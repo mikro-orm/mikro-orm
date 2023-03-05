@@ -6,7 +6,8 @@
     "start": "docusaurus start",
     "build": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus.mjs build",
     "swizzle": "docusaurus swizzle",
-    "deploy": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus.mjs deploy"
+    "deploy": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus.mjs deploy",
+    "prettier": "prettier --write 'docs/**/*.md' 'blog/**/*.md' 'versioned_docs/**/*.md'"
   },
   "dependencies": {
     "@docusaurus/core": "2.3.1",
@@ -29,5 +30,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "prettier": "^2.8.4"
   }
 }

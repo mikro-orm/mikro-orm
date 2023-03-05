@@ -63,14 +63,9 @@ When we define our entities, we need to be careful about optional properties. Wi
 
 ## Strict property type validation
 
-> Since v4.0.3 the validation needs to be explicitly enabled via `validate: true`.
-> It has performance implications and usually should not be needed, as long as
-> you don't modify your entities via `Object.assign()`.
+> Since v4.0.3 the validation needs to be explicitly enabled via `validate: true`. It has performance implications and usually should not be needed, as long as you don't modify your entities via `Object.assign()`.
 
-`MikroORM` will validate your properties before actual persisting happens. It will try to fix wrong 
-data types for you automatically. If automatic conversion fails, it will throw an error. You can 
-enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered 
-when persisting the entity. 
+`MikroORM` will validate your properties before actual persisting happens. It will try to fix wrong data types for you automatically. If automatic conversion fails, it will throw an error. You can enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered when persisting the entity.
 
 ```ts
 // number instead of string will throw

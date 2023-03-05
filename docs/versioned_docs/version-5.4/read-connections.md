@@ -2,19 +2,13 @@
 title: Read Replica Connections
 ---
 
-Users can specify multiple read connections via `replicas` option. You can provide only fields
-that differ from master connection, rest will be taken from it.
+Users can specify multiple read connections via `replicas` option. You can provide only fields that differ from master connection, rest will be taken from it.
 
-When resolving read connections, the default strategy is to assign random read replicas for all
-read operations (SELECT, COUNT) that are not running inside a transaction.
+When resolving read connections, the default strategy is to assign random read replicas for all read operations (SELECT, COUNT) that are not running inside a transaction.
 
-You can specify an explicit connection type for find and count operations by using the `connectionType`
-property on the corresponding Options argument (i.e. `FindOptions`, `CountOptions`).
+You can specify an explicit connection type for find and count operations by using the `connectionType` property on the corresponding Options argument (i.e. `FindOptions`, `CountOptions`).
 
-The connection resolution strategy can be also inverted by setting the `preferReadReplicas` configuration property
-to `false` so that the default connection will always be a write connection, unless explicitly requested to be read
-(can be useful in applications where read-replicas are available but should only be used for specific use-cases).
-
+The connection resolution strategy can be also inverted by setting the `preferReadReplicas` configuration property to `false` so that the default connection will always be a write connection, unless explicitly requested to be read (can be useful in applications where read-replicas are available but should only be used for specific use-cases).
 
 ```ts
 const orm = await MikroORM.init({
@@ -31,9 +25,7 @@ const orm = await MikroORM.init({
 });
 ```
 
-By default, select queries will use random read connection if not inside transaction. You can
-specify the connection type explicitly in `em.getConnection(type: 'read' | 'write')`.
-
+By default, select queries will use random read connection if not inside transaction. You can specify the connection type explicitly in `em.getConnection(type: 'read' | 'write')`.
 
 ```ts
 const connection = em.getConnection(); // write connection

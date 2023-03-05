@@ -3,8 +3,7 @@ title: Using EntityRepository instead of EntityManager
 sidebar_label: Entity Repository
 ---
 
-More convenient way of fetching entities from database is by using `EntityRepository`, that
-carries the entity name so you do not have to pass it to every `find` and `findOne` calls:
+More convenient way of fetching entities from database is by using `EntityRepository`, that carries the entity name so you do not have to pass it to every `find` and `findOne` calls:
 
 Example:
 
@@ -15,7 +14,7 @@ const booksRepository = orm.em.getRepository(Book);
 const books = await booksRepository.find({ author: '...' }, ['author'], { title: QueryOrder.DESC }, 2, 1);
 
 // or with options object
-const books = await booksRepository.find({ author: '...' }, { 
+const books = await booksRepository.find({ author: '...' }, {
   populate: ['author'],
   limit: 1,
   offset: 2,
@@ -49,24 +48,19 @@ export class Publisher {
 }
 ```
 
-Note that we need to pass that repository reference inside a callback so we will not run
-into circular dependency issues when using entity references inside that repository.
+Note that we need to pass that repository reference inside a callback so we will not run into circular dependency issues when using entity references inside that repository.
 
 Now you can access your custom repository via `EntityManager.getRepository()` method.
 
-> You can also register custom base repository (for all entities where you do not specify 
-`customRepository`) globally, via `MikroORM.init({ entityRepository: CustomBaseRepository })`
+> You can also register custom base repository (for all entities where you do not specify `customRepository`) globally, via `MikroORM.init({ entityRepository: CustomBaseRepository })`
 
-For more examples, take a look at
-[`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)
-or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mysql.test.ts).
+For more examples, take a look at [`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts) or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mysql.test.ts).
 
 ## EntityRepository\<T\> API
 
 #### `find(where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>`
 
-Returns array of entities found for given condition. You can specify `FindOptions` to request
-population of referenced entities or control the pagination:
+Returns array of entities found for given condition. You can specify `FindOptions` to request population of referenced entities or control the pagination:
 
 ```typescript
 export interface FindOptions {
@@ -81,57 +75,49 @@ export interface FindOptions {
 
 #### `find(where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>`
 
-Same as previous `find` method, just with dedicated parameters for `populate`, `orderBy`, `limit`
-and `offset`.
+Same as previous `find` method, just with dedicated parameters for `populate`, `orderBy`, `limit` and `offset`.
 
 ---
 
 #### `findAll(options?: FindOptions): Promise<T[]>`
 
-Returns all entities for given type. 
+Returns all entities for given type.
 
 ---
 
 #### `findAll(populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>`
 
-Same as previous `findAll` method, just with dedicated parameters for `populate`, `orderBy`, `limit`
-and `offset`.
+Same as previous `findAll` method, just with dedicated parameters for `populate`, `orderBy`, `limit` and `offset`.
 
 ---
 
 #### `findOne(where: FilterQuery<T> | string, populate?: string[]): Promise<T | null>`
 
-Finds an entity by given `where` condition. You can use primary key as `where` value, then
-if the entity is already managed, no database call will be made. 
+Finds an entity by given `where` condition. You can use primary key as `where` value, then if the entity is already managed, no database call will be made.
 
 ---
 
 #### `merge(data: EntityData<T>): T`
 
-Adds given entity to current Identity Map. After merging, entity becomes managed. 
-This is useful when you want to work with cached entities. 
+Adds given entity to current Identity Map. After merging, entity becomes managed. This is useful when you want to work with cached entities.
 
 ---
 
 #### `getReference(id: string): T`
 
-Gets a reference to the entity identified by the given type and identifier without actually 
-loading it, if the entity is not yet loaded.
+Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded.
 
 ---
 
 #### `count(where: any): Promise<number>`
 
-Gets count of entities matching the `where` condition. 
+Gets count of entities matching the `where` condition.
 
 ---
 
 #### `persist(entity: IEntity | IEntity[], flush?: boolean): Promise<void>`
 
-Tells the EntityManager to make an instance managed and persistent. The entity will be 
-entered into the database at or before transaction commit or as a result of the flush 
-operation. You can control immediate flushing via `flush` parameter and via `autoFlush`
-configuration option. 
+Tells the EntityManager to make an instance managed and persistent. The entity will be entered into the database at or before transaction commit or as a result of the flush operation. You can control immediate flushing via `flush` parameter and via `autoFlush` configuration option.
 
 ---
 
@@ -143,7 +129,7 @@ Shortcut for `persist` & `flush`.
 
 #### `persistLater(entity: IEntity | IEntity[]): void`
 
-Shortcut for just `persist`, without flushing. 
+Shortcut for just `persist`, without flushing.
 
 ---
 
@@ -155,10 +141,9 @@ Flushes all changes to objects that have been queued up to now to the database.
 
 #### `remove(where: IEntity | any, flush?: boolean): Promise<number>`
 
-When provided entity instance as `where` value, then it calls `removeEntity(entity, flush)`, 
-otherwise it fires delete query with given `where` condition. 
+When provided entity instance as `where` value, then it calls `removeEntity(entity, flush)`, otherwise it fires delete query with given `where` condition.
 
-This method fires `beforeDelete` and `afterDelete` hooks only if you provide entity instance.  
+This method fires `beforeDelete` and `afterDelete` hooks only if you provide entity instance.
 
 ---
 
@@ -166,22 +151,20 @@ This method fires `beforeDelete` and `afterDelete` hooks only if you provide ent
 
 Shortcut for `removeEntity` & `flush`.
 
-This method fires `beforeDelete` and `afterDelete` hooks. 
+This method fires `beforeDelete` and `afterDelete` hooks.
 
 ---
 
 #### `removeLater(entity: IEntity): void`
 
-Shortcut for `removeEntity` without flushing. 
+Shortcut for `removeEntity` without flushing.
 
-This method fires `beforeDelete` and `afterDelete` hooks. 
+This method fires `beforeDelete` and `afterDelete` hooks.
 
 ---
 
 #### `canPopulate(property: string): boolean`
 
-Returns whether given entity has given property which can be populated (is reference or
-collection).
+Returns whether given entity has given property which can be populated (is reference or collection).
 
 ---
-

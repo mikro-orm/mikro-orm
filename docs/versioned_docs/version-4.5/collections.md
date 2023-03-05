@@ -2,15 +2,11 @@
 title: Collections
 ---
 
-`OneToMany` and `ManyToMany` collections are stored in a `Collection` wrapper. It implements
-iterator so you can use `for of` loop to iterate through it. 
+`OneToMany` and `ManyToMany` collections are stored in a `Collection` wrapper. It implements iterator so you can use `for of` loop to iterate through it.
 
-Another way to access collection items is to use bracket syntax like when you access array items.
-Keep in mind that this approach will not check if the collection is initialed, while using `get`
-method will throw error in this case.
+Another way to access collection items is to use bracket syntax like when you access array items. Keep in mind that this approach will not check if the collection is initialed, while using `get` method will throw error in this case.
 
-> Note that array access in `Collection` is available only for reading already loaded items, you 
-> cannot add new items to `Collection` this way. 
+> Note that array access in `Collection` is available only for reading already loaded items, you cannot add new items to `Collection` this way.
 
 ```typescript
 const author = em.findOne(Author, '...', ['books']); // populating books collection
@@ -57,7 +53,7 @@ console.log(await author.books.loadItems()); // Book[]
 ## OneToMany Collections
 
 `OneToMany` collections are inverse side of `ManyToOne` references, to which they need to point via `fk` attribute:
- 
+
 ```typescript
 @Entity()
 export class Book {
@@ -88,15 +84,13 @@ export class Author {
 
 ## ManyToMany Collections
 
-For ManyToMany, SQL drivers use pivot table that holds reference to both entities. 
+For ManyToMany, SQL drivers use pivot table that holds reference to both entities.
 
-As opposed to them, with MongoDB we do not need to have join tables for `ManyToMany` 
-relations. All references are stored as an array of `ObjectId`s on owning entity. 
+As opposed to them, with MongoDB we do not need to have join tables for `ManyToMany` relations. All references are stored as an array of `ObjectId`s on owning entity.
 
 ### Unidirectional
 
-Unidirectional `ManyToMany` relations are defined only on one side, if you define only `entity`
-attribute, then it will be considered the owning side:
+Unidirectional `ManyToMany` relations are defined only on one side, if you define only `entity` attribute, then it will be considered the owning side:
 
 ```typescript
 @ManyToMany(() => Book)
@@ -109,8 +103,7 @@ books2 = new Collection<Book>(this);
 
 ### Bidirectional
 
-Bidirectional `ManyToMany` relations are defined on both sides, while one is owning side (where references are store), 
-marked by `inversedBy` attribute pointing to the inverse side:
+Bidirectional `ManyToMany` relations are defined on both sides, while one is owning side (where references are store), marked by `inversedBy` attribute pointing to the inverse side:
 
 ```typescript
 @ManyToMany(() => BookTag, tag => tag.books, { owner: true })
@@ -134,22 +127,15 @@ books = new Collection<Book>(this);
 
 ### Forcing fixed order of collection items
 
-> Since v3 many to many collections does not require having auto increment primary key, that 
-> was used to ensure fixed order of collection items.
+> Since v3 many to many collections does not require having auto increment primary key, that was used to ensure fixed order of collection items.
 
-To preserve fixed order of collections, you can use `fixedOrder: true` attribute, which will 
-start ordering by `id` column. Schema generator will convert the pivot table to have auto increment
-primary key `id`. You can also change the order column name via `fixedOrderColumn: 'order'`. 
+To preserve fixed order of collections, you can use `fixedOrder: true` attribute, which will start ordering by `id` column. Schema generator will convert the pivot table to have auto increment primary key `id`. You can also change the order column name via `fixedOrderColumn: 'order'`.
 
-You can also specify default ordering via `orderBy: { ... }` attribute. This will be used when
-you fully populate the collection including its items, as it orders by the referenced entity 
-properties instead of pivot table columns (which `fixedOrderColumn` is). On the other hand, 
-`fixedOrder` is used to maintain the insert order of items instead of ordering by some property. 
+You can also specify default ordering via `orderBy: { ... }` attribute. This will be used when you fully populate the collection including its items, as it orders by the referenced entity properties instead of pivot table columns (which `fixedOrderColumn` is). On the other hand, `fixedOrder` is used to maintain the insert order of items instead of ordering by some property.
 
 ## Propagation of Collection's add() and remove() operations
 
-When you use one of `Collection.add()` method, the item is added to given collection, 
-and this action is also propagated to its counterpart. 
+When you use one of `Collection.add()` method, the item is added to given collection, and this action is also propagated to its counterpart.
 
 ```typescript
 // one to many
@@ -160,7 +146,7 @@ author.books.add(book);
 console.log(book.author); // author will be set thanks to the propagation
 ```
 
-For M:N this works in both ways, either from owning side, or from inverse side. 
+For M:N this works in both ways, either from owning side, or from inverse side.
 
 ```typescript
 // many to many works both from owning side and from inverse side
@@ -172,19 +158,17 @@ console.log(tag.books.contains(book)); // true
 
 tag.books.add(book);
 console.log(book.tags.contains(tag)); // true
-``` 
+```
 
 > Collections on both sides have to be initialized, otherwise propagation won't work.
 
-> Although this propagation works also for M:N inverse side, you should always use owning
-> side to manipulate the collection.
+> Although this propagation works also for M:N inverse side, you should always use owning side to manipulate the collection.
 
 Same applies for `Collection.remove()`.
 
 ## Filtering and ordering of collection items
 
-When initializing collection items via `collection.init()`, you can filter the collection
-as well as order its items:
+When initializing collection items via `collection.init()`, you can filter the collection as well as order its items:
 
 ```typescript
 await book.tags.init({ where: { active: true }, orderBy: { name: QueryOrder.DESC } });
@@ -194,10 +178,7 @@ await book.tags.init({ where: { active: true }, orderBy: { name: QueryOrder.DESC
 
 ## Filtering Collections
 
-Collections have a `matching` method that allows to slice parts of data from a collection.
-By default, it will return the list of entities based on the query. We can use the `store`
-boolean parameter to save this list into the collection items - this will mark the 
-collection as `readonly`, methods like `add` or `remove` will throw. 
+Collections have a `matching` method that allows to slice parts of data from a collection. By default, it will return the list of entities based on the query. We can use the `store` boolean parameter to save this list into the collection items - this will mark the collection as `readonly`, methods like `add` or `remove` will throw.
 
 ```ts
 const a = await em.findOneOrFail(Author, 1);

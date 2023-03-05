@@ -2,15 +2,11 @@
 title: Collections
 ---
 
-`OneToMany` and `ManyToMany` collections are stored in a `Collection` wrapper. It implements
-iterator so you can use `for of` loop to iterate through it. 
+`OneToMany` and `ManyToMany` collections are stored in a `Collection` wrapper. It implements iterator so you can use `for of` loop to iterate through it.
 
-Another way to access collection items is to use bracket syntax like when you access array items.
-Keep in mind that this approach will not check if the collection is initialed, while using `get`
-method will throw error in this case.
+Another way to access collection items is to use bracket syntax like when you access array items. Keep in mind that this approach will not check if the collection is initialed, while using `get` method will throw error in this case.
 
-> Note that array access in `Collection` is available only for reading already loaded items, you 
-> cannot add new items to `Collection` this way. 
+> Note that array access in `Collection` is available only for reading already loaded items, you cannot add new items to `Collection` this way.
 
 ```typescript
 const author = orm.em.findOne(Author, '...', ['books']); // populating books collection
@@ -51,7 +47,7 @@ console.log(author.books[12345]); // undefined, even if the collection is not in
 ## OneToMany collections
 
 `OneToMany` collections are inverse side of `ManyToOne` references, to which they need to point via `fk` attribute:
- 
+
 ```typescript
 @Entity()
 export class Book {
@@ -78,8 +74,7 @@ export class Author {
 
 ## ManyToMany collections
 
-As opposed to SQL databases, with MongoDB we do not need to have join tables for `ManyToMany` relations. 
-All references are stored as an array of `ObjectID`s on owning entity. 
+As opposed to SQL databases, with MongoDB we do not need to have join tables for `ManyToMany` relations. All references are stored as an array of `ObjectID`s on owning entity.
 
 ### Unidirectional
 
@@ -92,8 +87,7 @@ books = new Collection<Book>(this);
 
 ### Bidirectional
 
-Bidirectional `ManyToMany` relations are defined on both sides, while one is owning side (where references are store), 
-marked by `inversedBy` attribute pointing to the inverse side:
+Bidirectional `ManyToMany` relations are defined on both sides, while one is owning side (where references are store), marked by `inversedBy` attribute pointing to the inverse side:
 
 ```typescript
 @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
@@ -109,8 +103,7 @@ books = new Collection<Book>(this);
 
 ## Propagation of Collection's add() and remove() operations
 
-When you use one of `Collection.add()` method, the item is added to given collection, 
-and this action is also propagated to its counterpart. 
+When you use one of `Collection.add()` method, the item is added to given collection, and this action is also propagated to its counterpart.
 
 ```typescript
 // one to many
@@ -121,7 +114,7 @@ author.books.add(book);
 console.log(book.author); // author will be set thanks to the propagation
 ```
 
-For M:N this works in both ways, either from owning side, or from inverse side. 
+For M:N this works in both ways, either from owning side, or from inverse side.
 
 ```typescript
 // many to many works both from owning side and from inverse side
@@ -133,12 +126,10 @@ console.log(tag.books.contains(book)); // true
 
 tag.books.add(book);
 console.log(book.tags.contains(tag)); // true
-``` 
+```
 
 > Collections on both sides have to be initialized, otherwise propagation won't work.
 
-> Although this propagation works also for M:N inverse side, you should always use owning
-> side to manipulate the collection.
+> Although this propagation works also for M:N inverse side, you should always use owning side to manipulate the collection.
 
 Same applies for `Collection.remove()`.
-

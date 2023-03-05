@@ -2,8 +2,7 @@
 title: Using QueryBuilder
 ---
 
-When you need to execute some SQL query without all the ORM stuff involved, you can either
-compose the query yourself, or use the `QueryBuilder` helper to construct the query for you:
+When you need to execute some SQL query without all the ORM stuff involved, you can either compose the query yourself, or use the `QueryBuilder` helper to construct the query for you:
 
 ```typescript
 const qb = orm.em.createQueryBuilder(Author);
@@ -41,9 +40,7 @@ const res2 = await qb.execute('get'); // returns single object
 const res3 = await qb.execute('run'); // returns object like `{ affectedRows: number, insertId: number, row: any }`
 ```
 
-Second argument can be used to disable mapping of database columns to property names (which 
-is enabled by default). In following example, `Book` entity has `createdAt` property defined 
-with implicit underscored field name `created_at`:
+Second argument can be used to disable mapping of database columns to property names (which is enabled by default). In following example, `Book` entity has `createdAt` property defined with implicit underscored field name `created_at`:
 
 ```typescript
 const res4 = await orm.em.createQueryBuilder(Book).select('*').execute('get', true);
@@ -62,13 +59,9 @@ console.log(entities); // array of Book entities
 
 ## Mapping raw results to entities
 
-Another way to create entity from raw results (that are not necessarily mapped to entity properties)
-is to use `map()` method of `EntityManager`, that is basically a shortcut for mapping results
-via `IDatabaseDriver.mapResult()` (which converts field names to property names - e.g. `created_at`
-to `createdAt`) and `merge()` which converts the data to entity instance and makes it managed. 
+Another way to create entity from raw results (that are not necessarily mapped to entity properties) is to use `map()` method of `EntityManager`, that is basically a shortcut for mapping results via `IDatabaseDriver.mapResult()` (which converts field names to property names - e.g. `created_at` to `createdAt`) and `merge()` which converts the data to entity instance and makes it managed.
 
-This method comes handy when you want to use 3rd party query builder like [Knex.js](https://knexjs.org/), 
-where the result is not mapped to entity properties automatically:
+This method comes handy when you want to use 3rd party query builder like [Knex.js](https://knexjs.org/), where the result is not mapped to entity properties automatically:
 
 ```typescript
 const results = await knex.select('*').from('users').where(knex.raw('id = ?', [id]));
@@ -115,8 +108,7 @@ console.log(qb.getQuery());
 
 ## Complex where conditions
 
-There are multiple ways to construct complex query conditions. You can either write parts of SQL
-manually, use `andWhere()`/`orWhere()`, or provide condition object:
+There are multiple ways to construct complex query conditions. You can either write parts of SQL manually, use `andWhere()`/`orWhere()`, or provide condition object:
 
 ### Custom SQL in where
 
@@ -201,4 +193,3 @@ QueryBuilder.getQuery(): string;
 QueryBuilder.getParams(): any;
 QueryBuilder.clone(): QueryBuilder;
 ```
-

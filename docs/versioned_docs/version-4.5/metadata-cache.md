@@ -4,26 +4,17 @@ title: Metadata Cache
 
 > In v4 you need to explicitly install `@mikro-orm/reflection` to use `TsMorphMetadataProvider`.
 
-Under the hood, `MikroORM` uses [`ts-morph`](https://github.com/dsherret/ts-morph) to read 
-TypeScript source files of all entities to be able to detect all types. Thanks to this, 
-defining the type is enough for runtime validation.
+Under the hood, `MikroORM` uses [`ts-morph`](https://github.com/dsherret/ts-morph) to read TypeScript source files of all entities to be able to detect all types. Thanks to this, defining the type is enough for runtime validation.
 
-If you use folder-based discovery, you should specify paths to
-the compiled entities via `entities` as well as paths to the TS source files of
-those entities via `entitiesTs`. When you run the ORM via `ts-node`, the latter
-will be used automatically, or if you explicitly pass `tsNode: true` in the config.
+If you use folder-based discovery, you should specify paths to the compiled entities via `entities` as well as paths to the TS source files of those entities via `entitiesTs`. When you run the ORM via `ts-node`, the latter will be used automatically, or if you explicitly pass `tsNode: true` in the config.
 
-After the discovery process ends, all metadata will be cached. By default, `FileCacheAdapter`
-will be used to store the cache inside `./temp` folder to JSON files. 
+After the discovery process ends, all metadata will be cached. By default, `FileCacheAdapter` will be used to store the cache inside `./temp` folder to JSON files.
 
 ## Automatic Invalidation
 
-Entity metadata are cached together with modified time of the source file, and every time
-the cache is requested, it first checks if the cache is not invalid. This way you can forgot 
-about the caching mechanism most of the time.
+Entity metadata are cached together with modified time of the source file, and every time the cache is requested, it first checks if the cache is not invalid. This way you can forgot about the caching mechanism most of the time.
 
-One case where you can end up needing to wipe the cache manually is when you work withing a 
-git branch where contents of entities folder differs. 
+One case where you can end up needing to wipe the cache manually is when you work withing a git branch where contents of entities folder differs.
 
 ## Disabling Metadata Cache
 
@@ -60,8 +51,7 @@ await MikroORM.init({
 
 ## Providing Custom Cache Adapter
 
-You can also implement your own cache adapter, for example to store the cache in redis. 
-To do so, just implement simple `CacheAdapter` interface:
+You can also implement your own cache adapter, for example to store the cache in redis. To do so, just implement simple `CacheAdapter` interface:
 
 ```typescript
 export interface CacheAdapter {

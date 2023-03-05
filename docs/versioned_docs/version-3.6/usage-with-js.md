@@ -3,8 +3,7 @@ title: Usage with JavaScript
 sidebar_label: Usage with Vanilla JS
 ---
 
-Since MikroORM 3.2, we can use `EntitySchema` helper to define own entities without 
-decorators, which works also for Vanilla JavaScript.
+Since MikroORM 3.2, we can use `EntitySchema` helper to define own entities without decorators, which works also for Vanilla JavaScript.
 
 > Read more about `EntitySchema` in [this section](entity-schema.md).
 
@@ -68,8 +67,7 @@ module.exports.entity = Author;
 module.exports.schema = schema;
 ```
 
-> Do not forget to provide `name` and `path` schema parameters as well as `entity` 
-> and `schema` exports.
+> Do not forget to provide `name` and `path` schema parameters as well as `entity` and `schema` exports.
 
 Reference parameter can be one of (where `SCALAR` is the default one):
 
@@ -92,5 +90,4 @@ const orm = await MikroORM.init({
 });
 ```
 
-For more examples of plain JavaScript entity definitions take a look
-[Express JavaScript example](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js). 
+For more examples of plain JavaScript entity definitions take a look [Express JavaScript example](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js).

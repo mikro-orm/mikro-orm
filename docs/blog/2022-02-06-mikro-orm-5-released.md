@@ -426,7 +426,7 @@ While MikroORM v5 is still compiled and published as CommonJS, we added several 
 ### Other notable changes
 
 - Partial loading support (`fields`) for joined loading strategy
-- `AsyncLocalStorage` used by default in the ``RequestContext`` helper
+- `AsyncLocalStorage` used by default in the `RequestContext` helper
 - `onLoad` event (like `onInit`, but allows async and fires only for loaded entities, not references)
 - Exporting async functions from CLI config
 - Configurable aliasing strategy for SQL

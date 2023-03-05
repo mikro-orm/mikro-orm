@@ -289,10 +289,10 @@ export class DateType extends Type {
 ```typescript
 @Entity()
 export class FooBar implements IdEntity<FooBar> {
-  
+
   @PrimaryKey()
   id!: number;
-  
+
   @Property({ type: DateType })
   born?: Date;
 
@@ -369,5 +369,3 @@ There are also some interesting suggestion in the Github issues, like [Dataloade
 So that is MikroORM 3, what do you think about it? What features or changes would you like to see next? Or what part of the documentation should be improved and how?
 
 > _Like_ [_MikroORM_](https://mikro-orm.io)_? ⭐️_ [_Star it_](https://github.com/mikro-orm/mikro-orm) _on GitHub and share this article with your friends._
-
-* * *

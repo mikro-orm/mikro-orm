@@ -179,8 +179,7 @@ export class OrderItem {
 
 ### Forcing fixed order of collection items
 
-> Since v3 many to many collections does not require having auto increment primary key, that
-> was used to ensure fixed order of collection items.
+> Since v3 many to many collections does not require having auto increment primary key, that was used to ensure fixed order of collection items.
 
 To preserve fixed order of collections, we can use `fixedOrder: true` attribute, which will start ordering by `id` column. Schema generator will convert the pivot table to have auto increment primary key `id`. We can also change the order column name via `fixedOrderColumn: 'order'`.
 
@@ -211,9 +210,9 @@ console.log(tag.books.contains(book)); // true
 
 tag.books.add(book);
 console.log(book.tags.contains(tag)); // true
-``` 
+```
 
->  Since v5.2.2 propagation of adding new items to inverse side M:N relation also works if the owning collection is not initialized. For propagation of remove operation, both sides still have to be initialized.
+> Since v5.2.2 propagation of adding new items to inverse side M:N relation also works if the owning collection is not initialized. For propagation of remove operation, both sides still have to be initialized.
 
 > Although this propagation works also for M:N inverse side, we should always use owning side to manipulate the collection.
 

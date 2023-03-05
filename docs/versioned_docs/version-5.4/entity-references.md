@@ -6,12 +6,9 @@ sidebar_label: Entity References
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-Every single entity relation is mapped to an entity reference. Reference is an entity that has
-only its identifier. This reference is stored in identity map so you will get the same object 
-reference when fetching the same document from database.
+Every single entity relation is mapped to an entity reference. Reference is an entity that has only its identifier. This reference is stored in identity map so you will get the same object reference when fetching the same document from database.
 
-You can call `await wrap(entity).init()` to initialize the entity. This will trigger database call 
-and populate itself, keeping the same reference in identity map. 
+You can call `await wrap(entity).init()` to initialize the entity. This will trigger database call and populate itself, keeping the same reference in identity map.
 
 ```ts
 const author = orm.em.getReference('...id...');
@@ -26,8 +23,7 @@ console.log(author.name); // defined
 
 ## Better Type-safety with `Reference<T>` Wrapper
 
-When you define `@ManyToOne` and `@OneToOne` properties on your entity, TypeScript compiler
-will think that desired entities are always loaded:
+When you define `@ManyToOne` and `@OneToOne` properties on your entity, TypeScript compiler will think that desired entities are always loaded:
 
 ```ts
 @Entity()
@@ -51,24 +47,20 @@ console.log(book.author.isInitialized()); // false
 console.log(book.author.name); // undefined as `Author` is not loaded yet
 ```
 
-> You can overcome this issue by using the `Reference<T>` wrapper. It simply wraps the entity, 
-defining `load(): Promise<T>` method that will first lazy load the association if not already
-available. You can also use `unwrap(): T` method to access the underlying entity without loading
-it.
+> You can overcome this issue by using the `Reference<T>` wrapper. It simply wraps the entity, defining `load(): Promise<T>` method that will first lazy load the association if not already available. You can also use `unwrap(): T` method to access the underlying entity without loading it.
 
-You can also use `load<K extends keyof T>(prop: K): Promise<T[K]>`, which works like `load()`
-but returns the specified property.
+You can also use `load<K extends keyof T>(prop: K): Promise<T[K]>`, which works like `load()` but returns the specified property.
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
 import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Reference } from '@mikro-orm/core';
@@ -143,9 +135,7 @@ console.log((await book.author.load()).name); // ok, author already loaded
 console.log(book.author.unwrap().name); // ok, author already loaded
 ```
 
-There are also `getEntity()` and `getProperty()` methods that are synchronous getters, 
-that will first check if the wrapped entity is initialized, and if not, it will throw 
-and error.
+There are also `getEntity()` and `getProperty()` methods that are synchronous getters, that will first check if the wrapped entity is initialized, and if not, it will throw and error.
 
 ```ts
 const book = await orm.em.findOne(Book, 1);
@@ -157,9 +147,7 @@ console.log((await book.author.load('name'))); // ok, loading the author first
 console.log(book.author.getProperty('name')); // ok, author already loaded
 ```
 
-If you use different metadata provider than `TsMorphMetadataProvider` 
-(e.g. `ReflectMetadataProvider`), you will also need to explicitly set `wrappedReference` 
-parameter:
+If you use different metadata provider than `TsMorphMetadataProvider` (e.g. `ReflectMetadataProvider`), you will also need to explicitly set `wrappedReference` parameter:
 
 ```ts
 @ManyToOne(() => Author, { wrappedReference: true })
@@ -168,9 +156,7 @@ author!: IdentifiedReference<Author>;
 
 ### Assigning to Reference Properties
 
-When you define the property as `Reference` wrapper, you will need to assign the `Reference`
-to it instead of the entity. You can create it via `Reference.create()` factory, or use `wrapped`
-option of `em.getReference()`:
+When you define the property as `Reference` wrapper, you will need to assign the `Reference` to it instead of the entity. You can create it via `Reference.create()` factory, or use `wrapped` option of `em.getReference()`:
 
 ```ts
 const book = await orm.em.findOne(Book, 1);
@@ -183,8 +169,7 @@ book.author = Reference.create(repo.getReference(2));
 await orm.em.flush();
 ```
 
-Since v5 we can also create entity references without access to `EntityManager`. 
-This can be handy if you want to create a reference from inside entity constructor:
+Since v5 we can also create entity references without access to `EntityManager`. This can be handy if you want to create a reference from inside entity constructor:
 
 ```ts
 @Entity()
@@ -200,8 +185,7 @@ export class Book {
 }
 ```
 
-Another way is to use `toReference()` method available as part of 
-[`WrappedEntity` interface](entity-helper.md#wrappedentity-and-wrap-helper):
+Another way is to use `toReference()` method available as part of [`WrappedEntity` interface](entity-helper.md#wrappedentity-and-wrap-helper):
 
 ```ts
 const author = new Author(...)
@@ -216,12 +200,9 @@ book.author.set(new Author(...));
 
 ### What is IdentifiedReference?
 
-`IdentifiedReference` is an intersection type that adds primary key property to the `Reference` 
-interface. It allows to get the primary key from `Reference` instance directly.
+`IdentifiedReference` is an intersection type that adds primary key property to the `Reference` interface. It allows to get the primary key from `Reference` instance directly.
 
-By default, we try to detect the PK by checking if a property with a known name exists.
-We check for those in order: `_id`, `uuid`, `id` - with a way to manually set the property
-name via `PrimaryKeyProp` symbol (`[PrimaryKeyProp]?: 'foo';`). 
+By default, we try to detect the PK by checking if a property with a known name exists. We check for those in order: `_id`, `uuid`, `id` - with a way to manually set the property name via `PrimaryKeyProp` symbol (`[PrimaryKeyProp]?: 'foo';`).
 
 We can also override this via second generic type argument.
 
@@ -239,19 +220,18 @@ const book = await orm.em.findOne(Book, 1);
 console.log(book.author.myPrimaryKey); // ok, returns the PK
 ```
 
-For MongoDB, define the PK generic type argument as `'id' | '_id'` to access both `string` 
-and `ObjectId` PK values:
+For MongoDB, define the PK generic type argument as `'id' | '_id'` to access both `string` and `ObjectId` PK values:
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
 @Entity()
@@ -317,5 +297,4 @@ console.log(book.author.id); // ok, returns string PK
 console.log(book.author._id); // ok, returns ObjectId PK
 ```
 
-> As opposed to `EntityHelper.init()` which always refreshes the entity, `Reference.load()` 
-> method will query the database only if the entity is not already loaded in Identity Map. 
+> As opposed to `EntityHelper.init()` which always refreshes the entity, `Reference.load()` method will query the database only if the entity is not already loaded in Identity Map.

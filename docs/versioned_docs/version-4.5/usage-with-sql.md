@@ -3,8 +3,7 @@ title: Usage with MySQL, MariaDB, PostgreSQL or SQLite
 sidebar_label: Usage with SQL Drivers
 ---
 
-To use `mikro-orm` with MySQL database, simply install the `@mikro-orm/mysql` dependency and set 
-the type option to `mysql` when initializing ORM. Since v4 it is no longer needed to install the `mysql2` package manually.
+To use `mikro-orm` with MySQL database, simply install the `@mikro-orm/mysql` dependency and set the type option to `mysql` when initializing ORM. Since v4 it is no longer needed to install the `mysql2` package manually.
 
 ```sh
 yarn add @mikro-orm/core @mikro-orm/mongodb     # for mongo
@@ -36,9 +35,7 @@ const orm = await MikroORM.init({
 
 ## Custom driver
 
-If you want to use database that is not currently supported, you can implement your own driver.
-More information about how to create one can be [found here](custom-driver.md). Then provide the 
-driver class via `driver` configuration option: 
+If you want to use database that is not currently supported, you can implement your own driver. More information about how to create one can be [found here](custom-driver.md). Then provide the driver class via `driver` configuration option:
 
 ```typescript
 import { MyCustomDriver } from './MyCustomDriver.ts';
@@ -52,8 +49,7 @@ const orm = await MikroORM.init({
 
 ## Schema
 
-Currently you will need to maintain the database schema yourself. For initial dump, you can 
-use [`SchemaGenerator` helper](schema-generator.md).  
+Currently you will need to maintain the database schema yourself. For initial dump, you can use [`SchemaGenerator` helper](schema-generator.md).
 
 ## ManyToMany collections with pivot tables
 
@@ -68,8 +64,7 @@ CREATE TABLE `publisher_to_test` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ```
 
-You can adjust the name of pivot table via `pivotTable` option in `@ManyToMany` decorator
-defined on owning side: 
+You can adjust the name of pivot table via `pivotTable` option in `@ManyToMany` decorator defined on owning side:
 
 ```typescript
 // for unidirectional
@@ -83,8 +78,7 @@ tags = new Collection<BookTag>(this);
 
 ## Using QueryBuilder to execute native SQL queries
 
-When you need to execute some SQL query without all the ORM stuff involved, you can either
-compose the query yourself, or use the `QueryBuilder` helper to construct the query for you:
+When you need to execute some SQL query without all the ORM stuff involved, you can either compose the query yourself, or use the `QueryBuilder` helper to construct the query for you:
 
 ```typescript
 const qb = orm.em.createQueryBuilder(Author);
@@ -127,17 +121,13 @@ QueryBuilder.getParams(): any;
 QueryBuilder.clone(): QueryBuilder;
 ```
 
-For more examples of how to work with `QueryBuilder`, take a look at `QueryBuilder` tests in 
-[`tests/QueryBuilder.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/QueryBuilder.test.ts).
+For more examples of how to work with `QueryBuilder`, take a look at `QueryBuilder` tests in [`tests/QueryBuilder.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/QueryBuilder.test.ts).
 
 ## Transactions
 
-When you call `em.flush()`, all computed changes are queried [inside a database
-transaction](unit-of-work.md) by default, so you do not have to handle transactions manually. 
+When you call `em.flush()`, all computed changes are queried [inside a database transaction](unit-of-work.md) by default, so you do not have to handle transactions manually.
 
-When you need to explicitly handle the transaction, you can use `em.transactional(cb)` 
-to run callback in transaction. It will provide forked `EntityManager` as a parameter 
-with clear isolated identity map - please use that to make changes. 
+When you need to explicitly handle the transaction, you can use `em.transactional(cb)` to run callback in transaction. It will provide forked `EntityManager` as a parameter with clear isolated identity map - please use that to make changes.
 
 ```typescript
 // if an error occurs inside the callback, all db queries from inside the callback will be rolled back
@@ -158,16 +148,13 @@ const author3 = new Author2('Author 3', 'a3@example.com');
 await orm.em.persistAndFlush([author1, author2, author3]);
 
 // finds authors with email like '%exa%le.c_m'
-const authors = await orm.em.find(Author2, { email: /exa.*le\.c.m$/ }); 
+const authors = await orm.em.find(Author2, { email: /exa.*le\.c.m$/ });
 console.log(authors); // all 3 authors found
 ```
 
 ## Native Collection Methods
 
-Sometimes you need to perform some bulk operation, or you just want to populate your
-database with initial fixtures. Using ORM for such operations can bring unnecessary
-boilerplate code. In this case, you can use one of `nativeInsert/nativeUpdate/nativeDelete`
-methods:
+Sometimes you need to perform some bulk operation, or you just want to populate your database with initial fixtures. Using ORM for such operations can bring unnecessary boilerplate code. In this case, you can use one of `nativeInsert/nativeUpdate/nativeDelete` methods:
 
 ```typescript
 em.nativeInsert<T extends AnyEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
@@ -175,9 +162,7 @@ em.nativeUpdate<T extends AnyEntity>(entityName: string, where: FilterQuery<T>, 
 em.nativeDelete<T extends AnyEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
 ```
 
-Those methods execute native SQL queries generated via `QueryBuilder` based on entity 
-metadata. Keep in mind that they do not hydrate results to entities, and they do not 
-trigger lifecycle hooks. 
+Those methods execute native SQL queries generated via `QueryBuilder` based on entity metadata. Keep in mind that they do not hydrate results to entities, and they do not trigger lifecycle hooks.
 
 They are also available as `EntityRepository` shortcuts:
 
@@ -187,9 +172,7 @@ EntityRepository.nativeUpdate(where: FilterQuery<T>, data: any): Promise<number>
 EntityRepository.nativeDelete(where: FilterQuery<T> | any): Promise<number>;
 ```
 
-Additionally there is `execute()` method that supports executing raw SQL queries or `QueryBuilder`
-instances. To create `QueryBuilder`, you can use `createQueryBuilder()` factory method on both 
-`EntityManager` and `EntityRepository` classes: 
+Additionally there is `execute()` method that supports executing raw SQL queries or `QueryBuilder` instances. To create `QueryBuilder`, you can use `createQueryBuilder()` factory method on both `EntityManager` and `EntityRepository` classes:
 
 ```typescript
 const qb = em.createQueryBuilder('Author');

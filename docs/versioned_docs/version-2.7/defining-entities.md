@@ -2,10 +2,7 @@
 title: Defining entities
 ---
 
-Entities are simple javascript objects (so called POJO), decorated with `@Entity` decorator.
-No real restrictions are made, you do not have to extend any base class, you are more than welcome
-to [use entity constructors](entity-constructors.md), just do not forget to specify primary key with
-`@PrimaryKey` decorator.
+Entities are simple javascript objects (so called POJO), decorated with `@Entity` decorator. No real restrictions are made, you do not have to extend any base class, you are more than welcome to [use entity constructors](entity-constructors.md), just do not forget to specify primary key with `@PrimaryKey` decorator.
 
 ```typescript title="./entities/Book.ts"
 @Entity()
@@ -42,16 +39,11 @@ export class Book {
 export interface Book extends IEntity<string> { }
 ```
 
-You will need to extend Book's interface with `IEntity`. The interface represents internal 
-methods added to your entity's prototype via `@Entity` decorator.
+You will need to extend Book's interface with `IEntity`. The interface represents internal methods added to your entity's prototype via `@Entity` decorator.
 
-> `IEntity` is generic interface, its type parameter depends on data type of normalized primary
-> key produced by used driver. SQL drivers usually use `number` and Mongo driver uses `string`.
-> This type default to union type `number | string`. Keep in mind that you have to worry about 
-> this only when you define your primary key as `_id` instead of `id`.
+> `IEntity` is generic interface, its type parameter depends on data type of normalized primary key produced by used driver. SQL drivers usually use `number` and Mongo driver uses `string`. This type default to union type `number | string`. Keep in mind that you have to worry about this only when you define your primary key as `_id` instead of `id`.
 
-As you can see, entity properties are decorated either with `@Property` decorator, or with one
-of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`. 
+As you can see, entity properties are decorated either with `@Property` decorator, or with one of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`.
 
 Here is another example of `Author` entity, that was referenced from the `Book` one:
 
@@ -119,16 +111,13 @@ You are free to choose one of those formats for entity filename (for a `BookTag`
 - `book-tag.model.ts`
 - `book-tag.entity.ts`
 
-Entity name is inferred from the first part of file name before first dot occurs, so you can 
-add any suffix behind the dot, not just `.model.ts` or `.entity.ts`. 
+Entity name is inferred from the first part of file name before first dot occurs, so you can add any suffix behind the dot, not just `.model.ts` or `.entity.ts`.
 
 ## Using BaseEntity
 
-You can define your own base entity with properties that you require on all entities, like
-primary key and created/updated time. 
+You can define your own base entity with properties that you require on all entities, like primary key and created/updated time.
 
-> If you are initializing the ORM via `entities` option, you need to specify all your
-> base entities as well.
+> If you are initializing the ORM via `entities` option, you need to specify all your base entities as well.
 
 ```typescript title="./entities/BaseEntity.ts"
 export abstract class BaseEntity {
@@ -147,8 +136,7 @@ export abstract class BaseEntity {
 
 ## Note about SQL drivers and @PrimaryKey
 
-All entities described above were defined with `_id: ObjectID` primary key - those were Mongo
-entities. 
+All entities described above were defined with `_id: ObjectID` primary key - those were Mongo entities.
 
 For SQL drivers, you will want to define your primary key as `id: number` instead:
 
@@ -157,6 +145,4 @@ For SQL drivers, you will want to define your primary key as `id: number` instea
 id: number;
 ```
 
-With your entities set up, you can start [using entity manager](entity-manager.md) and 
-[repositories](repositories.md) as described in following sections. 
-
+With your entities set up, you can start [using entity manager](entity-manager.md) and [repositories](repositories.md) as described in following sections.

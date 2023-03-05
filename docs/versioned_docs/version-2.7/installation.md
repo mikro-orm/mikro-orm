@@ -20,8 +20,7 @@ $ npm i -s mikro-orm pg      # for postgresql
 $ npm i -s mikro-orm sqlite  # for sqlite
 ```
 
-Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
-in `tsconfig.json` via:
+Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) in `tsconfig.json` via:
 
 ```json
 "experimentalDecorators": true
@@ -39,9 +38,7 @@ const orm = await MikroORM.init({
 console.log(orm.em); // access EntityManager via `em` property
 ```
 
-You can also provide paths where you store your entities via `entitiesDirs` array. Internally
-it uses [`globby`](https://github.com/sindresorhus/globby) so you can use 
-[globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns). 
+You can also provide paths where you store your entities via `entitiesDirs` array. Internally it uses [`globby`](https://github.com/sindresorhus/globby) so you can use [globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns).
 
 ```typescript
 const orm = await MikroORM.init({
@@ -50,8 +47,7 @@ const orm = await MikroORM.init({
 });
 ```
 
-You should provide list of directories, not paths to entities directly. If you want to do that
-instead, you should use `entities` array and use `globby` manually:
+You should provide list of directories, not paths to entities directly. If you want to do that instead, you should use `entities` array and use `globby` manually:
 
 ```typescript
 import { sync } from 'globby';
@@ -64,10 +60,7 @@ const orm = await MikroORM.init({
 
 ## Entity discovery in TypeScript
 
-Internally, `MikroORM` uses [performs analysis](metadata-cache.md) of source files of entities 
-to sniff types of all properties. This process can be slow if your project contains lots of 
-files. To speed up the discovery process a bit, you can provide more accurate paths where your
-entity source files are: 
+Internally, `MikroORM` uses [performs analysis](metadata-cache.md) of source files of entities to sniff types of all properties. This process can be slow if your project contains lots of files. To speed up the discovery process a bit, you can provide more accurate paths where your entity source files are:
 
 ```typescript
 const orm = await MikroORM.init({
@@ -79,8 +72,7 @@ const orm = await MikroORM.init({
 
 ## Request context
 
-Then you will need to fork entity manager for each request so their identity maps will not 
-collide. To do so, use the `RequestContext` helper:
+Then you will need to fork entity manager for each request so their identity maps will not collide. To do so, use the `RequestContext` helper:
 
 ```typescript
 const app = express();
@@ -93,4 +85,3 @@ app.use((req, res, next) => {
 More info about `RequestContext` is described [here](identity-map.md#request-context).
 
 Now you can start [defining your entities](defining-entities.md) (in one of the `entitiesDirs` folders).
-

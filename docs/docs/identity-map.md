@@ -38,7 +38,7 @@ We can still disable this check via `allowGlobalContext` configuration, or a con
 
 ## <a name="request-context"></a> `RequestContext` helper
 
-If we use dependency injection container like `inversify` or the one in `nestjs` framework, it can be hard to achieve this, because we usually want to access our repositories via DI container, but it will always provide us with the same instance, rather than new one for each request. 
+If we use dependency injection container like `inversify` or the one in `nestjs` framework, it can be hard to achieve this, because we usually want to access our repositories via DI container, but it will always provide us with the same instance, rather than new one for each request.
 
 To solve this, we can use `RequestContext` helper, that will use `node`'s [`AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) in the background to isolate the request context. MikroORM will always use request specific (forked) entity manager if available, so all we need to do is to create new request context preferably as a middleware:
 
@@ -46,11 +46,11 @@ To solve this, we can use `RequestContext` helper, that will use `node`'s [`Asyn
 app.use((req, res, next) => {
   RequestContext.create(orm.em, next);
 });
-``` 
+```
 
-We should register this middleware as the last one just before request handlers and before any of our custom middleware that is using the ORM. There might be issues when we register it before request processing middleware like `queryParser` or `bodyParser`, so definitely register the context after them. 
+We should register this middleware as the last one just before request handlers and before any of our custom middleware that is using the ORM. There might be issues when we register it before request processing middleware like `queryParser` or `bodyParser`, so definitely register the context after them.
 
-Later on we can then access the request scoped `EntityManager` via `RequestContext.getEntityManager()`. This method is used under the hood automatically, so we should not need it. 
+Later on we can then access the request scoped `EntityManager` via `RequestContext.getEntityManager()`. This method is used under the hood automatically, so we should not need it.
 
 > `RequestContext.getEntityManager()` will return `undefined` if the context was not started yet.
 
@@ -69,20 +69,15 @@ const res = await orm.em.getContext().find(Book, {});
 const res = await RequestContext.getEntityManager().find(Book, {});
 ```
 
-The `RequestContext.getEntityManager()` method then checks `AsyncLocalStorage` static instance we use for creating new EM forks in the `RequestContext.create()` method. 
+The `RequestContext.getEntityManager()` method then checks `AsyncLocalStorage` static instance we use for creating new EM forks in the `RequestContext.create()` method.
 
 The [`AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) class from Node.js core is the magician here. It allows us to track the context throughout the async calls. It allows us to decouple the `EntityManager` fork creation (usually in a middleware as shown in previous section) from its usage through the global `EntityManager` instance.
 
 ## `@UseRequestContext()` decorator
 
-Middlewares are executed only for regular HTTP request handlers, what if we need
-a request scoped method outside that? One example of that is queue handlers or
-scheduled tasks (e.g. CRON jobs).
+Middlewares are executed only for regular HTTP request handlers, what if we need a request scoped method outside that? One example of that is queue handlers or scheduled tasks (e.g. CRON jobs).
 
-We can use the `@UseRequestContext()` decorator. It requires us to first inject the
-`MikroORM` instance to current context, it will be then used to create the context
-for us. Under the hood, the decorator will register new request context for our
-method and execute it inside the context.
+We can use the `@UseRequestContext()` decorator. It requires us to first inject the `MikroORM` instance to current context, it will be then used to create the context for us. Under the hood, the decorator will register new request context for our method and execute it inside the context.
 
 This decorator will wrap the underlying method in `RequestContext.createAsync()` call. Every call to such method will create new context (new `EntityManager` fork) which will be used inside.
 
@@ -119,11 +114,11 @@ export class MyService {
 
 ## Why is Request Context needed?
 
-Imagine we will use a single Identity Map throughout our application. It will be shared across all request handlers, that can possibly run in parallel. 
+Imagine we will use a single Identity Map throughout our application. It will be shared across all request handlers, that can possibly run in parallel.
 
 ### Problem 1 - growing memory footprint
 
-As there would be only one shared Identity Map, we can't just clear it after our request ends. There can be another request working with it so clearing the Identity Map from one request could break other requests running in parallel. This will result in growing memory footprint, as every entity that became managed at some point in time would be kept in the Identity Map. 
+As there would be only one shared Identity Map, we can't just clear it after our request ends. There can be another request working with it so clearing the Identity Map from one request could break other requests running in parallel. This will result in growing memory footprint, as every entity that became managed at some point in time would be kept in the Identity Map.
 
 ### Problem 2 - unstable response of API endpoints
 
@@ -135,9 +130,9 @@ Let's say there are 2 endpoints
 2. `GET /book-with-author/:id` that returns the book and its author populated
 
 Now when someone requests same book via both of those endpoints, we could end up with both returning the same output:
- 
+
 1. `GET /book/1` returns `Book` without populating its property `author` property
 2. `GET /book-with-author/1` returns `Book`, this time with `author` populated
 3. `GET /book/1` returns `Book`, but this time also with `author` populated
 
-This happens because the information about entity association being populated is stored in the Identity Map. 
+This happens because the information about entity association being populated is stored in the Identity Map.

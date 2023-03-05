@@ -19,8 +19,7 @@ By doing this `MikroORM` will start using `console.log()` function to dump all q
 [query] commit [took 2 ms]
 ```
 
-It is also useful for debugging problems with entity discovery, as you will see information
-about every processed entity:
+It is also useful for debugging problems with entity discovery, as you will see information about every processed entity:
 
 ```
 [discovery] ORM entity discovery started
@@ -33,7 +32,7 @@ about every processed entity:
 
 ## Custom Logger
 
-You can also provide your own logger via `logger` option. 
+You can also provide your own logger via `logger` option.
 
 ```typescript
 return MikroORM.init({
@@ -44,8 +43,7 @@ return MikroORM.init({
 
 ## Logger Namespaces
 
-There are multiple Logger Namespaces that you can specifically request, while omitting the rest.
-Just specify array of them via the `debug` option:
+There are multiple Logger Namespaces that you can specifically request, while omitting the rest. Just specify array of them via the `debug` option:
 
 ```typescript
 return MikroORM.init({
@@ -59,13 +57,9 @@ If you provide `query-params` then you must also provide `query` in order for it
 
 ## Highlighters
 
-Previously Highlight.js was used to highlight various things in the CLI, 
-like SQL and mongo queries, or migrations or entities generated via CLI.
-While the library worked fine, it was causing performance issues mainly 
-for those bundling via webpack and using lambdas, as the library was huge.
+Previously Highlight.js was used to highlight various things in the CLI, like SQL and mongo queries, or migrations or entities generated via CLI. While the library worked fine, it was causing performance issues mainly for those bundling via webpack and using lambdas, as the library was huge.
 
-In v4 highlighting is disabled by default, and there are 2 highlighters 
-you can optionally use (you need to install them first).
+In v4 highlighting is disabled by default, and there are 2 highlighters you can optionally use (you need to install them first).
 
 ```typescript
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
@@ -76,5 +70,4 @@ MikroORM.init({
 });
 ```
 
-For MongoDB you can use `MongoHighlighter` from `@mikro-orm/mongo-highlighter` 
-package.
+For MongoDB you can use `MongoHighlighter` from `@mikro-orm/mongo-highlighter` package.

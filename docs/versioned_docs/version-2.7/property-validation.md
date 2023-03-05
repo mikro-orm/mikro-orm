@@ -2,10 +2,7 @@
 title: Property validation
 ---
 
-`MikroORM` will validate your properties before actual persisting happens. It will try to fix wrong 
-data types for you automatically. If automatic conversion fails, it will throw an error. You can 
-enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered 
-when persisting the entity. 
+`MikroORM` will validate your properties before actual persisting happens. It will try to fix wrong data types for you automatically. If automatic conversion fails, it will throw an error. You can enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered when persisting the entity.
 
 ```typescript
 // number instead of string will throw
@@ -45,4 +42,3 @@ await orm.em.persistAndFlush(author); // throws "Validation error: trying to set
 author.assign({ age: false });
 await orm.em.persistAndFlush(author); // throws "Validation error: trying to set Author.age of type 'number' to 'false' of type 'boolean'"
 ```
-

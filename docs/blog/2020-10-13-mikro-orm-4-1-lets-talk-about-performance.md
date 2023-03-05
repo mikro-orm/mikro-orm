@@ -9,9 +9,7 @@ authorTwitter: B4nan
 tags: [typescript, javascript, node, sql]
 ---
 
-I just shipped version 4.1 of [MikroORM](https://github.com/mikro-orm/mikro-orm), 
-the TypeScript ORM for Node.js, and I feel like this particular release deserves 
-a bit more attention than a regular feature release.
+I just shipped version 4.1 of [MikroORM](https://github.com/mikro-orm/mikro-orm), the TypeScript ORM for Node.js, and I feel like this particular release deserves a bit more attention than a regular feature release.
 
 <!--truncate-->
 
@@ -63,13 +61,13 @@ for (const user of users) {
 await em.flush();
 
 // update `user` set
-//   `name` = case 
-//     when (`id` = 1) then 'Peter 1 changed!' 
-//     when (`id` = 2) then 'Peter 2 changed!' 
-//     when (`id` = 3) then 'Peter 3 changed!' 
-//     when (`id` = 4) then 'Peter 4 changed!' 
-//     when (`id` = 5) then 'Peter 5 changed!' 
-//     else `priority` end 
+//   `name` = case
+//     when (`id` = 1) then 'Peter 1 changed!'
+//     when (`id` = 2) then 'Peter 2 changed!'
+//     when (`id` = 3) then 'Peter 3 changed!'
+//     when (`id` = 4) then 'Peter 4 changed!'
+//     when (`id` = 5) then 'Peter 5 changed!'
+//     else `priority` end
 //   where `id` in (1, 2, 3, 4, 5)
 ```
 

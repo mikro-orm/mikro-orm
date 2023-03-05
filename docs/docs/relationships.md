@@ -3,20 +3,16 @@ title: Modeling Entity Relationships
 sidebar_label: Modeling Entity Relationships
 ---
 
-There are 4 types of entity relationships in MikroORM: 
+There are 4 types of entity relationships in MikroORM:
 
 - ManyToOne
 - OneToMany
 - OneToOne
 - ManyToMany
 
-Relations can be unidirectional and bidirectional. Unidirectional are defined only on one 
-side (the owning side). Bidirectional are defined on both sides, while one is owning side 
-(where references are store), marked by `inversedBy` attribute pointing to the inverse side.
-On the inversed side we define it with `mappedBy` attribute pointing back to the owner:
+Relations can be unidirectional and bidirectional. Unidirectional are defined only on one side (the owning side). Bidirectional are defined on both sides, while one is owning side (where references are store), marked by `inversedBy` attribute pointing to the inverse side. On the inversed side we define it with `mappedBy` attribute pointing back to the owner:
 
-> When modeling bidirectional relationship, you can also omit the `inversedBy` attribute, 
-> defining `mappedBy` on the inverse side is enough as it will be auto-wired. 
+> When modeling bidirectional relationship, you can also omit the `inversedBy` attribute, defining `mappedBy` on the inverse side is enough as it will be auto-wired.
 
 ## ManyToOne
 
@@ -43,8 +39,7 @@ export class Book {
 }
 ```
 
-You can also specify how operations on given entity should [cascade](cascading.md) 
-to the referred entity.
+You can also specify how operations on given entity should [cascade](cascading.md) to the referred entity.
 
 ## OneToMany
 
@@ -71,19 +66,15 @@ export class Author {
 }
 ```
 
-As you can see, OneToMany is the inverse side of ManyToOne (which is the owning side).
-More about how collections work can be found on [collections page](collections.md). 
+As you can see, OneToMany is the inverse side of ManyToOne (which is the owning side). More about how collections work can be found on [collections page](collections.md).
 
-You can also specify how operations on given entity should [cascade](cascading.md) to the referred
-entities. There is also more aggressive remove mode called [Orphan Removal](cascading.md#orphan-removal) 
-(`books4` example).
+You can also specify how operations on given entity should [cascade](cascading.md) to the referred entities. There is also more aggressive remove mode called [Orphan Removal](cascading.md#orphan-removal) (`books4` example).
 
 ## OneToOne
 
 > One instance of the current Entity refers to One instance of the referred Entity.
 
-This is a variant of ManyToOne, where there is always just one entity on both sides. This means
-that the foreign key column is also unique.
+This is a variant of ManyToOne, where there is always just one entity on both sides. This means that the foreign key column is also unique.
 
 ### Owning Side
 
@@ -121,8 +112,7 @@ export class User {
 }
 ```
 
-As you can see, relationships can be also self-referencing (all of them. OneToOne also supports 
-[Orphan Removal](cascading.md#orphan-removal). 
+As you can see, relationships can be also self-referencing (all of them. OneToOne also supports [Orphan Removal](cascading.md#orphan-removal).
 
 ## ManyToMany
 
@@ -149,7 +139,7 @@ export class Book {
   @ManyToMany(() => BookTag, 'books', { owner: true })
   tags4 = new Collection<BookTag>(this);
 
-  // to define uni-directional many to many, simply provide only 
+  // to define uni-directional many to many, simply provide only
   @ManyToMany(() => Author)
   friends: Collection<Author> = new Collection<Author>(this);
 
@@ -169,7 +159,7 @@ export class BookTag {
 }
 ```
 
-Again, more information about how collections work can be found on [collections page](collections.md). 
+Again, more information about how collections work can be found on [collections page](collections.md).
 
 ## Relations in ESM projects
 

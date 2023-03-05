@@ -5,10 +5,7 @@ sidebar_label: Updating Entity Values
 
 ## Updating Entity Values with `entity.assign()`
 
-When you want to update entity based on user input, you will usually have just plain
-string ids of entity relations as user input. Normally you would need to use 
-`em.getReference()` to create references from each id first, and then
-use those references to update entity relations:
+When you want to update entity based on user input, you will usually have just plain string ids of entity relations as user input. Normally you would need to use `em.getReference()` to create references from each id first, and then use those references to update entity relations:
 
 ```typescript
 const jon = new Author('Jon Snow', 'snow@wall.st');
@@ -21,8 +18,8 @@ Same result can be easily achieved with `entity.assign()`:
 ```typescript
 import { wrap } from 'mikro-orm';
 
-wrap(book).assign({ 
-  title: 'Better Book 1', 
+wrap(book).assign({
+  title: 'Better Book 1',
   author: '...id...',
 });
 console.log(book.title); // 'Better Book 1'
@@ -30,22 +27,19 @@ console.log(book.author); // instance of Author with id: '...id...'
 console.log(book.author.id); // '...id...'
 ```
 
-To use `entity.assign()` on not managed entities, you need to provide `EntityManager` 
-instance explicitly: 
+To use `entity.assign()` on not managed entities, you need to provide `EntityManager` instance explicitly:
 
 ```typescript
 import { wrap } from 'mikro-orm';
 
 const book = new Book();
-wrap(book).assign({ 
-  title: 'Better Book 1', 
+wrap(book).assign({
+  title: 'Better Book 1',
   author: '...id...',
 }, { em: orm.em });
 ```
 
-By default, `entity.assign(data)` behaves same way as `Object.assign(entity, data)`, 
-e.g. it does not merge things recursively. To enable deep merging of object properties, 
-use second parameter to enable `mergeObjects` flag:
+By default, `entity.assign(data)` behaves same way as `Object.assign(entity, data)`, e.g. it does not merge things recursively. To enable deep merging of object properties, use second parameter to enable `mergeObjects` flag:
 
 ```typescript
 import { wrap } from 'mikro-orm';
@@ -61,8 +55,7 @@ console.log(book.meta); // { foo: 4 }
 
 ## `WrappedEntity` and `wrap()` helper
 
-`IWrappedEntity` is interface that defines helper methods as well as some internal 
-properties provided by the ORM:
+`IWrappedEntity` is interface that defines helper methods as well as some internal properties provided by the ORM:
 
 ```typescript
 interface IWrappedEntity<T, PK extends keyof T> {
@@ -84,12 +77,9 @@ interface IWrappedEntity<T, PK extends keyof T> {
 }
 ```
 
-Users can choose whether they are fine with polluting the entity interface with 
-those additional methods and properties, or they want to keep the interface clean 
-and use the `wrap(entity)` helper method instead to access them. 
+Users can choose whether they are fine with polluting the entity interface with those additional methods and properties, or they want to keep the interface clean and use the `wrap(entity)` helper method instead to access them.
 
-To keep all methods available on the entity, you can use interface merging with 
-`WrappedEntity<T, PK>` that both extends `AnyEntity<T, PK>` and defines all those methods.
+To keep all methods available on the entity, you can use interface merging with `WrappedEntity<T, PK>` that both extends `AnyEntity<T, PK>` and defines all those methods.
 
 ```typescript
 @Entity()

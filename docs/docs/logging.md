@@ -41,8 +41,7 @@ return MikroORM.init({
 });
 ```
 
-If we want to have more control over logging, we can use `loggerFactory`
-and use our own implementation of the `Logger` interface:
+If we want to have more control over logging, we can use `loggerFactory` and use our own implementation of the `Logger` interface:
 
 ```ts
 import { Logger, LoggerOptions, MikroORM, Configuration } from '@mikro-orm/core';
@@ -109,8 +108,7 @@ If you provide `query-params` then you must also provide `query` in order for it
 
 ## Highlighters
 
-Previously Highlight.js was used to highlight various things in the CLI, like SQL and mongo queries, or migrations or entities generated via CLI. While the library worked fine, it was causing
-performance issues mainly for those bundling via webpack and using lambdas, as the library was huge.
+Previously Highlight.js was used to highlight various things in the CLI, like SQL and mongo queries, or migrations or entities generated via CLI. While the library worked fine, it was causing performance issues mainly for those bundling via webpack and using lambdas, as the library was huge.
 
 Since v4, highlighting is disabled by default, and there are 2 highlighters you can optionally use (you need to install them first).
 
@@ -123,5 +121,4 @@ MikroORM.init({
 });
 ```
 
-For MongoDB you can use `MongoHighlighter` from `@mikro-orm/mongo-highlighter`
-package.
+For MongoDB you can use `MongoHighlighter` from `@mikro-orm/mongo-highlighter` package.

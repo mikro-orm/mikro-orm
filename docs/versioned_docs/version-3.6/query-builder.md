@@ -2,8 +2,7 @@
 title: Using Query Builder
 ---
 
-When you need to execute some SQL query without all the ORM stuff involved, you can either
-compose the query yourself, or use the `QueryBuilder` helper to construct the query for you:
+When you need to execute some SQL query without all the ORM stuff involved, you can either compose the query yourself, or use the `QueryBuilder` helper to construct the query for you:
 
 ```typescript
 const qb = orm.em.createQueryBuilder(Author);
@@ -23,8 +22,7 @@ const res1 = await qb.execute();
 
 ## Using Knex.js
 
-Under the hood, `QueryBuilder` uses [`Knex.js`](https://knexjs.org) to compose and run queries.
-You can access configured `knex` instance via `qb.getKnexQuery()` method:
+Under the hood, `QueryBuilder` uses [`Knex.js`](https://knexjs.org) to compose and run queries. You can access configured `knex` instance via `qb.getKnexQuery()` method:
 
 ```typescript
 const qb = orm.em.createQueryBuilder(Author);
@@ -38,14 +36,9 @@ const entities = res.map(a => orm.em.map(Author, a));
 console.log(entities); // Author[]
 ```
 
-You can also get clear and configured knex instance from the connection via `getKnex()` method.
-As this method is not available on the base `Connection` class, you will need to either manually
-type cast the connection to `AbstractSqlConnection` (or the actual implementation you are using, 
-e.g. `MySqlConnection`), or provide correct driver type hint to your `EntityManager` instance, 
-which will be then automatically inferred in `em.getConnection()` method.
+You can also get clear and configured knex instance from the connection via `getKnex()` method. As this method is not available on the base `Connection` class, you will need to either manually type cast the connection to `AbstractSqlConnection` (or the actual implementation you are using, e.g. `MySqlConnection`), or provide correct driver type hint to your `EntityManager` instance, which will be then automatically inferred in `em.getConnection()` method.
 
-> Driver and connection implementations are not directly exported from `mikro-orm` module. 
-> You can import them from `mikro-orm/dist` (e.g. `import { PostgreSqlDriver } from 'mikro-orm/dist/drivers/PostgreSqlDriver'`).
+> Driver and connection implementations are not directly exported from `mikro-orm` module. You can import them from `mikro-orm/dist` (e.g. `import { PostgreSqlDriver } from 'mikro-orm/dist/drivers/PostgreSqlDriver'`).
 
 ```typescript
 const conn = orm.em.getConnection() as AbstractSqlConnection;
@@ -80,9 +73,7 @@ const res2 = await qb.execute('get'); // returns single object
 const res3 = await qb.execute('run'); // returns object like `{ affectedRows: number, insertId: number, row: any }`
 ```
 
-Second argument can be used to disable mapping of database columns to property names (which 
-is enabled by default). In following example, `Book` entity has `createdAt` property defined 
-with implicit underscored field name `created_at`:
+Second argument can be used to disable mapping of database columns to property names (which is enabled by default). In following example, `Book` entity has `createdAt` property defined with implicit underscored field name `created_at`:
 
 ```typescript
 const res4 = await orm.em.createQueryBuilder(Book).select('*').execute('get', true);
@@ -91,8 +82,7 @@ const res5 = await orm.em.createQueryBuilder(Book).select('*').execute('get', fa
 console.log(res5); // `created_at` will be defined, while `createdAt` will be missing
 ```
 
-To get entity instances from the QueryBuilder result, you can use `getResult()` and `getSingleResult()`
-methods:
+To get entity instances from the QueryBuilder result, you can use `getResult()` and `getSingleResult()` methods:
 
 ```typescript
 const book = await orm.em.createQueryBuilder(Book).select('*').where({ id: 1 }).getSingleResult();
@@ -103,13 +93,9 @@ console.log(books[0] instanceof Book); // true
 
 ## Mapping Raw Results to Entities
 
-Another way to create entity from raw results (that are not necessarily mapped to entity properties)
-is to use `map()` method of `EntityManager`, that is basically a shortcut for mapping results
-via `IDatabaseDriver.mapResult()` (which converts field names to property names - e.g. `created_at`
-to `createdAt`) and `merge()` which converts the data to entity instance and makes it managed. 
+Another way to create entity from raw results (that are not necessarily mapped to entity properties) is to use `map()` method of `EntityManager`, that is basically a shortcut for mapping results via `IDatabaseDriver.mapResult()` (which converts field names to property names - e.g. `created_at` to `createdAt`) and `merge()` which converts the data to entity instance and makes it managed.
 
-This method comes handy when you want to use 3rd party query builders, where the result is not 
-mapped to entity properties automatically:
+This method comes handy when you want to use 3rd party query builders, where the result is not mapped to entity properties automatically:
 
 ```typescript
 const results = await knex.select('*').from('users').where(knex.raw('id = ?', [id]));
@@ -144,17 +130,16 @@ qb.select('*')
   .orderBy({ books: { tags: { createdBy: QueryOrder.DESC } } });
 
 console.log(qb.getQuery());
-// select `e0`.* 
-// from `author` as `e0` 
-// left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` 
-// left join `book2_to_book_tag2` as `e3` on `e1`.`uuid_pk` = `e3`.`book2_uuid_pk` 
-// left join `book_tag2` as `e2` on `e3`.`book_tag2_id` = `e2`.`id` 
-// where `e2`.`name` = ? 
+// select `e0`.*
+// from `author` as `e0`
+// left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id`
+// left join `book2_to_book_tag2` as `e3` on `e1`.`uuid_pk` = `e3`.`book2_uuid_pk`
+// left join `book_tag2` as `e2` on `e3`.`book_tag2_id` = `e2`.`id`
+// where `e2`.`name` = ?
 // order by `e1`.`tags` asc
 ```
 
-This is currently available only for filtering (`where`) and sorting (`orderBy`), only 
-the root entity will be selected. To populate its relationships, you can use [EntityLoader](nested-populate.md).
+This is currently available only for filtering (`where`) and sorting (`orderBy`), only the root entity will be selected. To populate its relationships, you can use [EntityLoader](nested-populate.md).
 
 ## Explicit Joining
 
@@ -177,8 +162,7 @@ console.log(qb.getQuery());
 
 ## Complex Where Conditions
 
-There are multiple ways to construct complex query conditions. You can either write parts of SQL
-manually, use `andWhere()`/`orWhere()`, or provide condition object:
+There are multiple ways to construct complex query conditions. You can either write parts of SQL manually, use `andWhere()`/`orWhere()`, or provide condition object:
 
 ### Custom SQL in where
 

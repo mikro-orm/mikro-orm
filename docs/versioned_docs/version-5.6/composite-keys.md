@@ -5,14 +5,9 @@ sidebar_label: Composite Primary Keys
 
 > Support for composite keys was added in version 3.5
 
-MikroORM supports composite primary keys natively. Composite keys are a very powerful 
-relational database concept and we took good care to make sure MikroORM supports as 
-many of the composite primary key use-cases. MikroORM supports composite keys of primitive 
-data-types as well as foreign keys as primary keys. You can also use your composite key 
-entities in relationships. 
+MikroORM supports composite primary keys natively. Composite keys are a very powerful relational database concept and we took good care to make sure MikroORM supports as many of the composite primary key use-cases. MikroORM supports composite keys of primitive data-types as well as foreign keys as primary keys. You can also use your composite key entities in relationships.
 
-This section shows how the semantics of composite primary keys work and how they map 
-to the database.
+This section shows how the semantics of composite primary keys work and how they map to the database.
 
 ## General Considerations
 
@@ -20,8 +15,7 @@ ID fields have to have their values set before you call `em.persist(entity)`.
 
 ## Primitive Types only
 
-Suppose you want to create a database of cars and use the model-name and year of 
-production as primary keys:
+Suppose you want to create a database of cars and use the model-name and year of production as primary keys:
 
 ```ts
 @Entity()
@@ -50,39 +44,28 @@ const car = new Car('Audi A8', 2010);
 await em.persistAndFlush(car);
 ```
 
-And for querying you need to provide all primary keys in the condition or an array of
-primary keys in the same order as the keys were defined:
+And for querying you need to provide all primary keys in the condition or an array of primary keys in the same order as the keys were defined:
 
 ```ts
 const audi1 = await em.findOneOrFail(Car, { name: 'Audi A8', year: 2010 });
 const audi2 = await em.findOneOrFail(Car, ['Audi A8', 2010]);
 ```
 
-> If we want to use the second approach with primary key tuple, we will need to specify 
-> the type of entity's primary key via `PrimaryKeyType` symbol as shown in the `Car` entity.
+> If we want to use the second approach with primary key tuple, we will need to specify the type of entity's primary key via `PrimaryKeyType` symbol as shown in the `Car` entity.
 
-> `PrimaryKeyType` is not needed when your entity has single scalar primary key under 
-> one of following property names: `id: number | string | bigint`, `_id: any` or 
-> `uuid: string`.
+> `PrimaryKeyType` is not needed when your entity has single scalar primary key under one of following property names: `id: number | string | bigint`, `_id: any` or `uuid: string`.
 
-You can also use this entity in associations. MikroORM will then generate two foreign 
-keys one for name and to year to the related entities.
+You can also use this entity in associations. MikroORM will then generate two foreign keys one for name and to year to the related entities.
 
-This example shows how you can nicely solve the requirement for existing values before 
-`em.persist()`: By adding them as mandatory values for the constructor.
+This example shows how you can nicely solve the requirement for existing values before `em.persist()`: By adding them as mandatory values for the constructor.
 
 ## Identity through foreign Entities
 
-There are tons of use-cases where the identity of an Entity should be determined by 
-the entity of one or many parent entities.
+There are tons of use-cases where the identity of an Entity should be determined by the entity of one or many parent entities.
 
-- Dynamic Attributes of an Entity (for example `Article`). Each Article has many 
-  attributes with primary key `article_id` and `attribute_name`.
-- `Address` object of a `Person`, the primary key of the address is `user_id`. This 
-  is not a case of a composite primary key, but the identity is derived through a 
-  foreign entity and a foreign key.
-- Pivot Tables with metadata can be modelled as Entity, for example connections between 
-  two articles with a little description and a score.
+- Dynamic Attributes of an Entity (for example `Article`). Each Article has many attributes with primary key `article_id` and `attribute_name`.
+- `Address` object of a `Person`, the primary key of the address is `user_id`. This is not a case of a composite primary key, but the identity is derived through a foreign entity and a foreign key.
+- Pivot Tables with metadata can be modelled as Entity, for example connections between two articles with a little description and a score.
 
 The semantics of mapping identity through foreign entities are easy:
 
@@ -133,9 +116,7 @@ export class ArticleAttribute {
 
 ## Use-Case 2: Simple Derived Identity
 
-Sometimes you have the requirement that two objects are related by a `@OneToOne` 
-association and that the dependent class should re-use the primary key of the class 
-it depends on. One good example for this is a user-address relationship:
+Sometimes you have the requirement that two objects are related by a `@OneToOne` association and that the dependent class should re-use the primary key of the class it depends on. One good example for this is a user-address relationship:
 
 ```ts
 @Entity()
@@ -162,9 +143,7 @@ export class Address {
 
 ## Use-Case 3: Join-Table with Metadata
 
-In the classic order product shop example there is the concept of the order item which 
-contains references to order and product and additional data such as the amount of products 
-purchased and maybe even the current price.
+In the classic order product shop example there is the concept of the order item which contains references to order and product and additional data such as the amount of products purchased and maybe even the current price.
 
 ```ts
 @Entity()
@@ -234,8 +213,7 @@ export class OrderItem {
 }
 ```
 
-:::info
-By default, a generated pivot table entity is used under the hood to represent the pivot table. Since v5.1 we can provide our own implementation via `pivotEntity` option.
+:::info By default, a generated pivot table entity is used under the hood to represent the pivot table. Since v5.1 we can provide our own implementation via `pivotEntity` option.
 
 The pivot table entity needs to have exactly two many-to-one properties, where first one needs to point to the owning entity and the second to the target entity of the many-to-many relation.
 
@@ -279,11 +257,11 @@ export class OrderItem {
 }
 ```
 
-Alternatively, we can work with the pivot entity directly: 
+Alternatively, we can work with the pivot entity directly:
 
 ```ts
 // create new item
-const item = em.create(OrderItem, { 
+const item = em.create(OrderItem, {
   order: 123,
   product: 321,
   amount: 999,
@@ -294,13 +272,11 @@ await em.persist(item).flush();
 const em.nativeDelete(OrderItem, { order: 123, product: 321 });
 ```
 
-We can as well define the 1:m properties targeting the pivot entity as in the previous example, and use that for modifying the collection, while using the M:N property for easier reading and filtering purposes.
-:::
+We can as well define the 1:m properties targeting the pivot entity as in the previous example, and use that for modifying the collection, while using the M:N property for easier reading and filtering purposes. :::
 
 ## Using QueryBuilder with composite keys
 
-Internally composite keys are represented as tuples, containing all the values in the
-same order as the primary keys were defined. 
+Internally composite keys are represented as tuples, containing all the values in the same order as the primary keys were defined.
 
 ```ts
 const qb1 = em.createQueryBuilder(CarOwner);
@@ -321,7 +297,6 @@ This also applies when you want to get a reference to entity with composite key:
 ```ts
 const ref = em.getReference(Car, ['Audi A8', 2010]);
 console.log(ref instanceof Car); // true
-``` 
+```
 
-> This part of documentation is highly inspired by [doctrine tutorial](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/tutorials/composite-primary-keys.html)
-> as the behaviour here is pretty much the same.
+> This part of documentation is highly inspired by [doctrine tutorial](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/tutorials/composite-primary-keys.html) as the behaviour here is pretty much the same.

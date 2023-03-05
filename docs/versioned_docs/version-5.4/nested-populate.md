@@ -2,15 +2,12 @@
 title: Smart Nested Populate
 ---
 
-`MikroORM` is capable of loading large nested structures while maintaining good 
-performance, querying each database table only once. Imagine you have this nested 
-structure:
+`MikroORM` is capable of loading large nested structures while maintaining good performance, querying each database table only once. Imagine you have this nested structure:
 
 - `Book` has one `Publisher` (M:1), one `Author` (M:1) and many `BookTag`s (M:N)
 - `Publisher` has many `Test`s (M:N)
 
-When you use nested populate while querying all `BookTag`s, this is what happens in
-the background:
+When you use nested populate while querying all `BookTag`s, this is what happens in the background:
 
 ```ts
 const tags = await em.findAll(BookTag, { populate: ['books.publisher.tests', 'books.author'] });
@@ -64,7 +61,7 @@ To populate existing entities, you can use `em.populate()`.
 const authors = await em.createQueryBuilder(Author).select('*').getResult();
 await em.populate(authors, ['books.tags']);
 
-// now your Author entities will have `books` collections populated, 
+// now your Author entities will have `books` collections populated,
 // as well as they will have their `tags` collections populated.
 console.log(authors[0].books[0].tags[0]); // initialized BookTag
 ```

@@ -22,8 +22,7 @@ $ npm i -s mikro-orm pg      # for postgresql
 $ npm i -s mikro-orm sqlite3 # for sqlite
 ```
 
-Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
-as well as `esModuleInterop` in `tsconfig.json` via:
+Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) as well as `esModuleInterop` in `tsconfig.json` via:
 
 ```json
 "experimentalDecorators": true,
@@ -44,9 +43,7 @@ console.log(orm.em); // access EntityManager via `em` property
 
 > Read more about all the possible configuration options in [Advanced Configuration](configuration.md) section.
 
-You can also provide paths where you store your entities via `entitiesDirs` array. Internally
-it uses [`globby`](https://github.com/sindresorhus/globby) so you can use 
-[globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns). 
+You can also provide paths where you store your entities via `entitiesDirs` array. Internally it uses [`globby`](https://github.com/sindresorhus/globby) so you can use [globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns).
 
 ```typescript
 const orm = await MikroORM.init({
@@ -55,8 +52,7 @@ const orm = await MikroORM.init({
 });
 ```
 
-You should provide list of directories, not paths to entities directly. If you want to do that
-instead, you should use `entities` array and use `globby` manually:
+You should provide list of directories, not paths to entities directly. If you want to do that instead, you should use `entities` array and use `globby` manually:
 
 ```typescript
 import globby from 'globby';
@@ -67,14 +63,11 @@ const orm = await MikroORM.init({
 });
 ```
 
-> You can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. 
-> The object will be deeply merged, overriding all internally used options.
+> You can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. The object will be deeply merged, overriding all internally used options.
 
 ## Possible issues with circular dependencies
 
-Your entities will most probably contain circular dependencies (e.g. if you use bi-directional 
-relationship). While this is fine, there might be issues caused by wrong order of entities 
-during discovery, especially when you are using the folder based way (via `entitiesDirs`).
+Your entities will most probably contain circular dependencies (e.g. if you use bi-directional relationship). While this is fine, there might be issues caused by wrong order of entities during discovery, especially when you are using the folder based way (via `entitiesDirs`).
 
 The errors caused by circular dependencies are usually similar to this one:
 
@@ -95,17 +88,12 @@ TypeError: Cannot read property 'name' of undefined
 
 If you encounter this, you have basically two options:
 
-- Use `entities` array to have control over the order of discovery. You might need to play with the actual 
-  order you provide here, or possibly with the order of import statements.
-- Use strings instead of references (e.g. `@OneToMany('Book', 'author')`). The downside here is that you 
-  will loose the typechecking capabilities of the decorators. 
+- Use `entities` array to have control over the order of discovery. You might need to play with the actual order you provide here, or possibly with the order of import statements.
+- Use strings instead of references (e.g. `@OneToMany('Book', 'author')`). The downside here is that you will loose the typechecking capabilities of the decorators.
 
 ## Entity Discovery in TypeScript
 
-Internally, `MikroORM` uses [`ts-morph` to perform analysis](metadata-providers.md) of source files 
-of entities to sniff types of all properties. This process can be slow if your project contains lots 
-of files. To speed up the discovery process a bit, you can provide more accurate paths where your
-entity source files are: 
+Internally, `MikroORM` uses [`ts-morph` to perform analysis](metadata-providers.md) of source files of entities to sniff types of all properties. This process can be slow if your project contains lots of files. To speed up the discovery process a bit, you can provide more accurate paths where your entity source files are:
 
 ```typescript
 const orm = await MikroORM.init({
@@ -129,9 +117,7 @@ const orm = await MikroORM.init({
 
 ## Setting up the Commandline Tool
 
-MikroORM ships with a number of command line tools that are very helpful during development, 
-like Schema Generator and Entity Generator. You can call this command from the NPM binary 
-directory or use `npx`:
+MikroORM ships with a number of command line tools that are very helpful during development, like Schema Generator and Entity Generator. You can call this command from the NPM binary directory or use `npx`:
 
 ```sh
 $ node node_modules/.bin/mikro-orm
@@ -141,10 +127,7 @@ $ npx mikro-orm
 $ mikro-orm
 ```
 
-For CLI to be able to access your database, you will need to create `mikro-orm.config.js` file that 
-exports your ORM configuration. TypeScript is also supported, just enable `useTsNode` flag in your
-`package.json` file. There you can also set up array of possible paths to `mikro-orm.config` file,
-as well as use different file name:
+For CLI to be able to access your database, you will need to create `mikro-orm.config.js` file that exports your ORM configuration. TypeScript is also supported, just enable `useTsNode` flag in your `package.json` file. There you can also set up array of possible paths to `mikro-orm.config` file, as well as use different file name:
 
 > Do not forget to install `ts-node` when enabling `useTsNode` flag.
 
@@ -170,12 +153,9 @@ export default {
 };
 ```
 
-Once you have the CLI config properly set up, you can omit the `MikroORM.init()` options
-parameter and the CLI config will be automatically used. 
+Once you have the CLI config properly set up, you can omit the `MikroORM.init()` options parameter and the CLI config will be automatically used.
 
-> You can also use different names for this file, simply rename it in the `configPaths` array
-> your in `package.json`. You can also use `MIKRO_ORM_CLI` environment variable with the path
-> to override `configPaths` value.
+> You can also use different names for this file, simply rename it in the `configPaths` array your in `package.json`. You can also use `MIKRO_ORM_CLI` environment variable with the path to override `configPaths` value.
 
 Now you should be able to start using the CLI. All available commands are listed in the CLI help:
 
@@ -199,13 +179,11 @@ Examples:
 
 To verify your setup, you can use `mikro-orm debug` command.
 
-> When you have CLI config properly set up, you can omit the `options` parameter
-> when calling `MikroORM.init()`.
+> When you have CLI config properly set up, you can omit the `options` parameter when calling `MikroORM.init()`.
 
 ## Request Context
 
-Then you will need to fork Entity Manager for each request so their identity maps will not 
-collide. To do so, use the `RequestContext` helper:
+Then you will need to fork Entity Manager for each request so their identity maps will not collide. To do so, use the `RequestContext` helper:
 
 ```typescript
 const app = express();

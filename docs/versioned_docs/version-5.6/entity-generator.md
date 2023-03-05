@@ -2,12 +2,11 @@
 title: Entity Generator
 ---
 
-To generate entities from existing database schema, you can use `EntityGenerator` helper. 
+To generate entities from existing database schema, you can use `EntityGenerator` helper.
 
-You can use it via CLI: 
+You can use it via CLI:
 
-> To work with the CLI, first install `@mikro-orm/cli` package locally.
-> The version needs to be aligned with the `@mikro-orm/core` package.
+> To work with the CLI, first install `@mikro-orm/cli` package locally. The version needs to be aligned with the `@mikro-orm/core` package.
 
 ```sh
 npx mikro-orm generate-entities --dump  # Dumps all generated entities
@@ -22,14 +21,14 @@ import { MikroORM } from '@mikro-orm/core';
 (async () => {
   const orm = await MikroORM.init({
     discovery: {
-      // we need to disable validation for no entities 
+      // we need to disable validation for no entities
       warnWhenNoEntities: false,
     },
     dbName: 'your-db-name',
     // ...
   });
   const generator = orm.getEntityGenerator();
-  const dump = await generator.generate({ 
+  const dump = await generator.generate({
     save: true,
     baseDir: process.cwd() + '/my-entities',
   });
@@ -46,7 +45,7 @@ $ ts-node generate-entities
 
 ## Advanced configuration
 
-By default, the `EntityGenerator` generates only owning sides of relations (e.g. M:1) and uses decorators for the entity definition. We can adjust its behaviour via `entityGenerator` section in the ORM config. Available options: 
+By default, the `EntityGenerator` generates only owning sides of relations (e.g. M:1) and uses decorators for the entity definition. We can adjust its behaviour via `entityGenerator` section in the ORM config. Available options:
 
 - `bidirectionalRelations` to generate also the inverse sides for them
 - `identifiedReferences` to generate M:1 and 1:1 relations as wrapped references

@@ -9,7 +9,7 @@ There are two ways how you can define your entities:
 
 # EntitySchema helper
 
-With `EntitySchema` helper you define the schema programmatically. 
+With `EntitySchema` helper you define the schema programmatically.
 
 ```typescript title="./entities/Book.ts"
 export interface Book extends BaseEntity {
@@ -31,8 +31,7 @@ export const schema = new EntitySchema<Book, BaseEntity>({
 });
 ```
 
-When creating new entity instances, you will need to use `em.create()` method that will
-create instance of internally created class. 
+When creating new entity instances, you will need to use `em.create()` method that will create instance of internally created class.
 
 ```typescript
 const repo = em.getRepository<Author>('Author');
@@ -40,15 +39,11 @@ const author = repo.create('Author', { name: 'name', email: 'email' }); // insta
 await repo.persistAndFlush(author);
 ```
 
-You can optionally use custom class for entity instances. Read more about this approach 
-in [Defining Entities via EntitySchema section](entity-schema.md).
+You can optionally use custom class for entity instances. Read more about this approach in [Defining Entities via EntitySchema section](entity-schema.md).
 
 # Classes and Decorators
 
-Entities are simple javascript objects (so called POJO), decorated with `@Entity` decorator.
-No real restrictions are made, you do not have to extend any base class, you are more than welcome
-to [use entity constructors](entity-constructors.md), just do not forget to specify primary key with
-`@PrimaryKey` decorator.
+Entities are simple javascript objects (so called POJO), decorated with `@Entity` decorator. No real restrictions are made, you do not have to extend any base class, you are more than welcome to [use entity constructors](entity-constructors.md), just do not forget to specify primary key with `@PrimaryKey` decorator.
 
 ```typescript title="./entities/Book.ts"
 @Entity()
@@ -83,13 +78,11 @@ export class Book {
 }
 ```
 
-As you can see, entity properties are decorated either with `@Property` decorator, or with one
-of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`. 
+As you can see, entity properties are decorated either with `@Property` decorator, or with one of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`.
 
 > From v3 you can also use default exports when defining your entity.
 
-Here is another example of `Author` entity, that was referenced from the `Book` one, this 
-time defined for mongo:
+Here is another example of `Author` entity, that was referenced from the `Book` one, this time defined for mongo:
 
 ```typescript title="./entities/Author.ts"
 @Entity()
@@ -151,8 +144,7 @@ If you want to define your entity in Vanilla JavaScript, take a look [here](usag
 
 ### Optional Properties
 
-When you define the property as optional (marked with `?`), this will be automatically considered
-as nullable property (mainly for SQL schema generator). 
+When you define the property as optional (marked with `?`), this will be automatically considered as nullable property (mainly for SQL schema generator).
 
 > This auto-detection works only when you omit the `type`/`entity` attribute.
 
@@ -171,10 +163,7 @@ favouriteBook?: Book; // wrong, not marked as `nullable`
 
 You can set default value of a property in 2 ways:
 
-1. Use runtime default value of the property. This approach should be preferred as long 
-as you are not using any native database function like `now()`. With this approach your
-entities will have the default value set even before it is actually persisted into the 
-database (e.g. when you instantiate new entity via `new Author()` or `em.create(Author, { ... })`.
+1. Use runtime default value of the property. This approach should be preferred as long as you are not using any native database function like `now()`. With this approach your entities will have the default value set even before it is actually persisted into the database (e.g. when you instantiate new entity via `new Author()` or `em.create(Author, { ... })`.
 
 ```typescript
 @Property()
@@ -185,12 +174,9 @@ bar!: string = 'abc';
 
 @Property()
 baz!: Date = new Date();
-``` 
+```
 
-2. Use `default` parameter of `@Property` decorator. This way the actual default value 
-will be provided by the database, and automatically mapped to the entity property after
-it is being persisted (after flush). Also note that with this approach, you need to wrap
-string default values in quotes as without quoting the value is considered a function.
+2. Use `default` parameter of `@Property` decorator. This way the actual default value will be provided by the database, and automatically mapped to the entity property after it is being persisted (after flush). Also note that with this approach, you need to wrap string default values in quotes as without quoting the value is considered a function.
 
 ```typescript
 @Property({ default: 1 })
@@ -201,20 +187,17 @@ bar!: string;
 
 @Property({ default: 'now' })
 baz!: Date;
-``` 
+```
 
 ### Enums
 
-To define enum property, use `@Enum()` decorator. Enums can be either numeric or string valued. 
+To define enum property, use `@Enum()` decorator. Enums can be either numeric or string valued.
 
-For schema generator to work properly in case of string enums, you need to define the enum 
-is same file as where it is used, so its values can be automatically discovered. If you want 
-to define the enum in another file, you should reexport it also in place where you use it. 
+For schema generator to work properly in case of string enums, you need to define the enum is same file as where it is used, so its values can be automatically discovered. If you want to define the enum in another file, you should reexport it also in place where you use it.
 
-Another possibility is to provide the reference to the enum implementation in the decorator
-via `@Enum(() => UserRole)`. 
+Another possibility is to provide the reference to the enum implementation in the decorator via `@Enum(() => UserRole)`.
 
-> You can also set enum items manually via `items: string[]` attribute.  
+> You can also set enum items manually via `items: string[]` attribute.
 
 ```typescript
 import { OutsideEnum } from './OutsideEnum.ts';
@@ -246,12 +229,11 @@ export const enum UserStatus {
 
 // or we could reexport OutsideEnum
 // export { OutsideEnum } from './OutsideEnum.ts';
-``` 
+```
 
 ## Indexes
 
-You can define indexes via `@Index()` decorator, for unique indexes, use `@Unique()` decorator. 
-You can use it either on entity class, or on entity property:
+You can define indexes via `@Index()` decorator, for unique indexes, use `@Unique()` decorator. You can use it either on entity class, or on entity property:
 
 ```typescript
 @Entity()
@@ -289,9 +271,8 @@ You can define custom types by extending `Type` abstract class. It has 4 optiona
 
 - `toJSON(value: any, platform: Platform): any`
 
-  Converts a value from its JS representation to its serialized JSON form of this type.
-  By default converts to the database value.
-  
+  Converts a value from its JS representation to its serialized JSON form of this type. By default converts to the database value.
+
 - `getColumnType(prop: EntityProperty, platform: Platform): string`
 
   Gets the SQL declaration snippet for a field of this type.
@@ -302,12 +283,9 @@ More information can be found in [Custom Types](custom-types.md) section.
 
 You can define your properties as virtual, either as a method, or via JavaScript `get/set`.
 
-Following example defines User entity with `firstName` and `lastName` database fields, that 
-are both hidden from the serialized response, replaced with virtual properties `fullName` 
-(defined as a classic method) and `fullName2` (defined as a JavaScript getter).
+Following example defines User entity with `firstName` and `lastName` database fields, that are both hidden from the serialized response, replaced with virtual properties `fullName` (defined as a classic method) and `fullName2` (defined as a JavaScript getter).
 
-> For JavaScript getter you need to provide `{ persist: false }` option otherwise the value
-> would be stored in the database. 
+> For JavaScript getter you need to provide `{ persist: false }` option otherwise the value would be stored in the database.
 
 ```typescript
 @Entity()
@@ -349,18 +327,15 @@ You are free to choose one of those formats for entity filename (for a `BookTag`
 - `book-tag.model.ts`
 - `book-tag.entity.ts`
 
-Entity name is inferred from the first part of file name before first dot occurs, so you can 
-add any suffix behind the dot, not just `.model.ts` or `.entity.ts`. 
+Entity name is inferred from the first part of file name before first dot occurs, so you can add any suffix behind the dot, not just `.model.ts` or `.entity.ts`.
 
 > You can change this behaviour by defining custom `NamingStrategy.getClassName()` method.
 
 ## Using BaseEntity
 
-You can define your own base entity with properties that you require on all entities, like
-primary key and created/updated time. 
+You can define your own base entity with properties that you require on all entities, like primary key and created/updated time.
 
-> If you are initializing the ORM via `entities` option, you need to specify all your
-> base entities as well.
+> If you are initializing the ORM via `entities` option, you need to specify all your base entities as well.
 
 ```typescript title="./entities/BaseEntity.ts"
 import { v4 } from 'uuid';
@@ -421,8 +396,7 @@ export class Book {
 
 ### Using BigInt as primary key (MySQL and PostgreSQL)
 
-You can use `BigIntType` to support `bigint`s. By default it will represent the value as
-a `string`.  
+You can use `BigIntType` to support `bigint`s. By default it will represent the value as a `string`.
 
 ```typescript
 @Entity()
@@ -436,7 +410,6 @@ export class Book {
 
 If you want to use native `bigint`s, read the following guide: [Using native BigInt PKs](using-bigint-pks.md).
 
-
 ### Example of Mongo entity
 
 ```typescript
@@ -446,7 +419,7 @@ export class Book {
   @PrimaryKey()
   _id!: ObjectId;
 
-  @SerializedPrimaryKey() 
+  @SerializedPrimaryKey()
   id!: string; // string variant of PK, will be handled automatically
 
   @Property()
@@ -478,5 +451,4 @@ export class Book {
 export interface Book extends WrappedEntity<Book, 'id'> { };
 ```
 
-With your entities set up, you can start [using entity manager](entity-manager.md) and 
-[repositories](repositories.md) as described in following sections. 
+With your entities set up, you can start [using entity manager](entity-manager.md) and [repositories](repositories.md) as described in following sections.

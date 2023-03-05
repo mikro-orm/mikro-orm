@@ -2,8 +2,7 @@
 title: Using native BigInt PKs (MySQL and PostgreSQL)
 ---
 
-You can use `BigIntType` to support `bigint`s. By default it will represent the value as
-a `string`.  
+You can use `BigIntType` to support `bigint`s. By default it will represent the value as a `string`.
 
 ```typescript
 @Entity()
@@ -15,8 +14,7 @@ export class Book {
 }
 ```
 
-If you want to use native `bigint` type, you will need to create new type based on the
-`BigIntType`:
+If you want to use native `bigint` type, you will need to create new type based on the `BigIntType`:
 
 ```typescript
 export class NativeBigIntType extends BigIntType {

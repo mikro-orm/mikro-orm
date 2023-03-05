@@ -19,8 +19,7 @@ By doing this `MikroORM` will start using `console.log()` function to dump all q
 [query] commit [took 2 ms]
 ```
 
-It is also useful for debugging problems with entity discovery, as you will see information
-about every processed entity:
+It is also useful for debugging problems with entity discovery, as you will see information about every processed entity:
 
 ```
 [discovery] ORM entity discovery started
@@ -33,7 +32,7 @@ about every processed entity:
 
 ## Custom Logger
 
-You can also provide your own logger via `logger` option. 
+You can also provide your own logger via `logger` option.
 
 ```typescript
 return MikroORM.init({
@@ -44,8 +43,7 @@ return MikroORM.init({
 
 ## Logger Namespaces
 
-There are multiple Logger Namespaces that you can specifically request, while omitting the rest.
-Just specify array of them via the `debug` option:
+There are multiple Logger Namespaces that you can specifically request, while omitting the rest. Just specify array of them via the `debug` option:
 
 ```typescript
 return MikroORM.init({

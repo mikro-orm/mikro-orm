@@ -84,7 +84,7 @@ The `rel()` helper will create entity instance that is not yet managed (as we do
 
 > `rel()` is a shortcut for `Reference.createNakedFromPK()`.
 
-And if you want to be safer and use the `Reference` wrapper, the `ref()` helper also accepts this new signature: 
+And if you want to be safer and use the `Reference` wrapper, the `ref()` helper also accepts this new signature:
 
 ```ts
 @ManyToOne({ entity: () => Author, ref: true })

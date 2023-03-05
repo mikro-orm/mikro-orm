@@ -6,24 +6,22 @@ title: Decorators
 
 ### @Entity()
 
-`@Entity` decorator is used to mark your model classes as entities. Do not use it for 
-abstract base classes.
+`@Entity` decorator is used to mark your model classes as entities. Do not use it for abstract base classes.
 
-| Parameter          | Type                     | Optional | Description                                                                     |
-|--------------------|--------------------------|----------|---------------------------------------------------------------------------------|
-| `tableName`        | `string`                 | yes      | Override default collection/table name.                                         |
-| `schema`           | `string`                 | yes      | Sets the schema name                                                            |
-| `collection`       | `string`                 | yes      | Alias for `tableName`.                                                          |
-| `comment`          | `string`                 | yes      | Specify comment to table **(SQL only)**                                         |
-| `customRepository` | `() => EntityRepository` | yes      | Set [custom repository class](repositories.md#custom-repository).               |
-| `discriminatorColumn` |  `string` | yes      | For [Single Table Inheritance](inheritance-mapping.md#single-table-inheritance) |                 
-| `discriminatorMap`   |  `Dictionary<string>` | yes      | For [Single Table Inheritance](inheritance-mapping.md#single-table-inheritance) |     
-| `discriminatorValue` |  `number` &#124; `string` | yes      | For [Single Table Inheritance](inheritance-mapping.md#single-table-inheritance) |
+| Parameter             | Type                     | Optional | Description                                                                     |
+| --------------------- | ------------------------ | -------- | ------------------------------------------------------------------------------- |
+| `tableName`           | `string`                 | yes      | Override default collection/table name.                                         |
+| `schema`              | `string`                 | yes      | Sets the schema name                                                            |
+| `collection`          | `string`                 | yes      | Alias for `tableName`.                                                          |
+| `comment`             | `string`                 | yes      | Specify comment to table **(SQL only)**                                         |
+| `customRepository`    | `() => EntityRepository` | yes      | Set [custom repository class](repositories.md#custom-repository).               |
+| `discriminatorColumn` | `string`                 | yes      | For [Single Table Inheritance](inheritance-mapping.md#single-table-inheritance) |
+| `discriminatorMap`    | `Dictionary<string>`     | yes      | For [Single Table Inheritance](inheritance-mapping.md#single-table-inheritance) |
+| `discriminatorValue`  | `number` &#124; `string` | yes      | For [Single Table Inheritance](inheritance-mapping.md#single-table-inheritance) |
 
 abstract | `boolean`;
 
 readonly | `boolean`;
-
 
 ```ts
 @Entity({ tableName: 'authors' })
@@ -34,11 +32,10 @@ export class Author { ... }
 
 ### @Property()
 
-`@Property()` decorator is used to define regular entity property. All following decorators
-extend the `@Property()` decorator, so you can also use its parameters there.
+`@Property()` decorator is used to define regular entity property. All following decorators extend the `@Property()` decorator, so you can also use its parameters there.
 
 | Parameter | Type | Optional | Description |
-|-----------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `fieldName` | `string` | yes | Override default property name (see [Naming Strategy](naming-strategy.md)). |
 | `type` | `string` &#124; `Constructor<Type>` &#124; `Type` | yes | Explicitly specify the runtime type (see [Metadata Providers](metadata-providers.md) and [Custom Types](custom-types.md)). |
 | `customType` | `Type` | yes | Explicitly specify the mapped type instance for this property (see [Custom Types](custom-types.md)). |
@@ -53,7 +50,7 @@ extend the `@Property()` decorator, so you can also use its parameters there.
 | `unsigned` | `boolean` | yes | Set column as unsigned for [Schema Generator](schema-generator.md).. **(SQL only)** |
 | `comment` | `string` | yes | Specify comment of column for [Schema Generator](schema-generator.md).. **(SQL only)** |
 | `version` | `boolean` | yes | Set to true to enable [Optimistic Locking] via version field (transactions.md#optimistic-locking). **(SQL only)** |
-| `concurrencyCheck` | `boolean` | yes | Set to true to enable [Optimistic Locking] via concurrency fields (transactions.md#concurrency-checks).|
+| `concurrencyCheck` | `boolean` | yes | Set to true to enable [Optimistic Locking] via concurrency fields (transactions.md#concurrency-checks). |
 | `customOrder` | `string[]` &#124; `number[]` &#124; `boolean[]` | yes | Specify a custom order for the column. **(SQL only)** |
 
 > You can use property initializers as usual.
@@ -77,14 +74,13 @@ registered = false;
 
 ### @PrimaryKey()
 
-`@PrimaryKey()` decorator is used to define entity's unique primary key identifier. 
+`@PrimaryKey()` decorator is used to define entity's unique primary key identifier.
 
-> `@PrimaryKey()` decorator extend the `@Property()` decorator, so you can use all 
-> its parameters.
+> `@PrimaryKey()` decorator extend the `@Property()` decorator, so you can use all its parameters.
 
 > Every entity needs to have at least one primary key (see composite primary keys).
 
-> Note that if only one PrimaryKey is set and it's type is number it will be set to auto incremented automatically in all SQL drivers. 
+> Note that if only one PrimaryKey is set and it's type is number it will be set to auto incremented automatically in all SQL drivers.
 
 ```ts
 @PrimaryKey()
@@ -102,13 +98,10 @@ _id!: ObjectId; // ObjectId PK in mongodb driver
 
 ### @SerializedPrimaryKey()
 
-> Property marked with `@SerializedPrimaryKey()` is virtual, it will not be persisted 
-> into the database.
+> Property marked with `@SerializedPrimaryKey()` is virtual, it will not be persisted into the database.
 
-For MongoDB you can define serialized primary key, which will be then used in entity 
-serialization via `JSON.stringify()` (through method `entity.toJSON()`).
-You will be able to use it to manipulate with the primary key as string. 
- 
+For MongoDB you can define serialized primary key, which will be then used in entity serialization via `JSON.stringify()` (through method `entity.toJSON()`). You will be able to use it to manipulate with the primary key as string.
+
 See [Usage with MongoDB](usage-with-mongo.md) and [Serializing](serializing.md).
 
 ```ts
@@ -121,19 +114,15 @@ id!: string;
 
 ### @Enum()
 
-> `@Enum()` decorator extend the `@Property()` decorator, so you can use all its 
-> parameters.
+> `@Enum()` decorator extend the `@Property()` decorator, so you can use all its parameters.
 
-`@Enum()` decorator can be used for both numeric and string enums. By default enums are 
-considered numeric, and will be represented in the database schema as `tinyint/smallint`. 
-For string enums, if you define the enum in same file, its values will be automatically 
-sniffed. 
+`@Enum()` decorator can be used for both numeric and string enums. By default enums are considered numeric, and will be represented in the database schema as `tinyint/smallint`. For string enums, if you define the enum in same file, its values will be automatically sniffed.
 
 See [Defining Entities](defining-entities.md#enums).
 
-| Parameter | Type | Optional | Description |
-|-----------|------|----------|-------------|
-| `items` | `number[]` &#124; `string[]` &#124; `() => Dictionary` | yes | Specify enum items explicitly. |
+| Parameter | Type                                                   | Optional | Description                    |
+| --------- | ------------------------------------------------------ | -------- | ------------------------------ |
+| `items`   | `number[]` &#124; `string[]` &#124; `() => Dictionary` | yes      | Specify enum items explicitly. |
 
 ```ts
 @Enum() // with ts-morph metadata provider we do not need to specify anything
@@ -154,14 +143,13 @@ enum4 = 'a';
 
 ### @Formula()
 
-`@Formula()` decorator can be used to map some SQL snippet to your entity. 
-The SQL fragment can be as complex as you want and even include subselects.
+`@Formula()` decorator can be used to map some SQL snippet to your entity. The SQL fragment can be as complex as you want and even include subselects.
 
 See [Defining Entities](defining-entities.md#formulas).
 
-| Parameter | Type | Optional | Description |
-|-----------|------|----------|-------------|
-| `formula` | `string` &#124; `() => string` | no | SQL fragment that will be part of the select clause.  |
+| Parameter | Type                           | Optional | Description                                          |
+| --------- | ------------------------------ | -------- | ---------------------------------------------------- |
+| `formula` | `string` &#124; `() => string` | no       | SQL fragment that will be part of the select clause. |
 
 ```ts
 @Formula('obj_length * obj_height * obj_width')
@@ -170,18 +158,15 @@ objectVolume?: number;
 
 ### @Index() and @Unique()
 
-Use `@Index()` to create an index, or `@Unique()` to create unique constraint. You can 
-use those decorators both on the entity level and on property level. To create compound
-index, use the decorator on the entity level and provide list of property names via the
-`properties` option.
+Use `@Index()` to create an index, or `@Unique()` to create unique constraint. You can use those decorators both on the entity level and on property level. To create compound index, use the decorator on the entity level and provide list of property names via the `properties` option.
 
 See [Defining Entities](defining-entities.md#indexes).
 
-| Parameter    | Type     | Optional | Description |
-|--------------|----------|----------|-------------|
-| `name`       | `string` | yes      | index name  |
+| Parameter | Type | Optional | Description |
+| --- | --- | --- | --- |
+| `name` | `string` | yes | index name |
 | `properties` | `string` &#124; `string[]` | yes | list of properties, required when using on entity level |
-| `type`       | `string` | yes      | index type, not available for `@Unique()`. Use `fulltext` to enable support for the `$fulltext` operator |
+| `type` | `string` | yes | index type, not available for `@Unique()`. Use `fulltext` to enable support for the `$fulltext` operator |
 
 ```ts
 @Entity()
@@ -207,29 +192,25 @@ export class Author {
 
 ### @Check()
 
-We can define check constraints via `@Check()` decorator. We can use it
-either on entity class, or on entity property. It has a required `expression`
-property, that can be either a string or a callback, that receives map of
-property names to column names. Note that we need to use the generic type
-argument if we want TypeScript suggestions for the property names.
+We can define check constraints via `@Check()` decorator. We can use it either on entity class, or on entity property. It has a required `expression` property, that can be either a string or a callback, that receives map of property names to column names. Note that we need to use the generic type argument if we want TypeScript suggestions for the property names.
 
 > Check constraints are currently supported only in postgres driver.
 
 See [Defining Entities](defining-entities.md#check-constraints).
 
-| Parameter    | Type     | Optional | Description       |
-|--------------|----------|----------|-------------------|
-| `name`       | `string` | yes      | constraint name   |
-| `property`   | `string` | yes      | property name, only used when generating the constraint name |
+| Parameter    | Type                            | Optional | Description                                                                          |
+| ------------ | ------------------------------- | -------- | ------------------------------------------------------------------------------------ |
+| `name`       | `string`                        | yes      | constraint name                                                                      |
+| `property`   | `string`                        | yes      | property name, only used when generating the constraint name                         |
 | `expression` | `string` &#124; `CheckCallback` | no       | constraint definition, can be a callback that gets a map of property to column names |
 
 ```ts
 @Entity()
-// with generated name based on the table name 
+// with generated name based on the table name
 @Check({ expression: 'price1 >= 0' })
-// with explicit name 
+// with explicit name
 @Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
-// with explicit type argument we get autocomplete on `columns` 
+// with explicit type argument we get autocomplete on `columns`
 @Check<FooEntity>({ expression: columns => `${columns.price1} >= 0` })
 export class Book {
 
@@ -251,39 +232,31 @@ export class Book {
 
 ## Entity Relationships
 
-All relationship decorators have `entity`, `cascade` and `eager` optional parameters. 
-If you use the default `ReflectMetadataProvider`, then `entity` parameter might be required 
-You will be warned about it being not defined while required during discovery process if you 
-use `ReflectMetadataProvider`. 
+All relationship decorators have `entity`, `cascade` and `eager` optional parameters. If you use the default `ReflectMetadataProvider`, then `entity` parameter might be required You will be warned about it being not defined while required during discovery process if you use `ReflectMetadataProvider`.
 
-You can also use `type` parameter instead of it - the difference being that `type` parameter
-needs to be string, while in `entity` parameter you can provide a reference (wrapped in 
-a callback to overcome issues with circular dependencies) to the entity, which plays nice 
-with refactoring features in IDEs like WebStorm. 
+You can also use `type` parameter instead of it - the difference being that `type` parameter needs to be string, while in `entity` parameter you can provide a reference (wrapped in a callback to overcome issues with circular dependencies) to the entity, which plays nice with refactoring features in IDEs like WebStorm.
 
-> If you explicitly provide `entity` as a reference, it will enable type checks for other
-> reference parameters like `inversedBy` or `mappedBy`.
+> If you explicitly provide `entity` as a reference, it will enable type checks for other reference parameters like `inversedBy` or `mappedBy`.
 
 ### @ManyToOne()
 
-> `@ManyToOne()` decorator extend the `@Property()` decorator, so you can use all 
-> its parameters.
+> `@ManyToOne()` decorator extend the `@Property()` decorator, so you can use all its parameters.
 
 Many instances of the current Entity refer to One instance of the referred Entity.
 
 See [Defining Entities](relationships.md#manytoone) for more examples.
 
-| Parameter           | Type | Optional | Description                                                                                                                                               |
-|---------------------|------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `entity`            | `string` &#124; `() => EntityName` | yes | Set target entity type.                                                                                                                                   |
-| `cascade`           | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
-| `eager`             | `boolean` | yes | Always load the relationship.                                                                                                                             |
-| `inversedBy`        | `(string & keyof T) ` &#124; ` (e: T) => any` | yes | Point to the inverse side property name.                                                                                                                  |
-| `wrappedReference`  | `boolean` | yes | Wrap the entity in [`Reference` wrapper](type-safe-relations.md).                                                                                         |
-| `ref`               | `boolean` | yes | Alias for `wrappedReference`.                                                                                                                             |
-| `primary`           | `boolean` | yes | Use this relation as primary key.                                                                                                                         |
-| `onDelete`          | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity).                                                                                  |
-| `onUpdateIntegrity` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity).                                                                                  |
+| Parameter | Type | Optional | Description |
+| --- | --- | --- | --- |
+| `entity` | `string` &#124; `() => EntityName` | yes | Set target entity type. |
+| `cascade` | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
+| `eager` | `boolean` | yes | Always load the relationship. |
+| `inversedBy` | `(string & keyof T) ` &#124; ` (e: T) => any` | yes | Point to the inverse side property name. |
+| `wrappedReference` | `boolean` | yes | Wrap the entity in [`Reference` wrapper](type-safe-relations.md). |
+| `ref` | `boolean` | yes | Alias for `wrappedReference`. |
+| `primary` | `boolean` | yes | Use this relation as primary key. |
+| `onDelete` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
+| `onUpdateIntegrity` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
 
 ```ts
 @ManyToOne()
@@ -298,28 +271,27 @@ author3?: Author;
 
 ### @OneToOne()
 
-> `@OneToOne()` decorator extend the `@Property()` decorator, so you can use all 
-> its parameters.
+> `@OneToOne()` decorator extend the `@Property()` decorator, so you can use all its parameters.
 
 One instance of the current Entity refers to One instance of the referred Entity.
 
 See [Defining Entities](relationships.md#onetoone) for more examples, including bi-directional 1:1.
 
-| Parameter           | Type | Optional | Description                                                                                                                                               |
-|---------------------|------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `entity`            | `string` &#124; `() => EntityName` | yes | Set target entity type.                                                                                                                                   |
-| `cascade`           | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
-| `eager`             | `boolean` | yes | Always load the relationship.                                                                                                                             |
-| `owner`             | `boolean` | yes | Explicitly set as owning side (same as providing `inversedBy`).                                                                                           |
-| `inversedBy`        | `(string & keyof T) ` &#124; ` (e: T) => any` | yes | Point to the inverse side property name.                                                                                                                  |
-| `mappedBy`          | `(string & keyof T)` &#124; `(e: T) => any` | yes | Point to the owning side property name.                                                                                                                   |
-| `wrappedReference`  | `boolean` | yes | Wrap the entity in [`Reference` wrapper](type-safe-relations.md).                                                                                         |
-| `ref`               | `boolean` | yes | Alias for `wrappedReference`                                                                                                                              |
-| `orphanRemoval`     | `boolean` | yes | Remove the entity when it gets disconnected from the relationship (see [Cascading](cascading.md#orphan-removal)).                                         |
-| `joinColumn`        | `string` | yes | Override default database column name on the owning side (see [Naming Strategy](naming-strategy.md)).                                                     |
-| `primary`           | `boolean` | yes | Use this relation as primary key.                                                                                                                         |
-| `onDelete`          | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity).                                                                                  |
-| `onUpdateIntegrity` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity).                                                                                  |
+| Parameter | Type | Optional | Description |
+| --- | --- | --- | --- |
+| `entity` | `string` &#124; `() => EntityName` | yes | Set target entity type. |
+| `cascade` | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
+| `eager` | `boolean` | yes | Always load the relationship. |
+| `owner` | `boolean` | yes | Explicitly set as owning side (same as providing `inversedBy`). |
+| `inversedBy` | `(string & keyof T) ` &#124; ` (e: T) => any` | yes | Point to the inverse side property name. |
+| `mappedBy` | `(string & keyof T)` &#124; `(e: T) => any` | yes | Point to the owning side property name. |
+| `wrappedReference` | `boolean` | yes | Wrap the entity in [`Reference` wrapper](type-safe-relations.md). |
+| `ref` | `boolean` | yes | Alias for `wrappedReference` |
+| `orphanRemoval` | `boolean` | yes | Remove the entity when it gets disconnected from the relationship (see [Cascading](cascading.md#orphan-removal)). |
+| `joinColumn` | `string` | yes | Override default database column name on the owning side (see [Naming Strategy](naming-strategy.md)). |
+| `primary` | `boolean` | yes | Use this relation as primary key. |
+| `onDelete` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
+| `onUpdateIntegrity` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
 
 ```ts
 // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side
@@ -337,8 +309,7 @@ bestFriend3!: User;
 
 ### @OneToMany()
 
-> `@OneToMany()` decorator extend the `@Property()` decorator, so you can use all 
-> its parameters.
+> `@OneToMany()` decorator extend the `@Property()` decorator, so you can use all its parameters.
 
 One instance of the current Entity has Many instances (references) to the referred Entity.
 
@@ -347,7 +318,7 @@ See [Defining Entities](relationships.md#onetomany) for more examples, including
 > You need to initialize the value with `Collection<T>` instance.
 
 | Parameter | Type | Optional | Description |
-|-----------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `mappedBy` | `(string & keyof T)` &#124; `(e: T) => any` | no | Point to the owning side property name. |
 | `entity` | `string` &#124; `() => EntityName` | yes | Set target entity type. |
 | `cascade` | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
@@ -367,8 +338,7 @@ books2 = new Collection<Book>(this); // target entity type can be read via `TsMo
 
 ### @ManyToMany()
 
-> `@ManyToMany()` decorator extend the `@Property()` decorator, so you can use all 
-> its parameters.
+> `@ManyToMany()` decorator extend the `@Property()` decorator, so you can use all its parameters.
 
 Many instances of the current Entity refers to Many instances of the referred Entity.
 
@@ -377,7 +347,7 @@ See [Defining Entities](relationships.md#manytomany) for more examples, includin
 > You need to initialize the value with `Collection<T>` instance.
 
 | Parameter | Type | Optional | Description |
-|-----------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `entity` | `string` &#124; `() => EntityName` | yes | Set target entity type. |
 | `cascade` | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
 | `eager` | `boolean` | yes | Always load the relationship. |
@@ -401,15 +371,13 @@ tagsUnordered = new Collection<BookTag>(this); // m:n with composite PK
 
 ## Lifecycle Hooks
 
-You can use lifecycle hooks to run some code when entity gets persisted. You can mark any of
-entity methods with them, you can also mark multiple methods with same hook.
+You can use lifecycle hooks to run some code when entity gets persisted. You can mark any of entity methods with them, you can also mark multiple methods with same hook.
 
 > All hooks support async methods with one exception - `@OnInit`.
 
 ### @OnInit()
 
-Fired when new instance of entity is created, either manually `em.create()`, or 
-automatically when new entities are loaded from database
+Fired when new instance of entity is created, either manually `em.create()`, or automatically when new entities are loaded from database
 
 > `@OnInit` is not fired when you create the entity manually via its constructor (`new MyEntity()`)
 
@@ -422,9 +390,7 @@ doStuffOnInit() {
 
 ### @OnLoad()
 
-Fired when new entities are loaded from database. Unlike `@InInit()`, 
-this will be fired only for fully loaded entities (not references). The method
-can be `async`.
+Fired when new entities are loaded from database. Unlike `@InInit()`, this will be fired only for fully loaded entities (not references). The method can be `async`.
 
 ```ts
 @OnLoad()
@@ -446,9 +412,7 @@ async doStuffBeforeCreate() {
 
 ### @AfterCreate()
 
-Fired right after the new entity is created in the database and merged to identity map. 
-Since this event entity will have reference to `EntityManager` and will be 
-enabled to call `wrap(entity).init()` method (including all entity references and collections).
+Fired right after the new entity is created in the database and merged to identity map. Since this event entity will have reference to `EntityManager` and will be enabled to call `wrap(entity).init()` method (including all entity references and collections).
 
 ```ts
 @AfterCreate()
@@ -470,7 +434,7 @@ async doStuffBeforeUpdate() {
 
 ### @AfterUpdate()
 
-Fired right after the entity is updated in the database. 
+Fired right after the entity is updated in the database.
 
 ```ts
 @AfterUpdate()
@@ -481,8 +445,7 @@ async doStuffAfterUpdate() {
 
 ### @BeforeDelete()
 
-Fired right before we delete the record from database. It is fired only when
-removing entity or entity reference, not when deleting records by query. 
+Fired right before we delete the record from database. It is fired only when removing entity or entity reference, not when deleting records by query.
 
 ```ts
 @BeforeDelete()
@@ -506,9 +469,7 @@ async doStuffAfterDelete() {
 
 ### @Subscriber()
 
-Used to register an event subscriber. Keep in mind that you need to make sure the file 
-gets loaded in order to make this decorator registration work (e.g. you import that file 
-explicitly somewhere).
+Used to register an event subscriber. Keep in mind that you need to make sure the file gets loaded in order to make this decorator registration work (e.g. you import that file explicitly somewhere).
 
 ```ts
 @Subscriber()

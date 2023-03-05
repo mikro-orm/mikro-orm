@@ -6,14 +6,13 @@ title: Decorators Reference
 
 ### @Entity()
 
-`@Entity` decorator is used to mark your model classes as entities. Do not use it for 
-abstract base classes.
+`@Entity` decorator is used to mark your model classes as entities. Do not use it for abstract base classes.
 
-| Parameter | Type | Optional | Description |
-|-----------|------|----------|-------------|
-| `tableName` | `string` | yes | Override default collection/table name. |
-| `collection` | `string` | yes | Alias for `tableName`. |
-| `customRepository` | `() => EntityRepository` | yes | Set custom repository class. |
+| Parameter          | Type                     | Optional | Description                             |
+| ------------------ | ------------------------ | -------- | --------------------------------------- |
+| `tableName`        | `string`                 | yes      | Override default collection/table name. |
+| `collection`       | `string`                 | yes      | Alias for `tableName`.                  |
+| `customRepository` | `() => EntityRepository` | yes      | Set custom repository class.            |
 
 > You can also use `@Repository()` decorator instead of `customRepository` parameter.
 
@@ -26,11 +25,10 @@ export class Author { ... }
 
 ### @Property()
 
-`@Property()` decorator is used to define regular entity property. All following decorators
-extend the `@Property()` decorator, so you can also use its parameters there. 
+`@Property()` decorator is used to define regular entity property. All following decorators extend the `@Property()` decorator, so you can also use its parameters there.
 
 | Parameter | Type | Optional | Description |
-|-----------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `fieldName` | `string` | yes | Override default property name (see [Naming Strategy](naming-strategy.md)). |
 | `type` | `string` &#124; `Type` | yes | Explicitly specify the runtime type (see [Metadata Providers](metadata-providers.md) and [Custom Types](custom-types.md)). |
 | `onUpdate` | `() => any` | yes | Automatically update the property value every time entity gets updated. |
@@ -65,14 +63,13 @@ registered = false;
 
 ### @PrimaryKey()
 
-`@PrimaryKey()` decorator is used to define entity's unique primary key identifier. 
+`@PrimaryKey()` decorator is used to define entity's unique primary key identifier.
 
-> `@PrimaryKey()` decorator extend the `@Property()` decorator, so you can use all 
-> its parameters.
+> `@PrimaryKey()` decorator extend the `@Property()` decorator, so you can use all its parameters.
 
 > Every entity needs to have at least one primary key (see composite primary keys).
 
-> Note that if only one PrimaryKey is set and it's type is number it will be set to auto incremented automatically in all SQL drivers. 
+> Note that if only one PrimaryKey is set and it's type is number it will be set to auto incremented automatically in all SQL drivers.
 
 ```typescript
 @PrimaryKey()
@@ -87,13 +84,10 @@ _id!: ObjectId; // ObjectId PK in mongodb driver
 
 ### @SerializedPrimaryKey()
 
-> Property marked with `@SerializedPrimaryKey()` is virtual, it will not be persisted 
-> into the database.
+> Property marked with `@SerializedPrimaryKey()` is virtual, it will not be persisted into the database.
 
-For MongoDB you can define serialized primary key, which will be then used in entity 
-serialization via `JSON.stringify()` (through method `entity.toJSON()`).
-You will be able to use it to manipulate with the primary key as string. 
- 
+For MongoDB you can define serialized primary key, which will be then used in entity serialization via `JSON.stringify()` (through method `entity.toJSON()`). You will be able to use it to manipulate with the primary key as string.
+
 See [Usage with MongoDB](usage-with-mongo.md) and [Serializing](serializing.md).
 
 ```typescript
@@ -106,19 +100,15 @@ id!: string;
 
 ### @Enum()
 
-> `@Enum()` decorator extend the `@Property()` decorator, so you can use all its 
-> parameters.
+> `@Enum()` decorator extend the `@Property()` decorator, so you can use all its parameters.
 
-`@Enum()` decorator can be used for both numeric and string enums. By default enums are 
-considered numeric, and will be represented in the database schema as `tinyint/smallint`. 
-For string enums, if you define the enum in same file, its values will be automatically 
-sniffed. 
+`@Enum()` decorator can be used for both numeric and string enums. By default enums are considered numeric, and will be represented in the database schema as `tinyint/smallint`. For string enums, if you define the enum in same file, its values will be automatically sniffed.
 
 See [Defining Entities](defining-entities.md#enums).
 
-| Parameter | Type | Optional | Description |
-|-----------|------|----------|-------------|
-| `items` | `number[]` &#124; `string[]` &#124; `() => Dictionary` | yes | Specify enum items explicitly. |
+| Parameter | Type                                                   | Optional | Description                    |
+| --------- | ------------------------------------------------------ | -------- | ------------------------------ |
+| `items`   | `number[]` &#124; `string[]` &#124; `() => Dictionary` | yes      | Specify enum items explicitly. |
 
 ```typescript
 @Enum() // with ts-morph metadata provider we do not need to specify anything
@@ -139,18 +129,15 @@ enum4 = 'a';
 
 ### @Index() and @Unique()
 
-Use `@Index()` to create an index, or `@Unique()` to create unique constraint. You can 
-use those decorators both on the entity level and on property level. To create compound
-index, use the decorator on the entity level and provide list of property names via the
-`properties` option.
+Use `@Index()` to create an index, or `@Unique()` to create unique constraint. You can use those decorators both on the entity level and on property level. To create compound index, use the decorator on the entity level and provide list of property names via the `properties` option.
 
 See [Defining Entities](defining-entities.md#indexes).
 
-| Parameter    | Type     | Optional | Description |
-|--------------|----------|----------|-------------|
-| `name`       | `string` | yes      | index name  |
-| `properties` | `string` &#124; `string[]` | yes | list of properties, required when using on entity level |
-| `type`       | `string` | yes      | index type, not available for `@Unique()` |
+| Parameter    | Type                       | Optional | Description                                             |
+| ------------ | -------------------------- | -------- | ------------------------------------------------------- |
+| `name`       | `string`                   | yes      | index name                                              |
+| `properties` | `string` &#124; `string[]` | yes      | list of properties, required when using on entity level |
+| `type`       | `string`                   | yes      | index type, not available for `@Unique()`               |
 
 ```typescript
 @Entity()
@@ -176,30 +163,22 @@ export class Author {
 
 ## Entity Relationships
 
-All relationship decorators have `entity`, `cascade` and `eager` optional parameters. 
-If you use the default `ReflectMetadataProvider`, then `entity` parameter might be required 
-You will be warned about it being not defined while required during discovery process if you 
-use `ReflectMetadataProvider`. 
+All relationship decorators have `entity`, `cascade` and `eager` optional parameters. If you use the default `ReflectMetadataProvider`, then `entity` parameter might be required You will be warned about it being not defined while required during discovery process if you use `ReflectMetadataProvider`.
 
-You can also use `type` parameter instead of it - the difference being that `type` parameter
-needs to be string, while in `entity` parameter you can provide a reference (wrapped in 
-a callback to overcome issues with circular dependencies) to the entity, which plays nice 
-with refactoring features in IDEs like WebStorm. 
+You can also use `type` parameter instead of it - the difference being that `type` parameter needs to be string, while in `entity` parameter you can provide a reference (wrapped in a callback to overcome issues with circular dependencies) to the entity, which plays nice with refactoring features in IDEs like WebStorm.
 
-> If you explicitly provide `entity` as a reference, it will enable type checks for other
-> reference parameters like `inversedBy` or `mappedBy`.
+> If you explicitly provide `entity` as a reference, it will enable type checks for other reference parameters like `inversedBy` or `mappedBy`.
 
 ### @ManyToOne()
 
-> `@ManyToOne()` decorator extend the `@Property()` decorator, so you can use all 
-> its parameters.
+> `@ManyToOne()` decorator extend the `@Property()` decorator, so you can use all its parameters.
 
 Many instances of the current Entity refer to One instance of the referred Entity.
 
 See [Defining Entities](relationships.md#manytoone) for more examples.
 
 | Parameter | Type | Optional | Description |
-|-----------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `entity` | `string` &#124; `() => EntityName` | yes | Set target entity type. |
 | `cascade` | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
 | `eager` | `boolean` | yes | Always load the relationship. |
@@ -221,15 +200,14 @@ author3?: Author;
 
 ### @OneToOne()
 
-> `@OneToOne()` decorator extend the `@Property()` decorator, so you can use all 
-> its parameters.
+> `@OneToOne()` decorator extend the `@Property()` decorator, so you can use all its parameters.
 
 One instance of the current Entity refers to One instance of the referred Entity.
 
 See [Defining Entities](relationships.md#onetoone) for more examples, including bi-directional 1:1.
 
 | Parameter | Type | Optional | Description |
-|-----------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `entity` | `string` &#124; `() => EntityName` | yes | Set target entity type. |
 | `cascade` | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
 | `eager` | `boolean` | yes | Always load the relationship. |
@@ -258,8 +236,7 @@ bestFriend3!: User;
 
 ### @OneToMany()
 
-> `@OneToMany()` decorator extend the `@Property()` decorator, so you can use all 
-> its parameters.
+> `@OneToMany()` decorator extend the `@Property()` decorator, so you can use all its parameters.
 
 One instance of the current Entity has Many instances (references) to the referred Entity.
 
@@ -268,7 +245,7 @@ See [Defining Entities](relationships.md#onetomany) for more examples, including
 > You need to initialize the value with `Collection<T>` instance.
 
 | Parameter | Type | Optional | Description |
-|-----------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `mappedBy` | `(string & keyof T)` &#124; `(e: T) => any` | no | Point to the owning side property name. |
 | `entity` | `string` &#124; `() => EntityName` | yes | Set target entity type. |
 | `cascade` | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
@@ -288,8 +265,7 @@ books2 = new Collection<Book>(this); // target entity type can be read via `TsMo
 
 ### @ManyToMany()
 
-> `@ManyToMany()` decorator extend the `@Property()` decorator, so you can use all 
-> its parameters.
+> `@ManyToMany()` decorator extend the `@Property()` decorator, so you can use all its parameters.
 
 Many instances of the current Entity refers to Many instances of the referred Entity.
 
@@ -298,7 +274,7 @@ See [Defining Entities](relationships.md#manytomany) for more examples, includin
 > You need to initialize the value with `Collection<T>` instance.
 
 | Parameter | Type | Optional | Description |
-|-----------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `entity` | `string` &#124; `() => EntityName` | yes | Set target entity type. |
 | `cascade` | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
 | `eager` | `boolean` | yes | Always load the relationship. |
@@ -322,15 +298,13 @@ tagsUnordered = new Collection<BookTag>(this); // m:n with composite PK
 
 ## Lifecycle Hooks
 
-You can use lifecycle hooks to run some code when entity gets persisted. You can mark any of
-entity methods with them, you can also mark multiple methods with same hook.
+You can use lifecycle hooks to run some code when entity gets persisted. You can mark any of entity methods with them, you can also mark multiple methods with same hook.
 
 > All hooks support async methods with one exception - `@OnInit`.
 
 ### @OnInit()
 
-Fired when new instance of entity is created, either manually `em.create()`, or 
-automatically when new entities are loaded from database
+Fired when new instance of entity is created, either manually `em.create()`, or automatically when new entities are loaded from database
 
 > `@OnInit` is not fired when you create the entity manually via its constructor (`new MyEntity()`)
 
@@ -354,9 +328,7 @@ async doStuffBeforeCreate() {
 
 ### @AfterCreate()
 
-Fired right after the new entity is created in the database and merged to identity map. 
-Since this event entity will have reference to `EntityManager` and will be 
-enabled to call `entity.init()` method (including all entity references and collections).
+Fired right after the new entity is created in the database and merged to identity map. Since this event entity will have reference to `EntityManager` and will be enabled to call `entity.init()` method (including all entity references and collections).
 
 ```typescript
 @AfterCreate()
@@ -378,7 +350,7 @@ async doStuffBeforeUpdate() {
 
 ### @AfterUpdate()
 
-Fired right after the entity is updated in the database. 
+Fired right after the entity is updated in the database.
 
 ```typescript
 @AfterUpdate()
@@ -389,8 +361,7 @@ async doStuffAfterUpdate() {
 
 ### @BeforeDelete()
 
-Fired right before we delete the record from database. It is fired only when
-removing entity or entity reference, not when deleting records by query. 
+Fired right before we delete the record from database. It is fired only when removing entity or entity reference, not when deleting records by query.
 
 ```typescript
 @BeforeDelete()
@@ -414,7 +385,7 @@ async doStuffAfterDelete() {
 
 ### @Repository()
 
-Used to register custom entity repository. 
+Used to register custom entity repository.
 
 > `em.getRepository()` will automatically return custom repository if it is registered.
 
