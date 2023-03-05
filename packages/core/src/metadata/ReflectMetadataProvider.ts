@@ -20,13 +20,26 @@ export class ReflectMetadataProvider extends MetadataProvider {
     // as we were mapping it to UnknownType which is a string. This is to prevent defaulting to JSON
     // column type, which can be often hard to revert and cause hard to understand issues with PKs.
     if (prop.kind === ReferenceKind.SCALAR && type === Object) {
-      type = String;
+      type = this.getTypeFromDefault(prop);
     }
 
     prop.type = type.name;
 
     if (prop.type && ['string', 'number', 'boolean', 'array', 'object'].includes(prop.type.toLowerCase())) {
       prop.type = prop.type.toLowerCase();
+    }
+  }
+
+  private getTypeFromDefault(prop: EntityProperty): any {
+    switch (typeof prop.default) {
+      case 'number':
+        return Number;
+      case 'boolean':
+        return Boolean;
+      case 'object':
+      case 'string':
+      default:
+        return String;
     }
   }
 
