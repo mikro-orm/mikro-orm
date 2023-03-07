@@ -34,8 +34,12 @@ export abstract class Migration {
     this.ctx = ctx;
   }
 
-  async execute(sql: Query) {
-    return this.driver.execute(sql, undefined, 'all', this.ctx);
+  /**
+   * Executes a raw SQL query. Accepts a string SQL or a knex query builder instance.
+   * The `params` parameter is respected only if you use string SQL in the first parameter.
+   */
+  async execute(sql: Query, params?: unknown[]) {
+    return this.driver.execute(sql, params, 'all', this.ctx);
   }
 
   getKnex() {
