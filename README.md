@@ -69,10 +69,10 @@ export class User {
   @Property()
   name!: string;
 
-  @OneToOne()
+  @OneToOne(() => Address)
   address?: Address;
 
-  @ManyToMany()
+  @ManyToMany(() => Car)
   cars = new Collection<Car>(this);
 
   constructor(name: string) {
@@ -110,12 +110,16 @@ await em.flush();
 
 ```sql
 begin;
-update user set title = 'Mr.' where id = 1;
-update user_address set street = '10 Downing Street' where id = 123;
-update car set for_sale = true where id = 1;
-update car set for_sale = true where id = 2;
-update car set for_sale = true where id = 3;
-insert into car (brand, owner) values ('VW', 1);
+update "user" set "title" = 'Mr.' where "id" = 1;
+update "user_address" set "street" = '10 Downing Street' where "id" = 123;
+update "car"
+  set "for_sale" = case
+    when ("id" = 1) then true
+    when ("id" = 2) then true
+    when ("id" = 3) then true
+    else "for_sale" end
+  where "id" in (1, 2, 3)
+insert into "car" ("brand", "owner") values ('VW', 1);
 commit;
 ```
 
@@ -127,36 +131,31 @@ comparison by identity (`ent1 === ent2`).
 
 ## 📖 Documentation
 
-MikroORM v4 documentation, included in this repo in the root directory, is built with 
-[Jekyll](https://jekyllrb.com/) and publicly hosted on GitHub Pages at https://mikro-orm.io.
+MikroORM documentation, included in this repo in the root directory, is built with 
+[Docusaurus](https://docusaurus.io) and publicly hosted on GitHub Pages at https://mikro-orm.io.
 
-There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit messages 
-(via `semantic-release`). 
-
-> You can browse MikroORM v3 docs at [https://mikro-orm.io/docs/3.6/installation](https://mikro-orm.io/docs/3.6/installation).
-
-> To upgrade to v4, please see the [upgrading guide](https://mikro-orm.io/docs/upgrading-v3-to-v4).
+There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit messages (via `semantic-release`). 
 
 ## ✨ Core Features
 
-- [Clean and Simple Entity Definition](https://mikro-orm.io/docs/defining-entities/)
-- [Identity Map](https://mikro-orm.io/docs/identity-map/)
-- [Entity References](https://mikro-orm.io/docs/entity-references/)
-- [Using Entity Constructors](https://mikro-orm.io/docs/using-entity-constructors/)
-- [Modelling Relationships](https://mikro-orm.io/docs/relationships/)
-- [Collections](https://mikro-orm.io/docs/collections/)
-- [Unit of Work](https://mikro-orm.io/docs/unit-of-work/)
-- [Transactions](https://mikro-orm.io/docs/transactions/)
-- [Cascading persist and remove](https://mikro-orm.io/docs/cascading/)
-- [Composite and Foreign Keys as Primary Key](https://mikro-orm.io/docs/composite-keys/)
-- [Filters](https://mikro-orm.io/docs/filters/)
-- [Using `QueryBuilder`](https://mikro-orm.io/docs/query-builder/)
-- [Preloading Deeply Nested Structures via populate](https://mikro-orm.io/docs/nested-populate/)
-- [Property Validation](https://mikro-orm.io/docs/property-validation/)
-- [Lifecycle Hooks](https://mikro-orm.io/docs/lifecycle-hooks/)
-- [Vanilla JS Support](https://mikro-orm.io/docs/usage-with-js/)
-- [Schema Generator](https://mikro-orm.io/docs/schema-generator/)
-- [Entity Generator](https://mikro-orm.io/docs/entity-generator/)
+- [Clean and Simple Entity Definition](https://mikro-orm.io/docs/defining-entities)
+- [Identity Map](https://mikro-orm.io/docs/identity-map)
+- [Entity References](https://mikro-orm.io/docs/entity-references)
+- [Using Entity Constructors](https://mikro-orm.io/docs/entity-constructors)
+- [Modelling Relationships](https://mikro-orm.io/docs/relationships)
+- [Collections](https://mikro-orm.io/docs/collections)
+- [Unit of Work](https://mikro-orm.io/docs/unit-of-work)
+- [Transactions](https://mikro-orm.io/docs/transactions)
+- [Cascading persist and remove](https://mikro-orm.io/docs/cascading)
+- [Composite and Foreign Keys as Primary Key](https://mikro-orm.io/docs/composite-keys)
+- [Filters](https://mikro-orm.io/docs/filters)
+- [Using `QueryBuilder`](https://mikro-orm.io/docs/query-builder)
+- [Preloading Deeply Nested Structures via populate](https://mikro-orm.io/docs/nested-populate)
+- [Property Validation](https://mikro-orm.io/docs/property-validation)
+- [Lifecycle Hooks](https://mikro-orm.io/docs/lifecycle-hooks)
+- [Vanilla JS Support](https://mikro-orm.io/docs/usage-with-js)
+- [Schema Generator](https://mikro-orm.io/docs/schema-generator)
+- [Entity Generator](https://mikro-orm.io/docs/entity-generator)
 
 ## 📦 Example Integrations
 
@@ -173,6 +172,7 @@ You can find example integrations for some popular frameworks in the [`mikro-orm
 - [NextJS + MySQL](https://github.com/jonahallibone/mikro-orm-nextjs)
 
 ### JavaScript Examples 
+- 
 - [Express + MongoDB](https://github.com/mikro-orm/express-js-example-app)
 
 ## Articles
@@ -287,10 +287,10 @@ export class MongoBook {
   @Property()
   title: string;
 
-  @ManyToOne()
+  @ManyToOne(() => Author)
   author: Author;
 
-  @ManyToMany()
+  @ManyToMany(() => BookTag)
   tags = new Collection<BookTag>(this);
 
   constructor(title: string, author: Author) {
@@ -356,13 +356,13 @@ const book3 = new Book('My Life on The Wall, part 3', author);
 book3.publisher = publisher;
 
 // just persist books, author and publisher will be automatically cascade persisted
-await orm.em.persistAndFlush([book1, book2, book3]);
+await em.persistAndFlush([book1, book2, book3]);
 ```
 
 To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`: 
 
 ```typescript
-const authors = orm.em.find(Author, {});
+const authors = em.find(Author, {});
 
 for (const author of authors) {
   console.log(author); // instance of Author entity
@@ -379,7 +379,7 @@ More convenient way of fetching entities from database is by using `EntityReposi
 carries the entity name so you do not have to pass it to every `find` and `findOne` calls:
 
 ```typescript
-const booksRepository = orm.em.getRepository(Book);
+const booksRepository = em.getRepository(Book);
 
 // with sorting, limit and offset parameters, populating author references
 const books = await booksRepository.find({ author: '...' }, ['author'], { title: QueryOrder.DESC }, 2, 1);
