@@ -93,6 +93,16 @@ describe('Utils', () => {
     expect(Utils.merge({ a: 'a', b: ['c'] }, { a: null })).toEqual({ a: null, b: ['c'] });
     expect(Utils.merge({ a: 'a', b: ['c'] }, { a: undefined })).toEqual({ a: 'a', b: ['c'] });
     expect(Utils.merge('a', 'b')).toEqual('a');
+
+    // GH #4101
+    const source = {
+      nestedData: { foo: 'bar' },
+      moreDeep: { moreDeepData: { foo: 'bar' } },
+    };
+
+    expect(Utils.merge({ nestedData: null, moreDeep: { moreDeepData: null } }, source)).toEqual(source);
+    expect(Utils.merge({ nestedData: 'test', moreDeep: { moreDeepData: 'test' } }, source)).toEqual(source);
+    expect(Utils.merge({ nestedData: {}, moreDeep: { moreDeepData: {} } }, source)).toEqual(source);
   });
 
   test('merge Buffers', () => {

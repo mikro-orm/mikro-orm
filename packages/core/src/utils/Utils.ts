@@ -295,6 +295,11 @@ export class Utils {
         }
 
         if (Utils.isPlainObject(value)) {
+          if (!Utils.isObject(target[key])) {
+            target[key] = Utils.copy(value);
+            return;
+          }
+
           if (!(key in target)) {
             Object.assign(target, { [key]: {} });
           }
