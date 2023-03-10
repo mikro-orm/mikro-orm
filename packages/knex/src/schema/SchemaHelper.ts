@@ -173,11 +173,11 @@ export abstract class SchemaHelper {
     return '';
   }
 
-  getAlterColumnAutoincrement(tableName: string, column: Column): string {
+  getAlterColumnAutoincrement(tableName: string, column: Column, schemaName?: string): string {
     return '';
   }
 
-  getChangeColumnCommentSQL(tableName: string, to: Column): string {
+  getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
     return '';
   }
 

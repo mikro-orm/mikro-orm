@@ -221,7 +221,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `alter table ${tableName} rename index ${oldIndexName} to ${keyName}`;
   }
 
-  getChangeColumnCommentSQL(tableName: string, to: Column): string {
+  getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
     tableName = this.platform.quoteIdentifier(tableName);
     const columnName = this.platform.quoteIdentifier(to.name);
 

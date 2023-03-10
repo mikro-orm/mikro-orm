@@ -388,7 +388,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
           continue; // will be handled via knex
         }
 
-        this.helper.pushTableQuery(table, this.helper.getChangeColumnCommentSQL(tableName, column));
+        this.helper.pushTableQuery(table, this.helper.getChangeColumnCommentSQL(tableName, column, schemaName));
       }
 
       for (const [oldColumnName, column] of Object.entries(diff.renamedColumns)) {
