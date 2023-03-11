@@ -11,7 +11,7 @@ import { EntitySchema } from './EntitySchema';
 import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import type { Platform } from '../platforms';
-import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, Type, t } from '../types';
+import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, t, Type } from '../types';
 import { colors } from '../logging/colors';
 
 export class MetadataDiscovery {
@@ -378,11 +378,19 @@ export class MetadataDiscovery {
     const pivotMeta = this.metadata.find(prop.pivotEntity);
     const pks = Object.values(pivotMeta?.properties ?? {}).filter(p => p.primary);
 
+    if (pivotMeta) {
+      pivotMeta.pivotTable = true;
+      prop.pivotTable = pivotMeta.tableName;
+
+      if (pks.length === 1) {
+        prop.fixedOrder = true;
+        prop.fixedOrderColumn = pks[0].name;
+      }
+    }
+
     if (pivotMeta && pks.length === 2) {
       const owner = prop.mappedBy ? meta2.properties[prop.mappedBy] : prop;
       const [first, second] = this.ensureCorrectFKOrderInPivotEntity(pivotMeta, owner);
-      pivotMeta.pivotTable = true;
-      prop.pivotTable = pivotMeta.tableName;
       prop.joinColumns = first.fieldNames;
       prop.inverseJoinColumns = second.fieldNames;
     }
