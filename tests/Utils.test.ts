@@ -78,6 +78,11 @@ describe('Utils', () => {
     expect(Utils.equals({ a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toBe(false);
     expect(Utils.equals({ a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } }, { a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toBe(true);
     expect(compareObjects(null, undefined)).toBe(true);
+    expect(compareObjects(Object.create(null), Object.create(null))).toBe(true);
+    expect(compareObjects({}, Object.create(null))).toBe(true);
+    expect(compareObjects(Object.create(null), {})).toBe(true);
+    expect(compareObjects({ a: Object.create(null) }, { a: {} })).toBe(true);
+    expect(compareObjects({}, Object.create(null))).toBe(true);
     expect(compareObjects(new Test(), new Author('n', 'e'))).toBe(false);
     expect(Utils.equals(NaN, NaN)).toBe(true);
   });

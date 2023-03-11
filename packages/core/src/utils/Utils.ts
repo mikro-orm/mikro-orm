@@ -29,21 +29,37 @@ import { helper } from '../entity/wrap';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
+function compareConstructors(a: any, b: any) {
+  if (a.constructor === b.constructor) {
+    return true;
+  }
+
+  if (!a.constructor) {
+    return b.constructor === Object;
+  }
+
+  if (!b.constructor) {
+    return a.constructor === Object;
+  }
+
+  return false;
+}
+
 export function compareObjects(a: any, b: any) {
   // eslint-disable-next-line eqeqeq
   if (a === b || (a == null && b == null)) {
     return true;
   }
 
-  if (!a || !b || typeof a !== 'object' || typeof b !== 'object' || a.constructor !== b.constructor) {
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object' || !compareConstructors(a, b)) {
     return false;
   }
 
-  if (a.valueOf !== Object.prototype.valueOf) {
+  if (a.valueOf !== Object.prototype.valueOf && typeof a.valueOf === 'function' && typeof b.valueOf === 'function') {
     return a.valueOf() === b.valueOf();
   }
 
-  if (a.toString !== Object.prototype.toString) {
+  if (a.toString !== Object.prototype.toString && typeof a.toString === 'function' && typeof b.toString === 'function') {
     return a.toString() === b.toString();
   }
 
