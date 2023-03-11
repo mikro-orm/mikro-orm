@@ -1272,7 +1272,7 @@ export const Book = new EntitySchema<IBook>({
   </TabItem>
 </Tabs>
 
-### Using PostgreSQL [uuid-osp](https://www.postgresql.org/docs/current/uuid-ossp.html) module function as primary key
+### Using PostgreSQL [uuid-ossp](https://www.postgresql.org/docs/current/uuid-ossp.html) module function as primary key
 
 Requires enabling the module via: `create extension "uuid-ossp";`
 
