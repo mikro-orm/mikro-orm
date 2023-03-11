@@ -172,7 +172,7 @@ You can find example integrations for some popular frameworks in the [`mikro-orm
 - [NextJS + MySQL](https://github.com/jonahallibone/mikro-orm-nextjs)
 
 ### JavaScript Examples 
-- 
+
 - [Express + MongoDB](https://github.com/mikro-orm/express-js-example-app)
 
 ## Articles
