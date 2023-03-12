@@ -293,11 +293,12 @@ export class EntityLoader {
       return;
     }
 
-    if (!populate.children) {
-      return void await this.populateMany<T>(entityName, entities, populate, options);
+    const populated = await this.populateMany<T>(entityName, entities, populate, options);
+
+    if (!populate.children && !populate.all) {
+      return;
     }
 
-    await this.populateMany<T>(entityName, entities, populate, options);
     const children: T[] = [];
 
     for (const entity of entities) {
@@ -313,13 +314,18 @@ export class EntityLoader {
     }
 
     const filtered = Utils.unique(children);
+
+    if (populated.length === 0 && !populate.children) {
+      return;
+    }
+
     const fields = this.buildFields(options.fields, prop);
     const innerOrderBy = Utils.asArray(options.orderBy)
       .filter(orderBy => Utils.isObject(orderBy[prop.name as string]))
       .map(orderBy => orderBy[prop.name as string]);
     const { refresh, filters, ignoreLazyScalarProperties, populateWhere, connectionType } = options;
 
-    await this.populate<T>(prop.type, filtered, populate.children, {
+    await this.populate<T>(prop.type, filtered, populate.children ?? populate.all!, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<T>,
       orderBy: innerOrderBy as QueryOrderMap<T>[],
       fields,
