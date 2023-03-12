@@ -24,9 +24,10 @@ export class ObjectHydrator extends Hydrator {
    */
   hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, type);
+    const running = this.running;
     this.running = true;
     Utils.callCompiledFunction(hydrate, entity, data, factory, newEntity, convertCustomTypes, schema);
-    this.running = false;
+    this.running = running;
   }
 
   /**
@@ -34,9 +35,10 @@ export class ObjectHydrator extends Hydrator {
    */
   hydrateReference<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, 'reference');
+    const running = this.running;
     this.running = true;
     Utils.callCompiledFunction(hydrate, entity, data, factory, false, convertCustomTypes, schema);
-    this.running = false;
+    this.running = running;
   }
 
   /**

@@ -282,6 +282,9 @@ export class ChangeSetPersister {
       return;
     }
 
+    // skip entity references as they don't have version values loaded
+    changeSets = changeSets.filter(cs => helper(cs.entity).__initialized);
+
     const $or = changeSets.map(cs => {
       const cond = Utils.getPrimaryKeyCond<T>(cs.originalEntity as T, meta.primaryKeys.concat(...meta.concurrencyCheckKeys)) as FilterQuery<T>;
 
