@@ -49,6 +49,15 @@ export abstract class Type<JSType = string, DBType = JSType> {
   }
 
   /**
+   * When a value is hydrated, we convert it back to the database value to ensure comparability,
+   * as often the raw database response is not the same as the `convertToDatabaseValue` result.
+   * This allows to disable the additional conversion in case you know it is not needed.
+   */
+  ensureComparable(): boolean {
+    return true;
+  }
+
+  /**
    * Converts a value from its JS representation to its serialized JSON form of this type.
    * By default uses the runtime value.
    */

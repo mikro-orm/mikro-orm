@@ -12,4 +12,8 @@ export class DateTimeType extends Type<Date, string> {
     return 'Date';
   }
 
+  ensureComparable(): boolean {
+    return false;
+  }
+
 }

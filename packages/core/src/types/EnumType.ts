@@ -12,4 +12,8 @@ export class EnumType extends Type<string | null | undefined> {
     return 'string';
   }
 
+  ensureComparable(): boolean {
+    return false;
+  }
+
 }

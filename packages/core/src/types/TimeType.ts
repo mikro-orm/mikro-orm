@@ -17,6 +17,10 @@ export class TimeType extends Type {
     return 'string';
   }
 
+  ensureComparable(): boolean {
+    return false;
+  }
+
   getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getTimeTypeDeclarationSQL(prop.length);
   }

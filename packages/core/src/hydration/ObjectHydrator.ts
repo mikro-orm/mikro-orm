@@ -98,7 +98,14 @@ export class ObjectHydrator extends Hydrator {
           `  if (${preCond}typeof data${dataKey} !== 'undefined') {`,
           `    if (convertCustomTypes) {`,
           `      const value = convertToJSValue_${convertorKey}(data${dataKey});`,
-          `      data${dataKey} = convertToDatabaseValue_${convertorKey}(value);`, // make sure the value is comparable
+        );
+
+        // make sure the value is comparable
+        if (prop.customType.ensureComparable()) {
+          ret.push(`      data${dataKey} = convertToDatabaseValue_${convertorKey}(value);`);
+        }
+
+        ret.push(
           `      entity${entityKey} = value;`,
           `    } else {`,
           `      entity${entityKey} = data${dataKey};`,

@@ -12,4 +12,8 @@ export class IntegerType extends Type<number | null | undefined, number | null |
     return 'number';
   }
 
+  ensureComparable(): boolean {
+    return false;
+  }
+
 }

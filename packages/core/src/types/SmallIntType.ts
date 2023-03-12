@@ -12,4 +12,8 @@ export class SmallIntType extends Type<number | null | undefined, number | null 
     return 'number';
   }
 
+  ensureComparable(): boolean {
+    return false;
+  }
+
 }

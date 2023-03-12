@@ -12,4 +12,8 @@ export class TextType extends Type<string | null | undefined, string | null | un
     return 'string';
   }
 
+  ensureComparable(): boolean {
+    return false;
+  }
+
 }

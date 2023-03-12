@@ -32,6 +32,10 @@ You can define custom types by extending `Type` abstract class. It has several o
 
   How should the raw database values be compared? Used in `EntityComparator`.Possible values: `string` | `number` | `boolean` | `date` | `any` | `buffer` | `array`.
 
+- `ensureComparable(): boolean`
+
+  When a value is hydrated, we convert it back to the database value to ensure comparability, as often the raw database response is not the same as the `convertToDatabaseValue` result. This allows to disable the additional conversion in case you know it is not needed.
+
 ```ts
 import { Type, Platform, EntityProperty, ValidationError } from '@mikro-orm/core';
 
