@@ -25,6 +25,10 @@ export class ScalarCriteriaNode extends CriteriaNode {
     return this.payload;
   }
 
+  willAutoJoin<T>(qb: IQueryBuilder<T>, alias?: string) {
+    return this.shouldJoin();
+  }
+
   shouldJoin(): boolean {
     if (!this.parent || !this.prop) {
       return false;

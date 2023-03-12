@@ -35,8 +35,8 @@ import {
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
-import { QueryBuilderHelper } from './QueryBuilderHelper';
 import type { Alias } from './QueryBuilderHelper';
+import { QueryBuilderHelper } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
 import type { Field, JoinOptions } from '../typings';
@@ -698,7 +698,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Provides promise-like interface so we can await the QB instance.
    */
   then<TResult1 = any, TResult2 = never>(onfulfilled?: ((value: any) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<T[] | number | QueryResult<T>> {
-    switch (this.type ?? QueryType.SELECT) {
+    let type = this.type ?? QueryType.SELECT;
+
+    if (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY)) {
+      type = QueryType.UPDATE;
+    }
+
+    switch (type) {
       case QueryType.INSERT:
       case QueryType.UPDATE:
       case QueryType.DELETE:
