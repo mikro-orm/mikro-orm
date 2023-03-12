@@ -5,7 +5,7 @@ import { MikroORM } from '@mikro-orm/mysql';
 export class UuidBinaryType extends Type<string, Buffer> {
 
   convertToDatabaseValue(value: string): Buffer {
-    return Buffer.from(parse(value) as number[]);
+    return Buffer.from(parse(value));
   }
 
   convertToJSValue(value: Buffer): string {

@@ -9,7 +9,7 @@ class UUID extends Type<string, Buffer> {
   }
 
   convertToDatabaseValue(value: string) {
-    return Buffer.from(parse(value) as any[]);
+    return Buffer.from(parse(value));
   }
 
   getColumnType() {
