@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.14](https://github.com/mikro-orm/mikro-orm/compare/v5.6.13...v5.6.14) (2023-03-12)
+
+
+### Features
+
+* **migrations:** add `params` to the `Migration.execute` method ([f280e6d](https://github.com/mikro-orm/mikro-orm/commit/f280e6d0d39dcd5a087497c7d533bec79b32f7cb)), closes [#4099](https://github.com/mikro-orm/mikro-orm/issues/4099)
+
+
+
+
+
 ## [5.6.13](https://github.com/mikro-orm/mikro-orm/compare/v5.6.12...v5.6.13) (2023-03-01)
 
 **Note:** Version bump only for package @mikro-orm/migrations

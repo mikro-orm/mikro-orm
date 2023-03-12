@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.14](https://github.com/mikro-orm/mikro-orm/compare/v5.6.13...v5.6.14) (2023-03-12)
+
+
+### Bug Fixes
+
+* **postgres:** use explicit schema in table identifier when altering comments ([#4123](https://github.com/mikro-orm/mikro-orm/issues/4123)) ([60d96de](https://github.com/mikro-orm/mikro-orm/commit/60d96de64de7f01a4d9baab485046c7f7f43ee7c)), closes [#4108](https://github.com/mikro-orm/mikro-orm/issues/4108)
+* **query-builder:** ensure inner paginate query selects sub-queries used in orderBy ([22b7146](https://github.com/mikro-orm/mikro-orm/commit/22b7146cae14a3e153ed4d144f18de1fb6b8cc45)), closes [#4104](https://github.com/mikro-orm/mikro-orm/issues/4104)
+* **query-builder:** fix update query with auto-join of 1:1 owner ([0a053fe](https://github.com/mikro-orm/mikro-orm/commit/0a053fe8854a088be8262291f51697749e89cd05)), closes [#4122](https://github.com/mikro-orm/mikro-orm/issues/4122)
+
+
+
+
+
 ## [5.6.13](https://github.com/mikro-orm/mikro-orm/compare/v5.6.12...v5.6.13) (2023-03-01)
 
 **Note:** Version bump only for package @mikro-orm/knex

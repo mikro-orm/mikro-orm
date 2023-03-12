@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.14](https://github.com/mikro-orm/mikro-orm/compare/v5.6.13...v5.6.14) (2023-03-12)
+
+
+### Bug Fixes
+
+* **core:** allow comparing `{}` with `Object.create(null)` ([955895e](https://github.com/mikro-orm/mikro-orm/commit/955895ec9b29caf4172852efd3da90cef8d7d0f5)), closes [#4109](https://github.com/mikro-orm/mikro-orm/issues/4109)
+* **core:** assigning to reference properties inside embeddables ([ede04e6](https://github.com/mikro-orm/mikro-orm/commit/ede04e6d9c77f064268eb94937a64bfd4666e42c)), closes [#4106](https://github.com/mikro-orm/mikro-orm/issues/4106)
+* **core:** discover pivot entities automatically when specified by reference ([3ea4776](https://github.com/mikro-orm/mikro-orm/commit/3ea47760faa1bb1092be374105fe85f0ffb2408d))
+* **core:** ensure `populate: true` supports nested relations inside M:N ([b42f0f3](https://github.com/mikro-orm/mikro-orm/commit/b42f0f3a54cb3e3f7146584caf4d34f200ccc195))
+* **core:** extra update on a reference with 1:1 self-reference ([f2fa2bd](https://github.com/mikro-orm/mikro-orm/commit/f2fa2bd5c30d70f511009a8cbc20966587be46c5)), closes [#4121](https://github.com/mikro-orm/mikro-orm/issues/4121)
+* **core:** fix nested object merging in JSON properties ([694ef28](https://github.com/mikro-orm/mikro-orm/commit/694ef281abf970434f42c7b620bfb81b1c794815)), closes [#4101](https://github.com/mikro-orm/mikro-orm/issues/4101)
+* **core:** improve handling of complex pivot table entities ([45449c4](https://github.com/mikro-orm/mikro-orm/commit/45449c4fd263198fb6220267ab1070a38ca3ef03)), closes [#4083](https://github.com/mikro-orm/mikro-orm/issues/4083)
+* **postgres:** use explicit schema in table identifier when altering comments ([#4123](https://github.com/mikro-orm/mikro-orm/issues/4123)) ([60d96de](https://github.com/mikro-orm/mikro-orm/commit/60d96de64de7f01a4d9baab485046c7f7f43ee7c)), closes [#4108](https://github.com/mikro-orm/mikro-orm/issues/4108)
+* **query-builder:** ensure inner paginate query selects sub-queries used in orderBy ([22b7146](https://github.com/mikro-orm/mikro-orm/commit/22b7146cae14a3e153ed4d144f18de1fb6b8cc45)), closes [#4104](https://github.com/mikro-orm/mikro-orm/issues/4104)
+* **query-builder:** fix update query with auto-join of 1:1 owner ([0a053fe](https://github.com/mikro-orm/mikro-orm/commit/0a053fe8854a088be8262291f51697749e89cd05)), closes [#4122](https://github.com/mikro-orm/mikro-orm/issues/4122)
+
+
+### Features
+
+* **core:** allow skipping `convertToDatabaseValue` during hydration ([d1ce240](https://github.com/mikro-orm/mikro-orm/commit/d1ce2408306a9bdd805077ef1a3f9c561eefe982)), closes [#4120](https://github.com/mikro-orm/mikro-orm/issues/4120)
+* **migrations:** add `params` to the `Migration.execute` method ([f280e6d](https://github.com/mikro-orm/mikro-orm/commit/f280e6d0d39dcd5a087497c7d533bec79b32f7cb)), closes [#4099](https://github.com/mikro-orm/mikro-orm/issues/4099)
+
+
+
+
+
 ## [5.6.13](https://github.com/mikro-orm/mikro-orm/compare/v5.6.12...v5.6.13) (2023-03-01)
 
 
