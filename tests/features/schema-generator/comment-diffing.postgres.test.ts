@@ -45,43 +45,38 @@ export class Book3 {
 
 }
 
-describe('comment diffing in postgres', () => {
+let orm: MikroORM<PostgreSqlDriver>;
 
-  let orm: MikroORM<PostgreSqlDriver>;
-
-  beforeAll(async () => {
-    orm = await MikroORM.init({
-      entities: [Book0],
-      dbName: `mikro_orm_test_comments`,
-      driver: PostgreSqlDriver,
-    });
-    await orm.schema.ensureDatabase();
-    await orm.schema.execute('drop table if exists book');
-    await orm.schema.createSchema();
+beforeAll(async () => {
+  orm = await MikroORM.init({
+    entities: [Book0],
+    schema: 'foo',
+    dbName: `mikro_orm_test_comments`,
+    driver: PostgreSqlDriver,
   });
+  await orm.schema.refreshDatabase();
+});
 
-  afterAll(() => orm.close(true));
+afterAll(() => orm.close(true));
 
-  test('schema orm.schema updates comments', async () => {
-    await orm.discoverEntity(Book1);
-    orm.getMetadata().reset('Book0');
-    const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff1).toMatchSnapshot();
-    await orm.schema.execute(diff1);
+test('comment diffing in postgres', async () => {
+  await orm.discoverEntity(Book1);
+  orm.getMetadata().reset('Book0');
+  const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+  expect(diff1).toMatchSnapshot();
+  await orm.schema.execute(diff1);
 
-    orm.getMetadata().reset('Book1');
-    await orm.discoverEntity(Book2);
-    const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff2).toMatchSnapshot();
-    await orm.schema.execute(diff2);
+  orm.getMetadata().reset('Book1');
+  await orm.discoverEntity(Book2);
+  const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+  expect(diff2).toMatchSnapshot();
+  await orm.schema.execute(diff2);
 
-    orm.getMetadata().reset('Book2');
-    await orm.discoverEntity(Book3);
-    const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff3).toMatchSnapshot();
-    await orm.schema.execute(diff3);
+  orm.getMetadata().reset('Book2');
+  await orm.discoverEntity(Book3);
+  const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+  expect(diff3).toMatchSnapshot();
+  await orm.schema.execute(diff3);
 
-    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
-  });
-
+  await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
 });

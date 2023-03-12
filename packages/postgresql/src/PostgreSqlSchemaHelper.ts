@@ -292,26 +292,28 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret.join(';\n');
   }
 
-  getAlterColumnAutoincrement(tableName: string, column: Column): string {
+  getAlterColumnAutoincrement(tableName: string, column: Column, schemaName?: string): string {
     const ret: string[] = [];
     const quoted = (val: string) => this.platform.quoteIdentifier(val);
+    const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
 
     /* istanbul ignore else */
     if (column.autoincrement) {
       const seqName = this.platform.getIndexName(tableName, [column.name], 'sequence');
       ret.push(`create sequence if not exists ${quoted(seqName)}`);
-      ret.push(`select setval('${seqName}', (select max(${quoted(column.name)}) from ${quoted(tableName)}))`);
-      ret.push(`alter table ${quoted(tableName)} alter column ${quoted(column.name)} set default nextval('${seqName}')`);
+      ret.push(`select setval('${seqName}', (select max(${quoted(column.name)}) from ${quoted(name)}))`);
+      ret.push(`alter table ${quoted(name)} alter column ${quoted(column.name)} set default nextval('${seqName}')`);
     } else if (column.default == null) {
-      ret.push(`alter table ${quoted(tableName)} alter column ${quoted(column.name)} drop default`);
+      ret.push(`alter table ${quoted(name)} alter column ${quoted(column.name)} drop default`);
     }
 
     return ret.join(';\n');
   }
 
-  getChangeColumnCommentSQL(tableName: string, to: Column): string {
+  getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
+    const name = this.platform.quoteIdentifier((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
     const value = to.comment ? this.platform.quoteValue(to.comment) : 'null';
-    return `comment on column "${tableName}"."${to.name}" is ${value}`;
+    return `comment on column ${name}."${to.name}" is ${value}`;
   }
 
   normalizeDefaultValue(defaultValue: string, length: number) {
