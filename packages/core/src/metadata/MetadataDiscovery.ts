@@ -116,17 +116,30 @@ export class MetadataDiscovery {
       .replace(/\[]$/, '')          // remove array suffix
       .replace(/\((.*)\)/, '$1');   // unwrap union types
 
-    const missing = this.discovered.flatMap(meta => Object.values(meta.properties).filter(prop => {
-      return prop.reference !== ReferenceType.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => this.discovered.find(m => m.className === type));
+    const missing: Constructor[] = [];
+
+    this.discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
+      if (prop.reference === ReferenceType.MANY_TO_MANY && prop.pivotEntity && !this.discovered.find(m => m.className === Utils.className(prop.pivotEntity))) {
+        const target = typeof prop.pivotEntity === 'function'
+          ? (prop.pivotEntity as () => Constructor)()
+          : prop.pivotEntity;
+        missing.push(target as Constructor);
+      }
+
+      if (prop.reference !== ReferenceType.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => this.discovered.find(m => m.className === type))) {
+        const target = typeof prop.entity === 'function'
+          ? prop.entity()
+          : prop.type;
+        missing.push(...Utils.asArray(target as Constructor));
+      }
     }));
 
-    for (const prop of missing) {
-      const target = (typeof prop.entity === 'function' ? prop.entity() : prop.type) as Constructor<AnyEntity>;
-      await this.tryDiscoverTargets(Utils.asArray(target));
+    if (missing.length > 0) {
+      await this.tryDiscoverTargets(missing);
     }
   }
 
-  private async tryDiscoverTargets(targets: Constructor<AnyEntity>[]): Promise<void> {
+  private async tryDiscoverTargets(targets: Constructor[]): Promise<void> {
     for (const target of targets) {
       if (typeof target === 'function' && target.name && !this.metadata.has(target.name)) {
         await this.discoverReferences([target]);
