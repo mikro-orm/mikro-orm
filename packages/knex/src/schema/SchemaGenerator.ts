@@ -380,7 +380,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       }
 
       for (const { column } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('autoincrement'))) {
-        this.helper.pushTableQuery(table, this.helper.getAlterColumnAutoincrement(tableName, column));
+        this.helper.pushTableQuery(table, this.helper.getAlterColumnAutoincrement(tableName, column, schemaName));
       }
 
       for (const { column, changedProperties } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('comment'))) {
