@@ -657,6 +657,19 @@ describe('QueryBuilder', () => {
     expect(qb2.getParams()).toEqual([]);
   });
 
+  test('GH #4104', async () => {
+    const qb = orm.em.createQueryBuilder(Author2, 'a');
+    const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: qb.ref('a.id') }).as('Author2.booksTotal');
+    qb.select(['*', qb1])
+      .where({ books: { title: 'foo' } })
+      .limit(1)
+      .orderBy({ booksTotal: QueryOrder.ASC });
+
+    await qb;
+    expect(qb.getQuery()).toEqual('select `a`.*, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` where `a`.`id` in (select `a`.`id` from (select `a`.`id`, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` where `e1`.`title` = ? group by `a`.`id` order by min(`books_total`) asc limit ?) as `a`) order by `books_total` asc');
+    expect(qb.getParams()).toEqual(['foo', 1]);
+  });
+
   test('select by 1:m', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ books: { $in: ['123', '321'] } });

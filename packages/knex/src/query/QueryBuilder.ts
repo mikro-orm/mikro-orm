@@ -730,7 +730,12 @@ export class QueryBuilder<T extends object = AnyEntity> {
       alias = meta?.properties[f]?.fieldNames[0] ?? alias;
     }
 
-    return qb.as(alias);
+    const ret = qb.as(alias);
+
+    // tag the instance, so it is possible to detect it easily
+    Object.defineProperty(ret, '__as', { enumerable: false, value: alias });
+
+    return ret;
   }
 
   clone(): QueryBuilder<T> {
@@ -1066,16 +1071,23 @@ export class QueryBuilder<T extends object = AnyEntity> {
       subQuery.offset(this._offset);
     }
 
+    const addToSelect = [];
+
     if (this._orderBy.length > 0) {
       const orderBy = [];
+
       for (const orderMap of this._orderBy) {
         for (const [field, direction] of Object.entries(orderMap)) {
           const [a, f] = this.helper.splitField(field);
           const prop = this.helper.getProperty(f, a);
           const type = this.platform.castColumn(prop);
-          orderBy.push({
-            [`min(${this.ref(this.helper.mapper(field, this.type, undefined, null))}${type})`]: direction,
-          });
+          const fieldName = this.helper.mapper(field, this.type, undefined, null);
+
+          if (!prop?.persist && !prop?.formula) {
+            addToSelect.push(fieldName);
+          }
+
+          orderBy.push({ [`min(${this.ref(fieldName)}${type})`]: direction });
         }
       }
 
@@ -1084,6 +1096,23 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     subQuery.finalized = true;
     const knexQuery = subQuery.as(this.mainAlias.aliasName).clearSelect().select(pks);
+
+    if (addToSelect.length > 0) {
+      addToSelect.forEach(prop => {
+        const field = this._fields!.find(field => {
+          if (typeof field === 'object' && field && '__as' in field) {
+            return field.__as === prop;
+          }
+
+          // not perfect, but should work most of the time, ideally we should check only the alias (`... as alias`)
+          return field.toString().includes(prop);
+        });
+
+        if (field) {
+          knexQuery.select(field as string);
+        }
+      });
+    }
 
     // multiple sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
     // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu
