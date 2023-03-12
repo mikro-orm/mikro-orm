@@ -100,7 +100,6 @@ export class ObjectHydrator extends Hydrator {
           `      const value = convertToJSValue_${convertorKey}(data${dataKey});`,
         );
 
-        // make sure the value is comparable
         if (prop.customType.ensureComparable()) {
           ret.push(`      data${dataKey} = convertToDatabaseValue_${convertorKey}(value);`);
         }
@@ -160,12 +159,12 @@ export class ObjectHydrator extends Hydrator {
         }
       }
 
-      if (prop.customType) {
+      if (prop.customType?.ensureComparable()) {
         context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
         ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
         const pk = prop.mapToPk ? '' : '.__helper.getPrimaryKey()';
-        ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}${pk});`); // make sure the value is comparable
+        ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}${pk});`);
         ret.push(`  }`);
       }
 
