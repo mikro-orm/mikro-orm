@@ -320,8 +320,13 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const set = new Set<string>();
     data.forEach(row => Object.keys(row).forEach(k => set.add(k)));
     const props = [...set].map(name => meta?.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
-    const fields = Utils.flatten(props.map(prop => prop.fieldNames));
+    let fields = Utils.flatten(props.map(prop => prop.fieldNames));
+    const duplicates = Utils.findDuplicates(fields);
     const params: unknown[] = [];
+
+    if (duplicates.length) {
+      fields = Utils.unique(fields);
+    }
 
     /* istanbul ignore next */
     const tableName = meta ? this.getTableName(meta, options) : this.platform.quoteIdentifier(entityName);
@@ -347,8 +352,16 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         const keys: string[] = [];
         props.forEach(prop => {
           if (prop.fieldNames.length > 1) {
-            params.push(...(row[prop.name] as unknown[] ?? prop.fieldNames.map(() => null)));
-            keys.push(...(row[prop.name] as unknown[] ?? prop.fieldNames).map(() => '?'));
+            const param = row[prop.name] as unknown[] ?? prop.fieldNames.map(() => null);
+            const key = (row[prop.name] as unknown[] ?? prop.fieldNames).map(() => '?');
+            prop.fieldNames.forEach((field, idx) => {
+              if (duplicates.includes(field)) {
+                param.splice(idx, 1);
+                key.splice(idx, 1);
+              }
+            });
+            params.push(...param);
+            keys.push(...key);
           } else if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])) {
             keys.push(prop.customType.convertToDatabaseValueSQL!('?', this.platform));
             addParams(prop, row);
