@@ -1152,10 +1152,7 @@ export class MetadataDiscovery {
       return;
     }
 
-    prop.unsigned = (prop.primary || prop.unsigned)
-      && prop.unsigned !== false  // Allow explicit opt-out of unsigned for primary keys
-      && this.isNumericProperty(prop)
-      && this.platform.supportsUnsigned();
+    prop.unsigned ??= (prop.primary || prop.unsigned) && this.isNumericProperty(prop) && this.platform.supportsUnsigned();
   }
 
   private initIndexes(prop: EntityProperty): void {
