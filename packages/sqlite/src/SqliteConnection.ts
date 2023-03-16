@@ -8,7 +8,7 @@ import { Utils } from '@mikro-orm/core';
 export class SqliteConnection extends AbstractSqlConnection {
 
   static readonly RUN_QUERY_RE = /^insert into|^update|^delete|^truncate/;
-  static readonly RUN_QUERY_RETURNING = /^insert into .* returning .*/;
+  static readonly RUN_QUERY_RETURNING = /^insert into ([\s\S])* returning .*/;
 
   async connect(): Promise<void> {
     await ensureDir(dirname(this.config.get('dbName')!));
