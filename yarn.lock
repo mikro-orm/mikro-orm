@@ -2272,7 +2272,7 @@ __metadata:
     "@mikro-orm/sql-highlighter": 1.0.1
     "@side/jest-runtime": ^1.1.0
     "@types/fs-extra": 11.0.1
-    "@types/jest": 29.4.4
+    "@types/jest": 29.5.0
     "@types/mysql2": "https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
     "@types/node": 18.15.3
     "@types/pg": 8.6.6
@@ -3078,13 +3078,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:29.4.4":
-  version: 29.4.4
-  resolution: "@types/jest@npm:29.4.4"
+"@types/jest@npm:29.5.0":
+  version: 29.5.0
+  resolution: "@types/jest@npm:29.5.0"
   dependencies:
     expect: ^29.0.0
     pretty-format: ^29.0.0
-  checksum: 754c21d996c3457c761e55c4076a2dd14d82e6290c3f57122db17aa07ef59c12af7df50a82a06845ef9ba1fbf75bb024a1fed68426514618856bda7fb90eb773
+  checksum: cd877e5c56d299cceb8bfdcbb1a77723c706750dd3c3bc47403bc3599b8faff590a3b009c68bb5b11bf7a8c77d1fb01de5e124329b4a08e65f1cdda28b0ecdb8
   languageName: node
   linkType: hard
 
