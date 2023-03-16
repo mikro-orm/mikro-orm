@@ -59,7 +59,7 @@ export class FooBar {
   name: string;
 
   @Property({ nullable: true })
-  prop?: string;
+  propName?: string;
 
   constructor(name: string, author: Author | Ref<Author>) {
     this.name = name;
@@ -152,7 +152,7 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await orm.em.flush();
     expect(mock).not.toBeCalled();
 
-    fooBars[0].prop = '12345';
+    fooBars[0].propName = '12345';
     await orm.em.flush();
     expect(mock).toBeCalled();
 
@@ -161,18 +161,18 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     expect(fooBarsReloaded).toHaveLength(3);
 
     mock.mockReset();
-    fooBarsReloaded[1].prop = '12345';
+    fooBarsReloaded[1].propName = '12345';
     const fooBar12 = await orm.em.upsert(fooBarsReloaded[0]); // exists
     const fooBar22 = await orm.em.upsert(fooBarsReloaded[1]); // exists
     const fooBar32 = await orm.em.upsert(fooBarsReloaded[2]); // exists
     expect(fooBar12).toBe(fooBarsReloaded[0]);
     expect(fooBar22).toBe(fooBarsReloaded[1]);
     expect(fooBar32).toBe(fooBarsReloaded[2]);
-    expect(fooBar22.prop).toBe('12345');
+    expect(fooBar22.propName).toBe('12345');
     expect(mock).not.toBeCalled();
     await orm.em.flush();
     await orm.em.refresh(fooBar22);
-    expect(fooBar22.prop).toBe('12345');
+    expect(fooBar22.propName).toBe('12345');
   }
 
   test('em.upsert(Type, data) with PK', async () => {
@@ -259,9 +259,9 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     orm.em.clear();
 
     const mock = mockLogger(orm);
-    const fooBar1 = await orm.em.upsert(FooBar, { name: 'fb1', author: 1, prop: 'val 1' }); // exists
-    const fooBar2 = await orm.em.upsert(FooBar, { name: 'fb2', author: 2, prop: 'val 2' }); // inserts
-    const fooBar3 = await orm.em.upsert(FooBar, { name: 'fb3', author: 3, prop: 'val 3' }); // inserts
+    const fooBar1 = await orm.em.upsert(FooBar, { name: 'fb1', author: 1, propName: 'val 1' }); // exists
+    const fooBar2 = await orm.em.upsert(FooBar, { name: 'fb2', author: 2, propName: 'val 2' }); // inserts
+    const fooBar3 = await orm.em.upsert(FooBar, { name: 'fb3', author: 3, propName: 'val 3' }); // inserts
 
     await assertFooBars([fooBar1, fooBar2, fooBar3], mock);
   });
@@ -335,9 +335,9 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     orm.em.clear();
 
     const mock = mockLogger(orm);
-    const fb1 = orm.em.create(FooBar, { id: 1, name: 'fb1', author: 1, prop: 'val 1' });
-    const fb2 = orm.em.create(FooBar, { id: 2, name: 'fb2', author: 2, prop: 'val 2' });
-    const fb3 = orm.em.create(FooBar, { id: 3, name: 'fb3', author: 3, prop: 'val 3' });
+    const fb1 = orm.em.create(FooBar, { id: 1, name: 'fb1', author: 1, propName: 'val 1' });
+    const fb2 = orm.em.create(FooBar, { id: 2, name: 'fb2', author: 2, propName: 'val 2' });
+    const fb3 = orm.em.create(FooBar, { id: 3, name: 'fb3', author: 3, propName: 'val 3' });
     const fooBar1 = await orm.em.upsert(FooBar, fb1); // exists
     const fooBar2 = await orm.em.upsert(FooBar, fb2); // inserts
     const fooBar3 = await orm.em.upsert(FooBar, fb3); // inserts
