@@ -146,6 +146,7 @@ describe('GH issue 482', () => {
     await expect(orm.em.flush()).rejects.toThrowError(`Invalid enum array items provided in Level.types: [ 'c' ]`);
 
     a2.types = [];
+    // @ts-ignore
     a2.numTypes = [NumLevelType.B, 3];
     await expect(orm.em.flush()).rejects.toThrowError(`Invalid enum array items provided in Level.numTypes: [ 3 ]`);
   });

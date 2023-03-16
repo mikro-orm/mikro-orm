@@ -11,7 +11,8 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "preserveConstEnums": true
+    "preserveConstEnums": true,
+    "ignoreDeprecations": "5.0"
   },
   "exclude": [
     "**/node_modules",

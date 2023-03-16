@@ -190,7 +190,7 @@ export class EntityHelper {
       }
 
       if (prop.reference === ReferenceType.ONE_TO_ONE && entity && helper(entity).__initialized && entity[prop2.name] != null && value == null) {
-        EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old);
+        EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old as T);
       }
     }
   }
