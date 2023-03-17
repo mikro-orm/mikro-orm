@@ -5,7 +5,6 @@ import { Reference } from '../entity/Reference';
 import { Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
 import type { EntityFactory } from '../entity/EntityFactory';
-import { JsonType } from '../types/JsonType';
 
 type EntityHydrator<T> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string) => void;
 
@@ -219,12 +218,8 @@ export class ObjectHydrator extends Hydrator {
       }
     };
 
-    const hydrateEmbedded = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
-      const entityKey = path.map(k => this.wrap(k)).join('');
-      const ret: string[] = [];
+    const createCond = (prop: EntityProperty, dataKey: string) => {
       const conds: string[] = [];
-      registerEmbeddedPrototype(prop, path);
-      parseObjectEmbeddable(prop, dataKey, ret);
 
       if (prop.object) {
         conds.push(`data${dataKey} != null`);
@@ -232,10 +227,27 @@ export class ObjectHydrator extends Hydrator {
         const notNull = prop.nullable ? '!= null' : '!== undefined';
         meta.props
           .filter(p => p.embedded?.[0] === prop.name)
-          .forEach(p => conds.push(`data${this.wrap(p.name)} ${notNull}`));
+          .forEach(p => {
+            if (p.reference === ReferenceType.EMBEDDED && !p.object && !p.array) {
+              conds.push(...createCond(p, dataKey + this.wrap(p.embedded![1])));
+              return;
+            }
+
+            conds.push(`data${this.wrap(p.name)} ${notNull}`);
+          });
       }
 
-      ret.push(`  if (${conds.join(' || ')}) {`);
+      return conds;
+    };
+
+    const hydrateEmbedded = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
+      const entityKey = path.map(k => this.wrap(k)).join('');
+      const ret: string[] = [];
+
+      registerEmbeddedPrototype(prop, path);
+      parseObjectEmbeddable(prop, dataKey, ret);
+
+      ret.push(`  if (${createCond(prop, dataKey).join(' || ')}) {`);
 
       if (prop.targetMeta?.polymorphs) {
         prop.targetMeta.polymorphs!.forEach(meta => {
