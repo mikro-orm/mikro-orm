@@ -101,7 +101,7 @@ export class UnitOfWork {
 
       wrapped.__meta.relations.forEach(prop => {
         if (Utils.isPlainObject(data[prop.name as string])) {
-          data[prop.name as string] = Utils.getPrimaryKeyValues(data[prop.name as string], wrapped.__meta.primaryKeys, true);
+          data[prop.name as string] = Utils.getPrimaryKeyValues(data[prop.name as string], prop.targetMeta!.primaryKeys, true);
         }
       });
       wrapped.__originalEntityData = data;
