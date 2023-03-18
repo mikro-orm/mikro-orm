@@ -131,14 +131,17 @@ export const Book = new EntitySchema<IBook>({
 </Tabs>
 
 ```ts
-const book = await em.findOne(Book, 1);
-console.log(book.author instanceof Reference); // true
-console.log(wrap(book.author).isInitialized()); // false
-console.log(book.author.name); // type error, there is no `name` property
-console.log(book.author.unwrap().name); // undefined as author is not loaded
-console.log(await book.author.load('name')); // ok, loading the author first
-console.log((await book.author.load()).name); // ok, author already loaded
-console.log(book.author.unwrap().name); // ok, author already loaded
+const book1 = await em.findOne(Book, 1);
+book.author instanceof Reference; // true
+book1.author; // Ref<Author> (instance of `Reference` class)
+book1.author.name; // type error, there is no `name` property
+book1.author.unwrap().name; // unsafe sync access, undefined as author is not loaded
+book1.author.isInitialized(); // false
+(await book1.author.load()).name; // async safe access
+
+const book2 = await em.findOne(Book, 1, { populate: ['author'] });
+book2.author; // LoadedReference<Author> (instance of `Reference` class)
+book2.author.$.name; // type-safe sync access
 ```
 
 There are also `getEntity()` and `getProperty()` methods that are synchronous getters, that will first check if the wrapped entity is initialized, and if not, it will throw and error.

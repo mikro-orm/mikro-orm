@@ -8,7 +8,7 @@ MikroORM uses the Identity Map pattern to track objects. Whenever you fetch an o
 This allows MikroORM room for optimizations. If you call the EntityManager and ask for an entity with a specific ID twice, it will return the same instance:
 
 ```ts
-const authorRepository = orm.em.getRepository(Author);
+const authorRepository = em.getRepository(Author);
 const jon1 = await authorRepository.findOne(1);
 const jon2 = await authorRepository.findOne(1);
 
@@ -21,7 +21,7 @@ Only one SELECT query will be fired against the database here. In the second `fi
 The identity map being indexed by primary keys only allows shortcuts when you ask for objects by primary key. When you query by other properties, you will still get the same reference, but two separate database calls will be made:
 
 ```ts
-const authorRepository = orm.em.getRepository(Author);
+const authorRepository = em.getRepository(Author);
 const jon1 = await authorRepository.findOne({ name: 'Jon Snow' });
 const jon2 = await authorRepository.findOne({ name: 'Jon Snow' });
 
@@ -38,10 +38,10 @@ The identity map has a second use-case. When you call `em.flush()`, MikroORM wil
 The following code WILL update your database with the changes made to the `Author` object, even if you did not call `em.persist()`:
 
 ```ts
-const authorRepository = orm.em.getRepository(Author);
+const authorRepository = em.getRepository(Author);
 const jon = await authorRepository.findOne(1);
 jon.email = 'foo@bar.com';
-await authorRepository.flush(); // calling orm.em.flush() has same effect
+await authorRepository.flush(); // calling em.flush() has same effect
 ```
 
 ## How MikroORM Detects Changes
@@ -86,16 +86,29 @@ The flushing strategy is given by the `flushMode` of the current running `Entity
 ```ts
 // querying for author will trigger auto-flush if we have new author persisted
 const a1 = new Author(...);
-orm.em.persist(a1);
-const r1 = await orm.em.find(Author, {});
+em.persist(a1);
+const r1 = await em.find(Author, {});
 
 // querying author won't trigger auto-flush if we have new book, but no changes on author
 const b4 = new Book(...);
-orm.em.persist(b4);
-const r2 = await orm.em.find(Author, {});
+em.persist(b4);
+const r2 = await em.find(Author, {});
 
 // but querying for book will trigger auto-flush
-const r3 = await orm.em.find(Book, {});
+const r3 = await em.find(Book, {});
+```
+
+Changes on managed entities are also detected, although this works only based on simple dirty checks, no query analyses in place.
+
+```ts
+const book = await em.findOne(Book, 1);
+book.price = 1000;
+
+// triggers auto-flush because of the changed `price`
+const r1 = await em.find(Book, { price: { $gt: 500 } });
+
+// triggers auto-flush too, the book entity is dirty
+const r2 = await em.find(Book, { name: /foo.*/ });
 ```
 
 We can set the flush mode on different places:

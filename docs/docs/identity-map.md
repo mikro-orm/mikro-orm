@@ -43,10 +43,19 @@ If we use dependency injection container like `inversify` or the one in `nestjs`
 To solve this, we can use `RequestContext` helper, that will use `node`'s [`AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) in the background to isolate the request context. MikroORM will always use request specific (forked) entity manager if available, so all we need to do is to create new request context preferably as a middleware:
 
 ```ts
+// `orm.em` is the global EntityManager instance
+
 app.use((req, res, next) => {
+  // calls `orm.em.fork()` and attaches it to the async context
   RequestContext.create(orm.em, next);
 });
-```
+
+app.get('/', async (req, res) => {
+  // uses fork from the async context automatically
+  const authors = await orm.em.find(Book, {});
+  res.json(authors);
+});
+``` 
 
 We should register this middleware as the last one just before request handlers and before any of our custom middleware that is using the ORM. There might be issues when we register it before request processing middleware like `queryParser` or `bodyParser`, so definitely register the context after them.
 
