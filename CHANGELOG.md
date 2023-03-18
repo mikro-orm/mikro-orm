@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.15](https://github.com/mikro-orm/mikro-orm/compare/v5.6.14...v5.6.15) (2023-03-18)
+
+
+### Bug Fixes
+
+* **core:** deduplicate columns in insert queries ([db734d6](https://github.com/mikro-orm/mikro-orm/commit/db734d69b23a97f1cca186dba6629b112d788b16))
+* **core:** fix nested inlined embedded property hydration ([2bbcb47](https://github.com/mikro-orm/mikro-orm/commit/2bbcb477890fc87cb2a349922d83bfdb54f68b59)), closes [#4145](https://github.com/mikro-orm/mikro-orm/issues/4145)
+* **core:** fix snapshot of relation properties loaded via joined strategy ([6015f3f](https://github.com/mikro-orm/mikro-orm/commit/6015f3fb2b09ca920d0fbe3329733d3d5f8d134e)), closes [#4129](https://github.com/mikro-orm/mikro-orm/issues/4129)
+* **core:** respect explicit `unsigned` option ([#4126](https://github.com/mikro-orm/mikro-orm/issues/4126)) ([846a57d](https://github.com/mikro-orm/mikro-orm/commit/846a57dc3baffe8897065710a6368efd91985401))
+* **sqlite:** fix detecting multi-line `returning` queries ([ba1a5fc](https://github.com/mikro-orm/mikro-orm/commit/ba1a5fc95c611ffd2c393e7dc8763255fa0ca6c7)), closes [#4133](https://github.com/mikro-orm/mikro-orm/issues/4133)
+
+
+
+
+
 ## [5.6.14](https://github.com/mikro-orm/mikro-orm/compare/v5.6.13...v5.6.14) (2023-03-12)
 
 
