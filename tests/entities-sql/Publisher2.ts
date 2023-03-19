@@ -32,10 +32,10 @@ export class Publisher2 extends BaseEntity2 {
   name: string;
 
   @OneToMany(() => Book2, 'publisher', { joinColumn: 'book_uuid', inverseJoinColumn: 'publisher_id' })
-  books!: Collection<Book2>;
+  books = new Collection<Book2>(this);
 
   @ManyToMany({ entity: () => Test2, pivotTable: 'publisher2_tests', fixedOrder: true })
-  tests!: Collection<Test2>;
+  tests = new Collection<Test2>(this);
 
   @Enum(() => PublisherType)
   type = PublisherType.LOCAL;

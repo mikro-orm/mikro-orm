@@ -204,22 +204,22 @@ export function ref<T extends object, PKV extends Primary<T> = Primary<T>>(entit
  */
 export function ref<T extends object, PKV extends Primary<T> = Primary<T>>(entityOrType?: T | Ref<T> | EntityClass<T>, pk?: T | PKV): Ref<T> | undefined | null {
   if (entityOrType == null) {
+    return entityOrType as unknown as null;
+  }
+
+  if (Utils.isEntity(entityOrType, true)) {
+    return helper(entityOrType).toReference() as Ref<T>;
+  }
+
+  if (Utils.isEntity(pk, true)) {
+    return helper(pk).toReference() as Ref<T>;
+  }
+
+  if (pk == null) {
     return pk as null;
   }
 
-  if (Utils.isEntity(pk)) {
-    return (pk as Dictionary).__helper.toReference();
-  }
-
-  if (Utils.isEntityClass(entityOrType)) {
-    if (pk == null) {
-      return pk as null;
-    }
-
-    return Reference.createFromPK<T>(entityOrType as EntityClass<T>, pk);
-  }
-
-  return (entityOrType as Dictionary).__helper.toReference();
+  return Reference.createFromPK<T>(entityOrType as EntityClass<T>, pk);
 }
 
 /**

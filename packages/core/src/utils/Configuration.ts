@@ -54,6 +54,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       alwaysAnalyseProperties: true,
       disableDynamicFileAccess: false,
       checkDuplicateEntities: true,
+      inferDefaultValues: true,
     },
     strict: false,
     validate: false,
@@ -492,6 +493,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     checkDuplicateTableNames?: boolean;
     alwaysAnalyseProperties?: boolean;
     disableDynamicFileAccess?: boolean;
+    inferDefaultValues?: boolean;
     getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
     checkDuplicateEntities?: boolean;
   };
