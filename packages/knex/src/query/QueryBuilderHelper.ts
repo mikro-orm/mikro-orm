@@ -38,6 +38,10 @@ export class QueryBuilderHelper {
   mapper(field: string | Knex.Raw, type?: QueryType): string;
   mapper(field: string | Knex.Raw, type?: QueryType, value?: any, alias?: string | null): string;
   mapper(field: string | Knex.Raw, type = QueryType.SELECT, value?: any, alias?: string | null): string | Knex.Raw {
+    if (Utils.isRawSql(field)) {
+      return this.platform.formatQuery(field.sql, field.params ?? []);
+    }
+
     if (typeof field !== 'string') {
       return field;
     }
@@ -615,6 +619,16 @@ export class QueryBuilderHelper {
       const returningProps = meta.hydrateProps
         .filter(prop => prop.returning || (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)))
         .filter(prop => !(prop.name in data));
+
+      if (returningProps.length > 0) {
+        qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
+      }
+
+      return;
+    }
+
+    if (type === QueryType.UPDATE) {
+      const returningProps = meta.hydrateProps.filter(prop => Utils.isRawSql(data[prop.name]));
 
       if (returningProps.length > 0) {
         qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
