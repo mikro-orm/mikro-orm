@@ -277,6 +277,9 @@ export class MetadataDiscovery {
       return;
     }
 
+    // infer default value from property initializer early, as the metatadata provide might use some defaults, e.g. string for reflect-metadata
+    Utils.values(meta.properties).forEach(prop => this.inferDefaultValue(meta, prop));
+
     // if the definition is using EntitySchema we still want it to go through the metadata provider to validate no types are missing
     await this.metadataProvider.loadEntityMetadata(meta, meta.className);
 
@@ -464,7 +467,7 @@ export class MetadataDiscovery {
     for (const prop of Object.values(meta.properties)) {
       this.initNullability(prop);
       this.applyNamingStrategy(meta, prop);
-      this.initDefaultValue(meta, prop);
+      this.initDefaultValue(prop);
       this.initVersionProperty(meta, prop);
       this.initCustomType(meta, prop);
       await this.initColumnType(meta, prop, meta.path);
@@ -929,20 +932,37 @@ export class MetadataDiscovery {
     return '1';
   }
 
-  private initDefaultValue(meta: EntityMetadata, prop: EntityProperty): void {
+  private inferDefaultValue(meta: EntityMetadata, prop: EntityProperty): void {
+    if (!meta.class) {
+      return;
+    }
+
     try {
       // try to create two entity instances to detect the value is stable
       const entity1 = new meta.class();
       const entity2 = new meta.class();
 
       // we compare the two values by reference, this will discard things like `new Date()`
-      if (entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name]) {
+      if (this.config.get('discovery').inferDefaultValues && prop.default === undefined && entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name]) {
         prop.default ??= entity1[prop.name];
+      }
+
+      // if the default value is null, infer nullability
+      if (entity1[prop.name] === null) {
+        prop.nullable ??= true;
+      }
+
+      // but still use object values for type inference if not explicitly set, e.g. `createdAt = new Date()`
+      if (prop.kind === ReferenceKind.SCALAR && prop.type == null && entity1[prop.name] != null) {
+        const type = Utils.getObjectType(entity1[prop.name]);
+        prop.type = type === 'object' ? 'string' : type;
       }
     } catch {
       // ignore
     }
+  }
 
+  private initDefaultValue(prop: EntityProperty): void {
     if (prop.defaultRaw || !('default' in prop)) {
       return;
     }
@@ -958,7 +978,7 @@ export class MetadataDiscovery {
 
   private initVersionProperty(meta: EntityMetadata, prop: EntityProperty): void {
     if (prop.version) {
-      this.initDefaultValue(meta, prop);
+      this.initDefaultValue(prop);
       meta.versionProperty = prop.name;
       prop.defaultRaw = this.getDefaultVersionValue(prop);
     }

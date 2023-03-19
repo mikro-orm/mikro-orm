@@ -19,10 +19,10 @@ export class Author2 extends BaseEntity2 {
   static afterDestroyCalled = 0;
 
   @Property({ length: 3, defaultRaw: 'current_timestamp(3)' })
-  createdAt: Date = new Date();
+  createdAt = new Date();
 
   @Property({ onUpdate: () => new Date(), length: 3, defaultRaw: 'current_timestamp(3)' })
-  updatedAt: Date = new Date();
+  updatedAt = new Date();
 
   @Property()
   name: string;
@@ -35,8 +35,8 @@ export class Author2 extends BaseEntity2 {
   age?: number;
 
   @Index()
-  @Property({ default: false })
-  termsAccepted: boolean = false;
+  @Property()
+  termsAccepted = false;
 
   @Property({ nullable: true })
   optional?: boolean;
@@ -51,10 +51,10 @@ export class Author2 extends BaseEntity2 {
   bornTime?: string;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
-  books!: Collection<Book2>;
+  books = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author', strategy: LoadStrategy.JOINED, orderBy: { title: QueryOrder.ASC } })
-  books2!: Collection<Book2>;
+  books2 = new Collection<Book2>(this);
 
   @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL] })
   address?: Address2;

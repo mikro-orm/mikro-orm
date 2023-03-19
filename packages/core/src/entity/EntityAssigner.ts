@@ -90,7 +90,7 @@ export class EntityAssigner {
         return EntityAssigner.assignReference<T>(entity, value, props[prop], em, options);
       }
 
-      if (props[prop]?.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (props[prop].setter || !props[prop].getter)) {
+      if (props[prop]?.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(props[prop].type.toLowerCase()) && (props[prop].setter || !props[prop].getter)) {
         return entity[prop as keyof T] = validator.validateProperty(props[prop], value, entity);
       }
 
