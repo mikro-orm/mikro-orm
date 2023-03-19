@@ -212,7 +212,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const kqb = qb.getKnexQuery().clear('select');
 
     if (type === QueryType.COUNT) {
-      kqb.select(qb.raw('count(*) as count'));
+      kqb.select(this.connection.getKnex().raw('count(*) as count'));
     } else { // select
       kqb.select('*');
     }
@@ -419,9 +419,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       }).join(', ');
     }
 
-    if (this.platform.usesReturningStatement()) {
-      /* istanbul ignore next */
-      const returningProps = meta!.hydrateProps.filter(prop => prop.persist !== false && (prop.primary || prop.defaultRaw || prop.autoincrement));
+    if (meta && this.platform.usesReturningStatement()) {
+      const returningProps = meta.hydrateProps
+        .filter(prop => prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw || prop.autoincrement))
+        .filter(prop => !(prop.name in data[0]) || Utils.isRawSql(data[0][prop.name]));
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       /* istanbul ignore next */
       sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
@@ -520,7 +521,16 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const keys = new Set<EntityKey<T>>();
-    data.forEach(row => Utils.keys(row).forEach(k => keys.add(k as EntityKey<T>)));
+    const returning = new Set<EntityKey<T>>();
+    data.forEach(row => {
+      Utils.keys(row).forEach(k => {
+        keys.add(k as EntityKey<T>);
+
+        if (Utils.isRawSql(row[k])) {
+          returning.add(k);
+        }
+      });
+    });
     const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames)).map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ');
     const params: any[] = [];
     let sql = `update ${this.getTableName(meta, options)} set `;
@@ -589,6 +599,13 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return '?';
     });
     sql += ` in (${conds.join(', ')})`;
+
+    if (this.platform.usesReturningStatement() && returning.size > 0) {
+      const returningFields = Utils.flatten([...returning].map(prop => meta.properties[prop].fieldNames));
+      /* istanbul ignore next */
+      sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
+    }
+
     const res = await this.rethrow(this.execute<QueryResult<T>>(sql, params, 'run', options.ctx));
 
     for (let i = 0; i < collections.length; i++) {
@@ -861,7 +878,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     if (prop.customType?.convertToJSValueSQL && tableAlias) {
       const prefixed = qb.ref(prop.fieldNames[0]).withSchema(tableAlias).toString();
-      return [qb.raw(prop.customType.convertToJSValueSQL(prefixed, this.platform) + ' as ' + aliased).toString()];
+      return [prop.customType.convertToJSValueSQL(prefixed, this.platform) + ' as ' + aliased];
     }
 
     if (prop.formula) {

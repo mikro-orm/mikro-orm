@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { expr, LockMode, MikroORM, QueryFlag, QueryOrder, UnderscoreNamingStrategy } from '@mikro-orm/core';
+import { expr, LockMode, MikroORM, QueryFlag, QueryOrder, raw, UnderscoreNamingStrategy } from '@mikro-orm/core';
 import { CriteriaNode, QueryBuilder, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
@@ -1477,21 +1477,13 @@ describe('QueryBuilder', () => {
 
   test('update query with column reference', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
-    qb.update({ price: qb.raw('price + 1') }).where({ uuid: '123' });
-    expect(qb.getQuery()).toEqual('update `book2` set `price` = price + 1 where `uuid_pk` = ?');
-    expect(qb.getParams()).toEqual(['123']);
+    qb.update({ price: raw('price + 1') }).where({ uuid: '123' });
+    expect(qb.getFormattedQuery()).toEqual('update `book2` set `price` = price + 1 where `uuid_pk` = \'123\'');
   });
 
-  test('update query with column reference via static raw helper', async () => {
+  test('count query with column reference', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
-    qb.update({ price: orm.em.raw('price + 1') }).where({ uuid: '123' });
-    expect(qb.getQuery()).toEqual('update `book2` set `price` = price + 1 where `uuid_pk` = ?');
-    expect(qb.getParams()).toEqual(['123']);
-  });
-
-  test('count query with column reference via static raw helper', async () => {
-    const qb = orm.em.createQueryBuilder(Book2);
-    await qb.where({ price: orm.em.raw('price + 1') }).getCount();
+    await qb.where({ price: raw('price + 1') }).getCount();
   });
 
   test('gh issue 3182', async () => {
@@ -1501,15 +1493,15 @@ describe('QueryBuilder', () => {
 
   test('update query with JSON type and raw value', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
-    const raw = qb.raw<any>(`jsonb_set(payload, '$.{consumed}', ?)`, [123]);
-    qb.update({ meta: raw }).where({ uuid: '456' });
+    const meta = raw(`jsonb_set(payload, '$.{consumed}', ?)`, [123]);
+    qb.update({ meta }).where({ uuid: '456' });
     expect(qb.getFormattedQuery()).toEqual('update `book2` set `meta` = jsonb_set(payload, \'$.{consumed}\', 123) where `uuid_pk` = \'456\'');
   });
 
-  test('qb.raw() with named bindings', async () => {
+  test('raw() with named bindings', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
-    const raw = qb.raw<any>(`jsonb_set(payload, '$.{consumed}', :val)`, { val: 123 });
-    qb.update({ meta: raw }).where({ uuid: '456' });
+    const meta = raw(`jsonb_set(payload, '$.{consumed}', :val)`, { val: 123 });
+    qb.update({ meta }).where({ uuid: '456' });
     expect(qb.getFormattedQuery()).toEqual('update `book2` set `meta` = jsonb_set(payload, \'$.{consumed}\', 123) where `uuid_pk` = \'456\'');
   });
 
