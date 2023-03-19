@@ -36,6 +36,10 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   override quoteValue(value: any): string {
+    if (Utils.isRawSql(value)) {
+      return this.formatQuery(value.sql, value.params ?? []);
+    }
+
     if (this.isRaw(value)) {
       return value;
     }
