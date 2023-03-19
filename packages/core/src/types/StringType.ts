@@ -12,7 +12,7 @@ export class StringType extends Type<string | null | undefined, string | null | 
     return 'string';
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 
