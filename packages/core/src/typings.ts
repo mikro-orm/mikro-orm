@@ -419,9 +419,13 @@ export class EntityMetadata<T = any> {
 
       o[prop.name] = {
         get() {
-          return this.__helper?.__data[prop.name];
+          return this.__helper.__data[prop.name];
         },
         set(val: unknown) {
+          if (typeof val === 'object' && !!val && '__raw' in val) {
+            (val as Dictionary).use();
+          }
+
           this.__helper.__data[prop.name] = val;
           this.__helper.__touched = true;
         },

@@ -401,6 +401,26 @@ await em.flush();
 
 This is a rough equivalent to calling `em.nativeUpdate()`, with one significant difference - we use the flush operation which handles event execution, so all life cycle hooks as well as flush events will be fired.
 
+## Atomic updates via `raw()` helper
+
+When you want to issue an atomic update query via flush, you can use the static `raw()` helper:
+
+```ts
+const ref = em.getReference(Author, 123);
+ref.age = raw(`age * 2`);
+
+await em.flush();
+console.log(ref.age); // real value is available after flush
+```
+
+The `raw()` helper returns special raw query fragment object. It disallows serialization (via `toJSON`) as well as working with the value (via [`valueOf()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/valueOf)). Only single use of this value is allowed, if you try to reassign it to another entity, an error will be thrown to protect you from mistakes like this:
+
+```ts
+order.number = raw(`(select max(num) + 1 from orders)`);
+user.lastOrderNumber = order.number; // throws, it could resolve to a different value
+JSON.stringify(order); // throws, raw value cannot be serialized
+```
+
 ## Upsert
 
 We can use `em.upsert()` create or update the entity, based on whether it is already present in the database. This method performs an `insert on conflict merge` query ensuring the database is in sync, returning a managed entity instance. The method accepts either `entityName` together with the entity `data`, or just entity instance.

@@ -9,7 +9,15 @@ import type {
   FlatQueryOrderMap,
   QBFilterQuery,
 } from '@mikro-orm/core';
-import { LockMode, OptimisticLockError, GroupOperator, QueryOperator, QueryOrderNumeric, ReferenceKind, Utils } from '@mikro-orm/core';
+import {
+  GroupOperator,
+  LockMode,
+  OptimisticLockError,
+  QueryOperator,
+  QueryOrderNumeric,
+  ReferenceKind,
+  Utils,
+} from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
@@ -32,6 +40,10 @@ export class QueryBuilderHelper {
   mapper(field: string | Knex.Raw, type?: QueryType): string;
   mapper(field: string | Knex.Raw, type?: QueryType, value?: any, alias?: string | null): string;
   mapper(field: string | Knex.Raw, type = QueryType.SELECT, value?: any, alias?: string | null): string | Knex.Raw {
+    if (Utils.isRawSql(field)) {
+      return this.platform.formatQuery(field.sql, field.params ?? []);
+    }
+
     if (typeof field !== 'string') {
       return field;
     }
@@ -592,12 +604,27 @@ export class QueryBuilderHelper {
     return ret.join(', ');
   }
 
-  finalize(type: QueryType, qb: Knex.QueryBuilder, meta?: EntityMetadata): void {
-    const useReturningStatement = type === QueryType.INSERT && this.platform.usesReturningStatement() && meta && !meta.compositePK;
+  finalize(type: QueryType, qb: Knex.QueryBuilder, meta?: EntityMetadata, data?: Dictionary): void {
+    if (!meta || !data || !this.platform.usesReturningStatement()) {
+      return;
+    }
 
-    if (useReturningStatement) {
-      const returningProps = meta!.hydrateProps.filter(prop => prop.persist !== false && (prop.primary || prop.defaultRaw));
-      qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
+    if (type === QueryType.INSERT) {
+      const returningProps = meta.hydrateProps
+        .filter(prop => prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw))
+        .filter(prop => !(prop.name in data) || Utils.isRawSql(data[prop.name]));
+
+      if (returningProps.length > 0) {
+        qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
+      }
+    }
+
+    if (type === QueryType.UPDATE) {
+      const returningProps = meta.hydrateProps.filter(prop => Utils.isRawSql(data[prop.name]));
+
+      if (returningProps.length > 0) {
+        qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
+      }
     }
   }
 

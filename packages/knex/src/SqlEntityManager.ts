@@ -27,16 +27,6 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
   }
 
   /**
-   * Creates raw SQL query that won't be escaped when used as a parameter.
-   */
-  raw<R = Knex.Raw>(sql: string, bindings: Knex.RawBinding[] | Knex.ValueDict = []): R {
-    const raw = this.getKnex().raw(sql, bindings);
-    (raw as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
-
-    return raw as unknown as R;
-  }
-
-  /**
    * Returns configured knex instance.
    */
   getKnex(type?: ConnectionType) {
