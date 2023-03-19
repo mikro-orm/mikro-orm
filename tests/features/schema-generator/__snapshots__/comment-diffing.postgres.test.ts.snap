@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`comment diffing in postgres 1`] = `
-"comment on column "foo"."book"."id" is 'this is primary''s key';
+"drop table if exists "book" cascade;
+
+comment on column "foo"."book"."id" is 'this is primary''s key';
 comment on column "foo"."book"."name" is 'this is name of book';
 comment on table "foo"."book" is 'this is book''s table';
 
