@@ -549,8 +549,8 @@ import { Publisher2Tests } from './Publisher2Tests';
 export class Publisher2 {
   id!: number;
   name!: string;
-  type!: Publisher2Type;
-  type2!: Publisher2Type2;
+  type: Publisher2Type = Publisher2Type.LOCAL;
+  type2: Publisher2Type2 = Publisher2Type2.LOCAL;
   enum1?: number;
   enum2?: number;
   enum3?: number;
@@ -584,9 +584,9 @@ export const Publisher2Schema = new EntitySchema({
   class: Publisher2,
   properties: {
     id: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255 },
-    type: { enum: true, items: () => Publisher2Type },
-    type2: { enum: true, items: () => Publisher2Type2 },
+    name: { type: 'string', length: 255, default: 'asd' },
+    type: { enum: true, items: () => Publisher2Type, default: 'local' },
+    type2: { enum: true, items: () => Publisher2Type2, default: 'LOCAL' },
     enum1: { type: 'number', columnType: 'tinyint', nullable: true },
     enum2: { type: 'number', columnType: 'tinyint', nullable: true },
     enum3: { type: 'number', columnType: 'tinyint', nullable: true },
@@ -1120,22 +1120,24 @@ export class FooParam2 {
 
 }
 ",
-  "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
 
+  [OptionalProps]?: 'name' | 'type' | 'type2';
+
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property({ length: 255, default: 'asd' })
   name!: string;
 
-  @Enum({ items: () => Publisher2Type })
-  type!: Publisher2Type;
+  @Enum({ items: () => Publisher2Type, default: 'local' })
+  type: Publisher2Type = Publisher2Type.LOCAL;
 
-  @Enum({ items: () => Publisher2Type2 })
-  type2!: Publisher2Type2;
+  @Enum({ items: () => Publisher2Type2, default: 'LOCAL' })
+  type2: Publisher2Type2 = Publisher2Type2.LOCAL;
 
   @Property({ columnType: 'tinyint', nullable: true })
   enum1?: number;
@@ -2234,24 +2236,26 @@ export class FooParam2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Enum, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
 @Entity()
 export class Publisher2 {
 
+  [OptionalProps]?: 'name' | 'type' | 'type2';
+
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property({ length: 255, default: 'asd' })
   name!: string;
 
-  @Enum({ items: () => Publisher2Type })
-  type!: Publisher2Type;
+  @Enum({ items: () => Publisher2Type, default: 'local' })
+  type: Publisher2Type = Publisher2Type.LOCAL;
 
-  @Enum({ items: () => Publisher2Type2 })
-  type2!: Publisher2Type2;
+  @Enum({ items: () => Publisher2Type2, default: 'LOCAL' })
+  type2: Publisher2Type2 = Publisher2Type2.LOCAL;
 
   @Property({ columnType: 'tinyint', nullable: true })
   enum1?: number;
@@ -2813,24 +2817,26 @@ export class FooParam2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Enum, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
 @Entity()
 export class Publisher2 {
 
+  [OptionalProps]?: 'name' | 'type' | 'type2';
+
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property({ length: 255, default: 'asd' })
   name!: string;
 
-  @Enum({ items: () => Publisher2Type })
-  type!: Publisher2Type;
+  @Enum({ items: () => Publisher2Type, default: 'local' })
+  type: Publisher2Type = Publisher2Type.LOCAL;
 
-  @Enum({ items: () => Publisher2Type2 })
-  type2!: Publisher2Type2;
+  @Enum({ items: () => Publisher2Type2, default: 'LOCAL' })
+  type2: Publisher2Type2 = Publisher2Type2.LOCAL;
 
   @Property({ columnType: 'tinyint', nullable: true })
   enum1?: number;
@@ -3329,22 +3335,24 @@ export class FooParam2 {
 
 }
 ",
-  "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
 
+  [OptionalProps]?: 'name' | 'type' | 'type2';
+
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property({ length: 255, default: 'asd' })
   name!: string;
 
-  @Enum({ items: () => Publisher2Type })
-  type!: Publisher2Type;
+  @Enum({ items: () => Publisher2Type, default: 'local' })
+  type: Publisher2Type = Publisher2Type.LOCAL;
 
-  @Enum({ items: () => Publisher2Type2 })
-  type2!: Publisher2Type2;
+  @Enum({ items: () => Publisher2Type2, default: 'LOCAL' })
+  type2: Publisher2Type2 = Publisher2Type2.LOCAL;
 
   @Property({ columnType: 'tinyint', nullable: true })
   enum1?: number;
