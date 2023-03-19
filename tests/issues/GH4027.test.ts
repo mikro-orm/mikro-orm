@@ -66,11 +66,11 @@ test('GH 4027', async () => {
 
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ["[query] insert into `child` (`id`, `created_at`) values ('e80ccf60-5cb2-4972-9227-7a4b9138c845', 1676050010440) returning `id`"],
+    ["[query] insert into `child` (`id`, `created_at`) values ('e80ccf60-5cb2-4972-9227-7a4b9138c845', 1676050010440)"],
     ['[query] commit'],
     ['[query] begin'],
-    ["[query] insert into `parent` (`id`, `created_at`) values ('9a061473-4a98-477d-ad03-fd7bcba3ec4f', 1676050010441) returning `id`"],
-    ["[query] insert into `parent_refs` (`parent_id`, `child_id`) values ('9a061473-4a98-477d-ad03-fd7bcba3ec4f', 'e80ccf60-5cb2-4972-9227-7a4b9138c845') returning `parent_id`, `child_id`"],
+    ["[query] insert into `parent` (`id`, `created_at`) values ('9a061473-4a98-477d-ad03-fd7bcba3ec4f', 1676050010441)"],
+    ["[query] insert into `parent_refs` (`parent_id`, `child_id`) values ('9a061473-4a98-477d-ad03-fd7bcba3ec4f', 'e80ccf60-5cb2-4972-9227-7a4b9138c845')"],
     ['[query] commit'],
   ]);
 });

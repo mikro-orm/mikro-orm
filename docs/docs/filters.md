@@ -55,7 +55,7 @@ import type { EntityManager } from '@mikro-orm/mysql';
 
   return {
     author: { name: args.name },
-    publishedAt: { $lte: em.raw('now()') },
+    publishedAt: { $lte: raw('now()') },
   };
 } })
 export class Book {

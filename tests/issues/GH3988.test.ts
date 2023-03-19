@@ -107,8 +107,8 @@ it('should create and persist entity along with child entity', async () => {
   await parentRepository.persistAndFlush(parent);
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ['[query] insert into `parent_entity` (`id`, `id2`) values (1, 2) returning `id`, `id2`'],
-    ['[query] insert into `child_entity` (`id`, `parent_id`, `parent_id2`) values (1, 1, 2) returning `id`'],
+    ['[query] insert into `parent_entity` (`id`, `id2`) values (1, 2)'],
+    ['[query] insert into `child_entity` (`id`, `parent_id`, `parent_id2`) values (1, 1, 2)'],
     ['[query] commit'],
   ]);
 });
