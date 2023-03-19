@@ -3,7 +3,7 @@ import {
   PrimaryKey,
   MikroORM,
   ManyToOne,
-  PrimaryKeyType,
+  PrimaryKeyProp,
   Property,
   wrap,
   Collection,
@@ -71,7 +71,7 @@ export class OrderItem {
   @Property({ default: 0 })
   offeredPrice: number;
 
-  [PrimaryKeyType]?: [number, number];
+  [PrimaryKeyProp]?: ['order', 'product'];
 
   constructor(order: Order, product: Product) {
     this.order = order;
