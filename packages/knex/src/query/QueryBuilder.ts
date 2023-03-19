@@ -23,6 +23,7 @@ import type {
   RequiredEntityData,
 } from '@mikro-orm/core';
 import {
+  raw,
   helper,
   LoadStrategy,
   LockMode,
@@ -190,7 +191,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     } else if (this.hasToManyJoins()) {
       this._fields = this.mainAlias.metadata!.primaryKeys;
     } else {
-      this._fields = [this.raw('*')];
+      this._fields = [raw('*')];
     }
 
     if (distinct) {
@@ -392,13 +393,6 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this.knex.ref(field);
   }
 
-  raw<R = Knex.Raw>(sql: string, bindings: Knex.RawBinding[] | Knex.ValueDict = []): R {
-    const raw = this.knex.raw(sql, bindings);
-    (raw as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
-
-    return raw as unknown as R;
-  }
-
   limit(limit?: number, offset = 0): this {
     this.ensureNotFinalized();
     this._limit = limit;
@@ -521,7 +515,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.helper.getLockSQL(qb, this.lockMode, this.lockTables);
     }
 
-    this.helper.finalize(this.type ?? QueryType.SELECT, qb, this.mainAlias.metadata);
+    this.helper.finalize(this.type ?? QueryType.SELECT, qb, this.mainAlias.metadata, this._data);
 
     return qb;
   }
