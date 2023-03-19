@@ -96,7 +96,7 @@ export enum QueryFlag {
   AUTO_JOIN_ONE_TO_ONE_OWNER = 'AUTO_JOIN_ONE_TO_ONE_OWNER',
 }
 
-export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];
+export const SCALAR_TYPES = ['string', 'number', 'boolean', 'date', 'buffer', 'regexp'];
 
 export enum ReferenceKind {
   SCALAR = 'scalar',

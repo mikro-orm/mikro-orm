@@ -13,7 +13,6 @@ import { simple as walk } from 'acorn-walk';
 import { clone } from './clone';
 import type {
   Dictionary,
-  EntityClass,
   EntityData,
   EntityDictionary,
   EntityKey,
@@ -613,21 +612,6 @@ export class Utils {
     }
 
     return !!data.__entity;
-  }
-
-  /**
-   * Checks whether given object is an entity instance.
-   */
-  static isEntityClass<T = unknown>(data: any, allowReference = false): data is EntityClass<T> {
-    if (!('prototype' in data)) {
-      return false;
-    }
-
-    if (allowReference && !!data.prototype.__reference) {
-      return true;
-    }
-
-    return !!data.prototype.__entity;
   }
 
   /**

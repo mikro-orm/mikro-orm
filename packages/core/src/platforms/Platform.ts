@@ -260,6 +260,7 @@ export abstract class Platform {
       case 'numeric': return Type.getType(DecimalType);
       case 'boolean': return Type.getType(BooleanType);
       case 'blob':
+      case 'uint8array':
       case 'buffer': return Type.getType(BlobType);
       case 'uuid': return Type.getType(UuidType);
       case 'date': return Type.getType(DateType);

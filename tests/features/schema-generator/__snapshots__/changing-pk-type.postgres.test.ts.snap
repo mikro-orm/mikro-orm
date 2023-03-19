@@ -39,7 +39,7 @@ alter table "user" add constraint "user_pkey" primary key ("id", "id2");
 
 exports[`changing PK column type [postgres] (GH 1480) changing PK type: 3. remove old PK (make it single PK again) 1`] = `
 {
-  "down": "alter table "user" add column "id2" int4 not null default null;
+  "down": "alter table "user" add column "id2" int4 not null;
 alter table "user" drop constraint "user_pkey";
 alter table "user" add constraint "user_pkey" primary key ("id", "id2");
 
