@@ -22,7 +22,7 @@ export class BlobType extends Uint8ArrayType {
     return 'Buffer';
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 
