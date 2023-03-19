@@ -2,12 +2,13 @@ import { Reference } from '../entity/Reference';
 import { Utils } from './Utils';
 import type {
   Dictionary,
+  EntityKey,
   EntityMetadata,
   EntityProperty,
-  FilterDef,
-  EntityKey,
   EntityValue,
-  FilterQuery, FilterKey,
+  FilterDef,
+  FilterKey,
+  FilterQuery,
 } from '../typings';
 import { ARRAY_OPERATORS, GroupOperator, ReferenceKind } from '../enums';
 import type { Platform } from '../platforms';
@@ -308,4 +309,60 @@ export function expr<T = unknown>(sql: (keyof T & string) | (keyof T & string)[]
   }
 
   return sql;
+}
+
+export class RawQueryFragment {
+
+  readonly sql: string;
+  readonly params?: unknown[];
+
+  #used = 0;
+
+  constructor(sql: string, params?: unknown[]) {
+    this.sql = sql;
+
+    if (params) {
+      this.params = params;
+    }
+  }
+
+  valueOf() {
+    throw new Error(`Trying to modify raw SQL fragment: '${this.sql}'`);
+  }
+
+  toJSON() {
+    throw new Error(`Trying to serialize raw SQL fragment: '${this.sql}'`);
+  }
+
+  /** @internal */
+  use() {
+    if (this.#used > 0) {
+      throw new Error(`Cannot reassign already used RawQueryFragment: '${this.sql}'`);
+    }
+
+    this.#used++;
+  }
+
+}
+
+Object.defineProperties(RawQueryFragment.prototype, {
+  __raw: { value: true, enumerable: false },
+  // toString: { value() { throw new Error(`Trying to serialize raw SQL fragment: '${this.sql}'`); }, enumerable: false },
+  // toJSON: { value() { throw new Error(`Trying to serialize raw SQL fragment: '${this.sql}'`); }, enumerable: false },
+});
+
+/**
+ * Creates raw SQL query fragment that can be assigned to a property or part of a filter.
+ */
+export function raw<R = any>(sql: string, params?: unknown[] | Dictionary<unknown>): R {
+  if (typeof params === 'object' && !Array.isArray(params)) {
+    const pairs = Object.entries(params);
+    params = [];
+    for (const [key, value] of pairs) {
+      sql = sql.replace(':' + key, '?');
+      params.push(value);
+    }
+  }
+
+  return new RawQueryFragment(sql, params) as R;
 }
