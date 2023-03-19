@@ -35,7 +35,7 @@ export class DateType extends Type<Date, string> {
     return 'string';
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 
