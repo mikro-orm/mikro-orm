@@ -17,7 +17,7 @@ export class TimeType extends Type {
     return 'string';
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 

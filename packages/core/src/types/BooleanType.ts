@@ -12,7 +12,7 @@ export class BooleanType extends Type<number | null | undefined, number | null |
     return 'boolean';
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 

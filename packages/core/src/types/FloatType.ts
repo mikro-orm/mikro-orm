@@ -12,7 +12,7 @@ export class FloatType extends Type<number | null | undefined, number | null | u
     return 'number';
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 
