@@ -12,7 +12,7 @@ export class TinyIntType extends Type<number | null | undefined, number | null |
     return 'number';
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 

@@ -164,9 +164,9 @@ export class MongoConnection extends Connection {
     if (Array.isArray(orderBy) && orderBy.length > 0) {
       const orderByTuples: [string, number][] = [];
       orderBy.forEach(o => {
-        Object.keys(o).forEach(k => {
+        Utils.keys(o).forEach(k => {
           const direction = o[k];
-          orderByTuples.push([k, Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction]);
+          orderByTuples.push([k, Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction as number]);
         });
       });
       if (orderByTuples.length > 0) {
