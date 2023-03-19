@@ -188,8 +188,6 @@ set foreign_key_checks = 0;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
-alter table \`publisher2\` modify \`name\` varchar(255) not null default 'asd', modify \`type\` enum('local', 'global') not null default 'local', modify \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL';
-
 alter table \`book2\` drop \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
@@ -388,8 +386,6 @@ set foreign_key_checks = 0;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
-alter table \`publisher2\` modify \`name\` varchar(255) not null default 'asd', modify \`type\` enum('local', 'global') not null default 'local', modify \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL';
-
 alter table \`book2\` drop \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
@@ -404,8 +400,6 @@ exports[`SchemaGenerator rename column [mysql]: mysql-update-schema-rename-colum
 "alter table \`author2\` drop foreign key \`author2_favourite_author_id_foreign\`;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
-
-alter table \`publisher2\` modify \`name\` varchar(255) not null default 'asd', modify \`type\` enum('local', 'global') not null default 'local', modify \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL';
 
 alter table \`author2\` drop index \`author2_favourite_author_id_index\`;
 alter table \`author2\` drop index \`author2_name_age_index\`;
@@ -461,8 +455,6 @@ exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-create-table
 "create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
-
-alter table \`publisher2\` modify \`name\` varchar(255) not null default 'asd', modify \`type\` enum('local', 'global') not null default 'local', modify \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL';
 
 alter table \`book2\` drop \`foo\`;
 
@@ -551,8 +543,6 @@ exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-
 "create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`enum_test\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
-
-alter table \`publisher2\` modify \`name\` varchar(255) not null default 'asd', modify \`type\` enum('local', 'global') not null default 'local', modify \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL';
 
 alter table \`book2\` drop \`foo\`;
 
