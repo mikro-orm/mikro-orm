@@ -3,7 +3,7 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 class RailsArrayType extends Type<string[], string> {
 
-  convertToDatabaseValue(values: string[]): string {
+  override convertToDatabaseValue(values: string[]): string {
     if (!values) {
       return null!;
     }
@@ -12,7 +12,7 @@ class RailsArrayType extends Type<string[], string> {
     return ['---', ...[...new Set(values)].map(value => `- ${value}`)].join('\n');
   }
 
-  convertToJSValue(value: string): string[] {
+  override convertToJSValue(value: string): string[] {
     if (!value) {
       return [];
     }
@@ -20,7 +20,7 @@ class RailsArrayType extends Type<string[], string> {
     return [...value.matchAll(/\n- (.*)/g)].map(matches => matches[1]);
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'text';
   }
 
