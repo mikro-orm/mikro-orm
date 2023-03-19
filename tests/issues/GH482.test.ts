@@ -99,7 +99,7 @@ describe('GH issue 482', () => {
     expect(j.optional).toBeNull();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "job" ("id", "optional") values ('2', '1') returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "job" ("id", "optional") values ('2', '1')`);
     expect(mock.mock.calls[2][0]).toMatch('commit');
     expect(mock.mock.calls[3][0]).toMatch('begin');
     expect(mock.mock.calls[4][0]).toMatch(`update "job" set "optional" = NULL where "id" = '2'`);
