@@ -222,7 +222,7 @@ export class ArrayCollection<T extends object, O extends object> {
 
       /* istanbul ignore if */
       if (!meta) {
-        throw MetadataError.fromUnknownEntity((this.owner as object).constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
+        throw MetadataError.fromUnknownEntity(this.owner.constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
       }
 
       const field = Utils.keys(meta.properties).find(k => this.owner[k] === this);
@@ -307,7 +307,7 @@ export class ArrayCollection<T extends object, O extends object> {
     const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized'];
     hidden.forEach(k => delete object[k]);
     const ret = inspect(object, { depth });
-    const name = `${this.constructor.name}<${this.property.type}>`;
+    const name = `${this.constructor.name}<${this.property?.type ?? 'unknown'}>`;
 
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
