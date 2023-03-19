@@ -8,7 +8,7 @@ export class MediumIntType extends IntegerType {
     return platform.getMediumIntTypeDeclarationSQL(prop);
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 
