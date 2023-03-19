@@ -53,6 +53,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       requireEntitiesArray: false,
       alwaysAnalyseProperties: true,
       disableDynamicFileAccess: false,
+      inferDefaultValues: true,
     },
     strict: false,
     validate: false,
@@ -490,6 +491,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     requireEntitiesArray?: boolean;
     alwaysAnalyseProperties?: boolean;
     disableDynamicFileAccess?: boolean;
+    inferDefaultValues?: boolean;
     getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
   };
   driver?: { new(config: Configuration): D };

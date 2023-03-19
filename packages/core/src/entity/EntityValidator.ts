@@ -18,9 +18,9 @@ export class EntityValidator {
         this.validateCollection(entity, prop);
       }
 
-      const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
+      const SCALAR_TYPES = ['string', 'number', 'boolean', 'date'];
 
-      if (prop.kind !== ReferenceKind.SCALAR || !SCALAR_TYPES.includes(prop.type)) {
+      if (prop.kind !== ReferenceKind.SCALAR || !SCALAR_TYPES.includes(prop.type.toLowerCase())) {
         return;
       }
 
