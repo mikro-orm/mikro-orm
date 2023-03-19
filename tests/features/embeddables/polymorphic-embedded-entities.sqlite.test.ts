@@ -23,7 +23,7 @@ abstract class Animal {
 @Embeddable({ discriminatorValue: AnimalType.CAT })
 class Cat extends Animal {
 
-  @Property()
+  @Property({ default: null })
   canMeow? = true;
 
   constructor(name: string) {
@@ -37,7 +37,7 @@ class Cat extends Animal {
 @Embeddable({ discriminatorValue: AnimalType.DOG })
 class Dog extends Animal {
 
-  @Property()
+  @Property({ default: null })
   canBark? = true;
 
   constructor(name: string) {
