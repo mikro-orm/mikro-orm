@@ -40,6 +40,6 @@ test('GH issue 4020', async () => {
 
   expect(e.created_at).toBeInstanceOf(Date);
   expect(mock.mock.calls).toEqual([
-    ["[query] insert into `guild_entity` (`id`, `name`) values ('1', 'name') on conflict (`id`) do update set `name` = excluded.`name` returning `id`, `created_at`"],
+    ["[query] insert into `guild_entity` (`id`, `name`) values ('1', 'name') on conflict (`id`) do update set `name` = excluded.`name` returning `created_at`"],
   ]);
 });

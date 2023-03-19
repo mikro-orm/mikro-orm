@@ -1,9 +1,29 @@
 import { v4 } from 'uuid';
 import { inspect } from 'util';
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
-import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, wrap,
-  UniqueConstraintViolationException, TableNotFoundException, TableExistsException, SyntaxErrorException, NonUniqueFieldNameException,
-  InvalidFieldNameException, expr, IsolationLevel, NullHighlighter, PopulateHint } from '@mikro-orm/core';
+import {
+  Collection,
+  Configuration,
+  EntityManager,
+  LockMode,
+  MikroORM,
+  QueryFlag,
+  QueryOrder,
+  Reference,
+  ValidationError,
+  wrap,
+  UniqueConstraintViolationException,
+  TableNotFoundException,
+  TableExistsException,
+  SyntaxErrorException,
+  NonUniqueFieldNameException,
+  InvalidFieldNameException,
+  expr,
+  IsolationLevel,
+  NullHighlighter,
+  PopulateHint,
+  raw,
+} from '@mikro-orm/core';
 import { MySqlDriver, MySqlConnection } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql, mockLogger } from './bootstrap';
@@ -1793,6 +1813,59 @@ describe('EntityManagerMySql', () => {
     await expect(orm.em.count(Book2, [book1, book2, book3])).resolves.toBe(3);
     const a = await orm.em.find(Book2, [book1, book2, book3]) as Book2[];
     await expect(orm.em.getRepository(Book2).count([book1, book2, book3])).resolves.toBe(3);
+  });
+
+  test('insert with raw sql fragment', async () => {
+    const author = orm.em.create(Author2, { id: 1, name: 'name', email: 'email', age: raw('100 + 20 + 3') });
+    const mock = mockLogger(orm, ['query', 'query-params']);
+    expect(() => author.age!++).toThrow();
+    expect(() => JSON.stringify(author)).toThrow();
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch(/insert into `author2` \(`id`, `created_at`, `updated_at`, `name`, `email`, `age`, `terms_accepted`\) values \(1, '.*', '.*', 'name', 'email', 100 \+ 20 \+ 3, false\)/);
+    expect(mock.mock.calls[2][0]).toMatch('select `a0`.`id`, `a0`.`age` from `author2` as `a0` where `a0`.`id` in (1)');
+    expect(mock.mock.calls[3][0]).toMatch('commit');
+
+    expect(author.age).toBe(123);
+  });
+
+  test('update with raw sql fragment', async () => {
+    await orm.em.insert(Author2, { id: 1, name: 'name', email: 'email', age: 123 });
+    const mock = mockLogger(orm, ['query', 'query-params']);
+
+    const ref = orm.em.getReference(Author2, 1);
+    ref.age = raw(`age * 2`);
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch(/update `author2` set `age` = age \* 2, `updated_at` = '.*' where `id` = 1/);
+    expect(mock.mock.calls[2][0]).toMatch('select `a0`.`id`, `a0`.`age` from `author2` as `a0` where `a0`.`id` in (1)');
+    expect(mock.mock.calls[3][0]).toMatch('commit');
+
+    expect(ref.age).toBe(246);
+  });
+
+  test('update with raw sql fragment (batch)', async () => {
+    await orm.em.insertMany(Author2, [
+      { id: 1, name: 'name 1', email: 'email 1', age: 123 },
+      { id: 2, name: 'name 2', email: 'email 2', age: 222 },
+    ]);
+    const mock = mockLogger(orm, ['query', 'query-params']);
+
+    const ref1 = orm.em.getReference(Author2, 1);
+    const ref2 = orm.em.getReference(Author2, 2);
+    ref1.age = raw(`age * 2`);
+    ref2.age = raw(`age / 2`);
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch(/update `author2` set `age` = case when \(`id` = 1\) then age \* 2 when \(`id` = 2\) then age \/ 2 else `age` end, `updated_at` = case when \(`id` = 1\) then '.*' when \(`id` = 2\) then '.*' else `updated_at` end where `id` in \(1, 2\)/);
+    expect(mock.mock.calls[2][0]).toMatch('select `a0`.`id`, `a0`.`age` from `author2` as `a0` where `a0`.`id` in (1, 2)');
+    expect(mock.mock.calls[3][0]).toMatch('commit');
+
+    expect(ref1.age).toBe(246);
+    expect(ref2.age).toBe(111);
   });
 
   test('find by joined property', async () => {
