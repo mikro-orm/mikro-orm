@@ -1,9 +1,30 @@
 import { v4 } from 'uuid';
 import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, FilterQuery } from '@mikro-orm/core';
 import {
-  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, ChangeSetType, wrap, expr,
-  UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel, PopulateHint, ref,
+  Collection,
+  Configuration,
+  EntityManager,
+  LockMode,
+  MikroORM,
+  QueryFlag,
+  QueryOrder,
+  Reference,
+  ValidationError,
+  ChangeSetType,
+  wrap,
+  expr,
+  UniqueConstraintViolationException,
+  TableNotFoundException,
+  NotNullConstraintViolationException,
+  TableExistsException,
+  SyntaxErrorException,
+  NonUniqueFieldNameException,
+  InvalidFieldNameException,
+  LoadStrategy,
+  IsolationLevel,
+  PopulateHint,
+  ref,
+  raw,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
@@ -238,7 +259,7 @@ describe('EntityManagerPostgre', () => {
     } catch { }
 
     expect(mock.mock.calls[0][0]).toMatch('begin isolation level read uncommitted');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "age"');
     expect(mock.mock.calls[2][0]).toMatch('rollback');
   });
 
@@ -1260,7 +1281,7 @@ describe('EntityManagerPostgre', () => {
 
     expect(mock.mock.calls[0][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" = $1 order by "b0"."title" asc`);
     expect(mock.mock.calls[1][0]).toMatch(`begin`);
-    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5)`);
     expect(mock.mock.calls[3][0]).toMatch(`commit`);
   });
 
@@ -1525,10 +1546,68 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
 
     const books2 = await orm.em.find(Book2, {
-      [expr('upper(title)')]: orm.em.getKnex().raw('upper(?)', ['b2']),
+      [expr('upper(title)')]: raw('upper(?)', ['b2']),
     }, { populate: ['perex'] });
     expect(books2).toHaveLength(1);
     expect(mock.mock.calls[1][0]).toMatch(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and upper(title) = upper('b2')`);
+  });
+
+  test('insert with raw sql fragment', async () => {
+    const author = orm.em.create(Author2, { id: 1, name: 'name', email: 'email', age: raw('100 + 20 + 3') });
+    const mock = mockLogger(orm, ['query', 'query-params']);
+    expect(() => author.age!++).toThrow();
+    expect(() => JSON.stringify(author)).toThrow();
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch(/insert into "author2" \("id", "created_at", "updated_at", "name", "email", "age", "terms_accepted"\) values \(1, '.*', '.*', 'name', 'email', 100 \+ 20 \+ 3, false\) returning "age"/);
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    expect(author.age).toBe(123);
+  });
+
+  test('update with raw sql fragment', async () => {
+    await orm.em.insertMany(Author2, [
+      { id: 1, name: 'name', email: 'email1', age: 123 },
+      { id: 2, name: 'name', email: 'email2', age: 1 },
+    ]);
+    const ref1 = await orm.em.findOneOrFail(Author2, 1);
+    const ref2 = await orm.em.findOneOrFail(Author2, 2);
+
+    const mock = mockLogger(orm, ['query', 'query-params']);
+    ref1.age = raw(`age * 2`);
+    expect(() => ref1.age!++).toThrow();
+    expect(() => ref2.age = ref1.age).toThrow();
+    expect(() => JSON.stringify(ref1)).toThrow();
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "age" = age \* 2, "updated_at" = '.*' where "id" = 1 returning "age"/);
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    expect(ref1.age).toBe(246);
+  });
+
+  test('update with raw sql fragment (batch)', async () => {
+    await orm.em.insertMany(Author2, [
+      { id: 1, name: 'name 1', email: 'email 1', age: 123 },
+      { id: 2, name: 'name 2', email: 'email 2', age: 222 },
+    ]);
+    const mock = mockLogger(orm, ['query', 'query-params']);
+
+    const ref1 = orm.em.getReference(Author2, 1);
+    const ref2 = orm.em.getReference(Author2, 2);
+    ref1.age = raw(`age * 2`);
+    ref2.age = raw(`age / 2`);
+
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "age" = case when \("id" = 1\) then age \* 2 when \("id" = 2\) then age \/ 2 else "age" end, "updated_at" = case when \("id" = 1\) then '.*' when \("id" = 2\) then '.*' else "updated_at" end where "id" in \(1, 2\) returning "age"/);
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    expect(ref1.age).toBe(246);
+    expect(ref2.age).toBe(111);
   });
 
   test('find by joined property', async () => {
@@ -2023,8 +2102,8 @@ describe('EntityManagerPostgre', () => {
     expect(b.publisher.unwrap()).toBe(ref2);
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id", "publisher_id") values ($1, $2, $3, $4, $5, $6) returning "uuid_pk", "created_at", "title"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "age"');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id", "publisher_id") values ($1, $2, $3, $4, $5, $6)');
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch('begin');
     expect(mock.mock.calls[5][0]).toMatch('update "book2" set "publisher_id" = $1 where "uuid_pk" = $2');
@@ -2062,8 +2141,8 @@ describe('EntityManagerPostgre', () => {
 
     // flushing things at the same tick will even batch the queries
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10), ($11, $12, $13, $14, $15) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10), ($11, $12, $13, $14, $15) returning "uuid_pk", "created_at", "title"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10), ($11, $12, $13, $14, $15) returning "id", "age"');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10), ($11, $12, $13, $14, $15)');
     expect(mock.mock.calls[3][0]).toMatch('commit');
 
     expect(ret.map(b => b.author.id)).toEqual([1, 2, 3]);
@@ -2100,16 +2179,16 @@ describe('EntityManagerPostgre', () => {
 
     // flushing things at different time will create multiple transactions
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
-    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "age"`);
+    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5)`);
     expect(mock.mock.calls[3][0]).toMatch(`commit`);
     expect(mock.mock.calls[4][0]).toMatch(`begin`);
-    expect(mock.mock.calls[5][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
-    expect(mock.mock.calls[6][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[5][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "age"`);
+    expect(mock.mock.calls[6][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5)`);
     expect(mock.mock.calls[7][0]).toMatch(`commit`);
     expect(mock.mock.calls[8][0]).toMatch(`begin`);
-    expect(mock.mock.calls[9][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
-    expect(mock.mock.calls[10][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[9][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "age"`);
+    expect(mock.mock.calls[10][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5)`);
     expect(mock.mock.calls[11][0]).toMatch(`commit`);
 
     mock.mockRestore();
