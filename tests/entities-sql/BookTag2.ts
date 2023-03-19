@@ -1,14 +1,4 @@
-import {
-  BigIntType,
-  Collection,
-  Entity,
-  ManyToMany,
-  PrimaryKey,
-  Property,
-  ReferenceKind,
-  Utils,
-  wrap,
-} from '@mikro-orm/core';
+import { BigIntType, Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -21,20 +11,12 @@ export class BookTag2 {
   name: string;
 
   @ManyToMany(() => Book2, book => book.tags)
-  books!: Collection<Book2>;
+  books = new Collection<Book2>(this);
 
   @ManyToMany(() => Book2, book => book.tagsUnordered)
-  booksUnordered!: Collection<Book2>;
+  booksUnordered = new Collection<Book2>(this);
 
   constructor(name: string) {
-    const props = wrap(this, true).__meta.properties;
-
-    Utils.keys(props).forEach(prop => {
-      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(props[prop].kind)) {
-        (this as any)[prop] = new Collection(this);
-      }
-    });
-
     this.name = name;
   }
 

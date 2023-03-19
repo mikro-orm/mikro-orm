@@ -23,16 +23,16 @@ export abstract class BaseEntity<T extends object, Optional extends keyof T = ne
   id!: string;
 
   @Property()
-  createdAt?: Date = new Date();
+  createdAt? = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt: Date = new Date();
+  updatedAt = new Date();
 
   @Property()
   foo?: string;
 
   @Property({ persist: false })
-  hookTest: boolean = false;
+  hookTest = false;
 
   @BeforeCreate()
   baseBeforeCreate() {

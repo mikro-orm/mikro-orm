@@ -162,7 +162,7 @@ export abstract class SchemaHelper {
     if (changedProperties) {
       Utils.runIfNotEmpty(() => col.defaultTo(column.default == null ? null : knex.raw(column.default)), guard('default'));
     } else {
-      Utils.runIfNotEmpty(() => col.defaultTo(column.default == null ? null : knex.raw(column.default)), column.default !== undefined);
+      Utils.runIfNotEmpty(() => col.defaultTo(knex.raw(column.default!)), column.default != null && column.default !== 'null');
     }
 
     return col;
