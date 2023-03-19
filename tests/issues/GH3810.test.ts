@@ -45,7 +45,7 @@ test('3810', async () => {
 
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ["[query] insert into \"user\" (\"options\") values ('{\"foo,\"}') returning \"id\", \"options\""],
+    ["[query] insert into \"user\" (\"options\") values ('{\"foo,\"}') returning \"id\""],
     ['[query] commit'],
     ['[query] begin'],
     ["[query] update \"user\" set \"options\" = '{\"foo,\",\"asd,\",bar,\",baz\"}' where \"id\" = 1"],
