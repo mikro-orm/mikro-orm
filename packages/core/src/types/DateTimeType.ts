@@ -12,7 +12,7 @@ export class DateTimeType extends Type<Date, string> {
     return 'Date';
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 
