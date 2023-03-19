@@ -89,9 +89,9 @@ test(`GH issue 3177`, async () => {
 
   expect(mock.mock.calls[0][0]).toMatch(`begin`);
   expect(mock.mock.calls[1][0]).toMatch(`insert into "tenant_01"."user_access_profile" ("id") values (default) returning "id"`);
-  expect(mock.mock.calls[2][0]).toMatch(`insert into "tenant_01"."user" ("id", "access_profile_id") values (1, 1) returning "id"`);
+  expect(mock.mock.calls[2][0]).toMatch(`insert into "tenant_01"."user" ("id", "access_profile_id") values (1, 1)`);
   expect(mock.mock.calls[3][0]).toMatch(`insert into "public"."permission" ("id") values (default), (default), (default) returning "id"`);
-  expect(mock.mock.calls[4][0]).toMatch(`insert into "tenant_01"."access_profile_permission" ("access_profile_id", "permission_id") values (1, 1), (1, 2), (1, 3) returning "access_profile_id", "permission_id"`);
+  expect(mock.mock.calls[4][0]).toMatch(`insert into "tenant_01"."access_profile_permission" ("access_profile_id", "permission_id") values (1, 1), (1, 2), (1, 3)`);
   expect(mock.mock.calls[5][0]).toMatch(`commit`);
   expect(mock.mock.calls[6][0]).toMatch(`select "u0".* from "tenant_01"."user" as "u0" where "u0"."id" = 1 limit 1`);
   expect(mock.mock.calls[7][0]).toMatch(`select "p0".* from "public"."permission" as "p0" where "p0"."id" in (1, 2, 3)`);
