@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, MikroORM, ManyToOne, PrimaryKeyType, Property, wrap, OneToMany, Collection, ManyToMany } from '@mikro-orm/core';
+import { Entity, PrimaryKey, MikroORM, ManyToOne, Property, wrap, OneToMany, Collection, ManyToMany } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -63,8 +63,6 @@ export class OrderItem {
 
   @Property({ default: 0 })
   offeredPrice: number;
-
-  [PrimaryKeyType]?: [number, number];
 
   constructor(order: Order, product: Product) {
     this.order = order;

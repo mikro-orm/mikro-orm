@@ -26,7 +26,7 @@ export class BlobType extends Type<Buffer | null> {
     return 'Buffer';
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 
