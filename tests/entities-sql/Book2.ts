@@ -36,7 +36,7 @@ export class Book2 {
   uuid = v4();
 
   @Property({ defaultRaw: 'current_timestamp(3)', length: 3 })
-  createdAt: Date = new Date();
+  createdAt = new Date();
 
   @Index({ type: 'fulltext' })
   @Property({ nullable: true, default: '' })
