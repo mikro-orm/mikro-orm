@@ -64,4 +64,4 @@ jobs:
         path: ./docs/build
 
     - name: Deploy artifact to GitHub Pages
-      uses: actions/deploy-pages@v1
+      uses: actions/deploy-pages@v2
