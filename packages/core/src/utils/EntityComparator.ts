@@ -40,6 +40,11 @@ export class EntityComparator {
     return Utils.callCompiledFunction(comparator, a, b);
   }
 
+  matching<T>(entityName: string, a: EntityData<T>, b: EntityData<T>): boolean {
+    const diff = this.diffEntities(entityName, a, b);
+    return Utils.getObjectKeysSize(diff) === 0;
+  }
+
   /**
    * Removes ORM specific code from entities and prepares it for serializing. Used before change set computation.
    * References will be mapped to primary keys, collections to arrays of primary keys.

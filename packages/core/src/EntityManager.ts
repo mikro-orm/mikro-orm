@@ -781,17 +781,31 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     // skip if we got the PKs via returning statement (`rows`)
     if (!ret.rows?.length && loadPK.size > 0) {
       const unique = meta.props.filter(p => p.unique).map(p => p.name);
-      const add = propIndex! >= 0 ? [unique[propIndex!]] : [];
+      const add = new Set(propIndex! >= 0 ? [unique[propIndex!]] : []);
+
+      for (const cond of loadPK.values()) {
+        Object.keys(cond).forEach(key => add.add(key));
+      }
+
       const pks = await this.driver.find(meta.className, { $or: [...loadPK.values()] as Dictionary[] }, {
         fields: meta.primaryKeys.concat(...add),
         ctx: em.transactionContext,
         convertCustomTypes: true,
       });
 
-      let i = 0;
-      for (const entity of loadPK.keys()) {
-        em.entityFactory.mergeData(meta, entity, pks[i]);
-        i++;
+      for (const [entity, cond] of loadPK.entries()) {
+        const pk = pks.find(pk => {
+          const tmp = { ...pk };
+          meta.primaryKeys.forEach(pk => delete tmp[pk]);
+          return this.comparator.matching(entityName, cond, tmp);
+        });
+
+        /* istanbul ignore next */
+        if (!pk) {
+          throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
+        }
+
+        em.entityFactory.mergeData(meta, entity, pk);
       }
     }
 
