@@ -83,7 +83,7 @@ export class Migrator implements IMigrator {
       migrations,
     });
 
-    const logger = this.config.get('logger');
+    const logger = (message: string) => this.config.getLogger().log('info', message);
     this.umzug.on('migrating', event => logger(`Processing '${event.name}'`));
     this.umzug.on('migrated', event => logger(`Applied '${event.name}'`));
     this.umzug.on('reverting', event => logger(`Processing '${event.name}'`));
