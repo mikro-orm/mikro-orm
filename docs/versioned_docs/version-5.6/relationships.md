@@ -170,7 +170,7 @@ If you use ESM in your TypeScript project with `reflect-metadata`, you might fal
 To get around them, use the `Rel` mapped type. It is an identity type, which disables the problematic inference from `reflect-metadata`, that causes ESM projects to fail.
 
 ```ts
-import { Rel } from '@mikro-orm/core';
+import type { Rel } from '@mikro-orm/core';
 
 @Entity()
 export class Book {
