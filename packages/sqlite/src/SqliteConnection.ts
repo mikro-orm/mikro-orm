@@ -9,6 +9,7 @@ export class SqliteConnection extends AbstractSqlConnection {
     await ensureDir(dirname(this.config.get('dbName')!));
     this.client = this.createKnexClient(this.getPatchedDialect());
     await this.client.raw('pragma foreign_keys = on');
+    this.connected = true;
   }
 
   getDefaultClientUrl(): string {

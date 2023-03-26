@@ -2,11 +2,26 @@ import 'reflect-metadata';
 import type { EntityMetadata, EntityProperty } from '../typings';
 import { MetadataProvider } from './MetadataProvider';
 import { ReferenceKind } from '../enums';
+import { Utils } from '../utils/Utils';
 
 export class ReflectMetadataProvider extends MetadataProvider {
 
-  async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void> {
-    await this.initProperties(meta, prop => this.initPropertyType(meta, prop));
+  loadEntityMetadata(meta: EntityMetadata, name: string): void {
+    this.initProperties(meta);
+  }
+
+  protected initProperties(meta: EntityMetadata): void {
+    // load types and column names
+    for (const prop of Object.values(meta.properties)) {
+      if (Utils.isString(prop.entity)) {
+        prop.type = prop.entity;
+      } else if (prop.entity) {
+        const tmp = prop.entity();
+        prop.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
+      } else if (!prop.type) {
+        this.initPropertyType(meta, prop);
+      }
+    }
   }
 
   protected initPropertyType(meta: EntityMetadata, prop: EntityProperty) {
