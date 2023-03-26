@@ -14,6 +14,7 @@ export abstract class Connection {
   protected readonly options: ConnectionOptions;
   protected abstract client: unknown;
   protected readonly logger = this.config.getLogger();
+  protected connected = false;
 
   constructor(protected readonly config: Configuration,
               options?: ConnectionOptions,
@@ -32,7 +33,7 @@ export abstract class Connection {
   /**
    * Establishes connection to database
    */
-  abstract connect(): Promise<void>;
+  abstract connect(): void | Promise<void>;
 
   /**
    * Are we connected to the database
@@ -46,6 +47,15 @@ export abstract class Connection {
     Object.keys(this.options)
       .filter(k => k !== 'name')
       .forEach(k => delete this.options[k as keyof ConnectionOptions]);
+  }
+
+  /**
+   * Ensure the connection exists, this is used to support lazy connect when using `MikroORM.initSync()`
+   */
+  async ensureConnection(): Promise<void> {
+    if (!this.connected) {
+      await this.connect();
+    }
   }
 
   /**

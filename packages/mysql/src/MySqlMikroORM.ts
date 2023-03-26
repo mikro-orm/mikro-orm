@@ -15,6 +15,13 @@ export class MySqlMikroORM extends MikroORM<MySqlDriver> {
     return super.init(options);
   }
 
+  /**
+   * @inheritDoc
+   */
+  static override initSync<D extends IDatabaseDriver = MySqlDriver>(options: Options<D>): MikroORM<D> {
+    return super.initSync(options);
+  }
+
 }
 
 export type MySqlOptions = Options<MySqlDriver>;
