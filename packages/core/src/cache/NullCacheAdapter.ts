@@ -1,32 +1,32 @@
-import type { CacheAdapter } from './CacheAdapter';
+import type { SyncCacheAdapter } from './CacheAdapter';
 
-export class NullCacheAdapter implements CacheAdapter {
+export class NullCacheAdapter implements SyncCacheAdapter {
 
   /**
    * @inheritDoc
    */
-  async get(name: string): Promise<any> {
+  get(name: string): any {
     return null;
   }
 
   /**
    * @inheritDoc
    */
-  async set(name: string, data: any, origin: string): Promise<void> {
+  set(name: string, data: any, origin: string): void {
     // ignore
   }
 
   /**
    * @inheritDoc
    */
-  async remove(name: string): Promise<void> {
+  remove(name: string): void {
     // ignore
   }
 
   /**
    * @inheritDoc
    */
-  async clear(): Promise<void> {
+  clear(): void {
     // ignore
   }
 
