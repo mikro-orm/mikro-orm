@@ -230,3 +230,7 @@ ref.age = raw(`age * 2`);
 await em.flush();
 console.log(ref.age); // real value is available after flush
 ```
+
+## Metadata CacheAdapter requires sync API
+
+To allow working with cache inside `MikroORM.initSync`, the metadata cache now enforces sync API. You should usually depend on the file-based cache for the metadata, which now uses sync methods to work with the file system.
