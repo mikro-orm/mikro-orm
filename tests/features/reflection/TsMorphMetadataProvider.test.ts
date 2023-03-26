@@ -90,7 +90,7 @@ describe('TsMorphMetadataProvider', () => {
 
     // customType should be re-hydrated when loading metadata from cache
     const provider = new TsMorphMetadataProvider(orm.config);
-    const cacheAdapter = orm.config.getCacheAdapter();
+    const cacheAdapter = orm.config.getMetadataCacheAdapter();
     const cache = await cacheAdapter.get('Publisher.ts');
     const meta = { properties: {
       types: { name: 'types', customType: new EnumArrayType('Publisher.types') },
@@ -118,7 +118,7 @@ describe('TsMorphMetadataProvider', () => {
   test('should throw when source file not found', async () => {
     const provider = new TsMorphMetadataProvider({} as any);
     const error = `Source file './path/to/entity.ts' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`;
-    await expect(provider.getExistingSourceFile('./path/to/entity.js')).rejects.toThrowError(error);
+    expect(() => provider.getExistingSourceFile('./path/to/entity.js')).toThrowError(error);
   });
 
 });

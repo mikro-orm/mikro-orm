@@ -10,7 +10,7 @@ export abstract class MetadataProvider {
 
   constructor(protected readonly config: IConfiguration) { }
 
-  abstract loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void>;
+  abstract loadEntityMetadata(meta: EntityMetadata, name: string): void;
 
   /**
    * Re-hydrates missing attributes like `customType` (functions/instances are lost when caching to JSON)
@@ -33,20 +33,6 @@ export abstract class MetadataProvider {
 
   useCache(): boolean {
     return this.config.get('metadataCache').enabled ?? false;
-  }
-
-  protected async initProperties(meta: EntityMetadata, fallback: (prop: EntityProperty) => void | Promise<void>): Promise<void> {
-    // load types and column names
-    for (const prop of Object.values(meta.properties)) {
-      if (Utils.isString(prop.entity)) {
-        prop.type = prop.entity;
-      } else if (prop.entity) {
-        const tmp = prop.entity();
-        prop.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
-      } else if (!prop.type) {
-        await fallback(prop);
-      }
-    }
   }
 
 }
