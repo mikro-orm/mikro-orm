@@ -15,6 +15,13 @@ export class MariaDbMikroORM extends MikroORM<MariaDbDriver> {
     return super.init(options);
   }
 
+  /**
+   * @inheritDoc
+   */
+  static override initSync<D extends IDatabaseDriver = MariaDbDriver>(options: Options<D>): MikroORM<D> {
+    return super.initSync(options);
+  }
+
 }
 
 export type MariaDbOptions = Options<MariaDbDriver>;
