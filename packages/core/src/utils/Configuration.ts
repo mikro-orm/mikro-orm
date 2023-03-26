@@ -546,6 +546,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   };
   metadataCache: {
     enabled?: boolean;
+    combined?: boolean | string;
     pretty?: boolean;
     adapter?: { new(...params: any[]): SyncCacheAdapter };
     options?: Dictionary;
