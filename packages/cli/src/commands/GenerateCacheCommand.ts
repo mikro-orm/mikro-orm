@@ -1,8 +1,8 @@
 import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
-import { MetadataDiscovery, MetadataStorage, colors } from '@mikro-orm/core';
+import { MetadataDiscovery, MetadataStorage, colors, FileCacheAdapter } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
 
-type CacheArgs = { ts?: boolean };
+type CacheArgs = { ts?: boolean; combined?: string };
 export class GenerateCacheCommand<T> implements CommandModule<T, CacheArgs> {
 
   command = 'cache:generate';
@@ -13,6 +13,10 @@ export class GenerateCacheCommand<T> implements CommandModule<T, CacheArgs> {
       type: 'boolean',
       desc: `Use ts-node to generate '.ts' cache`,
     });
+    args.option('combined', {
+      alias: 'c',
+      desc: `Generate production cache into a single JSON file that can be used with the GeneratedCacheAdapter.`,
+    });
     return args as Argv<CacheArgs>;
   };
 
@@ -20,18 +24,19 @@ export class GenerateCacheCommand<T> implements CommandModule<T, CacheArgs> {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<CacheArgs>) {
-    const config = await CLIHelper.getConfiguration();
+    const options = args.combined ? { combined: './metadata.json' } : {};
+    const config = await CLIHelper.getConfiguration(true, {
+      metadataCache: { enabled: true, adapter: FileCacheAdapter, options },
+    });
 
-    if (!config.get('metadataCache').enabled) {
-      return CLIHelper.dump(colors.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'));
-    }
-
+    config.getMetadataCacheAdapter().clear();
     config.set('logger', CLIHelper.dump.bind(null));
     config.set('debug', true);
     const discovery = new MetadataDiscovery(MetadataStorage.init(), config.getDriver().getPlatform(), config);
     await discovery.discover(args.ts ?? false);
 
-    CLIHelper.dump(colors.green(`${args.ts ? 'TS' : 'JS'} metadata cache was successfully generated`));
+    const combined = args.combined && config.get('metadataCache').combined;
+    CLIHelper.dump(colors.green(`${combined ? 'Combined ' : ''}${args.ts ? 'TS' : 'JS'} metadata cache was successfully generated${combined ? ' to ' + combined : ''}`));
   }
 
 }
