@@ -91,7 +91,7 @@ describe('TsMorphMetadataProvider', () => {
     // customType should be re-hydrated when loading metadata from cache
     const provider = new TsMorphMetadataProvider(orm.config);
     const cacheAdapter = orm.config.getMetadataCacheAdapter();
-    const cache = await cacheAdapter.get('Publisher.ts');
+    const cache = cacheAdapter.get('Publisher.ts');
     const meta = { properties: {
       types: { name: 'types', customType: new EnumArrayType('Publisher.types') },
       types2: { name: 'types2', customType: new EnumArrayType('Publisher.types2') },
@@ -111,7 +111,7 @@ describe('TsMorphMetadataProvider', () => {
     const provider = new TsMorphMetadataProvider({} as any);
     const initProperties = jest.spyOn(TsMorphMetadataProvider.prototype, 'initProperties' as any);
     expect(initProperties).toBeCalledTimes(0);
-    await provider.loadEntityMetadata({} as any, 'name');
+    provider.loadEntityMetadata({} as any, 'name');
     expect(initProperties).toBeCalledTimes(0);
   });
 
