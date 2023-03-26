@@ -1,6 +1,6 @@
 import { pathExistsSync } from 'fs-extra';
 import type { NamingStrategy } from '../naming-strategy';
-import type { CacheAdapter } from '../cache';
+import type { CacheAdapter, SyncCacheAdapter } from '../cache';
 import { FileCacheAdapter, NullCacheAdapter } from '../cache';
 import type { EntityRepository } from '../entity/EntityRepository';
 import type {
@@ -265,9 +265,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Gets instance of CacheAdapter. (cached)
+   * Gets instance of metadata CacheAdapter. (cached)
    */
-  getCacheAdapter(): CacheAdapter {
+  getMetadataCacheAdapter(): SyncCacheAdapter {
     return this.getCachedService(this.options.metadataCache.adapter!, this.options.metadataCache.options, this.options.baseDir, this.options.metadataCache.pretty);
   }
 
@@ -550,7 +550,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   metadataCache: {
     enabled?: boolean;
     pretty?: boolean;
-    adapter?: { new(...params: any[]): CacheAdapter };
+    adapter?: { new(...params: any[]): SyncCacheAdapter };
     options?: Dictionary;
   };
   resultCache: {
