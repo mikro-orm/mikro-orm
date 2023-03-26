@@ -8,7 +8,7 @@ import type { EntityProperty } from '../typings';
 export class BigIntType extends Type<string | bigint | null | undefined, string | null | undefined> {
 
   convertToDatabaseValue(value: string | bigint | null | undefined): string | null | undefined {
-    if (!value) {
+    if (value == null) {
       return value as null | undefined;
     }
 
@@ -16,7 +16,7 @@ export class BigIntType extends Type<string | bigint | null | undefined, string 
   }
 
   convertToJSValue(value: string | bigint | null | undefined): string | null | undefined {
-    if (!value) {
+    if (value == null) {
       return value as null | undefined;
     }
 
