@@ -6,11 +6,11 @@ describe('NullCacheAdapter', () => {
   test('should ignore old cache', async () => {
     const origin = TEMP_DIR + '/.origin';
     const cache = new NullCacheAdapter();
-    await cache.set('cache-test-handle', 123, origin);
-    await expect(cache.get('cache-test-handle')).resolves.toBeNull();
-    await cache.remove('cache-test-handle');
-    await expect(cache.get('cache-test-handle')).resolves.toBeNull();
-    await cache.clear();
+    cache.set('cache-test-handle', 123, origin);
+    expect(cache.get('cache-test-handle')).toBeNull();
+    cache.remove('cache-test-handle');
+    expect(cache.get('cache-test-handle')).toBeNull();
+    cache.clear();
   });
 
 });

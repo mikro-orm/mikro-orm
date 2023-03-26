@@ -15,6 +15,13 @@ export class MongoMikroORM extends MikroORM<MongoDriver> {
     return super.init(options);
   }
 
+  /**
+   * @inheritDoc
+   */
+  static override initSync<D extends IDatabaseDriver = MongoDriver>(options: Options<D>): MikroORM<D> {
+    return super.initSync(options);
+  }
+
 }
 
 export type MongoOptions = Options<MongoDriver>;
