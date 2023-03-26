@@ -66,13 +66,22 @@ const orm = await MikroORM.init<PostgreSqlDriver>({
 });
 ```
 
-If we are experiencing problems with folder based discovery, try using `mikro-orm debug` CLI command to check what paths are actually being used.
+If you are experiencing problems with folder based discovery, try using `mikro-orm debug` CLI command to check what paths are actually being used.
 
-> Since v4, we can also use file globs, like `./dist/app/**/entities/*.entity.js`.
+> Since v4, you can also use file globs, like `./dist/app/**/entities/*.entity.js`.
 
-We can also set the configuration via [environment variables](configuration.md#using-environment-variables).
+You can also set the configuration via [environment variables](configuration.md#using-environment-variables).
 
 > We can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. The object will be deeply merged, overriding all internally used options.
+
+## Synchronous initialization
+
+As opposed to the async `MikroORM.init` method, you can prefer to use synchronous variant `initSync`. This method has some limitations:
+
+- database connection will be established when you first interact with the database (or you can use `orm.connect()` explicitly)
+- no loading of the `config` file, `options` parameter is mandatory
+- no support for folder based discovery
+- no check for mismatched package versions
 
 ## Possible issues with circular dependencies
 

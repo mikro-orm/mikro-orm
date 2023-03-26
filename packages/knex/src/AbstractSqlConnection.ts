@@ -104,6 +104,8 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
+    await this.ensureConnection();
+
     if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(queryOrKnex)) {
       ctx ??= ((queryOrKnex as any).client.transacting ? queryOrKnex : null);
       const q = queryOrKnex.toSQL();
