@@ -134,7 +134,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 }
 
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = []) {
-  const orm = await MikroORM.init({
+  const orm = MikroORM.initSync({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, ...entities],
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,
@@ -182,7 +182,7 @@ export async function initORMSqlite() {
 }
 
 export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite') {
-  const orm = await MikroORM.init<any>({
+  const orm = MikroORM.initSync<any>({
     entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, IdentitySchema],
     dbName: ':memory:',
     baseDir: BASE_DIR,
@@ -191,7 +191,6 @@ export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite'
     propagateToOneOwner: false,
     forceUndefined: true,
     logger: i => i,
-    metadataCache: { pretty: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     extensions: [Migrator, SeedManager, EntityGenerator],
   });
