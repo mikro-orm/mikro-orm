@@ -15,6 +15,7 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
     this.getPatchedDialect();
     this.client = this.createKnexClient('better-sqlite3');
     await this.client.raw('pragma foreign_keys = on');
+    this.connected = true;
   }
 
   getDefaultClientUrl(): string {
