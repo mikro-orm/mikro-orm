@@ -9,7 +9,7 @@ export class MemoryCacheAdapter implements CacheAdapter {
   /**
    * @inheritDoc
    */
-  async get<T = any>(name: string): Promise<T | undefined> {
+  get<T = any>(name: string): T | undefined {
     const data = this.data.get(name);
 
     if (data) {
@@ -26,21 +26,21 @@ export class MemoryCacheAdapter implements CacheAdapter {
   /**
    * @inheritDoc
    */
-  async set(name: string, data: any, origin: string, expiration?: number): Promise<void> {
+  set(name: string, data: any, origin: string, expiration?: number): void {
     this.data.set(name, { data, expiration: Date.now() + (expiration ?? this.options.expiration) });
   }
 
   /**
    * @inheritDoc
    */
-  async remove(name: string): Promise<void> {
+  remove(name: string): void {
     this.data.delete(name);
   }
 
   /**
    * @inheritDoc
    */
-  async clear(): Promise<void> {
+  clear(): void {
     this.data.clear();
   }
 
