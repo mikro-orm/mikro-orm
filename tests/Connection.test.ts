@@ -11,7 +11,7 @@ class CustomConnection extends Connection {
     return undefined;
   }
 
-  async connect(): Promise<void> {
+  connect(): void {
     return undefined;
   }
 

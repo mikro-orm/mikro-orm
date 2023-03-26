@@ -18,7 +18,7 @@ export class ClearCacheCommand implements CommandModule {
       return;
     }
 
-    const cache = config.getCacheAdapter();
+    const cache = config.getMetadataCacheAdapter();
     await cache.clear();
 
     CLIHelper.dump(colors.green('Metadata cache was successfully cleared'));

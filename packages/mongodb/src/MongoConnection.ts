@@ -43,7 +43,6 @@ export class MongoConnection extends Connection {
 
   protected client!: MongoClient;
   protected db!: Db;
-  private connected = false;
 
   constructor(config: Configuration, options?: ConnectionOptions, type: ConnectionType = 'write') {
     super(config, options, type);
@@ -150,6 +149,7 @@ export class MongoConnection extends Connection {
   }
 
   async find<T extends object>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
+    await this.ensureConnection();
     collection = this.getCollectionName(collection);
     const options: Dictionary = ctx ? { session: ctx } : {};
 
@@ -166,7 +166,7 @@ export class MongoConnection extends Connection {
       orderBy.forEach(o => {
         Utils.keys(o).forEach(k => {
           const direction = o[k];
-          orderByTuples.push([k, Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction as number]);
+          orderByTuples.push([k.toString(), Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction as number]);
         });
       });
       if (orderByTuples.length > 0) {
@@ -214,6 +214,7 @@ export class MongoConnection extends Connection {
   }
 
   async aggregate<T extends object = any>(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<T[]> {
+    await this.ensureConnection();
     collection = this.getCollectionName(collection);
     /* istanbul ignore next */
     const options: Dictionary = ctx ? { session: ctx } : {};
@@ -230,6 +231,7 @@ export class MongoConnection extends Connection {
   }
 
   override async transactional<T>(cb: (trx: Transaction<ClientSession>) => Promise<T>, options: { isolationLevel?: IsolationLevel; ctx?: Transaction<ClientSession>; eventBroadcaster?: TransactionEventBroadcaster } & TransactionOptions = {}): Promise<T> {
+    await this.ensureConnection();
     const session = await this.begin(options);
 
     try {
@@ -246,6 +248,7 @@ export class MongoConnection extends Connection {
   }
 
   override async begin(options: { isolationLevel?: IsolationLevel; ctx?: ClientSession; eventBroadcaster?: TransactionEventBroadcaster } & TransactionOptions = {}): Promise<ClientSession> {
+    await this.ensureConnection();
     const { ctx, isolationLevel, eventBroadcaster, ...txOptions } = options;
 
     if (!ctx) {
@@ -260,6 +263,7 @@ export class MongoConnection extends Connection {
   }
 
   override async commit(ctx: ClientSession, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    await this.ensureConnection();
     await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionCommit, ctx);
     await ctx.commitTransaction();
     this.logQuery('db.commit();');
@@ -267,6 +271,7 @@ export class MongoConnection extends Connection {
   }
 
   override async rollback(ctx: ClientSession, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    await this.ensureConnection();
     await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
     await ctx.abortTransaction();
     this.logQuery('db.rollback();');
@@ -274,6 +279,7 @@ export class MongoConnection extends Connection {
   }
 
   private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean, upsertOptions?: UpsertOptions<T>): Promise<U> {
+    await this.ensureConnection();
     collection = this.getCollectionName(collection);
     const logger = this.config.getLogger();
     const options: Dictionary = ctx ? { session: ctx, upsert } : { upsert };

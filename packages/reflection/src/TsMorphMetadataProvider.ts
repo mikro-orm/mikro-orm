@@ -16,31 +16,31 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return this.config.get('metadataCache').enabled ?? true;
   }
 
-  async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void> {
+  loadEntityMetadata(meta: EntityMetadata, name: string): void {
     if (!meta.path) {
       return;
     }
 
-    await this.initProperties(meta);
+    this.initProperties(meta);
   }
 
-  async getExistingSourceFile(path: string, ext?: string, validate = true): Promise<SourceFile> {
+  getExistingSourceFile(path: string, ext?: string, validate = true): SourceFile {
     if (!ext) {
-      return await this.getExistingSourceFile(path, '.d.ts', false) || await this.getExistingSourceFile(path, '.ts');
+      return this.getExistingSourceFile(path, '.d.ts', false) || this.getExistingSourceFile(path, '.ts');
     }
 
     const tsPath = path.match(/.*\/[^/]+$/)![0].replace(/\.js$/, ext);
 
-    return (await this.getSourceFile(tsPath, validate))!;
+    return this.getSourceFile(tsPath, validate)!;
   }
 
-  protected override async initProperties(meta: EntityMetadata): Promise<void> {
+  protected initProperties(meta: EntityMetadata): void {
     // load types and column names
     for (const prop of Object.values(meta.properties)) {
       const type = this.extractType(prop);
 
       if (!type || this.config.get('discovery').alwaysAnalyseProperties) {
-        await this.initPropertyType(meta, prop);
+        this.initPropertyType(meta, prop);
       }
 
       prop.type = type || prop.type;
@@ -59,8 +59,8 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return prop.type;
   }
 
-  private async initPropertyType(meta: EntityMetadata, prop: EntityProperty): Promise<void> {
-    const { type, optional } = await this.readTypeFromSource(meta, prop);
+  private initPropertyType(meta: EntityMetadata, prop: EntityProperty): void {
+    const { type, optional } = this.readTypeFromSource(meta, prop);
     prop.type = type;
 
     if (optional) {
@@ -77,8 +77,8 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
   }
 
-  private async readTypeFromSource(meta: EntityMetadata, prop: EntityProperty): Promise<{ type: string; optional?: boolean }> {
-    const source = await this.getExistingSourceFile(meta.path);
+  private readTypeFromSource(meta: EntityMetadata, prop: EntityProperty): { type: string; optional?: boolean } {
+    const source = this.getExistingSourceFile(meta.path);
     const cls = source.getClass(meta.className);
 
     /* istanbul ignore next */
@@ -132,9 +132,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return { type, optional };
   }
 
-  private async getSourceFile(tsPath: string, validate: boolean): Promise<SourceFile | undefined> {
+  private getSourceFile(tsPath: string, validate: boolean): SourceFile | undefined {
     if (!this.sources) {
-      await this.initSourceFiles();
+      this.initSourceFiles();
     }
 
     const source = this.sources.find(s => s.getFilePath().endsWith(Utils.stripRelativePath(tsPath)));
@@ -166,9 +166,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
   }
 
-  private async initSourceFiles(): Promise<void> {
+  private initSourceFiles(): void {
     // All entity files are first required during the discovery, before we reach here, so it is safe to get the parts from the global
-    // metadata storage. We know the path thanks the the decorators being executed. In case we are running via ts-node, the extension
+    // metadata storage. We know the path thanks the decorators being executed. In case we are running via ts-node, the extension
     // will be already `.ts`, so no change needed. `.js` files will get renamed to `.d.ts` files as they will be used as a source for
     // the ts-morph reflection.
     const paths = Object.values(MetadataStorage.getMetadata()).map(m => m.path.replace(/\.js$/, '.d.ts'));
