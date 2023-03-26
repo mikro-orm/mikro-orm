@@ -66,6 +66,38 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     return orm;
   }
 
+  /**
+   * Synchronous variant of the `init` method with some limitations:
+   * - database connection will be established when you first interact with the database (or you can use `orm.connect()` explicitly)
+   * - no loading of the `config` file, `options` parameter is mandatory
+   * - no support for folder based discovery
+   * - no check for mismatched package versions
+   */
+  static initSync<D extends IDatabaseDriver = IDatabaseDriver>(options: Options<D>): MikroORM<D> {
+    ConfigurationLoader.registerDotenv(options);
+    const env = ConfigurationLoader.loadEnvironmentVars<D>();
+    options = Utils.merge(options, env);
+
+    if ('DRIVER' in this && !options!.driver) {
+      (options as Options).driver = (this as unknown as { DRIVER: Constructor<IDatabaseDriver> }).DRIVER;
+    }
+
+    const orm = new MikroORM(options!);
+
+    // we need to allow global context here as we are not in a scope of requests yet
+    const allowGlobalContext = orm.config.get('allowGlobalContext');
+    orm.config.set('allowGlobalContext', true);
+    orm.discoverEntitiesSync();
+    orm.config.set('allowGlobalContext', allowGlobalContext);
+    orm.driver.getPlatform().lookupExtensions(orm);
+
+    for (const extension of orm.config.get('extensions')) {
+      extension.register(orm);
+    }
+
+    return orm;
+  }
+
   constructor(options: Options<D> | Configuration<D>) {
     if (options instanceof Configuration) {
       this.config = options;
@@ -137,8 +169,8 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       await this.driver.close(force);
     }
 
-    if (this.config.getCacheAdapter()?.close) {
-      await this.config.getCacheAdapter().close!();
+    if (this.config.getMetadataCacheAdapter()?.close) {
+      await this.config.getMetadataCacheAdapter().close!();
     }
 
     if (this.config.getResultCacheAdapter()?.close) {
@@ -171,6 +203,15 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
   async discoverEntities(): Promise<void> {
     this.metadata = await this.discovery.discover(this.config.get('tsNode'));
+    this.createEntityManager();
+  }
+
+  discoverEntitiesSync(): void {
+    this.metadata = this.discovery.discoverSync(this.config.get('tsNode'));
+    this.createEntityManager();
+  }
+
+  private createEntityManager(): void {
     this.driver.setMetadata(this.metadata);
     this.em = this.driver.createEntityManager<D>();
     (this.em as { global: boolean }).global = true;
@@ -181,12 +222,12 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Allows dynamically discovering new entity by reference, handy for testing schema diffing.
    */
-  async discoverEntity(entities: Constructor | Constructor[]): Promise<void> {
+  discoverEntity(entities: Constructor | Constructor[]): void {
     entities = Utils.asArray(entities);
-    const tmp = await this.discovery.discoverReferences(entities);
+    const tmp = this.discovery.discoverReferences(entities);
     const options = this.config.get('discovery');
     new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], options.warnWhenNoEntities, options.checkDuplicateTableNames);
-    const metadata = await this.discovery.processDiscoveredEntities(tmp);
+    const metadata = this.discovery.processDiscoveredEntities(tmp);
     metadata.forEach(meta => this.metadata.set(meta.className, meta));
     this.metadata.decorate(this.em);
   }
