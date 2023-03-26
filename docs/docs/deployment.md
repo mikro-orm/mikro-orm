@@ -8,9 +8,30 @@ This has some consequences for deployment of your application. Sometimes you wil
 
 ## Deploy pre-built cache
 
-By default, output of metadata discovery will be cached in `temp` folder. You can reuse this cache in your deployed application. Currently the cache is saved in files named like the entity source file, e.g. `Author.ts` entity will store cache in `temp/Author.ts.json` file.
+Since v6, MikroORM lets you generate production cache bundle into a single JSON file via CLI:
 
-When running compiled code, JS entities will be taken into account instead, so you will need to generate the cache by running the compiled code locally. That will generate `temp/Author.js.json`, which is the file you will need to deploy alongside your application.
+```bash
+npx mikro-orm cache:generate --combined
+```
+
+This will create `./temp/metadata.json` file which can be used together with `GeneratedCacheAdapter` in your production configuration:
+
+```ts
+import { GeneratedCacheAdapter, MikroORM } from '@mikro-orm/core';
+
+await MikroORM.init({
+  metadataCache: {
+    enabled: true,
+    adapter: GeneratedCacheAdapter, 
+    options: { data: require('./temp/metadata.json') },
+  },
+  // ...
+});
+```
+
+This way you can keep the `@mikro-orm/reflection` package as a development dependency only, use the CLI to create the cache bundle, and depend only on that in your production build.
+
+> The cache bundle can be statically imported, which is handy in case you are using some bundler.
 
 ## Fill type or entity attributes everywhere
 

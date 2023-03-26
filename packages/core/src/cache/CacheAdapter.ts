@@ -44,4 +44,9 @@ export interface SyncCacheAdapter extends CacheAdapter {
    */
   remove(name: string): void;
 
+  /**
+   * Generates a combined cache from all existing entries.
+   */
+  combine?(): string | void;
+
 }
