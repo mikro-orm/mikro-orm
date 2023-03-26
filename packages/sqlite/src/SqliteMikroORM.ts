@@ -15,6 +15,13 @@ export class SqliteMikroORM extends MikroORM<SqliteDriver> {
     return super.init(options);
   }
 
+  /**
+   * @inheritDoc
+   */
+  static override initSync<D extends IDatabaseDriver = SqliteDriver>(options: Options<D>): MikroORM<D> {
+    return super.initSync(options);
+  }
+
 }
 
 export type SqliteOptions = Options<SqliteDriver>;
