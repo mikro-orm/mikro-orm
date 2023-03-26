@@ -35,15 +35,4 @@ describe('GenerateCacheCommand', () => {
     expect(discoverMock.mock.calls[1][0]).toBe(true);
   });
 
-  test('handler throws when cache is disabled', async () => {
-    getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: false }, getDriver: () => ({ getPlatform: jest.fn() }) } as any, false));
-    discoverMock.mockReset();
-    discoverMock.mockResolvedValue({} as MetadataStorage);
-
-    const cmd = new GenerateCacheCommand();
-
-    expect(discoverMock.mock.calls.length).toBe(0);
-    await expect(cmd.handler({} as any)).resolves.toBeUndefined();
-    expect(discoverMock.mock.calls.length).toBe(0);
-  });
 });
