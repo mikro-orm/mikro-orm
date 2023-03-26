@@ -104,6 +104,12 @@ export class MetadataDiscovery {
     }
 
     discovered.forEach(meta => meta.sync(true));
+    const combinedCachePath = this.cache.combine?.();
+
+    // override the path in the options, so we can log it from the CLI in `cache:generate` command
+    if (combinedCachePath) {
+      this.config.get('metadataCache').combined = combinedCachePath;
+    }
 
     return discovered.map(meta => this.metadata.get(meta.className));
   }
