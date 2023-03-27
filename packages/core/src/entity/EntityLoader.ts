@@ -210,7 +210,7 @@ export class EntityLoader {
     return data;
   }
 
-  private initializeCollections<T>(filtered: T[], prop: EntityProperty, field: keyof T, children: AnyEntity[]): void {
+  private initializeCollections<T extends object>(filtered: T[], prop: EntityProperty, field: keyof T, children: AnyEntity[]): void {
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
       this.initializeOneToMany<T>(filtered, children, prop, field);
     }
@@ -220,18 +220,33 @@ export class EntityLoader {
     }
   }
 
-  private initializeOneToMany<T>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {
-    for (const entity of filtered) {
-      const items = children.filter(child => {
-        if (prop.targetMeta!.properties[prop.mappedBy].mapToPk) {
-          return child[prop.mappedBy] as unknown === helper(entity).getPrimaryKey();
-        }
+  private initializeOneToMany<T extends object>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {
+    const mapToPk = prop.targetMeta!.properties[prop.mappedBy].mapToPk;
+    const map: Dictionary<T[]> = {};
 
-        return Reference.unwrapReference(child[prop.mappedBy]) as unknown === entity;
+    filtered.forEach(entity => {
+      const key = helper(entity).getSerializedPrimaryKey();
+      return map[key] = [];
+    });
+
+    if (mapToPk) {
+      children.forEach(child => {
+        const pk = child.__helper.__data[prop.mappedBy];
+        const key = helper(this.em.getReference(prop.type, pk)).getSerializedPrimaryKey();
+        map[key].push(child as T);
       });
-
-      (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
+    } else {
+      children.forEach(child => {
+        const entity = child.__helper.__data[prop.mappedBy];
+        const key = helper(entity).getSerializedPrimaryKey();
+        map[key].push(child as T);
+      });
     }
+
+    filtered.forEach(entity => {
+      const key = helper(entity).getSerializedPrimaryKey();
+      (entity[field] as unknown as Collection<T>).hydrate(map[key]);
+    });
   }
 
   private initializeManyToMany<T>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {

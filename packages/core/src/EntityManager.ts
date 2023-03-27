@@ -31,6 +31,7 @@ import type {
   FilterDef,
   FilterQuery,
   GetRepository,
+  IHydrator,
   Loaded,
   Populate,
   PopulateOptions,
@@ -1390,6 +1391,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getEntityFactory(): EntityFactory {
     return this.getContext().entityFactory;
+  }
+
+  /**
+   * Gets the Hydrator used by the EntityManager.
+   */
+  getHydrator(): IHydrator {
+    return this.config.getHydrator(this.getMetadata());
   }
 
   /**

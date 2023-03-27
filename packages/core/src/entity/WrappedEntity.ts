@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
 import type {
-  AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata,
+  AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, IHydrator,
   IWrappedEntityInternal, Populate, PopulateOptions, Primary,
 } from '../typings';
 import type { IdentifiedReference } from './Reference';
@@ -44,6 +44,7 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
   __identifier?: EntityIdentifier;
 
   constructor(private readonly entity: T,
+              private readonly hydrator: IHydrator,
               private readonly pkGetter?: (e: T) => Primary<T>,
               private readonly pkSerializer?: (e: T) => string,
               private readonly pkGetterConverted?: (e: T) => Primary<T>) { }

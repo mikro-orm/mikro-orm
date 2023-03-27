@@ -58,7 +58,7 @@ export class EntityHelper {
       __helper: {
         get(): WrappedEntity<T, keyof T> {
           Object.defineProperty(this, '__helper', {
-            value: new WrappedEntity(this, ...helperParams),
+            value: new WrappedEntity(this, em.getHydrator(), ...helperParams),
             enumerable: false,
           });
 
@@ -78,7 +78,6 @@ export class EntityHelper {
    * than on its prototype. Thanks to this we still have those properties enumerable (e.g. part of `Object.keys(entity)`).
    */
   private static defineProperties<T>(meta: EntityMetadata<T>, em: EntityManager): void {
-    const hydrator = em.config.getHydrator(em.getMetadata());
     Object
       .values<EntityProperty<T>>(meta.properties)
       .forEach(prop => {
@@ -88,7 +87,7 @@ export class EntityHelper {
         if (isReference) {
           return Object.defineProperty(meta.prototype, prop.name, {
             set(val: AnyEntity) {
-              EntityHelper.defineReferenceProperty(meta, prop, this, hydrator);
+              EntityHelper.defineReferenceProperty(meta, prop, this, em.getHydrator());
               this[prop.name] = val;
             },
           });
@@ -144,12 +143,12 @@ export class EntityHelper {
   }
 
   static defineReferenceProperty<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T>, ref: T, hydrator: IHydrator): void {
+    const wrapped = helper(ref);
     Object.defineProperty(ref, prop.name, {
       get() {
         return helper(ref).__data[prop.name];
       },
       set(val: AnyEntity | Reference<AnyEntity>) {
-        const wrapped = helper(ref);
         const entity = Reference.unwrapReference(val ?? wrapped.__data[prop.name]);
         const old = Reference.unwrapReference(wrapped.__data[prop.name]);
         wrapped.__data[prop.name] = Reference.wrapReference(val as T, prop);
@@ -168,8 +167,8 @@ export class EntityHelper {
     });
   }
 
-  private static propagate<T extends object, O extends object>(meta: EntityMetadata<O>, entity: T, owner: O, prop: EntityProperty<O>, value?: T[keyof T & string], old?: object): void {
-    const inverseProps = prop.targetMeta!.relations.filter(prop2 =>
+  static propagate<T extends object, O extends object>(meta: EntityMetadata<O>, entity: T, owner: O, prop: EntityProperty<O>, value?: T[keyof T & string], old?: object): void {
+    const inverseProps = prop.targetMeta!.bidirectionalRelations.filter(prop2 =>
       (prop2.inversedBy || prop2.mappedBy) === prop.name
       && (
         prop2.targetMeta!.abstract ?

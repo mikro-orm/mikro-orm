@@ -1916,6 +1916,29 @@ describe('EntityManagerPostgre', () => {
     expect(author.books.getItems().every(b => b.uuid)).toBe(true);
   });
 
+  test('perf: populating many large one to many collections (#4171)', async () => {
+    const authors = [];
+    const books = [];
+
+    for (let i = 1; i <= 1000; i++) {
+      const author = new Author2('Jon Snow ' + i, `snow-${i}@wall.st`);
+      authors.push(author);
+
+      for (let j = 1; j <= 20; j++) {
+        books.push(new Book2(`My Life on The Wall, part ${i}/${j}`, author));
+      }
+    }
+
+    await orm.em.insertMany(authors);
+    await orm.em.insertMany(books);
+
+    orm.em.clear();
+    const res = await orm.em.find(Author2, {});
+    console.time('perf: populate many 1:m collections');
+    await orm.em.populate(res, ['books']);
+    console.timeEnd('perf: populate many 1:m collections');
+  });
+
   // this should run in ~70ms (when running single test locally)
   test('perf: one to many via em.create()', async () => {
     const books = [] as Book2[];
@@ -1924,13 +1947,13 @@ describe('EntityManagerPostgre', () => {
       books.push(b);
     }
 
-    console.time('one to many via em.create()');
+    console.time('perf: one to many via em.create()');
     const author = orm.em.create(Author2,{
       name: 'Jon Snow',
       email: 'snow@wall.st',
       books,
     });
-    console.timeEnd('one to many via em.create()');
+    console.timeEnd('perf: one to many via em.create()');
   });
 
   // this should run in ~400ms (when running single test locally)

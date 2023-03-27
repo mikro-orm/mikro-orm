@@ -1,7 +1,8 @@
 import type { Transaction } from './connections';
 import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrderMap } from './enums';
 import { ReferenceType } from './enums';
-import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference } from './entity';
+import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference } from './entity';
+import { EntityHelper, Reference } from './entity';
 import type { SerializationContext } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
 import type { Type, types } from './types';
@@ -135,6 +136,7 @@ export interface IWrappedEntityInternal<
   __em?: any; // we cannot have `EntityManager` here as that causes a cycle
   __platform: Platform;
   __factory: EntityFactory; // internal factory instance that has its own global fork
+  __hydrator: IHydrator;
   __initialized: boolean;
   __touched: boolean;
   __originalEntityData?: EntityData<T>;
@@ -407,13 +409,41 @@ export class EntityMetadata<T = any> {
       const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
       const isReference = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
+      if (isReference) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const meta = this;
+        o[prop.name] = {
+          get() {
+            return this.__helper.__data[prop.name];
+          },
+          set(val: AnyEntity) {
+            const wrapped = this.__helper;
+            const hydrator = wrapped.hydrator as IHydrator;
+            const entity = Reference.unwrapReference(val ?? wrapped.__data[prop.name]);
+            const old = Reference.unwrapReference(wrapped.__data[prop.name]);
+            wrapped.__data[prop.name] = Reference.wrapReference(val, prop as EntityProperty);
+
+            // when propagation from inside hydration, we set the FK to the entity data immediately
+            if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
+              wrapped.__originalEntityData[prop.name as string] = val.__helper.getPrimaryKey(true);
+            } else {
+              wrapped.__touched = true;
+            }
+
+            EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
+          },
+          enumerable: true,
+          configurable: true,
+        };
+      }
+
       if (prop.inherited || prop.primary || isCollection || prop.persist === false || prop.trackChanges === false || isReference || prop.embedded) {
         return o;
       }
 
       o[prop.name] = {
         get() {
-          return this.__helper?.__data[prop.name];
+          return this.__helper.__data[prop.name];
         },
         set(val: unknown) {
           this.__helper.__data[prop.name] = val;
