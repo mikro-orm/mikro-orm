@@ -115,11 +115,13 @@ export class Migrator implements IMigrator {
       migrations,
     });
 
-    const logger = this.config.get('logger');
-    this.umzug.on('migrating', event => logger(`Processing '${event.name}'`));
-    this.umzug.on('migrated', event => logger(`Applied '${event.name}'`));
-    this.umzug.on('reverting', event => logger(`Processing '${event.name}'`));
-    this.umzug.on('reverted', event => logger(`Reverted '${event.name}'`));
+    if (!this.options.silent) {
+      const logger = this.config.get('logger');
+      this.umzug.on('migrating', event => logger(`Processing '${event.name}'`));
+      this.umzug.on('migrated', event => logger(`Applied '${event.name}'`));
+      this.umzug.on('reverting', event => logger(`Processing '${event.name}'`));
+      this.umzug.on('reverted', event => logger(`Reverted '${event.name}'`));
+    }
 
     if (this.options.generator) {
       this.generator = new this.options.generator(this.driver, this.config.getNamingStrategy(), this.options);

@@ -89,6 +89,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       tableName: 'mikro_orm_migrations',
       path: './migrations',
       glob: '!(*.d).{js,ts,cjs}',
+      silent: false,
       transactional: true,
       disableForeignKeys: true,
       allOrNothing: true,
@@ -441,6 +442,7 @@ export type MigrationsOptions = {
   path?: string;
   pathTs?: string;
   glob?: string;
+  silent?: boolean;
   transactional?: boolean;
   disableForeignKeys?: boolean;
   allOrNothing?: boolean;
