@@ -241,9 +241,9 @@ export class Migrator implements IMigrator {
     };
   }
 
-  protected async getCurrentSchema(): Promise<DatabaseSchema> {
+  protected async getSchemaFromSnapshot() {
     if (!this.options.snapshot || !await pathExists(this.snapshotPath)) {
-      return DatabaseSchema.create(this.driver.getConnection(), this.driver.getPlatform(), this.config);
+      return undefined;
     }
 
     const data = await Utils.dynamicImport(this.snapshotPath);
@@ -300,7 +300,7 @@ export class Migrator implements IMigrator {
         wrap: false,
         safe: this.options.safe,
         dropTables: this.options.dropTables,
-        fromSchema: await this.getCurrentSchema(),
+        fromSchema: await this.getSchemaFromSnapshot(),
       });
       up.push(...diff.up.split('\n'));
       down.push(...diff.down.split('\n'));
