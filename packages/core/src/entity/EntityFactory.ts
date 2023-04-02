@@ -111,6 +111,11 @@ export class EntityFactory {
     // do not override values changed by user
     Object.keys(diff).forEach(key => delete diff2[key]);
     Object.keys(diff2).filter(key => diff2[key] === undefined).forEach(key => delete diff2[key]);
+
+    // but always add collection properties if they are part of the `data`
+    Object.keys(data).filter(key => [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(meta.properties[key]?.reference)).forEach(key => diff2[key] = data[key]);
+
+    // rehydrated with the new values, skip those changed by user
     this.hydrate(entity, meta, diff2, options);
 
     // we need to update the entity data only with keys that were not present before
