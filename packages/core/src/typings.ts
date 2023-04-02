@@ -519,6 +519,7 @@ export interface EntityMetadata<T = any> {
   collection: string;
   path: string;
   primaryKeys: (keyof T & string)[];
+  simplePK: boolean; // whether the PK can be compared via `===`, e.g. simple scalar without a custom mapped type
   compositePK: boolean;
   versionProperty: keyof T & string;
   concurrencyCheckKeys: Set<keyof T & string>;

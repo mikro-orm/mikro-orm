@@ -304,6 +304,7 @@ export class EntitySchema<T = any, U = never> {
     if (pks.length > 0) {
       this._meta.primaryKeys = pks.map(prop => prop.name);
       this._meta.compositePK = pks.length > 1;
+      this._meta.simplePK = !this._meta.compositePK && pks[0].reference === ReferenceType.SCALAR && !pks[0].customType;
     }
 
     if (pks.length === 1 && pks[0].type === 'number') {

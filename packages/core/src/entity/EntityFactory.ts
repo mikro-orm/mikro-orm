@@ -256,7 +256,7 @@ export class EntityFactory {
   private findEntity<T extends object>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T | undefined {
     const schema = this.driver.getSchemaName(meta, options);
 
-    if (!meta.compositePK && !meta.getPrimaryProps()[0]?.customType) {
+    if (meta.simplePK) {
       return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0] as string] as Primary<T>, schema);
     }
 
