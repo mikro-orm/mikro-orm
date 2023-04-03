@@ -1016,7 +1016,7 @@ export class MetadataDiscovery {
       prop.customType = new BlobType();
     }
 
-    if (!prop.customType && prop.type === 'json') {
+    if (!prop.customType && ['json', 'jsonb'].includes(prop.type)) {
       prop.customType = new JsonType();
     }
 
