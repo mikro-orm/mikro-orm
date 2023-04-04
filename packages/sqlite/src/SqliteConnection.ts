@@ -5,11 +5,15 @@ import { Utils, type Dictionary } from '@mikro-orm/core';
 
 export class SqliteConnection extends AbstractSqlConnection {
 
-  async connect(): Promise<void> {
-    await ensureDir(dirname(this.config.get('dbName')!));
+  override createKnex() {
     this.client = this.createKnexClient(this.getPatchedDialect());
-    await this.client.raw('pragma foreign_keys = on');
     this.connected = true;
+  }
+
+  override async connect(): Promise<void> {
+    this.createKnex();
+    await ensureDir(dirname(this.config.get('dbName')!));
+    await this.getKnex().raw('pragma foreign_keys = on');
   }
 
   getDefaultClientUrl(): string {
@@ -21,9 +25,9 @@ export class SqliteConnection extends AbstractSqlConnection {
   }
 
   override async loadFile(path: string): Promise<void> {
-    const conn = await this.client.client.acquireConnection();
+    const conn = await this.getKnex().client.acquireConnection();
     await conn.exec((await readFile(path)).toString());
-    await this.client.client.releaseConnection(conn);
+    await this.getKnex().client.releaseConnection(conn);
   }
 
   protected override getKnexOptions(type: string): Knex.Config {
