@@ -24,18 +24,29 @@ export abstract class AbstractSqlConnection extends Connection {
     this.patchKnexClient();
   }
 
+  abstract createKnex(): void;
+
+  /** @inheritDoc */
+  connect(): void | Promise<void> {
+    this.createKnex();
+  }
+
   getKnex(): Knex {
+    if (!this.client) {
+      this.createKnex();
+    }
+
     return this.client;
   }
 
   override async close(force?: boolean): Promise<void> {
     await super.close(force);
-    await this.client.destroy();
+    await this.getKnex().destroy();
   }
 
   async isConnected(): Promise<boolean> {
     try {
-      await this.client.raw('select 1');
+      await this.getKnex().raw('select 1');
       return true;
     } catch {
       return false;
@@ -61,7 +72,7 @@ export abstract class AbstractSqlConnection extends Connection {
       await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
     }
 
-    const trx = await (options.ctx || this.client).transaction(null, {
+    const trx = await (options.ctx || this.getKnex()).transaction(null, {
       isolationLevel: options.isolationLevel,
       readOnly: options.readOnly,
     });
@@ -117,7 +128,7 @@ export abstract class AbstractSqlConnection extends Connection {
     const formatted = this.platform.formatQuery(queryOrKnex, params);
     const sql = this.getSql(queryOrKnex, formatted);
     return this.executeQuery<T>(sql, async () => {
-      const query = this.client.raw(formatted);
+      const query = this.getKnex().raw(formatted);
 
       if (ctx) {
         query.transacting(ctx);
@@ -133,7 +144,7 @@ export abstract class AbstractSqlConnection extends Connection {
    */
   async loadFile(path: string): Promise<void> {
     const buf = await readFile(path);
-    await this.client.raw(buf.toString());
+    await this.getKnex().raw(buf.toString());
   }
 
   protected createKnexClient(type: string): Knex {
@@ -193,7 +204,7 @@ export abstract class AbstractSqlConnection extends Connection {
       return formatted;
     }
 
-    return this.client.client.positionBindings(query);
+    return this.getKnex().client.positionBindings(query);
   }
 
   /**
