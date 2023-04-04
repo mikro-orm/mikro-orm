@@ -4,7 +4,7 @@ import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/kn
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
 
-  connect(): void {
+  override createKnex() {
     this.patchKnex();
     this.client = this.createKnexClient('pg');
     this.connected = true;
