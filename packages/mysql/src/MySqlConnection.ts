@@ -3,7 +3,7 @@ import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
 
 export class MySqlConnection extends AbstractSqlConnection {
 
-  connect(): void {
+  override createKnex() {
     this.patchKnex();
     this.client = this.createKnexClient('mysql2');
     this.connected = true;
