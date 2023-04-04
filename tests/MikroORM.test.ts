@@ -118,7 +118,6 @@ describe('MikroORM', () => {
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
     expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Test3']);
-    expect(await orm.isConnected()).toBe(false);
 
     delete process.env.MIKRO_ORM_CLI;
   });

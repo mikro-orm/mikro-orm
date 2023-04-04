@@ -12,7 +12,6 @@ export abstract class Connection {
   protected metadata!: MetadataStorage;
   protected platform!: Platform;
   protected readonly options: ConnectionOptions;
-  protected abstract client: unknown;
   protected readonly logger = this.config.getLogger();
   protected connected = false;
 
