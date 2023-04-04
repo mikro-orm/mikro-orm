@@ -5,12 +5,16 @@ import { Utils, type Dictionary } from '@mikro-orm/core';
 
 export class BetterSqliteConnection extends AbstractSqlConnection {
 
-  async connect(): Promise<void> {
-    await ensureDir(dirname(this.config.get('dbName')!));
+  override createKnex() {
     this.getPatchedDialect();
     this.client = this.createKnexClient('better-sqlite3');
-    await this.client.raw('pragma foreign_keys = on');
     this.connected = true;
+  }
+
+  override async connect(): Promise<void> {
+    this.createKnex();
+    await ensureDir(dirname(this.config.get('dbName')!));
+    await this.client.raw('pragma foreign_keys = on');
   }
 
   getDefaultClientUrl(): string {
