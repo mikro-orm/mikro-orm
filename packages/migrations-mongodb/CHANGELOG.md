@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.16](https://github.com/mikro-orm/mikro-orm/compare/v5.6.15...v5.6.16) (2023-04-04)
+
+
+### Features
+
+* **migrator:** allow disabling logging via `migrations.silent` ([#4182](https://github.com/mikro-orm/mikro-orm/issues/4182)) ([4b778bf](https://github.com/mikro-orm/mikro-orm/commit/4b778bf2db55bdc678a13c7dd6c27c3d72fde97d)), closes [#4124](https://github.com/mikro-orm/mikro-orm/issues/4124)
+
+
+### Reverts
+
+* Revert "chore(release): v5.6.16 [skip ci]" ([49faac9](https://github.com/mikro-orm/mikro-orm/commit/49faac95c86d4c65fb6f66f76efa98ba221dd67e))
+* Revert "chore(release): update internal dependencies to use tilde [skip ci]" ([381cba1](https://github.com/mikro-orm/mikro-orm/commit/381cba1fbf1141e1f754d25e1fd5748906425caa))
+
+
+
+
+
 ## [5.6.15](https://github.com/mikro-orm/mikro-orm/compare/v5.6.14...v5.6.15) (2023-03-18)
 
 **Note:** Version bump only for package @mikro-orm/migrations-mongodb
