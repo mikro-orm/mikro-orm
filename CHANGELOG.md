@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.16](https://github.com/mikro-orm/mikro-orm/compare/v5.6.15...v5.6.16) (2023-04-04)
+
+
+### Bug Fixes
+
+* **core:** don't override discovery options when `alwaysAnalyseProperties` is used ([f4acc91](https://github.com/mikro-orm/mikro-orm/commit/f4acc918ad25af3a97c2673de36922d5ce90eccf)), closes [#4181](https://github.com/mikro-orm/mikro-orm/issues/4181)
+* **core:** ensure correct FK as PK identity map key ([475e2a3](https://github.com/mikro-orm/mikro-orm/commit/475e2a33d1a2682cc9168269e36f14b10b6fe7fd))
+* **core:** fix hydration of 1:1 FK as PK property via joined strategy ([75653f0](https://github.com/mikro-orm/mikro-orm/commit/75653f0d857e74ab83f06290ffc8ed59f7e91f3c)), closes [#4160](https://github.com/mikro-orm/mikro-orm/issues/4160)
+* **core:** hydrate collection items when merging data in `factory.create` ([493d653](https://github.com/mikro-orm/mikro-orm/commit/493d653d84442cd854f3c6d1e67ce92d688f5924)), closes [#4173](https://github.com/mikro-orm/mikro-orm/issues/4173)
+* **migrations:** do not interact with the database when snapshot exists ([48df462](https://github.com/mikro-orm/mikro-orm/commit/48df46219811e33c296ad3bd182a95702d3a2007))
+* **mysql:** fix mapping of PK in `upsertMany` ([0f4cf85](https://github.com/mikro-orm/mikro-orm/commit/0f4cf85f8655326727f6fd27c6dbb66c606e922a)), closes [#4153](https://github.com/mikro-orm/mikro-orm/issues/4153)
+
+
+### Features
+
+* **core:** normalize zero in bigint type to string ([78a8e48](https://github.com/mikro-orm/mikro-orm/commit/78a8e48bec188fbe17d8b9deb4b623a4d1810a3b)), closes [#4159](https://github.com/mikro-orm/mikro-orm/issues/4159)
+* **migrator:** allow disabling logging via `migrations.silent` ([#4182](https://github.com/mikro-orm/mikro-orm/issues/4182)) ([4b778bf](https://github.com/mikro-orm/mikro-orm/commit/4b778bf2db55bdc678a13c7dd6c27c3d72fde97d)), closes [#4124](https://github.com/mikro-orm/mikro-orm/issues/4124)
+
+
+### Performance Improvements
+
+* **core:** populating many large 1:M collections ([875d966](https://github.com/mikro-orm/mikro-orm/commit/875d966db9b4d4ea313709e0f1382f025599edbf)), closes [#4171](https://github.com/mikro-orm/mikro-orm/issues/4171)
+
+
+
+
+
 ## [5.6.15](https://github.com/mikro-orm/mikro-orm/compare/v5.6.14...v5.6.15) (2023-03-18)
 
 
