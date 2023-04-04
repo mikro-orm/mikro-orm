@@ -4,7 +4,7 @@ import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
 
 export class MariaDbConnection extends AbstractSqlConnection {
 
-  connect(): void {
+  override createKnex(): void {
     this.client = this.createKnexClient(this.getPatchedDialect());
     this.connected = true;
   }
