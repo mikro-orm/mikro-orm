@@ -1,7 +1,28 @@
 import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager';
 import type { AssignOptions } from './EntityAssigner';
-import type { EntityData, EntityName, AnyEntity, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData } from '../typings';
-import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, GetReferenceOptions, NativeInsertUpdateOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
+import type {
+  EntityData,
+  EntityName,
+  AnyEntity,
+  Primary,
+  Loaded,
+  FilterQuery,
+  EntityDictionary,
+  AutoPath,
+  RequiredEntityData,
+  PaginatedResult
+} from '../typings';
+import type {
+  CountOptions,
+  DeleteOptions,
+  FindOneOptions,
+  FindOneOrFailOptions,
+  FindOptions,
+  GetReferenceOptions,
+  NativeInsertUpdateOptions,
+  PaginateOptions,
+  UpdateOptions
+} from '../drivers/IDatabaseDriver';
 import type { IdentifiedReference, Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
 
@@ -120,6 +141,14 @@ export class EntityRepository<T extends object> {
    */
   async findAndCount<P extends string = never>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<[Loaded<T, P>[], number]> {
     return this.em.findAndCount<T, P>(this.entityName, where, options);
+  }
+
+  /**
+   * Finds all entities matching your `where` query and returns them as a `PaginatedResult` object.
+   * Default page is 1 and default per page is 10.
+   */
+  async findAndPaginate<P extends string = never>(where: FilterQuery<T>, paginateOptions?: PaginateOptions<T, P>): Promise<PaginatedResult<T, P>> {
+    return this.em.findAndPaginate<T, P>(this.entityName, where, paginateOptions);
   }
 
   /**

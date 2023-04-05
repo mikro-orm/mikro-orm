@@ -1,4 +1,5 @@
 import { inspect } from 'util';
+import { PaginateOptions } from './drivers';
 import type { Configuration } from './utils';
 import { QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
@@ -32,7 +33,7 @@ import type {
   FilterQuery,
   GetRepository,
   IHydrator,
-  Loaded,
+  Loaded, PaginatedResult,
   Populate,
   PopulateOptions,
   Primary,
@@ -397,6 +398,28 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     ]);
 
     return [entities, count];
+  }
+
+  /**
+   * Finds all entities matching your `where` query and returns them as a `PaginatedResult` object.
+   * Default page is 1 and default per page is 10.
+   */
+  async findAndPaginate<
+    Entity extends object,
+    Hint extends string = never,
+  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, paginateOptions: PaginateOptions<Entity, Hint> = {}): Promise<PaginatedResult<Entity, Hint>> {
+    const { page = 1, perPage = 10, ...options } = paginateOptions;
+    const [entities, count] = await this.findAndCount<Entity, Hint>(entityName, where, { ...options, limit: perPage, offset: (page - 1) * perPage });
+
+    return {
+      data: entities,
+      meta: {
+        totalItems: count,
+        totalPages: Math.ceil(count / perPage),
+        currentPage: page,
+        perPage: perPage,
+      }
+    };
   }
 
   /**

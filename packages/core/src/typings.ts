@@ -742,6 +742,16 @@ export type Loaded<T, L extends string = never> = T & {
     : T[K]
 };
 
+export interface PaginatedResult<T, P extends string = never> {
+  data: Loaded<T, P>[];
+  meta: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    perPage: number;
+  };
+}
+
 export interface LoadedReference<T> extends Reference<Defined<T>> {
   $: Defined<T>;
   get(): Defined<T>;
