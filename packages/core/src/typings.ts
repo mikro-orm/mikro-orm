@@ -752,6 +752,14 @@ export interface PaginatedResult<T, P extends string = never> {
   };
 }
 
+export interface SimplePaginatedResult<T, P extends string = never> {
+  data: Loaded<T, P>[];
+  meta: {
+    currentPage: number;
+    perPage: number;
+  }
+}
+
 export interface LoadedReference<T> extends Reference<Defined<T>> {
   $: Defined<T>;
   get(): Defined<T>;

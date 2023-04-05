@@ -10,7 +10,7 @@ import type {
   EntityDictionary,
   AutoPath,
   RequiredEntityData,
-  PaginatedResult
+  PaginatedResult, SimplePaginatedResult
 } from '../typings';
 import type {
   CountOptions,
@@ -144,11 +144,23 @@ export class EntityRepository<T extends object> {
   }
 
   /**
-   * Finds all entities matching your `where` query and returns them as a `PaginatedResult` object.
+   * Finds entities matching your `where` query and returns them as a `PaginatedResult` object.
+   * It will return total entities count and total pages.
    * Default page is 1 and default per page is 10.
+   * To use pagination without counting all the rows and only use the next & previous, then use `repository.simplePaginate()`.
    */
-  async findAndPaginate<P extends string = never>(where: FilterQuery<T>, paginateOptions?: PaginateOptions<T, P>): Promise<PaginatedResult<T, P>> {
-    return this.em.findAndPaginate<T, P>(this.entityName, where, paginateOptions);
+  async paginate<P extends string = never>(where: FilterQuery<T>, paginateOptions?: PaginateOptions<T, P>): Promise<PaginatedResult<T, P>> {
+    return this.em.paginate<T, P>(this.entityName, where, paginateOptions);
+  }
+
+  /**
+   * Finds entities matching your `where` query and returns them as a `SimplePaginatedResult` object.
+   * It will return total entities count and total pages.
+   * Default page is 1 and default per page is 10.
+   * To use pagination without counting all the rows and only use the next & previous, then use `em.simplePaginate()`.
+   */
+  async simplePaginate<P extends string = never>(where: FilterQuery<T>, paginateOptions?: PaginateOptions<T, P>): Promise<SimplePaginatedResult<T, P>> {
+    return this.em.simplePaginate<T, P>(this.entityName, where, paginateOptions);
   }
 
   /**

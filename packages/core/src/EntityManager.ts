@@ -33,11 +33,12 @@ import type {
   FilterQuery,
   GetRepository,
   IHydrator,
-  Loaded, PaginatedResult,
+  Loaded,
+  PaginatedResult,
   Populate,
   PopulateOptions,
   Primary,
-  RequiredEntityData,
+  RequiredEntityData, SimplePaginatedResult,
 } from './typings';
 import type { TransactionOptions } from './enums';
 import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
@@ -402,9 +403,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Finds all entities matching your `where` query and returns them as a `PaginatedResult` object.
+   * It will return total entities count and total pages.
    * Default page is 1 and default per page is 10.
+   * To use pagination without counting all the rows and only use the next & previous, then use `em.simplePaginate()`.
    */
-  async findAndPaginate<
+  async paginate<
     Entity extends object,
     Hint extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, paginateOptions: PaginateOptions<Entity, Hint> = {}): Promise<PaginatedResult<Entity, Hint>> {
@@ -416,6 +419,28 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       meta: {
         totalItems: count,
         totalPages: Math.ceil(count / perPage),
+        currentPage: page,
+        perPage: perPage,
+      }
+    };
+  }
+
+  /**
+   * Finds entities matching your `where` query and returns them as a `SimplePaginatedResult` object.
+   * It will return total entities count and total pages.
+   * Default page is 1 and default per page is 10.
+   * To use pagination without counting all the rows and only use the next & previous, then use `em.simplePaginate()`.
+   */
+  async simplePaginate<
+    Entity extends object,
+    Hint extends string = never,
+  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, paginateOptions: PaginateOptions<Entity, Hint> = {}): Promise<SimplePaginatedResult<Entity, Hint>> {
+    const { page = 1, perPage = 10, ...options } = paginateOptions;
+    const entities = await this.find<Entity, Hint>(entityName, where, { ...options, limit: perPage, offset: (page - 1) * perPage });
+
+    return {
+      data: entities,
+      meta: {
         currentPage: page,
         perPage: perPage,
       }
