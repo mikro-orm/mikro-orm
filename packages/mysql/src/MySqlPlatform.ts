@@ -13,7 +13,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return 'utf8mb4';
   }
 
-  convertJsonToDatabaseValue(value: unknown, context?: TransformContext): unknown {
+  override convertJsonToDatabaseValue(value: unknown, context?: TransformContext): unknown {
     if (context?.mode === 'query') {
       return value;
     }

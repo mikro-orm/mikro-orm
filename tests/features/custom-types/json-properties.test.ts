@@ -1,5 +1,6 @@
-import { MikroORM, Entity, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
+import { MikroORM, Entity, PrimaryKey, Property, SimpleLogger, Utils, IDatabaseDriver } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
+import { PLATFORMS } from '../../bootstrap';
 
 @Entity()
 export class User {
@@ -23,13 +24,13 @@ const options = {
   'mongo': { dbName: 'mikro_orm_json_props' },
 };
 
-describe.each(Object.keys(options))('JSON properties [%s]',  type => {
+describe.each(Utils.keys(options))('JSON properties [%s]',  type => {
   let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init({
+    orm = await MikroORM.init<IDatabaseDriver>({
       entities: [User],
-      type,
+      driver: PLATFORMS[type],
       loggerFactory: options => new SimpleLogger(options),
       ...options[type],
     });
