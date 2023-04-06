@@ -59,19 +59,19 @@ export class MongoPlatform extends Platform {
     return false;
   }
 
-  override convertsJsonAutomatically(marshall = false): boolean {
+  override convertsJsonAutomatically(): boolean {
     return true;
   }
 
-  convertJsonToDatabaseValue(value: unknown): unknown {
+  override convertJsonToDatabaseValue(value: unknown): unknown {
     return value;
   }
 
-  convertJsonToJSValue(value: unknown): unknown {
+  override convertJsonToJSValue(value: unknown): unknown {
     return value;
   }
 
-  marshallArray(values: string[]): string {
+  override marshallArray(values: string[]): string {
     return values as unknown as string;
   }
 
