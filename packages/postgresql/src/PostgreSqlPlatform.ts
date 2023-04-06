@@ -280,7 +280,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   /**
    * @inheritDoc
    */
-  castJsonValue(prop?: { columnTypes?: string[] }): string {
+  override castJsonValue(prop?: { columnTypes?: string[] }): string {
     if (prop?.columnTypes?.[0] === 'json') {
       return '::text';
     }
