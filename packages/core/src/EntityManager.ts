@@ -988,7 +988,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       const add = new Set(propIndex! >= 0 ? [unique[propIndex!]] : []);
 
       for (const cond of loadPK.values()) {
-        Object.keys(cond).forEach(key => add.add(key as EntityKey));
+        Utils.keys(cond).forEach(key => add.add(key as EntityKey));
       }
 
       const where = { $or: [] as Dictionary[] };
