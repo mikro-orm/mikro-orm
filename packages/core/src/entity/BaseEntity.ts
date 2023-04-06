@@ -18,24 +18,24 @@ export abstract class BaseEntity {
     helper(this).populated(populated);
   }
 
-  toReference<T extends this = this>(): Ref<T> & LoadedReference<Loaded<T, AddEager<T>>> {
-    return Reference.create(this) as unknown as Ref<T> & LoadedReference<Loaded<T, AddEager<T>>>;
+  toReference<Entity extends this = this>(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>> {
+    return Reference.create(this) as unknown as Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
   }
 
-  toObject<T extends this = this>(ignoreFields: string[] = []): EntityDTO<T> {
-    return helper(this as unknown as T).toObject(ignoreFields);
+  toObject<Entity extends this = this>(ignoreFields: string[] = []): EntityDTO<Entity> {
+    return helper(this as unknown as Entity).toObject(ignoreFields);
   }
 
-  toPOJO<T extends this = this>(): EntityDTO<T> {
-    return helper(this as unknown as T).toPOJO();
+  toPOJO<Entity extends this = this>(): EntityDTO<Entity> {
+    return helper(this as unknown as Entity).toPOJO();
   }
 
-  assign(data: EntityData<this>, options?: AssignOptions): this {
-    return EntityAssigner.assign(this as object, data, options) as this;
+  assign<Entity extends this = this>(data: EntityData<Entity>, options?: AssignOptions): Entity {
+    return EntityAssigner.assign(this as Entity, data, options);
   }
 
-  init<Populate extends string = never>(populated = true): Promise<Loaded<this, Populate>> {
-    return helper(this).init<Populate>(populated);
+  init<Entity extends this = this, Populate extends string = never>(populated = true): Promise<Loaded<Entity, Populate>> {
+    return helper(this as Entity).init<Populate>(populated);
   }
 
   getSchema(): string | undefined {
