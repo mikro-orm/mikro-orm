@@ -35,7 +35,7 @@ export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
   /**
    * @inheritDoc
    */
-  getEntityManager(): SqlEntityManager {
+  override getEntityManager(): SqlEntityManager {
     return this._em;
   }
 

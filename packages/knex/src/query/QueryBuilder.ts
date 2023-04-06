@@ -41,7 +41,7 @@ import type { Alias } from './QueryBuilderHelper';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
-import type { Field, JoinOptions } from '../typings';
+import type { Field, IQueryBuilder, JoinOptions } from '../typings';
 
 /**
  * SQL query builder with fluent interface.
