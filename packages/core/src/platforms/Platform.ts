@@ -11,9 +11,10 @@ import {
   ArrayType, BigIntType, BlobType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
   TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType,
 } from '../types';
-import { Utils } from '../utils/Utils';
+import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
 import type { MikroORM } from '../MikroORM';
+import type { TransformContext } from '../types/Type';
 
 export const JsonProperty = Symbol('JsonProperty');
 
@@ -320,8 +321,17 @@ export abstract class Platform {
     throw new Error('Full text searching is not supported by this driver.');
   }
 
+  // TODO v6: remove the `marshall` parameter
   convertsJsonAutomatically(marshall = false): boolean {
-    return !marshall;
+    return true;
+  }
+
+  convertJsonToDatabaseValue(value: unknown, context?: TransformContext): unknown {
+    return JSON.stringify(value);
+  }
+
+  convertJsonToJSValue(value: unknown): unknown {
+    return parseJsonSafe(value);
   }
 
   getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {

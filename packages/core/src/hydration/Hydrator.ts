@@ -16,7 +16,7 @@ export abstract class Hydrator implements IHydrator {
   /**
    * @inheritDoc
    */
-  hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+  hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
     this.running = true;
     const props = this.getProperties(meta, type);
 
@@ -29,7 +29,7 @@ export abstract class Hydrator implements IHydrator {
   /**
    * @inheritDoc
    */
-  hydrateReference<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string): void {
+  hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string): void {
     this.running = true;
     meta.primaryKeys.forEach(pk => {
       this.hydrateProperty<T>(entity, meta.properties[pk], data, factory, false, convertCustomTypes);
@@ -41,7 +41,7 @@ export abstract class Hydrator implements IHydrator {
     return this.running;
   }
 
-  protected getProperties<T>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityProperty<T>[] {
+  protected getProperties<T extends object>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityProperty<T>[] {
     if (type === 'reference') {
       return meta.primaryKeys.map(pk => meta.properties[pk]);
     }
@@ -53,7 +53,7 @@ export abstract class Hydrator implements IHydrator {
     return meta.hydrateProps;
   }
 
-  protected hydrateProperty<T>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean): void {
+  protected hydrateProperty<T extends object>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean): void {
     entity[prop.name] = data[prop.name];
   }
 

@@ -58,7 +58,7 @@ describe('EntityManagerPostgre', () => {
       forceUtcTimezone: true,
     } as any, false);
     const driver = new PostgreSqlDriver(config);
-    expect(driver.getConnection().getConnectionOptions()).toEqual({
+    expect(driver.getConnection().getConnectionOptions()).toMatchObject({
       database: 'db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -1886,14 +1886,14 @@ describe('EntityManagerPostgre', () => {
       ],
     } as any, false);
     const driver = new PostgreSqlDriver(config);
-    expect(driver.getConnection('write').getConnectionOptions()).toEqual({
+    expect(driver.getConnection('write').getConnectionOptions()).toMatchObject({
       database: 'db_name',
       host: '127.0.0.10',
       password: 'secret',
       user: 'user',
       port: 1234,
     });
-    expect(driver.getConnection('read').getConnectionOptions()).toEqual({
+    expect(driver.getConnection('read').getConnectionOptions()).toMatchObject({
       database: 'db_name',
       host: 'read_host_1',
       password: 'secret',
