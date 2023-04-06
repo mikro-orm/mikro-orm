@@ -1,4 +1,4 @@
-import { OptionalProps, wrap } from '@mikro-orm/core';
+import { OptionalProps, ref, wrap } from '@mikro-orm/core';
 import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
@@ -612,6 +612,28 @@ describe('check typings', () => {
     const populated3: Loaded<Parent, 'children'> = await parent.load({ populate: ['children'] });
     const populated4: Loaded<Parent, 'children'> = await parent.load({ populate: ['children', 'id'] });
     const populated5: Loaded<Parent, 'children'> = await parent.load({ populate: ['children.parent'] });
+  });
+
+  test('assignability of Loaded<T> to Ref<T> via ref() helper', async () => {
+    interface Node extends BaseEntity {
+      id: string;
+    }
+
+    interface Author extends Node {
+      name: string;
+    }
+
+    interface Publisher extends Node {
+      foundingAuthor: Ref<Author>;
+      publishedBooks: Collection<Book>;
+    }
+
+    interface Book extends Node {
+      publishedBy: Ref<Publisher>;
+    }
+
+    const circularReferenceBook = {} as Loaded<Book, 'publishedBy.foundingAuthor'>;
+    const circularReference: Ref<Book> = ref(circularReferenceBook);
   });
 
   test('exclusion', async () => {
