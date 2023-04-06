@@ -6,15 +6,15 @@ let orm: MikroORM;
 
 class UuidBinaryType extends Type<string, Buffer> {
 
-  convertToDatabaseValue(uuid: string) {
+  override convertToDatabaseValue(uuid: string) {
     return Buffer.from(parse(uuid));
   }
 
-  convertToJSValue(bin: Buffer) {
+  override convertToJSValue(bin: Buffer) {
     return stringify(bin);
   }
 
-  getColumnType() {
+  override getColumnType() {
     return 'binary(16)';
   }
 
