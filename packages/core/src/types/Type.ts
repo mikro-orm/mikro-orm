@@ -5,7 +5,7 @@ import type { Constructor, EntityMetadata, EntityProperty } from '../typings';
 export interface TransformContext {
   fromQuery?: boolean;
   key?: string;
-  mode?: 'hydration' | 'query' | 'discovery' | 'serialization';
+  mode?: 'hydration' | 'query' | 'query-data' | 'discovery' | 'serialization';
 }
 
 export abstract class Type<JSType = string, DBType = JSType> {
@@ -53,7 +53,7 @@ export abstract class Type<JSType = string, DBType = JSType> {
    * as often the raw database response is not the same as the `convertToDatabaseValue` result.
    * This allows to disable the additional conversion in case you know it is not needed.
    */
-  ensureComparable(): boolean {
+  ensureComparable<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T>): boolean {
     return true;
   }
 

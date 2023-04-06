@@ -1,4 +1,4 @@
-import { Type } from './Type';
+import { Type, TransformContext } from './Type';
 import { DateType } from './DateType';
 import { TimeType } from './TimeType';
 import { DateTimeType } from './DateTimeType';
@@ -24,7 +24,7 @@ import { UnknownType } from './UnknownType';
 export {
   Type, DateType, TimeType, DateTimeType, BigIntType, BlobType, ArrayType, EnumArrayType, EnumType,
   JsonType, IntegerType, SmallIntType, TinyIntType, MediumIntType, FloatType, DoubleType, BooleanType, DecimalType,
-  StringType, UuidType, TextType, UnknownType,
+  StringType, UuidType, TextType, UnknownType, TransformContext,
 };
 
 export const types = {

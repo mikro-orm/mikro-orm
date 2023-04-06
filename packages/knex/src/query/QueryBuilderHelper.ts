@@ -786,7 +786,7 @@ export class QueryBuilderHelper {
       }
 
       if (prop.customType && convertCustomTypes && !this.platform.isRaw(data[k])) {
-        data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, { fromQuery: true, key: k, mode: 'query' });
+        data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, { fromQuery: true, key: k, mode: 'query-data' });
       }
 
       if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(data[k])) {

@@ -1,4 +1,4 @@
-import { types, defaults } from 'pg';
+import TypeOverrides from 'pg/lib/type-overrides';
 import type { Dictionary } from '@mikro-orm/core';
 import type { Knex } from '@mikro-orm/knex';
 import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
@@ -16,11 +16,13 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
 
   getConnectionOptions(): Knex.PgConnectionConfig {
     const ret = super.getConnectionOptions() as Knex.PgConnectionConfig;
+    const types = new TypeOverrides();
     [1082].forEach(oid => types.setTypeParser(oid, str => str)); // date type
 
     if (this.config.get('forceUtcTimezone')) {
       [1114].forEach(oid => types.setTypeParser(oid, str => new Date(str + 'Z'))); // timestamp w/o TZ type
-      (defaults as any).parseInputDatesAsUTC = true;
+      ret.parseInputDatesAsUTC = true;
+      ret.types = types as any;
     }
 
     return ret;

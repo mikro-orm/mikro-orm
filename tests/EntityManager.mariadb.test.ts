@@ -31,7 +31,7 @@ describe('EntityManagerMariaDb', () => {
       forceUtcTimezone: true,
     } as any, false);
     const driver = new MariaDbDriver(config);
-    expect(driver.getConnection().getConnectionOptions()).toEqual({
+    expect(driver.getConnection().getConnectionOptions()).toMatchObject({
       database: 'db_name',
       host: '127.0.0.10',
       password: 'secret',

@@ -2,11 +2,11 @@ import type { EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { Hydrator } from './Hydrator';
 import { Collection } from '../entity/Collection';
 import { Reference } from '../entity/Reference';
-import { Utils } from '../utils/Utils';
+import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
 import type { EntityFactory } from '../entity/EntityFactory';
 
-type EntityHydrator<T> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string) => void;
+type EntityHydrator<T extends object> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string) => void;
 
 export class ObjectHydrator extends Hydrator {
 
@@ -21,7 +21,7 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @inheritDoc
    */
-  hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+  hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, type);
     const running = this.running;
     this.running = true;
@@ -32,7 +32,7 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @inheritDoc
    */
-  hydrateReference<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
+  hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, 'reference');
     const running = this.running;
     this.running = true;
@@ -43,7 +43,7 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getEntityHydrator<T>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityHydrator<T> {
+  getEntityHydrator<T extends object>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityHydrator<T> {
     const exists = this.hydrators[type].get(meta.className);
 
     if (exists) {
@@ -78,7 +78,7 @@ export class ObjectHydrator extends Hydrator {
       return ret;
     };
 
-    const hydrateScalar = <T, U>(prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
+    const hydrateScalar = (prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
       const entityKey = path.map(k => this.wrap(k)).join('');
       const preCond = preCondition(dataKey);
       const convertorKey = path.filter(k => !k.match(/\[idx_\d+]/)).map(k => this.safeKey(k)).join('_');
@@ -99,7 +99,7 @@ export class ObjectHydrator extends Hydrator {
           `      const value = convertToJSValue_${convertorKey}(data${dataKey});`,
         );
 
-        if (prop.customType.ensureComparable()) {
+        if (prop.customType.ensureComparable(meta, prop)) {
           ret.push(`      data${dataKey} = convertToDatabaseValue_${convertorKey}(value);`);
         }
 
@@ -158,7 +158,7 @@ export class ObjectHydrator extends Hydrator {
         }
       }
 
-      if (prop.customType?.ensureComparable()) {
+      if (prop.customType?.ensureComparable(meta, prop)) {
         context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
         ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
@@ -210,9 +210,10 @@ export class ObjectHydrator extends Hydrator {
 
     const parseObjectEmbeddable = (prop: EntityProperty, dataKey: string, ret: string[]): void => {
       if (!this.platform.convertsJsonAutomatically() && (prop.object || prop.array)) {
+        context.set('parseJsonSafe', parseJsonSafe);
         ret.push(
           `  if (typeof data${dataKey} === 'string') {`,
-          `    data${dataKey} = JSON.parse(data${dataKey});`,
+          `    data${dataKey} = parseJsonSafe(data${dataKey});`,
           `  }`,
         );
       }
@@ -341,7 +342,7 @@ export class ObjectHydrator extends Hydrator {
     return hydrator;
   }
 
-  private createCollectionItemMapper<T>(prop: EntityProperty): string[] {
+  private createCollectionItemMapper<T extends object>(prop: EntityProperty): string[] {
     const meta = this.metadata.get(prop.type);
     const lines: string[] = [];
 

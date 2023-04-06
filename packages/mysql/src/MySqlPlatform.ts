@@ -1,7 +1,7 @@
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
-import type { SimpleColumnMeta, Type } from '@mikro-orm/core';
+import type { SimpleColumnMeta, Type, TransformContext } from '@mikro-orm/core';
 import { expr, Utils } from '@mikro-orm/core';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
@@ -11,6 +11,14 @@ export class MySqlPlatform extends AbstractSqlPlatform {
 
   getDefaultCharset(): string {
     return 'utf8mb4';
+  }
+
+  convertJsonToDatabaseValue(value: unknown, context?: TransformContext): unknown {
+    if (context?.mode === 'query') {
+      return value;
+    }
+
+    return JSON.stringify(value);
   }
 
   getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {

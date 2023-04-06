@@ -153,6 +153,19 @@ export function equals(a: any, b: any): boolean {
 
 const equalsFn = equals;
 
+export function parseJsonSafe<T = unknown>(value: unknown): T {
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      // ignore and return the value, as sometimes we get the parsed value,
+      // e.g. when it is a string value in JSON column
+    }
+  }
+
+  return value as T;
+}
+
 export class Utils {
 
   static readonly PK_SEPARATOR = '~~~';
