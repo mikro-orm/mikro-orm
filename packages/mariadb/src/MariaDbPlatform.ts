@@ -18,10 +18,10 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
     const [a, ...b] = path;
 
     if (aliased) {
-      return expr(alias => `${this.quoteIdentifier(`${alias}.${a}`)}->'$.${b.join('.')}'`);
+      return expr(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
     }
 
-    return `${this.quoteIdentifier(a)}->'$.${b.join('.')}'`;
+    return `json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`;
   }
 
   getBooleanTypeDeclarationSQL(): string {
