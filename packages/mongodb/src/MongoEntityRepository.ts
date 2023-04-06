@@ -23,7 +23,7 @@ export class MongoEntityRepository<T extends object> extends EntityRepository<T>
   /**
    * @inheritDoc
    */
-  getEntityManager(): MongoEntityManager {
+  override getEntityManager(): MongoEntityManager {
     return this._em;
   }
 
