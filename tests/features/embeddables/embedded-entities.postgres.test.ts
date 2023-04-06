@@ -1,4 +1,4 @@
-import { Embeddable, Embedded, Entity, expr, MikroORM, PrimaryKey, Property, ReferenceKind, t } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, raw, MikroORM, PrimaryKey, Property, ReferenceKind, t } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
@@ -402,10 +402,10 @@ describe('embedded entities in postgresql', () => {
     const mock = mockLogger(orm);
 
     const r = await orm.em.find(User, {
-      [expr('(address4->>\'street\')::text != \'\'')]: [],
-      [expr('lower((address4->>\'city\')::text) = ?')]: ['prague'],
-      [expr('(address4->>?)::text = ?')]: ['city', 'Prague'],
-      [expr('(address4->>?)::text')]: ['postalCode', '12000'],
+      [raw('(address4->>\'street\')::text != \'\'')]: [],
+      [raw('lower((address4->>\'city\')::text) = ?', ['prague'])]: [],
+      [raw('(address4->>?)::text = ?', ['city', 'Prague'])]: [],
+      [raw('(address4->>?)::text', ['postalCode'])]: '12000',
     });
     expect(r[0]).toBeInstanceOf(User);
     expect(r[0].address4).toBeInstanceOf(Address1);

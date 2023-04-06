@@ -7,6 +7,8 @@ import MySqlDialect from 'knex/lib/dialects/mysql';
 // @ts-ignore
 import MySqlColumnCompiler from 'knex/lib/dialects/mysql/schema/mysql-columncompiler';
 // @ts-ignore
+import MySqlQueryCompiler from 'knex/lib/dialects/mysql/query/mysql-querycompiler';
+// @ts-ignore
 import PostgresDialectTableCompiler from 'knex/lib/dialects/postgres/schema/pg-tablecompiler';
 // @ts-ignore
 import Sqlite3Dialect from 'knex/lib/dialects/sqlite3';
@@ -24,6 +26,7 @@ export const MonkeyPatchable = {
   QueryExecutioner,
   MySqlDialect,
   MySqlColumnCompiler,
+  MySqlQueryCompiler,
   PostgresDialectTableCompiler,
   Sqlite3Dialect,
   Sqlite3DialectTableCompiler,

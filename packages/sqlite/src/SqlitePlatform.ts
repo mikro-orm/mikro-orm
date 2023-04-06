@@ -1,7 +1,7 @@
 // @ts-ignore
 import { escape } from 'sqlstring-sqlite';
 import type { EntityProperty } from '@mikro-orm/core';
-import { expr, JsonProperty, Utils } from '@mikro-orm/core';
+import { raw, JsonProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { SqliteSchemaHelper } from './SqliteSchemaHelper';
 import { SqliteExceptionConverter } from './SqliteExceptionConverter';
@@ -106,10 +106,10 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     const [a, ...b] = path;
 
     if (aliased) {
-      return expr(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
+      return raw(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
     }
 
-    return `json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`;
+    return raw(`json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`);
   }
 
   override getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {

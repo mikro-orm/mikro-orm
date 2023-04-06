@@ -1,5 +1,5 @@
 import type { Dictionary, EntityKey } from '@mikro-orm/core';
-import { ReferenceKind, Utils } from '@mikro-orm/core';
+import { ALIAS_REPLACEMENT, raw, RawQueryFragment, ReferenceKind, Utils } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode';
 import type { IQueryBuilder } from '../typings';
 import { QueryType } from './enums';
@@ -25,7 +25,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       const childNode = this.payload[field] as CriteriaNode<T>;
       const payload = childNode.process(qb, this.prop ? alias : ownerAlias);
       const operator = Utils.isOperator(field);
-      const customExpression = ObjectCriteriaNode.isCustomExpression(field);
+      const isRawField = RawQueryFragment.isKnownFragment(field);
       // we need to keep the prefixing for formulas otherwise we would lose aliasing context when nesting inside group operators
       const virtual = childNode.prop?.persist === false && !childNode.prop?.formula;
       // if key is missing, we are inside group operator and we need to prefix with alias
@@ -36,8 +36,11 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         this.inlineChildPayload(o, payload, field as EntityKey, alias, childAlias);
       } else if (childNode.shouldRename(payload)) {
         o[childNode.renameFieldToPK(qb)] = payload;
-      } else if (primaryKey || virtual || operator || customExpression || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type ?? QueryType.SELECT)) {
-        o[field.replace(/\[::alias::]/g, alias!)] = payload;
+      } else if (isRawField) {
+        const rawField = RawQueryFragment.getKnownFragment(field)!;
+        o[raw(rawField.sql.replaceAll(ALIAS_REPLACEMENT, alias!), rawField.params)] = payload;
+      } else if (primaryKey || virtual || operator || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type ?? QueryType.SELECT)) {
+        o[field.replaceAll(ALIAS_REPLACEMENT, alias!)] = payload;
       } else {
         o[`${alias}.${field}`] = payload;
       }
