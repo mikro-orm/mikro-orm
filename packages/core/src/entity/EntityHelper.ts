@@ -198,7 +198,7 @@ export class EntityHelper {
     helper(entity).__pk = helper(entity).getPrimaryKey()!;
 
     // the inverse side will be changed on the `value` too, so we need to clean-up and schedule orphan removal there too
-    if (!prop.primary && value?.[prop2.name] != null && Reference.unwrapReference(value?.[prop2.name]) !== entity) {
+    if (!prop.primary && value?.[prop2.name] != null && Reference.unwrapReference(value?.[prop2.name] as object) !== entity) {
       const other = Reference.unwrapReference(value![prop2.name]!);
       delete helper(other).__data[prop.name];
 
