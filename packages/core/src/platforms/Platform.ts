@@ -323,8 +323,7 @@ export abstract class Platform {
     throw new Error('Full text searching is not supported by this driver.');
   }
 
-  // TODO v6: remove the `marshall` parameter
-  convertsJsonAutomatically(marshall = false): boolean {
+  convertsJsonAutomatically(): boolean {
     return true;
   }
 
