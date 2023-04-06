@@ -4,13 +4,12 @@ import type { EntityMetadata, EntityProperty } from '../typings';
 
 export class JsonType extends Type<unknown, string | null> {
 
-  // TODO v6: remove the boolean variant
-  override convertToDatabaseValue(value: unknown, platform: Platform, context?: TransformContext | boolean): string | null {
+  override convertToDatabaseValue(value: unknown, platform: Platform, context?: TransformContext): string | null {
     if (value == null) {
       return value as null;
     }
 
-    return platform.convertJsonToDatabaseValue(value, typeof context === 'boolean' ? { fromQuery: context } : context) as string;
+    return platform.convertJsonToDatabaseValue(value, context) as string;
   }
 
   override convertToJSValueSQL(key: string, platform: Platform): string {
@@ -21,7 +20,7 @@ export class JsonType extends Type<unknown, string | null> {
     return key + platform.castColumn(this.prop);
   }
 
-  convertToJSValue(value: string | unknown, platform: Platform): unknown {
+  override convertToJSValue(value: string | unknown, platform: Platform): unknown {
     return platform.convertJsonToJSValue(value);
   }
 
