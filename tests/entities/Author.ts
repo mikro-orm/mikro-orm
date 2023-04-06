@@ -123,8 +123,8 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'vers
     Author.afterDestroyCalled += 1;
   }
 
-  override assign(data: any): this {
-    return EntityAssigner.assign(this, data);
+  override assign<T extends this>(data: any): T {
+    return EntityAssigner.assign(this as T, data);
   }
 
   toJSON(strict = true, strip: (keyof this)[] = ['id', 'email'], ...args: any[]): EntityDTO<this> {
