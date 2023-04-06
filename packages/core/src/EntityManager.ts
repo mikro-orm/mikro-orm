@@ -866,7 +866,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       const add = new Set(propIndex! >= 0 ? [unique[propIndex!]] : []);
 
       for (const cond of loadPK.values()) {
-        Object.keys(cond).forEach(key => add.add(key));
+        Utils.keys(cond).forEach(key => add.add(key));
       }
 
       const pks = await this.driver.find(meta.className, { $or: [...loadPK.values()] as Dictionary[] }, {
@@ -879,7 +879,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         const pk = pks.find(pk => {
           const tmp = { ...pk };
           meta.primaryKeys.forEach(pk => delete tmp[pk]);
-          return this.comparator.matching(entityName, cond, tmp);
+          return this.comparator.matching(entityName, cond as any, tmp);
         });
 
         /* istanbul ignore next */
