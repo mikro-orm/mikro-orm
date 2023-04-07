@@ -17,6 +17,7 @@ import {
   ref,
   rel,
   t,
+  sql,
 } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
@@ -25,7 +26,7 @@ import { Test2 } from './Test2';
 
 @Entity()
 @Filter({ name: 'expensive', cond: { price: { $gt: 1000 } } })
-@Filter({ name: 'long', cond: { 'length(perex)': { $gt: 10000 } } })
+@Filter({ name: 'long', cond: () => ({ [sql`length(perex)`]: { $gt: 10000 } }) })
 @Filter({ name: 'hasAuthor', cond: { author: { $ne: null } }, default: true })
 @Filter({ name: 'writtenBy', cond: args => ({ author: { name: args.name } }) })
 export class Book2 {
