@@ -1,5 +1,5 @@
 import type { Dictionary, Platform } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, EntitySchema, expr, PrimaryKey, Property, ReferenceKind, SerializedPrimaryKey, Type } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, EntitySchema, PrimaryKey, Property, ReferenceKind, SerializedPrimaryKey, Type } from '@mikro-orm/core';
 import { MikroORM, ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../helpers';
 
@@ -327,7 +327,7 @@ describe('embedded entities in mongo', () => {
     expect(u4).toBe(u1);
     const u5 = await orm.em.findOneOrFail(User, {
       address4: {
-        [expr('$exists')]: true,
+        $exists: true,
       },
     });
     expect(u5).toBe(u1);
