@@ -1184,7 +1184,7 @@ export class Utils {
     return Object.entries(obj) as [keyof T, T[keyof T]][];
   }
 
-  static isRawSql(value: unknown): value is { sql: string; params?: unknown[]; use: () => void } {
+  static isRawSql(value: unknown): value is { sql: string; params: unknown[]; use: () => void } {
     return typeof value === 'object' && !!value && '__raw' in value;
   }
 
