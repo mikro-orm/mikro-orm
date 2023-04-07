@@ -1,6 +1,6 @@
 import { Client } from 'pg';
 import type { EntityProperty, Type, SimpleColumnMeta, Dictionary } from '@mikro-orm/core';
-import { expr, JsonProperty, Utils } from '@mikro-orm/core';
+import { ALIAS_REPLACEMENT, JsonProperty, raw, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
@@ -166,12 +166,12 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
     const first = path.shift();
     const last = path.pop();
-    const root = aliased ? expr(alias => this.quoteIdentifier(`${alias}.${first}`)) : this.quoteIdentifier(first!);
+    const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${first}` : first!);
     const types = {
       number: 'float8',
       boolean: 'bool',
     } as Dictionary;
-    const cast = (key: string) => type in types ? `(${key})::${types[type]}` : key;
+    const cast = (key: string) => raw(type in types ? `(${key})::${types[type]}` : key);
 
     if (path.length === 0) {
       return cast(`${root}->>'${last}'`);

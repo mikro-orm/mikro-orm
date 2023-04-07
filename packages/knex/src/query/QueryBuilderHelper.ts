@@ -10,11 +10,14 @@ import type {
   QBFilterQuery,
 } from '@mikro-orm/core';
 import {
+  ALIAS_REPLACEMENT_RE,
   GroupOperator,
   LockMode,
   OptimisticLockError,
   QueryOperator,
   QueryOrderNumeric,
+  raw,
+  RawQueryFragment,
   ReferenceKind,
   Utils,
 } from '@mikro-orm/core';
@@ -41,7 +44,7 @@ export class QueryBuilderHelper {
   mapper(field: string | Knex.Raw, type?: QueryType, value?: any, alias?: string | null): string;
   mapper(field: string | Knex.Raw, type = QueryType.SELECT, value?: any, alias?: string | null): string | Knex.Raw {
     if (Utils.isRawSql(field)) {
-      return this.platform.formatQuery(field.sql, field.params ?? []);
+      return this.knex.raw(field.sql, field.params);
     }
 
     if (typeof field !== 'string') {
@@ -80,10 +83,15 @@ export class QueryBuilderHelper {
       return this.knex.raw('(' + parts.map(part => this.knex.ref(part)).join(', ') + ')');
     }
 
-    let ret = field;
-    const customExpression = QueryBuilderHelper.isCustomExpression(field, !!alias);
+    const rawField = RawQueryFragment.getKnownFragment(field);
+
+    if (rawField) {
+      return this.knex.raw(rawField.sql, rawField.params);
+    }
+
     const [a, f] = this.splitField(field as EntityKey);
     const prop = this.getProperty(f, a);
+    let ret = field;
 
     // embeddable nested path instead of a regular property with table alias, reset alias
     if (prop?.name === a && prop.embeddedProps[f]) {
@@ -106,7 +114,7 @@ export class QueryBuilderHelper {
 
     if (prop?.hasConvertToJSValueSQL) {
       const prefixed = this.prefix(field, isTableNameAliasRequired, true);
-      const valueSQL = prop.customType.convertToJSValueSQL!(prefixed, this.platform);
+      const valueSQL = prop.customType.convertToJSValueSQL(prefixed, this.platform);
 
       if (alias === null) {
         return this.knex.raw(valueSQL);
@@ -116,17 +124,12 @@ export class QueryBuilderHelper {
     }
 
     // do not wrap custom expressions
-    if (!customExpression) {
+    if (!rawField) {
       ret = this.prefix(field);
     }
 
     if (alias) {
       ret += ' as ' + alias;
-    }
-
-    if (customExpression) {
-      const bindings = Utils.asArray(value).slice(0, ret.match(/\?/g)?.length ?? 0);
-      return this.knex.raw(ret, bindings);
     }
 
     if (!isTableNameAliasRequired || this.isPrefixed(ret) || noPrefix) {
@@ -303,22 +306,16 @@ export class QueryBuilderHelper {
       value = null;
     }
 
-    if (QueryBuilderHelper.isCustomExpression(key)) {
-      // unwind parameters when ? found in field name
-      const count = key.concat('?').match(/\?/g)!.length - 1;
-      const values = Utils.asArray(value);
-      const params1 = values.slice(0, count).map((c: any) => Utils.isObject(c) ? JSON.stringify(c) : c);
-      const params2 = values.slice(count);
-      const k = this.mapper(key, QueryType.SELECT, params1);
-      const { sql, bindings } = (k as unknown as Knex.QueryBuilder).toSQL().toNative();
+    const rawField = RawQueryFragment.getKnownFragment(key);
 
-      if (params2.length > 0) {
-        params.push(...bindings);
-        params.push(...params2 as Knex.Value[]);
-        return sql + ' = ?';
+    if (rawField) {
+      let sql = rawField.sql;
+      params.push(...rawField.params as Knex.Value[]);
+      params.push(...Utils.asArray(value) as Knex.Value[]);
+
+      if ((Utils.asArray(value) as Knex.Value[]).length > 0) {
+        sql += ' = ?';
       }
-
-      params.push(...bindings);
 
       return sql;
     }
@@ -461,33 +458,24 @@ export class QueryBuilderHelper {
       return this.processObjectSubCondition(cond, key, qb, method, m, type);
     }
 
-    if (QueryBuilderHelper.isCustomExpression(key)) {
-      return this.processCustomExpression(qb, m, key, cond, type);
-    }
-
     const op = cond[key] === null ? 'is' : '=';
+    const raw = RawQueryFragment.getKnownFragment(key);
+
+    if (raw) {
+      const value = Utils.asArray(cond[key]);
+
+      if (value.length > 0) {
+        return void qb[m](this.knex.raw(raw.sql, raw.params), op, value[0]);
+      }
+
+      return void qb[m](this.knex.raw(raw.sql, raw.params));
+    }
 
     if (this.subQueries[key]) {
       return void qb[m](this.knex.raw(`(${this.subQueries[key]})`), op, cond[key]);
     }
 
     qb[m](this.mapper(key, type, cond[key], null), op, cond[key]);
-  }
-
-  private processCustomExpression<T extends any[] = any[]>(clause: any, m: string, key: string, cond: any, type: QueryType): void {
-    // unwind parameters when ? found in field name
-    const count = key.concat('?').match(/\?/g)!.length - 1;
-    const value = Utils.asArray(cond[key]);
-    const params1 = value.slice(0, count).map((c: any) => Utils.isObject(c) ? JSON.stringify(c) : c);
-    const params2 = value.slice(count);
-    const k = this.mapper(key, type, params1);
-
-    if (params2.length > 0) {
-      const val = params2.length === 1 && params2[0] === null ? null : this.knex.raw('?', params2);
-      return void clause[m](k, val);
-    }
-
-    clause[m](k);
   }
 
   private processObjectSubCondition(cond: any, key: string, qb: Knex.QueryBuilder, method: 'where' | 'having', m: 'where' | 'orWhere' | 'having', type: QueryType): void {
@@ -572,22 +560,24 @@ export class QueryBuilderHelper {
 
   getQueryOrderFromObject(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string {
     const ret: string[] = [];
-    Object.keys(orderBy).forEach(k => {
-      const direction = orderBy[k];
+    Object.keys(orderBy).forEach(key => {
+      const direction = orderBy[key];
       const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
 
-      if (QueryBuilderHelper.isCustomExpression(k)) {
-        ret.push(`${k} ${order.toLowerCase()}`);
+      const raw = RawQueryFragment.getKnownFragment(key);
+
+      if (raw) {
+        ret.push(`${this.platform.formatQuery(raw.sql, raw.params)} ${order.toLowerCase()}`);
         return;
       }
 
-      Utils.splitPrimaryKeys(k).forEach(f => {
+      Utils.splitPrimaryKeys(key).forEach(f => {
         // eslint-disable-next-line prefer-const
         let [alias, field] = this.splitField(f, true);
         alias = populate[alias] || alias;
 
         const prop = this.getProperty(field, alias);
-        const noPrefix = (prop && prop.persist === false && !prop.formula) || QueryBuilderHelper.isCustomExpression(f);
+        const noPrefix = (prop && prop.persist === false && !prop.formula) || RawQueryFragment.isKnownFragment(f);
         const column = this.mapper(noPrefix ? field : `${alias}.${field}`, type, undefined, null);
         /* istanbul ignore next */
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
@@ -681,25 +671,22 @@ export class QueryBuilderHelper {
     qb.update(versionProperty.fieldNames[0], this.knex.raw(sql));
   }
 
-  static isCustomExpression(field: string, hasAlias = false): boolean {
-    // if we do not have alias, we don't consider spaces as custom expressions
-    const re = hasAlias ? /[ ?<>=()'"`:]|^\d/ : /[?<>=()'"`:]|^\d/;
-
-    return !!field.match(re);
-  }
-
   private prefix(field: string, always = false, quote = false): string {
     let ret: string;
 
     if (!this.isPrefixed(field)) {
       const alias = always ? (quote ? this.alias : this.platform.quoteIdentifier(this.alias)) + '.' : '';
-      const fieldName = this.fieldName(field, this.alias, always);
+      const fieldName = this.fieldName(field, this.alias, always) as string | RawQueryFragment;
 
-      if (QueryBuilderHelper.isCustomExpression(fieldName)) {
-        return fieldName;
+      if (fieldName instanceof RawQueryFragment) {
+        return fieldName.sql;
       }
 
-      ret = alias + fieldName;
+      if (this.isPrefixed(fieldName)) {
+        ret = fieldName;
+      } else {
+        ret = alias + fieldName;
+      }
     } else {
       const [a, ...rest] = field.split('.');
       const f = rest.join('.');
@@ -746,17 +733,17 @@ export class QueryBuilderHelper {
 
     if (prop.fieldNameRaw) {
       if (!always) {
-        return prop.fieldNameRaw
-          .replace(/\[::alias::]\.?/g, '')
-          .replace(this.platform.quoteIdentifier('') + '.', '');
+        return raw(prop.fieldNameRaw
+          .replace(new RegExp(ALIAS_REPLACEMENT_RE + '\\.?', 'g'), '')
+          .replace(this.platform.quoteIdentifier('') + '.', ''));
       }
 
       if (alias) {
-        return prop.fieldNameRaw.replace(/\[::alias::]/g, alias);
+        return raw(prop.fieldNameRaw.replace(new RegExp(ALIAS_REPLACEMENT_RE, 'g'), alias));
       }
 
       /* istanbul ignore next */
-      return prop.fieldNameRaw;
+      return raw(prop.fieldNameRaw);
     }
 
     /* istanbul ignore next */
