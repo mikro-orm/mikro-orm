@@ -23,13 +23,14 @@ import type {
   RequiredEntityData,
 } from '@mikro-orm/core';
 import {
-  raw,
   helper,
   LoadStrategy,
   LockMode,
   PopulateHint,
   QueryFlag,
   QueryHelper,
+  raw,
+  RawQueryFragment,
   ReferenceKind,
   serialize,
   Utils,
@@ -255,10 +256,15 @@ export class QueryBuilder<T extends object = AnyEntity> {
   where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
   where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this {
     this.ensureNotFinalized();
+    const rawField = RawQueryFragment.getKnownFragment(cond as string);
 
-    if (Utils.isString(cond)) {
-      cond = { [`(${cond})`]: Utils.asArray(params) };
-      operator = operator || '$and';
+    if (rawField) {
+      const sql = this.platform.formatQuery(rawField.sql, rawField.params);
+      cond = { [raw(`(${sql})`)]: Utils.asArray(params) };
+      operator ??= '$and';
+    } else if (Utils.isString(cond)) {
+      cond = { [raw(`(${cond})`, Utils.asArray(params))]: [] };
+      operator ??= '$and';
     } else {
       cond = QueryHelper.processWhere({
         where: cond as FilterQuery<T>,
@@ -339,10 +345,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this.ensureNotFinalized();
 
     if (Utils.isString(cond)) {
-      cond = { [`(${cond})`]: Utils.asArray(params) };
+      cond = { [raw(`(${cond})`, params)]: [] };
     }
 
     this._having = CriteriaNodeFactory.createNode<T>(this.metadata, this.mainAlias.entityName, cond).process(this);
+
     return this;
   }
 
@@ -524,21 +531,33 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Returns the query with parameters as wildcards.
    */
   getQuery(): string {
-    return this.getKnexQuery().toSQL().toNative().sql;
+    return this.toQuery().sql;
+  }
+
+  #query?: { sql: string; _sql: Knex.Sql; params: readonly unknown[] };
+
+  toQuery(): { sql: string; _sql: Knex.Sql; params: readonly unknown[] } {
+    if (this.#query) {
+      return this.#query;
+    }
+
+    const sql = this.getKnexQuery().toSQL();
+    const query = sql.toNative();
+    return this.#query = { sql: query.sql, params: query.bindings ?? [], _sql: sql };
   }
 
   /**
    * Returns the list of all parameters for this query.
    */
   getParams(): readonly Knex.Value[] {
-    return this.getKnexQuery().toSQL().toNative().bindings;
+    return this.toQuery().params as Knex.Value[];
   }
 
   /**
    * Returns raw interpolated query string with all the parameters inlined.
    */
   getFormattedQuery(): string {
-    const query = this.getKnexQuery().toSQL();
+    const query = this.toQuery()._sql;
     return this.platform.formatQuery(query.sql, query.bindings);
   }
 
@@ -841,6 +860,14 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const ret: Field<T>[] = [];
 
     fields.forEach(field => {
+      const rawField = RawQueryFragment.getKnownFragment(field as string);
+
+      if (rawField) {
+        const sql = this.platform.formatQuery(rawField.sql, rawField.params);
+        ret.push(this.knex.raw(sql) as Field<T>);
+        return;
+      }
+
       if (!Utils.isString(field)) {
         ret.push(field);
         return;
@@ -1039,8 +1066,14 @@ export class QueryBuilder<T extends object = AnyEntity> {
           const aliased = this.knex.ref(prop.fieldNames[0]).toString();
           return `${prop.formula!(alias)} as ${aliased}`;
         })
-        .filter(field => !this._fields!.includes(field))
-        .forEach(field => this.addSelect(field));
+        .filter(field => !this._fields!.some(f => {
+          if (f instanceof RawQueryFragment) {
+            return f.sql === field && f.params.length === 0;
+          }
+
+          return f === field;
+        }))
+        .forEach(field => this._fields!.push(raw(field)));
     }
 
     this.processPopulateWhere();
@@ -1137,7 +1170,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
             addToSelect.push(fieldName);
           }
 
-          orderBy.push({ [`min(${this.ref(fieldName)}${type})`]: direction });
+          orderBy.push({ [raw(`min(${this.ref(fieldName)}${type})`)]: direction });
         }
       }
 

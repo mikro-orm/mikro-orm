@@ -41,6 +41,7 @@ import {
   LoadStrategy,
   QueryFlag,
   QueryHelper,
+  raw,
   ReferenceKind,
   Utils,
 } from '@mikro-orm/core';
@@ -825,12 +826,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     if (prop.customType?.convertToJSValueSQL && tableAlias) {
       const prefixed = qb.ref(prop.fieldNames[0]).withSchema(tableAlias).toString();
-      return [prop.customType.convertToJSValueSQL(prefixed, this.platform) + ' as ' + aliased];
+      return [raw(`${prop.customType.convertToJSValueSQL(prefixed, this.platform)} as ${aliased}`)];
     }
 
     if (prop.formula) {
       const alias = qb.ref(tableAlias ?? qb.alias).toString();
-      return [`${prop.formula!(alias)} as ${aliased}`];
+      return [raw(`${prop.formula!(alias)} as ${aliased}`)];
     }
 
     if (tableAlias) {
@@ -953,7 +954,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const meta = helper(entity).__meta;
     const qb = this.createQueryBuilder((entity as object).constructor.name, options.ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).withSchema(options.schema ?? meta.schema);
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
-    qb.select('1').where(cond!).setLockMode(options.lockMode, options.lockTableAliases);
+    qb.select(raw('1')).where(cond!).setLockMode(options.lockMode, options.lockTableAliases);
     await this.rethrow(qb.execute());
   }
 
@@ -1040,6 +1041,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const requiresSQLConversion = meta.props.some(p => p.customType?.convertToJSValueSQL);
     const hasExplicitFields = !!fields;
     const ret: Field<T>[] = [];
+    let addFormulas = false;
 
     if (joinedProps.length > 0) {
       ret.push(...this.getFieldsForJoinedLoad(qb, meta, fields, populate));
@@ -1067,17 +1069,19 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     } else if (lazyProps.filter(p => !p.formula).length > 0) {
       const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate, false));
       ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
+      addFormulas = true;
     } else if (hasLazyFormulas || requiresSQLConversion) {
       ret.push('*');
+      addFormulas = true;
     }
 
-    if (ret.length > 0 && !hasExplicitFields) {
+    if (ret.length > 0 && !hasExplicitFields && addFormulas) {
       meta.props
         .filter(prop => prop.formula && !lazyProps.includes(prop))
         .forEach(prop => {
           const alias = qb.ref(qb.alias).toString();
           const aliased = qb.ref(prop.fieldNames[0]).toString();
-          ret.push(`${prop.formula!(alias)} as ${aliased}`);
+          ret.push(raw(`${prop.formula!(alias)} as ${aliased}`));
         });
 
       meta.props
