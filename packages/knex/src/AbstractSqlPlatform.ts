@@ -1,5 +1,5 @@
 import { escape } from 'sqlstring';
-import { expr, JsonProperty, Platform, Utils, type Constructor, type EntityManager, type EntityRepository, type IDatabaseDriver, type MikroORM } from '@mikro-orm/core';
+import { raw, JsonProperty, Platform, Utils, type Constructor, type EntityManager, type EntityRepository, type IDatabaseDriver, type MikroORM } from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
 import { SqlSchemaGenerator, type SchemaHelper } from './schema';
 
@@ -61,6 +61,11 @@ export abstract class AbstractSqlPlatform extends Platform {
     let pos = 0;
     let ret = '';
 
+    if (sql[0] === '?' && sql[1] !== '?') {
+      ret += this.quoteValue(params[j++]);
+      pos = 1;
+    }
+
     while (pos < sql.length) {
       const idx = sql.indexOf('?', pos + 1);
 
@@ -69,14 +74,14 @@ export abstract class AbstractSqlPlatform extends Platform {
         break;
       }
 
-      if (sql.substr(idx - 1, 2) === '\\?') {
-        ret += sql.substr(pos, idx - pos - 1) + '?';
+      if (sql.substring(idx - 1, idx + 1) === '\\?') {
+        ret += sql.substring(pos, idx - 1) + '?';
         pos = idx + 1;
-      } else if (sql.substr(idx, 2) === '??') {
-        ret += sql.substr(pos, idx - pos) + this.quoteIdentifier(params[j++]);
+      } else if (sql.substring(idx, idx + 2) === '??') {
+        ret += sql.substring(pos, idx) + this.quoteIdentifier(params[j++]);
         pos = idx + 2;
       } else {
-        ret += sql.substr(pos, idx - pos) + this.quoteValue(params[j++]);
+        ret += sql.substring(pos, idx) + this.quoteValue(params[j++]);
         pos = idx + 1;
       }
     }
@@ -93,7 +98,7 @@ export abstract class AbstractSqlPlatform extends Platform {
     const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
 
     if (aliased) {
-      return expr(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(quoteKey).join('.')}')`);
+      return raw(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(quoteKey).join('.')}')`);
     }
 
     return `json_extract(${this.quoteIdentifier(a)}, '$.${b.map(quoteKey).join('.')}')`;

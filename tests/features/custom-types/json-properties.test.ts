@@ -1,4 +1,4 @@
-import { MikroORM, Entity, PrimaryKey, Property, SimpleLogger, Utils, IDatabaseDriver, wrap } from '@mikro-orm/core';
+import { MikroORM, Entity, PrimaryKey, Property, SimpleLogger, Utils, IDatabaseDriver, sql } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 import { PLATFORMS } from '../../bootstrap';
 
@@ -53,10 +53,10 @@ describe.each(Utils.keys(options))('JSON properties [%s]',  type => {
     const res2 = await orm.em.findOneOrFail(User, { value: true });
     expect(res2.value).toBe(true);
 
-    // this should work in v6, once the `raw()` helper refactor will be merged
-    // await orm.em.insert(User, { value: [1, 2, 3] });
-    // const res3 = await orm.em.findOneOrFail(User, { value: { $eq: [1, 2, 3] } });
-    // expect(res3.value).toEqual([1, 2, 3]);
+    await orm.em.insert(User, { value: [1, 2, 3] });
+    const val = type === 'mysql' ? sql`json_array(1, 2, 3)` : [1, 2, 3];
+    const res3 = await orm.em.findOneOrFail(User, { value: { $eq: val } });
+    expect(res3.value).toEqual([1, 2, 3]);
   });
 
   test('em.insert() with object value', async () => {
