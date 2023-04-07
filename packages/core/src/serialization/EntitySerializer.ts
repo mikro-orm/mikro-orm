@@ -144,7 +144,8 @@ export class EntitySerializer {
       if (!options.ignoreSerializers && serializer) {
         return serializer(returnValue);
       }
-      return returnValue;
+
+      return returnValue as EntityValue<T>;
     }
 
     /* istanbul ignore next */
