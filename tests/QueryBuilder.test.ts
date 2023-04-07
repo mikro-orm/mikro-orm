@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { expr, LockMode, MikroORM, QueryFlag, QueryOrder, raw, UnderscoreNamingStrategy } from '@mikro-orm/core';
+import { LockMode, MikroORM, QueryFlag, QueryOrder, raw, sql, UnderscoreNamingStrategy } from '@mikro-orm/core';
 import { CriteriaNode, QueryBuilder, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
@@ -37,13 +37,13 @@ describe('QueryBuilder', () => {
     const qb1 = orm.em.createQueryBuilder(Publisher2);
     qb1.select('*')
       .where({ name: 'test 123', type: PublisherType.GLOBAL })
-      .orderBy({ [`(point(location_latitude, location_longitude) <@> point(${53}, ${9}))`]: 'ASC' });
+      .orderBy({ [raw(`(point(location_latitude, location_longitude) <@> point(?, ?))`, [53, 9])]: 'ASC' });
     expect(qb1.getFormattedQuery()).toBe('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = \'test 123\' and `e0`.`type` = \'global\' order by (point(location_latitude, location_longitude) <@> point(53, 9)) asc');
 
     const qb2 = orm.em.createQueryBuilder(Publisher2);
     qb2.select('*')
       .where({ name: 'test 123', type: PublisherType.GLOBAL })
-      .orderBy({ [`(point(location_latitude, location_longitude) <@> point(${53.46}, ${9.90}))`]: 'ASC' });
+      .orderBy({ [raw(`(point(location_latitude, location_longitude) <@> point(?, ?))`, [53.46, 9.90])]: 'ASC' });
     expect(qb2.getFormattedQuery()).toBe('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = \'test 123\' and `e0`.`type` = \'global\' order by (point(location_latitude, location_longitude) <@> point(53.46, 9.9)) asc');
 
     // trying to modify finalized QB will throw
@@ -130,7 +130,7 @@ describe('QueryBuilder', () => {
 
   test('select constant expression', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
-    qb.select('1').where({ id: 123 });
+    qb.select(sql`1`).where({ id: 123 });
     expect(qb.getQuery()).toEqual('select 1 from `publisher2` as `e0` where `e0`.`id` = ?');
     expect(qb.getParams()).toEqual([123]);
   });
@@ -390,16 +390,26 @@ describe('QueryBuilder', () => {
     const qb = orm.em.createQueryBuilder(Author2, 'a');
     qb.select(['a.*', 'b.*'])
       .leftJoin('a.books', 'b', {
-        'json_contains(`a`.`meta`, ?)': [{ 'b.foo': 'bar' }],
-        'json_contains(`a`.`meta`, ?) = ?': [{ 'b.foo': 'bar' }, false],
-        'lower(b.bar)': '321',
+        [raw('json_contains(`b`.`meta`, ?)', [{ 'b.foo': 'bar' }])]: [],
+        [raw('json_contains(`b`.`meta`, ?) = ?', [{ 'b.foo': 'bar' }, false])]: [],
+        [raw('lower(??)', ['b.title'])]: '321',
       })
       .where({ 'b.title': 'test 123' });
-    const sql = 'select `a`.*, `b`.* from `author2` as `a` ' +
-      'left join `book2` as `b` on `a`.`id` = `b`.`author_id` and json_contains(`a`.`meta`, ?) and json_contains(`a`.`meta`, ?) = ? and lower(b.bar) = ? ' +
-      'where `b`.`title` = ?';
-    expect(qb.getQuery()).toEqual(sql);
-    expect(qb.getParams()).toEqual(['{"b.foo":"bar"}', '{"b.foo":"bar"}', false, '321', 'test 123']);
+    expect(qb.getQuery()).toEqual('select `a`.*, `b`.* from `author2` as `a` ' +
+      'left join `book2` as `b` ' +
+      'on `a`.`id` = `b`.`author_id` ' +
+      'and json_contains(`b`.`meta`, ?) ' +
+      'and json_contains(`b`.`meta`, ?) = ? ' +
+      'and lower(`b`.`title`) = ? ' +
+      'where `b`.`title` = ?');
+    expect(qb.getParams()).toEqual([{ 'b.foo': 'bar' }, { 'b.foo': 'bar' }, false, '321', 'test 123']);
+    expect(qb.getFormattedQuery()).toEqual('select `a`.*, `b`.* from `author2` as `a` ' +
+      'left join `book2` as `b` ' +
+      'on `a`.`id` = `b`.`author_id` ' +
+      'and json_contains(`b`.`meta`, \'{\\"b.foo\\":\\"bar\\"}\') ' +
+      'and json_contains(`b`.`meta`, \'{\\"b.foo\\":\\"bar\\"}\') = false ' +
+      'and lower(`b`.`title`) = \'321\' ' +
+      "where `b`.`title` = 'test 123'");
   });
 
   test('select leftJoin 1:m with multiple conditions', async () => {
@@ -427,19 +437,23 @@ describe('QueryBuilder', () => {
           },
           {
             $and: [
-              { 'json_contains(`a`.`meta`, ?)': [{ 'b.foo': 'bar' }] },
-              { 'json_contains(`a`.`meta`, ?) = ?': [{ 'b.foo': 'bar' }, false] },
-              { 'lower(b.bar)': '321' },
+              { [raw('json_contains(`b`.`meta`, ?)', [{ 'b.foo': 'bar' }])]: [] },
+              { [raw('json_contains(`b`.`meta`, ?) = ?', [{ 'b.foo': 'bar' }, false])]: [] },
+              { [raw('lower(??)', ['b.title'])]: '321' },
             ],
           },
         ],
       })
       .where({ 'b.title': 'test 123' });
     const sql = 'select `a`.*, `b`.* from `author2` as `a` ' +
-      'left join `book2` as `b` on `a`.`id` = `b`.`author_id` and (`b`.`baz` > ? and `b`.`baz` <= ?) and match(`b`.`title`) against (? in boolean mode) and ((`b`.`foo` is null and `b`.`qux` is not null and `b`.`quux` is null and `b`.`baz` = ?) or (`b`.`foo` not in (?, ?) and `b`.`baz` in (?, ?) and `b`.`qux` is not null and `b`.`bar` like ?) or (`b`.`qux` is null and `b`.`bar` regexp ?) or (json_contains(`a`.`meta`, ?) and json_contains(`a`.`meta`, ?) = ? and lower(b.bar) = ?)) ' +
+      'left join `book2` as `b` ' +
+      'on `a`.`id` = `b`.`author_id` ' +
+      'and (`b`.`baz` > ? and `b`.`baz` <= ?) ' +
+      'and match(`b`.`title`) against (? in boolean mode) ' +
+      'and ((`b`.`foo` is null and `b`.`qux` is not null and `b`.`quux` is null and `b`.`baz` = ?) or (`b`.`foo` not in (?, ?) and `b`.`baz` in (?, ?) and `b`.`qux` is not null and `b`.`bar` like ?) or (`b`.`qux` is null and `b`.`bar` regexp ?) or (json_contains(`b`.`meta`, ?) and json_contains(`b`.`meta`, ?) = ? and lower(`b`.`title`) = ?)) ' +
       'where `b`.`title` = ?';
     expect(qb.getQuery()).toEqual(sql);
-    expect(qb.getParams()).toEqual([1, 10, 'test', 0, 0, 1, 2, 3, '%test%', '^(te){1,3}st$', '{"b.foo":"bar"}', '{"b.foo":"bar"}', false, '321', 'test 123']);
+    expect(qb.getParams()).toEqual([1, 10, 'test', 0, 0, 1, 2, 3, '%test%', '^(te){1,3}st$', { 'b.foo': 'bar' }, { 'b.foo': 'bar' }, false, '321', 'test 123']);
   });
 
   test('select leftJoin m:n owner', async () => {
@@ -515,14 +529,18 @@ describe('QueryBuilder', () => {
 
   test('select with custom expression', async () => {
     const qb1 = orm.em.createQueryBuilder(Book2);
-    qb1.select('*').where({ 'json_contains(`e0`.`meta`, ?)': [{ foo: 'bar' }] });
+    qb1.select('*').where({
+      [raw('json_contains(`e0`.`meta`, ?)', [{ foo: 'bar' }])]: [],
+    });
     expect(qb1.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` where json_contains(`e0`.`meta`, ?)');
-    expect(qb1.getParams()).toEqual(['{"foo":"bar"}']);
+    expect(qb1.getParams()).toEqual([{ foo: 'bar' }]);
 
     const qb2 = orm.em.createQueryBuilder(Book2);
-    qb2.select('*').where({ [expr(a => `json_contains(\`${a}\`.\`meta\`, ?) = ?`)]: [{ foo: 'baz' }, false] });
+    qb2.select('*').where({
+      [raw(a => `json_contains(\`${a}\`.??, ?) = ?`, ['meta', { foo: 'baz' }, false])]: [],
+    });
     expect(qb2.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` where json_contains(`e0`.`meta`, ?) = ?');
-    expect(qb2.getParams()).toEqual(['{"foo":"baz"}', false]);
+    expect(qb2.getParams()).toEqual([{ foo: 'baz' }, false]);
   });
 
   test('select with prototype-less object', async () => {
@@ -646,21 +664,17 @@ describe('QueryBuilder', () => {
 
   test('GH #1668', async () => {
     const qb1 = orm.em.createQueryBuilder(Author2, 'a');
-    qb1.select([
-      'floor(`a`.`age`) as `books_total`',
-    ])
-    .groupBy('booksTotal')
-    .orderBy({ booksTotal: QueryOrder.ASC });
+    qb1.select(raw('floor(`a`.`age`) as `books_total`'))
+      .groupBy('booksTotal')
+      .orderBy({ booksTotal: QueryOrder.ASC });
 
     expect(qb1.getQuery()).toEqual('select floor(`a`.`age`) as `books_total` from `author2` as `a` group by `books_total` order by `books_total` asc');
     expect(qb1.getParams()).toEqual([]);
 
     const qb2 = orm.em.createQueryBuilder(Author2, 'a');
-    qb2.select([
-      'floor(`a`.`age`) as `code`',
-    ])
-    .groupBy('code')
-    .orderBy({ code: QueryOrder.ASC });
+    qb2.select(raw('floor(`a`.`age`) as `code`'))
+      .groupBy('code')
+      .orderBy({ code: QueryOrder.ASC });
 
     expect(qb2.getQuery()).toEqual('select floor(`a`.`age`) as `code` from `author2` as `a` group by `code` order by `code` asc');
     expect(qb2.getParams()).toEqual([]);
@@ -846,7 +860,7 @@ describe('QueryBuilder', () => {
 
   test('select distinct id with left join', async () => {
     const qb = orm.em.createQueryBuilder(BookTag2, 't');
-    qb.select(['distinct `b`.`uuid_pk`', 'b.*', 't.*'])
+    qb.select([raw('distinct `b`.`uuid_pk`'), 'b.*', 't.*'])
       .leftJoin('t.books', 'b')
       .where({ 'b.title': 'test 123' });
     const sql = 'select distinct `b`.`uuid_pk`, `b`.*, `t`.* from `book_tag2` as `t` ' +
@@ -882,12 +896,12 @@ describe('QueryBuilder', () => {
       'left join `book2` as `b` on `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
       'where (((b.title = ? or b.title = ?) and (1 = 1)) or (1 = 2))';
     expect(qb.getQuery()).toEqual(sql);
-    expect(qb.getParams()).toEqual(['test 123', 'lol 321']);
+    expect(qb.getParams()).toEqual(['test 123', 'lol 321' ]);
   });
 
   test('select with group by and having', async () => {
     const qb = orm.em.createQueryBuilder(BookTag2, 't');
-    qb.select(['b.*', 't.*', 'count(t.id) as tags'])
+    qb.select(['b.*', 't.*', raw('count(t.id) as tags')])
       .leftJoin('t.books', 'b')
       .where('b.title = ? or b.title = ?', ['test 123', 'lol 321'])
       .groupBy(['b.uuid', 't.id'])
@@ -904,11 +918,11 @@ describe('QueryBuilder', () => {
 
   test('select with group by and having with object', async () => {
     const qb = orm.em.createQueryBuilder(BookTag2, 't');
-    qb.select(['b.*', 't.*', 'count(t.id) as tags'])
+    qb.select(['b.*', 't.*', raw('count(t.id) as tags')])
       .leftJoin('t.books', 'b')
       .where('b.title = ? or b.title = ?', ['test 123', 'lol 321'])
       .groupBy(['b.uuid', 't.id'])
-      .having({ $or: [{ 'b.uuid': '...', 'count(t.id)': { $gt: 0 } }, { 'b.title': 'my title' }] });
+      .having({ $or: [{ 'b.uuid': '...', [raw('count(t.id)')]: { $gt: 0 } }, { 'b.title': 'my title' }] });
     const sql = 'select `b`.*, `t`.*, count(t.id) as tags from `book_tag2` as `t` ' +
       'left join `book2_tags` as `e1` on `t`.`id` = `e1`.`book_tag2_id` ' +
       'left join `book2` as `b` on `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
@@ -922,15 +936,15 @@ describe('QueryBuilder', () => {
   test('select with operator (and)', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
     qb.select('*').where({ $and: [
-      { id: { $in: [1, 2, 7] } },
-      { id: { $nin: [3, 4] } },
-      { id: { $gt: 5 } },
-      { id: { $lt: 10 } },
-      { id: { $gte: 7 } },
-      { id: { $lte: 8 } },
-      { id: { $ne: 9 } },
-      { $not: { id: { $eq: 10 } } },
-    ] });
+        { id: { $in: [1, 2, 7] } },
+        { id: { $nin: [3, 4] } },
+        { id: { $gt: 5 } },
+        { id: { $lt: 10 } },
+        { id: { $gte: 7 } },
+        { id: { $lte: 8 } },
+        { id: { $ne: 9 } },
+        { $not: { id: { $eq: 10 } } },
+      ] });
     expect(qb.getQuery()).toEqual('select `e0`.* from `test2` as `e0` ' +
       'where `e0`.`id` in (?, ?, ?) ' +
       'and `e0`.`id` not in (?, ?) ' +
@@ -946,15 +960,15 @@ describe('QueryBuilder', () => {
   test('select with operator (or)', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
     qb.select('*').where({ $or: [
-      { id: { $in: [1, 2, 7] } },
-      { id: { $nin: [3, 4] } },
-      { id: { $gt: 5 } },
-      { id: { $lt: 10 } },
-      { id: { $gte: 7 } },
-      { id: { $lte: 8 } },
-      { id: { $ne: 9 } },
-      { $not: { id: { $eq: 10 } } },
-    ] });
+        { id: { $in: [1, 2, 7] } },
+        { id: { $nin: [3, 4] } },
+        { id: { $gt: 5 } },
+        { id: { $lt: 10 } },
+        { id: { $gte: 7 } },
+        { id: { $lte: 8 } },
+        { id: { $ne: 9 } },
+        { $not: { id: { $eq: 10 } } },
+      ] });
     expect(qb.getQuery()).toEqual('select `e0`.* from `test2` as `e0` ' +
       'where (`e0`.`id` in (?, ?, ?) ' +
       'or `e0`.`id` not in (?, ?) ' +
@@ -970,14 +984,14 @@ describe('QueryBuilder', () => {
   test('select with smart query conditions', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
     qb.select('*').where({ version: {
-      $gt: 1,
-      $lt: 2,
-      $gte: 3,
-      $lte: 4,
-      $ne: 5,
-      $in: [6, 7],
-      $nin: [8, 9],
-    } });
+        $gt: 1,
+        $lt: 2,
+        $gte: 3,
+        $lte: 4,
+        $ne: 5,
+        $in: [6, 7],
+        $nin: [8, 9],
+      } });
     expect(qb.getQuery()).toEqual('select `e0`.* from `test2` as `e0` ' +
       'where `e0`.`version` > ? ' +
       'and `e0`.`version` < ? ' +
@@ -1499,7 +1513,7 @@ describe('QueryBuilder', () => {
 
   test('update query with JSON type and raw value', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
-    const meta = raw(`jsonb_set(payload, '$.{consumed}', ?)`, [123]);
+    const meta = sql`jsonb_set(payload, '$.{consumed}', ${123})`;
     qb.update({ meta }).where({ uuid: '456' });
     expect(qb.getFormattedQuery()).toEqual('update `book2` set `meta` = jsonb_set(payload, \'$.{consumed}\', 123) where `uuid_pk` = \'456\'');
   });
@@ -1934,15 +1948,15 @@ describe('QueryBuilder', () => {
       '((`a`.`email` = ? or (`a`.`name` in (?) and `a`.`name` != ?) or `a`.`email` = ?)) or ' +
       'not ((`a`.`name` = ? or `a`.`email` = ?)) or ' +
       '(' +
-        '(' +
-          '((' +
-            '(`a`.`name` = ? and `a`.`email` = ?) or ' +
-            '(`a`.`name` = ? and `a`.`email` = ?)' +
-          ')) or ' +
-          '(`a`.`name` = ? and `a`.`email` = ?)' +
-        ')' +
+      '(' +
+      '((' +
+      '(`a`.`name` = ? and `a`.`email` = ?) or ' +
+      '(`a`.`name` = ? and `a`.`email` = ?)' +
+      ')) or ' +
+      '(`a`.`name` = ? and `a`.`email` = ?)' +
       ')' +
-    ')');
+      ')' +
+      ')');
   });
 
   test('select fk by operator should not trigger auto-joining', async () => {
@@ -1987,7 +2001,7 @@ describe('QueryBuilder', () => {
     qb1.select('*').where({
       $or: [
         { author: { name: 'test' } },
-        { author: { [expr(a => `lower(${a}.name)`)]: 'wut' } },
+        { author: { [raw(a => `lower(${a}.name)`)]: 'wut' } },
       ],
     });
     expect(qb1.getQuery()).toEqual('select `a`.*, `a`.price * 1.19 as `price_taxed` ' +
@@ -2004,13 +2018,13 @@ describe('QueryBuilder', () => {
 
   test('order by virtual property', async () => {
     const qb1 = orm.em.createQueryBuilder(Author2, 'a');
-    qb1.select(['*', '"1" as code']).where({ $in: [1, 2] }).orderBy({ code: 'asc' });
+    qb1.select(['*', sql`"1" as code`]).where({ $in: [1, 2] }).orderBy({ code: 'asc' });
     expect(qb1.getQuery()).toEqual('select `a`.*, "1" as code from `author2` as `a` where `a`.`id` in (?, ?) order by `code` asc');
   });
 
   test('having with virtual property', async () => {
     const qb1 = orm.em.createQueryBuilder(Author2, 'a');
-    qb1.select(['*', '"1" as code']).where({ $in: [1, 2] }).having({
+    qb1.select(['*', sql`"1" as code`]).where({ $in: [1, 2] }).having({
       code: { $gte: 'c' },
       $or: [{ code: { $gt: 'c' } }, { id: { $lt: 3 } }],
     });
@@ -2167,7 +2181,7 @@ describe('QueryBuilder', () => {
 
   test('order by custom expression', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
-    qb.select('*').orderBy({ 'length(name)': QueryOrder.DESC, 'type': QueryOrder.ASC });
+    qb.select('*').orderBy({ [sql`length(name)`]: QueryOrder.DESC, type: QueryOrder.ASC });
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by length(name) desc, `e0`.`type` asc');
   });
 
@@ -2175,11 +2189,13 @@ describe('QueryBuilder', () => {
     const qb141 = orm.em.createQueryBuilder(Book2).update({ meta: { items: 3 } }).where({
       $and: [
         { uuid: 'b47f1cca-90ca-11ec-99e0-42010a5d800c' },
-        { $or: [
+        {
+          $or: [
             { meta: null },
             { meta: { $eq: null } },
             { meta: { time: { $lt: 1646147306 } } },
-          ] },
+          ],
+        },
       ],
     });
     expect(qb141.getFormattedQuery()).toBe('update `book2` set `meta` = \'{\\"items\\":3}\' ' +
@@ -2588,7 +2604,7 @@ describe('QueryBuilder', () => {
     expect(qb4.getParams()).toEqual(['test']);
 
     const qb5 = pg.em.createQueryBuilder(Book2, 'b').select('b.author').where({ price: { $gt: 100 } });
-    const qb6 = pg.em.createQueryBuilder(Author2, 'a').select('*').where(`id in (${qb5.getFormattedQuery()})`);
+    const qb6 = pg.em.createQueryBuilder(Author2, 'a').select('*').where(raw(`id in (${qb5.getFormattedQuery()})`));
     expect(qb6.getQuery()).toEqual('select "a".* from "author2" as "a" where (id in (select "b"."author_id" from "book2" as "b" where "b"."price" > 100))');
     expect(qb6.getParams()).toEqual([]);
 
@@ -2640,10 +2656,10 @@ describe('QueryBuilder', () => {
       $and: [
         { uuid: 'b47f1cca-90ca-11ec-99e0-42010a5d800c' },
         { $or: [
-          { meta: null },
-          { meta: { $eq: null } },
-          { meta: { time: { $lt: 1646147306 } } },
-        ] },
+            { meta: null },
+            { meta: { $eq: null } },
+            { meta: { time: { $lt: 1646147306 } } },
+          ] },
       ],
     });
     expect(qb141.getFormattedQuery()).toBe('update "book2" set "meta" = \'{"items":3}\' ' +

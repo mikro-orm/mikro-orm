@@ -2,7 +2,7 @@ import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
 import type { Dictionary, SimpleColumnMeta, Type, TransformContext } from '@mikro-orm/core';
-import { expr, Utils } from '@mikro-orm/core';
+import { Utils } from '@mikro-orm/core';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
 

@@ -8,3 +8,4 @@ export * from './QueryHelper';
 export * from './NullHighlighter';
 export * from './EntityComparator';
 export * from './AbstractSchemaGenerator';
+export * from './RawQueryFragment';

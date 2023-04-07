@@ -12,7 +12,6 @@ import {
   ValidationError,
   ChangeSetType,
   wrap,
-  expr,
   UniqueConstraintViolationException,
   TableNotFoundException,
   NotNullConstraintViolationException,
@@ -138,6 +137,7 @@ describe('EntityManagerPostgre', () => {
     await expect(driver.find(BookTag2.name, { books: { $in: [uuid1] } })).resolves.not.toBeNull();
     expect(driver.getPlatform().formatQuery('CREATE USER ?? WITH PASSWORD ?', ['foo', 'bar'])).toBe(`CREATE USER "foo" WITH PASSWORD 'bar'`);
     expect(driver.getPlatform().formatQuery('select \\?, ?, ?', ['foo', 'bar'])).toBe(`select ?, 'foo', 'bar'`);
+    expect(driver.getPlatform().formatQuery('? = ??', ['foo', 'bar'])).toBe(`'foo' = "bar"`);
 
     // multi inserts
     await driver.nativeInsert(Test2.name, { id: 1, name: 't1' });
@@ -1536,9 +1536,9 @@ describe('EntityManagerPostgre', () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
 
     const books1 = await orm.em.find(Book2, {
-      [expr('upper(title)')]: ['B1', 'B2'],
+      [raw('upper(title)')]: ['B1', 'B2'],
       author: {
-        [expr('age::text')]: { $ilike: '%2%' },
+        [raw(a => `${a}.age::text`)]: { $ilike: '%2%' },
       },
     }, { populate: ['perex'] });
     expect(books1).toHaveLength(2);
@@ -1546,10 +1546,32 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
 
     const books2 = await orm.em.find(Book2, {
-      [expr('upper(title)')]: raw('upper(?)', ['b2']),
+      [raw('upper(title)')]: raw('upper(?)', ['b2']),
     }, { populate: ['perex'] });
     expect(books2).toHaveLength(1);
     expect(mock.mock.calls[1][0]).toMatch(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and upper(title) = upper('b2')`);
+  });
+
+  test('custom expressions require raw helper', async () => {
+    await orm.em.insertMany(Author2, [
+      { name: 'n1', email: 'e1' },
+      { name: 'n2', email: 'e2' },
+      { name: 'n3', email: 'e3' },
+    ]);
+    const mock = mockLogger(orm, ['query', 'query-params']);
+    const res = await orm.em.find(Author2, {
+      [raw('? = ? union select * from author2; --', [1, 1])]: 1,
+    });
+    expect(res).toHaveLength(3);
+
+    expect(mock.mock.calls[0][0]).toMatch('select "a0".* from "author2" as "a0" where 1 = 1 union select * from author2; --');
+
+    await expect(orm.em.find(Author2, {
+      // @ts-expect-error
+      ['1 = 1 union select * from author2; --']: 1,
+    })).rejects.toThrow('column a0.1 = 1 union select * from author2; -- does not exist');
+
+    expect(mock.mock.calls[1][0]).toMatch('select "a0".* from "author2" as "a0" where "a0"."1 = 1 union select * from author2; --" = 1');
   });
 
   test('insert with raw sql fragment', async () => {
