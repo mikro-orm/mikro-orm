@@ -1,5 +1,14 @@
 import type { EntityName } from '@mikro-orm/core';
-import { ArrayCollection, Collection, EntityManager, LockMode, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
+import {
+  ArrayCollection,
+  Collection,
+  EntityManager,
+  LockMode,
+  QueryOrder,
+  raw,
+  ValidationError,
+  wrap,
+} from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { initORMSqlite2, mockLogger } from './bootstrap';
 import type { IAuthor4, IPublisher4, ITest4 } from './entities-schema';
@@ -925,7 +934,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     const b1 = await orm.em.findOneOrFail(FooBar4, { name: 'b1' });
     expect(b1.virtual).toBeUndefined();
 
-    await orm.em.createQueryBuilder(FooBar4).select(`id, '123' as virtual`).getResultList();
+    await orm.em.createQueryBuilder(FooBar4).select(raw(`id, '123' as virtual`)).getResultList();
     expect(b1.virtual).toBe('123');
   });
 
