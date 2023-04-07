@@ -1,6 +1,6 @@
 // @ts-ignore
 import { escape } from 'sqlstring-sqlite';
-import { JsonProperty, Utils, type EntityProperty, type expr } from '@mikro-orm/core';
+import { JsonProperty, Utils, type EntityProperty } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { SqliteSchemaHelper } from './SqliteSchemaHelper';
 import { SqliteExceptionConverter } from './SqliteExceptionConverter';

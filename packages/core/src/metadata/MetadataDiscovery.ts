@@ -12,6 +12,7 @@ import { MetadataError } from '../errors';
 import type { Platform } from '../platforms';
 import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, t, Type, Uint8ArrayType } from '../types';
 import { colors } from '../logging/colors';
+import { raw } from '../utils/RawQueryFragment';
 
 export class MetadataDiscovery {
 
@@ -883,7 +884,8 @@ export class MetadataDiscovery {
 
         path.push(prop.name);
         meta.properties[name].fieldNames = [path.join('.')]; // store path for ObjectHydrator
-        meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(path.join('->'), prop.type, true); // for querying in SQL drivers
+        const fieldName = raw(this.platform.getSearchJsonPropertySQL(path.join('->'), prop.type, true));
+        meta.properties[name].fieldNameRaw = fieldName.sql; // for querying in SQL drivers
         meta.properties[name].persist = false; // only virtual as we store the whole object
         meta.properties[name].userDefined = false; // mark this as a generated/internal property, so we can distinguish from user-defined non-persist properties
       }
