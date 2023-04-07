@@ -120,19 +120,20 @@ export type FilterQuery<T> =
 export type QBFilterQuery<T = any> = ObjectQuery<T> | Dictionary;
 
 export interface IWrappedEntity<
-  T extends object,
-  P extends string = string,
+  Entity extends object,
+  Hint extends string = string,
 > {
   isInitialized(): boolean;
   isTouched(): boolean;
   populated(populated?: boolean): void;
   populate<Hint extends string = never>(populate: AutoPath<T, Hint>[] | boolean, options?: EntityLoaderOptions<T, Hint>): Promise<Loaded<T, Hint>>;
-  init<P extends string = never>(populated?: boolean, populate?: Populate<T, P>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<T, P>>;
-  toReference(): Ref<T> & LoadedReference<Loaded<T, AddEager<T>>>;
-  toObject(ignoreFields?: string[]): EntityDTO<T>;
-  toJSON(...args: any[]): EntityDTO<T>;
-  toPOJO(): EntityDTO<T>;
-  assign(data: EntityData<T> | Partial<EntityDTO<T>>, options?: AssignOptions | boolean): T;
+  init<P extends string = never>(populated?: boolean, populate?: Populate<Entity, P>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<Entity, P>>;
+  toReference(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
+  toObject<Ignored extends EntityKey<Entity>>(ignoreFields: Ignored[]): Omit<EntityDTO<Entity>, Ignored>;
+  toObject(...args: unknown[]): EntityDTO<Entity>;
+  toJSON(...args: any[]): EntityDTO<Entity>;
+  toPOJO(): EntityDTO<Entity>;
+  assign(data: EntityData<Entity> | Partial<EntityDTO<Entity>>, options?: AssignOptions | boolean): Entity;
   getSchema(): string | undefined;
   setSchema(schema?: string): void;
 }
