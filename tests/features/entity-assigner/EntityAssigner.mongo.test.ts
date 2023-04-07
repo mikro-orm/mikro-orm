@@ -1,5 +1,5 @@
 import type { EntityData, MikroORM } from '@mikro-orm/core';
-import { assign, expr, wrap } from '@mikro-orm/core';
+import { assign, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { Author, Book, BookTag } from '../../entities';
@@ -19,7 +19,8 @@ describe('EntityAssignerMongo', () => {
     await orm.em.persistAndFlush(book);
     expect(book.title).toBe('Book2');
     expect(book.author).toBe(jon);
-    book.assign({ title: 'Better Book2 1', author: god, [expr('notExisting')]: true });
+    // @ts-expect-error unknown property
+    book.assign({ title: 'Better Book2 1', author: god, notExisting: true });
     expect(book.author).toBe(god);
     expect((book as any).notExisting).toBe(true);
     await orm.em.persistAndFlush(god);

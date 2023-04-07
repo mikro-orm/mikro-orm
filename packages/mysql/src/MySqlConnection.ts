@@ -9,7 +9,7 @@ export class MySqlConnection extends AbstractSqlConnection {
   }
 
   private patchKnex() {
-    const { MySqlColumnCompiler } = MonkeyPatchable;
+    const { MySqlColumnCompiler, MySqlQueryCompiler } = MonkeyPatchable;
 
     // we need the old behaviour to be able to add auto_increment to a column that is already PK
     MySqlColumnCompiler.prototype.increments = function (options = { primaryKey: true }) {
@@ -20,6 +20,10 @@ export class MySqlConnection extends AbstractSqlConnection {
     MySqlColumnCompiler.prototype.bigincrements = function (options = { primaryKey: true }) {
       return 'bigint unsigned not null auto_increment' + (this.tableCompiler._canBeAddPrimaryKey(options) ? ' primary key' : '');
     };
+
+    // mysql dialect disallows query non scalar params, but we dont use it to execute the query, it always goes through the `platform.formatQuery()`
+    delete MySqlQueryCompiler.prototype.whereBasic;
+    delete MySqlQueryCompiler.prototype.whereRaw;
   }
 
   getDefaultClientUrl(): string {
