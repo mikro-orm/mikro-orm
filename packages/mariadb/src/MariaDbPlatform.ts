@@ -1,8 +1,7 @@
-import type { Dictionary } from '@mikro-orm/knex';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MariaDbSchemaHelper } from './MariaDbSchemaHelper';
 import { MariaDbExceptionConverter } from './MariaDbExceptionConverter';
-import { Utils, type SimpleColumnMeta, type Type, type expr } from '@mikro-orm/core';
+import { Utils, type SimpleColumnMeta, type Dictionary, type Type } from '@mikro-orm/core';
 
 export class MariaDbPlatform extends AbstractSqlPlatform {
 
