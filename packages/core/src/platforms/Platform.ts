@@ -1,7 +1,7 @@
 import { clone } from '../utils/clone';
 import { EntityRepository } from '../entity';
 import { UnderscoreNamingStrategy, type NamingStrategy } from '../naming-strategy';
-import type { Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings';
+import type { Constructor, EntityProperty, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
@@ -260,7 +260,6 @@ export abstract class Platform {
       case 'numeric': return Type.getType(DecimalType);
       case 'boolean': return Type.getType(BooleanType);
       case 'blob':
-      case 'uint8array':
       case 'buffer': return Type.getType(BlobType);
       case 'uint8array': return Type.getType(Uint8ArrayType);
       case 'uuid': return Type.getType(UuidType);
@@ -363,7 +362,7 @@ export abstract class Platform {
   }
 
   quoteIdentifier(id: string, quote = '`'): string {
-    return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
+    return `${quote}${id.toString().replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
   quoteValue(value: any): string {

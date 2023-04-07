@@ -18,7 +18,6 @@ import {
   SyntaxErrorException,
   NonUniqueFieldNameException,
   InvalidFieldNameException,
-  expr,
   IsolationLevel,
   NullHighlighter,
   PopulateHint,
@@ -832,26 +831,26 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const qb1 = orm.em.fork().createQueryBuilder(Book2);
-    const res1 = await qb1.select('*').where({ 'JSON_CONTAINS(`b0`.`meta`, ?)': [{ foo: 'bar' }, false] }).execute('get');
+    const res1 = await qb1.select('*').where({ [raw('JSON_CONTAINS(`b0`.`meta`, ?)', [{ foo: 'bar' }])]: false }).execute('get');
     expect(res1.createdAt).toBeDefined();
     // @ts-expect-error
     expect(res1.created_at).not.toBeDefined();
     expect(res1.meta).toEqual({ category: 'foo', items: 1 });
 
     const qb2 = orm.em.fork().createQueryBuilder(Book2);
-    const res2 = await qb2.select('*').where({ 'JSON_CONTAINS(meta, ?)': [{ category: 'foo' }, true] }).execute('get', false);
+    const res2 = await qb2.select('*').where({ [raw('JSON_CONTAINS(meta, ?)', [{ category: 'foo' }])]: true }).execute('get', false);
     expect(res2.createdAt).not.toBeDefined();
     // @ts-expect-error
     expect(res2.created_at).toBeDefined();
     expect(res2.meta).toEqual({ category: 'foo', items: 1 });
 
     const qb3 = orm.em.fork().createQueryBuilder(Book2);
-    const res3 = await qb3.select('*').where({ 'JSON_CONTAINS(meta, ?)': [{ category: 'foo' }, true] }).getSingleResult();
+    const res3 = await qb3.select('*').where({ [raw('JSON_CONTAINS(meta, ?)', [{ category: 'foo' }])]: true }).getSingleResult();
     expect(res3).toBeInstanceOf(Book2);
     expect(res3!.createdAt).toBeDefined();
     expect(res3!.meta).toEqual({ category: 'foo', items: 1 });
 
-    const res4 = await orm.em.fork().findOneOrFail(Book2, { [expr('JSON_CONTAINS(meta, ?)')]: [{ items: 1 }, true] });
+    const res4 = await orm.em.fork().findOneOrFail(Book2, { [raw('JSON_CONTAINS(meta, ?)', [{ items: 1 }])]: true });
     expect(res4).toBeInstanceOf(Book2);
     expect(res4.createdAt).toBeDefined();
     expect(res4.meta).toEqual({ category: 'foo', items: 1 });
@@ -866,7 +865,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
-    const res4 = await orm.em.findOneOrFail(Book2, { [expr<Book2>(['price', 'createdAt'])]: { $lte: [100, new Date()] } });
+    const res4 = await orm.em.findOneOrFail(Book2, { [raw<Book2>(['price', 'createdAt'])]: { $lte: [100, new Date()] } });
     expect(res4).toBeInstanceOf(Book2);
     expect(res4.createdAt).toBeDefined();
     expect(res4.price).toBe('100.00');
