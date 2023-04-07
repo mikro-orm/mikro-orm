@@ -500,7 +500,9 @@ describe('check typings', () => {
   test('Loaded type with EntityDTO (with ORM base entities)', async () => {
     const b1 = createEntity<Loaded<Book>>();
     const o11 = wrap(b1).toObject();
-    const o12 = b1.toObject();
+    const o12 = b1.toObject(['id']);
+    // @ts-expect-error
+    const id10 = o12.id;
     // @ts-expect-error o11.publisher is now just number, as it's not populated
     const id11 = o11.publisher?.id;
     // @ts-expect-error o12.publisher is now just number, as it's not populated
