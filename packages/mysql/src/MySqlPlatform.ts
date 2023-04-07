@@ -2,7 +2,7 @@ import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
 import type { Dictionary, SimpleColumnMeta, Type, TransformContext } from '@mikro-orm/core';
-import { expr, Utils } from '@mikro-orm/core';
+import { raw, Utils } from '@mikro-orm/core';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
 
@@ -25,10 +25,10 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     const [a, ...b] = path;
 
     if (aliased) {
-      return expr(alias => `${this.quoteIdentifier(`${alias}.${a}`)}->'$.${b.join('.')}'`);
+      return raw(alias => `${this.quoteIdentifier(`${alias}.${a}`)}->'$.${b.join('.')}'`);
     }
 
-    return `${this.quoteIdentifier(a)}->'$.${b.join('.')}'`;
+    return raw(`${this.quoteIdentifier(a)}->'$.${b.join('.')}'`);
   }
 
   override getBooleanTypeDeclarationSQL(): string {

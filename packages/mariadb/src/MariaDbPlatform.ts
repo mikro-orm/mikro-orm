@@ -3,7 +3,7 @@ import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MariaDbSchemaHelper } from './MariaDbSchemaHelper';
 import { MariaDbExceptionConverter } from './MariaDbExceptionConverter';
 import type { SimpleColumnMeta, Type } from '@mikro-orm/core';
-import { expr, Utils } from '@mikro-orm/core';
+import { raw, Utils } from '@mikro-orm/core';
 
 export class MariaDbPlatform extends AbstractSqlPlatform {
 
@@ -19,10 +19,10 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
     const [a, ...b] = path;
 
     if (aliased) {
-      return expr(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
+      return raw(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
     }
 
-    return `json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`;
+    return raw(`json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`);
   }
 
   override getBooleanTypeDeclarationSQL(): string {
