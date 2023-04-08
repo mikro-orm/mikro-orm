@@ -562,4 +562,7 @@ describe('check typings', () => {
     q = { [OptionalProps]: 'bar' };
   });
 
+  test('tuple type after entity serializized', async () => {
+    assert<IsExact<EntityDTO<Book>['point'], [number, number] | undefined>>(true);
+  });
 });
