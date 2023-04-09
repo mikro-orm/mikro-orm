@@ -228,7 +228,7 @@ export type EntityDTOProp<T> = T extends Scalar
         : T extends { $: infer U }
           ? (U extends readonly (infer V)[] ? EntityDTO<V>[] : EntityDTO<U>)
           : T extends readonly (infer U)[]
-            ? U[]
+            ? (T extends readonly [infer U, ...infer V] ? T : U[])
             : T extends Relation<T>
               ? EntityDTO<T>
               : T;
