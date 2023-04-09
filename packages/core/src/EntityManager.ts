@@ -1426,11 +1426,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async populate<
     Entity extends object,
     Hint extends string = never,
-  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint>[] | boolean, options: EntityLoaderOptions<Entity, Hint> = {}): Promise<Loaded<Entity, Hint>[]> {
+    Fields extends string = never,
+  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint>[] | boolean, options: EntityLoaderOptions<Entity, Hint, Fields> = {}): Promise<Loaded<Entity, Hint, Fields>[]> {
     entities = Utils.asArray(entities);
 
     if (entities.length === 0) {
-      return entities as Loaded<Entity, Hint>[];
+      return entities as Loaded<Entity, Hint, Fields>[];
     }
 
     const em = this.getContext();
@@ -1438,7 +1439,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const preparedPopulate = em.preparePopulate<Entity>(entityName, { populate: populate as true });
     await em.entityLoader.populate(entityName, entities, preparedPopulate, options);
 
-    return entities as Loaded<Entity, Hint>[];
+    return entities as Loaded<Entity, Hint, Fields>[];
   }
 
   /**

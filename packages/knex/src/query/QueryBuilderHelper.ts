@@ -114,7 +114,7 @@ export class QueryBuilderHelper {
 
     if (prop?.hasConvertToJSValueSQL) {
       const prefixed = this.prefix(field, isTableNameAliasRequired, true);
-      const valueSQL = prop.customType.convertToJSValueSQL(prefixed, this.platform);
+      const valueSQL = prop.customType.convertToJSValueSQL!(prefixed, this.platform);
 
       if (alias === null) {
         return this.knex.raw(valueSQL);
