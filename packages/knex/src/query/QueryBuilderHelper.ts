@@ -124,7 +124,7 @@ export class QueryBuilderHelper {
         valueSQL = fk.customType.convertToJSValueSQL!(prefixed, this.platform);
       } else  {
         const prefixed = this.prefix(field, isTableNameAliasRequired, true);
-        valueSQL = prop.customType.convertToJSValueSQL(prefixed, this.platform);
+        valueSQL = prop.customType.convertToJSValueSQL!(prefixed, this.platform);
       }
 
       if (alias === null) {
