@@ -16,10 +16,10 @@ import type { Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
 import type { Cursor } from '../utils/Cursor';
 
-export class EntityRepository<T extends object> {
+export class EntityRepository<Entity extends object> {
 
   constructor(protected readonly _em: EntityManager,
-              protected readonly entityName: EntityName<T>) { }
+              protected readonly entityName: EntityName<Entity>) { }
 
   /**
    * Tells the EntityManager to make an instance managed and persistent.
@@ -40,8 +40,11 @@ export class EntityRepository<T extends object> {
   /**
    * Finds first entity matching your `where` query.
    */
-  async findOne<P extends string = never>(where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<Loaded<T, P> | null> {
-    return this.em.findOne<T, P>(this.entityName, where, options);
+  async findOne<
+    Hint extends string = never,
+    Fields extends string = '*',
+  >(where: FilterQuery<Entity>, options?: FindOneOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields> | null> {
+    return this.em.findOne<Entity, Hint, Fields>(this.entityName, where, options);
   }
 
   /**
@@ -49,8 +52,11 @@ export class EntityRepository<T extends object> {
    * You can override the factory for creating this method via `options.failHandler` locally
    * or via `Configuration.findOneOrFailHandler` globally.
    */
-  async findOneOrFail<P extends string = never>(where: FilterQuery<T>, options?: FindOneOrFailOptions<T, P>): Promise<Loaded<T, P>> {
-    return this.em.findOneOrFail<T, P>(this.entityName, where, options);
+  async findOneOrFail<
+    Hint extends string = never,
+    Fields extends string = '*',
+  >(where: FilterQuery<Entity>, options?: FindOneOrFailOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>> {
+    return this.em.findOneOrFail<Entity, Hint, Fields>(this.entityName, where, options);
   }
 
   /**
@@ -75,8 +81,8 @@ export class EntityRepository<T extends object> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsert(entityOrData?: EntityData<T> | T, options?: NativeInsertUpdateOptions<T>): Promise<T> {
-    return this.em.upsert<T>(this.entityName, entityOrData, options);
+  async upsert(entityOrData?: EntityData<Entity> | Entity, options?: NativeInsertUpdateOptions<Entity>): Promise<Entity> {
+    return this.em.upsert<Entity>(this.entityName, entityOrData, options);
   }
 
   /**
@@ -104,37 +110,49 @@ export class EntityRepository<T extends object> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsertMany(entitiesOrData?: EntityData<T>[] | T[], options?: NativeInsertUpdateOptions<T>): Promise<T[]> {
-    return this.em.upsertMany<T>(this.entityName, entitiesOrData, options);
+  async upsertMany(entitiesOrData?: EntityData<Entity>[] | Entity[], options?: NativeInsertUpdateOptions<Entity>): Promise<Entity[]> {
+    return this.em.upsertMany<Entity>(this.entityName, entitiesOrData, options);
   }
 
   /**
    * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
    */
-  async find<P extends string = never>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<Loaded<T, P>[]> {
-    return this.em.find<T, P>(this.entityName, where as FilterQuery<T>, options);
+  async find<
+    Hint extends string = never,
+    Fields extends string = '*',
+  >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
+    return this.em.find<Entity, Hint, Fields>(this.entityName, where as FilterQuery<Entity>, options);
   }
 
   /**
    * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
    * where first element is the array of entities and the second is the count.
    */
-  async findAndCount<P extends string = never>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<[Loaded<T, P>[], number]> {
-    return this.em.findAndCount<T, P>(this.entityName, where, options);
+  async findAndCount<
+    Hint extends string = never,
+    Fields extends string = '*',
+  >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields>): Promise<[Loaded<Entity, Hint, Fields>[], number]> {
+    return this.em.findAndCount<Entity, Hint, Fields>(this.entityName, where, options);
   }
 
   /**
    * @inheritDoc EntityManager.findByCursor
    */
-  async findByCursor<P extends string = never>(where: FilterQuery<T>, options?: FindByCursorOptions<T, P>): Promise<Cursor<T, P>> {
-    return this.em.findByCursor<T, P>(this.entityName, where, options);
+  async findByCursor<
+    Hint extends string = never,
+    Fields extends string = '*',
+  >(where: FilterQuery<Entity>, options?: FindByCursorOptions<Entity, Hint, Fields>): Promise<Cursor<Entity, Hint, Fields>> {
+    return this.em.findByCursor<Entity, Hint, Fields>(this.entityName, where, options);
   }
 
   /**
    * Finds all entities of given type. You can pass additional options via the `options` parameter.
    */
-  async findAll<P extends string = never>(options?: FindOptions<T, P>): Promise<Loaded<T, P>[]> {
-    return this.em.find<T, P>(this.entityName, {} as FilterQuery<T>, options);
+  async findAll<
+    Hint extends string = never,
+    Fields extends string = '*',
+  >(options?: FindOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
+    return this.em.find<Entity, Hint, Fields>(this.entityName, {} as FilterQuery<Entity>, options);
   }
 
   /**
@@ -168,58 +186,58 @@ export class EntityRepository<T extends object> {
   /**
    * @inheritDoc EntityManager.insert
    */
-  async insert(data: T | EntityData<T>, options?: NativeInsertUpdateOptions<T>): Promise<Primary<T>> {
-    return this.em.insert<T>(this.entityName, data, options);
+  async insert(data: Entity | EntityData<Entity>, options?: NativeInsertUpdateOptions<Entity>): Promise<Primary<Entity>> {
+    return this.em.insert<Entity>(this.entityName, data, options);
   }
 
   /**
    * @inheritDoc EntityManager.insert
    */
-  async insertMany(data: T[] | EntityData<T>[], options?: NativeInsertUpdateOptions<T>): Promise<Primary<T>[]> {
-    return this.em.insertMany<T>(this.entityName, data, options);
+  async insertMany(data: Entity[] | EntityData<Entity>[], options?: NativeInsertUpdateOptions<Entity>): Promise<Primary<Entity>[]> {
+    return this.em.insertMany<Entity>(this.entityName, data, options);
   }
 
   /**
    * Fires native update query. Calling this has no side effects on the context (identity map).
    */
-  async nativeUpdate(where: FilterQuery<T>, data: EntityData<T>, options?: UpdateOptions<T>): Promise<number> {
+  async nativeUpdate(where: FilterQuery<Entity>, data: EntityData<Entity>, options?: UpdateOptions<Entity>): Promise<number> {
     return this.em.nativeUpdate(this.entityName, where, data, options);
   }
 
   /**
    * Fires native delete query. Calling this has no side effects on the context (identity map).
    */
-  async nativeDelete(where: FilterQuery<T>, options?: DeleteOptions<T>): Promise<number> {
+  async nativeDelete(where: FilterQuery<Entity>, options?: DeleteOptions<Entity>): Promise<number> {
     return this.em.nativeDelete(this.entityName, where, options);
   }
 
   /**
    * Maps raw database result to an entity and merges it to this EntityManager.
    */
-  map(result: EntityDictionary<T>, options?: { schema?: string }): T {
+  map(result: EntityDictionary<Entity>, options?: { schema?: string }): Entity {
     return this.em.map(this.entityName, result, options);
   }
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference(id: Primary<T>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): Ref<T>;
+  getReference(id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): Ref<Entity>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference(id: Primary<T> | Primary<T>[]): T;
+  getReference(id: Primary<Entity> | Primary<Entity>[]): Entity;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference(id: Primary<T>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: false }): T;
+  getReference(id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: false }): Entity;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference(id: Primary<T>, options?: GetReferenceOptions): T | Reference<T> {
-    return this.em.getReference<T>(this.entityName, id, options);
+  getReference(id: Primary<Entity>, options?: GetReferenceOptions): Entity | Reference<Entity> {
+    return this.em.getReference<Entity>(this.entityName, id, options);
   }
 
   /**
@@ -232,8 +250,11 @@ export class EntityRepository<T extends object> {
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<P extends string = never>(entities: T | T[], populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T, P>): Promise<Loaded<T, P>[]> {
-    return this.em.populate(entities as T, populate, options);
+  async populate<
+    Hint extends string = never,
+    Fields extends string = '*',
+  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint>[] | boolean, options?: EntityLoaderOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
+    return this.em.populate(entities as Entity, populate, options);
   }
 
   /**
@@ -244,14 +265,14 @@ export class EntityRepository<T extends object> {
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
-  create<P = never>(data: RequiredEntityData<T>, options?: CreateOptions): T {
+  create<Hint = never>(data: RequiredEntityData<Entity>, options?: CreateOptions): Entity {
     return this.em.create(this.entityName, data, options);
   }
 
   /**
    * Shortcut for `wrap(entity).assign(data, { em })`
    */
-  assign(entity: T, data: EntityData<T>, options?: AssignOptions): T {
+  assign(entity: Entity, data: EntityData<Entity>, options?: AssignOptions): Entity {
     return this.em.assign(entity, data, options);
   }
 
@@ -259,15 +280,15 @@ export class EntityRepository<T extends object> {
    * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
    * via second parameter. By default it will return already loaded entities without modifying them.
    */
-  merge(data: T | EntityData<T>, options?: MergeOptions): T {
-    return this.em.merge<T>(this.entityName, data, options);
+  merge(data: Entity | EntityData<Entity>, options?: MergeOptions): Entity {
+    return this.em.merge<Entity>(this.entityName, data, options);
   }
 
   /**
    * Returns total number of entities matching your `where` query.
    */
-  async count<P extends string = never>(where: FilterQuery<T> = {} as FilterQuery<T>, options: CountOptions<T, P> = {}): Promise<number> {
-    return this.em.count<T, P>(this.entityName, where, options);
+  async count<Hint extends string = never>(where: FilterQuery<Entity> = {} as FilterQuery<Entity>, options: CountOptions<Entity, Hint> = {}): Promise<number> {
+    return this.em.count<Entity, Hint>(this.entityName, where, options);
   }
 
   protected get em(): EntityManager {
