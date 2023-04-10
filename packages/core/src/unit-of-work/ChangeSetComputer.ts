@@ -148,9 +148,8 @@ export class ChangeSetComputer {
     const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop) as [AnyEntity, number[]][];
 
     targets.forEach(([target, idx]) => {
-      if (!target.__helper!.hasPrimaryKey()) {
-        Utils.setPayloadProperty<T>(changeSet.payload, this.metadata.find(changeSet.name)!, prop, target.__helper!.__identifier, idx);
-      }
+      const payloadValue = target.__helper!.hasPrimaryKey() ? target.__helper!.getPrimaryKey() : target.__helper!.__identifier;
+      Utils.setPayloadProperty<T>(changeSet.payload, this.metadata.find(changeSet.name)!, prop, payloadValue, idx);
     });
   }
 
