@@ -89,7 +89,6 @@ beforeEach(async () => {
   await orm.schema.refreshDatabase();
   foo = orm.em.create(Foo, {});
   await orm.em.flush();
-  orm.em.clear();
 });
 
 afterAll(() => {
