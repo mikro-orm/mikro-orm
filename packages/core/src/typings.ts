@@ -758,7 +758,7 @@ export interface SimplePaginatedResult<T, P extends string = never> {
     currentPage: number;
     perPage: number;
     hasNextPage: boolean;
-  }
+  };
 }
 
 export interface LoadedReference<T> extends Reference<Defined<T>> {

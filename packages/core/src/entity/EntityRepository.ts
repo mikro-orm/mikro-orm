@@ -10,7 +10,8 @@ import type {
   EntityDictionary,
   AutoPath,
   RequiredEntityData,
-  PaginatedResult, SimplePaginatedResult
+  PaginatedResult,
+  SimplePaginatedResult,
 } from '../typings';
 import type {
   CountOptions,
@@ -21,7 +22,7 @@ import type {
   GetReferenceOptions,
   NativeInsertUpdateOptions,
   PaginateOptions,
-  UpdateOptions
+  UpdateOptions,
 } from '../drivers/IDatabaseDriver';
 import type { IdentifiedReference, Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';

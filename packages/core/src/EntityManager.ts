@@ -1,5 +1,4 @@
 import { inspect } from 'util';
-import { PaginateOptions } from './drivers';
 import type { Configuration } from './utils';
 import { QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
@@ -13,6 +12,7 @@ import type {
   FindOneOptions,
   FindOneOrFailOptions,
   FindOptions,
+  PaginateOptions,
   GetReferenceOptions,
   IDatabaseDriver,
   LockOptions,
@@ -38,7 +38,8 @@ import type {
   Populate,
   PopulateOptions,
   Primary,
-  RequiredEntityData, SimplePaginatedResult,
+  RequiredEntityData,
+  SimplePaginatedResult,
 } from './typings';
 import type { TransactionOptions } from './enums';
 import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
@@ -420,8 +421,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         totalItems: count,
         totalPages: Math.ceil(count / perPage),
         currentPage: page,
-        perPage: perPage,
-      }
+        perPage,
+      },
     };
   }
 
@@ -442,9 +443,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       data: entities.length > perPage ? entities.slice(0, -1) : entities,
       meta: {
         currentPage: page,
-        perPage: perPage,
+        perPage,
         hasNextPage: entities.length > perPage,
-      }
+      },
     };
   }
 
