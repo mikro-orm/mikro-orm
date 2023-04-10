@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Rel, SimpleLogger } from '@mikro-orm/core';
-import { MikroORM, ObjectId, defineConfig } from '@mikro-orm/mongodb';
+import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Rel } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 
 @Entity()
 class Foo {
 
   @PrimaryKey()
-  _id!: ObjectId;
+  _id!: number;
 
   @ManyToOne({ entity: () => Bar1, nullable: true })
   bar1?: Rel<Bar1>;
@@ -18,16 +18,13 @@ class Foo {
   @ManyToOne({ entity: () => Bar3, nullable: true })
   bar3?: Rel<Bar3>;
 
-  @ManyToOne({ entity: () => Bar4, nullable: true })
-  bar4?: Rel<Bar4>;
-
 }
 
 @Entity()
 class Bar1 {
 
   @PrimaryKey()
-  _id!: ObjectId;
+  _id!: number;
 
   @OneToMany({ entity: () => Foo, mappedBy: book => book.bar1 })
   foos = new Collection<Foo>(this);
@@ -56,33 +53,19 @@ class Bar3 {
 
 }
 
-@Entity()
-class Bar4 {
-
-  @PrimaryKey()
-  _id!: number;
-
-  @OneToMany({ entity: () => Foo, mappedBy: book => book.bar4 })
-  foos = new Collection<Foo>(this);
-
-}
-
 let orm: MikroORM;
 let foo: Foo;
 
 beforeAll(async () => {
-  orm = await MikroORM.init(defineConfig({
+  orm = await MikroORM.init({
     entities: [
       Foo,
       Bar1,
       Bar2,
       Bar3,
-      Bar4,
     ],
-    clientUrl: 'mongodb://db',
-    loggerFactory: options => new SimpleLogger(options),
-    debug: true,
-  }));
+    dbName: ':memory:',
+  });
 });
 
 beforeEach(async () => {
@@ -101,15 +84,15 @@ test('create Bar1 (automatically generate a primary key as flush)', async () => 
   await orm.em.flush();
   orm.em.clear();
   const { bar1 } = await orm.em.findOneOrFail(Foo, { _id: foo._id });
-  expect(bar1).not.toBeUndefined();
+  expect(bar1).toBeTruthy();
 });
 
 test('create Bar1 (manually specifying a primary key)', async () => {
-  orm.em.create(Bar1, { _id: new ObjectId(), foos: [foo] });
+  orm.em.create(Bar1, { _id: 1, foos: [foo] });
   await orm.em.flush();
   orm.em.clear();
   const { bar1 } = await orm.em.findOneOrFail(Foo, { _id: foo._id });
-  expect(bar1).not.toBeUndefined();
+  expect(bar1).toBeTruthy();
 });
 
 test('create Bar2 (automatically generate a primary key at class definition)', async () => {
@@ -117,21 +100,13 @@ test('create Bar2 (automatically generate a primary key at class definition)', a
   await orm.em.flush();
   orm.em.clear();
   const { bar2 } = await orm.em.findOneOrFail(Foo, { _id: foo._id });
-  expect(bar2).not.toBeUndefined();
+  expect(bar2).toBeTruthy();
 });
 
-test('create Bar3 (manually generate a primary key)', async () => {
+test('create Bar3 (manually specifying a primary key)', async () => {
   orm.em.create(Bar3, { _id: 'bar3', foos: [foo] });
   await orm.em.flush();
   orm.em.clear();
   const { bar3 } = await orm.em.findOneOrFail(Foo, { _id: foo._id });
-  expect(bar3).not.toBeUndefined();
-});
-
-test('create Bar4 (manually generate a primary key)', async () => {
-  orm.em.create(Bar4, { _id: 4, foos: [foo] });
-  await orm.em.flush();
-  orm.em.clear();
-  const { bar4 } = await orm.em.findOneOrFail(Foo, { _id: foo._id });
-  expect(bar4).not.toBeUndefined();
+  expect(bar3).toBeTruthy();
 });
