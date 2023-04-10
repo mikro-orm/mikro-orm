@@ -7,19 +7,19 @@ import { v4 } from 'uuid';
 class Foo {
 
   @PrimaryKey()
-  public _id!: ObjectId;
+  _id!: ObjectId;
 
   @ManyToOne({ entity: () => Bar1, nullable: true })
-  public bar1?: Rel<Bar1>;
+  bar1?: Rel<Bar1>;
 
   @ManyToOne({ entity: () => Bar2, nullable: true })
-  public bar2?: Rel<Bar2>;
+  bar2?: Rel<Bar2>;
 
   @ManyToOne({ entity: () => Bar3, nullable: true })
-  public bar3?: Rel<Bar3>;
+  bar3?: Rel<Bar3>;
 
   @ManyToOne({ entity: () => Bar4, nullable: true })
-  public bar4?: Rel<Bar4>;
+  bar4?: Rel<Bar4>;
 
 }
 
@@ -27,10 +27,10 @@ class Foo {
 class Bar1 {
 
   @PrimaryKey()
-  public _id!: ObjectId;
+  _id!: ObjectId;
 
   @OneToMany({ entity: () => Foo, mappedBy: book => book.bar1 })
-  public foos = new Collection<Foo>(this);
+  foos = new Collection<Foo>(this);
 
 }
 
@@ -38,10 +38,10 @@ class Bar1 {
 class Bar2 {
 
   @PrimaryKey()
-  public _id = v4();
+  _id = v4();
 
   @OneToMany({ entity: () => Foo, mappedBy: book => book.bar2 })
-  public foos = new Collection<Foo>(this);
+  foos = new Collection<Foo>(this);
 
 }
 
@@ -49,10 +49,10 @@ class Bar2 {
 class Bar3 {
 
   @PrimaryKey()
-  public _id!: string;
+  _id!: string;
 
   @OneToMany({ entity: () => Foo, mappedBy: book => book.bar3 })
-  public foos = new Collection<Foo>(this);
+  foos = new Collection<Foo>(this);
 
 }
 
@@ -60,10 +60,10 @@ class Bar3 {
 class Bar4 {
 
   @PrimaryKey()
-  public _id!: number;
+  _id!: number;
 
   @OneToMany({ entity: () => Foo, mappedBy: book => book.bar4 })
-  public foos = new Collection<Foo>(this);
+  foos = new Collection<Foo>(this);
 
 }
 
