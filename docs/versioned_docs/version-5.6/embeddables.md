@@ -733,7 +733,7 @@ export const OwnerSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'number' },
     name: { type: 'string' },
-    address: { reference: 'embedded', entity: 'Cat | Dog' },
+    pet: { reference: 'embedded', entity: 'Cat | Dog' },
   },
 });
 ```
