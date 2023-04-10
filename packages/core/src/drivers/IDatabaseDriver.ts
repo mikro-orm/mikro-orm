@@ -120,10 +120,10 @@ export interface FindOptions<T, P extends string = never> {
   connectionType?: ConnectionType;
 }
 
-export interface PaginateOptions<T extends object, P extends string = never> extends FindOptions<T, P> {
+export type PaginateOptions<T extends object, P extends string = never> = Omit<FindOptions<T, P>, 'limit' | 'offset'> & {
   page?: number;
   perPage?: number;
-}
+};
 
 export interface FindOneOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'lockMode'> {
   lockMode?: LockMode;

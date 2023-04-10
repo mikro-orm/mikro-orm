@@ -757,6 +757,7 @@ export interface SimplePaginatedResult<T, P extends string = never> {
   meta: {
     currentPage: number;
     perPage: number;
+    hasNextPage: boolean;
   }
 }
 

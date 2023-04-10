@@ -436,13 +436,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, paginateOptions: PaginateOptions<Entity, Hint> = {}): Promise<SimplePaginatedResult<Entity, Hint>> {
     const { page = 1, perPage = 10, ...options } = paginateOptions;
-    const entities = await this.find<Entity, Hint>(entityName, where, { ...options, limit: perPage, offset: (page - 1) * perPage });
+    const entities = await this.find<Entity, Hint>(entityName, where, { ...options, limit: perPage + 1, offset: (page - 1) * perPage });
 
     return {
-      data: entities,
+      data: entities.length > perPage ? entities.slice(0, -1) : entities,
       meta: {
         currentPage: page,
         perPage: perPage,
+        hasNextPage: entities.length > perPage,
       }
     };
   }
