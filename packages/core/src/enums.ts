@@ -1,13 +1,13 @@
-import type { Dictionary, EntityKey, ExcludeFunctions, ExpandProperty } from './typings';
+import type { Dictionary, EntityKey, ExpandProperty } from './typings';
 import type { Transaction } from './connections';
 
-export const enum FlushMode {
-  /** The `EntityManager` tries to delay the flush until the current Transaction is committed, although it might flush prematurely too. */
-  COMMIT,
+export enum FlushMode {
+  /** The `EntityManager` delays the flush until the current Transaction is committed. */
+  COMMIT = 'commit',
   /** This is the default mode, and it flushes the `EntityManager` only if necessary. */
-  AUTO,
+  AUTO = 'auto',
   /** Flushes the `EntityManager` before every query. */
-  ALWAYS,
+  ALWAYS = 'always',
 }
 
 export enum PopulateHint {
