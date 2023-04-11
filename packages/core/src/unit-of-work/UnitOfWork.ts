@@ -764,10 +764,6 @@ export class UnitOfWork {
     const collection = reference as Collection<AnyEntity>;
 
     if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) && collection) {
-      if (type === Cascade.MERGE && collection.isInitialized()) {
-        collection.populated();
-      }
-
       collection
         .getItems(false)
         .forEach(item => this.cascade(item, type, visited, options));

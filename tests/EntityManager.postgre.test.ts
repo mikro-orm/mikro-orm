@@ -920,8 +920,8 @@ describe('EntityManagerPostgre', () => {
       fields: ['books.title'],
     });
     const json = wrap(newGod).toJSON();
-    // @ts-expect-error
-    expect(json.books[0].author).toBe(newGod.id);
+    // @ts-expect-error since v6, automatically selected FKs are no longer part of the serialized entity
+    expect(json.books[0].author).toBeUndefined();
   });
 
   test('findOne by id', async () => {
