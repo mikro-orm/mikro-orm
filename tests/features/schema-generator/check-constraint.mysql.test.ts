@@ -47,7 +47,7 @@ describe('check constraint [mysql8]', () => {
       driver: MySqlDriver,
       port: 3308,
       metadataProvider: TsMorphMetadataProvider,
-      cache: { options: { cacheDir: `${__dirname}/temp` } },
+      metadataCache: { options: { cacheDir: `${__dirname}/temp` } },
     });
     const meta0 = orm0.getMetadata().get(FooEntity.name);
     expect(meta0.checks).toEqual([
@@ -75,7 +75,7 @@ describe('check constraint [mysql8]', () => {
       driver: MySqlDriver,
       port: 3308,
       metadataProvider: TsMorphMetadataProvider,
-      cache: { options: { cacheDir: `${__dirname}/temp` } },
+      metadataCache: { options: { cacheDir: `${__dirname}/temp` } },
     });
     const meta = orm.getMetadata().get(FooEntity.name);
     expect(meta.checks).toEqual([

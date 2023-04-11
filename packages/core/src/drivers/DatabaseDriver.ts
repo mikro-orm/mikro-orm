@@ -76,7 +76,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   /* istanbul ignore next */
-  async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]> {
+  async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<EntityData<T>[]> {
     throw new Error(`Virtual entities are not supported by ${this.constructor.name} driver.`);
   }
 
@@ -89,7 +89,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<any>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T, any>): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>): Promise<Dictionary<T[]>> {
     throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
@@ -311,9 +311,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     });
   }
 
-  protected getPivotOrderBy<T>(prop: EntityProperty<T>, orderBy?: QueryOrderMap<T>[]): QueryOrderMap<T>[] {
+  protected getPivotOrderBy<T>(prop: EntityProperty<T>, orderBy?: OrderDefinition<T>): QueryOrderMap<T>[] {
     if (!Utils.isEmpty(orderBy)) {
-      return orderBy!;
+      return orderBy as QueryOrderMap<T>[];
     }
 
     if (!Utils.isEmpty(prop.orderBy)) {

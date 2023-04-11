@@ -82,7 +82,7 @@ test('assigning collection items with updateByPrimaryKey: false', async () => {
   await orm.em.flush();
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ['[query] insert into `product` (`id`, `name`, `store_id`) values (?, ?, ?) returning `id`'],
+    ['[query] insert into `product` (`id`, `name`, `store_id`) values (?, ?, ?)'],
     ['[query] update `product` set `name` = ? where `id` = ?'],
     ['[query] commit'],
   ]);
@@ -104,7 +104,7 @@ test('assigning collection items with updateNestedEntities: false', async () => 
   await orm.em.flush();
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ['[query] insert into `product` (`id`, `name`, `store_id`) values (?, ?, ?), (?, ?, ?) returning `id`'],
+    ['[query] insert into `product` (`id`, `name`, `store_id`) values (?, ?, ?), (?, ?, ?)'],
     ['[query] delete from `product` where `id` in (?)'],
     ['[query] commit'],
   ]);
