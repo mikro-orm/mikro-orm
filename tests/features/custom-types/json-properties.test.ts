@@ -1,4 +1,14 @@
-import { MikroORM, Entity, PrimaryKey, Property, SimpleLogger, Utils, IDatabaseDriver, sql } from '@mikro-orm/core';
+import {
+  MikroORM,
+  Entity,
+  PrimaryKey,
+  Property,
+  SimpleLogger,
+  Utils,
+  IDatabaseDriver,
+  sql,
+  wrap,
+} from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 import { PLATFORMS } from '../../bootstrap';
 
