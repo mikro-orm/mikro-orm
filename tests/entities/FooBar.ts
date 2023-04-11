@@ -60,6 +60,9 @@ export default class FooBar {
   @Property({ onCreate: (bar: FooBar) => bar.meta.onUpdateCalled = true })
   onUpdateTest?: boolean;
 
+  @Property({ nullable: true })
+  tenant?: number;
+
   readonly meta = { onCreateCalled: false, onUpdateCalled: false };
 
   static create(name: string) {

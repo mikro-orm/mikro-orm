@@ -3552,7 +3552,7 @@ import { Author2 } from './Author2';
 @Entity()
 export class Address2 {
 
-  @OneToOne({ entity: () => Author2, onUpdateIntegrity: 'cascade', deleteRule: 'cascade', primary: true })
+  @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Author2;
 
   @Property({ length: 255 })
@@ -3612,7 +3612,7 @@ export class Author2 {
   @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
   favouriteBook?: Book2;
 
-  @ManyToOne({ entity: () => Author2, onUpdateIntegrity: 'cascade', deleteRule: 'set null', nullable: true })
+  @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteAuthor?: Author2;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
@@ -3644,10 +3644,10 @@ export class BaseUser2 {
   @Property({ length: 255, nullable: true })
   ownerProp?: string;
 
-  @ManyToOne({ entity: () => BaseUser2, onUpdateIntegrity: 'cascade', deleteRule: 'set null', nullable: true })
+  @ManyToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteEmployee?: BaseUser2;
 
-  @OneToOne({ entity: () => BaseUser2, onUpdateIntegrity: 'cascade', deleteRule: 'set null', nullable: true })
+  @OneToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteManager?: BaseUser2;
 
   @Property({ nullable: true })
@@ -3709,7 +3709,7 @@ export class Book2 {
   @ManyToOne({ entity: () => Author2 })
   author!: Author2;
 
-  @ManyToOne({ entity: () => Publisher2, onUpdateIntegrity: 'cascade', deleteRule: 'cascade', nullable: true })
+  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Publisher2;
 
   @Property({ length: 255, nullable: true, default: 'lol' })
@@ -3730,10 +3730,10 @@ export class Book2Tags {
   @PrimaryKey()
   order!: number;
 
-  @ManyToOne({ entity: () => Book2, onUpdateIntegrity: 'cascade', deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => Book2, updateRule: 'cascade', deleteRule: 'cascade' })
   book2!: Book2;
 
-  @ManyToOne({ entity: () => BookTag2, onUpdateIntegrity: 'cascade', deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => BookTag2, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag2!: BookTag2;
 
 }
@@ -3750,7 +3750,7 @@ export class CarOwner2 {
   @Property({ length: 255 })
   name!: string;
 
-  @ManyToOne({ entity: () => Car2, onUpdateIntegrity: 'cascade' })
+  @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
   car!: Car2;
 
 }
@@ -3817,10 +3817,10 @@ export class FooBar2 {
   @Property({ fieldName: 'name with space', length: 255, nullable: true })
   nameWithSpace?: string;
 
-  @OneToOne({ entity: () => FooBaz2, onUpdateIntegrity: 'cascade', deleteRule: 'set null', nullable: true })
+  @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz2;
 
-  @OneToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', deleteRule: 'set null', nullable: true })
+  @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
   @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -3867,10 +3867,10 @@ export class FooParam2 {
 
   [OptionalProps]?: 'version';
 
-  @ManyToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', primary: true })
+  @ManyToOne({ entity: () => FooBar2, updateRule: 'cascade', primary: true })
   bar!: FooBar2;
 
-  @ManyToOne({ entity: () => FooBaz2, onUpdateIntegrity: 'cascade', primary: true })
+  @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
   baz!: FooBaz2;
 
   @Property({ length: 255 })
@@ -3881,22 +3881,24 @@ export class FooParam2 {
 
 }
 ",
-  "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
 
+  [OptionalProps]?: 'name' | 'type' | 'type2';
+
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property({ length: 255, default: 'asd' })
   name!: string;
 
-  @Enum({ items: () => Publisher2Type })
-  type!: Publisher2Type;
+  @Enum({ items: () => Publisher2Type, default: 'local' })
+  type: Publisher2Type = Publisher2Type.LOCAL;
 
-  @Enum({ items: () => Publisher2Type2 })
-  type2!: Publisher2Type2;
+  @Enum({ items: () => Publisher2Type2, default: 'LOCAL' })
+  type2: Publisher2Type2 = Publisher2Type2.LOCAL;
 
   @Property({ columnType: 'tinyint', nullable: true })
   enum1?: number;
@@ -3944,7 +3946,7 @@ export class Publisher2Tests {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Publisher2, onUpdateIntegrity: 'cascade', deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher2!: Publisher2;
 
   @Index({ name: 'publisher2_tests_test2_id_index' })
@@ -3985,7 +3987,7 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
-  @OneToOne({ entity: () => Car2, onUpdateIntegrity: 'cascade', deleteRule: 'set null', nullable: true })
+  @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteCar?: Car2;
 
   @ManyToMany({ entity: () => Car2, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumns: ['car2_name', 'car2_year'] })
@@ -4007,7 +4009,7 @@ import { Author2 } from './Author2';
 @Entity()
 export class Address2 {
 
-  @OneToOne({ entity: () => Author2, onUpdateIntegrity: 'cascade', deleteRule: 'cascade', primary: true })
+  @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Author2;
 
   @Property({ length: 255 })
@@ -4067,7 +4069,7 @@ export class Author2 {
   @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
   favouriteBook?: Book2;
 
-  @ManyToOne({ entity: () => Author2, onUpdateIntegrity: 'cascade', deleteRule: 'set null', nullable: true })
+  @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteAuthor?: Author2;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
@@ -4122,7 +4124,7 @@ export class Book2 {
   @ManyToOne({ entity: () => Author2 })
   author!: Author2;
 
-  @ManyToOne({ entity: () => Publisher2, onUpdateIntegrity: 'cascade', deleteRule: 'cascade', nullable: true })
+  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Publisher2;
 
   @Property({ length: 255, nullable: true, default: 'lol' })
@@ -4143,10 +4145,10 @@ export class Book2Tags {
   @PrimaryKey()
   order!: number;
 
-  @ManyToOne({ entity: () => Book2, onUpdateIntegrity: 'cascade', deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => Book2, updateRule: 'cascade', deleteRule: 'cascade' })
   book2!: Book2;
 
-  @ManyToOne({ entity: () => BookTag2, onUpdateIntegrity: 'cascade', deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => BookTag2, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag2!: BookTag2;
 
 }
@@ -4160,7 +4162,7 @@ export class Configuration2 {
   @PrimaryKey({ length: 255 })
   property!: string;
 
-  @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', primary: true })
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
   test!: Test2;
 
   @Property({ length: 255 })
@@ -4185,10 +4187,10 @@ export class FooBar2 {
   @Property({ fieldName: 'name with space', length: 255, nullable: true })
   nameWithSpace?: string;
 
-  @OneToOne({ entity: () => FooBaz2, onUpdateIntegrity: 'cascade', deleteRule: 'set null', nullable: true })
+  @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz2;
 
-  @OneToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', deleteRule: 'set null', nullable: true })
+  @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
   @Property({ length: 0, defaultRaw: \`current_timestamp(0)\` })
@@ -4235,10 +4237,10 @@ export class FooParam2 {
 
   [OptionalProps]?: 'version';
 
-  @ManyToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', primary: true })
+  @ManyToOne({ entity: () => FooBar2, updateRule: 'cascade', primary: true })
   bar!: FooBar2;
 
-  @ManyToOne({ entity: () => FooBaz2, onUpdateIntegrity: 'cascade', primary: true })
+  @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
   baz!: FooBaz2;
 
   @Property({ length: 255 })
@@ -4272,10 +4274,10 @@ export class Label2Tests {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Label2, onUpdateIntegrity: 'cascade', deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => Label2, updateRule: 'cascade', deleteRule: 'cascade' })
   label2!: Label2;
 
-  @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
   test2!: Test2;
 
 }
@@ -4344,10 +4346,10 @@ export class Publisher2Tests {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Publisher2, onUpdateIntegrity: 'cascade', deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher2!: Publisher2;
 
-  @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
   test2!: Test2;
 
 }

@@ -29,10 +29,11 @@ export abstract class BaseEntity {
     return Reference.create(this) as unknown as Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
   }
 
+  toObject<Entity extends this = this>(): EntityDTO<Entity>;
+  toObject<Entity extends this = this>(ignoreFields: never[]): EntityDTO<Entity>;
   toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(ignoreFields: Ignored[]): Omit<EntityDTO<Entity>, Ignored>;
-  toObject<Entity extends this = this>(...args: unknown[]): EntityDTO<Entity>;
   toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(ignoreFields?: Ignored[]): Omit<EntityDTO<Entity>, Ignored> {
-    return helper(this as unknown as Entity).toObject(ignoreFields);
+    return helper(this as unknown as Entity).toObject(ignoreFields!);
   }
 
   toPOJO<Entity extends this = this>(): EntityDTO<Entity> {
