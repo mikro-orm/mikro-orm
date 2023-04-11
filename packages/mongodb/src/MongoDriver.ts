@@ -90,7 +90,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   async findOne<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T, P> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
     if (this.metadata.find(entityName)?.virtual) {
-      const [item] = await this.findVirtual(entityName, where, options as FindOptions<T, any>);
+      const [item] = await this.findVirtual(entityName, where, options as FindOptions<T, any, any>);
       /* istanbul ignore next */
       return item ?? null;
     }

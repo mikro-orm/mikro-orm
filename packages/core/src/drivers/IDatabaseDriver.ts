@@ -40,7 +40,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F>): Promise<EntityData<T> | null>;
 
-  findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]>;
+  findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<EntityData<T>[]>;
 
   nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
@@ -63,7 +63,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
    */
-  loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T, any>): Promise<Dictionary<T[]>>;
+  loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>): Promise<Dictionary<T[]>>;
 
   getPlatform(): Platform;
 
@@ -95,10 +95,11 @@ export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<
 
 export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
 
-export interface FindOptions<T, P extends string = never, F extends string = '*'> {
+export interface FindOptions<T, P extends string = never, F extends string = never> {
   where?: FilterQuery<T>;
   populate?: readonly AutoPath<T, P>[] | boolean;
   populateWhere?: ObjectQuery<T> | PopulateHint;
+  fields?: readonly AutoPath<T, F, '*'>[];
   orderBy?: OrderDefinition<T>;
   cache?: boolean | number | [string, number];
   limit?: number;
@@ -116,15 +117,14 @@ export interface FindOptions<T, P extends string = never, F extends string = '*'
   refresh?: boolean;
   convertCustomTypes?: boolean;
   disableIdentityMap?: boolean;
-  fields?: readonly EntityField<T, F>[];
   schema?: string;
   flags?: QueryFlag[];
   /** sql only */
   groupBy?: string | string[];
   having?: QBFilterQuery<T>;
   /** sql only */
-  strategy?: LoadStrategy;
-  flushMode?: FlushMode;
+  strategy?: LoadStrategy | 'select-in' | 'joined';
+  flushMode?: FlushMode | 'commit' | 'auto' | 'always';
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   /** sql only */
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
