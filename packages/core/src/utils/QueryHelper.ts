@@ -124,7 +124,7 @@ export class QueryHelper {
       let cond = { [rootPrimaryKey]: { $in: where } } as FilterQuery<T>;
 
       // detect tuple comparison, use `$or` in case the number of constituents don't match
-      if (meta && !where.every(c => Utils.isPrimaryKey(c as unknown) || Array.isArray(c) && c.length === meta.primaryKeys.length && c.every(i => Utils.isPrimaryKey(i)))) {
+      if (meta && !where.every(c => Utils.isPrimaryKey(c as unknown) || (Array.isArray(c) && c.length === meta.primaryKeys.length && c.every(i => Utils.isPrimaryKey(i))))) {
         cond = { $or: where } as FilterQuery<T>;
       }
 

@@ -1,5 +1,20 @@
-import { ObjectId } from 'bson';
-import { EntityDTO, Ref, Dictionary, Collection, Cascade, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap, Filter, OptionalProps } from '@mikro-orm/core';
+import {
+  EntityDTO,
+  Ref,
+  Dictionary,
+  Collection,
+  Cascade,
+  Entity,
+  Index,
+  ManyToMany,
+  ManyToOne,
+  Property,
+  Unique,
+  wrap,
+  Filter,
+  OptionalProps,
+  EntityKey,
+} from '@mikro-orm/core';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
@@ -56,14 +71,12 @@ export class Book extends BaseEntity3 {
     this.author = author!;
   }
 
-  toJSON<T extends this = this>(strict = true, strip: string[] = ['metaObject', 'metaArray', 'metaArrayOfStrings'], ...args: any[]): EntityDTO<T> {
-    const o = wrap(this as T).toObject(...args);
-
+  toJSON<Ignored extends EntityKey<this>>(strict = true, strip: Ignored[] = ['metaObject', 'metaArray', 'metaArrayOfStrings'] as Ignored[]): Omit<EntityDTO<this>, Ignored> {
     if (strict) {
-      strip.forEach(k => delete o[k as keyof typeof o]);
+      return wrap(this).toObject(strip);
     }
 
-    return o;
+    return wrap(this).toObject();
   }
 
 }

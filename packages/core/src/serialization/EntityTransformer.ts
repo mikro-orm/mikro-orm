@@ -26,7 +26,7 @@ export class EntityTransformer {
     let contextCreated = false;
 
     if (!wrapped.__serializationContext.root) {
-      const root = new SerializationContext<Entity>(wrapped.__serializationContext.populate ?? []);
+      const root = new SerializationContext<Entity>(wrapped.__config, wrapped.__serializationContext.populate, wrapped.__serializationContext.fields);
       SerializationContext.propagate(root, entity, isVisible);
       contextCreated = true;
     }
@@ -55,13 +55,21 @@ export class EntityTransformer {
     [...keys]
       .filter(prop => raw ? meta.properties[prop] : isVisible<Entity>(meta, prop, ignoreFields))
       .map(prop => {
+        const populated = root.isMarkedAsPopulated(meta.className, prop);
+        const partiallyLoaded = root.isPartiallyLoaded(meta.className, prop);
+        const isPrimary = wrapped.__config.get('serialization').includePrimaryKeys && meta.properties[prop].primary;
+
+        if (!partiallyLoaded && !populated && !isPrimary) {
+          return [prop, undefined];
+        }
+
         const cycle = root.visit(meta.className, prop);
 
         if (cycle && visited) {
           return [prop, undefined];
         }
 
-        const val = EntityTransformer.processProperty<Entity>(prop, entity, raw);
+        const val = EntityTransformer.processProperty<Entity>(prop, entity, raw, populated);
 
         if (!cycle) {
           root.leave(meta.className, prop);
@@ -111,7 +119,7 @@ export class EntityTransformer {
     return prop;
   }
 
-  private static processProperty<Entity extends object>(prop: EntityKey<Entity>, entity: Entity, raw: boolean): EntityValue<Entity> | undefined {
+  private static processProperty<Entity extends object>(prop: EntityKey<Entity>, entity: Entity, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
     const wrapped = helper(entity);
     const property = wrapped.__meta.properties[prop];
     const serializer = property?.serializer;
@@ -131,11 +139,11 @@ export class EntityTransformer {
     }
 
     if (Utils.isCollection(entity[prop])) {
-      return EntityTransformer.processCollection(prop, entity, raw);
+      return EntityTransformer.processCollection(prop, entity, raw, populated);
     }
 
     if (Utils.isEntity(entity[prop], true)) {
-      return EntityTransformer.processEntity(prop, entity, wrapped.__platform, raw);
+      return EntityTransformer.processEntity(prop, entity, wrapped.__platform, raw, populated);
     }
 
     if (property.kind === ReferenceKind.EMBEDDED) {
@@ -159,7 +167,7 @@ export class EntityTransformer {
     return wrapped.__platform.normalizePrimaryKey(entity[prop] as unknown as IPrimaryKey) as unknown as EntityValue<Entity>;
   }
 
-  private static processEntity<Entity extends object>(prop: keyof Entity, entity: Entity, platform: Platform, raw: boolean): EntityValue<Entity> | undefined {
+  private static processEntity<Entity extends object>(prop: keyof Entity, entity: Entity, platform: Platform, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
     const child = entity[prop] as unknown as Entity | Reference<Entity>;
     const wrapped = helper(child);
 
@@ -167,22 +175,33 @@ export class EntityTransformer {
       return wrapped.toPOJO() as unknown as EntityValue<Entity>;
     }
 
-    if (wrapped.isInitialized() && (wrapped.__populated || !wrapped.__managed) && child !== entity && !wrapped.__lazyInitialized) {
-      const args = [...wrapped.__meta.toJsonParams.map(() => undefined)];
-      return wrap(child).toJSON(...args) as EntityValue<Entity>;
+    function isPopulated() {
+      if (wrapped.__populated != null) {
+        return wrapped.__populated;
+      }
+
+      if (populated) {
+        return true;
+      }
+
+      return !wrapped.__managed;
+    }
+
+    if (wrapped.isInitialized() && isPopulated() && child !== entity) {
+      return wrap(child).toJSON() as EntityValue<Entity>;
     }
 
     return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as unknown as EntityValue<Entity>;
   }
 
-  private static processCollection<Entity>(prop: keyof Entity, entity: Entity, raw: boolean): EntityValue<Entity> | undefined {
+  private static processCollection<Entity>(prop: keyof Entity, entity: Entity, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
     const col = entity[prop] as Collection<AnyEntity>;
 
     if (raw && col.isInitialized(true)) {
       return col.getItems().map(item => wrap(item).toPOJO()) as EntityValue<Entity>;
     }
 
-    if (col.isInitialized(true) && col.shouldPopulate()) {
+    if (col.shouldPopulate(populated)) {
       return col.toArray() as EntityValue<Entity>;
     }
 

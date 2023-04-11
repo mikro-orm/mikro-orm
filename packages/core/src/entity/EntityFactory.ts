@@ -5,7 +5,8 @@ import type {
   EntityKey,
   EntityMetadata,
   EntityName,
-  EntityProperty, EntityValue,
+  EntityProperty,
+  EntityValue,
   New,
   Primary,
 } from '../typings';
@@ -127,7 +128,15 @@ export class EntityFactory {
 
     // do not override values changed by user
     Utils.keys(diff).forEach(key => delete diff2[key]);
-    Utils.keys(diff2).filter(key => diff2[key] === undefined).forEach(key => delete diff2[key]);
+
+    Utils.keys(diff2).filter(key => {
+      // ignore null values if there is already present non-null value
+      if (existsData[key] != null) {
+        return diff2[key] == null;
+      }
+
+      return diff2[key] === undefined;
+    }).forEach(key => delete diff2[key]);
 
     // but always add collection properties and formulas if they are part of the `data`
     Utils.keys(data)
