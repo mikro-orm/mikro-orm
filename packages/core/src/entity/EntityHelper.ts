@@ -53,6 +53,7 @@ export class EntityHelper {
     Object.defineProperties(prototype, {
       __entity: { value: !meta.embeddable },
       __meta: { value: meta },
+      __config: { value: em.config },
       __platform: { value: em.getPlatform() },
       __factory: { value: em.getEntityFactory() },
       __helper: {

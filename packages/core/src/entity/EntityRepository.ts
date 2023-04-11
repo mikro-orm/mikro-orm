@@ -42,7 +42,7 @@ export class EntityRepository<Entity extends object> {
    */
   async findOne<
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(where: FilterQuery<Entity>, options?: FindOneOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields> | null> {
     return this.em.findOne<Entity, Hint, Fields>(this.entityName, where, options);
   }
@@ -54,7 +54,7 @@ export class EntityRepository<Entity extends object> {
    */
   async findOneOrFail<
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(where: FilterQuery<Entity>, options?: FindOneOrFailOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>> {
     return this.em.findOneOrFail<Entity, Hint, Fields>(this.entityName, where, options);
   }
@@ -119,7 +119,7 @@ export class EntityRepository<Entity extends object> {
    */
   async find<
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
     return this.em.find<Entity, Hint, Fields>(this.entityName, where as FilterQuery<Entity>, options);
   }
@@ -130,7 +130,7 @@ export class EntityRepository<Entity extends object> {
    */
   async findAndCount<
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields>): Promise<[Loaded<Entity, Hint, Fields>[], number]> {
     return this.em.findAndCount<Entity, Hint, Fields>(this.entityName, where, options);
   }
@@ -140,7 +140,7 @@ export class EntityRepository<Entity extends object> {
    */
   async findByCursor<
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(where: FilterQuery<Entity>, options?: FindByCursorOptions<Entity, Hint, Fields>): Promise<Cursor<Entity, Hint, Fields>> {
     return this.em.findByCursor<Entity, Hint, Fields>(this.entityName, where, options);
   }
@@ -150,7 +150,7 @@ export class EntityRepository<Entity extends object> {
    */
   async findAll<
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(options?: FindOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
     return this.em.find<Entity, Hint, Fields>(this.entityName, {} as FilterQuery<Entity>, options);
   }
@@ -252,7 +252,7 @@ export class EntityRepository<Entity extends object> {
    */
   async populate<
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint>[] | boolean, options?: EntityLoaderOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
     return this.em.populate(entities as Entity, populate, options);
   }
