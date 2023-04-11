@@ -65,7 +65,7 @@ class Reader {
 @Entity()
 class Book {
 
-  [PrimaryKeyProp]?: ['id', 'company_id'];
+  [PrimaryKeyProp]?: ['id', 'company'];
 
   @Unique({ name: 'book_id_unique' })
   @PrimaryKey({ columnType: 'uuid' })

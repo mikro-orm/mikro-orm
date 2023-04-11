@@ -272,7 +272,7 @@ describe('EntityManagerPostgre', () => {
     }, { readOnly: true, isolationLevel: IsolationLevel.READ_COMMITTED })).rejects.toThrowError(/cannot execute INSERT in a read-only transaction/);
 
     expect(mock.mock.calls[0][0]).toMatch('begin transaction isolation level read committed read only');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "age"');
     expect(mock.mock.calls[2][0]).toMatch('rollback');
   });
 
@@ -933,8 +933,8 @@ describe('EntityManagerPostgre', () => {
       fields: ['books.title'],
     });
     const json = wrap(newGod).toJSON();
-    // @ts-expect-error
-    expect(json.books[0].author).toBe(newGod.id);
+    // @ts-expect-error since v6, automatically selected FKs are no longer part of the serialized entity
+    expect(json.books[0].author).toBeUndefined();
   });
 
   test('findOne by id', async () => {

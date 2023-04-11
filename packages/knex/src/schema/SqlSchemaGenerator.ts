@@ -1,5 +1,5 @@
 ﻿import type { Knex } from 'knex';
-import { AbstractSchemaGenerator, Utils, type Dictionary, type EntityMetadata, type MikroORM, ISchemaGenerator } from '@mikro-orm/core';
+import { AbstractSchemaGenerator, Utils, type Dictionary, type EntityMetadata, type MikroORM, type ISchemaGenerator } from '@mikro-orm/core';
 import type { CheckDef, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';

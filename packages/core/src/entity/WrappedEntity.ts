@@ -2,7 +2,7 @@ import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
 import type {
   AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, IHydrator, EntityValue, EntityKey,
-  IWrappedEntityInternal, Populate, PopulateOptions, Primary, AutoPath, Loaded, Ref, AddEager, Loaded, LoadedReference, EntityDTO,
+  IWrappedEntityInternal, Populate, PopulateOptions, Primary, AutoPath, Loaded, Ref, AddEager, LoadedReference, EntityDTO,
 } from '../typings';
 import { Reference } from './Reference';
 import { EntityTransformer } from '../serialization/EntityTransformer';
@@ -14,18 +14,18 @@ import { ValidationError } from '../errors';
 import type { EntityIdentifier } from './EntityIdentifier';
 import { helper } from './wrap';
 import type { SerializationContext } from '../serialization/SerializationContext';
+import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer';
 
 export class WrappedEntity<Entity extends object> {
 
   __initialized = true;
   __touched = false;
   __populated?: boolean;
-  __lazyInitialized?: boolean;
   __managed?: boolean;
   __onLoadFired?: boolean;
   __schema?: string;
   __em?: EntityManager;
-  __serializationContext: { root?: SerializationContext<Entity>; populate?: PopulateOptions<Entity>[] } = {};
+  __serializationContext: { root?: SerializationContext<Entity>; populate?: PopulateOptions<Entity>[]; fields?: string[] } = {};
   __loadedProperties = new Set<string>();
   __data: Dictionary = {};
   __processing = false;
@@ -56,9 +56,8 @@ export class WrappedEntity<Entity extends object> {
     return this.__touched;
   }
 
-  populated(populated = true): void {
+  populated(populated: boolean | undefined = true): void {
     this.__populated = populated;
-    this.__lazyInitialized = false;
   }
 
   toReference(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>> {
@@ -68,6 +67,10 @@ export class WrappedEntity<Entity extends object> {
 
   toObject<Ignored extends EntityKey<Entity> = never>(ignoreFields?: Ignored[]): Omit<EntityDTO<Entity>, Ignored> {
     return EntityTransformer.toObject(this.entity, ignoreFields);
+  }
+
+  serialize<Hint extends string = never, Exclude extends string = never>(options?: SerializeOptions<Entity, Hint, Exclude>): EntityDTO<Loaded<Entity, Hint>> {
+    return EntitySerializer.serialize(this.entity, options);
   }
 
   toPOJO(): EntityDTO<Entity> {
@@ -93,23 +96,21 @@ export class WrappedEntity<Entity extends object> {
     }
 
     await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate, connectionType, schema: this.__schema });
-    this.populated(populated);
-    this.__lazyInitialized = true;
 
     return this.entity;
   }
 
   async populate<Hint extends string = never>(
-    populate: AutoPath<T, Hint>[] | boolean,
-    options: EntityLoaderOptions<T, Hint> = {},
-  ): Promise<Loaded<T, Hint>> {
+    populate: AutoPath<Entity, Hint>[] | boolean,
+    options: EntityLoaderOptions<Entity, Hint> = {},
+  ): Promise<Loaded<Entity, Hint>> {
     if (!this.__em) {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
     await this.__em.populate(this.entity, populate, options);
 
-    return this.entity as Loaded<T, Hint>;
+    return this.entity as Loaded<Entity, Hint>;
   }
 
   hasPrimaryKey(): boolean {
@@ -184,6 +185,10 @@ export class WrappedEntity<Entity extends object> {
 
   get __platform() {
     return (this.entity as IWrappedEntityInternal<Entity>).__platform!;
+  }
+
+  get __config() {
+    return (this.entity as IWrappedEntityInternal<Entity>).__config!;
   }
 
   get __primaryKeys(): Primary<Entity>[] {

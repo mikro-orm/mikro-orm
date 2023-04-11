@@ -75,6 +75,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
     populateAfterFlush: true,
+    serialization: {
+      includePrimaryKeys: true,
+    },
     persistOnCreate: true,
     forceEntityConstructor: false,
     forceUndefined: false,
@@ -507,6 +510,9 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
   populateAfterFlush: boolean;
+  serialization: {
+    includePrimaryKeys: boolean;
+  };
   persistOnCreate: boolean;
   forceEntityConstructor: boolean | (Constructor<AnyEntity> | string)[];
   forceUndefined: boolean;
