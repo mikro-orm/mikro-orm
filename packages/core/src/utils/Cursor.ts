@@ -2,8 +2,7 @@ import { inspect } from 'util';
 import type { Dictionary, EntityKey, EntityMetadata, FilterObject, Loaded } from '../typings';
 import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseDriver';
 import { Utils } from './Utils';
-import type { QueryOrder, QueryOrderKeys } from '../enums';
-import { ReferenceKind } from '../enums';
+import { ReferenceKind, type QueryOrder, type QueryOrderKeys } from '../enums';
 import { Reference } from '../entity/Reference';
 
 /**

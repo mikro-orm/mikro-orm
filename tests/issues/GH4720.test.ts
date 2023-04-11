@@ -6,7 +6,6 @@ import {
   OneToMany,
   PrimaryKey,
   PrimaryKeyProp,
-  PrimaryKeyType,
   Property,
   Unique,
 } from '@mikro-orm/core';
@@ -32,8 +31,7 @@ class Parent {
 @Entity()
 class ChildType {
 
-  [PrimaryKeyProp]?: 'foo' | 'boo';
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['foo', 'boo'];
 
   @PrimaryKey()
   foo!: string;
@@ -49,8 +47,7 @@ class ChildType {
 @Entity()
 class Child {
 
-  [PrimaryKeyProp]?: 'parent' | 'type';
-  [PrimaryKeyType]?: [number, [string, string]];
+  [PrimaryKeyProp]?: ['parent', 'type'];
 
   @ManyToOne({ entity: () => Parent, primary: true })
   parent!: Parent;

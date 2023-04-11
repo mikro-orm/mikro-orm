@@ -234,3 +234,45 @@ console.log(ref.age); // real value is available after flush
 ## Metadata CacheAdapter requires sync API
 
 To allow working with cache inside `MikroORM.initSync`, the metadata cache now enforces sync API. You should usually depend on the file-based cache for the metadata, which now uses sync methods to work with the file system.
+
+## Implicit serialization changes
+
+Implicit serialization, so calling `toObject()` or `toJSON()` on the entity, as opposed to explicitly using the `serialize()` helper, now works entirely based on `populate` hints. This means that, unless you explicitly marked some entity as populated via `wrap(entity).populated()`, it will be part of the serialized form only if it was part of the `populate` hint:
+
+```ts
+// let's say both Author and Book entity has a m:1 relation to Publisher entity
+// we only populate the publisher relation of the Book entity
+const user = await em.findOneOrFail(Author, 1, {
+  populate: ['books.publisher'],
+});
+
+const dto = wrap(user).toObject();
+console.log(dto.publisher); // only the FK, e.g. `123`
+console.log(dto.books[0].publisher); // populated, e.g. `{ id: 123, name: '...' }`
+```
+
+Moreover, the implicit serialization now respects the partial loading hints too. Previously, all loaded properties were serialized, partial loading worked only on the database query level. Since v6, we also prune the data on runtime. This means that unless the property is part of the partial loading hint (`fields` option), it won't be part of the DTO - only exception is the primary key, you can optionally hide it via `hidden: true` in the property options. Main difference here will be the foreign keys, those are often automatically selected as they are needed to build the entity graph, but will no longer be part of the DTO.
+
+```ts
+const user = await em.findOneOrFail(Author, 1, {
+  fields: ['books.publisher.name'],
+});
+
+const dto = wrap(user).toObject();
+// only the publisher's name will be available, previously there would be also `book.author`
+// `{ id: 1, books: [{ id: 2, publisher: { id: 3, name: '...' } }] }`
+```
+
+**This also works for embeddables, including nesting and object mode.**
+
+## `serialize` helper always returns array
+
+This method used to return a single object conditionally based on its inputs, but the solution broke intellisense for the `populate` option. The method signature still accepts single object or an array of objects, but always returns an array.
+
+To serialize single entity, you can use array destructing, or use `wrap(entity).serialize()` which handles a single entity only.
+
+```ts
+const dtos = serialize([user1, user, ...], { exclude: ['id', 'email'], forceObject: true });
+const [dto1] = serialize(user, { exclude: ['id', 'email'], forceObject: true });
+const dto2 = wrap(user).serialize({ exclude: ['id', 'email'], forceObject: true });
+```
