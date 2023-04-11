@@ -40,6 +40,7 @@ import type {
   RequiredEntityData,
   Ref,
   EntityKey,
+  AnyString,
 } from './typings';
 import type { TransactionOptions } from './enums';
 import { EventType, FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceKind, SCALAR_TYPES } from './enums';
@@ -146,7 +147,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async find<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint, Fields> = {}): Promise<Loaded<Entity, Hint, Fields>[]> {
     if (options.disableIdentityMap) {
       const em = this.getContext(false);
@@ -290,17 +291,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   protected async processWhere<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(entityName: string, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint, Fields> | FindOneOptions<Entity, Hint, Fields>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<Entity>> {
     where = QueryHelper.processWhere({
-      where: where as FilterQuery<Entity>,
+      where,
       entityName,
       metadata: this.metadata,
       platform: this.driver.getPlatform(),
       convertCustomTypes: options.convertCustomTypes,
       aliased: type === 'read',
     });
-    where = await this.applyFilters(entityName, where, options.filters ?? {}, type, options);
+    where = (await this.applyFilters(entityName, where, options.filters ?? {}, type, options))!;
     where = await this.applyDiscriminatorCondition(entityName, where);
 
     return where;
@@ -331,7 +332,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  async applyFilters<Entity extends object>(entityName: string, where: FilterQuery<Entity>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete', findOptions?: FindOptions<any, any> | FindOneOptions<any, any>): Promise<FilterQuery<Entity>> {
+  async applyFilters<Entity extends object>(entityName: string, where: FilterQuery<Entity> | undefined, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete', findOptions?: FindOptions<any, any> | FindOneOptions<any, any>): Promise<FilterQuery<Entity> | undefined> {
     const meta = this.metadata.find<Entity>(entityName);
     const filters: FilterDef[] = [];
     const ret: Dictionary[] = [];
@@ -393,7 +394,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async findAndCount<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint, Fields> = {}): Promise<[Loaded<Entity, Hint, Fields>[], number]> {
     const em = this.getContext(false);
     const [entities, count] = await Promise.all([
@@ -459,7 +460,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async findByCursor<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindByCursorOptions<Entity, Hint, Fields> = {}): Promise<Cursor<Entity, Hint, Fields>> {
     const em = this.getContext(false);
     entityName = Utils.className(entityName);
@@ -480,7 +481,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async refresh<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(entity: Entity, options: FindOneOptions<Entity, Hint, Fields> = {}): Promise<Loaded<Entity, Hint, Fields> | null> {
     const fork = this.fork();
     const entityName = entity.constructor.name;
@@ -505,7 +506,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async findOne<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOneOptions<Entity, Hint, Fields> = {}): Promise<Loaded<Entity, Hint, Fields> | null> {
     if (options.disableIdentityMap) {
       const em = this.getContext(false);
@@ -579,7 +580,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async findOneOrFail<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOneOrFailOptions<Entity, Hint, Fields> = {}): Promise<Loaded<Entity, Hint, Fields>> {
     let entity: Loaded<Entity, Hint, Fields> | null;
     let isStrictViolation = false;
@@ -887,7 +888,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       const pks = await this.driver.find(meta.className, { $or: [...loadPK.values()] as Dictionary[] }, {
-        fields: meta.primaryKeys.concat(...add),
+        fields: meta.primaryKeys.concat(...add) as any,
         ctx: em.transactionContext,
         convertCustomTypes: true,
       });
@@ -1369,7 +1370,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  async tryFlush<Entity extends object>(entityName: EntityName<Entity>, options: { flushMode?: FlushMode }): Promise<void> {
+  async tryFlush<Entity extends object>(entityName: EntityName<Entity>, options: { flushMode?: FlushMode | AnyString }): Promise<void> {
     const em = this.getContext();
     const flushMode = options.flushMode ?? em.flushMode ?? em.config.get('flushMode');
     entityName = Utils.className(entityName);
@@ -1608,7 +1609,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return entity as Loaded<T, P, F>;
   }
 
-  private buildFields<T extends object, P extends string>(fields: readonly EntityField<T, P>[]): readonly AutoPath<T, P>[] {
+  private buildFields<T extends object, P extends string>(fields: readonly EntityField<T, P>[]): string[] {
     return fields.reduce((ret, f) => {
       if (Utils.isPlainObject(f)) {
         Utils.keys(f).forEach(ff => ret.push(...this.buildFields(f[ff]!).map(field => `${ff as string}.${field}` as never)));
@@ -1623,15 +1624,42 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private preparePopulate<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = never,
   >(entityName: string, options: Pick<FindOptions<Entity, Hint, Fields>, 'populate' | 'strategy' | 'fields'>): PopulateOptions<Entity>[] {
     // infer populate hint if only `fields` are available
     if (!options.populate && options.fields) {
-      options.populate = this.buildFields(options.fields) as any;
+      const meta = this.metadata.find(entityName)!;
+      // we need to prune the `populate` hint from to-one relations, as partially loading them does not require their population, we want just the FK
+      const pruneToOneRelations = (meta: EntityMetadata, fields: string[]): string[] => {
+        return fields.filter(field => {
+          if (!field.includes('.')) {
+            if (field === '*') {
+              return true;
+            }
+
+            return ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(meta.properties[field].kind);
+          }
+
+          const parts = field.split('.');
+          const key = parts.shift()!;
+
+          /* istanbul ignore next */
+          if (key === '*') {
+            return true;
+          }
+
+          const prop = meta.properties[key];
+          const ret = pruneToOneRelations(prop.targetMeta!, [parts.join('.')]);
+
+          return ret.length > 0;
+        });
+      };
+
+      options.populate = pruneToOneRelations(meta, this.buildFields(options.fields)) as any;
     }
 
     if (!options.populate) {
-      return this.entityLoader.normalizePopulate<Entity>(entityName, [], options.strategy);
+      return this.entityLoader.normalizePopulate<Entity>(entityName, [], options.strategy as LoadStrategy);
     }
 
     if (Array.isArray(options.populate)) {
@@ -1644,7 +1672,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }) as unknown as Populate<Entity>;
     }
 
-    const ret: PopulateOptions<Entity>[] = this.entityLoader.normalizePopulate<Entity>(entityName, options.populate as true, options.strategy);
+    const ret: PopulateOptions<Entity>[] = this.entityLoader.normalizePopulate<Entity>(entityName, options.populate as true, options.strategy as LoadStrategy);
     const invalid = ret.find(({ field }) => !this.canPopulate(entityName, field));
 
     if (invalid) {
@@ -1653,7 +1681,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     return ret.map(field => {
       // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
-      field.strategy = options.populate === true ? LoadStrategy.SELECT_IN : (options.strategy ?? field.strategy);
+      field.strategy = options.populate === true ? LoadStrategy.SELECT_IN : (options.strategy ?? field.strategy) as LoadStrategy;
       return field;
     });
   }

@@ -156,7 +156,7 @@ describe('Utils', () => {
   test('getParamNames', () => {
     expect(Utils.getParamNames(Test, 'constructor')).toEqual([]);
     expect(Utils.getParamNames(FooBar, 'constructor')).toEqual([]);
-    expect(Utils.getParamNames(Author, 'toJSON')).toEqual(['strict', 'strip', '...args']);
+    expect(Utils.getParamNames(Author, 'toJSON')).toEqual(['strict', 'strip']);
     expect(Utils.getParamNames('')).toEqual([]);
 
     const func = `function (email, organization, role=(cov_1a0rd1emyt.b[13][0]++, Test.TEST)) {}`;
