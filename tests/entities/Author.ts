@@ -127,8 +127,8 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'vers
     return EntityAssigner.assign(this as T, data);
   }
 
-  toJSON(strict = true, strip: (keyof this)[] = ['id', 'email'], ...args: any[]): EntityDTO<this> {
-    const o = this.toObject(...args);
+  toJSON(strict = true, strip: (keyof this)[] = ['id', 'email']): EntityDTO<this> {
+    const o = this.toObject();
     (o as Dictionary).fooBar = 123;
 
     if (strict) {

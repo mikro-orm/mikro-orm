@@ -93,7 +93,7 @@ describe('GH issue 222', () => {
     await orm.em.persistAndFlush(c);
     orm.em.clear();
 
-    const cc = await orm.em.findOneOrFail(C, c.id);
+    const cc = await orm.em.findOneOrFail(C, c.id, { populate: ['a'] });
     expect(cc.bCollection.count()).toBe(1);
     expect(cc.a.prop).toEqual(cc.bCollection[0].a.prop);
     const ccJson = wrap(cc).toJSON();

@@ -290,7 +290,6 @@ describe('partial loading (mysql)', () => {
 
     const r2 = await orm.em.find(BookTag2, {}, {
       fields: ['name', 'books.title', 'books.author', 'books.author.email'],
-      populate: ['books.author'],
       filters: false,
     });
     expect(r2).toHaveLength(6);
@@ -314,7 +313,6 @@ describe('partial loading (mysql)', () => {
 
     const r3 = await orm.em.find(BookTag2, {}, {
       fields: ['name', 'books.title', 'books.author.email'],
-      populate: ['books.author'],
       filters: false,
       strategy: LoadStrategy.JOINED,
     });
