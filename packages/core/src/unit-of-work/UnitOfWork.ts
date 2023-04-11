@@ -3,6 +3,7 @@ import type {
   AnyEntity,
   Dictionary,
   EntityData,
+  EntityKey,
   EntityMetadata,
   EntityProperty,
   EntityValue,
@@ -107,12 +108,12 @@ export class UnitOfWork {
       });
 
       wrapped.__meta.props.forEach(prop => {
-        if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name as string])) {
+        if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name as EntityKey])) {
           prop.targetMeta?.props.forEach(p => {
             const prefix = prop.prefix === false ? '' : prop.prefix === true ? prop.name + '_' : prop.prefix;
-            data[prefix + p.name] = data[prop.name as string][p.name];
+            data[prefix + p.name as EntityKey] = data[prop.name as EntityKey][p.name];
           });
-          data[prop.name as string] = Utils.getPrimaryKeyValues(data[prop.name as string], prop.targetMeta!.primaryKeys, true);
+          data[prop.name as EntityKey<T>] = Utils.getPrimaryKeyValues(data[prop.name as EntityKey], prop.targetMeta!.primaryKeys, true);
         }
       });
 
@@ -610,13 +611,13 @@ export class UnitOfWork {
       if (props.every(prop => entity[prop] != null)) {
         return Utils.getPrimaryKeyHash(props.map(p => {
           const prop = wrapped.__meta.properties[p];
-          return prop.kind === ReferenceKind.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]!).getSerializedPrimaryKey();
+          return prop.kind === ReferenceKind.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name as EntityKey]!).getSerializedPrimaryKey();
         }) as any);
       }
 
-      if (props.every(prop => wrapped.__originalEntityData?.[prop as string] != null)) {
+      if (props.every(prop => wrapped.__originalEntityData?.[prop as EntityKey] != null)) {
         return Utils.getPrimaryKeyHash(props.map(p => {
-          return wrapped.__originalEntityData![p as string];
+          return wrapped.__originalEntityData![p as EntityKey];
         }));
       }
 
@@ -674,7 +675,7 @@ export class UnitOfWork {
     if (this.isCollectionSelfReferenced(collection, processed)) {
       this.extraUpdates.add([parent, prop.name, collection, undefined]);
       const coll = new Collection<AnyEntity, T>(parent);
-      coll.property = prop;
+      coll.property = prop as EntityProperty<any>;
       parent[prop.name as keyof T] = coll as unknown as T[keyof T];
 
       return;
@@ -767,10 +768,6 @@ export class UnitOfWork {
     const collection = kind as Collection<AnyEntity>;
 
     if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) && collection) {
-      if (type === Cascade.MERGE && collection.isInitialized()) {
-        collection.populated();
-      }
-
       collection
         .getItems(false)
         .forEach(item => this.cascade(item, type, visited, options));
@@ -839,7 +836,7 @@ export class UnitOfWork {
 
     // perf: set the `Collection._property` to skip the getter, as it can be slow when there is a lot of relations
     if (Utils.isCollection<AnyEntity, T>(kind)) {
-      kind.property = prop;
+      kind.property = prop as EntityProperty<any>;
     }
 
     const isCollection = [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind);
@@ -943,6 +940,8 @@ export class UnitOfWork {
             this.scheduleExtraUpdate(changeSet, [prop]);
             return true;
           }
+
+          return false;
         });
       }
 

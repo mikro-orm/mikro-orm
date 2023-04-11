@@ -66,7 +66,9 @@ describe('EntityHelperMongo', () => {
     orm.em.clear();
 
     const author = await orm.em.findOneOrFail(Author, god.id, { populate: ['favouriteAuthor', 'books.author.books', 'books.publisher'] });
-    const json = wrap(author).toObject();
+    const json = wrap(author).toObject(['name']);
+    // @ts-expect-error
+    expect(json.name).toBeUndefined();
     expect(json.termsAccepted).toBe(false);
     expect(json.favouriteAuthor).toBe(god.id); // self reference will be ignored even when explicitly populated
     expect(json.books![0]).toMatchObject({
@@ -274,7 +276,7 @@ describe('EntityHelperMongo', () => {
     orm.em.clear();
 
     const jon = await orm.em.findOneOrFail(Author, god, { populate: true });
-    const o = serialize(jon, { populate: true });
+    const [o] = serialize([jon], { populate: true });
     expect(o).toMatchObject({
       id: jon.id,
       createdAt: jon.createdAt,

@@ -118,7 +118,7 @@ export function compareBuffers(a: ArrayBufferView, b: ArrayBufferView): boolean 
   }
 
   for (let i = length; i-- !== 0;) {
-    if (a[i] !== b[i]) {
+    if ((a as unknown as unknown[])[i] !== (b as unknown as unknown[])[i]) {
       return false;
     }
   }

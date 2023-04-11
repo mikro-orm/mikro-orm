@@ -10,7 +10,7 @@ import {
   type EntityLoaderOptions,
   type EntityRepository,
 } from './entity';
-import type { SerializationContext } from './serialization';
+import type { SerializationContext, SerializeOptions } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
 import type { Type, types } from './types';
 import type { Platform } from './platforms';
@@ -119,43 +119,40 @@ export type FilterQuery<T> =
   | FilterQuery<T>[];
 export type QBFilterQuery<T = any> = ObjectQuery<T> | Dictionary;
 
-export interface IWrappedEntity<
-  Entity extends object,
-  Hint extends string = string,
-> {
+export interface IWrappedEntity<Entity extends object> {
   isInitialized(): boolean;
   isTouched(): boolean;
   populated(populated?: boolean): void;
-  populate<Hint extends string = never>(populate: AutoPath<T, Hint>[] | boolean, options?: EntityLoaderOptions<T, Hint>): Promise<Loaded<T, Hint>>;
-  init<P extends string = never>(populated?: boolean, populate?: Populate<Entity, P>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<Entity, P>>;
+  populate<Hint extends string = never>(populate: AutoPath<Entity, Hint>[] | boolean, options?: EntityLoaderOptions<Entity, Hint>): Promise<Loaded<Entity, Hint>>;
+  init<Hint extends string = never>(populated?: boolean, populate?: Populate<Entity, Hint>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<Entity, Hint>>;
   toReference(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
+  toObject(): EntityDTO<Entity>;
+  toObject(ignoreFields: never[]): EntityDTO<Entity>;
   toObject<Ignored extends EntityKey<Entity>>(ignoreFields: Ignored[]): Omit<EntityDTO<Entity>, Ignored>;
-  toObject(...args: unknown[]): EntityDTO<Entity>;
   toJSON(...args: any[]): EntityDTO<Entity>;
   toPOJO(): EntityDTO<Entity>;
+  serialize<Hint extends string = never, Exclude extends string = never>(options?: SerializeOptions<Entity, Hint, Exclude>): EntityDTO<Loaded<Entity, Hint>>;
   assign(data: EntityData<Entity> | Partial<EntityDTO<Entity>>, options?: AssignOptions | boolean): Entity;
   getSchema(): string | undefined;
   setSchema(schema?: string): void;
 }
 
-export interface IWrappedEntityInternal<
-  T extends object,
-  P extends string = string,
-> extends IWrappedEntity<T, P> {
+export interface IWrappedEntityInternal<Entity extends object> extends IWrappedEntity<Entity> {
   hasPrimaryKey(): boolean;
-  getPrimaryKey(convertCustomTypes?: boolean): Primary<T> | null;
-  getPrimaryKeys(convertCustomTypes?: boolean): Primary<T>[] | null;
-  setPrimaryKey(val: Primary<T>): void;
-  getSerializedPrimaryKey(): string & keyof T;
-  __meta: EntityMetadata<T>;
+  getPrimaryKey(convertCustomTypes?: boolean): Primary<Entity> | null;
+  getPrimaryKeys(convertCustomTypes?: boolean): Primary<Entity>[] | null;
+  setPrimaryKey(val: Primary<Entity>): void;
+  getSerializedPrimaryKey(): string & keyof Entity;
+  __meta: EntityMetadata<Entity>;
   __data: Dictionary;
   __em?: any; // we cannot have `EntityManager` here as that causes a cycle
   __platform: Platform;
+  __config: Configuration;
   __factory: EntityFactory; // internal factory instance that has its own global fork
   __hydrator: IHydrator;
   __initialized: boolean;
   __touched: boolean;
-  __originalEntityData?: EntityData<T>;
+  __originalEntityData?: EntityData<Entity>;
   __loadedProperties: Set<string>;
   __identifier?: EntityIdentifier;
   __managed: boolean;
@@ -163,11 +160,10 @@ export interface IWrappedEntityInternal<
   __schema?: string;
   __populated: boolean;
   __onLoadFired: boolean;
-  __reference?: Ref<T>;
-  __lazyInitialized: boolean;
-  __pk?: Primary<T>;
-  __primaryKeys: Primary<T>[];
-  __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] };
+  __reference?: Ref<Entity>;
+  __pk?: Primary<Entity>;
+  __primaryKeys: Primary<Entity>[];
+  __serializationContext: { root?: SerializationContext<Entity>; populate?: PopulateOptions<Entity>[]; fields?: string[] };
 }
 
 export type AnyEntity<T = any> = Partial<T>;
@@ -538,7 +534,7 @@ export interface EntityMetadata<T = any> {
   virtual?: boolean;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
-  expression?: string | ((em: any, where: FilterQuery<T>, options: FindOptions<T, any>) => object | string);
+  expression?: string | ((em: any, where: FilterQuery<T>, options: FindOptions<T, any, any>) => object | string);
   discriminatorColumn?: EntityKey<T>;
   discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<string>;
@@ -711,7 +707,7 @@ export interface MigrationObject {
 
 export type FilterDef = {
   name: string;
-  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<any, any> | FindOneOptions<any, any>) => Dictionary | Promise<Dictionary>);
+  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<any, any, any> | FindOneOptions<any, any, any>) => Dictionary | Promise<Dictionary>);
   default?: boolean;
   entity?: string[];
   args?: boolean;
@@ -742,9 +738,10 @@ type GetStringKey<T, K extends StringKeys<T, string>, E extends string> = K exte
 type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 export type AutoPath<O, P extends string, E extends string = never, D extends Prev[number] = 5> =
-  [D] extends [never] ? string :
+  [D] extends [never] ? any :
   P extends any ?
     (P & `${string}.` extends never ? P : P & `${string}.`) extends infer Q
+    // P extends infer Q
       ? Q extends `${infer A}.${infer B}`
         ? A extends StringKeys<O, E>
           ? `${A}.${AutoPath<Defined<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
@@ -778,23 +775,23 @@ type IsPrefixed<T, K, L extends string> = K extends Prefix<T, L> ? K : (K extend
 // filter by prefix and map to suffix
 type Suffix<Key, Hint extends string> = Hint extends `${infer Pref}.${infer Suf}`
   ? (Pref extends Key ? Suf : never)
-  : (Hint extends '*' ? '*' : never);
+  : never;
 
 type Defined<T> = T & {};
 
 type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
-type LoadedProp<T, L extends string = never, F extends string = '*'> = LoadedLoadable<Defined<T>, Loaded<ExtractType<Defined<T>>, L, F>> | AddOptional<T>;
+type LoadedProp<T, L extends string = never, F extends string = '*'> = LoadedLoadable<T, Loaded<ExtractType<T>, L, F>>;
 export type AddEager<T> = ExtractEagerProps<T> & string;
 
 export type Selected<T, L extends string = never, F extends string = '*'> = {
-  [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<T[K], Suffix<K, L>, Suffix<K, F>>;
+  [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L>, Suffix<K, F>> | AddOptional<T[K]>;
 };
 
 /**
  * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
  */
 export type Loaded<T, L extends string = never, F extends string = '*'> = [F] extends ['*'] ? (T & {
-  [K in keyof T as IsPrefixed<T, K, L | AddEager<T>>]: LoadedProp<T[K], Suffix<K, L>>;
+  [K in keyof T as IsPrefixed<T, K, L | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L>> | AddOptional<T[K]>;
 }) : Selected<T, L, F>;
 
 export interface LoadedReference<T> extends Reference<Defined<T>> {
