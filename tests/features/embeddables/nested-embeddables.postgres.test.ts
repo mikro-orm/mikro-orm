@@ -1,4 +1,4 @@
-import { Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import { MikroORM, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
@@ -297,7 +297,11 @@ describe('embedded entities in postgres', () => {
     await orm.em.fork().find(User, {}, { fields: ['profile2.identity.email'] });
 
     await orm.em.fork().find(User, {}, { fields: ['profile1.identity.meta.foo'] });
-    await orm.em.fork().find(User, {}, { fields: ['profile2.identity.meta.foo'] });
+
+    // partial loading works also for object mode embeddables, including nesting (GH #4199)
+    const u = await orm.em.fork().find(User, {}, { fields: ['profile2.identity.meta.foo'] });
+    expect(wrap(u[0]).toObject()).toEqual({ id: 1, profile2: { identity: { meta: { foo: 'f2' } } } });
+    expect(wrap(u[1]).toObject()).toEqual({ id: 2, profile2: { identity: { meta: { foo: 'f4' } } } });
 
     // @ts-expect-error old syntax is still technically supported, but not on type level
     await orm.em.fork().find(User, {}, { fields: [{ profile1: ['identity'] }] });

@@ -78,7 +78,11 @@ export class EntityLoader {
 
     entities = entities.filter(e => !visited.has(e));
     entities.forEach(e => visited.add(e));
-    entities.forEach(e => helper(e).__serializationContext.populate ??= populate as PopulateOptions<Entity>[]);
+    entities.forEach(e => {
+      const context = helper(e).__serializationContext;
+      context.populate ??= populate as PopulateOptions<Entity>[];
+      context.fields ??= options.fields ? [...options.fields as string[]] : undefined;
+    });
 
     for (const pop of populate) {
       await this.populateField<Entity>(entityName, entities, pop, options as Required<EntityLoaderOptions<Entity>>);
@@ -195,19 +199,7 @@ export class EntityLoader {
     if (prop.kind === ReferenceKind.EMBEDDED) {
       return [];
     }
-
-    // set populate flag
-    entities.forEach(entity => {
-      const value = entity[field];
-
-      if (Utils.isEntity(value, true)) {
-        (value as AnyEntity).__helper!.populated();
-      } else if (Utils.isCollection(value)) {
-        (value as Collection<any>).populated();
-      }
-    });
-
-    const filtered = this.filterCollections<Entity>(entities, field, options.refresh);
+    const filtered = this.filterCollections<Entity>(entities, field, options);
     const innerOrderBy = Utils.asArray(options.orderBy)
       .filter(orderBy => Utils.isObject(orderBy[prop.name]))
       .map(orderBy => orderBy[prop.name]);
@@ -270,7 +262,7 @@ export class EntityLoader {
   }
 
   private async findChildren<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, populate: PopulateOptions<Entity>, options: Required<EntityLoaderOptions<Entity>>): Promise<AnyEntity[]> {
-    const children = this.getChildReferences<Entity>(entities, prop, options.refresh);
+    const children = this.getChildReferences<Entity>(entities, prop, options);
     const meta = this.metadata.find(prop.type)!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
     let schema: string | undefined = options.schema;
@@ -295,7 +287,7 @@ export class EntityLoader {
 
     const ids = Utils.unique(children.map(e => e.__helper.getPrimaryKey()));
     const where = this.mergePrimaryCondition<Entity>(ids, fk as FilterKey<Entity>, options, meta, this.metadata, this.driver.getPlatform());
-    const fields = this.buildFields(options.fields, prop);
+    const fields = this.buildFields(options.fields, prop) as any;
     const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType } = options;
 
     return this.em.find(prop.type, where, {
@@ -378,10 +370,10 @@ export class EntityLoader {
     const refresh = options.refresh;
     const where = await this.extractChildCondition(options, prop, true);
     const fields = this.buildFields(options.fields, prop);
-    const options2 = { ...options } as FindOptions<Entity, any>;
+    const options2 = { ...options } as unknown as FindOptions<Entity, any, any>;
     delete options2.limit;
     delete options2.offset;
-    options2.fields = fields;
+    options2.fields = fields as any;
     options2.populate = (populate?.children ?? []) as never;
 
     if (prop.customType) {
@@ -486,8 +478,8 @@ export class EntityLoader {
     return ret;
   }
 
-  private getChildReferences<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, refresh: boolean): AnyEntity[] {
-    const filtered = this.filterCollections(entities, prop.name, refresh);
+  private getChildReferences<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>): AnyEntity[] {
+    const filtered = this.filterCollections(entities, prop.name, options);
     const children: AnyEntity[] = [];
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY) {
@@ -497,31 +489,47 @@ export class EntityLoader {
     } else if (prop.kind === ReferenceKind.MANY_TO_MANY) { // inverse side
       children.push(...filtered as AnyEntity[]);
     } else { // MANY_TO_ONE or ONE_TO_ONE
-      children.push(...this.filterReferences(entities, prop.name, refresh) as AnyEntity[]);
+      children.push(...this.filterReferences(entities, prop.name, options) as AnyEntity[]);
     }
 
     return children;
   }
 
-  private filterCollections<Entity>(entities: Entity[], field: keyof Entity, refresh: boolean): Entity[] {
-    if (refresh) {
+  private filterCollections<Entity extends object>(entities: Entity[], field: keyof Entity, options: Required<EntityLoaderOptions<Entity>>): Entity[] {
+    if (options.refresh) {
       return entities.filter(e => e[field]);
     }
 
     return entities.filter(e => Utils.isCollection(e[field]) && !(e[field] as unknown as Collection<AnyEntity>).isInitialized(true));
   }
 
-  private filterReferences<Entity>(entities: Entity[], field: keyof Entity, refresh: boolean): Entity[keyof Entity][] {
+  private filterReferences<Entity extends object>(entities: Entity[], field: keyof Entity & string, options: Required<EntityLoaderOptions<Entity>>): Entity[keyof Entity][] {
     const children = entities.filter(e => Utils.isEntity(e[field], true));
 
-    if (refresh) {
+    if (options.refresh) {
       return children.map(e => Reference.unwrapReference(e[field] as AnyEntity)) as Entity[keyof Entity][];
     }
 
-    return children.filter(e => !(e[field] as AnyEntity).__helper!.__initialized).map(e => Reference.unwrapReference(e[field] as AnyEntity)) as Entity[keyof Entity][];
+    if (options.fields) {
+      return children
+        .filter(e => {
+          const wrapped = helper(e[field] as object);
+
+          const childFields = (options.fields as string[])
+            .filter(f => f.startsWith(`${field}.`))
+            .map(f => f.substring(field.length + 1));
+
+          return !wrapped.__initialized || !childFields.every(field => wrapped.__loadedProperties.has(field));
+        })
+        .map(e => Reference.unwrapReference(e[field] as AnyEntity)) as Entity[keyof Entity][];
+    }
+
+    return children
+      .filter(e => !(e[field] as AnyEntity).__helper!.__initialized)
+      .map(e => Reference.unwrapReference(e[field] as AnyEntity)) as Entity[keyof Entity][];
   }
 
-  private filterByReferences<Entity>(entities: Entity[], field: keyof Entity, refresh: boolean): Entity[] {
+  private filterByReferences<Entity extends object>(entities: Entity[], field: keyof Entity, refresh: boolean): Entity[] {
     /* istanbul ignore next */
     if (refresh) {
       return entities;
