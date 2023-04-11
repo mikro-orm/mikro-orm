@@ -80,7 +80,7 @@ export class IdentityMap {
 
   private getPkHash<T>(item: T): string {
     const wrapped = (item as AnyEntity).__helper;
-    const meta = wrapped.__meta;
+    const meta = wrapped.__meta as EntityMetadata<T>;
     const pk = wrapped!.getPrimaryKey(true);
 
     if (pk == null) {

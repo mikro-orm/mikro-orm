@@ -1,4 +1,4 @@
-import { Cascade, Entity, OneToOne, PrimaryKey, PrimaryKeyType, Property, Ref } from '@mikro-orm/core';
+import { Cascade, Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
 import { randomUUID } from 'crypto';
 
@@ -15,7 +15,7 @@ class NonRoot {
   })
   root!: Ref<Root>;
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['id', 'root'];
 
 }
 

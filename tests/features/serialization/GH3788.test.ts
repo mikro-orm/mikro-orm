@@ -50,6 +50,6 @@ test('serialization of not managed relations (#3788)', async () => {
     },
   });
   expect(JSON.stringify(mainItem)).toBe(`{"name":"yyyy","coverImage":{"url":"xxxx","itemEntity":{"name":"yyyy"}}}`);
-  expect(JSON.stringify(serialize(mainItem))).toBe(`{"name":"yyyy","coverImage":{"url":"xxxx","itemEntity":{"name":"yyyy"}}}`);
-  expect(JSON.stringify(serialize(mainItem, { populate: ['coverImage'] }))).toBe(`{"name":"yyyy","coverImage":{"url":"xxxx","itemEntity":{"name":"yyyy"}}}`);
+  expect(JSON.stringify(serialize(mainItem)[0])).toBe(`{"name":"yyyy","coverImage":{"url":"xxxx","itemEntity":{"name":"yyyy"}}}`);
+  expect(JSON.stringify(serialize(mainItem, { populate: ['coverImage'] })[0])).toBe(`{"name":"yyyy","coverImage":{"url":"xxxx","itemEntity":{"name":"yyyy"}}}`);
 });

@@ -101,7 +101,7 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('updating composite key entity', async () => {
-  const permission = await orm.em.findOne(
+  const permission = await orm.em.findOneOrFail(
     RoleResourcePermission,
     {
       role: orm.em.getReference(Role, 1),

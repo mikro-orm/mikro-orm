@@ -8,7 +8,10 @@ import type {
   LoadedCollection,
   Populate,
   Primary,
-  ConnectionType, Dictionary, FilterKey, EntityKey,
+  ConnectionType,
+  Dictionary,
+  FilterKey,
+  EntityKey,
 } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
@@ -29,8 +32,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
   private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
   private readonly?: boolean;
-  private _populated = false;
-  private _lazyInitialized = false;
+  private _populated?: boolean;
   private _em?: unknown;
 
   constructor(owner: O, items?: T[], initialized = true) {
@@ -77,17 +79,25 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     const em = this.getEntityManager();
     const pivotMeta = em.getMetadata().find(this.property.pivotEntity)!;
+    const where = this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta);
 
     if (!em.getPlatform().usesPivotTable() && this.property.kind === ReferenceKind.MANY_TO_MANY) {
       return this._count = this.length;
-    } else if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
-      const count = await em.count(this.property.type, this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotEntity }] });
+    }
+
+    if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
+      const count = await em.count(this.property.type, where, {
+        populate: [{ field: this.property.pivotEntity } as any],
+      });
+
       if (!options.where) {
         this._count = count;
       }
+
       return count;
     }
-    const count = await em.count(this.property.type, this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta));
+    const count = await em.count(this.property.type, where);
+
     if (!options.where) {
       this._count = count;
     }
@@ -103,9 +113,9 @@ export class Collection<T extends object, O extends object = object> extends Arr
     if (this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
       const cond = await em.applyFilters(this.property.type, where, options.filters ?? {}, 'read');
       const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, opts.orderBy, ctx, options);
-      items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true }));
+      items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<TT>) => em.merge(this.property.type, item, { convertCustomTypes: true })) as any;
     } else {
-      items = await em.find(this.property.type, this.createCondition(where), opts);
+      items = await em.find(this.property.type, this.createCondition(where), opts) as any;
     }
 
     if (options.store) {
@@ -209,7 +219,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.count();
   }
 
-  isEmpty(): boolean {
+  override isEmpty(): boolean {
     this.checkInitialized();
     return super.isEmpty();
   }
@@ -217,7 +227,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  slice(start?: number, end?: number): T[]  {
+  override slice(start?: number, end?: number): T[]  {
     this.checkInitialized();
     return super.slice(start, end);
   }
@@ -225,7 +235,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  exists(cb: (item: T) => boolean): boolean {
+  override exists(cb: (item: T) => boolean): boolean {
     this.checkInitialized();
     return super.exists(cb);
   }
@@ -233,7 +243,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  find(cb: (item: T, index: number) => boolean): T | undefined {
+  override find(cb: (item: T, index: number) => boolean): T | undefined {
     this.checkInitialized();
     return super.find(cb);
   }
@@ -241,7 +251,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  filter(cb: (item: T, index: number) => boolean): T[] {
+  override filter(cb: (item: T, index: number) => boolean): T[] {
     this.checkInitialized();
     return super.filter(cb);
   }
@@ -249,7 +259,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  map<R>(mapper: (item: T, index: number) => R): R[] {
+  override map<R>(mapper: (item: T, index: number) => R): R[] {
     this.checkInitialized();
     return super.map(mapper);
   }
@@ -258,28 +268,35 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1): Record<T[K1] & PropertyKey, T>;
+  override indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1): Record<T[K1] & PropertyKey, T>;
 
   /**
    * @inheritDoc
    */
-  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey: K2): Record<T[K1] & PropertyKey, T[K2]>;
+  override indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey: K2): Record<T[K1] & PropertyKey, T[K2]>;
 
   /**
    * @inheritDoc
    */
-  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey?: K2): Record<T[K1] & PropertyKey, T> | Record<T[K1] & PropertyKey, T[K2]> {
+  override indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey?: K2): Record<T[K1] & PropertyKey, T> | Record<T[K1] & PropertyKey, T[K2]> {
     this.checkInitialized();
     return super.indexBy(key, valueKey as never);
   }
 
-  shouldPopulate(): boolean {
-    return this._populated && !this._lazyInitialized;
+  shouldPopulate(populated?: boolean): boolean {
+    if (!this.isInitialized(true)) {
+      return false;
+    }
+
+    if (this._populated != null) {
+      return this._populated;
+    }
+
+    return !!populated;
   }
 
-  populated(populated = true): void {
+  populated(populated: boolean | undefined = true): void {
     this._populated = populated;
-    this._lazyInitialized = false;
   }
 
   async init<TT extends T, P extends string = never>(options: InitOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
@@ -298,7 +315,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
       const cond = await em.applyFilters(this.property.type, options.where, {}, 'read');
       const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, options.orderBy, undefined, options);
       this.hydrate(map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })), true);
-      this._lazyInitialized = true;
 
       return this as unknown as LoadedCollection<Loaded<TT, P>>;
     }
@@ -307,18 +323,17 @@ export class Collection<T extends object, O extends object = object> extends Arr
     if (this.property.kind === ReferenceKind.MANY_TO_MANY && (this.property.owner || em.getPlatform().usesPivotTable()) && this.length === 0) {
       this.initialized = true;
       this.dirty = false;
-      this._lazyInitialized = true;
 
       return this as unknown as LoadedCollection<Loaded<TT, P>>;
     }
 
-    const where = this.createCondition(options.where as FilterQuery<T>);
+    const where = this.createCondition(options.where);
     const order = [...this.items]; // copy order of references
     const customOrder = !!options.orderBy;
-    const items: T[] = await em.find(this.property.type, where, {
+    const items: TT[] = await em.find(this.property.type, where, {
       populate: options.populate,
       lockMode: options.lockMode,
-      orderBy: this.createOrderBy(options.orderBy as QueryOrderMap<T>),
+      orderBy: this.createOrderBy(options.orderBy as QueryOrderMap<TT>),
       connectionType: options.connectionType,
       schema: this.property.targetMeta!.schema === '*'
         ? helper(this.owner).__schema
@@ -338,7 +353,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     this.initialized = true;
     this.dirty = false;
-    this._lazyInitialized = true;
 
     return this as unknown as LoadedCollection<Loaded<TT, P>>;
   }
@@ -387,9 +401,9 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return em;
   }
 
-  private createCondition(cond: FilterQuery<T> = {}): FilterQuery<T> {
+  private createCondition<TT extends T>(cond: FilterQuery<TT> = {}): FilterQuery<TT> {
     if (this.property.kind === ReferenceKind.ONE_TO_MANY) {
-      cond[this.property.mappedBy as FilterKey<T>] = helper(this.owner).getPrimaryKey() as any;
+      cond[this.property.mappedBy as FilterKey<TT>] = helper(this.owner).getPrimaryKey() as any;
     } else { // MANY_TO_MANY
       this.createManyToManyCondition(cond);
     }
@@ -397,18 +411,18 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return cond;
   }
 
-  private createOrderBy(orderBy: QueryOrderMap<T> | QueryOrderMap<T>[] = []): QueryOrderMap<T>[] {
+  private createOrderBy<TT extends T>(orderBy: QueryOrderMap<TT> | QueryOrderMap<TT>[] = []): QueryOrderMap<TT>[] {
     if (Utils.isEmpty(orderBy) && this.property.kind === ReferenceKind.ONE_TO_MANY) {
       const defaultOrder = this.property.referencedColumnNames.map(name => {
         return { [name]: QueryOrder.ASC };
       });
-      orderBy = this.property.orderBy as QueryOrderMap<T> || defaultOrder;
+      orderBy = this.property.orderBy as QueryOrderMap<TT> || defaultOrder;
     }
 
     return Utils.asArray(orderBy);
   }
 
-  private createManyToManyCondition(cond: FilterQuery<T>) {
+  private createManyToManyCondition<TT extends T>(cond: FilterQuery<TT>) {
     const dict = cond as Dictionary;
 
     if (this.property.owner || this.property.pivotTable) {

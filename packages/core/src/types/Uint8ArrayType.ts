@@ -4,7 +4,7 @@ import type { EntityProperty } from '../typings';
 
 export class Uint8ArrayType extends Type<Uint8Array | null> {
 
-  convertToDatabaseValue(value: Uint8Array): Buffer {
+  override convertToDatabaseValue(value: Uint8Array): Buffer {
     if (!value) {
       return value;
     }
@@ -12,7 +12,7 @@ export class Uint8ArrayType extends Type<Uint8Array | null> {
     return Buffer.from(value);
   }
 
-  convertToJSValue(value: Buffer): Uint8Array | null {
+  override convertToJSValue(value: Buffer): Uint8Array | null {
     if (!value) {
       return value;
     }
@@ -31,15 +31,15 @@ export class Uint8ArrayType extends Type<Uint8Array | null> {
     return new Uint8Array(Buffer.from(value));
   }
 
-  compareAsType(): string {
+  override compareAsType(): string {
     return 'Buffer';
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 
-  getColumnType(prop: EntityProperty, platform: Platform): string {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getBlobDeclarationSQL();
   }
 

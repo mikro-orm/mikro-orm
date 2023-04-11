@@ -18,7 +18,8 @@ import {
   EntityManagerType,
   type EntityMetadata,
   type EntityName,
-  type EntityProperty, EntityValue,
+  type EntityProperty,
+  type EntityValue,
   type FilterQuery,
   type FindByCursorOptions,
   type FindOneOptions,
@@ -45,6 +46,7 @@ import {
   type UpsertManyOptions,
   type UpsertOptions,
   Utils,
+  type OrderDefinition,
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
@@ -86,7 +88,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate);
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false);
-    const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields as Field<T>[]);
+    const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields as unknown as Field<T>[]);
     const joinedPropsOrderBy = this.buildJoinedPropsOrderBy(entityName, qb, meta, joinedProps);
     const orderBy = [...Utils.asArray(options.orderBy), ...joinedPropsOrderBy];
 
@@ -688,7 +690,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks, deleteDiff, insertDiff, options));
   }
 
-  override async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<any> = {} as FilterQuery<any>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T, any>): Promise<Dictionary<T[]>> {
+  override async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<any> = {} as FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
     const pivotMeta = this.metadata.find(prop.pivotEntity)!;
@@ -712,7 +714,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
       .withSchema(this.getSchemaName(prop.targetMeta, options));
     const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, [{ field: prop.pivotEntity }]);
-    const fields = this.buildFields(prop.targetMeta!, (options.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options.fields as Field<T>[]);
+    const fields = this.buildFields(prop.targetMeta!, (options.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options.fields as unknown as Field<T>[]);
     qb.select(fields).populate(populate).where(where).orderBy(orderBy!).setLockMode(options.lockMode, options.lockTableAliases);
 
     if (owners.length === 1 && (options.offset != null || options.limit != null)) {
