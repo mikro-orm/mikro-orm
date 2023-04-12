@@ -1,4 +1,4 @@
-import type { EntityName, EntityMetadata, EntityProperty } from '../typings';
+import type { EntityMetadata, EntityName, EntityProperty } from '../typings';
 import { Utils } from '../utils';
 import { MetadataError } from '../errors';
 import { ReferenceKind } from '../enums';
@@ -138,6 +138,11 @@ export class MetadataValidator {
     } else if (prop.mappedBy) {
       const inverse = metadata.get(prop.type).properties[prop.mappedBy];
       this.validateInverseSide(meta, prop, inverse, metadata);
+    } else {
+      // 1:m property has `mappedBy`
+      if (prop.kind === ReferenceKind.ONE_TO_MANY && !prop.mappedBy) {
+        throw MetadataError.fromMissingOption(meta, prop, 'mappedBy');
+      }
     }
   }
 
