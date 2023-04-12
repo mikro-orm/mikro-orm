@@ -53,13 +53,22 @@ export class Collection<T extends object, O extends object = object> extends Arr
   }
 
   /**
+   * Ensures the collection is loaded first (without reloading it if it already is loaded).
+   * Returns the Collection instance (itself), works the same as `Reference.load()`.
+   */
+  async load<TT extends T, P extends string = never>(options: InitOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
+    if (!this.isInitialized(true)) {
+      await this.init(options);
+    }
+
+    return this as unknown as LoadedCollection<Loaded<TT, P>>;
+  }
+
+  /**
    * Initializes the collection and returns the items
    */
   async loadItems<TT extends T, P extends string = never>(options?: InitOptions<TT, P>): Promise<Loaded<TT, P>[]> {
-    if (!this.isInitialized(true)) {
-      await this.init(options as unknown as InitOptions<T, P>);
-    }
-
+    await this.load(options);
     return super.getItems() as Loaded<TT, P>[];
   }
 
