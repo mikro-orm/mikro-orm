@@ -65,3 +65,14 @@ jobs:
 
     - name: Deploy artifact to GitHub Pages
       uses: actions/deploy-pages@v2
+
+    - name: Install EnhanceDocs CLI
+      uses: enhancedocs/enhancedocs-github-action@0.1.0
+      with:
+        api-key: ${{ secrets.ENHANCEDOCS_API_KEY }}
+    - name: Build EnhanceDocs
+      working-directory: docs
+      run: enhancedocs build docs
+    - name: Push to EnhanceDocs
+      working-directory: docs
+      run: enhancedocs push <replace with project id>

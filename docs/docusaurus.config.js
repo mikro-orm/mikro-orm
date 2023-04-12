@@ -34,12 +34,6 @@ module.exports = {
   scripts: ['/js/custom.js'],
   trailingSlash: false,
   themeConfig: {
-    algolia: {
-      apiKey: '83015544b5b03ca27af77c74a25d4868',
-      appId: 'V3HQ8I5PUQ',
-      indexName: 'mikro-orm',
-      contextualSearch: true,
-    },
     announcementBar: {
       id: 'supportus',
       content: '⭐️ If you like MikroORM, give it a star on ' +
