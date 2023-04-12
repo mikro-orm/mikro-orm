@@ -28,6 +28,7 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
   __em?: EntityManager;
   __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] } = {};
   __loadedProperties = new Set<string>();
+  __loadedRelations = new Set<string>();
   __data: Dictionary = {};
   __processing = false;
 
