@@ -256,6 +256,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return this.fromMessage(meta, prop, `is defined as scalar @Property(), but its type is a discovered entity ${target.className}. Maybe you want to use @${suggestion}() decorator instead?`);
   }
 
+  static fromMissingOption(meta: EntityMetadata, prop: EntityProperty, option: string) {
+    return this.fromMessage(meta, prop, `is missing '${option}' option`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {
     return new MetadataError(`${meta.className}.${prop.name} ${message}`);
   }
