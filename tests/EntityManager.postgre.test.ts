@@ -337,7 +337,12 @@ describe('EntityManagerPostgre', () => {
       //
     });
 
-    const books = await publisher2.books.loadItems({ lockMode: LockMode.PESSIMISTIC_WRITE });
+    expect(publisher2.books.isInitialized(true)).toBe(false);
+    const books1 = await publisher2.books.load({ lockMode: LockMode.PESSIMISTIC_WRITE });
+    const books2 = await publisher2.books.load({ lockMode: LockMode.PESSIMISTIC_WRITE });
+    expect(books1).toBeInstanceOf(Collection);
+    expect(books1.isInitialized(true)).toBe(true);
+    expect(books1).toBe(books2);
     await em.commit();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
