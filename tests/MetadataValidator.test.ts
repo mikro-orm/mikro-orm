@@ -21,7 +21,9 @@ describe('MetadataValidator', () => {
     // one to many
     meta.Test = { name: 'Test', className: 'Test', properties: {} };
     meta.Test.root = meta.Test;
-    meta.Author.properties.tests = { name: 'tests', kind: ReferenceKind.ONE_TO_MANY, type: 'Test', mappedBy: 'foo' };
+    meta.Author.properties.tests = { name: 'tests', kind: ReferenceKind.ONE_TO_MANY, type: 'Test' };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Author.tests is missing 'mappedBy' option`);
+    meta.Author.properties.tests.mappedBy = 'foo';
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Author.tests has unknown 'mappedBy' reference: Test.foo`);
 
     meta.Test.properties.foo = { name: 'foo', kind: ReferenceKind.ONE_TO_ONE, type: 'Author' };
