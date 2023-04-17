@@ -74,13 +74,26 @@ export class AuthorSubscriber implements EventSubscriber<Author> {
 
 }
 ```
+> &#x26a0;&#xfe0f;**Warning**
+>
+> Do not mix and match the `@Subscriber()` decorator and the `subscribers`
+> array in the configuration. If you use the decorator, you **should not
+> use** the `subscribers` array, and vice versa.
+>
+> **This is due to an issue that will cause every subscriber to be
+> registered
+> twice, which will result in duplicate events being fired.**
+>
+> Additionally, future versions of MikroORM will be dropping support for the
+> `@Subscriber()` decorator in favor of the `subscribers` array in the configuration.
+> As such, it is not recommended to use the `@Subscriber()` decorator and to
+> instead use the `subscribers` array in the configuration.
 
 Another example, where we register to all the events and all entities:
 
 ```ts
-import { EventArgs, EventSubscriber, Subscriber } from '@mikro-orm/core';
+import { EventArgs, EventSubscriber } from '@mikro-orm/core';
 
-@Subscriber()
 export class EverythingSubscriber implements EventSubscriber {
 
   // entity life cycle events
@@ -199,7 +212,6 @@ We first use `uow.getChangeSets()` method to look up the change set of entity we
 2. Call `uow.recomputeSingleChangeSet(cs.entity)` to recalculate the existing change set of the `FooBar` entity.
 
 ```ts
-@Subscriber()
 export class FooBarSubscriber implements EventSubscriber {
 
   async onFlush(args: FlushEventArgs): Promise<void> {
