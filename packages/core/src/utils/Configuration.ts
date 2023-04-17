@@ -523,9 +523,9 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   useBatchUpdates?: boolean;
   batchSize: number;
   hydrator: HydratorConstructor;
-  loadStrategy: LoadStrategy;
+  loadStrategy: LoadStrategy | 'select-in' | 'joined';
   populateWhere: PopulateHint;
-  flushMode: FlushMode;
+  flushMode: FlushMode | 'commit' | 'auto' | 'always';
   entityRepository?: Constructor;
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
