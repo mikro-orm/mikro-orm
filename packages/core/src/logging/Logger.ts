@@ -35,6 +35,7 @@ export type LoggerNamespace = 'query' | 'query-params' | 'schema' | 'discovery' 
 
 export interface LogContext {
   query?: string;
+  label?: string;
   params?: unknown[];
   took?: number;
   level?: 'info' | 'warning' | 'error';
@@ -50,3 +51,5 @@ export interface LoggerOptions {
   highlighter?: Highlighter;
   usesReplicas?: boolean;
 }
+
+export type LoggerContext = Pick<LogContext, 'label'>;

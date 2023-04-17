@@ -122,3 +122,14 @@ MikroORM.init({
 ```
 
 For MongoDB you can use `MongoHighlighter` from `@mikro-orm/mongo-highlighter` package.
+
+## Query Labels
+
+It may often be beneficial to log the origin of a query when using [`EntityManager.find`](entity-manager.md#fetching-entities-with-entitymanager) or [`EnmtityManager.findOne`](entity-manager.md#fetching-entities-with-entitymanager) for debugging and redundancy elimination purposes. 
+
+An optional `loggerContext` option can be included within the `FindOptions` parameter of either call which will add a label to the output when debug mode is enabled.
+
+```ts
+const author = await em.findOne(Author, { id: 1 }, { loggerContext: { label: 'Author Retrieval - /authors/me' } });
+// [query] (Author Retrieval - /authors/me) select "a0".* from "Author" as "a0" where "a0"."id" = 1 limit 1 [took 21 ms]
+```

@@ -13,8 +13,9 @@ export class SimpleLogger extends DefaultLogger {
 
     // clean up the whitespace
     message = message.replace(/\n/g, '').replace(/ +/g, ' ').trim();
+    const label = context?.label ? `(${context.label}) ` : '';
 
-    this.writer(`[${namespace}] ${message}`);
+    this.writer(`[${namespace}] ${label}${message}`);
   }
 
   /**
