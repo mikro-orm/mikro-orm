@@ -80,7 +80,7 @@ Do not mix and match the `@Subscriber()` decorator and the `subscribers`
 array in the configuration. If you use the decorator, you **should not
 use** the `subscribers` array, and vice versa.
 
-**This is due to an issue that will cause every subscriber to be registered
+**This is due to an issue that will cause each subscriber in the configuration array annotated with `@Subscriber()` to be registered
 twice, which will result in duplicate events being fired.**
 
 Additionally, future versions of MikroORM will be dropping support for the
