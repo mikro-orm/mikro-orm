@@ -76,17 +76,11 @@ export class AuthorSubscriber implements EventSubscriber<Author> {
 ```
 
 :::caution Warning
-Do not mix and match the `@Subscriber()` decorator and the `subscribers`
-array in the configuration. If you use the decorator, you **should not
-use** the `subscribers` array, and vice versa.
+Do not mix and match the `@Subscriber()` decorator and the `subscribers` array in the configuration. If you use the decorator, you **should not use** the `subscribers` array, and vice versa.
 
-**This is due to an issue that will cause each subscriber in the configuration array annotated with `@Subscriber()` to be registered
-twice, which will result in duplicate events being fired.**
+This is due to an issue that will cause each subscriber in the configuration array annotated with `@Subscriber()` to be registered twice, **which will result in duplicate events being fired.**
 
-Additionally, future versions of MikroORM will be dropping support for the
-`@Subscriber()` decorator in favor of the `subscribers` array in the configuration.
-As such, it is not recommended to use the `@Subscriber()` decorator and to
-instead use the `subscribers` array in the configuration.
+Additionally, future versions of MikroORM will be dropping support for the`@Subscriber()` decorator in favor of the `subscribers` array in the configuration. Therefore, it is not recommended to use the `@Subscriber()` decorator and to instead use the `subscribers` array in the configuration.
 :::
 
 Another example, where we register to all the events and all entities:
