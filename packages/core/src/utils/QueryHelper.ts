@@ -237,6 +237,10 @@ export class QueryHelper {
       return (cond as ObjectQuery<T>[]).map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as unknown as ObjectQuery<T>;
     }
 
+    if (platform.isRaw(cond)) {
+      return cond;
+    }
+
     return prop.customType.convertToDatabaseValue(cond, platform, { fromQuery, key, mode: 'query' });
   }
 

@@ -495,6 +495,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   getKnexQuery(): Knex.QueryBuilder {
     this.finalize();
     const qb = this.getQueryBase();
+    (qb as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
 
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type ?? QueryType.SELECT, this._cond, qb), this._cond && !this._onConflict);
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), this._groupBy);
@@ -1117,6 +1118,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     // multiple sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
     // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu
     const subSubQuery = this.getKnex().select(pks).from(knexQuery);
+    (subSubQuery as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
     this._limit = undefined;
     this._offset = undefined;
     const cond = this._cond;
