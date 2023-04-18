@@ -386,7 +386,7 @@ export class QueryBuilderHelper {
 
   appendOnConflictClause<T>(type: QueryType, onConflict: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[], qb: Knex.QueryBuilder): void {
     onConflict.forEach(item => {
-      const sub = qb.onConflict(item.fields);
+      const sub = item.fields.length > 0 ? qb.onConflict(item.fields) : qb.onConflict();
       Utils.runIfNotEmpty(() => sub.ignore(), item.ignore);
       Utils.runIfNotEmpty(() => {
         let mergeParam: Dictionary | string[] = item.merge!;

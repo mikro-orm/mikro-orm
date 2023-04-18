@@ -2461,6 +2461,19 @@ describe('QueryBuilder', () => {
     }
 
     {
+      const timestamp = new Date();
+      const qb = pg.em.createQueryBuilder(Author2).insert({
+        createdAt: timestamp,
+        email: 'ignore@example.com',
+        name: 'John Doe',
+        updatedAt: timestamp,
+      }).onConflict().ignore();
+
+      expect(qb.getQuery()).toEqual('insert into "author2" ("created_at", "email", "name", "updated_at") values ($1, $2, $3, $4) on conflict do nothing returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+      expect(qb.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
+    }
+
+    {
       const qb = pg.em.createQueryBuilder(FooBar2, 'fb1');
       qb.select('*')
         .distinct()
