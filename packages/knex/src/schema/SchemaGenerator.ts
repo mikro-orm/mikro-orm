@@ -43,7 +43,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     const dbName = this.config.get('dbName')!;
 
     if (this.lastEnsuredDatabase === dbName) {
-      return true;
+      return false;
     }
 
     const exists = await this.helper.databaseExists(this.connection, dbName);
