@@ -153,14 +153,6 @@ npx mikro-orm migration:fresh    # Drop the database and migrate up to the lates
 
 > To create blank migration file, we can use `npx mikro-orm migration:create --blank`.
 
-> To specify a name for your migration file, we can use `npx mikro-orm migration:create --name=newName`
-
-You can customize the naming convention for your migration file by utilizing the `fileName` callback and overriding its default behavior.
-```sh
-    migrations: {
-      fileName: (time, name) =>`Migration-${time}+${name}`
-    }
-```
 For `migration:up` and `migration:down` commands we can specify `--from` (`-f`), `--to` (`-t`) and `--only` (`-o`) options to run only a subset of migrations:
 
 ```sh
@@ -270,7 +262,34 @@ await MikroORM.init({
   },
 });
 ```
+## Using custom migration names
+To specify a name for your migration file, we can use `npx mikro-orm migration:create --name=newName`
 
+> Each migration filename should contains a timestamp that allows Mikro-orm to determine the order of the migrations
+
+You can customize the naming convention for your migration file by utilizing the `fileName` callback and overriding its default behavior.
+
+If we would like to always specfiy a name, we should throw an error in case the name is not provided.
+```ts
+migrations: {
+  fileName: (timestamp: string, name?: string) => {
+    if (!name) {
+      throw new Error('Specify migration name via `mikro-orm migration:create --name=...`');
+    }
+
+    return `Migration${timestamp}_${name}`;
+  },
+},
+```
+
+If we just want to change the filename without throwing an error in case the name is not provided
+```ts
+migrations: {
+  fileName: (timestamp: string, name?: string) => {
+    return `CustomMigration${timestamp}_${name ? name : '' }`;
+  },
+},
+```
 ## MongoDB support
 
 Support for migrations in MongoDB has been added in v5.3. It uses its own package: `@mikro-orm/migrations-mongodb`, and should be otherwise compatible with the current CLI commands. Use `this.driver` or `this.getCollection()` to manipulate with the database.
