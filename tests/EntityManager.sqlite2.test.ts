@@ -525,8 +525,9 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(b1).toBe(b5);
     expect(b1).toBe(b6);
     expect(b1).toBe(b7);
+  });
 
-    // complex condition for json property with update query (GH #2839)
+  test('complex condition for json property with update query (GH #2839)', async () => {
     const qb141 = orm.em.createQueryBuilder(Book4).update({ meta: { items: 3 } }).where({
       $and: [
         { id: 123 },

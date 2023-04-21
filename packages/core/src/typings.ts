@@ -253,6 +253,8 @@ export interface EntityProperty<T = any> {
   targetMeta?: EntityMetadata;
   columnTypes: string[];
   customType: Type<any>;
+  hasConvertToJSValueSQL: boolean;
+  hasConvertToDatabaseValueSQL: boolean;
   autoincrement?: boolean;
   primary?: boolean;
   serializedPrimaryKey: boolean;

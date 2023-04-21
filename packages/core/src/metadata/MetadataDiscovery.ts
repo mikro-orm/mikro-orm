@@ -1020,6 +1020,10 @@ export class MetadataDiscovery {
       prop.customType = new JsonType();
     }
 
+    if (prop.reference === ReferenceType.SCALAR && !prop.customType && prop.columnTypes && ['json', 'jsonb'].includes(prop.columnTypes[0])) {
+      prop.customType = new JsonType();
+    }
+
     if (!prop.customType && this.getMappedType(prop) instanceof BigIntType) {
       prop.customType = new BigIntType();
     }
@@ -1029,6 +1033,8 @@ export class MetadataDiscovery {
       prop.customType.meta = meta;
       prop.customType.prop = prop;
       prop.columnTypes ??= [prop.customType.getColumnType(prop, this.platform)];
+      prop.hasConvertToJSValueSQL = !!prop.customType.convertToJSValueSQL && prop.customType.convertToJSValueSQL('', this.platform) !== '';
+      prop.hasConvertToDatabaseValueSQL = !!prop.customType.convertToDatabaseValueSQL && prop.customType.convertToDatabaseValueSQL('', this.platform) !== '';
     }
 
     if (Type.isMappedType(prop.customType) && prop.reference === ReferenceType.SCALAR && !prop.type?.toString().endsWith('[]')) {

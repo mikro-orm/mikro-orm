@@ -48,10 +48,6 @@ export class CriteriaNodeFactory {
   static createObjectNode(metadata: MetadataStorage, entityName: string, payload: Dictionary, parent?: ICriteriaNode, key?: string): ICriteriaNode {
     const meta = metadata.find(entityName);
 
-    if (!parent && Object.keys(payload).every(k => meta?.properties[k]?.reference === ReferenceType.SCALAR)) {
-      return this.createScalarNode(metadata, entityName, payload, parent, key);
-    }
-
     const node = new ObjectCriteriaNode(metadata, entityName, parent, key);
     node.payload = Object.keys(payload).reduce((o, item) => {
       o[item] = this.createObjectItemNode(metadata, entityName, node, payload, item, meta);

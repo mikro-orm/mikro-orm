@@ -124,7 +124,7 @@ export class CriteriaNode implements ICriteriaNode {
   [inspect.custom]() {
     const o: Dictionary = {};
     ['entityName', 'key', 'index', 'payload']
-      .filter(k => this[k] != null)
+      .filter(k => this[k] !== undefined)
       .forEach(k => o[k] = this[k]);
 
     return `${this.constructor.name} ${inspect(o)}`;

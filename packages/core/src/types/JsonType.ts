@@ -14,6 +14,14 @@ export class JsonType extends Type<unknown, string | null> {
     return platform.convertJsonToDatabaseValue(value, typeof context === 'boolean' ? { fromQuery: context } : context) as string;
   }
 
+  convertToJSValueSQL(key: string, platform: Platform): string {
+    return key + platform.castJsonValue(this.prop);
+  }
+
+  convertToDatabaseValueSQL(key: string, platform: Platform): string {
+    return key + platform.castColumn(this.prop);
+  }
+
   convertToJSValue(value: string | unknown, platform: Platform): unknown {
     return platform.convertJsonToJSValue(value);
   }

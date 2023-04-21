@@ -264,7 +264,7 @@ export class EntitySchema<T = any, U = never> {
 
   private initProperties(): void {
     Object.entries<Property<T, unknown>>(this._meta.properties as Dictionary).forEach(([name, options]) => {
-      options.type = options.customType != null ? options.customType.constructor.name : options.type;
+      options.type ??= options.customType != null ? options.customType.constructor.name : options.type;
 
       switch ((options as EntityProperty).reference) {
         case ReferenceType.ONE_TO_ONE:

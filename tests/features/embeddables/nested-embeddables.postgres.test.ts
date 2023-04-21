@@ -348,7 +348,7 @@ describe('embedded entities in postgres', () => {
     expect(jon.profile1.identity.meta).toBeUndefined();
   });
 
-  test('partial loading', async () => {
+  test('partial loading 2', async () => {
     const mock = mockLogger(orm, ['query']);
 
     await orm.em.fork().qb(User).select('profile1.identity.email').where({ profile1: { identity: { email: 'foo@bar.baz' } } }).execute();
