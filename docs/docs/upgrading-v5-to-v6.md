@@ -8,7 +8,7 @@ title: Upgrading from v5 to v6
 
 Support for older node versions was dropped. 
 
-## TypeScript 4.9+ required
+## ⚠️ TypeScript 5.0+ required
 
 Support for older TypeScript versions was dropped. 
 
@@ -229,6 +229,16 @@ const ref = em.getReference(User, 1);
 ref.age = raw(`age * 2`);
 await em.flush();
 console.log(ref.age); // real value is available after flush
+```
+
+## Changed default PostgreSQL `Date` mapping precision
+
+Previously, all drivers defaulted the `Date` type mapping to a timestamp with 0 precision (so seconds). This is [discouraged in PostgreSQL](https://wiki.postgresql.org/wiki/Don't_Do_This#Don.27t_use_timestamp.280.29_or_timestamptz.280.29), and is no longer valid - the default mapping without the `length` property being explicitly set is now `timestamptz`, which stores microsecond precision, so equivalent to `timestampz(6)`.
+
+To revert back to the v5 behavior, you can either set the `columnType: 'timestampz(0)'`, or use `length: 0`:
+
+```ts
+@Property({ length: 0 })
 ```
 
 ## Metadata CacheAdapter requires sync API
