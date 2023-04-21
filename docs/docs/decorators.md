@@ -249,16 +249,16 @@ Many instances of the current Entity refer to One instance of the referred Entit
 
 See [Defining Entities](relationships.md#manytoone) for more examples.
 
-| Parameter    | Type | Optional | Description                                                                                                                                               |
-|--------------|------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `entity`     | `string` &#124; `() => EntityName` | yes | Set target entity type.                                                                                                                                   |
-| `cascade`    | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
-| `eager`      | `boolean` | yes | Always load the relationship.                                                                                                                             |
-| `inversedBy` | `(string & keyof T) ` &#124; ` (e: T) => any` | yes | Point to the inverse side property name.                                                                                                                  |
-| `ref`        | `boolean` | yes | Wrap the entity in [`Reference` wrapper](type-safe-relations.md).                                                                                         |
-| `primary`    | `boolean` | yes | Use this relation as primary key.                                                                                                                         |
+| Parameter    | Type | Optional | Description                                                                                                                                                |
+|--------------|------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `entity`     | `string` &#124; `() => EntityName` | yes | Set target entity type.                                                                                                           |
+| `cascade`    | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)).|
+| `eager`      | `boolean` | yes | Always load the relationship. (Discouraged for use with to-many relations.)                                                                                 |
+| `inversedBy` | `(string & keyof T) ` &#124; ` (e: T) => any` | yes | Point to the inverse side property name.                                                                               |
+| `ref`        | `boolean` | yes | Wrap the entity in [`Reference` wrapper](type-safe-relations.md).                                                                                          |
+| `primary`    | `boolean` | yes | Use this relation as primary key.                                                                                                                          |
 | `deleteRule`   | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity).                                                                                  |
-| `updateRule` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity).                                                                                  |
+| `updateRule` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity).                                                                                    |
 
 ```ts
 @ManyToOne()
@@ -283,7 +283,7 @@ See [Defining Entities](relationships.md#onetoone) for more examples, including 
 |-----------------|-----------------------------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `entity`        | `string` &#124; `() => EntityName`            | yes      | Set target entity type.                                                                                                                                    |
 | `cascade`       | `Cascade[]`                                   | yes      | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)).  |
-| `eager`         | `boolean`                                     | yes      | Always load the relationship.                                                                                                                              |
+| `eager`         | `boolean`                                     | yes      | Always load the relationship. (Discouraged for use with to-many relations.)                                                                                |
 | `owner`         | `boolean`                                     | yes      | Explicitly set as owning side (same as providing `inversedBy`).                                                                                            |
 | `inversedBy`    | `(string & keyof T) ` &#124; ` (e: T) => any` | yes      | Point to the inverse side property name.                                                                                                                   |
 | `mappedBy`      | `(string & keyof T)` &#124; `(e: T) => any`   | yes      | Point to the owning side property name.                                                                                                                    |
@@ -324,7 +324,7 @@ See [Defining Entities](relationships.md#onetomany) for more examples, including
 | `mappedBy`          | `(string & keyof T)` &#124; `(e: T) => any` | no       | Point to the owning side property name.                                                                                                                   |
 | `entity`            | `string` &#124; `() => EntityName`          | yes      | Set target entity type.                                                                                                                                   |
 | `cascade`           | `Cascade[]`                                 | yes      | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
-| `eager`             | `boolean`                                   | yes      | Always load the relationship.                                                                                                                             |
+| `eager`             | `boolean`                                   | yes      | Always load the relationship. (Discouraged for use with to-many relations.)                                                                               |
 | `orphanRemoval`     | `boolean`                                   | yes      | Remove the entity when it gets disconnected from the connection (see [Cascading](cascading.md#orphan-removal)).                                           |
 | `orderBy`           | `{ [field: string]: QueryOrder }`           | yes      | Set default ordering condition.                                                                                                                           |
 | `joinColumn`        | `string`                                    | yes      | Override default database column name on the owning side (see [Naming Strategy](naming-strategy.md)).                                                     |
@@ -352,7 +352,7 @@ See [Defining Entities](relationships.md#manytomany) for more examples, includin
 |---------------------|-----------------------------------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `entity`            | `string` &#124; `() => EntityName`            | yes      | Set target entity type.                                                                                                                                   |
 | `cascade`           | `Cascade[]`                                   | yes      | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
-| `eager`             | `boolean`                                     | yes      | Always load the relationship.                                                                                                                             |
+| `eager`             | `boolean`                                     | yes      | Always load the relationship. (Discouraged for use with to-many relations.)                                                                               |
 | `owner`             | `boolean`                                     | yes      | Explicitly set as owning side (same as providing `inversedBy`).                                                                                           |
 | `inversedBy`        | `(string & keyof T) ` &#124; ` (e: T) => any` | yes      | Point to the inverse side property name.                                                                                                                  |
 | `mappedBy`          | `(string & keyof T)` &#124; `(e: T) => any`   | yes      | Point to the owning side property name.                                                                                                                   |

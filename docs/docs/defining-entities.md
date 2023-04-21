@@ -1667,7 +1667,7 @@ From v4 `BaseEntity` class is provided with `init`, `isInitialized`, `assign` an
 import { BaseEntity } from '@mikro-orm/core';
 
 @Entity()
-export class Book extends BaseEntity<Book, 'id'> {
+export class Book extends BaseEntity {
 
   @PrimaryKey()
   id!: number;
