@@ -8,7 +8,7 @@ title: Upgrading from v5 to v6
 
 Support for older node versions was dropped. 
 
-## ⚠️ TypeScript 4.9+ required
+## ⚠️ TypeScript 5.0+ required
 
 Support for older TypeScript versions was dropped. 
 
