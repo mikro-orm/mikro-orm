@@ -36,7 +36,7 @@ export class UnitOfWork {
   private readonly orphanRemoveStack = new Set<AnyEntity>();
   private readonly changeSets = new Map<AnyEntity, ChangeSet<any>>();
   private readonly collectionUpdates = new Set<Collection<AnyEntity>>();
-  private readonly extraUpdates = new Set<[AnyEntity, string | string[], AnyEntity | AnyEntity[] | Reference<any> | Collection<any>]>();
+  private readonly extraUpdates = new Set<[AnyEntity, string | string[], AnyEntity | AnyEntity[] | Reference<any> | Collection<any>, ChangeSet<any> | undefined]>();
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getPlatform();
   private readonly eventManager = this.em.getEventManager();
@@ -200,7 +200,7 @@ export class UnitOfWork {
     return [...this.collectionUpdates];
   }
 
-  getExtraUpdates(): Set<[AnyEntity, string | string[], (AnyEntity | AnyEntity[] | Reference<any> | Collection<any>)]> {
+  getExtraUpdates(): Set<[AnyEntity, string | string[], (AnyEntity | AnyEntity[] | Reference<any> | Collection<any>), ChangeSet<any> | undefined]> {
     return this.extraUpdates;
   }
 
@@ -482,7 +482,7 @@ export class UnitOfWork {
       return;
     }
 
-    this.extraUpdates.add([changeSet.entity, props.map(p => p.name), props.map(p => changeSet.entity[p.name])]);
+    this.extraUpdates.add([changeSet.entity, props.map(p => p.name), props.map(p => changeSet.entity[p.name]), changeSet]);
     props.forEach(p => delete changeSet.entity[p.name]);
     props.forEach(p => delete changeSet.payload[p.name]);
   }
@@ -614,7 +614,7 @@ export class UnitOfWork {
 
   private processToManyReference<T extends object>(collection: Collection<AnyEntity>, visited: Set<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
     if (this.isCollectionSelfReferenced(collection, visited)) {
-      this.extraUpdates.add([parent, prop.name, collection]);
+      this.extraUpdates.add([parent, prop.name, collection, undefined]);
       parent[prop.name as keyof T] = new Collection<AnyEntity>(parent) as unknown as T[keyof T];
 
       return;
@@ -815,23 +815,7 @@ export class UnitOfWork {
     }
 
     // 5. extra updates
-    const extraUpdates: ChangeSet<any>[] = [];
-
-    for (const extraUpdate of this.extraUpdates) {
-      if (Array.isArray(extraUpdate[1])) {
-        extraUpdate[1].forEach((p, i) => extraUpdate[0][p] = extraUpdate[2][i]);
-      } else {
-        extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
-      }
-
-      const changeSet = this.changeSetComputer.computeChangeSet(extraUpdate[0])!;
-
-      if (changeSet) {
-        extraUpdates.push(changeSet);
-      }
-    }
-
-    await this.commitUpdateChangeSets(extraUpdates, ctx, false);
+    await this.commitExtraUpdates(ctx);
 
     // 6. collection updates
     for (const coll of this.collectionUpdates) {
@@ -941,6 +925,33 @@ export class UnitOfWork {
     for (const changeSet of changeSets) {
       this.unsetIdentity(changeSet.entity);
       await this.runHooks(EventType.afterDelete, changeSet);
+    }
+  }
+
+  private async commitExtraUpdates<T extends object>(ctx?: Transaction): Promise<void> {
+    const extraUpdates: [ChangeSet<any>, ChangeSet<any> | undefined][] = [];
+
+    for (const extraUpdate of this.extraUpdates) {
+      if (Array.isArray(extraUpdate[1])) {
+        extraUpdate[1].forEach((p, i) => extraUpdate[0][p] = extraUpdate[2][i]);
+      } else {
+        extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
+      }
+
+      const changeSet = this.changeSetComputer.computeChangeSet(extraUpdate[0])!;
+
+      if (changeSet) {
+        extraUpdates.push([changeSet, extraUpdate[3]]);
+      }
+    }
+
+    await this.commitUpdateChangeSets(extraUpdates.map(u => u[0]), ctx, false);
+
+    // propagate the new values to the original changeset
+    for (const extraUpdate of extraUpdates) {
+      if (extraUpdate[1]) {
+        Object.assign(extraUpdate[1].payload, extraUpdate[0].payload);
+      }
     }
   }
 
