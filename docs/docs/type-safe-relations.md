@@ -137,7 +137,6 @@ book1.author; // Ref<Author> (instance of `Reference` class)
 book1.author.name; // type error, there is no `name` property
 book1.author.unwrap().name; // unsafe sync access, undefined as author is not loaded
 book1.author.isInitialized(); // false
-(await book1.author.load()).name; // async safe access
 
 const book2 = await em.findOne(Book, 1, { populate: ['author'] });
 book2.author; // LoadedReference<Author> (instance of `Reference` class)
@@ -162,6 +161,22 @@ If you use different metadata provider than `TsMorphMetadataProvider` (e.g. `Ref
 @ManyToOne(() => Author, { ref: true })
 author!: Ref<Author>;
 ```
+
+### Using `Reference.load()`
+
+After retrieving a reference, you can load the full entity by utilizing the asynchronous `Reference.load()` method.
+
+```ts
+const book1 = await em.findOne(Book, 1);
+(await book1.author.load()).name; // async safe access
+
+const book2 = await em.findOne(Book, 2);
+const author = await book2.author.load();
+author.name;
+await book2.author.load(); // no additional query, already loaded
+```
+
+> As opposed to `wrap(e).init()` which always refreshes the entity, `Reference.load()` method will query the database only if the entity is not already loaded in Identity Map.
 
 ## `Loaded` type
 
@@ -405,5 +420,3 @@ const book = await em.findOne(Book, 1);
 console.log(book.author.id); // ok, returns string PK
 console.log(book.author._id); // ok, returns ObjectId PK
 ```
-
-> As opposed to `wrap(e).init()` which always refreshes the entity, `Reference.load()` method will query the database only if the entity is not already loaded in Identity Map.
