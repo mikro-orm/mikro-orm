@@ -511,7 +511,7 @@ export class Migration20191013214813 extends Migration {
       "alter table "custom"."test2" drop column "path";",
     ],
   },
-  "fileName": "Migration20191013214813_custom_name.ts",
+  "fileName": "migration20191013214813_custom_name.ts",
 }
 `;
 

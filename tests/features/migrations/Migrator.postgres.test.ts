@@ -124,11 +124,11 @@ describe('Migrator (postgres)', () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
-    orm.config.set('migrations', { ...migrationsSettings });
+    orm.config.set('migrations', { ...migrationsSettings, fileName: (time, name) => `migration${time}_${name}` });
     const migrator = orm.migrator;
     const migration = await migrator.createMigration(undefined, false, false, 'custom_name');
     expect(migration).toMatchSnapshot('migration-dump');
-    expect(migration.fileName).toEqual('Migration20191013214813_custom_name.ts');
+    expect(migration.fileName).toEqual('migration20191013214813_custom_name.ts');
     const upMock = jest.spyOn(Umzug.prototype, 'up');
     upMock.mockImplementation(() => void 0 as any);
     const downMock = jest.spyOn(Umzug.prototype, 'down');
