@@ -265,21 +265,19 @@ await MikroORM.init({
 
 ## Using custom migration names
 
-We can add a name to migration files via a CLI
+Since v5.7, you can specify a custom migration name via `--name` CLI option. It will be appended to the generated prefix:
 
+```sh
+# generates file Migration20230421212713_add_email_property_to_user_table.ts
+npx mikro-orm migration:create --name=add_email_property_to_user_table
 ```
-npx mikro-orm migration:create --name=newName
-```
 
-The default behavior support `name` option, here's how it works, if we set `name` option to equal `add_email_property_to_user_table` the name of the generated file will be as follows "Migration20191013214813_add_email_property_to_user_table"
-
-You can customize the naming convention for your migration file by utilizing the `fileName` callback and overriding its default behavior.
-
-If we would like to always specify a name, we should throw an error in case the name is not provided.
+You can customize the naming convention for your migration file by utilizing the `fileName` callback, or even use it to enforce migrations with names:
 
 ```ts
 migrations: {
   fileName: (timestamp: string, name?: string) => {
+    // force user to provide the name, otherwise we would end up with `Migration20230421212713_undefined`
     if (!name) {
       throw new Error('Specify migration name via `mikro-orm migration:create --name=...`');
     }
@@ -289,17 +287,11 @@ migrations: {
 },
 ```
 
-> Each migration filename should contains a timestamp that allows MikroOrm to determine the order of the migrations
+:::caution Warning
 
-If we just want to change the filename without throwing an error in case the name is not provided
+When overriding the `migrations.fileName` strategy, keep in mind that your migration files need to be sortable, you should never start the filename with the custom `name` option as it could result in wrong order of execution.
 
-```ts
-migrations: {
-  fileName: (timestamp: string, name?: string) => {
-    return `CustomMigration${timestamp}_${name ? name : '' }`;
-  },
-},
-```
+:::
 
 ## MongoDB support
 
