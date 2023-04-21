@@ -171,7 +171,7 @@ Users can choose whether they are fine with polluting the entity interface with 
 import { BaseEntity } from '@mikro-orm/core';
 
 @Entity()
-export class Book extends BaseEntity<Book, 'id'> { ... }
+export class Book extends BaseEntity { ... }
 ```
 
 Then you can work with those methods directly:
