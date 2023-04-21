@@ -184,12 +184,13 @@ export class EntityHelper {
         inverse.add(owner);
       }
 
-      if (prop.reference === ReferenceType.ONE_TO_ONE && entity && helper(entity).__initialized && Reference.unwrapReference(inverse) !== owner && value != null) {
-        EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old);
-      }
-
-      if (prop.reference === ReferenceType.ONE_TO_ONE && entity && helper(entity).__initialized && entity[prop2.name] != null && value == null) {
-        EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old as T);
+      if (prop.reference === ReferenceType.ONE_TO_ONE && entity && helper(entity).__initialized) {
+        if (
+          (value != null && Reference.unwrapReference(inverse) !== owner) ||
+          (value == null && entity[prop2.name] != null)
+        ) {
+          EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old as T);
+        }
       }
     }
   }

@@ -258,7 +258,7 @@ export class UnitOfWork {
   }
 
   persist<T extends object>(entity: T, visited?: Set<AnyEntity>, options: { checkRemoveStack?: boolean; cascade?: boolean } = {}): void {
-    if (options.checkRemoveStack && (this.removeStack.has(entity))) {
+    if (options.checkRemoveStack && this.removeStack.has(entity)) {
       return;
     }
 
@@ -394,12 +394,17 @@ export class UnitOfWork {
       const rel = Reference.unwrapReference(entity[prop.name]);
 
       if (Utils.isCollection(rel) && rel.isInitialized()) {
-        rel.removeAll();
+        rel.getItems(false).forEach(item => rel.removeWithoutPropagation(item));
+        continue;
+      }
+
+      if (Utils.isCollection(rel?.[inverse]) && rel[inverse].isInitialized()) {
+        rel[inverse].removeWithoutPropagation(entity);
         continue;
       }
 
       // there is a value, and it is still a self-reference (e.g. not replaced by user manually)
-      if (rel?.[inverse] && entity === rel[inverse]) {
+      if (rel?.[inverse] && entity === Reference.unwrapReference(rel[inverse])) {
         delete helper(rel).__data[inverse];
       }
     }
@@ -569,7 +574,7 @@ export class UnitOfWork {
   }
 
   private initIdentifier<T extends object>(entity: T): void {
-    const wrapped = helper(entity);
+    const wrapped = entity && helper(entity);
 
     if (!wrapped || wrapped.__identifier || wrapped.hasPrimaryKey()) {
       return;
@@ -579,7 +584,7 @@ export class UnitOfWork {
 
     if (pk.reference === ReferenceType.SCALAR) {
       wrapped.__identifier = new EntityIdentifier();
-    } else {
+    } else if (entity[pk.name]) {
       this.initIdentifier(entity[pk.name] as object);
       wrapped.__identifier = helper(entity[pk.name] as AnyEntity)?.__identifier;
     }
