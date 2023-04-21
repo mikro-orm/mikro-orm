@@ -66,9 +66,7 @@ Before you submit your pull request consider the following guidelines:
 - If somebody from project contributors suggest changes then:
   - Make the required updates.
   - Re-run all test suites to ensure tests are still passing.
-  - Rebase your branch and force push to your GitHub repository (this will update your Pull Request). Basically you can 
-    use `git commit -a --amend` and `git push --force origin my-fix-branch` in order to keep single commit in the feature 
-    branch.
+  - Commit them and push. Don't rebase after you get a review so it is clear what changes you did in the last commit. The PR will be squash merged, so its history is irrelevant.
 
 That's it! Thank you for your contribution!
 
