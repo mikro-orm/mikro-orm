@@ -19,11 +19,7 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
     await ensureDir(path);
     const timestamp = new Date().toISOString().replace(/[-T:]|\.\d{3}z$/ig, '');
     const className = this.namingStrategy.classToMigrationName(timestamp);
-    let fileName = `${this.options.fileName!(timestamp)}`;
-    if (name) {
-      fileName = `${fileName}_${name}`;
-    }
-    fileName = `${fileName}.${this.options.emit}`;
+    const fileName = `${this.options.fileName!(timestamp, name)}.${this.options.emit}`;
     const ret = this.generateMigrationFile(className, diff);
     await writeFile(path + '/' + fileName, ret);
 

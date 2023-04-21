@@ -452,7 +452,7 @@ export type MigrationsOptions = {
   snapshotName?: string;
   emit?: 'js' | 'ts' | 'cjs';
   generator?: Constructor<IMigrationGenerator>;
-  fileName?: (timestamp: string) => string;
+  fileName?: (timestamp: string, name?: string) => string;
   migrationsList?: MigrationObject[];
 };
 
