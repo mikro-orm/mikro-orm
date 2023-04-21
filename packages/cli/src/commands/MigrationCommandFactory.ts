@@ -80,6 +80,11 @@ export class MigrationCommandFactory {
       type: 'string',
       desc: 'Sets path to directory where to save entities',
     });
+    args.option('name', {
+      alias: 'name',
+      type: 'string',
+      desc: 'Specify custom name for the file',
+    });
   }
 
   static async handleMigrationCommand(args: ArgumentsCamelCase<Options>, method: MigratorMethod): Promise<void> {
@@ -145,7 +150,7 @@ export class MigrationCommandFactory {
   }
 
   private static async handleCreateCommand(migrator: IMigrator, args: ArgumentsCamelCase<Options>, config: Configuration): Promise<void> {
-    const ret = await migrator.createMigration(args.path, args.blank, args.initial);
+    const ret = await migrator.createMigration(args.path, args.blank, args.initial, args.name);
 
     if (ret.diff.up.length === 0) {
       return CLIHelper.dump(colors.green(`No changes required, schema is up-to-date`));
@@ -237,5 +242,5 @@ export class MigrationCommandFactory {
 
 type MigratorMethod = 'create' | 'check' | 'up' | 'down' | 'list' | 'pending' | 'fresh';
 type CliUpDownOptions = { to?: string | number; from?: string | number; only?: string };
-type GenerateOptions = { dump?: boolean; blank?: boolean; initial?: boolean; path?: string; disableFkChecks?: boolean; seed: string };
+type GenerateOptions = { dump?: boolean; blank?: boolean; initial?: boolean; path?: string; disableFkChecks?: boolean; seed: string; name?: string };
 type Options = GenerateOptions & CliUpDownOptions;

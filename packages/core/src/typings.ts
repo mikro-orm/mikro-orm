@@ -597,7 +597,7 @@ export interface IMigrator {
   /**
    * Checks current schema for changes, generates new migration if there are any.
    */
-  createMigration(path?: string, blank?: boolean, initial?: boolean): Promise<MigrationResult>;
+  createMigration(path?: string, blank?: boolean, initial?: boolean, name?: string): Promise<MigrationResult>;
 
   /**
    * Checks current schema for changes.
@@ -647,7 +647,7 @@ export interface IMigrationGenerator {
   /**
    * Generates the full contents of migration file. Uses `generateMigrationFile` to get the file contents.
    */
-  generate(diff: MigrationDiff, path?: string): Promise<[string, string]>;
+  generate(diff: MigrationDiff, path?: string, name?: string): Promise<[string, string]>;
 
   /**
    * Creates single migration statement. By default adds `this.addSql(sql);` to the code.

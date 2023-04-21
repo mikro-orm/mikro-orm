@@ -47,7 +47,7 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async createMigration(path?: string, blank = false, initial = false): Promise<MigrationResult> {
+  async createMigration(path?: string, blank = false, initial = false, name?: string): Promise<MigrationResult> {
     if (initial) {
       return this.createInitialMigration(path);
     }
@@ -60,8 +60,7 @@ export class Migrator implements IMigrator {
     }
 
     await this.storeCurrentSchema();
-    const migration = await this.generator.generate(diff, path);
-
+    const migration = await this.generator.generate(diff, path, name);
     return {
       fileName: migration[1],
       code: migration[0],
