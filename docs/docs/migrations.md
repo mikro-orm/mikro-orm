@@ -263,6 +263,36 @@ await MikroORM.init({
 });
 ```
 
+## Using custom migration names
+
+Since v5.7, you can specify a custom migration name via `--name` CLI option. It will be appended to the generated prefix:
+
+```sh
+# generates file Migration20230421212713_add_email_property_to_user_table.ts
+npx mikro-orm migration:create --name=add_email_property_to_user_table
+```
+
+You can customize the naming convention for your migration file by utilizing the `fileName` callback, or even use it to enforce migrations with names:
+
+```ts
+migrations: {
+  fileName: (timestamp: string, name?: string) => {
+    // force user to provide the name, otherwise we would end up with `Migration20230421212713_undefined`
+    if (!name) {
+      throw new Error('Specify migration name via `mikro-orm migration:create --name=...`');
+    }
+
+    return `Migration${timestamp}_${name}`;
+  },
+},
+```
+
+:::caution Warning
+
+When overriding the `migrations.fileName` strategy, keep in mind that your migration files need to be sortable, you should never start the filename with the custom `name` option as it could result in wrong order of execution.
+
+:::
+
 ## MongoDB support
 
 Support for migrations in MongoDB has been added in v5.3. It uses its own package: `@mikro-orm/migrations-mongodb`, and should be otherwise compatible with the current CLI commands. Use `this.driver` or `this.getCollection()` to manipulate with the database.

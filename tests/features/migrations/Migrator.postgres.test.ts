@@ -120,6 +120,30 @@ describe('Migrator (postgres)', () => {
     downMock.mockRestore();
   });
 
+  test('generate migration with custom name with name option', async () => {
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const migrationsSettings = orm.config.get('migrations');
+    orm.config.set('migrations', { ...migrationsSettings, fileName: (time, name) => `migration${time}_${name}` });
+    const migrator = orm.migrator;
+    const migration = await migrator.createMigration(undefined, false, false, 'custom_name');
+    expect(migration).toMatchSnapshot('migration-dump');
+    expect(migration.fileName).toEqual('migration20191013214813_custom_name.ts');
+    const upMock = jest.spyOn(Umzug.prototype, 'up');
+    upMock.mockImplementation(() => void 0 as any);
+    const downMock = jest.spyOn(Umzug.prototype, 'down');
+    downMock.mockImplementation(() => void 0 as any);
+    await migrator.up();
+    await migrator.down(migration.fileName.replace('.ts', ''));
+    await migrator.up();
+    await migrator.down(migration.fileName);
+    await migrator.up();
+    orm.config.set('migrations', migrationsSettings); // Revert migration config changes
+    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    upMock.mockRestore();
+    downMock.mockRestore();
+  });
+
   test('generate schema migration', async () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
