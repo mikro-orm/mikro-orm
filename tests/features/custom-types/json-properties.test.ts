@@ -9,7 +9,7 @@ export class User {
   @PrimaryKey({ name: '_id' })
   id: number = User.id++;
 
-  @Property({ type: 'json' })
+  @Property({ columnType: 'json' })
   value: any;
 
 }

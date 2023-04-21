@@ -1001,7 +1001,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         });
 
       meta.props
-        .filter(prop => prop.customType?.convertToDatabaseValueSQL || prop.customType?.convertToJSValueSQL)
+        .filter(prop => prop.hasConvertToDatabaseValueSQL || prop.hasConvertToJSValueSQL)
         .forEach(prop => ret.push(prop.name));
     }
 

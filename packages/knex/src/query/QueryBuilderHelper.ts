@@ -84,7 +84,7 @@ export class QueryBuilderHelper {
       return this.knex.raw(`${prop.formula(alias2)}${as}`);
     }
 
-    if (prop?.customType?.convertToJSValueSQL) {
+    if (prop?.hasConvertToJSValueSQL) {
       const prefixed = this.prefix(field, isTableNameAliasRequired, true);
       const valueSQL = prop.customType.convertToJSValueSQL!(prefixed, this.platform);
 
@@ -789,9 +789,10 @@ export class QueryBuilderHelper {
         data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, { fromQuery: true, key: k, mode: 'query-data' });
       }
 
-      if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(data[k])) {
+      if (prop.hasConvertToDatabaseValueSQL && !this.platform.isRaw(data[k])) {
         const quoted = this.platform.quoteValue(data[k]);
-        data[k] = this.knex.raw(prop.customType.convertToDatabaseValueSQL!(quoted, this.platform).replace(/\?/, '\\?'));
+        const sql = prop.customType.convertToDatabaseValueSQL!(quoted, this.platform);
+        data[k] = this.knex.raw(sql.replace(/\?/, '\\?'));
       }
 
       if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {

@@ -470,7 +470,14 @@ export abstract class Platform {
   /**
    * @internal
    */
-  castColumn(prop?: EntityProperty): string {
+  castColumn(prop?: { columnTypes?: string[] }): string {
+    return '';
+  }
+
+  /**
+   * @internal
+   */
+  castJsonValue(prop?: { columnTypes?: string[] }): string {
     return '';
   }
 

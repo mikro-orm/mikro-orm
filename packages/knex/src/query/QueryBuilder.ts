@@ -887,7 +887,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     const meta = this.mainAlias.metadata;
     /* istanbul ignore next */
-    const requiresSQLConversion = meta?.props.filter(p => p.customType?.convertToJSValueSQL) ?? [];
+    const requiresSQLConversion = meta?.props.filter(p => p.hasConvertToJSValueSQL) ?? [];
 
     if (this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES) && (fields.includes('*') || fields.includes(`${this.mainAlias.aliasName}.*`)) && requiresSQLConversion.length > 0) {
       requiresSQLConversion.forEach(p => ret.push(this.helper.mapper(p.name, this.type)));

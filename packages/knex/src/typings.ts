@@ -145,6 +145,7 @@ export interface IQueryBuilder<T> {
   having(cond?: QBFilterQuery | string, params?: any[]): this;
   getAliasForJoinPath(path: string): string | undefined;
   getNextAlias(entityName?: string): string;
+  raw(field: string): any;
 }
 
 export interface ICriteriaNode {
