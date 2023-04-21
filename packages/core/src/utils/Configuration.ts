@@ -97,7 +97,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       safe: false,
       snapshot: true,
       emit: 'ts',
-      fileName: (timestamp: string) => `Migration${timestamp}`,
+      fileName: (timestamp: string, name?: string) => `Migration${timestamp}${name ? '_' + name : ''}`,
     },
     schemaGenerator: {
       disableForeignKeys: true,

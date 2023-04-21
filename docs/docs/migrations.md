@@ -153,6 +153,14 @@ npx mikro-orm migration:fresh    # Drop the database and migrate up to the lates
 
 > To create blank migration file, we can use `npx mikro-orm migration:create --blank`.
 
+> To specify a name for your migration file, we can use `npx mikro-orm migration:create --name=newName`
+
+You can customize the naming convention for your migration file by utilizing the `fileName` callback and overriding its default behavior.
+```sh
+    migrations: {
+      fileName: (time, name) => time + name
+    }
+```
 For `migration:up` and `migration:down` commands we can specify `--from` (`-f`), `--to` (`-t`) and `--only` (`-o`) options to run only a subset of migrations:
 
 ```sh
