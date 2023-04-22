@@ -1774,7 +1774,11 @@ describe('EntityManagerMySql', () => {
     const b1 = (await orm.em.findOne(FooBar2, { id: bar.id }))!;
     expect(b1).toBe(b1.fooBar);
     expect(b1.id).not.toBeNull();
-    expect(wrap(b1).toJSON()).toMatchObject({ fooBar: b1.id });
+    expect(wrap(b1).toJSON().fooBar).toBe(b1.id);
+    // @ts-expect-error
+    expect(wrap(b1).toJSON().foo).toBeUndefined();
+    // @ts-expect-error
+    expect(wrap(b1).toJSON().bar).toBeUndefined();
   });
 
   test('persisting entities in parallel inside forked EM with copied IM', async () => {
