@@ -27,6 +27,7 @@ describe('EntityHelperMongo', () => {
   test('#toObject() should ignore properties marked with hidden flag', async () => {
     const test = Test.create('Bible');
     expect(test.hiddenField).toBeDefined();
+    // @ts-expect-error
     expect(wrap(test).toJSON().hiddenField).not.toBeDefined();
   });
 
