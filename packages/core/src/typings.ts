@@ -39,6 +39,8 @@ export const PrimaryKeyProp = Symbol('PrimaryKeyProp');
 export const OptionalProps = Symbol('OptionalProps');
 export const EagerProps = Symbol('EagerProps');
 
+export const HiddenProps = Symbol('HiddenProps');
+
 export type UnwrapPrimary<T> = T extends Scalar
   ? T
   : T extends Reference<infer U>
@@ -239,7 +241,9 @@ export type EntityDTOProp<T> = T extends Scalar
             : T extends Relation<T>
               ? EntityDTONested<T>
               : T;
-export type EntityDTO<T> = { [K in EntityKey<T>]: EntityDTOProp<T[K]> };
+type ExtractHiddenProps<T> = T extends { [HiddenProps]?: infer Prop } ? Prop : never;
+type ExcludeHidden<T, K extends keyof T> = K extends ExtractHiddenProps<T> ? never : K;
+export type EntityDTO<T> = { [K in EntityKey<T> as ExcludeHidden<T, K>]: EntityDTOProp<T[K]> };
 
 export type CheckCallback<T> = (columns: Record<keyof T, string>) => string;
 

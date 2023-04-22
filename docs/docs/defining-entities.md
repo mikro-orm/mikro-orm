@@ -1053,6 +1053,8 @@ values={[
 @Entity()
 export class User {
 
+  [HiddenProps]?: 'firstName' | 'lastName';
+
   @Property({ hidden: true })
   firstName!: string;
 
@@ -1079,6 +1081,8 @@ export class User {
 @Entity()
 export class User {
 
+  [HiddenProps]?: 'firstName' | 'lastName';
+
   @Property({ hidden: true })
   firstName!: string;
 
@@ -1103,6 +1107,9 @@ export class User {
 
 ```ts title="./entities/User.ts"
 export class User {
+
+  [HiddenProps]?: 'firstName' | 'lastName';
+
   firstName!: string;
   lastName!: string;
 

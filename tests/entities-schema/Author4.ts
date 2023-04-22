@@ -1,5 +1,5 @@
 import type { Collection, EventArgs } from '@mikro-orm/core';
-import { EntitySchema, DateType, TimeType, BooleanType, t, ReferenceKind, wrap } from '@mikro-orm/core';
+import { EntitySchema, DateType, TimeType, BooleanType, t, ReferenceKind, HiddenProps } from '@mikro-orm/core';
 import type { IBaseEntity5 } from './BaseEntity5';
 import type { IBook4 } from './Book4';
 
@@ -22,6 +22,8 @@ function randomHook(args: EventArgs<IAuthor4>) {
 }
 
 export class Identity {
+
+  [HiddenProps]?: 'foo' | 'bar';
 
   constructor(public foo: string, public bar: number) {}
 

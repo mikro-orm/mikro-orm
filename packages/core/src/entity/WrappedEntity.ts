@@ -76,7 +76,7 @@ export class WrappedEntity<Entity extends object> {
   }
 
   toPOJO(): EntityDTO<Entity> {
-    return EntityTransformer.toObject(this.entity, [], true);
+    return EntityTransformer.toObject(this.entity, [], true) as EntityDTO<Entity>;
   }
 
   toJSON(...args: any[]): EntityDictionary<Entity> {
