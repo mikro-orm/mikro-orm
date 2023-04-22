@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import type { Dictionary, EntityProperty } from '@mikro-orm/core';
-import { BooleanType, DateTimeType, Utils } from '@mikro-orm/core';
+import { BooleanType, DateTimeType, JsonType, parseJsonSafe, Utils } from '@mikro-orm/core';
 import type { Check, Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
@@ -540,6 +540,13 @@ export class SchemaComparator {
       const defaultValueTo = !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + to.default!);
 
       return defaultValueFrom === defaultValueTo;
+    }
+
+    if (to.mappedType instanceof JsonType) {
+      const defaultValueFrom = parseJsonSafe(from.default.replace(/^'(.*)'$/, '$1'));
+      const defaultValueTo = parseJsonSafe(to.default?.replace(/^'(.*)'$/, '$1'));
+
+      return Utils.equals(defaultValueFrom, defaultValueTo);
     }
 
     if (to.mappedType instanceof DateTimeType && from.default && to.default) {

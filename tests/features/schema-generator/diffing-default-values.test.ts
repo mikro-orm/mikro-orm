@@ -18,6 +18,17 @@ export class Foo {
 }
 
 @Entity()
+export class Foo0 extends Foo {
+
+  @Property({ defaultRaw: 'now()' })
+  bar2!: Date;
+
+  @Property({ defaultRaw: 'now(6)', length: 6 })
+  bar3!: Date;
+
+}
+
+@Entity()
 export class Foo1 extends Foo {
 
   @Property({ defaultRaw: 'now()' })
@@ -25,6 +36,9 @@ export class Foo1 extends Foo {
 
   @Property({ defaultRaw: 'now(6)', length: 6 })
   bar3!: Date;
+
+  @Property({ type: 'json', default: JSON.stringify({ value: 42 }) })
+  metadata!: any;
 
 }
 
@@ -37,6 +51,9 @@ export class Foo2 extends Foo {
   @Property({ defaultRaw: 'now()', length: 6 })
   bar3!: Date;
 
+  @Property({ type: 'json', default: JSON.stringify({ value: 42 }) })
+  metadata!: any;
+
 }
 
 @Entity()
@@ -45,13 +62,16 @@ export class Foo3 extends Foo {
   @Property({ defaultRaw: 'now' })
   bar2!: Date;
 
+  @Property({ type: 'json', default: JSON.stringify({ value: 43 }) })
+  metadata!: any;
+
 }
 
 describe('diffing default values (GH #2385)', () => {
 
   test('string defaults do not produce additional diffs [mysql]', async () => {
     const orm = await MikroORM.init({
-      entities: [Foo1],
+      entities: [Foo0],
       dbName: 'mikro_orm_test_gh_2385',
       driver: MySqlDriver,
       port: 3308,
