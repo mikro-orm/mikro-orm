@@ -1,9 +1,11 @@
-import { Entity, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property, wrap, HiddenProps } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 @Entity()
 export class EntityWithHiddenProp {
+
+  [HiddenProps]?: 'hiddenProp';
 
   @PrimaryKey()
   id!: number;
@@ -55,7 +57,9 @@ describe('hidden properties are still included when cached (GH 3294)', () => {
     expect(res1.hiddenProp).toStrictEqual(res2.hiddenProp);
 
     // Expect hidden prop to still be hidden when using `toJSON`
+    // @ts-expect-error
     expect(wrap(res1).toJSON().hiddenProp).toBeUndefined();
+    // @ts-expect-error
     expect(wrap(res2).toJSON().hiddenProp).toBeUndefined();
   });
 

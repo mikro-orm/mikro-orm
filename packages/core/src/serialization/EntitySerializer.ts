@@ -1,6 +1,7 @@
 import type { Collection } from '../entity/Collection';
 import type {
   AutoPath,
+  Dictionary,
   EntityDTO,
   EntityDTOProp,
   EntityKey,
@@ -62,7 +63,7 @@ export class EntitySerializer {
     }
 
     const root = wrapped.__serializationContext.root!;
-    const ret = {} as EntityDTO<T>;
+    const ret = {} as Dictionary;
     const keys = new Set<EntityKey<T>>(meta.primaryKeys);
     Utils.keys(entity as object).forEach(prop => keys.add(prop));
     const visited = root.visited.has(entity);
