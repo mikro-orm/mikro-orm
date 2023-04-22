@@ -37,19 +37,27 @@ export class Book {
 
 ## Hidden Properties
 
-If you want to omit some properties from serialized result, you can mark them with `hidden` flag on `@Property()` decorator:
+If you want to omit some properties from serialized result, you can mark them with `hidden` flag on `@Property()` decorator. To have this information available on the type level, you also need to use the `HiddenProps` symbol:
 
 ```ts
 @Entity()
 export class Book {
 
+  // we use the `HiddenProps` symbol to define hidden properties on type level
+  [HiddenProps]?: 'hiddenField' | 'otherHiddenField';
+
   @Property({ hidden: true })
   hiddenField = Date.now();
+
+  @Property({ hidden: true, nullable: true })
+  otherHiddenField?: string;
 
 }
 
 const book = new Book(...);
 console.log(wrap(book).toObject().hiddenField); // undefined
+
+// @ts-expect-error accessing `hiddenField` will fail to compile thanks to the `HiddenProps` symbol
 console.log(wrap(book).toJSON().hiddenField); // undefined
 ```
 
