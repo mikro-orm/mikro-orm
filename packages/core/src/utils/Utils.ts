@@ -523,8 +523,8 @@ export class Utils {
     return Utils.getPrimaryKeyHash(pks as string[]);
   }
 
-  static getPrimaryKeyHash(pks: string[]): string {
-    return pks.join(this.PK_SEPARATOR);
+  static getPrimaryKeyHash(pks: (string | Buffer)[]): string {
+    return pks.map(pk => Buffer.isBuffer(pk) ? pk.toString('hex') : pk).join(this.PK_SEPARATOR);
   }
 
   static splitPrimaryKeys(key: string): string[] {
