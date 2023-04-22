@@ -1,5 +1,5 @@
 import type { Collection } from '../entity/Collection';
-import type { AnyEntity, EntityDTO, EntityKey, EntityMetadata, EntityValue, IPrimaryKey } from '../typings';
+import type { AnyEntity, Dictionary, EntityDTO, EntityKey, EntityMetadata, EntityValue, IPrimaryKey } from '../typings';
 import { helper, wrap } from '../entity/wrap';
 import type { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
@@ -33,7 +33,7 @@ export class EntityTransformer {
 
     const root = wrapped.__serializationContext.root!;
     const meta = wrapped.__meta;
-    const ret = {} as EntityDTO<Entity>;
+    const ret = {} as Dictionary;
     const keys = new Set<EntityKey<Entity>>();
 
     if (meta.serializedPrimaryKey && !meta.compositePK) {
@@ -78,21 +78,21 @@ export class EntityTransformer {
         return [prop, val] as const;
       })
       .filter(([, value]) => typeof value !== 'undefined')
-      .forEach(([prop, value]) => ret[this.propertyName(meta, prop!, wrapped.__platform)] = value as any);
+      .forEach(([prop, value]) => ret[this.propertyName(meta, prop!, wrapped.__platform) as any] = value as any);
 
     if (!visited) {
       root.visited.delete(entity);
     }
 
     if (!wrapped.isInitialized() && wrapped.hasPrimaryKey()) {
-      return ret;
+      return ret as EntityDTO<Entity>;
     }
 
     // decorated getters
     meta.props
       .filter(prop => prop.getter && prop.getterName === undefined && !prop.hidden && typeof entity[prop.name] !== 'undefined')
       // @ts-ignore
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.name, entity, raw));
+      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform) as any] = this.processProperty(prop.name, entity, raw));
 
     // decorated get methods
     meta.props
@@ -104,7 +104,7 @@ export class EntityTransformer {
       root.close();
     }
 
-    return ret;
+    return ret as EntityDTO<Entity>;
   }
 
   private static propertyName<Entity>(meta: EntityMetadata<Entity>, prop: EntityKey<Entity>, platform?: Platform): EntityKey<Entity> {
