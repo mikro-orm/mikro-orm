@@ -1,7 +1,9 @@
-import { Entity, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
+import { Entity, HiddenProps, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 
 @Entity()
 export class Test {
+
+  [HiddenProps]?: 'hiddenField';
 
   @PrimaryKey({ type: 'ObjectId' })
   _id: any;
