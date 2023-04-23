@@ -25,6 +25,12 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(msg);
   }
 
+  static fromWrongRepositoryType(entityName: string, repoType: string, method: string): ValidationError {
+    const msg = `Trying to use EntityRepository.${method}() with '${entityName}' entity while the repository is of type '${repoType}'`;
+
+    return new ValidationError(msg);
+  }
+
   static fromCollectionNotInitialized(entity: AnyEntity, prop: EntityProperty): ValidationError {
     const entityName = entity.constructor.name;
     const msg = `${entityName}.${prop.name} is not initialized, define it as '${prop.name} = new Collection<${prop.type}>(this);'`;

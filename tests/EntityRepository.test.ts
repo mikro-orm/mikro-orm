@@ -2,7 +2,7 @@ import type { AnyEntity } from '@mikro-orm/core';
 import { Configuration, QueryOrder } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/knex';
 import { EntityRepository } from '@mikro-orm/knex';
-import { Publisher } from './entities';
+import { Publisher, Author } from './entities';
 import type { MongoEntityManager } from '@mikro-orm/mongodb';
 import { MongoDriver, MongoEntityRepository } from '@mikro-orm/mongodb';
 
@@ -127,6 +127,12 @@ describe('EntityRepository', () => {
     methods.findOneOrFail.mock.calls = [];
     await repo.findOneOrFail({ name: 'bar' }, options);
     expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, options]);
+  });
+
+  test('assign() and populate() validates entity type', async () => {
+    const e = Object.create(Author.prototype, {});
+    await expect(repo.populate(e, [])).rejects.toThrowError(`Trying to use EntityRepository.populate() with 'Author' entity while the repository is of type 'Publisher'`);
+    expect(() => repo.assign(e, {})).toThrowError(`Trying to use EntityRepository.assign() with 'Author' entity while the repository is of type 'Publisher'`);
   });
 
 });

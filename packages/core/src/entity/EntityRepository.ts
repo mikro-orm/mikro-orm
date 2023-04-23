@@ -1,9 +1,11 @@
 import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager';
 import type { AssignOptions } from './EntityAssigner';
-import type { EntityData, EntityName, AnyEntity, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData } from '../typings';
+import type { EntityData, EntityName, AnyEntity, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData, Dictionary } from '../typings';
 import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, GetReferenceOptions, NativeInsertUpdateOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
 import type { IdentifiedReference, Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
+import { ValidationError } from '../errors';
+import { Utils } from '../utils/Utils';
 
 export class EntityRepository<T extends object> {
 
@@ -228,6 +230,7 @@ export class EntityRepository<T extends object> {
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
   async populate<P extends string = never>(entities: T | T[], populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T, P>): Promise<Loaded<T, P>[]> {
+    this.validateRepositoryType(entities, 'populate');
     return this.em.populate(entities as T, populate, options);
   }
 
@@ -247,6 +250,7 @@ export class EntityRepository<T extends object> {
    * Shortcut for `wrap(entity).assign(data, { em })`
    */
   assign(entity: T, data: EntityData<T>, options?: AssignOptions): T {
+    this.validateRepositoryType(entity, 'assign');
     return this.em.assign(entity, data, options);
   }
 
@@ -267,6 +271,21 @@ export class EntityRepository<T extends object> {
 
   protected get em(): EntityManager {
     return this._em;
+  }
+
+  protected validateRepositoryType(entities: T[] | T, method: string) {
+    entities = Utils.asArray(entities);
+
+    if (entities.length === 0) {
+      return;
+    }
+
+    const entityName = entities[0].constructor.name;
+    const repoType = Utils.className(this.entityName);
+
+    if (entityName && repoType !== entityName) {
+      throw ValidationError.fromWrongRepositoryType(entityName, repoType, method);
+    }
   }
 
 }
