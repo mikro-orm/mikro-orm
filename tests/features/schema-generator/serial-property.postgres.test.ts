@@ -94,8 +94,8 @@ test('schema generator works with non-pk autoincrement columns (serial)', async 
   await generator.refreshDatabase();
   await expect(generator.getUpdateSchemaSQL()).resolves.toBe('');
 
-  await orm.discoverEntity(Something1);
   orm.getMetadata().reset('Something0');
+  await orm.discoverEntity(Something1);
   const diff1 = await generator.getUpdateSchemaSQL();
   expect(diff1).toMatchSnapshot();
   await generator.execute(diff1);

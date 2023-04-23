@@ -82,14 +82,14 @@ describe('ignore specific schema changes (GH 1904)', () => {
   test('schema generator respects ignoreSchemaChanges for `type`', async () => {
     const diff0 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff0).toBe('');
-    await orm.discoverEntity(Book2);
     orm.getMetadata().reset('Book1');
+    await orm.discoverEntity(Book2);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toBe('');
 
     // Once we remove ignoreSchemaChanges, we should see a diff again.
-    await orm.discoverEntity(Book5);
     orm.getMetadata().reset('Book2');
+    await orm.discoverEntity(Book5);
     const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toBe('alter table `book` modify `changing_field` timestamp not null;\n\n');
   });
@@ -97,8 +97,8 @@ describe('ignore specific schema changes (GH 1904)', () => {
   test('schema generator respects ignoreSchemaChanges for `extra`', async () => {
     const diff0 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff0).toBe('');
-    await orm.discoverEntity(Book3);
     orm.getMetadata().reset('Book1');
+    await orm.discoverEntity(Book3);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toBe('');
   });
@@ -106,8 +106,8 @@ describe('ignore specific schema changes (GH 1904)', () => {
   test('schema generator respects ignoreSchemaChanges for `extra` and `type`', async () => {
     const diff0 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff0).toBe('');
-    await orm.discoverEntity(Book4);
     orm.getMetadata().reset('Book1');
+    await orm.discoverEntity(Book4);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toBe('');
   });

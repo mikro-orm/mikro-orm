@@ -45,8 +45,8 @@ describe('adding FK column (GH 942)', () => {
   afterAll(() => orm.close(true));
 
   test('schema: adding 1:1 relation', async () => {
-    await orm.discoverEntity(User2);
     orm.getMetadata().reset('User');
+    await orm.discoverEntity(User2);
     const diff1 = await orm.schema.getUpdateSchemaSQL();
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);

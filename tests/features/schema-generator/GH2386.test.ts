@@ -61,14 +61,14 @@ describe('changing column in mysql (GH 2386)', () => {
   test('schema generator respect indexes on FKs on column update', async () => {
     const diff0 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff0).toBe('');
-    await orm.discoverEntity(Book2);
     orm.getMetadata().reset('Book1');
+    await orm.discoverEntity(Book2);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toBe('alter table `book` modify `updated_at` timestamp not null default current_timestamp;\n\n');
     await orm.schema.execute(diff1);
 
-    await orm.discoverEntity(Book3);
     orm.getMetadata().reset('Book2');
+    await orm.discoverEntity(Book3);
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toBe('alter table `book` modify `updated_at` timestamp not null default current_timestamp on update current_timestamp;\n\n');
     await orm.schema.execute(diff3);

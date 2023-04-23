@@ -64,6 +64,13 @@ export class MetadataValidator {
       throw MetadataError.duplicateEntityDiscovered(duplicates);
     }
 
+    const tableNames = discovered.filter(meta => !meta.abstract && meta === meta.root && (meta.tableName || meta.collection));
+    const duplicateTableNames = Utils.findDuplicates(tableNames.map(meta => meta.tableName || meta.collection));
+
+    if (duplicateTableNames.length > 0) {
+      throw MetadataError.duplicateEntityDiscovered(duplicateTableNames, 'table names');
+    }
+
     // validate we found at least one entity (not just abstract/base entities)
     if (discovered.filter(meta => meta.name).length === 0 && warnWhenNoEntities) {
       throw MetadataError.onlyAbstractEntitiesDiscovered();

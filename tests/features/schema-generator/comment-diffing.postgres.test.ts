@@ -60,20 +60,20 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('comment diffing in postgres', async () => {
-  await orm.discoverEntity(Book1);
   orm.getMetadata().reset('Book0');
+  await orm.discoverEntity(Book1);
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff1).toMatchSnapshot();
   await orm.schema.execute(diff1);
 
-  orm.getMetadata().reset('Book1');
   await orm.discoverEntity(Book2);
+  orm.getMetadata().reset('Book1');
   const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff2).toMatchSnapshot();
   await orm.schema.execute(diff2);
 
-  orm.getMetadata().reset('Book2');
   await orm.discoverEntity(Book3);
+  orm.getMetadata().reset('Book2');
   const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff3).toMatchSnapshot();
   await orm.schema.execute(diff3);

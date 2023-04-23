@@ -220,8 +220,8 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError('Only abstract entities were discovered, maybe you forgot to use @Entity() decorator?');
   }
 
-  static duplicateEntityDiscovered(paths: string[]): MetadataError {
-    return new MetadataError(`Duplicate entity names are not allowed: ${paths.join(', ')}`);
+  static duplicateEntityDiscovered(paths: string[], subject = 'entity names'): MetadataError {
+    return new MetadataError(`Duplicate ${subject} are not allowed: ${paths.join(', ')}`);
   }
 
   static multipleDecorators(entityName: string, propertyName: string): MetadataError {
