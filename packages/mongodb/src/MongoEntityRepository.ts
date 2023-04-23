@@ -14,15 +14,25 @@ export class MongoEntityRepository<T extends object> extends EntityRepository<T>
    * Shortcut to driver's aggregate method. Available in MongoDriver only.
    */
   async aggregate(pipeline: any[]): Promise<any[]> {
-    return this.em.aggregate(this.entityName, pipeline);
+    return this.getEntityManager().aggregate(this.entityName, pipeline);
   }
 
   getCollection(): Collection<T> {
-    return this._em.getConnection().getCollection(this.entityName);
+    return this.getEntityManager().getCollection(this.entityName);
   }
 
+  /**
+   * @inheritDoc
+   */
+  getEntityManager(): MongoEntityManager {
+    return this._em;
+  }
+
+  /**
+   * @inheritDoc
+   */
   protected get em(): MongoEntityManager {
-    return this._em.getContext(false);
+    return this._em;
   }
 
 }
