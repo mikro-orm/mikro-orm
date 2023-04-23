@@ -30,7 +30,7 @@ export abstract class Platform {
   }
 
   supportsTransactions(): boolean {
-    return true;
+    return !this.config.get('disableTransactions');
   }
 
   usesImplicitTransactions(): boolean {
