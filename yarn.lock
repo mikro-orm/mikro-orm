@@ -1485,10 +1485,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:8.38.0":
-  version: 8.38.0
-  resolution: "@eslint/js@npm:8.38.0"
-  checksum: 1f28987aa8c9cd93e23384e16c7220863b39b5dc4b66e46d7cdbccce868040f455a98d24cd8b567a884f26545a0555b761f7328d4a00c051e7ef689cbea5fce1
+"@eslint/js@npm:8.39.0":
+  version: 8.39.0
+  resolution: "@eslint/js@npm:8.39.0"
+  checksum: 63fe36e2bfb5ff5705d1c1a8ccecd8eb2f81d9af239713489e767b0e398759c0177fcc75ad62581d02942f2776903a8496d5fae48dc2d883dff1b96fcb19e9e2
   languageName: node
   linkType: hard
 
@@ -2221,7 +2221,7 @@ __metadata:
     "@mikro-orm/core": ^5.6.16
     "@mikro-orm/mongodb": ~5.6.16
     fs-extra: 11.1.1
-    mongodb: 4.13.0
+    mongodb: 4.16.0
     umzug: 3.2.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -2256,8 +2256,8 @@ __metadata:
   resolution: "@mikro-orm/mongodb@workspace:packages/mongodb"
   dependencies:
     "@mikro-orm/core": ^5.6.16
-    bson: ^4.7.0
-    mongodb: 4.13.0
+    bson: ^4.7.2
+    mongodb: 4.16.0
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
     "@mikro-orm/entity-generator": ^5.0.0
@@ -2344,16 +2344,16 @@ __metadata:
     "@types/fs-extra": 11.0.1
     "@types/jest": 29.5.1
     "@types/mysql2": "https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
-    "@types/node": 18.15.12
+    "@types/node": 18.16.0
     "@types/pg": 8.6.6
     "@types/sqlstring": 2.3.0
     "@types/uuid": 9.0.1
     "@types/webpack-env": 1.18.0
     "@typescript-eslint/eslint-plugin": 5.59.0
     "@typescript-eslint/parser": 5.59.0
-    bson: ^4.7.0
+    bson: ^4.7.2
     conditional-type-checks: 1.0.6
-    eslint: 8.38.0
+    eslint: 8.39.0
     fs-extra: 11.1.1
     gen-esm-wrapper: 1.1.3
     guid-typescript: 1.0.9
@@ -2361,11 +2361,11 @@ __metadata:
     jest: 29.5.0
     lerna: 6.6.1
     lint-staged: 13.2.1
-    mongodb: 4.13.0
-    mongodb-memory-server: ^8.10.0
-    node-gyp: ^9.3.0
+    mongodb: 4.16.0
+    mongodb-memory-server: ^8.12.2
+    node-gyp: ^9.3.1
     rimraf: 5.0.0
-    sql-formatter: 8.0.2
+    sql-formatter: 8.2.0
     ts-jest: 29.1.0
     ts-node: 10.9.1
     typescript: 5.0.4
@@ -3301,10 +3301,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:18.15.12":
-  version: 18.15.12
-  resolution: "@types/node@npm:18.15.12"
-  checksum: dff7596db8d0a18bcd8da542dc62ed4377cba39546ff53baaa06d106f1482bc3e4e5e03644f5d1e3cef0904ffbe8ebbc244b2b0851f8025ab2a3959ee0ace58f
+"@types/node@npm:18.16.0":
+  version: 18.16.0
+  resolution: "@types/node@npm:18.16.0"
+  checksum: 63e0042136663b9e85ce503a4c65406cc6621fdba63ea66c74b4b1364a9aa9bdb57cadcb76696abab177f38a819b0fa6ace9e7f1647dcb990aedb1b4bd01012f
   languageName: node
   linkType: hard
 
@@ -3365,13 +3365,6 @@ __metadata:
   version: 2.0.1
   resolution: "@types/stack-utils@npm:2.0.1"
   checksum: 205fdbe3326b7046d7eaf5e494d8084f2659086a266f3f9cf00bccc549c8e36e407f88168ad4383c8b07099957ad669f75f2532ed4bc70be2b037330f7bae019
-  languageName: node
-  linkType: hard
-
-"@types/tmp@npm:^0.2.3":
-  version: 0.2.3
-  resolution: "@types/tmp@npm:0.2.3"
-  checksum: 0ca45e99b3b3c6959d5c4f4555f73c8007db540cfb0fbbb9373217f9ab85e67eef75193f51a1d6564b0ee6c6f5ffa259d1034d7f7530a5b7ce80acb94cfc4daa
   languageName: node
   linkType: hard
 
@@ -4133,12 +4126,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bson@npm:^4.7.0":
-  version: 4.7.0
-  resolution: "bson@npm:4.7.0"
+"bson@npm:^4.7.2":
+  version: 4.7.2
+  resolution: "bson@npm:4.7.2"
   dependencies:
     buffer: ^5.6.0
-  checksum: 83e7b64afdad5a505073a7e6206e7b345f59e7888fbcb1948fba72b6101a1baf58b7499314f8e24b650567665f7973eda048aabbb1ddcfbadfba7d6c6b0f5e83
+  checksum: f357d12c5679c8eb029a62e410ad40fb862b7b91f0fc12a3399fb3668e14aecaa63205ffeeee48735a01d393171743607dcd527eb8c058b6f2bd294079ee4125
   languageName: node
   linkType: hard
 
@@ -5046,7 +5039,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"denque@npm:^2.0.1, denque@npm:^2.1.0":
+"denque@npm:^2.0.1":
   version: 2.1.0
   resolution: "denque@npm:2.1.0"
   checksum: 1d4ae1d05e59ac3a3481e7b478293f4b4c813819342273f3d5b826c7ffa9753c520919ba264f377e09108d24ec6cf0ec0ac729a5686cbb8f32d797126c5dae74
@@ -5316,13 +5309,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-scope@npm:^7.1.1":
-  version: 7.1.1
-  resolution: "eslint-scope@npm:7.1.1"
+"eslint-scope@npm:^7.2.0":
+  version: 7.2.0
+  resolution: "eslint-scope@npm:7.2.0"
   dependencies:
     esrecurse: ^4.3.0
     estraverse: ^5.2.0
-  checksum: 9f6e974ab2db641ca8ab13508c405b7b859e72afe9f254e8131ff154d2f40c99ad4545ce326fd9fde3212ff29707102562a4834f1c48617b35d98c71a97fbf3e
+  checksum: 64591a2d8b244ade9c690b59ef238a11d5c721a98bcee9e9f445454f442d03d3e04eda88e95a4daec558220a99fa384309d9faae3d459bd40e7a81b4063980ae
   languageName: node
   linkType: hard
 
@@ -5340,14 +5333,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:8.38.0":
-  version: 8.38.0
-  resolution: "eslint@npm:8.38.0"
+"eslint@npm:8.39.0":
+  version: 8.39.0
+  resolution: "eslint@npm:8.39.0"
   dependencies:
     "@eslint-community/eslint-utils": ^4.2.0
     "@eslint-community/regexpp": ^4.4.0
     "@eslint/eslintrc": ^2.0.2
-    "@eslint/js": 8.38.0
+    "@eslint/js": 8.39.0
     "@humanwhocodes/config-array": ^0.11.8
     "@humanwhocodes/module-importer": ^1.0.1
     "@nodelib/fs.walk": ^1.2.8
@@ -5357,7 +5350,7 @@ __metadata:
     debug: ^4.3.2
     doctrine: ^3.0.0
     escape-string-regexp: ^4.0.0
-    eslint-scope: ^7.1.1
+    eslint-scope: ^7.2.0
     eslint-visitor-keys: ^3.4.0
     espree: ^9.5.1
     esquery: ^1.4.2
@@ -5386,7 +5379,7 @@ __metadata:
     text-table: ^0.2.0
   bin:
     eslint: bin/eslint.js
-  checksum: 73b6d9b650d0434aa7c07d0a1802f099b086ee70a8d8ba7be730439a26572a5eb71def12125c82942be2ec8ee5be38a6f1b42a13e40d4b67f11a148ec9e263eb
+  checksum: d7a074ff326e7ea482500dc0427a7d4b0260460f0f812d19b46b1cca681806b67309f23da9d17cd3de8eb74dd3c14cb549c4d58b05b140564d14cc1a391122a0
   languageName: node
   linkType: hard
 
@@ -8579,11 +8572,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb-memory-server-core@npm:8.10.0":
-  version: 8.10.0
-  resolution: "mongodb-memory-server-core@npm:8.10.0"
+"mongodb-memory-server-core@npm:8.12.2":
+  version: 8.12.2
+  resolution: "mongodb-memory-server-core@npm:8.12.2"
   dependencies:
-    "@types/tmp": ^0.2.3
     async-mutex: ^0.3.2
     camelcase: ^6.3.0
     debug: ^4.3.4
@@ -8591,34 +8583,33 @@ __metadata:
     get-port: ^5.1.1
     https-proxy-agent: ^5.0.1
     md5-file: ^5.0.0
-    mongodb: ~4.11.0
+    mongodb: ^4.13.0
     new-find-package-json: ^2.0.0
     semver: ^7.3.8
     tar-stream: ^2.1.4
-    tmp: ^0.2.1
-    tslib: ^2.4.1
-    uuid: ^8.3.1
+    tslib: ^2.5.0
+    uuid: ^9.0.0
     yauzl: ^2.10.0
-  checksum: fdd281a1480a07fa22d4286d74e70f93d612ba9ad3ab76e6ab4dddbe136d863a2670e6a7aed411fc2ca3eab7f9508790e8f137cc432d16a559fa6f2eadcc379f
+  checksum: 5224ab18da6b09f784331f5397552e83de343bac716e54f221e963d3a6113aa108b60964f2b4814c32cbd6e3ab907dbfebb08b13f44e8c3bb6ea41ab04640342
   languageName: node
   linkType: hard
 
-"mongodb-memory-server@npm:^8.10.0":
-  version: 8.10.0
-  resolution: "mongodb-memory-server@npm:8.10.0"
+"mongodb-memory-server@npm:^8.12.2":
+  version: 8.12.2
+  resolution: "mongodb-memory-server@npm:8.12.2"
   dependencies:
-    mongodb-memory-server-core: 8.10.0
-    tslib: ^2.4.1
-  checksum: 73828a765904ee063502531cd1e45bda2d78525eae026e3ce55f77d097312cd67e86f45e30cea91a90fd39316569aa2c8fb6b74dac84ed193c3d54033dbbaee5
+    mongodb-memory-server-core: 8.12.2
+    tslib: ^2.5.0
+  checksum: 4ece74c4cd2991aaedf0c184cf0d785388585303ce80fe3a044edf2bb2a1245cf84f0660f3d68fcc833a5e15104bfdcef87f00edcf04e17cf48c231d182cd61f
   languageName: node
   linkType: hard
 
-"mongodb@npm:4.13.0":
-  version: 4.13.0
-  resolution: "mongodb@npm:4.13.0"
+"mongodb@npm:4.16.0, mongodb@npm:^4.13.0":
+  version: 4.16.0
+  resolution: "mongodb@npm:4.16.0"
   dependencies:
     "@aws-sdk/credential-providers": ^3.186.0
-    bson: ^4.7.0
+    bson: ^4.7.2
     mongodb-connection-string-url: ^2.5.4
     saslprep: ^1.0.3
     socks: ^2.7.1
@@ -8627,26 +8618,7 @@ __metadata:
       optional: true
     saslprep:
       optional: true
-  checksum: 4c30eed40f639ac64069623cf7a4954e98eab81b91d61df90e7813dd2a745259cdc698f3b60bd7f37c123242b7eb0aaae6ee4e29ff2e48f5d13f187931d51f36
-  languageName: node
-  linkType: hard
-
-"mongodb@npm:~4.11.0":
-  version: 4.11.0
-  resolution: "mongodb@npm:4.11.0"
-  dependencies:
-    "@aws-sdk/credential-providers": ^3.186.0
-    bson: ^4.7.0
-    denque: ^2.1.0
-    mongodb-connection-string-url: ^2.5.4
-    saslprep: ^1.0.3
-    socks: ^2.7.1
-  dependenciesMeta:
-    "@aws-sdk/credential-providers":
-      optional: true
-    saslprep:
-      optional: true
-  checksum: 3080c2f58dc712ca6d0a34b0f4101c3ca66fbf86360b2a5ea2b64a9f757b4a0d7b77851688657fc3240ac748ddcd69c21ec2f7c785f10cb7d41e00e863f415ec
+  checksum: f0b1347739cc362b82b3aabc7e7d4d74bc7a344ed1bbafd6f92681bcab440f6cc618ffa0438d41d2789cb34818f3b09d4c78f517b42160ebae55bf2c96f13953
   languageName: node
   linkType: hard
 
@@ -8825,7 +8797,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-gyp@npm:^9.0.0, node-gyp@npm:^9.3.0, node-gyp@npm:latest":
+"node-gyp@npm:^9.0.0, node-gyp@npm:latest":
   version: 9.3.0
   resolution: "node-gyp@npm:9.3.0"
   dependencies:
@@ -8842,6 +8814,26 @@ __metadata:
   bin:
     node-gyp: bin/node-gyp.js
   checksum: 589ddd3ed967724ef425f9624bfa47cf73022640ab3eba6d556e92cdc4ddef33b63fce3a467c93b995a3f61df92eafd3c3d1e8dbe4a2c00c383334487dea99c3
+  languageName: node
+  linkType: hard
+
+"node-gyp@npm:^9.3.1":
+  version: 9.3.1
+  resolution: "node-gyp@npm:9.3.1"
+  dependencies:
+    env-paths: ^2.2.0
+    glob: ^7.1.4
+    graceful-fs: ^4.2.6
+    make-fetch-happen: ^10.0.3
+    nopt: ^6.0.0
+    npmlog: ^6.0.0
+    rimraf: ^3.0.2
+    semver: ^7.3.5
+    tar: ^6.1.2
+    which: ^2.0.2
+  bin:
+    node-gyp: bin/node-gyp.js
+  checksum: b860e9976fa645ca0789c69e25387401b4396b93c8375489b5151a6c55cf2640a3b6183c212b38625ef7c508994930b72198338e3d09b9d7ade5acc4aaf51ea7
   languageName: node
   linkType: hard
 
@@ -10873,14 +10865,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sql-formatter@npm:8.0.2":
-  version: 8.0.2
-  resolution: "sql-formatter@npm:8.0.2"
+"sql-formatter@npm:8.2.0":
+  version: 8.2.0
+  resolution: "sql-formatter@npm:8.2.0"
   dependencies:
     argparse: ^2.0.1
   bin:
     sql-formatter: bin/sql-formatter-cli.js
-  checksum: f4141ce525ac6f38e9cf2d99ae1595b9b98adddaaa108771a9851d47eb267536275d9fdc21a09b70a0a4096ca6139cd2f28e79cec5f97e96845976107fc7b5c4
+  checksum: 1a0bc206ec277f555ccab2ed6608066d5ea72a95e772cfb73d507e14dccc44f6c483cf7af9390c16e56ed45287228f444b1154e13b7f07e01a4817d9511c10db
   languageName: node
   linkType: hard
 
@@ -11288,7 +11280,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tmp@npm:^0.2.1, tmp@npm:~0.2.1":
+"tmp@npm:~0.2.1":
   version: 0.2.1
   resolution: "tmp@npm:0.2.1"
   dependencies:
@@ -11460,10 +11452,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.4.1":
+"tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0":
   version: 2.4.1
   resolution: "tslib@npm:2.4.1"
   checksum: 19480d6e0313292bd6505d4efe096a6b31c70e21cf08b5febf4da62e95c265c8f571f7b36fcc3d1a17e068032f59c269fab3459d6cd3ed6949eafecf64315fca
+  languageName: node
+  linkType: hard
+
+"tslib@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "tslib@npm:2.5.0"
+  checksum: ae3ed5f9ce29932d049908ebfdf21b3a003a85653a9a140d614da6b767a93ef94f460e52c3d787f0e4f383546981713f165037dc2274df212ea9f8a4541004e1
   languageName: node
   linkType: hard
 
@@ -11782,7 +11781,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:8.3.2, uuid@npm:^8.3.1, uuid@npm:^8.3.2":
+"uuid@npm:8.3.2, uuid@npm:^8.3.2":
   version: 8.3.2
   resolution: "uuid@npm:8.3.2"
   bin:
@@ -11791,7 +11790,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:9.0.0":
+"uuid@npm:9.0.0, uuid@npm:^9.0.0":
   version: 9.0.0
   resolution: "uuid@npm:9.0.0"
   bin:
