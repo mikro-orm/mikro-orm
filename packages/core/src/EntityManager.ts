@@ -68,6 +68,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private filters: Dictionary<FilterDef> = {};
   private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;
+  private disableTransactions = this.config.get('disableTransactions');
   private flushMode?: FlushMode;
 
   /**
@@ -824,10 +825,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
     const em = this.getContext(false);
+
+    if (this.disableTransactions) {
+      return cb(em);
+    }
+
     const fork = em.fork({
       clear: false, // state will be merged once resolves
       flushMode: options.flushMode,
       cloneEventManager: true,
+      disableTransactions: options.ignoreNestedTransactions,
     });
     options.ctx ??= em.transactionContext;
 
@@ -858,7 +865,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Starts new transaction bound to this EntityManager. Use `ctx` parameter to provide the parent when nesting transactions.
    */
-  async begin(options: TransactionOptions = {}): Promise<void> {
+  async begin(options: Omit<TransactionOptions, 'ignoreNestedTransactions'> = {}): Promise<void> {
+    if (this.disableTransactions) {
+      return;
+    }
+
     const em = this.getContext(false);
     em.transactionContext = await em.getConnection('write').begin({ ...options, eventBroadcaster: new TransactionEventBroadcaster(em) });
   }
@@ -868,6 +879,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async commit(): Promise<void> {
     const em = this.getContext(false);
+
+    if (this.disableTransactions) {
+      await em.flush();
+      return;
+    }
 
     if (!em.transactionContext) {
       throw ValidationError.transactionRequired();
@@ -882,6 +898,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Rollbacks the transaction bound to this EntityManager.
    */
   async rollback(): Promise<void> {
+    if (this.disableTransactions) {
+      return;
+    }
+
     const em = this.getContext(false);
 
     if (!em.transactionContext) {
@@ -1357,6 +1377,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     em.config.set('allowGlobalContext', true);
     const fork = new (em.constructor as typeof EntityManager)(em.config, em.driver, em.metadata, options.useContext, eventManager);
     fork.setFlushMode(options.flushMode ?? em.flushMode);
+    fork.disableTransactions = options.disableTransactions ?? this.disableTransactions ?? this.config.get('disableTransactions');
     em.config.set('allowGlobalContext', allowGlobalContext);
 
     fork.filters = { ...em.filters };
@@ -1677,5 +1698,8 @@ export interface ForkOptions {
   cloneEventManager?: boolean;
   /** use this flag to ignore current async context - this is required if we want to call `em.fork()` inside the `getContext` handler */
   disableContextResolution?: boolean;
+  /** set flush mode for this fork, overrides the global option, can be overridden locally via FindOptions */
   flushMode?: FlushMode;
+  /** disable transactions for this fork */
+  disableTransactions?: boolean;
 }

@@ -508,6 +508,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   driverOptions: Dictionary;
   namingStrategy?: { new(): NamingStrategy };
   implicitTransactions?: boolean;
+  disableTransactions?: boolean;
   connect: boolean;
   verbose: boolean;
   autoJoinOneToOneOwner: boolean;

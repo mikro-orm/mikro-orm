@@ -31,7 +31,7 @@ export class MongoEntityManager<D extends MongoDriver = MongoDriver> extends Ent
   /**
    * @inheritDoc
    */
-  async begin(options: TransactionOptions & MongoTransactionOptions = {}): Promise<void> {
+  async begin(options: Omit<TransactionOptions, 'ignoreNestedTransactions'> & MongoTransactionOptions = {}): Promise<void> {
     return super.begin(options);
   }
 
