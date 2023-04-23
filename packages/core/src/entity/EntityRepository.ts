@@ -1,6 +1,6 @@
 import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager';
 import type { AssignOptions } from './EntityAssigner';
-import type { EntityData, EntityName, AnyEntity, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData, Dictionary } from '../typings';
+import type { EntityData, EntityName, AnyEntity, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData } from '../typings';
 import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, GetReferenceOptions, NativeInsertUpdateOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
 import type { IdentifiedReference, Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
@@ -15,17 +15,21 @@ export class EntityRepository<T extends object> {
   /**
    * Tells the EntityManager to make an instance managed and persistent.
    * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
+   *
+   * @deprecated this method will be removed in v6, you should work with the EntityManager instead
    */
   persist(entity: AnyEntity | AnyEntity[]): EntityManager {
-    return this.em.persist(entity);
+    return this.getEntityManager().persist(entity);
   }
 
   /**
    * Persists your entity immediately, flushing all not yet persisted changes to the database too.
    * Equivalent to `em.persist(e).flush()`.
+   *
+   * @deprecated this method will be removed in v6, you should work with the EntityManager instead
    */
   async persistAndFlush(entity: AnyEntity | AnyEntity[]): Promise<void> {
-    await this.em.persistAndFlush(entity);
+    await this.getEntityManager().persistAndFlush(entity);
   }
 
   /**
@@ -35,14 +39,14 @@ export class EntityRepository<T extends object> {
    * @deprecated use `persist()`
    */
   persistLater(entity: AnyEntity | AnyEntity[]): void {
-    this.em.persistLater(entity);
+    this.getEntityManager().persistLater(entity);
   }
 
   /**
    * Finds first entity matching your `where` query.
    */
   async findOne<P extends string = never>(where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<Loaded<T, P> | null> {
-    return this.em.findOne<T, P>(this.entityName, where, options);
+    return this.getEntityManager().findOne<T, P>(this.entityName, where, options);
   }
 
   /**
@@ -51,7 +55,7 @@ export class EntityRepository<T extends object> {
    * or via `Configuration.findOneOrFailHandler` globally.
    */
   async findOneOrFail<P extends string = never>(where: FilterQuery<T>, options?: FindOneOrFailOptions<T, P>): Promise<Loaded<T, P>> {
-    return this.em.findOneOrFail<T, P>(this.entityName, where, options);
+    return this.getEntityManager().findOneOrFail<T, P>(this.entityName, where, options);
   }
 
   /**
@@ -77,7 +81,7 @@ export class EntityRepository<T extends object> {
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
   async upsert(entityOrData?: EntityData<T> | T, options?: NativeInsertUpdateOptions<T>): Promise<T> {
-    return this.em.upsert<T>(this.entityName, entityOrData, options);
+    return this.getEntityManager().upsert<T>(this.entityName, entityOrData, options);
   }
 
   /**
@@ -106,14 +110,14 @@ export class EntityRepository<T extends object> {
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
   async upsertMany(entitiesOrData?: EntityData<T>[] | T[], options?: NativeInsertUpdateOptions<T>): Promise<T[]> {
-    return this.em.upsertMany<T>(this.entityName, entitiesOrData, options);
+    return this.getEntityManager().upsertMany<T>(this.entityName, entitiesOrData, options);
   }
 
   /**
    * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
    */
   async find<P extends string = never>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<Loaded<T, P>[]> {
-    return this.em.find<T, P>(this.entityName, where as FilterQuery<T>, options);
+    return this.getEntityManager().find<T, P>(this.entityName, where as FilterQuery<T>, options);
   }
 
   /**
@@ -121,14 +125,14 @@ export class EntityRepository<T extends object> {
    * where first element is the array of entities and the second is the count.
    */
   async findAndCount<P extends string = never>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<[Loaded<T, P>[], number]> {
-    return this.em.findAndCount<T, P>(this.entityName, where, options);
+    return this.getEntityManager().findAndCount<T, P>(this.entityName, where, options);
   }
 
   /**
    * Finds all entities of given type. You can pass additional options via the `options` parameter.
    */
   async findAll<P extends string = never>(options?: FindOptions<T, P>): Promise<Loaded<T, P>[]> {
-    return this.em.find<T, P>(this.entityName, {} as FilterQuery<T>, options);
+    return this.getEntityManager().find<T, P>(this.entityName, {} as FilterQuery<T>, options);
   }
 
   /**
@@ -136,17 +140,21 @@ export class EntityRepository<T extends object> {
    * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
    *
    * To remove entities by condition, use `em.nativeDelete()`.
+   *
+   * @deprecated this method will be removed in v6, you should work with the EntityManager instead
    */
   remove(entity: AnyEntity): EntityManager {
-    return this.em.remove(entity);
+    return this.getEntityManager().remove(entity);
   }
 
   /**
    * Removes an entity instance immediately, flushing all not yet persisted changes to the database too.
    * Equivalent to `em.remove(e).flush()`
+   *
+   * @deprecated this method will be removed in v6, you should work with the EntityManager instead
    */
   async removeAndFlush(entity: AnyEntity): Promise<void> {
-    await this.em.removeAndFlush(entity);
+    await this.getEntityManager().removeAndFlush(entity);
   }
 
   /**
@@ -156,7 +164,7 @@ export class EntityRepository<T extends object> {
    * @deprecated use `remove()`
    */
   removeLater(entity: AnyEntity): void {
-    this.em.removeLater(entity);
+    this.getEntityManager().removeLater(entity);
   }
 
   /**
@@ -164,37 +172,39 @@ export class EntityRepository<T extends object> {
    * This effectively synchronizes the in-memory state of managed objects with the database.
    * This method is a shortcut for `em.flush()`, in other words, it will flush the whole UoW,
    * not just entities registered via this particular repository.
+   *
+   * @deprecated this method will be removed in v6, you should work with the EntityManager instead
    */
   async flush(): Promise<void> {
-    return this.em.flush();
+    return this.getEntityManager().flush();
   }
 
   /**
    * Fires native insert query. Calling this has no side effects on the context (identity map).
    */
   async nativeInsert(data: T | EntityData<T>, options?: NativeInsertUpdateOptions<T>): Promise<Primary<T>> {
-    return this.em.nativeInsert<T>(this.entityName, data, options);
+    return this.getEntityManager().nativeInsert<T>(this.entityName, data, options);
   }
 
   /**
    * Fires native update query. Calling this has no side effects on the context (identity map).
    */
   async nativeUpdate(where: FilterQuery<T>, data: EntityData<T>, options?: UpdateOptions<T>): Promise<number> {
-    return this.em.nativeUpdate(this.entityName, where, data, options);
+    return this.getEntityManager().nativeUpdate(this.entityName, where, data, options);
   }
 
   /**
    * Fires native delete query. Calling this has no side effects on the context (identity map).
    */
   async nativeDelete(where: FilterQuery<T>, options?: DeleteOptions<T>): Promise<number> {
-    return this.em.nativeDelete(this.entityName, where, options);
+    return this.getEntityManager().nativeDelete(this.entityName, where, options);
   }
 
   /**
    * Maps raw database result to an entity and merges it to this EntityManager.
    */
   map(result: EntityDictionary<T>, options?: { schema?: string }): T {
-    return this.em.map(this.entityName, result, options);
+    return this.getEntityManager().map(this.entityName, result, options);
   }
 
   /**
@@ -216,14 +226,14 @@ export class EntityRepository<T extends object> {
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
   getReference<PK extends keyof T = keyof T>(id: Primary<T>, options?: GetReferenceOptions): T | Reference<T> {
-    return this.em.getReference<T>(this.entityName, id, options);
+    return this.getEntityManager().getReference<T>(this.entityName, id, options);
   }
 
   /**
    * Checks whether given property can be populated on the entity.
    */
   canPopulate(property: string): boolean {
-    return this.em.canPopulate(this.entityName, property);
+    return this.getEntityManager().canPopulate(this.entityName, property);
   }
 
   /**
@@ -231,7 +241,7 @@ export class EntityRepository<T extends object> {
    */
   async populate<P extends string = never>(entities: T | T[], populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T, P>): Promise<Loaded<T, P>[]> {
     this.validateRepositoryType(entities, 'populate');
-    return this.em.populate(entities as T, populate, options);
+    return this.getEntityManager().populate(entities as T, populate, options);
   }
 
   /**
@@ -243,7 +253,7 @@ export class EntityRepository<T extends object> {
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
   create<P = never>(data: RequiredEntityData<T>, options?: CreateOptions): T {
-    return this.em.create(this.entityName, data, options);
+    return this.getEntityManager().create(this.entityName, data, options);
   }
 
   /**
@@ -251,7 +261,7 @@ export class EntityRepository<T extends object> {
    */
   assign(entity: T, data: EntityData<T>, options?: AssignOptions): T {
     this.validateRepositoryType(entity, 'assign');
-    return this.em.assign(entity, data, options);
+    return this.getEntityManager().assign(entity, data, options);
   }
 
   /**
@@ -259,17 +269,27 @@ export class EntityRepository<T extends object> {
    * via second parameter. By default it will return already loaded entities without modifying them.
    */
   merge(data: T | EntityData<T>, options?: MergeOptions): T {
-    return this.em.merge<T>(this.entityName, data, options);
+    return this.getEntityManager().merge<T>(this.entityName, data, options);
   }
 
   /**
    * Returns total number of entities matching your `where` query.
    */
   async count<P extends string = never>(where: FilterQuery<T> = {} as FilterQuery<T>, options: CountOptions<T, P> = {}): Promise<number> {
-    return this.em.count<T, P>(this.entityName, where, options);
+    return this.getEntityManager().count<T, P>(this.entityName, where, options);
   }
 
+  /**
+   * @deprecated this method will be removed in v6, use the public `getEntityManager()` method instead
+   */
   protected get em(): EntityManager {
+    return this._em;
+  }
+
+  /**
+   * Returns the underlying EntityManager instance
+   */
+  getEntityManager(): EntityManager {
     return this._em;
   }
 

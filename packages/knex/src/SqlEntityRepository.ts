@@ -15,7 +15,7 @@ export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
    * Creates a QueryBuilder instance
    */
   createQueryBuilder(alias?: string): QueryBuilder<T> {
-    return this.em.createQueryBuilder(this.entityName, alias);
+    return this.getEntityManager().createQueryBuilder(this.entityName, alias);
   }
 
   /**
@@ -29,11 +29,21 @@ export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
    * Returns configured knex instance.
    */
   getKnex(type?: ConnectionType): Knex {
-    return this.em.getConnection(type).getKnex();
+    return this.getEntityManager().getConnection(type).getKnex();
   }
 
+  /**
+   * @inheritDoc
+   */
+  getEntityManager(): SqlEntityManager {
+    return this._em;
+  }
+
+  /**
+   * @inheritDoc
+   */
   protected get em(): SqlEntityManager {
-    return this._em.getContext(false);
+    return this._em;
   }
 
 }
