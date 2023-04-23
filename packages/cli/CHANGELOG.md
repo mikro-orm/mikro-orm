@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.7.0](https://github.com/mikro-orm/mikro-orm/compare/v5.6.16...v5.7.0) (2023-04-23)
+
+
+### Features
+
+* **migrations:** add support for custom migration names ([#4250](https://github.com/mikro-orm/mikro-orm/issues/4250)) ([fb2879e](https://github.com/mikro-orm/mikro-orm/commit/fb2879e21575a54d1b05c7d1fc250d5f713d9b44))
+
+
+
+
+
 ## [5.6.16](https://github.com/mikro-orm/mikro-orm/compare/v5.6.15...v5.6.16) (2023-04-04)
 
 

@@ -3,6 +3,43 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.7.0](https://github.com/mikro-orm/mikro-orm/compare/v5.6.16...v5.7.0) (2023-04-23)
+
+
+### Bug Fixes
+
+* **core:** clean up bidirectional references after removal of entity ([bfd3840](https://github.com/mikro-orm/mikro-orm/commit/bfd3840a81ae01cc9f2b8fce77edf2f7e814d5fa)), closes [#4234](https://github.com/mikro-orm/mikro-orm/issues/4234)
+* **core:** detect `JsonType` based on `columnType` ([#4252](https://github.com/mikro-orm/mikro-orm/issues/4252)) ([2e01622](https://github.com/mikro-orm/mikro-orm/commit/2e01622963c8b22c6468b93a9cd3bc4d8e13bada)), closes [#4229](https://github.com/mikro-orm/mikro-orm/issues/4229)
+* **core:** do not try to propagate changes to `mapToPk` relations ([7028890](https://github.com/mikro-orm/mikro-orm/commit/7028890a3c902ed042e89da10168572544f0e595)), closes [#4254](https://github.com/mikro-orm/mikro-orm/issues/4254)
+* **core:** fix mapping of joined relations with buffer PKs ([8e9e7ee](https://github.com/mikro-orm/mikro-orm/commit/8e9e7ee5fc4cbea0225113b735628a1f0298c5f5)), closes [#4219](https://github.com/mikro-orm/mikro-orm/issues/4219)
+* **core:** merge env vars with explicit configuration recursively ([392a623](https://github.com/mikro-orm/mikro-orm/commit/392a623a9602eb42e8215dd71381c215d4ac1503)), closes [#4235](https://github.com/mikro-orm/mikro-orm/issues/4235)
+* **core:** prevent tuple type properties from being converted to array when serializing entities ([#4205](https://github.com/mikro-orm/mikro-orm/issues/4205)) ([04ad72e](https://github.com/mikro-orm/mikro-orm/commit/04ad72e968b997fdc113b11db605fbb119a52f77))
+* **core:** propagate changes from extra updates back to the original changeset ([77f5c14](https://github.com/mikro-orm/mikro-orm/commit/77f5c147efc5e96007908a481cf2d3c34ac321fa)), closes [#4245](https://github.com/mikro-orm/mikro-orm/issues/4245)
+* **core:** rework JSON value processing ([#4194](https://github.com/mikro-orm/mikro-orm/issues/4194)) ([5594c46](https://github.com/mikro-orm/mikro-orm/commit/5594c469f05d2c1fc76f3cc1a388f5e7162f4e72)), closes [#4193](https://github.com/mikro-orm/mikro-orm/issues/4193)
+* **mariadb:** use `json_extract` when querying JSON fields ([ca96acc](https://github.com/mikro-orm/mikro-orm/commit/ca96acc640ae36a1b9d5992b248a8d32f019e18c))
+* **query-builder:** fix pagination when PK uses `BigIntType` ([b789031](https://github.com/mikro-orm/mikro-orm/commit/b789031300e752cfd9565371e7989776b18bd3a0)), closes [#4227](https://github.com/mikro-orm/mikro-orm/issues/4227)
+* **query-builder:** support `onConflict().ignore()` without parameters ([3a3b0bd](https://github.com/mikro-orm/mikro-orm/commit/3a3b0bd956354917f31481582cc2e6381951a7c5)), closes [#4224](https://github.com/mikro-orm/mikro-orm/issues/4224)
+* **schema:** fix comparing default value of JSON properties ([41277a1](https://github.com/mikro-orm/mikro-orm/commit/41277a1376904b197851bbc3a6cb7692187d90d0)), closes [#4212](https://github.com/mikro-orm/mikro-orm/issues/4212)
+
+
+### Features
+
+* **core:** allow disabling transactions ([#4260](https://github.com/mikro-orm/mikro-orm/issues/4260)) ([8e8bc38](https://github.com/mikro-orm/mikro-orm/commit/8e8bc38d7d4056d59dc7058b0f2d2c3827588bc0)), closes [#3747](https://github.com/mikro-orm/mikro-orm/issues/3747) [#3992](https://github.com/mikro-orm/mikro-orm/issues/3992)
+* **core:** deprecate `persist/flush/remove` methods from `EntityRepository` ([#4259](https://github.com/mikro-orm/mikro-orm/issues/4259)) ([eba4563](https://github.com/mikro-orm/mikro-orm/commit/eba45635c61c13f3646a19e640522bce09f5a24a)), closes [#3989](https://github.com/mikro-orm/mikro-orm/issues/3989)
+* **core:** validate repository type in `repo.populate()` and `repo.assign()` ([301bdf8](https://github.com/mikro-orm/mikro-orm/commit/301bdf881b56ffb373c168f7be9af71a061466da)), closes [#3989](https://github.com/mikro-orm/mikro-orm/issues/3989)
+* **core:** validate unique `tableName` ([0693029](https://github.com/mikro-orm/mikro-orm/commit/069302936bfa1fd10aeb2636ccdc3ca6ea021c4b)), closes [#4149](https://github.com/mikro-orm/mikro-orm/issues/4149)
+* **migrations:** add support for custom migration names ([#4250](https://github.com/mikro-orm/mikro-orm/issues/4250)) ([fb2879e](https://github.com/mikro-orm/mikro-orm/commit/fb2879e21575a54d1b05c7d1fc250d5f713d9b44))
+* **mongo:** allow setting weights on index ([299b188](https://github.com/mikro-orm/mikro-orm/commit/299b18861339a8e7d5ebb5ac06a9350d0983a1a7)), closes [#4172](https://github.com/mikro-orm/mikro-orm/issues/4172)
+
+
+### Performance Improvements
+
+* **core:** fix eager loading of multiple properties causing a cycles ([ecbecfc](https://github.com/mikro-orm/mikro-orm/commit/ecbecfc9b46ea7402024e7fd31e3f818b361d860)), closes [#4213](https://github.com/mikro-orm/mikro-orm/issues/4213)
+
+
+
+
+
 ## [5.6.16](https://github.com/mikro-orm/mikro-orm/compare/v5.6.15...v5.6.16) (2023-04-04)
 
 

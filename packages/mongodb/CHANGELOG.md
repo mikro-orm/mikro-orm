@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.7.0](https://github.com/mikro-orm/mikro-orm/compare/v5.6.16...v5.7.0) (2023-04-23)
+
+
+### Bug Fixes
+
+* **core:** rework JSON value processing ([#4194](https://github.com/mikro-orm/mikro-orm/issues/4194)) ([5594c46](https://github.com/mikro-orm/mikro-orm/commit/5594c469f05d2c1fc76f3cc1a388f5e7162f4e72)), closes [#4193](https://github.com/mikro-orm/mikro-orm/issues/4193)
+
+
+### Features
+
+* **core:** allow disabling transactions ([#4260](https://github.com/mikro-orm/mikro-orm/issues/4260)) ([8e8bc38](https://github.com/mikro-orm/mikro-orm/commit/8e8bc38d7d4056d59dc7058b0f2d2c3827588bc0)), closes [#3747](https://github.com/mikro-orm/mikro-orm/issues/3747) [#3992](https://github.com/mikro-orm/mikro-orm/issues/3992)
+* **core:** deprecate `persist/flush/remove` methods from `EntityRepository` ([#4259](https://github.com/mikro-orm/mikro-orm/issues/4259)) ([eba4563](https://github.com/mikro-orm/mikro-orm/commit/eba45635c61c13f3646a19e640522bce09f5a24a)), closes [#3989](https://github.com/mikro-orm/mikro-orm/issues/3989)
+* **mongo:** allow setting weights on index ([299b188](https://github.com/mikro-orm/mikro-orm/commit/299b18861339a8e7d5ebb5ac06a9350d0983a1a7)), closes [#4172](https://github.com/mikro-orm/mikro-orm/issues/4172)
+
+
+
+
+
 ## [5.6.16](https://github.com/mikro-orm/mikro-orm/compare/v5.6.15...v5.6.16) (2023-04-04)
 
 
