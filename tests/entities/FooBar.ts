@@ -1,8 +1,21 @@
 import { ObjectId } from 'bson';
-import { ArrayType, Entity, JsonType, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
+import {
+  ArrayType,
+  Entity,
+  Index,
+  JsonType,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  SerializedPrimaryKey,
+} from '@mikro-orm/core';
 import { FooBaz } from './FooBaz';
 
 @Entity()
+@Index({ options: [
+  { name: 'text', str: 'text', baz: 1 },
+  { weights: { name: 10, str: 5 } },
+] })
 export default class FooBar {
 
   @PrimaryKey()

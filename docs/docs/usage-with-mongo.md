@@ -120,17 +120,32 @@ Alternatively you can call `ensureIndexes()` method on the `SchemaGenerator`:
 await orm.getSchemaGenerator().ensureIndexes();
 ```
 
-> You can pass additional index/unique options via `options` parameter:
->
-> `@Unique({ options: { partialFilterExpression: { name: { $exists: true } } }})`
+You can pass additional index/unique options via `options` parameter:
 
-> You can also create text indexes by passing `type` parameter:
->
-> `@Index({ properties: ['name', 'caption'], type: 'text' })`
+```ts
+@Unique({ options: { partialFilterExpression: { name: { $exists: true } } }})
+```
 
-> If you provide only `options` in the index definition, it will be used as is, this allows to define any kind of index:
->
-> `@Index({ options: { point: '2dsphere', title: -1 } })`
+You can also create text indexes by passing `type` parameter:
+
+```ts
+@Index({ properties: ['name', 'caption'], type: 'text' })
+```
+
+If you provide only `options` in the index definition, it will be used as is, this allows to define any kind of index:
+
+```ts
+@Index({ options: { point: '2dsphere', title: -1 } })
+```
+
+To set index weights, you can pass a tuple to the `options` parameter:
+
+```ts
+@Index({ options: [
+  { title: 'text', perex: 'text', key: 1 },
+  { weights: { title: 10, perex: 5 } },
+] })
+```
 
 ## Native collection methods
 
