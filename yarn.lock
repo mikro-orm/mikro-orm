@@ -2365,7 +2365,6 @@ __metadata:
     mongodb-memory-server: ^8.12.2
     node-gyp: ^9.3.1
     rimraf: 5.0.0
-    sql-formatter: 8.2.0
     ts-jest: 29.1.0
     ts-node: 10.9.1
     typescript: 5.0.4
@@ -10862,17 +10861,6 @@ __metadata:
   version: 1.0.3
   resolution: "sprintf-js@npm:1.0.3"
   checksum: 19d79aec211f09b99ec3099b5b2ae2f6e9cdefe50bc91ac4c69144b6d3928a640bb6ae5b3def70c2e85a2c3d9f5ec2719921e3a59d3ca3ef4b2fd1a4656a0df3
-  languageName: node
-  linkType: hard
-
-"sql-formatter@npm:8.2.0":
-  version: 8.2.0
-  resolution: "sql-formatter@npm:8.2.0"
-  dependencies:
-    argparse: ^2.0.1
-  bin:
-    sql-formatter: bin/sql-formatter-cli.js
-  checksum: 1a0bc206ec277f555ccab2ed6608066d5ea72a95e772cfb73d507e14dccc44f6c483cf7af9390c16e56ed45287228f444b1154e13b7f07e01a4817d9511c10db
   languageName: node
   linkType: hard
 

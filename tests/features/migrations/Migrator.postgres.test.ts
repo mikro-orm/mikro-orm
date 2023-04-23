@@ -1,6 +1,5 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import { Umzug } from 'umzug';
-import { format } from 'sql-formatter';
 import { MetadataStorage, MikroORM } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
 import type { DatabaseTable } from '@mikro-orm/postgresql';
@@ -82,7 +81,6 @@ describe('Migrator (postgres)', () => {
       }
 
       createStatement(sql: string, padLeft: number): string {
-        sql = format(sql, { language: 'postgresql' });
         sql = sql.split('\n').map((l, i) => i === 0 ? l : `${' '.repeat(padLeft + 13)}${l}`).join('\n');
 
         return super.createStatement(sql, padLeft);
