@@ -32,7 +32,6 @@ export class CLIConfigurator {
       }
     }
 
-    // noinspection HtmlDeprecatedTag
     return yargs
       .scriptName('mikro-orm')
       .version(version)
