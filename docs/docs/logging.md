@@ -32,7 +32,7 @@ It is also useful for debugging problems with entity discovery, as you will see 
 
 ## Disabling colored output
 
-To disable colored output, we can use multiple environment variables:
+To disable colored output, you can use multiple environment variables:
 
 - `NO_COLOR`
 - `MIKRO_ORM_NO_COLOR`
@@ -75,7 +75,7 @@ Several customization options exist to allow for style changes or custom logic.
 
 ### Using a custom logger
 
-We can provide our own logger function via the `logger` option:
+You can provide your own logger function via the `logger` option:
 
 ```ts
 return MikroORM.init({
@@ -89,7 +89,8 @@ return MikroORM.init({
 If you want more control over what is logged and how, use the `loggerFactory` option in your config and either extend the `DefaultLogger` class or make your `Logger` from scratch:
 
 #### Extending `DefaultLogger`
-We can extend the `DefaultLogger` instead of implementing everything from scratch. It is also exported from the `@mikro-orm/core` package:
+
+You can extend the `DefaultLogger` instead of implementing everything from scratch. It is also exported from the `@mikro-orm/core` package:
 
 ```ts
 class CustomLogger extends DefaultLogger {
@@ -109,7 +110,8 @@ return MikroORM.init({
 ```
 
 #### Creating a custom logger from scratch
-We can use `loggerFactory` and use our own implementation of the `Logger` interface:
+
+You can use `loggerFactory` and use your own implementation of the `Logger` interface:
 
 ```ts
 import { Logger, LoggerOptions, MikroORM, Configuration } from '@mikro-orm/core';
