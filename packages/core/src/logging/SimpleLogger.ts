@@ -1,6 +1,9 @@
 import type { LogContext, LoggerNamespace } from './Logger';
 import { DefaultLogger } from './DefaultLogger';
 
+/**
+ * A basic logger that provides fully formatted output without color
+ */
 export class SimpleLogger extends DefaultLogger {
 
   /**

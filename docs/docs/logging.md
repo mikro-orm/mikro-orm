@@ -86,11 +86,11 @@ return MikroORM.init({
 
 ### Using a custom `LoggerFactory`
 
-If you want more control over what is logged and how, use the `loggerFactory` option in your config and either extend the `DefaultLogger` class or make your `Logger` from scratch:
+If you want more control over what is logged and how, use the `loggerFactory` option in your config and extend the `SimpleLogger` class, extend the `DefaultLogger` class, or make your `Logger` from scratch:
 
-#### Extending `DefaultLogger`
+#### Extending `DefaultLogger` or `SimpleLogger`
 
-You can extend the `DefaultLogger` instead of implementing everything from scratch. It is also exported from the `@mikro-orm/core` package:
+You can extend the `DefaultLogger` or `SimpleLogger` instead of implementing everything from scratch. `DefaultLogger` and `SimpleLogger` are both exported from the `@mikro-orm/core` package with `SimpleLogger` being colorless.
 
 ```ts
 class CustomLogger extends DefaultLogger {
@@ -107,6 +107,13 @@ return MikroORM.init({
   debug: true,
   loggerFactory: (options) => new CustomLogger(options),
 });
+```
+
+To use `SimpleLogger` instead, simply replace `DefaultLogger` in the example above: 
+```ts
+class CustomLogger extends SimpleLogger {
+  // ...
+}
 ```
 
 #### Creating a custom logger from scratch
