@@ -68,9 +68,9 @@ describe('aliasing of nested JSON queries (GH 3242)', () => {
     await orm.em.find(Author, { books: { id: 'test' } });
     await orm.em.find(Book, { data: { title: 'test' } });
 
-    expect(mock.mock.calls[0][0]).toMatch("select `a0`.* from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where `b1`.`data`->'$.title' = 'test'");
+    expect(mock.mock.calls[0][0]).toMatch("select `a0`.* from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where json_extract(`b1`.`data`, '$.title') = 'test'");
     expect(mock.mock.calls[1][0]).toMatch("select `a0`.* from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where `b1`.`id` = 'test'");
-    expect(mock.mock.calls[2][0]).toMatch("select `b0`.* from `book` as `b0` where `b0`.`data`->'$.title' = 'test'");
+    expect(mock.mock.calls[2][0]).toMatch("select `b0`.* from `book` as `b0` where json_extract(`b0`.`data`, '$.title') = 'test'");
 
     await orm.close(true);
   });

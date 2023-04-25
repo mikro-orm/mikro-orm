@@ -521,7 +521,7 @@ describe('QueryBuilder', () => {
     const filter = Object.create(null);
     filter.meta = { foo: 'bar' };
     qb1.select('*').where(filter);
-    expect(qb1.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` where `e0`.`meta`->\'$.foo\' = ?');
+    expect(qb1.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` where json_extract(`e0`.`meta`, \'$.foo\') = ?');
     expect(qb1.getParams()).toEqual(['bar']);
   });
 
@@ -2155,7 +2155,7 @@ describe('QueryBuilder', () => {
       'where `uuid_pk` = \'b47f1cca-90ca-11ec-99e0-42010a5d800c\' ' +
       'and (`meta` is null ' +
       'or `meta` is null ' +
-      'or `meta`->\'$.time\' < 1646147306)');
+      'or json_extract(`meta`, \'$.time\') < 1646147306)');
   });
 
   test('query json property with operator directly (GH #3246)', async () => {

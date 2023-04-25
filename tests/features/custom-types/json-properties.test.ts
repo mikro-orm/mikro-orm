@@ -131,4 +131,40 @@ describe.each(Object.keys(options))('JSON properties [%s]',  type => {
     expect(mock).not.toBeCalled();
   });
 
+  test('find with special characters in JSON property key', async () => {
+    const key1 = ':123';
+    const key2 = '#123';
+    const key3 = ' 123';
+    const key4 = '123';
+    // mongo does not support dots in key name: https://www.mongodb.com/docs/manual/reference/limits/#Restrictions-on-Field-Names
+    const key5 = type === 'mongo' ? '123' : '.123';
+
+    await orm.em.insert(User, {
+      value: {
+        [key1]: 'test 1',
+        [key2]: 'test 2',
+        [key3]: 'test 3',
+        [key4]: 'test 4',
+        [key5]: 'test 5',
+      },
+    });
+
+    const res = await orm.em.findOneOrFail(User, {
+      value: {
+        [key1]: 'test 1',
+        [key2]: 'test 2',
+        [key3]: 'test 3',
+        [key4]: 'test 4',
+        [key5]: 'test 5',
+      },
+    });
+    expect(res.value).toEqual({
+      [key1]: 'test 1',
+      [key2]: 'test 2',
+      [key3]: 'test 3',
+      [key4]: 'test 4',
+      [key5]: 'test 5',
+    });
+  });
+
 });

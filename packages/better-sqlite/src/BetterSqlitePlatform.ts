@@ -102,16 +102,6 @@ export class BetterSqlitePlatform extends AbstractSqlPlatform {
     return escape(value, true, this.timezone);
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
-    const [a, ...b] = path;
-
-    if (aliased) {
-      return expr(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
-    }
-
-    return `json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`;
-  }
-
   getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
     if (type === 'primary') {
       return this.getDefaultPrimaryName(tableName, columns);

@@ -13,17 +13,6 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
     return 'utf8mb4';
   }
 
-  /* istanbul ignore next */
-  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
-    const [a, ...b] = path;
-
-    if (aliased) {
-      return expr(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
-    }
-
-    return `json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`;
-  }
-
   getBooleanTypeDeclarationSQL(): string {
     return 'tinyint(1)';
   }
