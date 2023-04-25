@@ -1,8 +1,18 @@
 import { knex, type Knex } from 'knex';
 import { readFile } from 'fs-extra';
-import { Connection, EventType, Utils, type
-  AnyEntity, type Configuration, type ConnectionOptions, type EntityData, type IsolationLevel, type QueryResult, type
-  Transaction, type TransactionEventBroadcaster,
+import {
+  Connection,
+  EventType,
+  Utils,
+  type AnyEntity,
+  type Configuration,
+  type ConnectionOptions,
+  type EntityData,
+  type IsolationLevel,
+  type QueryResult,
+  type Transaction,
+  type TransactionEventBroadcaster,
+  type LoggerContext,
 } from '@mikro-orm/core';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { MonkeyPatchable } from './MonkeyPatchable';
@@ -115,7 +125,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, loggerContext?: LoggerContext): Promise<T> {
     await this.ensureConnection();
 
     if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(queryOrKnex)) {
@@ -136,7 +146,7 @@ export abstract class AbstractSqlConnection extends Connection {
 
       const res = await query;
       return this.transformRawResult<T>(res, method);
-    }, { query: queryOrKnex, params });
+    }, { query: queryOrKnex, params, ...loggerContext });
   }
 
   /**

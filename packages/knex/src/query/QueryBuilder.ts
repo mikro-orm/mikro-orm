@@ -32,13 +32,15 @@ import {
   type QBQueryOrderMap,
   type QueryOrderMap,
   type QueryResult,
-  type RequiredEntityData } from '@mikro-orm/core';
+  type RequiredEntityData,
+  type LoggerContext,
+} from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { QueryBuilderHelper, type Alias } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
-import type { Field, IQueryBuilder, JoinOptions } from '../typings';
+import type { Field, JoinOptions } from '../typings';
 
 /**
  * SQL query builder with fluent interface.
@@ -126,7 +128,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
               private readonly context?: Knex.Transaction,
               alias?: string,
               private connectionType?: ConnectionType,
-              private readonly em?: SqlEntityManager) {
+              private readonly em?: SqlEntityManager,
+              private readonly loggerContext?: LoggerContext) {
     if (alias) {
       this.aliasCounter++;
       this._explicitAlias = true;
@@ -646,7 +649,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     const type = this.connectionType || (method === 'run' ? 'write' : 'read');
-    const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context);
+    const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context, this.loggerContext);
     const meta = this.mainAlias.metadata;
 
     if (!mapResults || !meta) {
