@@ -49,7 +49,7 @@ export class Migrator implements IMigrator {
    */
   async createMigration(path?: string, blank = false, initial = false, name?: string): Promise<MigrationResult> {
     if (initial) {
-      return this.createInitialMigration(path);
+      return this.createInitialMigration(path, name);
     }
 
     await this.ensureMigrationsDirExists();
@@ -77,12 +77,12 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async createInitialMigration(path?: string): Promise<MigrationResult> {
+  async createInitialMigration(path?: string, name?: string): Promise<MigrationResult> {
     await this.ensureMigrationsDirExists();
     const schemaExists = await this.validateInitialMigration();
     const diff = await this.getSchemaDiff(false, true);
     await this.storeCurrentSchema();
-    const migration = await this.generator.generate(diff, path);
+    const migration = await this.generator.generate(diff, path, name);
 
     if (schemaExists) {
       await this.storage.logMigration({ name: migration[1], context: null });
