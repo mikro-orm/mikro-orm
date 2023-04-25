@@ -107,8 +107,6 @@ return MikroORM.init({
 });
 ```
 
-
-
 #### Creating a custom logger from scratch
 We can use `loggerFactory` and use our own implementation of the `Logger` interface:
 
