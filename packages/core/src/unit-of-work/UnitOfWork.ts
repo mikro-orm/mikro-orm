@@ -104,6 +104,15 @@ export class UnitOfWork {
           data[prop.name as string] = Utils.getPrimaryKeyValues(data[prop.name as string], prop.targetMeta!.primaryKeys, true);
         }
       });
+
+      if (this.em.config.get('forceUndefined')) {
+        Object.keys(data).forEach(key => {
+          if (data[key] === null) {
+            data[key] = undefined;
+          }
+        });
+      }
+
       wrapped.__originalEntityData = data;
       wrapped.__touched = false;
     }
