@@ -70,6 +70,7 @@ MikroORM.init({
 For MongoDB you can use `MongoHighlighter` from `@mikro-orm/mongo-highlighter` package.
 
 ## Logger Customization
+
 Several customization options exist to allow for style changes or custom logic.
 
 ### Using a custom logger
