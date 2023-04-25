@@ -84,6 +84,7 @@ return MikroORM.init({
 ```
 
 ### Using a custom `LoggerFactory`
+
 If you want more control over what is logged and how, use the `loggerFactory` option in your config and either extend the `DefaultLogger` class or make your `Logger` from scratch:
 
 #### Extending `DefaultLogger`
