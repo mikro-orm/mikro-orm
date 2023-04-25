@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.2](https://github.com/mikro-orm/mikro-orm/compare/v5.7.1...v5.7.2) (2023-04-25)
+
+
+### Bug Fixes
+
+* **migrations:** allow generating named initial migration ([01d6a39](https://github.com/mikro-orm/mikro-orm/commit/01d6a39b22885ffa16332122d6279911440448dc)), closes [#4271](https://github.com/mikro-orm/mikro-orm/issues/4271)
+
+
+
+
+
 ## [5.7.1](https://github.com/mikro-orm/mikro-orm/compare/v5.7.0...v5.7.1) (2023-04-25)
 
 **Note:** Version bump only for package @mikro-orm/migrations
