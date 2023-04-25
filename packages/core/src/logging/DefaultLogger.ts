@@ -32,7 +32,11 @@ export class DefaultLogger implements Logger {
       message = colors.yellow(message);
     }
 
-    this.writer(colors.grey(`[${namespace}] `) + message);
+    const label = context?.label
+      ? colors.cyan(`(${context.label}) `)
+      : '';
+
+    this.writer(colors.grey(`[${namespace}] `) + label + message);
   }
 
   /**
