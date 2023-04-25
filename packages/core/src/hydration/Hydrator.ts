@@ -17,7 +17,9 @@ export abstract class Hydrator implements IHydrator {
    * @inheritDoc
    */
   hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
-    this.running = true;
+    // the running state is used to consider propagation as hydration, saving the values directly to the entity data,
+    // but we don't want that for new entities, their propagation should result in entity updates when flushing
+    this.running = !newEntity;
     const props = this.getProperties(meta, type);
 
     for (const prop of props) {

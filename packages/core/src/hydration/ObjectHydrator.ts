@@ -24,7 +24,9 @@ export class ObjectHydrator extends Hydrator {
   hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, type);
     const running = this.running;
-    this.running = true;
+    // the running state is used to consider propagation as hydration, saving the values directly to the entity data,
+    // but we don't want that for new entities, their propagation should result in entity updates when flushing
+    this.running = !newEntity;
     Utils.callCompiledFunction(hydrate, entity, data, factory, newEntity, convertCustomTypes, schema);
     this.running = running;
   }
