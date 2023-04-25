@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.1](https://github.com/mikro-orm/mikro-orm/compare/v5.7.0...v5.7.1) (2023-04-25)
+
+
+### Bug Fixes
+
+* **cli:** await the `yargs.parse` call ([3757472](https://github.com/mikro-orm/mikro-orm/commit/37574723d0ce37a8d0d3284124d836a517f451a7)), closes [#4265](https://github.com/mikro-orm/mikro-orm/issues/4265)
+
+
+
+
+
 # [5.7.0](https://github.com/mikro-orm/mikro-orm/compare/v5.6.16...v5.7.0) (2023-04-23)
 
 
