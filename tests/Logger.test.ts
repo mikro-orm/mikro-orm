@@ -90,7 +90,7 @@ describe('Logger', () => {
 
   describe('SimpleLogger', () => {
 
-        test('should print correctly without a label', () => {
+    test('should print correctly without a label', () => {
       const logger = new SimpleLogger({ writer: mockWriter, debugMode: ['query'] });
       const namespace = 'query';
       const message = 'test label msg';
@@ -98,7 +98,7 @@ describe('Logger', () => {
       expect(mockWriter).toBeCalledWith(`[${namespace}] ${message}`);
     });
 
-        test('should print labels correctly', () => {
+    test('should print labels correctly', () => {
       const logger = new SimpleLogger({ writer: mockWriter, debugMode: ['query'] });
       const namespace = 'query';
       const message = 'test label msg';
