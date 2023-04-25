@@ -37,6 +37,8 @@ import {
   type Transaction,
   type TransactionEventBroadcaster,
   type UpsertOptions,
+  type UpsertManyOptions,
+  type LoggerContext,
 } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
@@ -148,7 +150,7 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T extends object>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
+  async find<T extends object>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>, loggerContext?: LoggerContext): Promise<EntityData<T>[]> {
     await this.ensureConnection();
     collection = this.getCollectionName(collection);
     const options: Dictionary = ctx ? { session: ctx } : {};
@@ -188,7 +190,7 @@ export class MongoConnection extends Connection {
 
     const now = Date.now();
     const res = await resultSet.toArray();
-    this.logQuery(`${query}.toArray();`, { took: Date.now() - now, results: res.length });
+    this.logQuery(`${query}.toArray();`, { took: Date.now() - now, results: res.length, ...loggerContext });
 
     return res as EntityData<T>[];
   }
@@ -205,7 +207,7 @@ export class MongoConnection extends Connection {
     return this.runQuery<T>('updateMany', collection, data, where, ctx, upsert, upsertOptions);
   }
 
-  async bulkUpdateMany<T extends object>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean, upsertOptions?: UpsertOptions<T>): Promise<QueryResult<T>> {
+  async bulkUpdateMany<T extends object>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean, upsertOptions?: UpsertManyOptions<T>): Promise<QueryResult<T>> {
     return this.runQuery<T>('bulkUpdateMany', collection, data, where, ctx, upsert, upsertOptions);
   }
 
@@ -213,7 +215,7 @@ export class MongoConnection extends Connection {
     return this.runQuery<T>('deleteMany', collection, undefined, where, ctx);
   }
 
-  async aggregate<T extends object = any>(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<T[]> {
+  async aggregate<T extends object = any>(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>, loggerContext?: LoggerContext): Promise<T[]> {
     await this.ensureConnection();
     collection = this.getCollectionName(collection);
     /* istanbul ignore next */
@@ -221,7 +223,7 @@ export class MongoConnection extends Connection {
     const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}, ${this.logObject(options)}).toArray();`;
     const now = Date.now();
     const res = await this.getCollection(collection).aggregate<T>(pipeline, options).toArray();
-    this.logQuery(query, { took: Date.now() - now, results: res.length });
+    this.logQuery(query, { took: Date.now() - now, results: res.length, ...loggerContext });
 
     return res;
   }
@@ -278,7 +280,7 @@ export class MongoConnection extends Connection {
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
 
-  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean, upsertOptions?: UpsertOptions<T>): Promise<U> {
+  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean, upsertOptions?: UpsertOptions<T>, loggerContext?: LoggerContext): Promise<U> {
     await this.ensureConnection();
     collection = this.getCollectionName(collection);
     const logger = this.config.getLogger();
@@ -340,7 +342,7 @@ export class MongoConnection extends Connection {
         break;
     }
 
-    this.logQuery(query!, { took: Date.now() - now });
+    this.logQuery(query!, { took: Date.now() - now, ...loggerContext });
 
     if (method === 'countDocuments') {
       return res! as unknown as U;
