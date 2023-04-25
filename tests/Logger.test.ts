@@ -1,4 +1,4 @@
-import { Configuration, DefaultLogger, SimpleLogger, colors } from '@mikro-orm/core';
+import { DefaultLogger, SimpleLogger, colors } from '@mikro-orm/core';
 
 // Allow for testing colored output and prevent colors from causing match failures (invis. chars)
 const redColorFormatterSpy = jest.spyOn(colors, 'red').mockImplementation(text => text);

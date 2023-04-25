@@ -1,4 +1,4 @@
-import type { Highlighter } from '../typings';
+import type { Dictionary, Highlighter } from '../typings';
 
 export interface Logger {
 
@@ -33,7 +33,7 @@ export interface Logger {
 
 export type LoggerNamespace = 'query' | 'query-params' | 'schema' | 'discovery' | 'info';
 
-export interface LogContext {
+export interface LogContext extends Dictionary {
   query?: string;
   label?: string;
   params?: unknown[];
@@ -52,4 +52,11 @@ export interface LoggerOptions {
   usesReplicas?: boolean;
 }
 
-export type LoggerContext = Pick<LogContext, 'label'>;
+/**
+ * Context for a logger to utilize to format output, including a label and additional properties that can be accessed by custom loggers
+ *
+ * @example
+ * await em.findOne(User, 1, { loggerContext: { label: 'user middleware' } };
+ * // [query] (user middleware) select * from user where id = 1;
+ */
+export type LoggerContext = Pick<LogContext, 'label'> & Dictionary;
