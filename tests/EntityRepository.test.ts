@@ -1,4 +1,3 @@
-import type { AnyEntity } from '@mikro-orm/core';
 import { Configuration, QueryOrder } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/knex';
 import { EntityRepository } from '@mikro-orm/knex';
@@ -8,8 +7,6 @@ import { MongoDriver, MongoEntityRepository } from '@mikro-orm/mongodb';
 
 const methods = {
   getReference: jest.fn(),
-  persist: jest.fn(),
-  persistAndFlush: jest.fn(),
   createQueryBuilder: jest.fn(),
   qb: jest.fn(),
   findOne: jest.fn(),
@@ -19,9 +16,6 @@ const methods = {
   find: jest.fn(),
   findAndCount: jest.fn(),
   findByCursor: jest.fn(),
-  remove: jest.fn(),
-  removeAndFlush: jest.fn(),
-  flush: jest.fn(),
   canPopulate: jest.fn(),
   populate: jest.fn(),
   count: jest.fn(),
@@ -49,10 +43,6 @@ describe('EntityRepository', () => {
     repo.getReference('bar');
     expect(methods.getReference.mock.calls[0]).toEqual([Publisher, 'bar', undefined]);
     const e = Object.create(Publisher.prototype);
-    repo.persist(e);
-    expect(methods.persist.mock.calls[0]).toEqual([e]);
-    await repo.persistAndFlush(e);
-    expect(methods.persistAndFlush.mock.calls[0]).toEqual([e]);
     await repo.find({ name: 'bar' });
     expect(methods.find.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
     await repo.findAndCount({ name: 'bar' });
@@ -71,11 +61,6 @@ describe('EntityRepository', () => {
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
     await repo.qb();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
-    repo.remove(e);
-    expect(methods.remove.mock.calls[0]).toEqual([e]);
-    const entity = {} as AnyEntity;
-    await repo.removeAndFlush(entity);
-    expect(methods.removeAndFlush.mock.calls[0]).toEqual([entity]);
     await repo.create({ name: 'bar' });
     expect(methods.create.mock.calls[0]).toEqual([Publisher, { name: 'bar' }]);
     await repo.assign(e, { name: 'bar' });
