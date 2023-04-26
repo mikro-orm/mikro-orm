@@ -1,4 +1,4 @@
-import { Collection, EntityManager, MikroORM, QueryOrder } from '@mikro-orm/core';
+import { EntityManager, MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 import {  initORMSqlite3 } from './bootstrap';
@@ -22,12 +22,12 @@ describe('EntityManagerSqlite fts5 table', () => {
     const book5 = new Book5('My Death in a grass field, part 5');
 
     const repo = orm.em.getRepository(Book5);
-    repo.persist(book1);
-    repo.persist(book2);
-    repo.persist(book3);
-    repo.persist(book4);
-    repo.persist(book5);
-    await repo.flush();
+    orm.em.persist(book1);
+    orm.em.persist(book2);
+    orm.em.persist(book3);
+    orm.em.persist(book4);
+    orm.em.persist(book5);
+    await orm.em.flush();
     orm.em.clear();
 
     expect((await repo.count())!).toBe(5);
