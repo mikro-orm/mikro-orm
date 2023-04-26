@@ -50,14 +50,13 @@ describe('events (mysql)', () => {
     expect(Author2Subscriber.log).toEqual([]);
     Author2.beforeDestroyCalled = 0;
     Author2.afterDestroyCalled = 0;
-    const repo = orm.em.getRepository(Author2);
     const author = new Author2('Jon Snow', 'snow@wall.st');
     expect(author.id).toBeUndefined();
     expect(author.version).toBeUndefined();
     expect(author.versionAsString).toBeUndefined();
     expect(author.hookParams).toHaveLength(0);
 
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.id).toBeDefined();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
@@ -65,7 +64,7 @@ describe('events (mysql)', () => {
     expect(author.hookParams[0].changeSet).toMatchObject({ entity: author, type: 'create', payload: { name: 'Jon Snow' } });
 
     author.name = 'John Snow';
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.version).toBe(2);
     expect(author.versionAsString).toBe('v2');
     expect(author.hookParams[2].em).toBe(orm.em);
@@ -73,13 +72,13 @@ describe('events (mysql)', () => {
 
     expect(Author2.beforeDestroyCalled).toBe(0);
     expect(Author2.afterDestroyCalled).toBe(0);
-    await repo.removeAndFlush(author);
+    await orm.em.removeAndFlush(author);
     expect(Author2.beforeDestroyCalled).toBe(1);
     expect(Author2.afterDestroyCalled).toBe(1);
 
     const author2 = new Author2('Johny Cash', 'johny@cash.com');
-    await repo.persistAndFlush(author2);
-    await repo.removeAndFlush(author2);
+    await orm.em.persistAndFlush(author2);
+    await orm.em.removeAndFlush(author2);
     expect(Author2.beforeDestroyCalled).toBe(2);
     expect(Author2.afterDestroyCalled).toBe(2);
 
