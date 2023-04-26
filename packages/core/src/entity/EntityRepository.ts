@@ -1,6 +1,6 @@
 import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager';
 import type { AssignOptions } from './EntityAssigner';
-import type { EntityData, EntityName, AnyEntity, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData, Ref } from '../typings';
+import type { EntityData, EntityName, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData, Ref } from '../typings';
 import type {
   CountOptions,
   DeleteOptions,
@@ -20,28 +20,8 @@ import type { Cursor } from '../utils/Cursor';
 
 export class EntityRepository<Entity extends object> {
 
-  constructor(protected readonly _em: EntityManager,
+  constructor(protected readonly em: EntityManager,
               protected readonly entityName: EntityName<Entity>) { }
-
-  /**
-   * Tells the EntityManager to make an instance managed and persistent.
-   * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
-   *
-   * @deprecated this method will be removed in v6, you should work with the EntityManager instead
-   */
-  persist(entity: AnyEntity | AnyEntity[]): EntityManager {
-    return this.getEntityManager().persist(entity);
-  }
-
-  /**
-   * Persists your entity immediately, flushing all not yet persisted changes to the database too.
-   * Equivalent to `em.persist(e).flush()`.
-   *
-   * @deprecated this method will be removed in v6, you should work with the EntityManager instead
-   */
-  async persistAndFlush(entity: AnyEntity | AnyEntity[]): Promise<void> {
-    await this.getEntityManager().persistAndFlush(entity);
-  }
 
   /**
    * Finds first entity matching your `where` query.
@@ -162,40 +142,6 @@ export class EntityRepository<Entity extends object> {
   }
 
   /**
-   * Marks entity for removal.
-   * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
-   *
-   * To remove entities by condition, use `em.nativeDelete()`.
-   *
-   * @deprecated this method will be removed in v6, you should work with the EntityManager instead
-   */
-  remove(entity: AnyEntity): EntityManager {
-    return this.getEntityManager().remove(entity);
-  }
-
-  /**
-   * Removes an entity instance immediately, flushing all not yet persisted changes to the database too.
-   * Equivalent to `em.remove(e).flush()`
-   *
-   * @deprecated this method will be removed in v6, you should work with the EntityManager instead
-   */
-  async removeAndFlush(entity: AnyEntity): Promise<void> {
-    await this.getEntityManager().removeAndFlush(entity);
-  }
-
-  /**
-   * Flushes all changes to objects that have been queued up to now to the database.
-   * This effectively synchronizes the in-memory state of managed objects with the database.
-   * This method is a shortcut for `em.flush()`, in other words, it will flush the whole UoW,
-   * not just entities registered via this particular repository.
-   *
-   * @deprecated this method will be removed in v6, you should work with the EntityManager instead
-   */
-  async flush(): Promise<void> {
-    return this.getEntityManager().flush();
-  }
-
-  /**
    * @inheritDoc EntityManager.insert
    */
   async insert(data: Entity | EntityData<Entity>, options?: NativeInsertUpdateOptions<Entity>): Promise<Primary<Entity>> {
@@ -305,13 +251,6 @@ export class EntityRepository<Entity extends object> {
     return this.getEntityManager().count<Entity, Hint>(this.entityName, where, options);
   }
 
-  /**
-   * @deprecated this method will be removed in v6, use the public `getEntityManager()` method instead
-   */
-  protected get em(): EntityManager {
-    return this._em;
-  }
-
   getEntityName(): string {
     return Utils.className(this.entityName);
   }
@@ -320,7 +259,7 @@ export class EntityRepository<Entity extends object> {
    * Returns the underlying EntityManager instance
    */
   getEntityManager(): EntityManager {
-    return this._em;
+    return this.em;
   }
 
   protected validateRepositoryType(entities: Entity[] | Entity, method: string) {
