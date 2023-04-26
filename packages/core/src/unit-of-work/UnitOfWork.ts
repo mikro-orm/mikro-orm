@@ -235,7 +235,14 @@ export class UnitOfWork {
     this.queuedActions.clear();
   }
 
-  computeChangeSet<T extends object>(entity: T): void {
+  computeChangeSet<T extends object>(entity: T, type?: ChangeSetType): void {
+    const wrapped = helper(entity);
+
+    if (type) {
+      this.changeSets.set(entity, new ChangeSet(entity, type, {}, wrapped.__meta));
+      return;
+    }
+
     const cs = this.changeSetComputer.computeChangeSet(entity);
 
     if (!cs || this.checkUniqueProps(cs)) {
@@ -245,8 +252,8 @@ export class UnitOfWork {
     this.initIdentifier(entity);
     this.changeSets.set(entity, cs);
     this.persistStack.delete(entity);
-    helper(entity).__originalEntityData = this.comparator.prepareEntity(entity);
-    helper(entity).__touched = false;
+    wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
+    wrapped.__touched = false;
   }
 
   recomputeSingleChangeSet<T extends object>(entity: T): void {
@@ -487,7 +494,7 @@ export class UnitOfWork {
         }
       }
 
-      this.changeSets.set(entity, new ChangeSet(entity, type, {}, entity.__meta!));
+      this.computeChangeSet(entity, type);
     }
   }
 

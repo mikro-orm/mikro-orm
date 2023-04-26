@@ -227,6 +227,19 @@ bar.name = 'bar';
 await em.persistAndFlush(bar);
 ```
 
+To create a `DELETE` changeset, you can use the second parameter of `uow.computeChangeSet()`:
+
+```ts
+async onFlush(args: FlushEventArgs): Promise<void> {
+  const changeSets = args.uow.getChangeSets();
+  const cs = changeSets.find(cs => cs.type === ChangeSetType.UPDATE && cs.entity instanceof FooBar);
+
+  if (cs) {
+    args.uow.computeChangeSet(cs.entity, ChangeSetType.DELETE);
+  }
+}
+```
+
 ## Transaction events
 
 Transaction events happen at the beginning and end of a transaction.
