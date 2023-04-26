@@ -273,7 +273,6 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     switch (prop?.columnTypes?.[0]) {
       case this.getUuidTypeDeclarationSQL({}): return '::text';
       case this.getBooleanTypeDeclarationSQL(): return '::int';
-      case 'json': return '::jsonb';
       default: return '';
     }
   }
