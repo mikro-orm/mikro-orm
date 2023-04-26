@@ -1,3 +1,5 @@
+import TypeOverrides from 'pg/lib/type-overrides';
+
 const knex = jest.fn();
 (knex as any).Client = Object;
 const raw = jest.fn();
@@ -156,6 +158,7 @@ describe('MikroORM', () => {
       user: 'postgres',
       password: 'pass1',
       database: 'mikro-orm-test',
+      types: expect.any(TypeOverrides),
     });
 
     await MikroORM.init({
@@ -168,6 +171,7 @@ describe('MikroORM', () => {
       user: 'postgres',
       password: 'pass2',
       database: 'mikro-orm-test',
+      types: expect.any(TypeOverrides),
     });
 
     await MikroORM.init({
@@ -180,6 +184,7 @@ describe('MikroORM', () => {
       user: 'postgres',
       password: 'pass3',
       database: 'mikro-orm-test',
+      types: expect.any(TypeOverrides),
     });
 
     await MikroORM.init({

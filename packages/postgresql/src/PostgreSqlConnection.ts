@@ -18,11 +18,11 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     const ret = super.getConnectionOptions() as Knex.PgConnectionConfig;
     const types = new TypeOverrides();
     [1082].forEach(oid => types.setTypeParser(oid, str => str)); // date type
+    ret.types = types as any;
 
     if (this.config.get('forceUtcTimezone')) {
       [1114].forEach(oid => types.setTypeParser(oid, str => new Date(str + 'Z'))); // timestamp w/o TZ type
       ret.parseInputDatesAsUTC = true;
-      ret.types = types as any;
     }
 
     return ret;
