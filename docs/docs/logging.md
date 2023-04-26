@@ -93,7 +93,6 @@ const author = await em.findOne(Author, { id: 1 }, { loggerContext: { isDisabled
 // Results in no output when executed
 ```
 
-
 ### Using a custom logger
 
 You can provide your own logger function via the `logger` option:

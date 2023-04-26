@@ -1,4 +1,4 @@
-import { DefaultLogger, SimpleLogger, colors } from '@mikro-orm/core';
+import { DefaultLogger, LogContext, SimpleLogger, colors } from '@mikro-orm/core';
 
 // Allow for testing colored output and prevent colors from causing match failures (invis. chars)
 const redColorFormatterSpy = jest.spyOn(colors, 'red').mockImplementation(text => text);
@@ -87,23 +87,45 @@ describe('Logger', () => {
       expect(redColorFormatterSpy).not.toBeCalled();
     });
 
-    test('should respect the isDisabled context property', () => {
-      const logger = new DefaultLogger({ writer: mockWriter, debugMode: ['query'] });
+    test('should respect the enabled context property', () => {
+      const logger = new DefaultLogger({ writer: mockWriter, debugMode: true });
       const namespace = 'query';
       const message = '';
 
-      logger.log(namespace, message, { level: 'error', isDisabled: undefined });
+      logger.log(namespace, message, { level: 'error', enabled: true });
       expect(mockWriter).toBeCalledTimes(1);
       jest.clearAllMocks();
 
-      logger.log(namespace, message, { level: 'error', isDisabled: false });
+      logger.log(namespace, message, { level: 'error', enabled: undefined });
       expect(mockWriter).toBeCalledTimes(1);
       jest.clearAllMocks();
 
-      logger.log(namespace, message, { level: 'error', isDisabled: true });
+      logger.log(namespace, message, { level: 'error', enabled: false });
       expect(mockWriter).not.toBeCalled();
     });
 
+    test('should respect the debugMode context property', () => {
+      const logger = new DefaultLogger({ writer: mockWriter, debugMode: true });
+      const message = '';
+
+      let options: LogContext = { debugMode: ['query'] };
+      logger.log('query', message, options);
+      logger.log('discovery', message, options);
+      expect(mockWriter).toBeCalledTimes(1);
+      jest.clearAllMocks();
+
+      options = { debugMode: ['query', 'info'] };
+      logger.log('query', message, options);
+      logger.log('info', message, options);
+      expect(mockWriter).toBeCalledTimes(2);
+      jest.clearAllMocks();
+
+      options = { debugMode: ['discovery', 'info'] };
+      logger.log('query', message, options);
+      logger.log('info', message, options);
+      expect(mockWriter).not.toBeCalled();
+      jest.clearAllMocks();
+    });
   });
 
   describe('SimpleLogger', () => {
@@ -123,23 +145,6 @@ describe('Logger', () => {
       const label = 'hello world handler';
       logger.log(namespace, message, { label });
       expect(mockWriter).toBeCalledWith(`[${namespace}] (${label}) ${message}`);
-    });
-
-    test('should respect the isDisabled context property', () => {
-      const logger = new SimpleLogger({ writer: mockWriter, debugMode: ['query'] });
-      const namespace = 'query';
-      const message = '';
-
-      logger.log(namespace, message, { level: 'error', isDisabled: undefined });
-      expect(mockWriter).toBeCalledTimes(1);
-      jest.clearAllMocks();
-
-      logger.log(namespace, message, { level: 'error', isDisabled: false });
-      expect(mockWriter).toBeCalledTimes(1);
-      jest.clearAllMocks();
-
-      logger.log(namespace, message, { level: 'error', isDisabled: true });
-      expect(mockWriter).not.toBeCalled();
     });
   });
 });

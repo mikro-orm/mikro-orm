@@ -10,7 +10,7 @@ import type { Collection } from '../entity/Collection';
 import type { EntityManager } from '../EntityManager';
 import type { DriverException } from '../exceptions';
 import type { Configuration } from '../utils/Configuration';
-import type { LoggerContext } from '../logging';
+import type { LoggingOptions } from '../logging';
 
 export const EntityManagerType = Symbol('EntityManagerType');
 
@@ -129,7 +129,7 @@ export interface FindOptions<T, P extends string = never, F extends string = nev
   lockTableAliases?: string[];
   ctx?: Transaction;
   connectionType?: ConnectionType;
-  loggerContext?: LoggerContext;
+  logging?: LoggingOptions;
 }
 
 export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = never> extends Omit<FindOptions<T, P, F>, 'limit' | 'offset'> {

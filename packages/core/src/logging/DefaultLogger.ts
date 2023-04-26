@@ -61,19 +61,10 @@ export class DefaultLogger implements Logger {
   }
 
   isEnabled(namespace: LoggerNamespace, context?: LogContext) {
-    if (context?.isDisabled !== undefined && context.isDisabled !== false) {
-      if (context.isDisabled === true) {
-        // Disable for ALL
-        return false;
-      } else if (context.isDisabled === 'on-success'
-        && context.level
-        && !['warning', 'error'].includes(context.level)) {
-        // Disable only on success and the level was NOT an error state
-        return false;
-      }
-    }
+    if (context?.enabled === false) { return false; }
+    const debugMode = context?.debugMode ?? this.debugMode;
 
-    return !!this.debugMode && (!Array.isArray(this.debugMode) || this.debugMode.includes(namespace));
+    return !!debugMode && (!Array.isArray(debugMode) || debugMode.includes(namespace));
   }
 
   /**
