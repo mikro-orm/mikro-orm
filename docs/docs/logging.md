@@ -73,6 +73,27 @@ For MongoDB you can use `MongoHighlighter` from `@mikro-orm/mongo-highlighter` p
 
 Several customization options exist to allow for style changes or custom logic.
 
+### Query Labels
+
+It may often be beneficial to log the origin of a query when using [`EntityManager.find`](entity-manager.md#fetching-entities-with-entitymanager) or [`EntityManager.findOne`](entity-manager.md#fetching-entities-with-entitymanager) for debugging and redundancy elimination purposes. 
+
+An optional `loggerContext` option can be included within the `FindOptions` parameter of either call which will add a label to the output when debug mode is enabled.
+
+```ts
+const author = await em.findOne(Author, { id: 1 }, { loggerContext: { label: 'Author Retrieval - /authors/me' } });
+// [query] (Author Retrieval - /authors/me) select "a0".* from "Author" as "a0" where "a0"."id" = 1 limit 1 [took 21 ms]
+```
+
+### Disabling logging for specific queries
+
+If you'd like to disable queries on a per-query basis, you can leverage the `isDisabled` flag within `FindOptions`:
+
+```ts
+const author = await em.findOne(Author, { id: 1 }, { loggerContext: { isDisabled: true } });
+// Results in no output when executed
+```
+
+
 ### Using a custom logger
 
 You can provide your own logger function via the `logger` option:
@@ -142,7 +163,7 @@ interface Logger {
   warn(namespace: LoggerNamespace, message: string, context?: LogContext): void;
   logQuery(context: LogContext): void;
   setDebugMode(debugMode: boolean | LoggerNamespace[]): void;
-  isEnabled(namespace: LoggerNamespace): boolean;
+  isEnabled(namespace: LoggerNamespace, context?: LogContext): boolean;
 }
 
 type LoggerNamespace = 'query' | 'query-params' | 'schema' | 'discovery' | 'info';
@@ -153,6 +174,7 @@ interface LogContext extends Dictionary {
   params?: unknown[];
   took?: number;
   level?: 'info' | 'warning' | 'error';
+  isDisabled?: boolean;
   connection?: {
     type?: string;
     name?: string;
@@ -160,18 +182,8 @@ interface LogContext extends Dictionary {
 }
 ```
 
-### Query Labels
-
-It may often be beneficial to log the origin of a query when using [`EntityManager.find`](entity-manager.md#fetching-entities-with-entitymanager) or [`EntityManager.findOne`](entity-manager.md#fetching-entities-with-entitymanager) for debugging and redundancy elimination purposes. 
-
-An optional `loggerContext` option can be included within the `FindOptions` parameter of either call which will add a label to the output when debug mode is enabled.
-
-```ts
-const author = await em.findOne(Author, { id: 1 }, { loggerContext: { label: 'Author Retrieval - /authors/me' } });
-// [query] (Author Retrieval - /authors/me) select "a0".* from "Author" as "a0" where "a0"."id" = 1 limit 1 [took 21 ms]
-```
-
 ### Providing additional context to a custom logger
+
 If you have implemented your own `LoggerFactory` and need to access additional contextual values inside your customer logger implementation, utilize the `LoggerContext` property of `FindOptions`. Adding additional key/value pairs to that object will make them available inside your custom logger:
 
 ```ts

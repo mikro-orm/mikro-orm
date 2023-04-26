@@ -27,7 +27,7 @@ export interface Logger {
    */
   setDebugMode(debugMode: boolean | LoggerNamespace[]): void;
 
-  isEnabled(namespace: LoggerNamespace): boolean;
+  isEnabled(namespace: LoggerNamespace, context?: LogContext): boolean;
 
 }
 
@@ -39,6 +39,7 @@ export interface LogContext extends Dictionary {
   params?: unknown[];
   took?: number;
   level?: 'info' | 'warning' | 'error';
+  isDisabled?: boolean | 'on-success';
   connection?: {
     type?: string;
     name?: string;
@@ -59,4 +60,4 @@ export interface LoggerOptions {
  * await em.findOne(User, 1, { loggerContext: { label: 'user middleware' } };
  * // [query] (user middleware) select * from user where id = 1;
  */
-export type LoggerContext = Pick<LogContext, 'label'> & Dictionary;
+export type LoggerContext = (Pick<LogContext, 'label' | 'isDisabled'> & Dictionary);

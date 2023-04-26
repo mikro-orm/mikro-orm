@@ -86,6 +86,24 @@ describe('Logger', () => {
       expect(yellowColorFormatterSpy).not.toBeCalled();
       expect(redColorFormatterSpy).not.toBeCalled();
     });
+
+    test('should respect the isDisabled context property', () => {
+      const logger = new DefaultLogger({ writer: mockWriter, debugMode: ['query'] });
+      const namespace = 'query';
+      const message = '';
+
+      logger.log(namespace, message, { level: 'error', isDisabled: undefined });
+      expect(mockWriter).toBeCalledTimes(1);
+      jest.clearAllMocks();
+
+      logger.log(namespace, message, { level: 'error', isDisabled: false });
+      expect(mockWriter).toBeCalledTimes(1);
+      jest.clearAllMocks();
+
+      logger.log(namespace, message, { level: 'error', isDisabled: true });
+      expect(mockWriter).not.toBeCalled();
+    });
+
   });
 
   describe('SimpleLogger', () => {
@@ -106,6 +124,24 @@ describe('Logger', () => {
       logger.log(namespace, message, { label });
       expect(mockWriter).toBeCalledWith(`[${namespace}] (${label}) ${message}`);
     });
-  });
 
+    test('should respect the isDisabled context property', () => {
+      const logger = new SimpleLogger({ writer: mockWriter, debugMode: ['query'] });
+      const namespace = 'query';
+      const message = '';
+
+      logger.log(namespace, message, { level: 'error', isDisabled: undefined });
+      expect(mockWriter).toBeCalledTimes(1);
+      jest.clearAllMocks();
+
+      logger.log(namespace, message, { level: 'error', isDisabled: false });
+      expect(mockWriter).toBeCalledTimes(1);
+      jest.clearAllMocks();
+
+      logger.log(namespace, message, { level: 'error', isDisabled: true });
+      expect(mockWriter).not.toBeCalled();
+    });
+  });
 });
+
+

@@ -15,7 +15,7 @@ export class DefaultLogger implements Logger {
    * @inheritDoc
    */
   log(namespace: LoggerNamespace, message: string, context?: LogContext): void {
-    if (!this.isEnabled(namespace)) {
+    if (!this.isEnabled(namespace, context)) {
       return;
     }
 
@@ -60,7 +60,19 @@ export class DefaultLogger implements Logger {
     this.debugMode = debugMode;
   }
 
-  isEnabled(namespace: LoggerNamespace): boolean {
+  isEnabled(namespace: LoggerNamespace, context?: LogContext) {
+    if (context?.isDisabled !== undefined && context.isDisabled !== false) {
+      if (context.isDisabled === true) {
+        // Disable for ALL
+        return false;
+      } else if (context.isDisabled === 'on-success'
+        && context.level
+        && !['warning', 'error'].includes(context.level)) {
+        // Disable only on success and the level was NOT an error state
+        return false;
+      }
+    }
+
     return !!this.debugMode && (!Array.isArray(this.debugMode) || this.debugMode.includes(namespace));
   }
 
@@ -68,7 +80,7 @@ export class DefaultLogger implements Logger {
    * @inheritDoc
    */
   logQuery(context: { query: string } & LogContext): void {
-    if (!this.isEnabled('query')) {
+    if (!this.isEnabled('query', context)) {
       return;
     }
 
