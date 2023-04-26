@@ -76,11 +76,11 @@ test('update triggered after insert (GH #4266)', async () => {
 
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ['[query] insert into `a` (`id`, `name`) values (1, \'a\') returning `id`'],
+    ['[query] insert into `a` (`id`, `name`) values (1, \'a\')'],
     ['[query] commit'],
     ['[query] select `a0`.* from `a` as `a0` where `a0`.`name` = \'a\' limit 1'],
     ['[query] begin'],
-    ['[query] insert into `b` (`id`, `name`, `a_id`) values (2, \'b\', 1) returning `id`'],
+    ['[query] insert into `b` (`id`, `name`, `a_id`) values (2, \'b\', 1)'],
     ['[query] commit'],
   ]);
 });
