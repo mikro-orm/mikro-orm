@@ -181,7 +181,7 @@ describe('EntityManagerMySql', () => {
     const author = new Author2('name', 'email');
     author.termsAccepted = true;
     author.favouriteAuthor = author;
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     const a = await repo.findOne(author);
 
     const authors = await repo.find({ favouriteAuthor: author });
@@ -242,10 +242,10 @@ describe('EntityManagerMySql', () => {
   test('should work with boolean values', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.termsAccepted).toBe(false);
     author.termsAccepted = true;
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.termsAccepted).toBe(true);
     orm.em.clear();
 
@@ -254,7 +254,7 @@ describe('EntityManagerMySql', () => {
     const a2 = (await repo.findOne({ termsAccepted: true }))!;
     expect(a2).not.toBeNull();
     a2.termsAccepted = false;
-    await repo.persistAndFlush(a2);
+    await orm.em.persistAndFlush(a2);
     orm.em.clear();
 
     const a3 = (await repo.findOne({ termsAccepted: false }))!;
@@ -466,11 +466,10 @@ describe('EntityManagerMySql', () => {
     book3.createdAt = new Date(Date.now() + 3);
     book3.publisher = wrap(publisher).toReference();
 
-    const repo = orm.em.getRepository(Book2);
-    repo.persist(book1);
-    repo.persist(book2);
-    repo.persist(book3);
-    await repo.flush();
+    orm.em.persist(book1);
+    orm.em.persist(book2);
+    orm.em.persist(book3);
+    await orm.em.flush();
     orm.em.clear();
 
     const publisher7k = (await orm.em.getRepository(Publisher2).findOne({ name: '7K publisher' }))!;
@@ -579,7 +578,7 @@ describe('EntityManagerMySql', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
     expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
-    await orm.em.getRepository(Book2).remove(lastBook[0]).flush();
+    await orm.em.remove(lastBook[0]).flush();
   });
 
   test('json properties', async () => {
@@ -940,7 +939,7 @@ describe('EntityManagerMySql', () => {
   test('findOne by id', async () => {
     const authorRepository = orm.em.getRepository(Author2);
     const jon = new Author2('Jon Snow', 'snow@wall.st');
-    await authorRepository.persistAndFlush(jon);
+    await orm.em.persistAndFlush(jon);
 
     orm.em.clear();
     let author = (await authorRepository.findOne(jon.id))!;
@@ -1393,7 +1392,7 @@ describe('EntityManagerMySql', () => {
   test('trying to populate non-existing or non-reference property will throw', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('Johny Cash', 'johny@cash.com');
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     orm.em.clear();
 
     await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author2' does not have property 'tests'`);
@@ -1408,7 +1407,7 @@ describe('EntityManagerMySql', () => {
     let t3 = Test2.create('t3');
     await orm.em.persistAndFlush([t1, t2, t3]);
     publisher.tests.add(t2, t1, t3);
-    await repo.persistAndFlush(publisher);
+    await orm.em.persistAndFlush(publisher);
     orm.em.clear();
 
     const ent = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
@@ -1420,7 +1419,7 @@ describe('EntityManagerMySql', () => {
 
     [t1, t2, t3] = ent.tests.getItems();
     ent.tests.set([t3, t2, t1]);
-    await repo.flush();
+    await orm.em.flush();
     orm.em.clear();
 
     const ent1 = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
@@ -1673,10 +1672,10 @@ describe('EntityManagerMySql', () => {
     await expect(author.updatedAt).toBeDefined();
     // allow 1 ms difference as updated time is recalculated when persisting
     await expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
 
     author.name = 'name1';
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     await expect(author.createdAt).toBeDefined();
     await expect(author.updatedAt).toBeDefined();
     await expect(author.updatedAt).not.toEqual(author.createdAt);

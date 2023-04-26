@@ -198,7 +198,7 @@ describe('EntityManagerPostgre', () => {
     const author = new Author2('name', 'email');
     author.termsAccepted = true;
     author.favouriteAuthor = author;
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     const a = await repo.findOne(author);
     const authors = await repo.find({ favouriteAuthor: author });
     expect(a).toBe(author);
@@ -314,7 +314,7 @@ describe('EntityManagerPostgre', () => {
   test('collection loads items after savepoint should not fail', async () => {
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
     const book = new Book2('My Life on The Wall, part 1', new Author2('name', 'email'));
-    book.publisher = wrap(publisher).toReference();
+    book.publisher = ref(publisher);
 
     const author = new Author2('Bartleby', 'bartelby@writer.org');
     author.books.add(book);
@@ -400,17 +400,16 @@ describe('EntityManagerPostgre', () => {
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
 
     const book1 = new Book2('My Life on The Wall, part 1', author);
-    book1.publisher = wrap(publisher).toReference();
+    book1.publisher = ref(publisher);
     const book2 = new Book2('My Life on The Wall, part 2', author);
-    book2.publisher = wrap(publisher).toReference();
+    book2.publisher = ref(publisher);
     const book3 = new Book2('My Life on The Wall, part 3', author);
-    book3.publisher = wrap(publisher).toReference();
+    book3.publisher = ref(publisher);
 
-    const repo = orm.em.getRepository(Book2);
-    repo.persist(book1);
-    repo.persist(book2);
-    repo.persist(book3);
-    await repo.flush();
+    orm.em.persist(book1);
+    orm.em.persist(book2);
+    orm.em.persist(book3);
+    await orm.em.flush();
     orm.em.clear();
 
     const publisher7k = (await orm.em.getRepository(Publisher2).findOne({ name: '7K publisher' }))!;
@@ -512,7 +511,7 @@ describe('EntityManagerPostgre', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
     expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
-    await orm.em.getRepository(Book2).remove(lastBook[0]).flush();
+    await orm.em.remove(lastBook[0]).flush();
   });
 
   test('json properties', async () => {
@@ -928,7 +927,7 @@ describe('EntityManagerPostgre', () => {
   test('findOne by id', async () => {
     const authorRepository = orm.em.getRepository(Author2);
     const jon = new Author2('Jon Snow', 'snow@wall.st');
-    await authorRepository.persistAndFlush(jon);
+    await orm.em.persistAndFlush(jon);
 
     orm.em.clear();
     let author = (await authorRepository.findOne(jon.id))!;
@@ -946,7 +945,7 @@ describe('EntityManagerPostgre', () => {
     const publisher = new Publisher2('Publisher');
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
-    bible.publisher = wrap(publisher).toReference();
+    bible.publisher = ref(publisher);
     await orm.em.persistAndFlush(bible);
 
     let jon = new Author2('Jon Snow', 'snow@wall.st');
@@ -1356,25 +1355,25 @@ describe('EntityManagerPostgre', () => {
     expect(author.versionAsString).toBeUndefined();
     expect(author.code).toBe('snow@wall.st - Jon Snow');
 
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.id).toBeDefined();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
 
     author.name = 'John Snow';
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.version).toBe(2);
     expect(author.versionAsString).toBe('v2');
 
     expect(Author2.beforeDestroyCalled).toBe(0);
     expect(Author2.afterDestroyCalled).toBe(0);
-    await repo.removeAndFlush(author);
+    await orm.em.removeAndFlush(author);
     expect(Author2.beforeDestroyCalled).toBe(1);
     expect(Author2.afterDestroyCalled).toBe(1);
 
     const author2 = new Author2('Johny Cash', 'johny@cash.com');
-    await repo.persistAndFlush(author2);
-    await repo.removeAndFlush(author2);
+    await orm.em.persistAndFlush(author2);
+    await orm.em.removeAndFlush(author2);
     expect(Author2.beforeDestroyCalled).toBe(2);
     expect(Author2.afterDestroyCalled).toBe(2);
   });
@@ -1398,7 +1397,7 @@ describe('EntityManagerPostgre', () => {
   test('trying to populate non-existing or non-reference property will throw', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('Johny Cash', 'johny@cash.com');
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     orm.em.clear();
 
     await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author2' does not have property 'tests'`);
@@ -1413,7 +1412,7 @@ describe('EntityManagerPostgre', () => {
     const t3 = Test2.create('t3');
     await orm.em.persistAndFlush([t1, t2, t3]);
     publisher.tests.add(t2, t1, t3);
-    await repo.persistAndFlush(publisher);
+    await orm.em.persistAndFlush(publisher);
     orm.em.clear();
 
     const ent = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
@@ -1431,10 +1430,10 @@ describe('EntityManagerPostgre', () => {
     await expect(author.updatedAt).toBeDefined();
     // allow 1 ms difference as updated time is recalculated when persisting
     await expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
 
     author.name = 'name1';
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     await expect(author.createdAt).toBeDefined();
     await expect(author.updatedAt).toBeDefined();
     await expect(author.updatedAt).not.toEqual(author.createdAt);

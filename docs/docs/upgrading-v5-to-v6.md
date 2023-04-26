@@ -31,6 +31,67 @@ const email = book.author.email; // ok, selected
 const name = book.author.name; // fail, not selected
 ```
 
+## Removed methods from `EntityRepository`
+
+Following methods are no longer available on the `EntityRepository` instance. 
+
+- `persist`
+- `persistAndFlush`
+- `remove`
+- `removeAndFlush`
+- `flush`
+
+They were confusing as they gave a false sense of working with a scoped context (e.g. only with a `User` type), while in fact, they were only shortcuts for the same methods of underlying `EntityManager`. You should work with the `EntityManager` directly instead of using a repository when it comes to entity persistence, repositories should be treated as an extension point for custom logic (e.g. wrapping query builder usage).
+
+```diff
+-userRepository.persist(user);
+-await userRepository.flush();
++em.persist(user);
++await em.flush();
+```
+
+> Alternatively, you can use the `repository.getEntityManager()` method to access those methods directly on the `EntityManager`.
+
+If you want to keep those methods on repository level, you can define custom base repository and use it globally:
+
+```ts
+import { EntityManager, EntityRepository, AnyEntity } from '@mikro-orm/mysql';
+
+export class ExtendedEntityRepository<T extends object> extends EntityRepository<T> {
+
+  persist(entity: AnyEntity | AnyEntity[]): EntityManager {
+    return this.em.persist(entity);
+  }
+
+  async persistAndFlush(entity: AnyEntity | AnyEntity[]): Promise<void> {
+    await this.em.persistAndFlush(entity);
+  }
+
+  remove(entity: AnyEntity): EntityManager {
+    return this.em.remove(entity);
+  }
+
+  async removeAndFlush(entity: AnyEntity): Promise<void> {
+    await this.em.removeAndFlush(entity);
+  }
+
+  async flush(): Promise<void> {
+    return this.em.flush();
+  }
+
+}
+```
+
+And specify it in the ORM config:
+
+```ts
+MikroORM.init({
+   entityRepository: () => ExtendedEntityRepository,
+})
+```
+
+You might as well want to use the `EntityRepositoryType` symbol, possibly in a custom base entity.
+
 ## Removal of static require calls
 
 There were some places where we did a static `require()` call, e.g. when loading the driver implementation based on the `type` option. Those places were problematic for bundlers like webpack, as well as new school build systems like vite.
