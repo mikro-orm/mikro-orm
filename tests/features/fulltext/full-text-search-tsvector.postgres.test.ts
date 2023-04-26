@@ -39,18 +39,15 @@ describe('full text search tsvector in postgres', () => {
   afterAll(() => orm.close(true));
 
   test('load entities', async () => {
-    const repo = orm.em.getRepository(Book);
-
     const book1 = new Book('My Life on The ? Wall, part 1');
-    await repo.persist(book1).flush();
+    await orm.em.persist(book1).flush();
 
+    const repo = orm.em.getRepository(Book);
     const fullTextBooks = (await repo.find({ searchableTitle: { $fulltext: 'life wall' } }))!;
     expect(fullTextBooks.length).toBe(1);
   });
 
   test('load entities (multi)', async () => {
-    const repo = orm.em.getRepository(Book);
-
     const book1 = new Book('My Life on The ? Wall, part 1');
     const book2 = new Book('My Life on The Wall, part 2');
     const book3 = new Book('My Life on The Wall, part 3');
@@ -58,9 +55,9 @@ describe('full text search tsvector in postgres', () => {
     const book5 = new Book('My Life on The House');
     const book6 = new Book(null);
 
-    repo.persist([book1, book2, book3, book4, book5, book6]);
-    await repo.flush();
+    await orm.em.persist([book1, book2, book3, book4, book5, book6]).flush();
 
+    const repo = orm.em.getRepository(Book);
     const fullTextBooks = (await repo.find({ searchableTitle: { $fulltext: 'life wall' } }))!;
     expect(fullTextBooks).toHaveLength(3);
   });

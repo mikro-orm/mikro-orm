@@ -122,11 +122,10 @@ describe('EntityManagerMariaDb', () => {
     book3.createdAt = new Date(Date.now() + 3);
     book3.publisher = wrap(publisher).toReference();
 
-    const repo = orm.em.getRepository(Book2);
-    repo.persist(book1);
-    repo.persist(book2);
-    repo.persist(book3);
-    await repo.flush();
+    orm.em.persist(book1);
+    orm.em.persist(book2);
+    orm.em.persist(book3);
+    await orm.em.flush();
     orm.em.clear();
 
     const publisher7k = (await orm.em.getRepository(Publisher2).findOne({ name: '7K publisher' }))!;
@@ -224,7 +223,7 @@ describe('EntityManagerMariaDb', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
     expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
-    await orm.em.getRepository(Book2).remove(lastBook[0]).flush();
+    await orm.em.remove(lastBook[0]).flush();
   });
 
   afterAll(async () => orm.close(true));
