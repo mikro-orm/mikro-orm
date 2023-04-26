@@ -20,12 +20,11 @@ test('null dates stay null when fetched', async () => {
 
   await orm.getSchemaGenerator().refreshDatabase();
 
-  const repo = orm.em.fork().getRepository(Test);
-  const c = repo.create({
+  orm.em.create(Test, {
     id: '123',
     date: undefined,
   });
-  await repo.persistAndFlush(c);
+  await orm.em.flush();
 
   const entity = await orm.em.fork().findOne(Test, '123');
 

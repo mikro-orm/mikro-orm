@@ -5,9 +5,9 @@ import type { MongoEntityManager } from './MongoEntityManager';
 
 export class MongoEntityRepository<T extends object> extends EntityRepository<T> {
 
-  constructor(protected override readonly _em: MongoEntityManager,
+  constructor(protected override readonly em: MongoEntityManager,
               entityName: EntityName<T>) {
-    super(_em, entityName);
+    super(em, entityName);
   }
 
   /**
@@ -25,14 +25,7 @@ export class MongoEntityRepository<T extends object> extends EntityRepository<T>
    * @inheritDoc
    */
   override getEntityManager(): MongoEntityManager {
-    return this._em;
-  }
-
-  /**
-   * @inheritDoc
-   */
-  protected override get em(): MongoEntityManager {
-    return this._em;
+    return this.em;
   }
 
 }

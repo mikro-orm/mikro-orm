@@ -94,7 +94,7 @@ describe('EntityManagerSqlite', () => {
   test('should convert entity to PK when trying to search by entity', async () => {
     const repo = orm.em.getRepository<any>(Author3);
     const author = new Author3('name', 'email');
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     const a = await repo.findOne(author);
     const authors = await repo.find({ id: author });
     expect(a).toBe(author);
@@ -216,11 +216,10 @@ describe('EntityManagerSqlite', () => {
     const book3 = new Book3('My Life on The Wall, part 3', author);
     book3.publisher = publisher;
 
-    const repo = orm.em.getRepository(Book3);
-    repo.persist(book1);
-    repo.persist(book2);
-    repo.persist(book3);
-    await repo.flush();
+    orm.em.persist(book1);
+    orm.em.persist(book2);
+    orm.em.persist(book3);
+    await orm.em.flush();
     orm.em.clear();
 
     const publisher7k = (await orm.em.getRepository<any>(Publisher3).findOne({ name: '7K publisher' }))!;
@@ -313,7 +312,7 @@ describe('EntityManagerSqlite', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author3);
     expect(lastBook[0].author.isInitialized()).toBe(true);
-    await orm.em.getRepository(Book3).remove(lastBook[0]).flush();
+    await orm.em.remove(lastBook[0]).flush();
   });
 
   test('findOne should initialize entity that is already in IM', async () => {
@@ -533,7 +532,7 @@ describe('EntityManagerSqlite', () => {
   test('findOne by id', async () => {
     const authorRepository = orm.em.getRepository<any>(Author3);
     const jon = new Author3('Jon Snow', 'snow@wall.st');
-    await authorRepository.persistAndFlush(jon);
+    await orm.em.persistAndFlush(jon);
 
     orm.em.clear();
     let author = (await authorRepository.findOne(jon.id))!;
@@ -740,7 +739,7 @@ describe('EntityManagerSqlite', () => {
     expect(author.baseVersion).toBeUndefined();
     expect(author.baseVersionAsString).toBeUndefined();
 
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.id).toBeDefined();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
@@ -748,7 +747,7 @@ describe('EntityManagerSqlite', () => {
     expect(author.baseVersionAsString).toBe('v1');
 
     author.name = 'John Snow';
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.version).toBe(3);
     expect(author.versionAsString).toBe('v3');
     expect(author.baseVersion).toBe(3);
@@ -758,15 +757,15 @@ describe('EntityManagerSqlite', () => {
     expect(Author3.afterDestroyCalled).toBe(0);
     expect(BaseEntity4.beforeDestroyCalled).toBe(0);
     expect(BaseEntity4.afterDestroyCalled).toBe(0);
-    await repo.remove(author).flush();
+    await orm.em.remove(author).flush();
     expect(Author3.beforeDestroyCalled).toBe(2);
     expect(Author3.afterDestroyCalled).toBe(2);
     expect(BaseEntity4.beforeDestroyCalled).toBe(2);
     expect(BaseEntity4.afterDestroyCalled).toBe(2);
 
     const author2 = new Author3('Johny Cash', 'johny@cash.com');
-    await repo.persistAndFlush(author2);
-    await repo.remove(author2).flush();
+    await orm.em.persistAndFlush(author2);
+    await orm.em.remove(author2).flush();
     expect(Author3.beforeDestroyCalled).toBe(4);
     expect(Author3.afterDestroyCalled).toBe(4);
     expect(BaseEntity4.beforeDestroyCalled).toBe(4);
@@ -776,7 +775,7 @@ describe('EntityManagerSqlite', () => {
   test('trying to populate non-existing or non-reference property will throw', async () => {
     const repo = orm.em.getRepository(Author3);
     const author = new Author3('Johny Cash', 'johny@cash.com');
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     orm.em.clear();
 
     await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author3' does not have property 'tests'`);
@@ -791,7 +790,7 @@ describe('EntityManagerSqlite', () => {
     const t3 = Test3.create('t3');
     await orm.em.persist([t1, t2, t3]).flush();
     publisher.tests.add(t2, t1, t3);
-    await repo.persistAndFlush(publisher);
+    await orm.em.persistAndFlush(publisher);
     orm.em.clear();
 
     const ent = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
@@ -809,11 +808,11 @@ describe('EntityManagerSqlite', () => {
     await expect(author.updatedAt).toBeDefined();
     // allow 1 ms difference as updated time is recalculated when persisting
     await expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
 
     author.name = 'name1';
     await new Promise(resolve => setTimeout(resolve, 10));
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     await expect(author.createdAt).toBeDefined();
     await expect(author.updatedAt).toBeDefined();
     await expect(author.updatedAt).not.toEqual(author.createdAt);
