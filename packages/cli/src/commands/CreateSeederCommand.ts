@@ -17,8 +17,8 @@ export class CreateSeederCommand<T> implements CommandModule<T, { seeder: string
   /**
    * @inheritDoc
    */
-  async handler(args: ArgumentsCamelCase<{ seeder: string }>) {
-    const className = CreateSeederCommand.getSeederClassName(args.seeder);
+  async handler(args: ArgumentsCamelCase<{ seeder?: string }>) {
+    const className = CreateSeederCommand.getSeederClassName(args.seeder!);
     const orm = await CLIHelper.getORM();
     const seeder = orm.getSeeder();
     const path = await seeder.createSeeder(className);
