@@ -101,10 +101,10 @@ export abstract class AbstractSqlPlatform extends Platform {
       return raw(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(quoteKey).join('.')}')`);
     }
 
-    return `json_extract(${this.quoteIdentifier(a)}, '$.${b.map(quoteKey).join('.')}')`;
+    return raw(`json_extract(${this.quoteIdentifier(a)}, '$.${b.map(quoteKey).join('.')}')`);
   }
 
-  overrideisRaw(value: any): boolean {
+  override isRaw(value: any): boolean {
     return super.isRaw(value) || (typeof value === 'object' && value !== null && value.client && ['Ref', 'Raw'].includes(value.constructor.name));
   }
 
