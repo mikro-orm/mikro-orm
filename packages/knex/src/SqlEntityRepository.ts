@@ -6,9 +6,9 @@ import type { QueryBuilder } from './query';
 
 export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
 
-  constructor(protected override readonly _em: SqlEntityManager,
+  constructor(protected override readonly em: SqlEntityManager,
               entityName: EntityName<T>) {
-    super(_em, entityName);
+    super(em, entityName);
   }
 
   /**
@@ -29,21 +29,14 @@ export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
    * Returns configured knex instance.
    */
   getKnex(type?: ConnectionType): Knex {
-    return this.getEntityManager().getConnection(type).getKnex();
+    return this.getEntityManager().getKnex();
   }
 
   /**
    * @inheritDoc
    */
   override getEntityManager(): SqlEntityManager {
-    return this._em;
-  }
-
-  /**
-   * @inheritDoc
-   */
-  protected override get em(): SqlEntityManager {
-    return this._em;
+    return this.em;
   }
 
 }
