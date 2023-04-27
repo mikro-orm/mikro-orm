@@ -84,13 +84,26 @@ const author = await em.findOne(Author, { id: 1 }, { loggerContext: { label: 'Au
 // [query] (Author Retrieval - /authors/me) select "a0".* from "Author" as "a0" where "a0"."id" = 1 limit 1 [took 21 ms]
 ```
 
-### Disabling logging for specific queries
+### Changing `debugMode` or disabling logging for specific queries
 
 If you'd like to disable queries on a per-query basis, you can leverage the `isDisabled` flag within `FindOptions`:
 
 ```ts
-const author = await em.findOne(Author, { id: 1 }, { loggerContext: { isDisabled: true } });
-// Results in no output when executed
+// MikroORM.init({ debug: true });
+const author = await em.findOne(Author, { id: 1 }, { logging: { enabled: false } });
+// Overrides config and displays no logger output
+
+// ...
+
+// MikroORM.init({ debug: false });
+const author = await em.findOne(Author, { id: 1 }, { logging: { enabled: true } });
+// Overrides config and displays logger output
+
+// ...
+
+// MikroORM.init({ debug: ['query-labels'] });
+const author = await em.findOne(Author, { id: 1 }, { logging: { debugMode: ['query'] } });
+// Overrides config and displays logger output for query
 ```
 
 ### Using a custom logger
