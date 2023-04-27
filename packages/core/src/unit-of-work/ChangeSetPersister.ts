@@ -1,5 +1,5 @@
 import type { MetadataStorage } from '../metadata';
-import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
+import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
 import type { EntityFactory, EntityValidator, Collection } from '../entity';
 import { EntityIdentifier, helper } from '../entity';
 import type { ChangeSet } from './ChangeSet';
@@ -110,7 +110,7 @@ export class ChangeSetPersister {
       this.mapPrimaryKey(meta, res.insertId as number, changeSet);
     }
 
-    this.mapReturnedValues(changeSet.entity, res.row, meta);
+    this.mapReturnedValues(changeSet.entity, changeSet.payload, res.row, meta);
     this.markAsPopulated(changeSet, meta);
     wrapped.__initialized = true;
     wrapped.__managed = true;
@@ -159,7 +159,7 @@ export class ChangeSetPersister {
         this.mapPrimaryKey(meta, res.rows![i][field], changeSet);
       }
 
-      this.mapReturnedValues(changeSet.entity, res.rows![i], meta);
+      this.mapReturnedValues(changeSet.entity, changeSet.payload, res.rows![i], meta);
       this.markAsPopulated(changeSet, meta);
       wrapped.__initialized = true;
       wrapped.__managed = true;
@@ -381,7 +381,7 @@ export class ChangeSetPersister {
    * No need to handle composite keys here as they need to be set upfront.
    * We do need to map to the change set payload too, as it will be used in the originalEntityData for new entities.
    */
-  mapReturnedValues<T extends object>(entity: T, row: Dictionary | undefined, meta: EntityMetadata<T>): void {
+  mapReturnedValues<T extends object>(entity: T, payload: EntityDictionary<T>, row: Dictionary | undefined, meta: EntityMetadata<T>): void {
     if (this.platform.usesReturningStatement() && row && Utils.hasObjectKeys(row)) {
       const data = meta.props.reduce((ret, prop) => {
         if (prop.fieldNames && row[prop.fieldNames[0]] != null && entity[prop.name] == null) {
@@ -393,6 +393,7 @@ export class ChangeSetPersister {
 
       if (Utils.hasObjectKeys(data)) {
         this.hydrator.hydrate(entity, meta, data as EntityData<T>, this.factory, 'returning', false, true);
+        Object.assign(payload, data); // merge to the changeset payload, so it gets saved to the entity snapshot
       }
     }
   }

@@ -628,7 +628,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: true,
     });
 
-    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, ret.row, meta);
+    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta);
 
     if (!helper(entity).hasPrimaryKey()) {
       const pk = await this.driver.findOne(meta.className, where, {
@@ -771,7 +771,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         convertCustomTypes: true,
       });
 
-      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, ret.rows?.[i], meta);
+      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data![i], ret.rows?.[i], meta);
 
       if (!helper(entity).hasPrimaryKey()) {
         loadPK.set(entity, allWhere[i]);
