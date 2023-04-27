@@ -186,7 +186,8 @@ interface LogContext extends Dictionary {
   params?: unknown[];
   took?: number;
   level?: 'info' | 'warning' | 'error';
-  isDisabled?: boolean;
+  enabled?: boolean;
+  debugMode?: LoggerNamespace[]
   connection?: {
     type?: string;
     name?: string;
