@@ -122,7 +122,7 @@ describe('Logger', () => {
 
       options = { debugMode: ['discovery', 'info'] };
       logger.log('query', message, options);
-      logger.log('info', message, options);
+      logger.log('query-params', message, options);
       expect(mockWriter).not.toBeCalled();
       jest.clearAllMocks();
     });
