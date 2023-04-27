@@ -61,7 +61,7 @@ export class DefaultLogger implements Logger {
   }
 
   isEnabled(namespace: LoggerNamespace, context?: LogContext) {
-    if (context?.enabled !== undefined) { return context.enabled; }
+    if (context?.enabled === false) { return false; }
     const debugMode = context?.debugMode ?? this.debugMode;
 
     return !!debugMode && (!Array.isArray(debugMode) || debugMode.includes(namespace));
