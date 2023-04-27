@@ -150,6 +150,8 @@ export enum EventType {
   afterCreate = 'afterCreate',
   beforeUpdate = 'beforeUpdate',
   afterUpdate = 'afterUpdate',
+  beforeUpsert = 'beforeUpsert',
+  afterUpsert = 'afterUpsert',
   beforeDelete = 'beforeDelete',
   afterDelete = 'afterDelete',
   beforeFlush = 'beforeFlush',

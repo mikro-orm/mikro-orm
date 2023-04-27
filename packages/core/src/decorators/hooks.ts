@@ -29,6 +29,14 @@ export function AfterUpdate() {
   return hook(EventType.afterUpdate);
 }
 
+export function BeforeUpsert() {
+  return hook(EventType.beforeUpsert);
+}
+
+export function AfterUpsert() {
+  return hook(EventType.afterUpsert);
+}
+
 export function OnInit() {
   return hook(EventType.onInit);
 }

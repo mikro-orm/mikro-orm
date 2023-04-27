@@ -30,6 +30,8 @@ All hooks support async methods with one exception - `@OnInit`.
 
 - `@AfterDelete()` is fired right after the record gets deleted from database and it is unset from the identity map.
 
+> `em.upsert()` and `em.upsertMany` cannot fire the create/update hooks, as we don't know if the query is an insert or update, those methods offer their own hooks - `beforeUpsert` and `afterUpsert`.
+
 > `@OnInit` is not fired when we create the entity manually via its constructor (`new MyEntity()`)
 
 > `@OnInit` can be sometimes fired twice, once when the entity reference is created, and once after its populated. To distinguish between those we can use `wrap(this).isInitialized()`.
@@ -96,6 +98,8 @@ export class EverythingSubscriber implements EventSubscriber {
   async afterCreate<T>(args: EventArgs<T>): Promise<void> { ... }
   async beforeUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
   async afterUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
+  async beforeUpsert<T>(args: EventArgs<T>): Promise<void> { ... }
+  async afterUpsert<T>(args: EventArgs<T>): Promise<void> { ... }
   async beforeDelete<T>(args: EventArgs<T>): Promise<void> { ... }
   async afterDelete<T>(args: EventArgs<T>): Promise<void> { ... }
 

@@ -39,7 +39,7 @@ import type {
   RequiredEntityData,
 } from './typings';
 import type { TransactionOptions } from './enums';
-import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
+import { EventType, FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
 import type { FlushEventArgs } from './events';
@@ -614,6 +614,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     data = QueryHelper.processObjectParams(data) as EntityData<Entity>;
     em.validator.validateParams(data, 'insert data');
+
+    if (em.eventManager.hasListeners(EventType.beforeUpsert, meta)) {
+      await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity: data, em }, meta);
+    }
+
     const ret = await em.driver.nativeUpdate(entityName, where, data, {
       ctx: em.transactionContext,
       upsert: true,
@@ -642,6 +647,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
     const snapshot = this.comparator.prepareEntity(entity);
     em.unitOfWork.registerManaged(entity, snapshot, { refresh: true });
+
+    if (em.eventManager.hasListeners(EventType.afterUpsert, meta)) {
+      await em.eventManager.dispatchEvent(EventType.afterUpsert, { entity, em }, meta);
+    }
 
     return entity;
   }
@@ -689,6 +698,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const allData: EntityData<Entity>[] = [];
     const allWhere: FilterQuery<Entity>[] = [];
     const entities = new Map<Entity, EntityData<Entity>>();
+    const entitiesByData = new Map<EntityData<Entity>, Entity>();
 
     for (let row of data) {
       let where: FilterQuery<Entity>;
@@ -699,6 +709,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         if (helper(entity).__managed && helper(entity).__em === em) {
           em.entityFactory.mergeData(meta, entity, row);
           entities.set(entity, row);
+          entitiesByData.set(row, entity);
           continue;
         }
 
@@ -713,6 +724,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
           if (exists) {
             em.assign(exists, row);
             entities.set(exists, row);
+            entitiesByData.set(row, exists);
             continue;
           }
         }
@@ -753,6 +765,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return [...entities.keys()];
     }
 
+    if (em.eventManager.hasListeners(EventType.beforeUpsert, meta)) {
+      for (const dto of data) {
+        const entity = entitiesByData.get(dto) ?? dto;
+        await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity, em }, meta);
+      }
+    }
+
     const ret = await em.driver.nativeUpdateMany(entityName, allWhere, allData, {
       ctx: em.transactionContext,
       upsert: true,
@@ -761,6 +780,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     });
 
     entities.clear();
+    entitiesByData.clear();
     const loadPK = new Map<Entity, FilterQuery<Entity>>();
 
     allData.forEach((row, i) => {
@@ -778,6 +798,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       entities.set(entity, row);
+      entitiesByData.set(row, entity);
     });
 
     // skip if we got the PKs via returning statement (`rows`)
@@ -815,6 +836,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       // recompute the data as there might be some values missing (e.g. those with db column defaults)
       const snapshot = this.comparator.prepareEntity(entity);
       em.unitOfWork.registerManaged(entity, snapshot, { refresh: true });
+    }
+
+    if (em.eventManager.hasListeners(EventType.afterUpsert, meta)) {
+      for (const [entity] of entities) {
+        await em.eventManager.dispatchEvent(EventType.afterUpsert, { entity, em }, meta);
+      }
     }
 
     return [...entities.keys()];

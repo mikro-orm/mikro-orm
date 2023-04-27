@@ -647,9 +647,7 @@ export class UnitOfWork {
   }
 
   private async runHooks<T extends object>(type: EventType, changeSet: ChangeSet<T>, sync = false): Promise<unknown> {
-    const hasListeners = this.eventManager.hasListeners(type, changeSet.meta);
-
-    if (!hasListeners) {
+    if (!this.eventManager.hasListeners(type, changeSet.meta)) {
       return;
     }
 

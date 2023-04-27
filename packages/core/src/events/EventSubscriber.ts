@@ -26,6 +26,8 @@ export interface EventSubscriber<T = any> {
   afterCreate?(args: EventArgs<T>): void | Promise<void>;
   beforeUpdate?(args: EventArgs<T>): void | Promise<void>;
   afterUpdate?(args: EventArgs<T>): void | Promise<void>;
+  beforeUpsert?(args: EventArgs<T>): void | Promise<void>;
+  afterUpsert?(args: EventArgs<T>): void | Promise<void>;
   beforeDelete?(args: EventArgs<T>): void | Promise<void>;
   afterDelete?(args: EventArgs<T>): void | Promise<void>;
   beforeFlush?(args: FlushEventArgs): void | Promise<void>;

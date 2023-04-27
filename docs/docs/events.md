@@ -34,6 +34,10 @@ All hooks support async methods with one exception - `@OnInit`.
 
 > `@OnInit` can be sometimes fired twice, once when the entity reference is created, and once after its populated. To distinguish between those we can use `wrap(this).isInitialized()`.
 
+### Upsert hooks
+
+`em.upsert()` and `em.upsertMany` cannot fire the create/update hooks, as we don't know if the query is an insert or update, those methods offer their own hooks - `beforeUpsert` and `afterUpsert`. The `beforeUpsert` event might provide a DTO instead of entity instance, based on how you call the upsert method. `afterUpsert` event will always receive already managed entity instance.
+
 ## Limitations of lifecycle hooks
 
 Hooks are executed inside the commit action of unit of work, after all change sets are computed. This means that it is not possible to create new entities as usual from inside the hook. Calling `em.flush()` from hooks will result in validation error. Calling `em.persist()` can result in undefined behaviour like locking errors.
@@ -96,6 +100,8 @@ export class EverythingSubscriber implements EventSubscriber {
   async afterCreate<T>(args: EventArgs<T>): Promise<void> { ... }
   async beforeUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
   async afterUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
+  async beforeUpsert<T>(args: EventArgs<T>): Promise<void> { ... }
+  async afterUpsert<T>(args: EventArgs<T>): Promise<void> { ... }
   async beforeDelete<T>(args: EventArgs<T>): Promise<void> { ... }
   async afterDelete<T>(args: EventArgs<T>): Promise<void> { ... }
 
