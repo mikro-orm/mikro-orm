@@ -53,6 +53,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     discovery: {
       warnWhenNoEntities: true,
       requireEntitiesArray: false,
+      checkDuplicateTableNames: true,
       alwaysAnalyseProperties: true,
       disableDynamicFileAccess: false,
     },
@@ -498,6 +499,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   discovery: {
     warnWhenNoEntities?: boolean;
     requireEntitiesArray?: boolean;
+    checkDuplicateTableNames?: boolean;
     alwaysAnalyseProperties?: boolean;
     disableDynamicFileAccess?: boolean;
     getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;

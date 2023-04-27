@@ -153,7 +153,7 @@ describe('MetadataValidator', () => {
       tableName: 'foo',
       properties,
     } as any);
-    expect(() => validator.validateDiscovered([schema1.meta, schema2.meta], true)).toThrowError(`Duplicate table names are not allowed: foo`);
+    expect(() => validator.validateDiscovered([schema1.meta, schema2.meta], true, true)).toThrowError(`Duplicate table names are not allowed: foo`);
   });
 
   test('MetadataStorage.get throws when no metadata found', async () => {

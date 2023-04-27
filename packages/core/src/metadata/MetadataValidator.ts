@@ -53,7 +53,7 @@ export class MetadataValidator {
     }
   }
 
-  validateDiscovered(discovered: EntityMetadata[], warnWhenNoEntities: boolean): void {
+  validateDiscovered(discovered: EntityMetadata[], warnWhenNoEntities?: boolean, checkDuplicateTableNames?: boolean): void {
     if (discovered.length === 0 && warnWhenNoEntities) {
       throw MetadataError.noEntityDiscovered();
     }
@@ -67,7 +67,7 @@ export class MetadataValidator {
     const tableNames = discovered.filter(meta => !meta.abstract && meta === meta.root && (meta.tableName || meta.collection));
     const duplicateTableNames = Utils.findDuplicates(tableNames.map(meta => meta.tableName || meta.collection));
 
-    if (duplicateTableNames.length > 0) {
+    if (duplicateTableNames.length > 0 && checkDuplicateTableNames) {
       throw MetadataError.duplicateEntityDiscovered(duplicateTableNames, 'table names');
     }
 

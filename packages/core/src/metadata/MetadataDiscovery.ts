@@ -94,18 +94,19 @@ export class MetadataDiscovery {
   private async findEntities(preferTsNode: boolean): Promise<EntityMetadata[]> {
     this.discovered.length = 0;
 
+    const options = this.config.get('discovery');
     const key = (preferTsNode && this.config.get('tsNode', Utils.detectTsNode()) && this.config.get('entitiesTs').length > 0) ? 'entitiesTs' : 'entities';
     const paths = this.config.get(key).filter(item => Utils.isString(item)) as string[];
     const refs = this.config.get(key).filter(item => !Utils.isString(item)) as Constructor<AnyEntity>[];
 
-    if (this.config.get('discovery').requireEntitiesArray && paths.length > 0) {
+    if (options.requireEntitiesArray && paths.length > 0) {
       throw new Error(`[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`);
     }
 
     await this.discoverDirectories(paths);
     await this.discoverReferences(refs);
     await this.discoverMissingTargets();
-    this.validator.validateDiscovered(this.discovered, this.config.get('discovery').warnWhenNoEntities!);
+    this.validator.validateDiscovered(this.discovered, options.warnWhenNoEntities, options.checkDuplicateTableNames);
 
     return this.discovered;
   }

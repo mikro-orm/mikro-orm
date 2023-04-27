@@ -161,7 +161,8 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   async discoverEntity(entities: Constructor | Constructor[]): Promise<void> {
     entities = Utils.asArray(entities);
     const tmp = await this.discovery.discoverReferences(entities);
-    new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], this.config.get('discovery').warnWhenNoEntities!);
+    const options = this.config.get('discovery');
+    new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], options.warnWhenNoEntities, options.checkDuplicateTableNames);
     const metadata = await this.discovery.processDiscoveredEntities(tmp);
     metadata.forEach(meta => this.metadata.set(meta.className, meta));
     this.metadata.decorate(this.em);
