@@ -1,4 +1,4 @@
-import { MikroORM, Entity, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
+import { MikroORM, Entity, PrimaryKey, Property, SimpleLogger, wrap } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 
 @Entity()
@@ -123,7 +123,7 @@ describe.each(Object.keys(options))('JSON properties [%s]',  type => {
     await orm.em.flush();
     expect(mock).not.toBeCalled();
 
-    res.value = { lol: true };
+    wrap(res).assign({ value: { lol: true } });
     await orm.em.flush();
     expect(mock).toBeCalled();
     mock.mockReset();
