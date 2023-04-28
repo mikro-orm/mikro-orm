@@ -40,7 +40,6 @@ export async function initMongoReplSet(db?: string): Promise<string> {
 
   await rs.start();
   await rs.waitUntilRunning();
-  await new Promise(resolve => setTimeout(resolve, 3e3));
   replicaSets.push(rs);
 
   return rs.getUri(db);
@@ -48,7 +47,7 @@ export async function initMongoReplSet(db?: string): Promise<string> {
 
 export async function closeReplSets(): Promise<void> {
   for (const rs of replicaSets) {
-    await rs.stop();
+    await rs.stop({ force: true, doCleanup: true });
   }
 }
 
