@@ -67,7 +67,7 @@
     "@mikro-orm/knex": "~5.7.2",
     "fs-extra": "11.1.1",
     "tsconfig-paths": "4.2.0",
-    "yargs": "17.7.1"
+    "yargs": "17.7.2"
   },
   "devDependencies": {
     "@mikro-orm/entity-generator": "^5.7.2",
