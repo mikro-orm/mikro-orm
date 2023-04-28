@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.3](https://github.com/mikro-orm/mikro-orm/compare/v5.7.2...v5.7.3) (2023-04-28)
+
+
+### Bug Fixes
+
+* **core:** merge returned values to the initial entity snapshot ([e123076](https://github.com/mikro-orm/mikro-orm/commit/e1230764633ecdc906f3b1a4073f1dc44100e5a1)), closes [#4284](https://github.com/mikro-orm/mikro-orm/issues/4284)
+* **postgres:** do not convert `date` column type to `Date` object automatically ([a7d1d09](https://github.com/mikro-orm/mikro-orm/commit/a7d1d09e710497d08d2c12346a76c664ed2d67e5)), closes [#4194](https://github.com/mikro-orm/mikro-orm/issues/4194) [#4276](https://github.com/mikro-orm/mikro-orm/issues/4276)
+
+
+### Features
+
+* **core:** add `beforeUpsert` and `afterUpsert` events ([db9ff09](https://github.com/mikro-orm/mikro-orm/commit/db9ff0974c0c51450729aec81436bacffb2362f6)), closes [#4282](https://github.com/mikro-orm/mikro-orm/issues/4282)
+* **core:** allow creating DELETE changesets via `uow.computeChangeSet()` ([61479b6](https://github.com/mikro-orm/mikro-orm/commit/61479b642751f9bc347ae2ab6f0bbf630d6a6295)), closes [#4280](https://github.com/mikro-orm/mikro-orm/issues/4280)
+* **core:** allow disabling validation for duplicate `tableName` ([dfb87bf](https://github.com/mikro-orm/mikro-orm/commit/dfb87bf96d801666edb30a35da41a6cf9e2369d9))
+
+
+
+
+
 ## [5.7.2](https://github.com/mikro-orm/mikro-orm/compare/v5.7.1...v5.7.2) (2023-04-25)
 
 
