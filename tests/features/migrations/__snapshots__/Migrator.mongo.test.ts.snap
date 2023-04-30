@@ -45,7 +45,7 @@ exports[`Migrator (mongo) generate migration with custom name: migration-dump 1`
 {
   "code": "import { Migration } from '@mikro-orm/migrations-mongodb';
 
-export class Migration20191013214813 extends Migration {
+export class Migration20191013214813_custom_name extends Migration {
 
   async up(): Promise<void> {
   }
@@ -56,7 +56,7 @@ export class Migration20191013214813 extends Migration {
     "down": [],
     "up": [],
   },
-  "fileName": "migration-20191013214813.ts",
+  "fileName": "migration-20191013214813_custom_name.ts",
 }
 `;
 
