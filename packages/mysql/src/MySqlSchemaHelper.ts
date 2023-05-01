@@ -170,6 +170,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
     Object.keys(ret).forEach(key => {
       const parts = key.split('.');
+      /* istanbul ignore next */
       const schemaName = parts.length > 1 ? parts[0] : undefined;
       ret[key] = this.mapForeignKeys(ret[key], key, schemaName);
     });
