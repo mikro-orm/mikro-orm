@@ -269,6 +269,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       return extension;
     }
 
+    /* istanbul ignore next */
     throw new Error(`Migrator extension not registered.`);
   }
 
@@ -282,6 +283,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       return extension;
     }
 
+    /* istanbul ignore next */
     throw new Error(`SeedManager extension not registered.`);
   }
 

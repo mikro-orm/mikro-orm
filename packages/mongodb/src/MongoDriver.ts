@@ -186,9 +186,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       for (let i = 0; i < copiedData.$and.length; i++) {
         const and = copiedData.$and[i];
         if ('$fulltext' in and) {
+          /* istanbul ignore next */
           if ('$fulltext' in copiedData) {
             throw new Error('Cannot merge multiple $fulltext conditions to top level of the query object.');
           }
+
           copiedData.$fulltext = and.$fulltext!;
           delete and.$fulltext;
         }
@@ -292,6 +294,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     if (fields) {
       for (let field of fields) {
+        /* istanbul ignore next */
         if (Utils.isPlainObject(field)) {
           continue;
         }

@@ -14,7 +14,7 @@ class Author {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({
+  orm = MikroORM.initSync({
     entities: [Author],
     dbName: ':memory:',
   });
