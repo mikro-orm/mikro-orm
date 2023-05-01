@@ -120,6 +120,11 @@ export class EntitySchema<T = any, U = never> {
       prop.enum = false;
     }
 
+    // force string labels on native enums
+    if (prop.nativeEnumName && Array.isArray(prop.items)) {
+      prop.items = prop.items.map(val => '' + val);
+    }
+
     this.addProperty(name, this.internal ? type : type || 'enum', prop);
   }
 
