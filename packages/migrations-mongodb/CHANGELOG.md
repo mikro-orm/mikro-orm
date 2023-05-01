@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.4](https://github.com/mikro-orm/mikro-orm/compare/v5.7.3...v5.7.4) (2023-05-01)
+
+
+### Bug Fixes
+
+* **migrations:** respect custom migration name in migration class names ([#4294](https://github.com/mikro-orm/mikro-orm/issues/4294)) ([c402a99](https://github.com/mikro-orm/mikro-orm/commit/c402a993b75a09a78f8fb9ea3de44f5298729689))
+
+
+
+
+
 ## [5.7.3](https://github.com/mikro-orm/mikro-orm/compare/v5.7.2...v5.7.3) (2023-04-28)
 
 **Note:** Version bump only for package @mikro-orm/migrations-mongodb

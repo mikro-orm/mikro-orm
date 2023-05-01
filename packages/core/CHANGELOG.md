@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.4](https://github.com/mikro-orm/mikro-orm/compare/v5.7.3...v5.7.4) (2023-05-01)
+
+
+### Bug Fixes
+
+* **core:** expand PK conditions inside top level operators ([305ce5d](https://github.com/mikro-orm/mikro-orm/commit/305ce5d6eef0971440f8bf7b01106f2da6fcfccc)), closes [#4222](https://github.com/mikro-orm/mikro-orm/issues/4222)
+* **core:** fix extra updates when caching inlined embedded entities ([3dc3b32](https://github.com/mikro-orm/mikro-orm/commit/3dc3b3267ea7a2c4cbc9835214b84165d816adb2)), closes [#4295](https://github.com/mikro-orm/mikro-orm/issues/4295)
+* **core:** fix object merging in `assign` helper when current value is scalar ([c012f95](https://github.com/mikro-orm/mikro-orm/commit/c012f95cfe0e4cd312652ff2d541a09b6ddfcde6)), closes [#4290](https://github.com/mikro-orm/mikro-orm/issues/4290)
+* **core:** only consider valid query as tuple comparison ([7212a53](https://github.com/mikro-orm/mikro-orm/commit/7212a53fddc8c7712d7b2ec1eba8df41ccdab0eb)), closes [#4220](https://github.com/mikro-orm/mikro-orm/issues/4220)
+* **migrations:** respect custom migration name in migration class names ([#4294](https://github.com/mikro-orm/mikro-orm/issues/4294)) ([c402a99](https://github.com/mikro-orm/mikro-orm/commit/c402a993b75a09a78f8fb9ea3de44f5298729689))
+
+
+
+
+
 ## [5.7.3](https://github.com/mikro-orm/mikro-orm/compare/v5.7.2...v5.7.3) (2023-04-28)
 
 
