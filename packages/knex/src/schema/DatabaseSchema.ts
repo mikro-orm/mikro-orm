@@ -12,6 +12,7 @@ export class DatabaseSchema {
 
   private tables: DatabaseTable[] = [];
   private namespaces = new Set<string>();
+  private nativeEnums: Dictionary<unknown[]> = {}; // for postgres
 
   constructor(private readonly platform: AbstractSqlPlatform,
               readonly name: string) { }
@@ -19,6 +20,7 @@ export class DatabaseSchema {
   addTable(name: string, schema: string | undefined | null, comment?: string): DatabaseTable {
     const namespaceName = schema ?? this.name;
     const table = new DatabaseTable(this.platform, name, namespaceName);
+    table.nativeEnums = this.nativeEnums;
     table.comment = comment;
     this.tables.push(table);
 
@@ -41,6 +43,15 @@ export class DatabaseSchema {
     return !!this.getTable(name);
   }
 
+  setNativeEnums(nativeEnums: Dictionary<unknown[]>): void {
+    this.nativeEnums = nativeEnums;
+    this.tables.forEach(t => t.nativeEnums = nativeEnums);
+  }
+
+  getNativeEnums(): Dictionary<unknown[]> {
+    return this.nativeEnums;
+  }
+
   hasNamespace(namespace: string) {
     return this.namespaces.has(namespace);
   }
@@ -50,7 +61,7 @@ export class DatabaseSchema {
   }
 
   static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): Promise<DatabaseSchema> {
-    const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
+    const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema') ?? platform.getDefaultSchemaName());
     const allTables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL());
     const parts = config.get('migrations').tableName!.split('.');
     const migrationsTableName = parts[1] ?? parts[0];
@@ -63,6 +74,15 @@ export class DatabaseSchema {
 
   static fromMetadata(metadata: EntityMetadata[], platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): DatabaseSchema {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
+    const nativeEnums: Dictionary<unknown[]> = {};
+
+    for (const meta of metadata) {
+      meta.props
+        .filter(prop => prop.nativeEnumName)
+        .forEach(prop => nativeEnums[prop.nativeEnumName!] = prop.items?.map(val => '' + val) ?? []);
+    }
+
+    schema.setNativeEnums(nativeEnums);
 
     for (const meta of metadata) {
       const table = schema.addTable(meta.collection, this.getSchemaName(meta, config, schemaName));

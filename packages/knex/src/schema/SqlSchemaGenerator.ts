@@ -139,6 +139,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       ret += await this.dump(this.dropTable(meta.collection, this.getSchemaName(meta, options)), '\n');
     }
 
+    for (const columnName of Object.keys(schema.getNativeEnums())) {
+      ret += await this.dump(this.dropNativeEnum(columnName, options.schema ?? this.config.get('schema')), '\n');
+    }
+
     if (options.dropMigrationsTable) {
       ret += await this.dump(this.dropTable(this.config.get('migrations').tableName!, this.config.get('schema')), '\n');
     }
@@ -190,6 +194,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta => meta.tableName);
     fromSchema.prune(options.schema, wildcardSchemaTables);
     toSchema.prune(options.schema, wildcardSchemaTables);
+    toSchema.setNativeEnums(fromSchema.getNativeEnums());
 
     return { fromSchema, toSchema };
   }
@@ -319,6 +324,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   private alterTable(diff: TableDifference, safe: boolean): Knex.SchemaBuilder[] {
     const ret: Knex.SchemaBuilder[] = [];
     const [schemaName, tableName] = this.splitTableName(diff.name);
+    const changedNativeEnums: [string, string[], string[]][] = [];
+
+    for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
+      if (column.nativeEnumName && changedProperties.has('enumItems') && column.nativeEnumName in diff.fromTable.nativeEnums) {
+        changedNativeEnums.push([column.nativeEnumName, column.enumItems!, diff.fromTable.getColumn(column.name)!.enumItems!]);
+      }
+    }
 
     ret.push(this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
       for (const index of Object.values(diff.removedIndexes)) {
@@ -361,6 +373,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
       for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
         if (changedProperties.size === 1 && changedProperties.has('comment')) {
+          continue;
+        }
+
+        if (changedProperties.size === 1 && changedProperties.has('enumItems') && column.nativeEnumName) {
           continue;
         }
 
@@ -422,6 +438,12 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         table.comment(comment);
       }
     }));
+
+    changedNativeEnums.forEach(([enumName, itemsNew, itemsOld]) => {
+      // postgres allows only adding new items
+      const newItems = itemsNew.filter(val => !itemsOld.includes(val));
+      ret.push(...newItems.map(val => this.alterNativeEnum(enumName, schemaName, val)));
+    });
 
     return ret;
   }
@@ -562,6 +584,22 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     return builder;
+  }
+
+  private dropNativeEnum(name: string, schema?: string): Knex.SchemaBuilder {
+    if (schema && schema !== this.platform.getDefaultSchemaName()) {
+      name = schema + '.' + name;
+    }
+
+    return this.knex.schema.raw(`drop type ${this.platform.quoteIdentifier(name)}`);
+  }
+
+  private alterNativeEnum(name: string, schema?: string, value?: string): Knex.SchemaBuilder {
+    if (schema && schema !== this.platform.getDefaultSchemaName()) {
+      name = schema + '.' + name;
+    }
+
+    return this.knex.schema.raw(`alter type ${this.platform.quoteIdentifier(name)} add value ${this.platform.quoteValue(value)}`);
   }
 
   private createForeignKeys(table: Knex.CreateTableBuilder, tableDef: DatabaseTable, schema?: string): void {
