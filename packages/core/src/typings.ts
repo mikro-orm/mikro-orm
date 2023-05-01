@@ -307,6 +307,7 @@ export interface EntityProperty<T = any> {
   hidden?: boolean;
   enum?: boolean;
   items?: (number | string)[];
+  nativeEnumName?: string; // for postgres, by default it uses text column with check constraint
   version?: boolean;
   concurrencyCheck?: boolean;
   eager?: boolean;
