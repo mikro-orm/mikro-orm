@@ -1,5 +1,4 @@
-import { Cascade, Collection, Entity, EntityData, ManyToOne, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Ref, SimpleLogger } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mysql';
+import { MikroORM, Cascade, Collection, Entity, EntityData, ManyToOne, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Ref, SimpleLogger } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -73,7 +72,7 @@ class ArticleAttribute {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({
+  orm = MikroORM.initSync({
     entities: [Category],
     dbName: `mikro_orm_4062`,
     port: 3308,
