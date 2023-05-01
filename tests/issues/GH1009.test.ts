@@ -75,7 +75,7 @@ describe('GH issue 1009', () => {
   let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init({
+    orm = MikroORM.initSync({
       entities: [BrandSiteRestriction, Site, Brand, Publisher, Placement],
       dbName: `:memory:`,
     });
