@@ -129,7 +129,7 @@ export class QueryHelper {
       const composite = keys > 1;
 
       if (key in GroupOperator) {
-        o[key] = value.map((sub: any) => QueryHelper.processWhere<T>({ ...options, where: sub, root: false }));
+        o[key] = value.map((sub: any) => QueryHelper.processWhere<T>({ ...options, where: sub, root }));
         return o;
       }
 
