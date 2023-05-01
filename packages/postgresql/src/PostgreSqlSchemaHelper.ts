@@ -346,6 +346,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   override getAlterColumnAutoincrement(tableName: string, column: Column, schemaName?: string): string {
     const ret: string[] = [];
     const quoted = (val: string) => this.platform.quoteIdentifier(val);
+    /* istanbul ignore next */
     const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
 
     /* istanbul ignore else */

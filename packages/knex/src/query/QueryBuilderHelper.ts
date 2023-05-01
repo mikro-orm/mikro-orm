@@ -47,6 +47,7 @@ export class QueryBuilderHelper {
       return this.knex.raw(field.sql, field.params);
     }
 
+    /* istanbul ignore next */
     if (typeof field !== 'string') {
       return field;
     }
@@ -682,11 +683,7 @@ export class QueryBuilderHelper {
         return fieldName.sql;
       }
 
-      if (this.isPrefixed(fieldName)) {
-        ret = fieldName;
-      } else {
-        ret = alias + fieldName;
-      }
+      ret = alias + fieldName;
     } else {
       const [a, ...rest] = field.split('.');
       const f = rest.join('.');
