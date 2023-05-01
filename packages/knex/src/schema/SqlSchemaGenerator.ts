@@ -488,7 +488,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     await Utils.runSerial(lines, line => this.driver.execute(line));
   }
 
-  private wrapSchema(sql: string, options: { wrap?: boolean } = {}): string {
+  private wrapSchema(sql: string, options: { wrap?: boolean }): string {
     options.wrap ??= this.options.disableForeignKeys;
 
     if (!options.wrap || sql.trim() === '') {
