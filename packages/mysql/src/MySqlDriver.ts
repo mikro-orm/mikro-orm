@@ -15,6 +15,7 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
     await super.init();
     // the increment step may differ when running a cluster, see https://github.com/mikro-orm/mikro-orm/issues/3828
     const res = await this.connection.execute(`show variables like 'auto_increment_increment'`);
+    /* istanbul ignore next */
     this.autoIncrementIncrement = res[0]?.auto_increment_increment ? +res[0]?.auto_increment_increment : 1;
   }
 

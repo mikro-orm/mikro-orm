@@ -42,7 +42,7 @@ describe('GH issue 1224', () => {
   const log = jest.fn();
 
   beforeAll(async () => {
-    orm = await MikroORM.init({
+    orm = MikroORM.initSync({
       entities: [Node, A, B],
       dbName: `mikro_orm_test_gh_1224`,
       metadataCache: { enabled: false },
