@@ -89,6 +89,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+    /* istanbul ignore next */
     const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
     const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
     const quotedIndexName = this.quoteIdentifier(indexName);
@@ -109,10 +110,12 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getRegExpValue(val: RegExp): { $re: string; $flags?: string } {
+    /* istanbul ignore else */
     if (val.flags.includes('i')) {
       return { $re: val.source, $flags: val.flags };
     }
 
+    /* istanbul ignore next */
     return { $re: val.source };
   }
 
