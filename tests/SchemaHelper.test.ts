@@ -15,6 +15,8 @@ describe('SchemaHelper', () => {
     expect(helper.getChangeColumnCommentSQL('a', {} as any)).toBe('');
     await expect(helper.getEnumDefinitions(jest.fn() as any, [], '')).resolves.toEqual({});
     expect(() => helper.getListTablesSQL()).toThrowError('Not supported by given driver');
+    expect(() => helper.getAlterNativeEnumSQL('table')).toThrowError('Not supported by given driver');
+    expect(() => helper.getDropNativeEnumSQL('table')).toThrowError('Not supported by given driver');
     expect(() => helper.getForeignKeysSQL('table')).toThrowError('Not supported by given driver');
     await expect(helper.getColumns({} as any, 'table')).rejects.toThrowError('Not supported by given driver');
     await expect(helper.getIndexes({} as any, 'table')).rejects.toThrowError('Not supported by given driver');
