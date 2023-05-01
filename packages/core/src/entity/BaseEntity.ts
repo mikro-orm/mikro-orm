@@ -2,6 +2,8 @@ import { Reference } from './Reference';
 import type { Ref, EntityData, EntityDTO, Loaded, AddEager, LoadedReference, EntityKey } from '../typings';
 import type { AssignOptions } from './EntityAssigner';
 import { EntityAssigner } from './EntityAssigner';
+import type { SerializeOptions } from '../serialization/EntitySerializer';
+import { EntitySerializer } from '../serialization/EntitySerializer';
 import { helper } from './wrap';
 
 export abstract class BaseEntity {
@@ -26,11 +28,15 @@ export abstract class BaseEntity {
   toObject<Entity extends this = this>(ignoreFields: never[]): EntityDTO<Entity>;
   toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(ignoreFields: Ignored[]): Omit<EntityDTO<Entity>, Ignored>;
   toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(ignoreFields?: Ignored[]): Omit<EntityDTO<Entity>, Ignored> {
-    return helper(this as unknown as Entity).toObject(ignoreFields!);
+    return helper(this as Entity).toObject(ignoreFields!);
   }
 
   toPOJO<Entity extends this = this>(): EntityDTO<Entity> {
-    return helper(this as unknown as Entity).toPOJO();
+    return helper(this as Entity).toPOJO();
+  }
+
+  serialize<Entity extends this = this, Hint extends string = never, Exclude extends string = never>(options?: SerializeOptions<Entity, Hint, Exclude>): EntityDTO<Loaded<Entity, Hint>> {
+    return EntitySerializer.serialize(this as Entity, options);
   }
 
   assign<Entity extends this = this>(data: EntityData<Entity>, options?: AssignOptions): Entity {

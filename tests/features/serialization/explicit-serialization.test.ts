@@ -1,7 +1,7 @@
 import { wrap, serialize } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/postgresql';
 import { initORMPostgreSql } from '../../bootstrap';
-import { Author2, Book2, Publisher2, PublisherType } from '../../entities-sql';
+import { Author2, Book2, FooBar2, Publisher2, PublisherType } from '../../entities-sql';
 
 let orm: MikroORM;
 
@@ -29,11 +29,22 @@ async function createEntities() {
   return { god, author, publisher, book1, book2, book3 };
 }
 
+test('explicit serialization with ORM BaseEntity', async () => {
+  const fb = orm.em.create(FooBar2, { name: 'fb' });
+  await orm.em.flush();
+
+  const o1 = wrap(fb).serialize();
+  expect(o1).toMatchObject({
+    id: fb.id,
+    name: fb.name,
+  });
+});
+
 test('explicit serialization', async () => {
   const { god, author, publisher, book1, book2, book3 } = await createEntities();
   const jon = await orm.em.findOneOrFail(Author2, author, { populate: true })!;
 
-  const [o1] = serialize(jon);
+  const o1 = wrap(jon).serialize();
   expect(o1).toMatchObject({
     id: jon.id,
     createdAt: jon.createdAt,
