@@ -55,3 +55,23 @@ test('bundler friendly production cache', async () => {
   });
   await orm2.close();
 });
+
+test('bundler friendly production cache (default metadata file)', async () => {
+  // warm up cache by doing async init, this creates a single metadata.json file
+  const orm1 = await MikroORM.init({
+    metadataCache: { enabled: true, adapter: FileCacheAdapter, options: { combined: true, cacheDir: __dirname } },
+    entities: [A],
+    dbName: ':memory:',
+    metadataProvider: TsMorphMetadataProvider,
+    connect: false,
+  });
+  await orm1.close();
+
+  // now we can use the combined cached to init the ORM synchronously, without the ts-morph dependency
+  const orm2 = MikroORM.initSync({
+    metadataCache: { enabled: true, adapter: GeneratedCacheAdapter, options: { data: require('./metadata.json') } },
+    entities: [A],
+    dbName: ':memory:',
+  });
+  await orm2.close();
+});
