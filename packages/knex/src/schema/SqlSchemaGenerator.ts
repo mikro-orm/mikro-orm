@@ -117,7 +117,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     await this.ensureDatabase();
     const wrap = options.wrap ?? this.options.disableForeignKeys;
     const metadata = this.getOrderedMetadata(options.schema).reverse();
-    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
+    const schemas = this.getTargetSchema(options.schema).getNamespaces();
+    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas);
     let ret = '';
 
     // remove FKs explicitly if we can't use cascading statement and we don't disable FK checks (we need this for circular relations)
@@ -136,6 +137,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     for (const meta of metadata) {
       ret += await this.dump(this.dropTable(meta.collection, this.getSchemaName(meta, options)), '\n');
+    }
+
+    if (this.platform.supportsNativeEnums()) {
+      for (const columnName of Object.keys(schema.getNativeEnums())) {
+        const sql = this.helper.getDropNativeEnumSQL(columnName, options.schema ?? this.config.get('schema'));
+        ret += await this.dump(this.knex.schema.raw(sql), '\n');
+      }
     }
 
     if (options.dropMigrationsTable) {
@@ -185,10 +193,12 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     options.safe ??= false;
     options.dropTables ??= true;
     const toSchema = this.getTargetSchema(options.schema);
-    const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
+    const schemas = toSchema.getNamespaces();
+    const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas);
     const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta => meta.tableName);
     fromSchema.prune(options.schema, wildcardSchemaTables);
     toSchema.prune(options.schema, wildcardSchemaTables);
+    toSchema.setNativeEnums(fromSchema.getNativeEnums());
 
     return { fromSchema, toSchema };
   }
@@ -318,6 +328,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   private alterTable(diff: TableDifference, safe: boolean): Knex.SchemaBuilder[] {
     const ret: Knex.SchemaBuilder[] = [];
     const [schemaName, tableName] = this.splitTableName(diff.name);
+    const changedNativeEnums: [string, string[], string[]][] = [];
+
+    for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
+      if (column.nativeEnumName && changedProperties.has('enumItems') && column.nativeEnumName in diff.fromTable.nativeEnums) {
+        changedNativeEnums.push([column.nativeEnumName, column.enumItems!, diff.fromTable.getColumn(column.name)!.enumItems!]);
+      }
+    }
 
     ret.push(this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
       for (const index of Object.values(diff.removedIndexes)) {
@@ -360,6 +377,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
       for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
         if (changedProperties.size === 1 && changedProperties.has('comment')) {
+          continue;
+        }
+
+        if (changedProperties.size === 1 && changedProperties.has('enumItems') && column.nativeEnumName) {
           continue;
         }
 
@@ -421,6 +442,14 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         table.comment(comment);
       }
     }));
+
+    if (this.platform.supportsNativeEnums()) {
+      changedNativeEnums.forEach(([enumName, itemsNew, itemsOld]) => {
+        // postgres allows only adding new items
+        const newItems = itemsNew.filter(val => !itemsOld.includes(val));
+        ret.push(...newItems.map(val => this.knex.schema.raw(this.helper.getAlterNativeEnumSQL(enumName, schemaName, val))));
+      });
+    }
 
     return ret;
   }
