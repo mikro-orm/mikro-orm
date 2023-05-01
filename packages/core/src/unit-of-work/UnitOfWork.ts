@@ -105,6 +105,16 @@ export class UnitOfWork {
         }
       });
 
+      wrapped.__meta.props.forEach(prop => {
+        if (prop.reference === ReferenceType.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name as string])) {
+          prop.targetMeta?.props.forEach(p => {
+            const prefix = prop.prefix === false ? '' : prop.prefix === true ? prop.name + '_' : prop.prefix;
+            data[prefix + p.name] = data[prop.name as string][p.name];
+          });
+          data[prop.name as string] = Utils.getPrimaryKeyValues(data[prop.name as string], prop.targetMeta!.primaryKeys, true);
+        }
+      });
+
       if (this.em.config.get('forceUndefined')) {
         Object.keys(data).forEach(key => {
           if (data[key] === null) {
