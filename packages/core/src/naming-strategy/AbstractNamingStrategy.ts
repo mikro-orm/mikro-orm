@@ -9,8 +9,14 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return ret.charAt(0).toUpperCase() + ret.slice(1);
   }
 
-  classToMigrationName(timestamp: string): string {
-    return `Migration${timestamp}`;
+  classToMigrationName(timestamp: string, customMigrationName?: string): string {
+    let migrationName = `Migration${timestamp}`;
+
+    if (customMigrationName) {
+      migrationName += `_${customMigrationName}`;
+    }
+
+    return migrationName;
   }
 
   indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {

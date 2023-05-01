@@ -465,7 +465,7 @@ exports[`Migrator (postgres) generate migration with custom name with name optio
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
-export class Migration20191013214813 extends Migration {
+export class Migration20191013214813_custom_name extends Migration {
 
   async up(): Promise<void> {
     this.addSql('alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);');

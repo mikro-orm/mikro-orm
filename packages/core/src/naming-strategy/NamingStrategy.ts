@@ -13,7 +13,7 @@ export interface NamingStrategy {
   /**
    * Return a migration name. This name should allow ordering.
    */
-  classToMigrationName(timestamp: string): string;
+  classToMigrationName(timestamp: string, customMigrationName?: string): string;
 
   /**
    * Return a column name for a property
