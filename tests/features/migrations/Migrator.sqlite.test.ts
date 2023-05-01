@@ -138,6 +138,8 @@ describe('Migrator (sqlite)', () => {
     const migration1 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).not.toBeCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
+    const outOfSync = await migrator.checkMigrationNeeded();
+    expect(outOfSync).toBe(false);
     await remove(process.cwd() + '/temp/migrations-2/' + migration1.fileName);
 
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
