@@ -64,7 +64,15 @@ export abstract class SchemaHelper {
     return {};
   }
 
-  async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
+  getDropNativeEnumSQL(name: string, schema?: string): string {
+    throw new Error('Not supported by given driver');
+  }
+
+  getAlterNativeEnumSQL(name: string, schema?: string, value?: string): string {
+    throw new Error('Not supported by given driver');
+  }
+
+  async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void> {
     for (const t of tables) {
       const table = schema.addTable(t.table_name, t.schema_name);
       table.comment = t.table_comment;
