@@ -17,6 +17,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  override supportsNativeEnums(): boolean {
+    return true;
+  }
+
   override supportsCustomPrimaryKeyNames(): boolean {
     return true;
   }
@@ -128,7 +132,11 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'double precision';
   }
 
-  override getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[] }): string {
+  override getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[]; nativeEnumName?: string }): string {
+    if (column.nativeEnumName) {
+      return column.nativeEnumName;
+    }
+
     if (column.items?.every(item => Utils.isString(item))) {
       return 'text';
     }

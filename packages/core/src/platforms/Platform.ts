@@ -48,6 +48,11 @@ export abstract class Platform {
     return false;
   }
 
+  /** for postgres native enums */
+  supportsNativeEnums(): boolean {
+    return false;
+  }
+
   getSchemaHelper(): unknown {
     return undefined;
   }
