@@ -1,6 +1,5 @@
 import { ObjectId } from 'bson';
-import { Entity, PrimaryKey, Property, Dictionary } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mongodb';
+import { MikroORM, Entity, PrimaryKey, Property, Dictionary } from '@mikro-orm/mongodb';
 
 @Entity()
 class Entity401 {
@@ -25,7 +24,7 @@ describe('GH issue 401', () => {
   let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init({
+    orm = MikroORM.initSync({
       entities: [Entity401],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
     });
