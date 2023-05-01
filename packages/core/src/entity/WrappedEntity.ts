@@ -146,7 +146,7 @@ export class WrappedEntity<Entity extends object> {
 
     if (this.__meta.compositePK) {
       return this.__meta.primaryKeys.reduce((ret, pk) => {
-        const child = this.entity[pk] as AnyEntity<Entity> | Primary<unknown>;
+        const child = this.entity[pk] as AnyEntity<Entity>;
 
         if (Utils.isEntity(child, true)) {
           const childPk = helper(child).getPrimaryKeys(convertCustomTypes);
