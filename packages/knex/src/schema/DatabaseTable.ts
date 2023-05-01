@@ -12,6 +12,7 @@ export class DatabaseTable {
   private indexes: IndexDef[] = [];
   private checks: CheckDef[] = [];
   private foreignKeys: Dictionary<ForeignKey> = {};
+  public nativeEnums: Dictionary<unknown[]> = {}; // for postgres
   public comment?: string;
 
   constructor(private readonly platform: AbstractSqlPlatform,
@@ -54,7 +55,7 @@ export class DatabaseTable {
       const type = v.name in enums ? 'enum' : v.type;
       v.mappedType = this.platform.getMappedType(type);
       v.default = v.default?.toString().startsWith('nextval(') ? null : v.default;
-      v.enumItems = enums[v.name] || [];
+      v.enumItems ??= enums[v.name] || [];
       o[v.name] = v;
 
       return o;
@@ -100,11 +101,12 @@ export class DatabaseTable {
         autoincrement: prop.autoincrement ?? primary,
         primary,
         nullable: this.columns[field]?.nullable ?? !!prop.nullable,
+        nativeEnumName: prop.nativeEnumName,
         length: prop.length,
         precision: prop.precision,
         scale: prop.scale,
         default: prop.defaultRaw,
-        enumItems: prop.items?.every(Utils.isString) ? prop.items as string[] : undefined,
+        enumItems: prop.nativeEnumName || prop.items?.every(Utils.isString) ? prop.items as string[] : undefined,
         comment: prop.comment,
         extra: prop.extra,
         ignoreSchemaChanges: prop.ignoreSchemaChanges,
