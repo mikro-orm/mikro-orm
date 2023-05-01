@@ -222,6 +222,3 @@ test('serialization respects partial loading hints 4', async () => {
     owner: { id: 1, name: 's1' },
   });
 });
-
-// TODO test em.populate and add way to set populate hint on already loaded entities
-// TODO test partial loading on (nested) embeddables (both inlined and object mode)
