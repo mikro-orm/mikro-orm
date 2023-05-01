@@ -18,6 +18,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  override supportsNativeEnums(): boolean {
+    return true;
+  }
+
   override supportsCustomPrimaryKeyNames(): boolean {
     return true;
   }

@@ -136,11 +136,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     const quotedTableName = this.tableName();
     const defaultTo = col.modified.defaultTo;
 
-    if (!defaultTo) {
-      return;
-    }
-
-    if (defaultTo[0] === null) {
+    if (defaultTo?.[0] == null) {
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} drop default`, bindings: [] });
     }
   }

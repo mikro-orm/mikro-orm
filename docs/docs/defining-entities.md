@@ -550,6 +550,74 @@ properties: {
   </TabItem>
 </Tabs>
 
+### PostgreSQL native enums
+
+By default, the PostgreSQL driver, represents enums as a text columns with check constraints. Since v6, you can opt-in for a native enums by setting the `nativeEnumName` option.
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="reflect-metadata">
+
+```ts title="./entities/Author.ts"
+@Entity()
+export class User {
+
+  @Enum({ items: () => UserRole, nativeEnumName: 'user_role' })
+  role!: UserRole;
+
+}
+
+export enum UserRole {
+  ADMIN = 'admin',
+  MODERATOR = 'moderator',
+  USER = 'user',
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/Author.ts"
+@Entity()
+export class User {
+
+  @Enum({ items: () => UserRole, nativeEnumName: 'user_role' })
+  role!: UserRole;
+
+}
+
+export enum UserRole {
+  ADMIN = 'admin',
+  MODERATOR = 'moderator',
+  USER = 'user',
+}
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/Author.ts"
+export enum UserRole {
+  ADMIN = 'admin',
+  MODERATOR = 'moderator',
+  USER = 'user',
+}
+
+properties: {
+  role: { enum: true, nativeEnumName: 'user_role', items: () => UserRole },
+},
+```
+
+  </TabItem>
+</Tabs>
+
 ## Enum arrays
 
 We can also use array of values for enum, in that case, `EnumArrayType` type will be used automatically, that will validate items on flush.

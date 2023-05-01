@@ -56,8 +56,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `${ignoredPrefixes} and "${column}" not in (${ignored})`;
   }
 
-  override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
-    const schemas = tables.length === 0 ? [schema.name] : tables.map(t => t.schema_name ?? schema.name);
+  override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void> {
+    schemas ??= tables.length === 0 ? [schema.name] : tables.map(t => t.schema_name ?? schema.name);
     const nativeEnums = await this.getNativeEnumDefinitions(connection, schemas);
     schema.setNativeEnums(nativeEnums);
 
@@ -218,6 +218,22 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       o[row.enum_name] = this.platform.unmarshallArray(row.enum_value);
       return o;
     }, {});
+  }
+
+  override getDropNativeEnumSQL(name: string, schema?: string): string {
+    if (schema && schema !== this.platform.getDefaultSchemaName()) {
+      name = schema + '.' + name;
+    }
+
+    return `drop type ${this.platform.quoteIdentifier(name)}`;
+  }
+
+  override getAlterNativeEnumSQL(name: string, schema?: string, value?: string): string {
+    if (schema && schema !== this.platform.getDefaultSchemaName()) {
+      name = schema + '.' + name;
+    }
+
+    return `alter type ${this.platform.quoteIdentifier(name)} add value ${this.platform.quoteValue(value)}`;
   }
 
   override async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName?: string, schemaName?: string): Promise<Dictionary<string[]>> {

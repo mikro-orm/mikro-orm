@@ -1,26 +1,28 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`native enums in postgres enum diffing: postgres-update-schema-enums-1 1`] = `
-"create table "new_table" ("id" serial primary key, "enum_test" varchar(255) not null);
+"create schema if not exists "different_schema";
+
+create table "different_schema"."new_table" ("id" serial primary key, "enum_test" varchar(255) not null);
 
 "
 `;
 
 exports[`native enums in postgres enum diffing: postgres-update-schema-enums-2 1`] = `
-"create type "enum_test" as enum ('a', 'b');
-alter table "new_table" alter column "enum_test" type "enum_test" using ("enum_test"::"enum_test");
+"create type "different_schema"."enum_test" as enum ('a', 'b');
+alter table "different_schema"."new_table" alter column "enum_test" type "different_schema"."enum_test" using ("enum_test"::"different_schema"."enum_test");
 
 "
 `;
 
 exports[`native enums in postgres enum diffing: postgres-update-schema-enums-3 1`] = `
-"alter type "enum_test" add value 'c';
+"alter type "different_schema"."enum_test" add value 'c';
 
 "
 `;
 
 exports[`native enums in postgres enum diffing: postgres-update-schema-enums-4 1`] = `
-"alter table "new_table" alter column "enum_test" type text using ("enum_test"::text);
+"alter table "different_schema"."new_table" alter column "enum_test" type text using ("enum_test"::text);
 
 "
 `;
@@ -52,7 +54,6 @@ drop type "enum4";
 drop type "enum5";
 drop type "enum_entity_type";
 drop type "enum_entity_type2";
-drop type "enum_test";
 
 set session_replication_role = 'origin';
 "
