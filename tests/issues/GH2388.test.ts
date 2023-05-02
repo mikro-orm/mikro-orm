@@ -69,7 +69,6 @@ beforeAll(async () => {
       MemberRelationshipTwo,
     ],
     dbName: ':memory:',
-    debug: true,
   });
 
   await orm.em
@@ -84,7 +83,7 @@ beforeAll(async () => {
 
 afterAll(() => orm.close(true));
 
-test('should populate both entities', async () => {
+test('should not delete active id when mutating entity', async () => {
   const fork1 = orm.em.fork();
 
   const member1 = fork1.create(Member, {});
@@ -113,4 +112,25 @@ test('should populate both entities', async () => {
 
   expect(loaded.passive).toBeTruthy();
   expect(loaded.activeOne).toBeTruthy();
+});
+
+test('should support creating two different relationships in the same transaction', async () => {
+  const fork1 = orm.em.fork();
+
+  const member1 = fork1.create(Member, {});
+  const member2 = fork1.create(Member, {});
+
+  fork1.create(MemberRelationshipOne, {
+    activeOne: member1,
+    passive: member2,
+    data: 'foo',
+  });
+
+  fork1.create(MemberRelationshipTwo, {
+    activeTwo: member1,
+    passive: member2,
+    data: 'bar',
+  });
+
+  await fork1.flush();
 });
