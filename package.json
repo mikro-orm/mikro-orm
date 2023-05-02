@@ -108,8 +108,8 @@
     "@types/sqlstring": "2.3.0",
     "@types/uuid": "9.0.1",
     "@types/webpack-env": "1.18.0",
-    "@typescript-eslint/eslint-plugin": "5.59.1",
-    "@typescript-eslint/parser": "5.59.1",
+    "@typescript-eslint/eslint-plugin": "5.59.2",
+    "@typescript-eslint/parser": "5.59.2",
     "bson": "^5.2.0",
     "conditional-type-checks": "1.0.6",
     "eslint": "8.39.0",
@@ -129,5 +129,5 @@
     "typescript": "5.0.4",
     "uuid": "9.0.0"
   },
-  "packageManager": "yarn@3.5.0"
+  "packageManager": "yarn@3.5.1"
 }
