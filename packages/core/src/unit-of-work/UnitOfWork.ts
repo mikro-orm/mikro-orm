@@ -586,17 +586,42 @@ export class UnitOfWork {
   private expandUniqueProps<T extends object>(entity: T): string[] {
     const wrapped = helper(entity);
 
-    return wrapped.__meta.uniqueProps.map(prop => {
-      if (entity[prop.name]) {
+    if (!wrapped.__meta.hasUniqueProps) {
+      return [];
+    }
+
+    const simpleUniqueHashes = wrapped.__meta.uniqueProps.map(prop => {
+      if (entity[prop.name] != null) {
         return prop.reference === ReferenceType.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]).getSerializedPrimaryKey();
       }
 
-      if (wrapped.__originalEntityData?.[prop.name as string]) {
+      if (wrapped.__originalEntityData?.[prop.name as string] != null) {
         return Utils.getPrimaryKeyHash(Utils.asArray(wrapped.__originalEntityData![prop.name as string]));
       }
 
       return undefined;
     }).filter(i => i) as string[];
+
+    const compoundUniqueHashes = wrapped.__meta.uniques.map(unique => {
+      const props = Utils.asArray(unique.properties);
+
+      if (props.every(prop => entity[prop] != null)) {
+        return Utils.getPrimaryKeyHash(props.map(p => {
+          const prop = wrapped.__meta.properties[p];
+          return prop.reference === ReferenceType.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]).getSerializedPrimaryKey();
+        }) as any);
+      }
+
+      if (props.every(prop => wrapped.__originalEntityData?.[prop as string] != null)) {
+        return Utils.getPrimaryKeyHash(props.map(p => {
+          return wrapped.__originalEntityData![p as string];
+        }));
+      }
+
+      return undefined;
+    }).filter(i => i) as string[];
+
+    return simpleUniqueHashes.concat(compoundUniqueHashes);
   }
 
   private initIdentifier<T extends object>(entity: T): void {

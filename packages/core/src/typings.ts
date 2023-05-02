@@ -398,6 +398,7 @@ export class EntityMetadata<T = any> {
       return !prop.inherited && prop.hydrate !== false && !discriminator && !prop.embedded && !onlyGetter;
     });
     this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.type));
+    this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
     this.virtual = !!this.expression;
 
     if (this.virtual) {
@@ -546,6 +547,7 @@ export interface EntityMetadata<T = any> {
   filters: Dictionary<FilterDef>;
   comment?: string;
   selfReferencing?: boolean;
+  hasUniqueProps?: boolean;
   readonly?: boolean;
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<T>;
