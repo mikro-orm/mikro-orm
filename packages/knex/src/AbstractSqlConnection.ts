@@ -2,7 +2,7 @@ import type { Knex } from 'knex';
 import { knex } from 'knex';
 import { readFile } from 'fs-extra';
 import type {
-  AnyEntity, Configuration, ConnectionOptions, EntityData, IsolationLevel, LoggingOptions, QueryResult,
+  AnyEntity, Configuration, ConnectionOptions, EntityData, IsolationLevel, LogContext, LoggingOptions, QueryResult,
   Transaction, TransactionEventBroadcaster } from '@mikro-orm/core';
 import { Connection, EventType, Utils,
 } from '@mikro-orm/core';
@@ -125,7 +125,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     const formatted = this.platform.formatQuery(queryOrKnex, params);
-    const sql = this.getSql(queryOrKnex, formatted);
+    const sql = this.getSql(queryOrKnex, formatted, logging);
     const res = await this.executeQuery<any>(sql, () => {
       const query = this.getKnex().raw(formatted);
 
@@ -193,14 +193,14 @@ export abstract class AbstractSqlConnection extends Connection {
     return config;
   }
 
-  private getSql(query: string, formatted: string): string {
+  private getSql(query: string, formatted: string, context?: LogContext): string {
     const logger = this.config.getLogger();
 
-    if (!logger.isEnabled('query')) {
+    if (!logger.isEnabled('query', context)) {
       return query;
     }
 
-    if (logger.isEnabled('query-params')) {
+    if (logger.isEnabled('query-params', context)) {
       return formatted;
     }
 

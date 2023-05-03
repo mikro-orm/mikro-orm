@@ -1,4 +1,4 @@
-import { Entity, LoggerNamespace, MikroORM, PrimaryKey } from '@mikro-orm/core';
+import { Entity, LoggerNamespace, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
@@ -7,6 +7,9 @@ export class Example {
 
   @PrimaryKey()
   id!: number;
+
+  @Property({ nullable: true })
+  title?: string;
 
 }
 
@@ -43,22 +46,27 @@ describe('logging', () => {
   });
 
   it(`logs on query - baseline`, async () => {
-    const ex = await orm.em.findOneOrFail(Example, { id: 1 });
+    const ex = await orm.em.fork().findOneOrFail(Example, { id: 1 });
     expect(mockedLogger).toBeCalledTimes(1);
   });
 
   it(`overrides the default namespace`, async () => {
     setDebug(['discovery']);
-    await orm.em.findOneOrFail(Example, { id: 1 }, { logging: { debugMode: ['query'] } });
+    const em = orm.em.fork();
+
+    const example = await em.findOneOrFail(Example, { id: 1 }, { logging: { debugMode: ['query'] } });
+    example.title = 'An update';
+    await em.persistAndFlush(example);
+
     expect(mockedLogger).toBeCalledTimes(1);
   });
 
-  it(`overrides the default debug config`, async () => {
-    await orm.em.findOneOrFail(Example, { id: 1 }, { logging: { enabled: false } });
+  it(`overrides the default debug config via the enabled flag`, async () => {
+    await orm.em.fork().findOneOrFail(Example, { id: 1 }, { logging: { enabled: false } });
     expect(mockedLogger).not.toBeCalled();
 
     setDebug([]);
-    await orm.em.findOneOrFail(Example, { id: 1 }, { logging: { enabled: true } });
+    await orm.em.fork().findOneOrFail(Example, { id: 1 }, { logging: { enabled: true } });
     expect(mockedLogger).toBeCalledTimes(1);
   });
 
