@@ -1,5 +1,6 @@
 import { Entity, LoggerNamespace, MikroORM, PrimaryKey } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
+import { mockLogger } from '../../helpers';
 
 @Entity()
 export class Example {
@@ -9,25 +10,27 @@ export class Example {
 
 }
 
-const mockLogger = jest.fn(thing => console.log('CALLED', thing));
-
 describe('logging', () => {
 
   let orm: MikroORM<SqliteDriver>;
-  const setDebug = (debug: LoggerNamespace[] | boolean = ['query', 'query-params']) => orm.config.set('debug', debug);
+  let mockedLogger: jest.Func;
+  const setDebug = (debug: LoggerNamespace[] = ['query', 'query-params']) => {
+    mockedLogger = mockLogger(orm, debug);
+  };
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Example],
       dbName: ':memory:',
       driver: SqliteDriver,
-      logger: mockLogger,
     });
+    setDebug();
 
     await orm.schema.createSchema();
 
     const example = new Example();
     await orm.em.persistAndFlush(example);
+
   });
 
   afterAll(async () => {
@@ -40,24 +43,23 @@ describe('logging', () => {
   });
 
   it(`logs on query - baseline`, async () => {
-    await orm.em.findOneOrFail(Example, { id: 1 });
-    expect(mockLogger).toBeCalledTimes(1);
+    const ex = await orm.em.findOneOrFail(Example, { id: 1 });
+    expect(mockedLogger).toBeCalledTimes(1);
   });
 
   it(`overrides the default namespace`, async () => {
     setDebug(['discovery']);
     await orm.em.findOneOrFail(Example, { id: 1 }, { logging: { debugMode: ['query'] } });
-    expect(mockLogger).toBeCalledTimes(1);
+    expect(mockedLogger).toBeCalledTimes(1);
   });
 
   it(`overrides the default debug config`, async () => {
-    setDebug(true);
     await orm.em.findOneOrFail(Example, { id: 1 }, { logging: { enabled: false } });
-    expect(mockLogger).not.toBeCalled();
+    expect(mockedLogger).not.toBeCalled();
 
-    setDebug(false);
+    setDebug([]);
     await orm.em.findOneOrFail(Example, { id: 1 }, { logging: { enabled: true } });
-    expect(mockLogger).toBeCalledTimes(1);
+    expect(mockedLogger).toBeCalledTimes(1);
   });
 
 });
