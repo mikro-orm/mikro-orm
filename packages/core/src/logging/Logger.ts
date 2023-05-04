@@ -63,4 +63,4 @@ export interface LoggerOptions {
  * await em.findOne(User, 1, { loggerContext: { label: 'user middleware' } };
  * // [query] (user middleware) select * from user where id = 1;
  */
-export type LoggingOptions = (Pick<LogContext, 'label' | 'enabled' | 'debugMode'> & Dictionary);
+export type LoggingOptions = Pick<LogContext, 'label' | 'enabled' | 'debugMode'> & Dictionary;

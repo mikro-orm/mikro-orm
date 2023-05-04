@@ -86,7 +86,7 @@ const author = await em.findOne(Author, { id: 1 }, { loggerContext: { label: 'Au
 
 ### Changing `debugMode` or disabling logging for specific queries
 
-If you'd like to disable queries on a per-query basis, you can leverage the `isDisabled` flag within `FindOptions`:
+If you'd like to disable logging on a per-query basis, you can leverage the `enabled` flag within `FindOptions`:
 
 ```ts
 // MikroORM.init({ debug: true });
@@ -187,7 +187,7 @@ interface LogContext extends Dictionary {
   took?: number;
   level?: 'info' | 'warning' | 'error';
   enabled?: boolean;
-  debugMode?: LoggerNamespace[]
+  debugMode?: LoggerNamespace[];
   connection?: {
     type?: string;
     name?: string;
