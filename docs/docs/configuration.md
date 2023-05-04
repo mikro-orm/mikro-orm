@@ -61,7 +61,7 @@ Read more about this in [Metadata Providers](metadata-providers.md) sections.
 Since v5.6, the ORM extensions like `SchemaGenerator`, `Migrator` or `EntityGenerator` can be registered via the `extensions` config option. This will be the only supported way to have the shortcuts like `orm.migrator` available in v6, so we no longer need to dynamically require those dependencies or specify them as optional peer dependencies (both of those things cause issues with various bundling tools like Webpack, or those used in Remix or Next.js).
 
 ```ts
-import { defineConfig } from '@mikro-orm/postgres';
+import { defineConfig } from '@mikro-orm/postgresql';
 import { Migrator } from '@mikro-orm/migrations';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { SeedManager } from '@mikro-orm/seeder';
