@@ -33,7 +33,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where, true);
-    const res = await this.rethrow(this.getConnection('read').find(entityName, where, options.orderBy, options.limit, options.offset, fields, options.ctx));
+    const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
+      this.renameFields(entityName, orderBy, false),
+    );
+    const res = await this.rethrow(this.getConnection('read').find(entityName, where, orderBy, options.limit, options.offset, fields, options.ctx));
 
     return res.map(r => this.mapResult<T>(r, this.metadata.find<T>(entityName))!);
   }
@@ -51,7 +54,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where, true);
-    const res = await this.rethrow(this.getConnection('read').find(entityName, where, options.orderBy, 1, undefined, fields, options.ctx));
+    const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
+      this.renameFields(entityName, orderBy, false),
+    );
+    const res = await this.rethrow(this.getConnection('read').find(entityName, where, orderBy, 1, undefined, fields, options.ctx));
 
     return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
   }
