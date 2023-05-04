@@ -30,7 +30,7 @@ describe('GH issue 4313', () => {
     a.complexName = 'a';
     const b = new A();
     b.complexName = 'b';
-    await orm.em.persistAndFlush([a,b]);
+    await orm.em.persistAndFlush([a, b]);
     orm.em.clear();
   });
 
@@ -81,6 +81,5 @@ describe('GH issue 4313', () => {
       orderBy: [{ complexName: 'desc' }],
     });
     expect(data4!.complexName).toBe('b');
-
   });
 });
