@@ -17,6 +17,7 @@ import type { LockMode } from '../enums';
 import { helper, wrap } from './wrap';
 import { Utils } from '../utils/Utils';
 
+/** @deprecated use `Ref` instead, `IdentifiedReference` type will be removed in v6 */
 export type IdentifiedReference<T, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]: T[K] } & Reference<T>);
 
 export class Reference<T> {
