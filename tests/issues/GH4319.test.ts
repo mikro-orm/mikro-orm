@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, OneToMany, BigIntType, PrimaryKey, Ref, MikroORM } from '@mikro-orm/core';
+import { Collection, Entity, ManyToOne, OneToMany, BigIntType, PrimaryKey, Ref } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Company {
@@ -30,7 +31,7 @@ export class Service {
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
-  @OneToMany(() => ServicePropertyMikro, property => property.performable)
+  @OneToMany(() => ServicePropertyMikro, property => property.service)
   properties = new Collection<ServicePropertyMikro>(this);
 
   @ManyToOne(() => Company, {
@@ -50,7 +51,7 @@ class ServicePropertyMikro {
     ref: true,
     inversedBy: service => service.properties,
   })
-  performable!: Ref<Service>;
+  service!: Ref<Service>;
 
   @OneToMany(() => ServicePropertyConditionMikro, spc => spc.property)
   conditions = new Collection<ServicePropertyConditionMikro>(this);
@@ -97,7 +98,7 @@ beforeEach(async () => {
 
   service = fork.create(Service, { vendor });
 
-  fork.create(ServicePropertyMikro, { performable: service });
+  fork.create(ServicePropertyMikro, { service });
 
   await fork.flush();
 });
@@ -114,8 +115,8 @@ test(`populating properties across two promises causes conflict`, async () => {
         { id: service.id },
         { populate: ['vendor.rules'] },
       )
-      .then(async performable => {
-        const properties = await performable.properties.load({
+      .then(async service => {
+        const properties = await service.properties.load({
           populate: ['conditions'],
         });
 
@@ -135,8 +136,8 @@ test(`remove properties from second promise causes no issue`, async () => {
         { id: service.id },
         { populate: ['vendor.rules'] },
       )
-      .then(async performable => {
-        const properties = await performable.properties.load({
+      .then(async service => {
+        const properties = await service.properties.load({
           populate: ['conditions'],
         });
 
@@ -152,8 +153,8 @@ test(`remove rules from first promise causes no issue`, async () => {
   await Promise.all([
     orm.em
       .findOneOrFail(Service, { id: service.id }, { populate: ['vendor'] })
-      .then(async performable => {
-        const properties = await performable.properties.load({
+      .then(async service => {
+        const properties = await service.properties.load({
           populate: ['conditions'],
         });
 
