@@ -27,7 +27,7 @@ export interface Logger {
    */
   setDebugMode(debugMode: boolean | LoggerNamespace[]): void;
 
-  isEnabled(namespace: LoggerNamespace): boolean;
+  isEnabled(namespace: LoggerNamespace, context?: LogContext): boolean;
 
 }
 
@@ -40,6 +40,8 @@ export interface LogContext extends Dictionary {
   took?: number;
   results?: number;
   level?: 'info' | 'warning' | 'error';
+  enabled?: boolean;
+  debugMode?: LoggerNamespace[];
   connection?: {
     type?: string;
     name?: string;
@@ -54,10 +56,12 @@ export interface LoggerOptions {
 }
 
 /**
- * Context for a logger to utilize to format output, including a label and additional properties that can be accessed by custom loggers
+ * Logger options to modify format output and overrides, including a label and additional properties that can be accessed by custom loggers
+ *
+ * Differs from {@link LoggerOptions} in terms of how they are used; this type is primarily a public type meant to be used within methods like `EntityManager.Find`
  *
  * @example
  * await em.findOne(User, 1, { loggerContext: { label: 'user middleware' } };
  * // [query] (user middleware) select * from user where id = 1;
  */
-export type LoggerContext = Pick<LogContext, 'label'> & Dictionary;
+export type LoggingOptions = Pick<LogContext, 'label' | 'enabled' | 'debugMode'> & Dictionary;
