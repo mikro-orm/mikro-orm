@@ -38,7 +38,8 @@ import {
   type TransactionEventBroadcaster,
   type UpsertOptions,
   type UpsertManyOptions,
-  type LoggerContext,
+  type LoggingOptions,
+  type LogContext,
 } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
@@ -150,7 +151,7 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T extends object>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>, loggerContext?: LoggerContext): Promise<EntityData<T>[]> {
+  async find<T extends object>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>, logging?: LoggingOptions): Promise<EntityData<T>[]> {
     await this.ensureConnection();
     collection = this.getCollectionName(collection);
     const options: Dictionary = ctx ? { session: ctx } : {};
@@ -190,7 +191,7 @@ export class MongoConnection extends Connection {
 
     const now = Date.now();
     const res = await resultSet.toArray();
-    this.logQuery(`${query}.toArray();`, { took: Date.now() - now, results: res.length, ...loggerContext });
+    this.logQuery(`${query}.toArray();`, { took: Date.now() - now, results: res.length, ...logging });
 
     return res as EntityData<T>[];
   }
@@ -215,7 +216,7 @@ export class MongoConnection extends Connection {
     return this.runQuery<T>('deleteMany', collection, undefined, where, ctx);
   }
 
-  async aggregate<T extends object = any>(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>, loggerContext?: LoggerContext): Promise<T[]> {
+  async aggregate<T extends object = any>(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>, logging?: LoggingOptions): Promise<T[]> {
     await this.ensureConnection();
     collection = this.getCollectionName(collection);
     /* istanbul ignore next */
@@ -223,7 +224,7 @@ export class MongoConnection extends Connection {
     const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}, ${this.logObject(options)}).toArray();`;
     const now = Date.now();
     const res = await this.getCollection(collection).aggregate<T>(pipeline, options).toArray();
-    this.logQuery(query, { took: Date.now() - now, results: res.length, ...loggerContext });
+    this.logQuery(query, { took: Date.now() - now, results: res.length, ...logging });
 
     return res;
   }
@@ -280,7 +281,7 @@ export class MongoConnection extends Connection {
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
 
-  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean, upsertOptions?: UpsertOptions<T>, loggerContext?: LoggerContext): Promise<U> {
+  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean, upsertOptions?: UpsertOptions<T>, logging?: LoggingOptions): Promise<U> {
     await this.ensureConnection();
     collection = this.getCollectionName(collection);
     const logger = this.config.getLogger();
@@ -342,7 +343,7 @@ export class MongoConnection extends Connection {
         break;
     }
 
-    this.logQuery(query!, { took: Date.now() - now, ...loggerContext });
+    this.logQuery(query!, { took: Date.now() - now, ...logging });
 
     if (method === 'countDocuments') {
       return res! as unknown as U;

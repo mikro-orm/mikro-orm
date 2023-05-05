@@ -103,7 +103,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   static cannotRemoveFromCollectionWithoutOrphanRemoval(owner: AnyEntity, property: EntityProperty): ValidationError {
     const options = [
       ' - add `orphanRemoval: true` to the collection options',
-      ' - add `onDelete: \'cascade\'` to the owning side options',
+      ' - add `deleteRule: \'cascade\'` to the owning side options',
       ' - add `nullable: true` to the owning side options',
     ].join('\n');
     return new ValidationError(`Removing items from collection ${owner.constructor.name}.${property.name} without \`orphanRemoval: true\` would break non-null constraint on the owning side. You have several options: \n${options}`, owner);
