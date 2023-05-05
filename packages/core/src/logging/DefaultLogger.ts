@@ -15,7 +15,7 @@ export class DefaultLogger implements Logger {
    * @inheritDoc
    */
   log(namespace: LoggerNamespace, message: string, context?: LogContext): void {
-    if (!this.isEnabled(namespace)) {
+    if (!this.isEnabled(namespace, context)) {
       return;
     }
 
@@ -60,15 +60,18 @@ export class DefaultLogger implements Logger {
     this.debugMode = debugMode;
   }
 
-  isEnabled(namespace: LoggerNamespace): boolean {
-    return !!this.debugMode && (!Array.isArray(this.debugMode) || this.debugMode.includes(namespace));
+  isEnabled(namespace: LoggerNamespace, context?: LogContext) {
+    if (context?.enabled !== undefined) { return context.enabled; }
+    const debugMode = context?.debugMode ?? this.debugMode;
+
+    return !!debugMode && (!Array.isArray(debugMode) || debugMode.includes(namespace));
   }
 
   /**
    * @inheritDoc
    */
   logQuery(context: { query: string } & LogContext): void {
-    if (!this.isEnabled('query')) {
+    if (!this.isEnabled('query', context)) {
       return;
     }
 
