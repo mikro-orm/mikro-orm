@@ -21,12 +21,15 @@ import type {
   EntityProperty,
   IMetadataStorage,
   Primary,
+  Ref,
 } from '../typings';
 import { GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
 import type { Collection } from '../entity/Collection';
 import type { Platform } from '../platforms';
 import { helper } from '../entity/wrap';
 import type { ScalarReference } from '../entity/Reference';
+import { type EntityManager } from '../EntityManager';
+import type DataLoader from 'dataloader';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
@@ -1210,6 +1213,39 @@ export class Utils {
 
   static isRawSql(value: unknown): value is { sql: string; params: unknown[]; use: () => void } {
     return typeof value === 'object' && !!value && '__raw' in value;
+  }
+
+  static groupPrimaryKeysByEntity(
+    refs: readonly Ref<any>[],
+  ): Map<string, Set<Primary<any>>> {
+    const map = new Map<string, Set<Primary<any>>>();
+    for (const ref of refs) {
+      const className = helper(ref).__meta.className;
+      let primaryKeys = map.get(className);
+      if (primaryKeys == null) {
+        primaryKeys = new Set();
+        map.set(className, primaryKeys);
+      }
+      primaryKeys.add(helper(ref).getPrimaryKey() as Primary<any>);
+    }
+    return map;
+  }
+
+  static getRefBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<Ref<any>, any> {
+    return async (refs: readonly Ref<any>[]): Promise<ArrayLike<any | Error>> => {
+      const groupedIds = Utils.groupPrimaryKeysByEntity(refs);
+      const promises = Array.from(groupedIds).map(
+        ([entityName, ids]) =>
+          em.find(entityName, Array.from(ids)),
+      );
+      await Promise.all(promises);
+      /* Instead of assigning each find result to the original reference we use a shortcut
+        which takes advantage of the already existing Mikro-ORM caching mechanism:
+        when it calls ref.load it will automatically retrieve the entry the entity
+        from the cache (it will hit the cache because of the previous find query).
+        This trick won't be possible for collections where we have to map the results. */
+      return await Promise.all(refs.map(async ref => await ref.load({ dataloader: false })));
+    };
   }
 
 }

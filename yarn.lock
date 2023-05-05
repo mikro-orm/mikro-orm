@@ -2051,6 +2051,7 @@ __metadata:
   dependencies:
     acorn-loose: "npm:8.3.0"
     acorn-walk: "npm:8.2.0"
+    dataloader: "npm:2.2.2"
     dotenv: "npm:16.1.4"
     fs-extra: "npm:11.1.1"
     globby: "npm:11.1.0"
@@ -4702,6 +4703,13 @@ __metadata:
   version: 7.0.0
   resolution: "dargs@npm:7.0.0"
   checksum: d69645a295d44a13ab2343a4922617342813eb9b5d0b66bdae54814ae2d305c17cdf5aca874ce1a86ce53f8f275f43b91335f1f3f38026dd11358474a4429d81
+  languageName: node
+  linkType: hard
+
+"dataloader@npm:2.2.2":
+  version: 2.2.2
+  resolution: "dataloader@npm:2.2.2"
+  checksum: 73ca3126c7828273b50e982ede9ac7f1bc7ec1df46c91863600ab27889ad508f5ee4ea62ce5fe8c22a598a4066bb47db6e785d3db9c8b48466993dce7e81f4e4
   languageName: node
   linkType: hard
 

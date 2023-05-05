@@ -51,6 +51,7 @@ import type { FlushEventArgs } from './events';
 import { EventManager, TransactionEventBroadcaster } from './events';
 import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
+import DataLoader from 'dataloader';
 
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
@@ -63,6 +64,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   readonly _id = EntityManager.counter++;
   readonly global = false;
   readonly name = this.config.get('contextName');
+  readonly refLoader = new DataLoader(Utils.getRefBatchLoadFn(this));
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Dictionary<EntityRepository<any>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);

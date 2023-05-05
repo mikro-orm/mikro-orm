@@ -115,6 +115,10 @@ export class Reference<T> {
   async load<TT extends T, K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P> | K): Promise<Loaded<TT, P> | T[K]> {
     const opts: Dictionary = typeof options === 'object' ? options : { prop: options } as LoadReferenceOptions<T, P>;
 
+    if (opts.dataloader) {
+      return helper(this.entity).__em.refLoader.load(this);
+    }
+
     if (!this.isInitialized() || opts.refresh) {
       await helper(this.entity).init(undefined, opts?.populate, opts?.lockMode, opts?.connectionType);
     }
@@ -246,6 +250,7 @@ export interface LoadReferenceOptions<T, P extends string = never> {
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   connectionType?: ConnectionType;
   refresh?: boolean;
+  dataloader?: boolean;
 }
 
 /**
