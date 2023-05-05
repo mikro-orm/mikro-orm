@@ -34,7 +34,7 @@ import type {
   EntityKey,
   EntityValue,
   OrderDefinition,
-  LoggerContext,
+  LoggingOptions,
 } from '@mikro-orm/core';
 import {
   DatabaseDriver,
@@ -86,7 +86,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate);
-    const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.loggerContext);
+    const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging);
     const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields as unknown as Field<T>[]);
     const joinedPropsOrderBy = this.buildJoinedPropsOrderBy(entityName, qb, meta, joinedProps);
     const orderBy = [...Utils.asArray(options.orderBy), ...joinedPropsOrderBy];
@@ -844,7 +844,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   }
 
   /** @internal */
-  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggerContext): QueryBuilder<T> {
+  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, logging?: LoggingOptions): QueryBuilder<T> {
     const connectionType = this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
     const qb = new QueryBuilder<T>(
       entityName,
@@ -854,7 +854,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       undefined,
       connectionType,
       undefined,
-      loggerContext,
+      logging,
     );
 
     if (!convertCustomTypes) {
