@@ -33,7 +33,7 @@ import {
   type QueryOrderMap,
   type QueryResult,
   type RequiredEntityData,
-  type LoggerContext,
+  type LoggingOptions,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
@@ -129,7 +129,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
               alias?: string,
               private connectionType?: ConnectionType,
               private readonly em?: SqlEntityManager,
-              private readonly loggerContext?: LoggerContext) {
+              private readonly logging?: LoggingOptions) {
     if (alias) {
       this.aliasCounter++;
       this._explicitAlias = true;
@@ -649,7 +649,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     const type = this.connectionType || (method === 'run' ? 'write' : 'read');
-    const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context, this.loggerContext);
+    const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context, this.logging);
     const meta = this.mainAlias.metadata;
 
     if (!mapResults || !meta) {
