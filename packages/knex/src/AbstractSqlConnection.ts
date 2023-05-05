@@ -2,7 +2,7 @@ import type { Knex } from 'knex';
 import { knex } from 'knex';
 import { readFile } from 'fs-extra';
 import type {
-  AnyEntity, Configuration, ConnectionOptions, EntityData, IsolationLevel, LoggerContext, QueryResult,
+  AnyEntity, Configuration, ConnectionOptions, EntityData, IsolationLevel, LogContext, LoggingOptions, QueryResult,
   Transaction, TransactionEventBroadcaster } from '@mikro-orm/core';
 import { Connection, EventType, Utils,
 } from '@mikro-orm/core';
@@ -114,7 +114,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, loggerContext?: LoggerContext): Promise<T> {
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, logging?: LoggingOptions): Promise<T> {
     await this.ensureConnection();
 
     if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(queryOrKnex)) {
@@ -125,7 +125,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     const formatted = this.platform.formatQuery(queryOrKnex, params);
-    const sql = this.getSql(queryOrKnex, formatted);
+    const sql = this.getSql(queryOrKnex, formatted, logging);
     return this.executeQuery<T>(sql, async () => {
       const query = this.getKnex().raw(formatted);
 
@@ -135,7 +135,7 @@ export abstract class AbstractSqlConnection extends Connection {
 
       const res = await query;
       return this.transformRawResult<T>(res, method);
-    }, { query: queryOrKnex, params, ...loggerContext });
+    }, { query: queryOrKnex, params, ...logging });
   }
 
   /**
@@ -192,14 +192,14 @@ export abstract class AbstractSqlConnection extends Connection {
     return config;
   }
 
-  private getSql(query: string, formatted: string): string {
+  private getSql(query: string, formatted: string, context?: LogContext): string {
     const logger = this.config.getLogger();
 
-    if (!logger.isEnabled('query')) {
+    if (!logger.isEnabled('query', context)) {
       return query;
     }
 
-    if (logger.isEnabled('query-params')) {
+    if (logger.isEnabled('query-params', context)) {
       return formatted;
     }
 
