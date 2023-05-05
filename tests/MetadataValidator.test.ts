@@ -141,9 +141,9 @@ describe('MetadataValidator', () => {
 
   test('validates duplicities in tableName', async () => {
     const properties: Dictionary = {
-      id: { reference: 'scalar', primary: true, name: 'id', type: 'number' },
-      name: { reference: 'scalar', name: 'name', type: 'string' },
-      age: { reference: 'scalar', name: 'age', type: 'string' },
+      id: { kind: 'scalar', primary: true, name: 'id', type: 'number' },
+      name: { kind: 'scalar', name: 'name', type: 'string' },
+      age: { kind: 'scalar', name: 'age', type: 'string' },
     };
     const schema1 = EntitySchema.fromMetadata({
       name: 'Foo1',
@@ -170,9 +170,9 @@ describe('MetadataValidator', () => {
     test('allows duplicate classNames when "checkDuplicateEntities" is "false"', async () => {
       // Arrange
       const properties: Dictionary = {
-        id: { reference: 'scalar', primary: true, name: 'id', type: 'number' },
-        name: { reference: 'scalar', name: 'name', type: 'string' },
-        age: { reference: 'scalar', name: 'age', type: 'string' },
+        id: { kind: 'scalar', primary: true, name: 'id', type: 'number' },
+        name: { kind: 'scalar', name: 'name', type: 'string' },
+        age: { kind: 'scalar', name: 'age', type: 'string' },
       };
       const schema1 = EntitySchema.fromMetadata({
         name: 'Foo1',
@@ -195,9 +195,9 @@ describe('MetadataValidator', () => {
     test('allows duplicate tableNames when "checkDuplicateTableNames" is true but "checkDuplicateEntities" is false', async () => {
       // Arrange
       const properties: Dictionary = {
-        id: { reference: 'scalar', primary: true, name: 'id', type: 'number' },
-        name: { reference: 'scalar', name: 'name', type: 'string' },
-        age: { reference: 'scalar', name: 'age', type: 'string' },
+        id: { kind: 'scalar', primary: true, name: 'id', type: 'number' },
+        name: { kind: 'scalar', name: 'name', type: 'string' },
+        age: { kind: 'scalar', name: 'age', type: 'string' },
       };
       const schema1 = EntitySchema.fromMetadata({
         name: 'Foo1',
@@ -220,9 +220,9 @@ describe('MetadataValidator', () => {
     test('throws an error when duplicate entity is not provided', async () => {
       // Arrange
       const properties: Dictionary = {
-        id: { reference: 'scalar', primary: true, name: 'id', type: 'number' },
-        name: { reference: 'scalar', name: 'name', type: 'string' },
-        age: { reference: 'scalar', name: 'age', type: 'string' },
+        id: { kind: 'scalar', primary: true, name: 'id', type: 'number' },
+        name: { kind: 'scalar', name: 'name', type: 'string' },
+        age: { kind: 'scalar', name: 'age', type: 'string' },
       };
       const schema1 = EntitySchema.fromMetadata({
         name: 'Foo1',
