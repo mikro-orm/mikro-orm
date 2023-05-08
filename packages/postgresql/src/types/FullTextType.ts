@@ -1,7 +1,6 @@
 import { raw, Type } from '@mikro-orm/core';
-import type { TransformContext } from '@mikro-orm/core';
+import type { TransformContext, RawQueryFragment } from '@mikro-orm/core';
 import type { PostgreSqlPlatform } from '../PostgreSqlPlatform';
-import type { Knex } from '@mikro-orm/knex';
 
 // Postgres has four levels of full text weights
 // https://www.postgresql.org/docs/current/textsearch-controls.html
@@ -12,7 +11,7 @@ type FullTextWeight = 'A' | 'B' | 'C' | 'D';
 // with nullable properties.
 export type WeightedFullTextValue = { [K in FullTextWeight]?: string | null };
 
-export class FullTextType extends Type<string | WeightedFullTextValue, string | null | Knex.Raw> {
+export class FullTextType extends Type<string | WeightedFullTextValue, string | null | RawQueryFragment> {
 
   constructor(public regconfig: string = 'simple') {
     super();
@@ -29,7 +28,7 @@ export class FullTextType extends Type<string | WeightedFullTextValue, string | 
   // Use convertToDatabaseValue to prepare insert queries as this method has
   // access to the raw JS value. Return Knex#raw to prevent QueryBuilderHelper#mapData
   // from sanitizing the returned chaing of SQL functions.
-  override convertToDatabaseValue(value: string | WeightedFullTextValue, platform: PostgreSqlPlatform, context?: TransformContext | boolean): string | null | Knex.Raw {
+  override convertToDatabaseValue(value: string | WeightedFullTextValue, platform: PostgreSqlPlatform, context?: TransformContext | boolean): string | null | RawQueryFragment {
     // Don't convert to values from select queries to the to_tsvector notation
     // these should be compared as string using a special oparator or function
     // this behaviour is defined in Platform#getFullTextWhereClause.
