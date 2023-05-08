@@ -30,7 +30,7 @@ export class Book {
 
   @Index({ type: 'fulltext' })
   @Property({ type: FullTextType, nullable: true, onUpdate: createWeightedValue, onCreate: createWeightedValue })
-  searchableTitleWeighted!: WeightedFullTextValue | string;
+  searchableTitleWeighted!: WeightedFullTextValue;
 
   constructor(title: string | null) {
     this.title = title;
