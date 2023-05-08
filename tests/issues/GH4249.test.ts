@@ -1,20 +1,22 @@
 import {
     BigIntType,
     Entity,
+    FilterQuery,
     JsonType,
     LoadStrategy,
     ManyToOne,
     PrimaryKey,
     Property,
     SimpleLogger,
-    wrap
+    wrap,
 } from '@mikro-orm/core';
-import {MikroORM, MySqlDriver} from '@mikro-orm/mysql';
-import {mockLogger} from '../helpers';
+import { MikroORM, MySqlDriver } from '@mikro-orm/mysql';
+import { mockLogger } from '../helpers';
 
 @Entity()
 class Author {
-    @PrimaryKey({columnType: 'bigint', type: BigIntType})
+
+    @PrimaryKey({ columnType: 'bigint', type: BigIntType })
     private id: string;
 
     public constructor(id: string) {
@@ -24,17 +26,19 @@ class Author {
     public getId(): string {
         return this.id;
     }
+
 }
 
 @Entity()
 class Post {
+
     @PrimaryKey()
     private id: number;
 
-    @ManyToOne({entity: () => Author})
+    @ManyToOne({ entity: () => Author })
     private author: Author;
 
-    @Property({columnType: 'json', type: JsonType})
+    @Property({ columnType: 'json', type: JsonType })
     private extra: Record<string, any>;
 
     public constructor(authro: Author, extra: Record<string, any>) {
@@ -56,6 +60,7 @@ class Post {
     public getExtra(): Record<string, any> {
         return this.extra;
     }
+
 }
 
 let orm: MikroORM;
@@ -78,7 +83,7 @@ beforeAll(async () => {
 
     const em = orm.em.fork();
     const author = new Author('198604260123');
-    const post = new Post(author, {category: 'Tech'});
+    const post = new Post(author, { category: 'Tech' });
     em.persist(author);
     em.persist(post);
     await em.flush();
@@ -92,16 +97,16 @@ afterAll(async () => {
 test('4249', async () => {
     const mock = mockLogger(orm);
     const em = orm.em.fork();
-    const post = await em.getRepository(Post).findOneOrFail(<FilterQuery<Post>>{id: postId});
+    const post = await em.getRepository(Post).findOneOrFail({ id: postId } as FilterQuery<Post>);
     await post.getAuthor();
     await em.flush();
     expect(mock.mock.calls).toEqual([
             [
-                '[query] select `p0`.* from `post` as `p0` where `p0`.`id` = 1 limit 1'
+                '[query] select `p0`.* from `post` as `p0` where `p0`.`id` = 1 limit 1',
             ],
             [
-                "[query] select `a0`.* from `author` as `a0` where `a0`.`id` = '198604260123' limit 1"
+                "[query] select `a0`.* from `author` as `a0` where `a0`.`id` = '198604260123' limit 1",
             ],
-        ]
+        ],
     );
 });
