@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.5](https://github.com/mikro-orm/mikro-orm/compare/v5.7.4...v5.7.5) (2023-05-09)
+
+
+### Bug Fixes
+
+* **core:** deprecate `wrappedReference` and `IdentifiedReference` ([ab79832](https://github.com/mikro-orm/mikro-orm/commit/ab79832a8f119bc5c473ee8fb749ba1c9e4d01b3))
+* **core:** detect early deletes for compound unique constraints ([f9530e4](https://github.com/mikro-orm/mikro-orm/commit/f9530e4b24bd806e33f1997d4e1ef548e02b6b90)), closes [#4305](https://github.com/mikro-orm/mikro-orm/issues/4305)
+* **core:** fix extra updates caused by bigint type ([2acd25e](https://github.com/mikro-orm/mikro-orm/commit/2acd25e1dfd2eb7764e38c4ff224a84e52d5ed0f)), closes [#4249](https://github.com/mikro-orm/mikro-orm/issues/4249)
+* **core:** fix extra updates caused by property initializers when `forceEntityConstructor` is enabled ([7ee883d](https://github.com/mikro-orm/mikro-orm/commit/7ee883df04be893a1c01b3ef0b41a736f5d6b3b9)), closes [#4323](https://github.com/mikro-orm/mikro-orm/issues/4323)
+* **core:** respect schema name when checking duplicate table names ([5b89b00](https://github.com/mikro-orm/mikro-orm/commit/5b89b0056b6f87e6d5f4960bb2395d37bb9b3c28)), closes [#4332](https://github.com/mikro-orm/mikro-orm/issues/4332)
+
+
+
+
+
 ## [5.7.4](https://github.com/mikro-orm/mikro-orm/compare/v5.7.3...v5.7.4) (2023-05-01)
 
 

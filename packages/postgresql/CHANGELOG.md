@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.5](https://github.com/mikro-orm/mikro-orm/compare/v5.7.4...v5.7.5) (2023-05-09)
+
+
+### Bug Fixes
+
+* **postgres:** improve enum/check constraint inspection in schema diffing ([6c44b42](https://github.com/mikro-orm/mikro-orm/commit/6c44b4277976c2c4bd79818d997a1a6bff861d7c)), closes [#4312](https://github.com/mikro-orm/mikro-orm/issues/4312)
+
+
+
+
+
 ## [5.7.4](https://github.com/mikro-orm/mikro-orm/compare/v5.7.3...v5.7.4) (2023-05-01)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

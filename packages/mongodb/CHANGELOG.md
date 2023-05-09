@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.5](https://github.com/mikro-orm/mikro-orm/compare/v5.7.4...v5.7.5) (2023-05-09)
+
+
+### Bug Fixes
+
+* **mongo:** sorting with UnderscoreNamingStrategy ([#4314](https://github.com/mikro-orm/mikro-orm/issues/4314)) ([a5b0f94](https://github.com/mikro-orm/mikro-orm/commit/a5b0f94895a1485249156d26290f60cc7080b65a)), closes [#4313](https://github.com/mikro-orm/mikro-orm/issues/4313)
+
+
+
+
+
 ## [5.7.4](https://github.com/mikro-orm/mikro-orm/compare/v5.7.3...v5.7.4) (2023-05-01)
 
 **Note:** Version bump only for package @mikro-orm/mongodb
