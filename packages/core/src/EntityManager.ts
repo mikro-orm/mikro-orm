@@ -193,10 +193,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         convertCustomTypes: true,
       }) as Entity;
 
-      if (!meta.virtual) {
-        em.unitOfWork.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
-      }
-
       ret.push(entity);
     }
 
@@ -485,7 +481,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     });
 
     if (!meta.virtual) {
-      em.unitOfWork.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
       await em.lockAndPopulate(entityName, entity, where, options);
     }
 
