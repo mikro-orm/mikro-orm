@@ -2,6 +2,9 @@
 title: Smart Query Conditions
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 When you want to make complex queries, we can easily end up with a lot of boilerplate code full of curly brackets:
 
 ```ts
