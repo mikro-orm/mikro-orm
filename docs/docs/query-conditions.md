@@ -2,6 +2,9 @@
 title: Smart Query Conditions
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 When you want to make complex queries, we can easily end up with a lot of boilerplate code full of curly brackets:
 
 ```ts
@@ -92,22 +95,22 @@ The implementation and requirements differs per driver so it's important that fi
 
 ### PostgreSQL
 
-PosgreSQL allows to execute queries (pg-query) on the type pg-vector. The pg-vector type can be a column (more performant) or be created in the query (no excess columns in the database).
+PosgreSQL allows to execute queries (pg-query) on the type pg-vector. The pg-vector type can be a column (more performant) or be created in the query (no excess columns in the database).  When using a column, advanced functionality such as [a custom `regconfig` or `setweight`](https://www.postgresql.org/docs/current/textsearch-controls.html) (the default `regconfig` is `simple`) is also supported.
 
 Refer to the [PostgreSQL documentation](https://www.postgresql.org/docs/current/functions-textsearch.html) for possible queries.
 
 <Tabs
-groupId="entity-def"
+groupId="postgres-full-text"
 defaultValue="as-column"
 values={[
-{label: 'reflect-metadata', value: 'as-column'},
-{label: 'ts-morph', value: 'in-query'},
+{label: 'Using a column', value: 'as-column'},
+{label: 'Using an index', value: 'in-query'},
 ]
 }>
 <TabItem value="as-column">
 
 ```ts title="./entities/Book.ts"
-import { FullTextType } from '@mikro-orm/postgresql';
+import { FullTextType, WeightedFullTextValue } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Book {
@@ -115,17 +118,27 @@ export class Book {
   @Property()
   title!: string;
 
+  // example when using default settings
   @Index({ type: 'fulltext' })
   @Property({ type: FullTextType, onUpdate: (book) => book.title })
   searchableTitle!: string;
 
+  // example when using a custom regconfig
+  @Index({ type: 'fulltext' })
+  @Property({ type: new FullTextType('english'), onUpdate: (book) => book.title })
+  searchableTitle!: string;
+
+  // example when using weights
+  @Index({ type: 'fulltext' })
+  @Property({ type: FullTextType, onUpdate: (book) => ({ A: book.title, B: book.description }) })
+  searchableTitle!: WeightedFullTextValue;
 }
 ```
 
-And to find results: `repository.findOne({ searchableTitle: { $fulltext: 'query' } })`
+And to find results: `repository.findOne({ searchableTitle: { $fulltext: 'query' } })`.
 
-  </TabItem>
-  <TabItem value="in-query">
+</TabItem>
+<TabItem value="in-query">
 
 ```ts title="./entities/Book.ts"
 @Entity()
