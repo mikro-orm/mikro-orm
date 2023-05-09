@@ -2,6 +2,9 @@
 title: Smart Query Conditions
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 When you want to make complex queries, we can easily end up with a lot of boilerplate code full of curly brackets:
 
 ```ts
@@ -87,11 +90,11 @@ PosgreSQL allows to execute queries (pg-query) on the type pg-vector. The pg-vec
 Refer to the [PostgreSQL documentation](https://www.postgresql.org/docs/current/functions-textsearch.html) for possible queries.
 
 <Tabs
-  groupId="entity-def"
+  groupId="postgres-full-text"
   defaultValue="as-column"
   values={[
-    {label: 'reflect-metadata', value: 'as-column'},
-    {label: 'ts-morph', value: 'in-query'},
+    {label: 'Using a column', value: 'as-column'},
+    {label: 'Using an index', value: 'in-query'},
   ]}>
   <TabItem value="as-column">
 
