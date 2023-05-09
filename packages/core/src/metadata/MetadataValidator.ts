@@ -64,8 +64,11 @@ export class MetadataValidator {
       throw MetadataError.duplicateEntityDiscovered(duplicates);
     }
 
-    const tableNames = discovered.filter(meta => !meta.abstract && meta === meta.root && (meta.tableName || meta.collection));
-    const duplicateTableNames = Utils.findDuplicates(tableNames.map(meta => meta.tableName || meta.collection));
+    const tableNames = discovered.filter(meta => !meta.abstract && meta === meta.root && (meta.tableName || meta.collection) && meta.schema !== '*');
+    const duplicateTableNames = Utils.findDuplicates(tableNames.map(meta => {
+      const tableName = meta.tableName || meta.collection;
+      return (meta.schema ? '.' + meta.schema : '') + tableName;
+    }));
 
     if (duplicateTableNames.length > 0 && checkDuplicateTableNames) {
       throw MetadataError.duplicateEntityDiscovered(duplicateTableNames, 'table names');

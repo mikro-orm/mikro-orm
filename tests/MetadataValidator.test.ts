@@ -150,9 +150,12 @@ describe('MetadataValidator', () => {
     } as any);
     const schema2 = EntitySchema.fromMetadata({
       name: 'Foo2',
+      schema: 'other',
       tableName: 'foo',
       properties,
     } as any);
+    expect(() => validator.validateDiscovered([schema1.meta, schema2.meta], true, true)).not.toThrowError();
+    schema2.meta.schema = '';
     expect(() => validator.validateDiscovered([schema1.meta, schema2.meta], true, true)).toThrowError(`Duplicate table names are not allowed: foo`);
   });
 
