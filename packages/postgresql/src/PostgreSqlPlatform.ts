@@ -1,8 +1,9 @@
 import { Client } from 'pg';
-import { raw, ALIAS_REPLACEMENT, JsonProperty, Utils, type EntityProperty, type Type, type SimpleColumnMeta, type Dictionary } from '@mikro-orm/core';
+import { raw, ALIAS_REPLACEMENT, JsonProperty, Utils, type EntityProperty, Type, type SimpleColumnMeta, type Dictionary } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
+import { FullTextType } from './types/FullTextType';
 
 export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
@@ -77,6 +78,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getFullTextWhereClause(prop: EntityProperty): string {
+    if (prop.customType instanceof FullTextType) {
+      return `:column: @@ plainto_tsquery('${prop.customType.regconfig}', :query)`;
+    }
+
     if (prop.columnTypes[0] === 'tsvector') {
       return `:column: @@ plainto_tsquery('simple', :query)`;
     }
@@ -99,6 +104,13 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
+  }
+
+  override getMappedType(type: string): Type<unknown> {
+    switch (this.extractSimpleType(type)) {
+      case 'tsvector': return Type.getType(FullTextType);
+      default: return super.getMappedType(type);
+    }
   }
 
   override getRegExpOperator(val?: unknown, flags?: string): string {
