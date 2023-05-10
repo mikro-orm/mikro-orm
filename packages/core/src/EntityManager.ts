@@ -65,6 +65,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   readonly global = false;
   readonly name = this.config.get('contextName');
   readonly refLoader = new DataLoader(Utils.getRefBatchLoadFn(this));
+  readonly colLoader = new DataLoader(Utils.getColBatchLoadFn(this));
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Dictionary<EntityRepository<any>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);

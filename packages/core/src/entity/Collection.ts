@@ -73,7 +73,10 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * Initializes the collection and returns the items
    */
-  async loadItems<TT extends T, P extends string = never>(options?: InitOptions<TT, P>): Promise<Loaded<TT, P>[]> {
+  async loadItems<TT extends T, P extends string = never>(options?: InitOptions<TT, P> & { dataloader?: boolean }): Promise<Loaded<TT, P>[]> {
+    if (options?.dataloader && !this.isInitialized()) {
+      return this.getEntityManager().colLoader.load(this);
+    }
     await this.load(options);
     return super.getItems() as Loaded<TT, P>[];
   }

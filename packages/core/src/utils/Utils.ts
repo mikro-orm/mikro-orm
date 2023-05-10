@@ -24,7 +24,7 @@ import type {
   Ref,
 } from '../typings';
 import { GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
-import type { Collection } from '../entity/Collection';
+import { Collection } from '../entity/Collection';
 import type { Platform } from '../platforms';
 import { helper } from '../entity/wrap';
 import type { ScalarReference } from '../entity/Reference';
@@ -1245,6 +1245,78 @@ export class Utils {
         from the cache (it will hit the cache because of the previous find query).
         This trick won't be possible for collections where we have to map the results. */
       return await Promise.all(refs.map(async ref => await ref.load({ dataloader: false })));
+    };
+  }
+
+  static groupInversedOrMappedKeysByEntity(
+    collections: readonly Collection<any>[],
+  ): Map<string, Map<string, Set<Primary<any>>>> {
+    const entitiesMap = new Map<string, Map<string, Set<Primary<any>>>>();
+    for (const col of collections) {
+      const className = col.property.type;
+      let propMap = entitiesMap.get(className);
+      if (propMap == null) {
+        propMap = new Map();
+        entitiesMap.set(className, propMap);
+      }
+      // Many to Many vs One to Many
+      const inversedProp: string | undefined = col.property.inversedBy ?? col.property.mappedBy;
+      if (inversedProp == null) {
+        throw new Error(
+          'Cannot find inversedBy or mappedBy prop: did you forget to set the inverse side of a many-to-many relationship?',
+        );
+      }
+      let primaryKeys = propMap.get(inversedProp);
+      if (primaryKeys == null) {
+        primaryKeys = new Set();
+        propMap.set(inversedProp, primaryKeys);
+      }
+      primaryKeys.add(helper(col.owner).getPrimaryKey());
+    }
+    return entitiesMap;
+  }
+
+  static getColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<Collection<any>, any> {
+    return async (collections: readonly Collection<any>[]) => {
+      const entitiesMap = Utils.groupInversedOrMappedKeysByEntity(collections);
+      const promises: Promise<any[]>[] = Array.from(entitiesMap.entries()).map(
+        async ([entityName, propMap]) =>
+          await em.find(
+            entityName,
+            {
+              $or: Array.from(propMap.entries()).map(([prop, pks]) => ({ [prop]: Array.from(pks) })),
+            },
+            {
+              // We need to populate collections in order to later retrieve the PKs from its items
+              populate: Array.from(propMap.keys()).filter(
+                prop => em.getMetadata().get(entityName).properties[prop]?.ref !== true,
+              ) as any,
+            },
+          ),
+      );
+      const results = (await Promise.all(promises)).flat();
+      return collections.map(collection =>
+        results.filter(result => {
+          // Entity matches
+          if (helper(result).__meta.className === collection.property.type) {
+            // Either inversedBy or mappedBy exist because we already checked in groupInversedOrMappedKeysByEntity
+            const refOrCol = result[(collection.property.inversedBy ?? collection.property.mappedBy)] as
+              | Ref<any>
+              | Collection<any>;
+            if (refOrCol instanceof Collection) {
+              for (const item of refOrCol.getItems()) {
+                if (helper(item).getPrimaryKey() === helper(collection.owner).getPrimaryKey()) {
+                  return true;
+                }
+              }
+            } else {
+              return helper(refOrCol).getPrimaryKey() === helper(collection.owner).getPrimaryKey();
+            }
+
+          }
+          return false;
+        }),
+      );
     };
   }
 
