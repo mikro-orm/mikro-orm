@@ -32,7 +32,7 @@ describe('Webpack', () => {
       entities: [AuthorWpI, BookWpI],
       discovery: { disableDynamicFileAccess: true },
     } as Options;
-    const err = `Please provide either 'type' or 'entity' attribute in AuthorWpI.books`;
+    const err = `Please provide either 'type' or 'entity' attribute in AuthorWpI.books. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`;
     await expect(MikroORM.init(options)).rejects.toThrowError(err);
   });
 

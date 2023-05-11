@@ -13,7 +13,7 @@ export class ReflectMetadataProvider extends MetadataProvider {
     let type = Reflect.getMetadata('design:type', meta.prototype, prop.name);
 
     if (!type || (type === Object && prop.reference !== ReferenceType.SCALAR)) {
-      throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}`);
+      throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`);
     }
 
     // Instead of requiring the type everywhere, we default to string, which maintains the behaviour,
