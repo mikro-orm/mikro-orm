@@ -588,20 +588,16 @@ export class Utils {
     }, {} as any);
   }
 
-  static getOrderedPrimaryKeys<T>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes?: boolean): Primary<T>[] {
+  static getOrderedPrimaryKeys<T>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
     const pks = meta.primaryKeys.map((pk, idx) => {
       const prop = meta.properties[pk];
       // `data` can be a composite PK in form of array of PKs, or a DTO
-      let value = Array.isArray(data) ? data[idx] : data[pk];
+      let value = Array.isArray(data) ? data[idx] : (data[pk] ?? data);
 
       if (prop.reference !== ReferenceType.SCALAR && prop.targetMeta) {
-        const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta, platform); // do not convert custom types yet
+        const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta);
         value = value2.length > 1 ? value2 : value2[0];
-      }
-
-      if (prop.customType && platform && convertCustomTypes) {
-        return prop.customType.convertToJSValue(value, platform);
       }
 
       return value;
