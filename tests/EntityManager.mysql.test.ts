@@ -2222,13 +2222,16 @@ describe('EntityManagerMySql', () => {
     const b1 = await orm.em.findOneOrFail(FooBar2, b.id);
     expect(b1.random).toBe(123);
     expect(b1.lazyRandom).toBeUndefined();
+    await orm.em.populate(b1, ['lazyRandom']);
+    expect(b1.lazyRandom).toBe(456);
     expect(mock.mock.calls[0][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where `f0`.`id` = ? limit ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `f0`.`id`, (select 456) as `lazy_random` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
     orm.em.clear();
 
     const b2 = await orm.em.findOneOrFail(FooBar2, b.id, { populate: ['lazyRandom'] });
     expect(b2.random).toBe(123);
     expect(b2.lazyRandom).toBe(456);
-    expect(mock.mock.calls[1][0]).toMatch('select `f0`.*, (select 123) as `random`, (select 456) as `lazy_random` from `foo_bar2` as `f0` where `f0`.`id` = ? limit ?');
+    expect(mock.mock.calls[2][0]).toMatch('select `f0`.*, (select 123) as `random`, (select 456) as `lazy_random` from `foo_bar2` as `f0` where `f0`.`id` = ? limit ?');
   });
 
   test('search by formulas (gh #3048)', async () => {

@@ -949,6 +949,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return;
     }
 
+    if (prop.formula) {
+      ret.push(prop.name);
+      return;
+    }
+
     if (prop.fieldNames) {
       ret.push(...prop.fieldNames);
     }
