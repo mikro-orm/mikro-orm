@@ -1,7 +1,15 @@
 import type { Transaction } from './connections';
 import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrderMap } from './enums';
 import { ReferenceType } from './enums';
-import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference } from './entity';
+import type {
+  AssignOptions,
+  Collection,
+  EntityFactory,
+  EntityIdentifier,
+  EntityLoaderOptions,
+  EntityRepository,
+  IdentifiedReference,
+} from './entity';
 import { EntityHelper, Reference } from './entity';
 import type { SerializationContext } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
@@ -111,6 +119,7 @@ export interface IWrappedEntity<
   isInitialized(): boolean;
   isTouched(): boolean;
   populated(populated?: boolean): void;
+  populate<Hint extends string = never>(populate: AutoPath<T, Hint>[] | boolean, options?: EntityLoaderOptions<T, Hint>): Promise<Loaded<T, Hint>>;
   init<P extends string = never>(populated?: boolean, populate?: Populate<T, P>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<T, P>>;
   toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends string = string>(): IdentifiedReference<T, PK2> & LoadedReference<T>;
   toObject(ignoreFields?: string[]): EntityDTO<T>;

@@ -152,6 +152,7 @@ em.assign(user, dto);
 interface IWrappedEntity<T, PK extends keyof T> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
+  populate(populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T, P>): Promise<Loaded<T, P>>;
   init(populated?: boolean, lockMode?: LockMode): Promise<T>;
   toReference(): IdentifiedReference<T, PK>;
   toObject(ignoreFields?: string[]): Dictionary;
