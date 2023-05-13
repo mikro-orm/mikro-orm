@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.6](https://github.com/mikro-orm/mikro-orm/compare/v5.7.5...v5.7.6) (2023-05-13)
+
+
+### Features
+
+* **core:** log number of results ([261b3d9](https://github.com/mikro-orm/mikro-orm/commit/261b3d95ac225b819a26b67a65f4c32c3e34e52f))
+
+
+
+
+
 ## [5.7.5](https://github.com/mikro-orm/mikro-orm/compare/v5.7.4...v5.7.5) (2023-05-09)
 
 

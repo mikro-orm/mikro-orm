@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.6](https://github.com/mikro-orm/mikro-orm/compare/v5.7.5...v5.7.6) (2023-05-13)
+
+
+### Bug Fixes
+
+* **core:** allow `em.populate()` on lazy formula properties ([5c6bb13](https://github.com/mikro-orm/mikro-orm/commit/5c6bb13fd92ad941f1f8de1982544620bb3e1547))
+* **core:** ensure database values are used in the identity map keys ([46b5e3a](https://github.com/mikro-orm/mikro-orm/commit/46b5e3ab50e8347fa6af0ca4289bf7d7ed7653d3)), closes [#4335](https://github.com/mikro-orm/mikro-orm/issues/4335)
+* **core:** fix re-populating relations with `refresh: true` ([74b6a98](https://github.com/mikro-orm/mikro-orm/commit/74b6a98d1157a27ee57c7233c92cd460d787adb8)), closes [#4339](https://github.com/mikro-orm/mikro-orm/issues/4339)
+
+
+### Features
+
+* **core:** add `wrap(entity).populate([...])` shortcut ([6b519c4](https://github.com/mikro-orm/mikro-orm/commit/6b519c4a7336ba0df023e0067701f4b46dc15343))
+* **core:** log number of results ([261b3d9](https://github.com/mikro-orm/mikro-orm/commit/261b3d95ac225b819a26b67a65f4c32c3e34e52f))
+
+
+### Performance Improvements
+
+* **core:** define some enums as const enums, so they get inlined ([3cb43ba](https://github.com/mikro-orm/mikro-orm/commit/3cb43baf14e4aa9b23d6085756198b6dbc796fb9))
+
+
+
+
+
 ## [5.7.5](https://github.com/mikro-orm/mikro-orm/compare/v5.7.4...v5.7.5) (2023-05-09)
 
 
