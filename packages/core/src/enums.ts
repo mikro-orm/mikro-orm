@@ -10,7 +10,7 @@ export const enum FlushMode {
   ALWAYS,
 }
 
-export enum PopulateHint {
+export const enum PopulateHint {
   INFER,
   ALL,
 }
@@ -52,7 +52,7 @@ export const ARRAY_OPERATORS = [
   '$contained',
 ];
 
-export enum QueryOrder {
+export const enum QueryOrder {
   ASC = 'ASC',
   ASC_NULLS_LAST = 'ASC NULLS LAST',
   ASC_NULLS_FIRST = 'ASC NULLS FIRST',
@@ -85,7 +85,7 @@ export interface FlatQueryOrderMap {
   [x: string]: QueryOrderKeysFlat;
 }
 
-export enum QueryFlag {
+export const enum QueryFlag {
   DISTINCT = 'DISTINCT',
   PAGINATE = 'PAGINATE',
   DISABLE_PAGINATE = 'DISABLE_PAGINATE',
@@ -98,7 +98,7 @@ export enum QueryFlag {
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];
 
-export enum ReferenceType {
+export const enum ReferenceType {
   SCALAR = 'scalar',
   ONE_TO_ONE = '1:1',
   ONE_TO_MANY = '1:m',
@@ -107,7 +107,7 @@ export enum ReferenceType {
   EMBEDDED = 'embedded',
 }
 
-export enum Cascade {
+export const enum Cascade {
   PERSIST = 'persist',
   MERGE = 'merge',
   REMOVE = 'remove',
@@ -119,12 +119,12 @@ export enum Cascade {
   CANCEL_ORPHAN_REMOVAL = 'cancel_orphan_removal',
 }
 
-export enum LoadStrategy {
+export const enum LoadStrategy {
   SELECT_IN = 'select-in',
   JOINED = 'joined'
 }
 
-export enum LockMode {
+export const enum LockMode {
   NONE = 0,
   OPTIMISTIC = 1,
   PESSIMISTIC_READ = 2,
@@ -135,7 +135,7 @@ export enum LockMode {
   PESSIMISTIC_READ_OR_FAIL = 7,
 }
 
-export enum IsolationLevel {
+export const enum IsolationLevel {
   READ_UNCOMMITTED = 'read uncommitted',
   READ_COMMITTED = 'read committed',
   SNAPSHOT = 'snapshot',

@@ -69,7 +69,7 @@ export interface ChangeSet<T> {
   originalEntity?: EntityData<T>;
 }
 
-export enum ChangeSetType {
+export const enum ChangeSetType {
   CREATE = 'create',
   UPDATE = 'update',
   DELETE = 'delete',

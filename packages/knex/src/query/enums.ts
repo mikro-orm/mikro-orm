@@ -1,4 +1,4 @@
-export enum QueryType {
+export const enum QueryType {
   TRUNCATE = 'TRUNCATE',
   SELECT = 'SELECT',
   COUNT = 'COUNT',
