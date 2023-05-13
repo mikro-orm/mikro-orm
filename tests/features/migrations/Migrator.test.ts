@@ -316,7 +316,7 @@ describe('Migrator', () => {
     await remove(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx\\d+');
     });
@@ -356,7 +356,7 @@ describe('Migrator', () => {
     await remove(path + '/' + migration2.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx_xx');
     });
@@ -389,7 +389,7 @@ describe('Migrator', () => {
     await remove(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx_xx');
     });
@@ -431,7 +431,7 @@ describe('Migrator - with explicit migrations', () => {
     expect(spy1).toBeCalledWith('select 1 - 1');
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx_xx');
     });

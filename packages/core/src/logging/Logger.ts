@@ -37,6 +37,7 @@ export interface LogContext {
   query?: string;
   params?: unknown[];
   took?: number;
+  results?: number;
   level?: 'info' | 'warning' | 'error';
   connection?: {
     type?: string;

@@ -181,7 +181,7 @@ export class MongoConnection extends Connection {
 
     const now = Date.now();
     const res = await resultSet.toArray();
-    this.logQuery(`${query}.toArray();`, { took: Date.now() - now });
+    this.logQuery(`${query}.toArray();`, { took: Date.now() - now, results: res.length });
 
     return res as EntityData<T>[];
   }
@@ -212,8 +212,8 @@ export class MongoConnection extends Connection {
     const options: Dictionary = ctx ? { session: ctx } : {};
     const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}, ${this.logObject(options)}).toArray();`;
     const now = Date.now();
-    const res = this.getCollection(collection).aggregate<T>(pipeline, options).toArray();
-    this.logQuery(query, { took: Date.now() - now });
+    const res = await this.getCollection(collection).aggregate<T>(pipeline, options).toArray();
+    this.logQuery(query, { took: Date.now() - now, results: res.length });
 
     return res;
   }

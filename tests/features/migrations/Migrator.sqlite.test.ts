@@ -264,7 +264,7 @@ describe('Migrator (sqlite)', () => {
     await remove(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx\\d+');
     });
@@ -297,7 +297,7 @@ describe('Migrator (sqlite)', () => {
     await remove(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx_xx');
     });
