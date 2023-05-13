@@ -1,6 +1,7 @@
 ---
 title: Migrations
 ---
+> Note: Migrations are usually used for any schema changes in an existing database. If you are deploying a service/application that uses MikroORM on a new database, you might want to run the [Schema Generator](schema-generator.md) instead
 
 > To use migrations we need to first install `@mikro-orm/migrations` package for SQL driver or `@mikro-orm/migrations-mongodb` for MongoDB.
 

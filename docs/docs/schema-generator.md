@@ -4,6 +4,8 @@ title: Schema Generator
 
 > SchemaGenerator can do harm to your database. It will drop or alter tables, indexes, sequences and such. Please use this tool with caution in development and not on a production server. It is meant for helping you develop your Database Schema, but NOT with migrating schema from A to B in production. A safe approach would be generating the SQL on development server and saving it into SQL Migration files that are executed manually on the production server.
 
+> For any changes in your schema while having an existing database (ex. new tables, column modifications), especially ones already deployed to environments being utilized by other users, perhaps you might want to utilize [migrations](migrations.md) instead.
+
 > SchemaGenerator assumes your project uses the given database on its own. Update and Drop commands will mess with other tables if they are not related to the current project that is using MikroORM. Please be careful!
 
 To generate schema from your entity metadata, you can use `SchemaGenerator` helper.
