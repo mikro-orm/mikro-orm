@@ -257,7 +257,10 @@ export class EntityLoader {
   }
 
   private async findChildren<T extends object>(entities: T[], prop: EntityProperty<T>, populate: PopulateOptions<T>, options: Required<EntityLoaderOptions<T>>): Promise<AnyEntity[]> {
-    entities = entities.filter(e => !helper(e).__loadedRelations.has(prop.name));
+    if (!options.refresh) {
+      entities = entities.filter(e => !helper(e).__loadedRelations.has(prop.name));
+    }
+
     const children = this.getChildReferences<T>(entities, prop, options.refresh);
     const meta = this.metadata.find(prop.type)!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
@@ -285,7 +288,8 @@ export class EntityLoader {
     const where = this.mergePrimaryCondition<T>(ids, fk, options, meta, this.metadata, this.driver.getPlatform());
     const fields = this.buildFields(options.fields, prop);
     const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType } = options;
-    entities.forEach(e => !helper(e).__loadedRelations.add(prop.name));
+
+    entities.forEach(e => helper(e).__loadedRelations.add(prop.name));
 
     return this.em.find(prop.type, where, {
       refresh, filters, convertCustomTypes, lockMode, populateWhere,
