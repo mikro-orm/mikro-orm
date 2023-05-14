@@ -20,11 +20,11 @@ export abstract class BaseEntity {
     helper(this).populated(populated);
   }
 
-  async populate<This extends this, Hint extends string = never>(
-    populate: AutoPath<This, Hint>[] | boolean,
-    options: EntityLoaderOptions<This, Hint> = {},
-  ): Promise<Loaded<This, Hint>> {
-    return helper(this as This).populate(populate, options);
+  async populate<Entity extends this = this, Hint extends string = never>(
+    populate: AutoPath<Entity, Hint>[] | boolean,
+    options: EntityLoaderOptions<Entity, Hint> = {},
+  ): Promise<Loaded<Entity, Hint>> {
+    return helper(this as Entity).populate(populate, options);
   }
 
   toReference<Entity extends this = this>(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>> {
