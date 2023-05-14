@@ -401,13 +401,27 @@ export class Utils {
   /**
    * Renames object key, keeps order of properties.
    */
-  static renameKey<T>(payload: T, from: string | keyof T, to: string): void {
-    if (Utils.isObject(payload) && (from as string) in payload && !(to in payload)) {
-      Object.keys(payload).forEach(key => {
-        const value = payload[key];
-        delete payload[key];
-        payload[from === key ? to : key as keyof T] = value;
-      }, payload);
+  static renameKey<T>(payload: T, from: string | keyof T, to: string, recursive = false): void {
+    if (Utils.isObject(payload)) {
+      if ((from as string) in payload && !(to in payload)) {
+        Object.keys(payload).forEach(key => {
+          const value = payload[key];
+          delete payload[key];
+          payload[from === key ? to : key as keyof T] = value;
+        }, payload);
+      }
+
+      if (recursive) {
+        Object.keys(payload).forEach(key => {
+          Utils.renameKey(payload[key], from, to, recursive);
+        });
+      }
+
+      return;
+    }
+
+    if (recursive && Array.isArray(payload)) {
+      payload.forEach(item => Utils.renameKey(item, from, to, recursive));
     }
   }
 
