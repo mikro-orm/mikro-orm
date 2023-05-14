@@ -1048,8 +1048,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
     QueryHelper.processObjectParams(this._cond);
     QueryHelper.processObjectParams(this._having);
 
-    // automatically enable paginate flag when we detect to-many joins
-    if (!this.flags.has(QueryFlag.DISABLE_PAGINATE) && this.hasToManyJoins()) {
+    // automatically enable paginate flag when we detect to-many joins, but only if there is no `group by` clause
+    if (!this.flags.has(QueryFlag.DISABLE_PAGINATE) && this._groupBy.length === 0 && this.hasToManyJoins()) {
       this.flags.add(QueryFlag.PAGINATE);
     }
 

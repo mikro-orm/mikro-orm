@@ -2136,7 +2136,6 @@ describe('EntityManagerMySql', () => {
       orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
       limit: 5,
       groupBy: ['id', 'name', 'b1.title'],
-      flags: [QueryFlag.DISABLE_PAGINATE],
       having: { $or: [{ age: { $gt: 0 } }, { age: { $lte: 0 } }, { age: null }] }, // no-op just for testing purposes
     });
 

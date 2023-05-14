@@ -1727,6 +1727,31 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', '%3', 10, 5]);
   });
 
+  test('group by disables automatic pagination', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2, 'p')
+      .select(['p.*', 'b.*', 'a.*', 't.*'])
+      .leftJoin('books', 'b')
+      .join('b.author', 'a')
+      .join('b.tags', 't')
+      .where({ 'p.name': 'test 123', 'b.title': /3$/ })
+      .orderBy({ 'b.title': QueryOrder.DESC })
+      .groupBy('a.id')
+      .limit(10, 5);
+
+    const sql = 'select `p`.*, `b`.*, `a`.*, `t`.* ' +
+      'from `publisher2` as `p` ' +
+      'left join `book2` as `b` on `p`.`id` = `b`.`publisher_id` ' +
+      'inner join `author2` as `a` on `b`.`author_id` = `a`.`id` ' +
+      'inner join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
+      'inner join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id` ' +
+      'where `p`.`name` = ? and `b`.`title` like ? ' +
+      'group by `a`.`id` ' +
+      'order by `b`.`title` desc ' +
+      'limit ? offset ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', '%3', 10, 5]);
+  });
+
   test('qb.getCount() removes limit, offset and order by clauses', async () => {
     const logger = mockLogger(orm);
     await orm.em.createQueryBuilder(Publisher2, 'p')
