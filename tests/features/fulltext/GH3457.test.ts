@@ -6,7 +6,7 @@ import {
   MikroORM,
   PrimaryKey,
   Property,
-  Subscriber, wrap,
+  wrap,
 } from '@mikro-orm/core';
 import { FullTextType, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { randomUUID } from 'crypto';
@@ -60,7 +60,6 @@ export class TestHistory {
 
 }
 
-@Subscriber()
 export class CaseHistorySubscriber implements EventSubscriber<Test> {
 
   async onFlush(args: FlushEventArgs): Promise<void> {
@@ -86,6 +85,7 @@ beforeAll(async () => {
     entities: [Test, TestHistory],
     dbName: `mikro_orm_test_3457`,
     driver: PostgreSqlDriver,
+    subscribers: [CaseHistorySubscriber],
   });
   await orm.schema.refreshDatabase();
 });

@@ -27,7 +27,7 @@ import type { EntityManager } from '../EntityManager';
 import type { Platform } from '../platforms';
 import type { EntitySchema } from '../metadata/EntitySchema';
 import type { MetadataProvider } from '../metadata/MetadataProvider';
-import { MetadataStorage } from '../metadata/MetadataStorage';
+import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider';
 import type { EventSubscriber } from '../events';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
@@ -344,8 +344,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       this.options.filters[key].default ??= true;
     });
 
-    const subscribers = Object.values(MetadataStorage.getSubscriberMetadata());
-    this.options.subscribers = [...new Set([...this.options.subscribers, ...subscribers])];
+    this.options.subscribers = Utils.unique(this.options.subscribers).map(subscriber => {
+      return subscriber.constructor.name === 'Function' ? new (subscriber as Constructor)() : subscriber;
+    }) as EventSubscriber[];
 
     if (!colors.enabled()) {
       this.options.highlighter = new NullHighlighter();
@@ -488,7 +489,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
   entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
   extensions: { register: (orm: MikroORM) => void }[];
-  subscribers: EventSubscriber[];
+  subscribers: (EventSubscriber | Constructor<EventSubscriber>)[];
   filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
   discovery: {
     warnWhenNoEntities?: boolean;
