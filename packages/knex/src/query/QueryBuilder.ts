@@ -1083,6 +1083,28 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return qb;
   }
 
+  private applyDiscriminatorCondition(): void {
+    const meta = this.mainAlias.metadata;
+
+    if (!meta?.discriminatorValue) {
+      return;
+    }
+
+    const types = Object.values(meta.root.discriminatorMap!).map(cls => this.metadata.find(cls)!);
+    const children: EntityMetadata[] = [];
+    const lookUpChildren = (ret: EntityMetadata[], type: string) => {
+      const children = types.filter(meta2 => meta2.extends === type);
+      children.forEach(m => lookUpChildren(ret, m.className));
+      ret.push(...children.filter(c => c.discriminatorValue));
+
+      return children;
+    };
+    lookUpChildren(children, meta.className);
+    this.andWhere({
+      [meta.root.discriminatorColumn!]: children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue,
+    });
+  }
+
   private finalize(): void {
     if (this.finalized) {
       return;
@@ -1093,6 +1115,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     const meta = this.mainAlias.metadata as EntityMetadata<T>;
+    this.applyDiscriminatorCondition();
 
     if (meta && this.flags.has(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)) {
       const relationsToPopulate = this._populate.map(({ field }) => field);
@@ -1294,8 +1317,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const pivotAlias = this.getNextAlias(pivotMeta.name!);
 
     this._joins[field] = this.helper.joinPivotTable(field, prop, this.mainAlias.aliasName, pivotAlias, 'leftJoin');
-    Utils.renameKey(this._cond, `${field}.${owner.name}`, Utils.getPrimaryKeyHash(owner.fieldNames.map(fieldName => `${pivotAlias}.${fieldName}`)));
-    Utils.renameKey(this._cond, `${field}.${inverse.name}`, Utils.getPrimaryKeyHash(inverse.fieldNames.map(fieldName => `${pivotAlias}.${fieldName}`)));
+    Utils.renameKey(this._cond, `${field}.${owner.name}`, Utils.getPrimaryKeyHash(owner.fieldNames.map(fieldName => `${pivotAlias}.${fieldName}`)), true);
+    Utils.renameKey(this._cond, `${field}.${inverse.name}`, Utils.getPrimaryKeyHash(inverse.fieldNames.map(fieldName => `${pivotAlias}.${fieldName}`)), true);
     this._populateMap[field] = this._joins[field].alias;
   }
 
