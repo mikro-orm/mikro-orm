@@ -1,7 +1,7 @@
 import type { Dictionary, ExcludeFunctions, ExpandProperty } from './typings';
 import type { Transaction } from './connections';
 
-export const enum FlushMode {
+export enum FlushMode {
   /** The `EntityManager` tries to delay the flush until the current Transaction is committed, although it might flush prematurely too. */
   COMMIT,
   /** This is the default mode, and it flushes the `EntityManager` only if necessary. */
@@ -10,7 +10,7 @@ export const enum FlushMode {
   ALWAYS,
 }
 
-export const enum PopulateHint {
+export enum PopulateHint {
   INFER,
   ALL,
 }
@@ -52,7 +52,7 @@ export const ARRAY_OPERATORS = [
   '$contained',
 ];
 
-export const enum QueryOrder {
+export enum QueryOrder {
   ASC = 'ASC',
   ASC_NULLS_LAST = 'ASC NULLS LAST',
   ASC_NULLS_FIRST = 'ASC NULLS FIRST',
@@ -85,7 +85,7 @@ export interface FlatQueryOrderMap {
   [x: string]: QueryOrderKeysFlat;
 }
 
-export const enum QueryFlag {
+export enum QueryFlag {
   DISTINCT = 'DISTINCT',
   PAGINATE = 'PAGINATE',
   DISABLE_PAGINATE = 'DISABLE_PAGINATE',
@@ -98,7 +98,7 @@ export const enum QueryFlag {
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];
 
-export const enum ReferenceType {
+export enum ReferenceType {
   SCALAR = 'scalar',
   ONE_TO_ONE = '1:1',
   ONE_TO_MANY = '1:m',
@@ -107,7 +107,7 @@ export const enum ReferenceType {
   EMBEDDED = 'embedded',
 }
 
-export const enum Cascade {
+export enum Cascade {
   PERSIST = 'persist',
   MERGE = 'merge',
   REMOVE = 'remove',
@@ -119,12 +119,12 @@ export const enum Cascade {
   CANCEL_ORPHAN_REMOVAL = 'cancel_orphan_removal',
 }
 
-export const enum LoadStrategy {
+export enum LoadStrategy {
   SELECT_IN = 'select-in',
   JOINED = 'joined'
 }
 
-export const enum LockMode {
+export enum LockMode {
   NONE = 0,
   OPTIMISTIC = 1,
   PESSIMISTIC_READ = 2,
@@ -135,7 +135,7 @@ export const enum LockMode {
   PESSIMISTIC_READ_OR_FAIL = 7,
 }
 
-export const enum IsolationLevel {
+export enum IsolationLevel {
   READ_UNCOMMITTED = 'read uncommitted',
   READ_COMMITTED = 'read committed',
   SNAPSHOT = 'snapshot',
