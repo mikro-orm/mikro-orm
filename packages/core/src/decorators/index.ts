@@ -13,7 +13,6 @@ export * from './Indexed';
 export * from './Embeddable';
 export * from './Embedded';
 export * from './Filter';
-export * from './Subscriber';
 export * from './CreateRequestContext';
 export * from './EnsureRequestContext';
 export * from './hooks';
