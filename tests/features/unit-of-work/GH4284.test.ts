@@ -35,7 +35,7 @@ test(`GH issue 4284`, async () => {
   await orm.em.flush();
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ['[query] insert into `aentity` (`id`) values (\'1\') returning `id`, `name`'],
+    ['[query] insert into `aentity` (`id`) values (\'1\') returning `name`'],
     ['[query] commit'],
   ]);
 });

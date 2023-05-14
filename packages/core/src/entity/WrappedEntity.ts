@@ -2,7 +2,7 @@ import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
 import type {
   AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, IHydrator, EntityValue, EntityKey,
-  IWrappedEntityInternal, Populate, PopulateOptions, Primary, AutoPath, Loaded, Ref, AddEager, Loaded, LoadedReference, EntityDTO,
+  IWrappedEntityInternal, Populate, PopulateOptions, Primary, AutoPath, Ref, AddEager, Loaded, LoadedReference, EntityDTO,
 } from '../typings';
 import { Reference } from './Reference';
 import { EntityTransformer } from '../serialization/EntityTransformer';
@@ -104,16 +104,16 @@ export class WrappedEntity<Entity extends object> {
   }
 
   async populate<Hint extends string = never>(
-    populate: AutoPath<T, Hint>[] | boolean,
-    options: EntityLoaderOptions<T, Hint> = {},
-  ): Promise<Loaded<T, Hint>> {
+    populate: AutoPath<Entity, Hint>[] | boolean,
+    options: EntityLoaderOptions<Entity, Hint> = {},
+  ): Promise<Loaded<Entity, Hint>> {
     if (!this.__em) {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
     await this.__em.populate(this.entity, populate, options);
 
-    return this.entity as Loaded<T, Hint>;
+    return this.entity as Loaded<Entity, Hint>;
   }
 
   hasPrimaryKey(): boolean {
