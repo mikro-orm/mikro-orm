@@ -1,4 +1,4 @@
-import { Entity, Ref, ManyToOne, PrimaryKey, Property, EventSubscriber, ChangeSet, FlushEventArgs, Subscriber } from '@mikro-orm/core';
+import { Entity, Ref, ManyToOne, PrimaryKey, Property, EventSubscriber, ChangeSet, FlushEventArgs } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -15,7 +15,6 @@ class Node {
 
 }
 
-@Subscriber()
 class AfterFlushSubscriber implements EventSubscriber {
 
   static readonly changeSets: ChangeSet<any>[] = [];
@@ -32,10 +31,9 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Node],
     dbName: ':memory:',
+    subscribers: [AfterFlushSubscriber],
   });
   await orm.schema.refreshDatabase();
-
-  orm.em.getEventManager().registerSubscriber(new AfterFlushSubscriber());
 });
 
 afterAll(async () => {
