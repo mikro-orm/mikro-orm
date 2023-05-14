@@ -1,7 +1,5 @@
 import type { EventArgs, EventSubscriber } from '@mikro-orm/core';
-import { Subscriber } from '@mikro-orm/core';
 
-@Subscriber()
 export class EverythingSubscriber implements EventSubscriber {
 
   static readonly log: [string, EventArgs<any>][] = [];
