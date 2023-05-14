@@ -92,6 +92,10 @@ MikroORM.init({
 
 You might as well want to use the `EntityRepositoryType` symbol, possibly in a custom base entity.
 
+## Removed `@Subscriber()` decorator
+
+Use `subscribers` array in the ORM config, it now also accepts class reference, not just instances.
+
 ## Removal of static require calls
 
 There were some places where we did a static `require()` call, e.g. when loading the driver implementation based on the `type` option. Those places were problematic for bundlers like webpack, as well as new school build systems like vite.
