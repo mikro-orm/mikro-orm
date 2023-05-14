@@ -107,12 +107,12 @@ export class UnitOfWork {
       });
 
       wrapped.__meta.props.forEach(prop => {
-        if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name as EntityKey])) {
+        if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
           prop.targetMeta?.props.forEach(p => {
             const prefix = prop.prefix === false ? '' : prop.prefix === true ? prop.name + '_' : prop.prefix;
             data[prefix + p.name as EntityKey] = data[prop.name as EntityKey][p.name];
           });
-          data[prop.name as EntityKey<T>] = Utils.getPrimaryKeyValues(data[prop.name as EntityKey], prop.targetMeta!.primaryKeys, true);
+          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
         }
       });
 
@@ -609,14 +609,14 @@ export class UnitOfWork {
       if (props.every(prop => entity[prop] != null)) {
         return Utils.getPrimaryKeyHash(props.map(p => {
           const prop = wrapped.__meta.properties[p];
-          return prop.kind === ReferenceKind.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name as EntityKey]).getSerializedPrimaryKey();
+          return prop.kind === ReferenceKind.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name as EntityKey]!).getSerializedPrimaryKey();
         }) as any);
       }
 
-      if (props.every(prop => wrapped.__originalEntityData?.[prop as EntityKey] != null)) {
+      if (props.every(prop => wrapped.__originalEntityData?.[prop] != null)) {
         return Utils.getPrimaryKeyHash(props.map(p => {
-          return wrapped.__originalEntityData![p as EntityKey];
-        }));
+          return wrapped.__originalEntityData![p];
+        }) as string[]);
       }
 
       return undefined;
