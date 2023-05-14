@@ -430,7 +430,7 @@ export class EntityLoader {
     }
 
     if (filters) {
-      return this.em.applyFilters(prop.type, subCond, options.filters, 'read');
+      return this.em.applyFilters(prop.type, subCond, options.filters, 'read', options);
     }
 
     return subCond;

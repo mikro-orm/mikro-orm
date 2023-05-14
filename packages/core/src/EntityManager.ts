@@ -295,7 +295,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: options.convertCustomTypes,
       aliased: type === 'read',
     });
-    where = await this.applyFilters(entityName, where, options.filters ?? {}, type);
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, type, options);
     where = await this.applyDiscriminatorCondition(entityName, where);
 
     return where;
@@ -326,7 +326,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  async applyFilters<Entity extends object>(entityName: string, where: FilterQuery<Entity>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<Entity>> {
+  async applyFilters<Entity extends object>(entityName: string, where: FilterQuery<Entity>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete', findOptions?: FindOptions<any, any> | FindOneOptions<any, any>): Promise<FilterQuery<Entity>> {
     const meta = this.metadata.find<Entity>(entityName);
     const filters: FilterDef[] = [];
     const ret: Dictionary[] = [];
@@ -361,7 +361,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
           throw new Error(`No arguments provided for filter '${filter.name}'`);
         }
 
-        cond = await filter.cond(args, type, this);
+        cond = await filter.cond(args, type, this, findOptions);
       } else {
         cond = filter.cond;
       }

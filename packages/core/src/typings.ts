@@ -20,7 +20,7 @@ import { Utils } from './utils/Utils';
 import { EntityComparator } from './utils/EntityComparator';
 import type { EntityManager } from './EntityManager';
 import type { EventSubscriber } from './events';
-import type { FindOptions } from './drivers';
+import type { FindOneOptions, FindOptions } from './drivers';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -686,7 +686,7 @@ export interface MigrationObject {
 
 export type FilterDef = {
   name: string;
-  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any) => Dictionary | Promise<Dictionary>);
+  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<any, any> | FindOneOptions<any, any>) => Dictionary | Promise<Dictionary>);
   default?: boolean;
   entity?: string[];
   args?: boolean;
