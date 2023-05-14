@@ -8,7 +8,6 @@ import type {
   EntityIdentifier,
   EntityLoaderOptions,
   EntityRepository,
-  Ref,
 } from './entity';
 import { EntityHelper, Reference } from './entity';
 import type { SerializationContext, SerializeOptions } from './serialization';
@@ -126,7 +125,7 @@ export interface IWrappedEntity<Entity extends object> {
   isInitialized(): boolean;
   isTouched(): boolean;
   populated(populated?: boolean): void;
-  populate<Hint extends string = never>(populate: AutoPath<T, Hint>[] | boolean, options?: EntityLoaderOptions<T, Hint>): Promise<Loaded<T, Hint>>;
+  populate<Hint extends string = never>(populate: AutoPath<Entity, Hint>[] | boolean, options?: EntityLoaderOptions<Entity, Hint>): Promise<Loaded<Entity, Hint>>;
   init<Hint extends string = never>(populated?: boolean, populate?: Populate<Entity, Hint>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<Entity, Hint>>;
   toReference(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
   toObject(): EntityDTO<Entity>;
@@ -698,7 +697,7 @@ export interface MigrationObject {
 
 export type FilterDef = {
   name: string;
-  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<any, any> | FindOneOptions<any, any>) => Dictionary | Promise<Dictionary>);
+  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<any, any, any> | FindOneOptions<any, any, any>) => Dictionary | Promise<Dictionary>);
   default?: boolean;
   entity?: string[];
   args?: boolean;
