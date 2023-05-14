@@ -239,7 +239,7 @@ export class EntityFactory {
       // we need to wipe all the values as they would cause update queries on next flush
       if (!options.initialized && this.config.get('forceEntityConstructor')) {
         meta.props
-          .filter(prop => prop.persist !== false && !prop.primary && data[prop.name as EntityKey] === undefined)
+          .filter(prop => prop.persist !== false && !prop.primary && data[prop.name] === undefined)
           .forEach(prop => delete entity[prop.name]);
       }
 
