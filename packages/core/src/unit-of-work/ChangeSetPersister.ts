@@ -179,7 +179,7 @@ export class ChangeSetPersister {
     const meta = this.metadata.find(changeSet.name)!;
     const res = await this.updateEntity(meta, changeSet, options);
     this.checkOptimisticLock(meta, changeSet, res);
-    this.mapReturnedValues(changeSet.entity, res.row, meta);
+    this.mapReturnedValues(changeSet.entity, changeSet.payload, res.row, meta);
     await this.reloadVersionValues(meta, [changeSet], options);
     changeSet.persisted = true;
   }
@@ -227,7 +227,7 @@ export class ChangeSetPersister {
 
     changeSets.forEach((changeSet, idx) => {
       if (res.rows) {
-        this.mapReturnedValues(changeSet.entity, res.rows[idx], meta);
+        this.mapReturnedValues(changeSet.entity, changeSet.payload, res.rows[idx], meta);
       }
 
       changeSet.persisted = true;

@@ -75,7 +75,7 @@ export class QueryHelper {
           return false;
         }
 
-        if (meta.properties[k].primary && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(meta.properties[k as EntityKey<T>].kind)) {
+        if (meta.properties[k as EntityKey<T>].primary && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(meta.properties[k as EntityKey<T>].kind)) {
           return this.inlinePrimaryKeyObjects(where[k], meta.properties[k as EntityKey<T>].targetMeta!, metadata, v);
         }
 
@@ -119,6 +119,7 @@ export class QueryHelper {
       const rootPrimaryKey = meta ? Utils.getPrimaryKeyHash(meta.primaryKeys) : entityName;
       let cond = { [rootPrimaryKey]: { $in: where } } as FilterQuery<T>;
 
+      // @ts-ignore
       // detect tuple comparison, use `$or` in case the number of constituents don't match
       if (meta && !where.every(c => Utils.isPrimaryKey(c) || Array.isArray(c) && c.length === meta.primaryKeys.length && c.every(i => Utils.isPrimaryKey(i)))) {
         cond = { $or: where } as FilterQuery<T>;
