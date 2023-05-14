@@ -241,6 +241,12 @@ export class QueryBuilderHelper {
         conditions.push(`${this.knex.ref(left)} = ${this.knex.ref(right)}`);
       });
 
+      if (join.prop.targetMeta!.discriminatorValue && !join.path?.endsWith('[pivot]')) {
+        const typeProperty = join.prop.targetMeta!.root.discriminatorColumn!;
+        const alias = !join.prop.owner ? join.inverseAlias ?? join.alias : join.ownerAlias;
+        join.cond[`${alias}.${typeProperty}`] = join.prop.targetMeta!.discriminatorValue;
+      }
+
       Object.keys(join.cond).forEach(key => {
         conditions.push(this.processJoinClause(key, join.cond[key], params));
       });
