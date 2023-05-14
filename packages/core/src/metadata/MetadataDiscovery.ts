@@ -471,12 +471,12 @@ export class MetadataDiscovery {
     }
 
     if (!prop.joinColumns) {
-      prop.joinColumns = prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.root.className, referencedColumnName, meta.compositePK));
+      prop.joinColumns = prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.className, referencedColumnName, meta.compositePK));
     }
 
     if (!prop.inverseJoinColumns) {
       const meta2 = this.metadata.get(prop.type);
-      prop.inverseJoinColumns = this.initManyToOneFieldName(prop, meta2.root.className);
+      prop.inverseJoinColumns = this.initManyToOneFieldName(prop, meta2.className);
     }
   }
 
@@ -593,7 +593,7 @@ export class MetadataDiscovery {
     }
 
     schemaName ??= meta.schema;
-    const targetType = prop.targetMeta!.root.className;
+    const targetType = prop.targetMeta!.className;
     const data = new EntityMetadata({
       name: prop.pivotTable,
       className: prop.pivotTable,
@@ -611,9 +611,9 @@ export class MetadataDiscovery {
     }
 
     // handle self-referenced m:n with same default field names
-    if (meta.root.name === targetType && prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])) {
-      prop.joinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.root.className + '_1', name, meta.compositePK));
-      prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.root.className + '_2', name, meta.compositePK));
+    if (meta.name === targetType && prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])) {
+      prop.joinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.className + '_1', name, meta.compositePK));
+      prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.className + '_2', name, meta.compositePK));
 
       if (prop.inversedBy) {
         const prop2 = this.metadata.get(targetType).properties[prop.inversedBy];
@@ -622,8 +622,8 @@ export class MetadataDiscovery {
       }
     }
 
-    data.properties[meta.root.name + '_owner'] = this.definePivotProperty(prop, meta.root.name + '_owner', meta.root.name!, targetType + '_inverse', true);
-    data.properties[targetType + '_inverse'] = this.definePivotProperty(prop, targetType + '_inverse', targetType, meta.root.name + '_owner', false);
+    data.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.name!, targetType + '_inverse', true);
+    data.properties[targetType + '_inverse'] = this.definePivotProperty(prop, targetType + '_inverse', targetType, meta.name + '_owner', false);
 
     return this.metadata.set(data.className, data);
   }

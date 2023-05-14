@@ -105,10 +105,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * @internal
    */
   constructor(readonly config: Configuration,
-              private readonly driver: D,
-              private readonly metadata: MetadataStorage,
-              private readonly useContext = true,
-              private readonly eventManager = new EventManager(config.get('subscribers'))) { }
+              protected readonly driver: D,
+              protected readonly metadata: MetadataStorage,
+              protected readonly useContext = true,
+              protected readonly eventManager = new EventManager(config.get('subscribers'))) { }
 
   /**
    * Gets the Driver instance used by this EntityManager.
