@@ -56,36 +56,6 @@ MikroORM.init({
 });
 ```
 
-Or use `@Subscriber()` decorator - keep in mind that we need to make sure the file gets loaded in order to make this decorator registration work (e.g. we import that file explicitly somewhere).
-
-```ts
-import { EntityName, EventArgs, EventSubscriber, Subscriber } from '@mikro-orm/core';
-
-@Subscriber()
-export class AuthorSubscriber implements EventSubscriber<Author> {
-
-  getSubscribedEntities(): EntityName<Author>[] {
-    return [Author];
-  }
-
-  async afterCreate(args: EventArgs<Author>): Promise<void> {
-    // ...
-  }
-
-  async afterUpdate(args: EventArgs<Author>): Promise<void> {
-    // ...
-  }
-
-}
-```
-:::caution Warning
-Do not mix and match the `@Subscriber()` decorator and the `subscribers` array in the configuration. If you use the decorator, you **should not use** the `subscribers` array, and vice versa.
-
-This is due to an issue that will cause each subscriber in the configuration array annotated with `@Subscriber()` to be registered twice, **which will result in duplicate events being fired.**
-
-Additionally, future versions of MikroORM will be dropping support for the`@Subscriber()` decorator in favor of the `subscribers` array in the configuration. Therefore, it is not recommended to use the `@Subscriber()` decorator and to instead use the `subscribers` array in the configuration.
-:::
-
 Another example, where we register to all the events and all entities:
 
 ```ts

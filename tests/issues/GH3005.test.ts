@@ -1,5 +1,5 @@
 import type { EventSubscriber, FlushEventArgs } from '@mikro-orm/better-sqlite';
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Subscriber, wrap } from '@mikro-orm/better-sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/better-sqlite';
 
 @Entity({ tableName: 'customers' })
 class Customer {
@@ -29,7 +29,6 @@ class Order {
 
 }
 
-@Subscriber()
 class OrdersSubscriber implements EventSubscriber<Order> {
 
   getSubscribedEntities() {
@@ -54,6 +53,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Order, Customer],
     dbName: ':memory:',
+    subscribers: [OrdersSubscriber],
   });
   await orm.schema.refreshDatabase();
 });
