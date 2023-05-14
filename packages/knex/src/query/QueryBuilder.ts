@@ -788,12 +788,18 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): EntityProperty {
     this.ensureNotFinalized();
     const [fromAlias, fromField] = this.helper.splitField(field);
-    const entityName = this._aliases[fromAlias]?.entityName;
+    const q = (str: string) => `'${str}'`;
+
+    if (!this._aliases[fromAlias]) {
+      throw new Error(`Trying to join ${q(fromField)} with alias ${q(fromAlias)}, but ${q(fromAlias)} is not a known alias. Available aliases are: ${Object.keys(this._aliases).map(q).join(', ')}.`);
+    }
+
+    const entityName = this._aliases[fromAlias].entityName;
     const meta = this.metadata.get(entityName);
     const prop = meta.properties[fromField];
 
     if (!prop) {
-      throw new Error(`Trying to join ${field}, but ${fromField} is not a defined relation on ${meta.className}`);
+      throw new Error(`Trying to join ${q(field)}, but ${q(fromField)} is not a defined relation on ${meta.className}.`);
     }
 
     this.createAlias(prop.type, alias);

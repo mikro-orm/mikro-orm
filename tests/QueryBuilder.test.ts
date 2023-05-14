@@ -259,11 +259,17 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual([2, 1]);
   });
 
+  test('validation of unknown alias', async () => {
+    const qb = orm.em.createQueryBuilder(FooBar2, 'fb1');
+    qb.select('*').joinAndSelect('fb1.baz', 'fz');
+    expect(() => qb.join('fb0.baz', 'b')).toThrowError(`Trying to join 'baz' with alias 'fb0', but 'fb0' is not a known alias. Available aliases are: 'fb1', 'fz'.`);
+  });
+
   test('complex select with mapping of joined results', async () => {
     const qb = orm.em.createQueryBuilder(FooBar2, 'fb1');
     qb.select('*').joinAndSelect('fb1.baz', 'fz');
 
-    const err = `Trying to join fz.fooBar, but fooBar is not a defined relation on FooBaz2`;
+    const err = `Trying to join 'fz.fooBar', but 'fooBar' is not a defined relation on FooBaz2`;
     expect(() => qb.leftJoinAndSelect('fz.fooBar', 'fb2')).toThrowError(err);
 
     qb.leftJoinAndSelect('fz.bar', 'fb2')
