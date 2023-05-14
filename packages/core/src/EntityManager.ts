@@ -332,7 +332,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  async applyFilters<Entity extends object>(entityName: string, where: FilterQuery<Entity> | undefined, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete', findOptions?: FindOptions<any, any> | FindOneOptions<any, any>): Promise<FilterQuery<Entity> | undefined> {
+  async applyFilters<Entity extends object>(entityName: string, where: FilterQuery<Entity> | undefined, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete', findOptions?: FindOptions<any, any, any> | FindOneOptions<any, any, any>): Promise<FilterQuery<Entity> | undefined> {
     const meta = this.metadata.find<Entity>(entityName);
     const filters: FilterDef[] = [];
     const ret: Dictionary[] = [];
@@ -693,7 +693,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     em.validator.validateParams(data, 'insert data');
 
     if (em.eventManager.hasListeners(EventType.beforeUpsert, meta)) {
-      await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity: data, em }, meta);
+      await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity: data as Entity, em }, meta);
     }
 
     const ret = await em.driver.nativeUpdate(entityName, where, data, {
@@ -844,7 +844,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (em.eventManager.hasListeners(EventType.beforeUpsert, meta)) {
       for (const dto of data) {
-        const entity = entitiesByData.get(dto) ?? dto;
+        const entity = entitiesByData.get(dto) ?? dto as Entity;
         await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity, em }, meta);
       }
     }
