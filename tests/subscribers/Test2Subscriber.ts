@@ -1,9 +1,7 @@
 import type { EntityName, EventSubscriber, FlushEventArgs } from '@mikro-orm/core';
-import { Subscriber } from '@mikro-orm/core';
-import { Test2 } from '../entities-sql';
 import type { SqlEntityManager } from '@mikro-orm/knex';
+import { Test2 } from '../entities-sql';
 
-@Subscriber()
 export class Test2Subscriber implements EventSubscriber<Test2> {
 
   static readonly log: [string, FlushEventArgs][] = [];
