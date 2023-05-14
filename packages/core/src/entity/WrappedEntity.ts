@@ -1,8 +1,25 @@
 import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
 import type {
-  AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, IHydrator, EntityValue, EntityKey,
-  IWrappedEntityInternal, Populate, PopulateOptions, Primary, AutoPath, Loaded, Ref, AddEager, LoadedReference, EntityDTO,
+  AnyEntity,
+  ConnectionType,
+  Dictionary,
+  EntityData,
+  EntityDictionary,
+  EntityMetadata,
+  IHydrator,
+  EntityValue,
+  EntityKey,
+  IWrappedEntityInternal,
+  Populate,
+  PopulateOptions,
+  Primary,
+  AutoPath,
+  Ref,
+  AddEager,
+  LoadedReference,
+  EntityDTO,
+  Loaded,
 } from '../typings';
 import { Reference } from './Reference';
 import { EntityTransformer } from '../serialization/EntityTransformer';
