@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import type { AnyEntity, ConnectionType, Dictionary, EntityData, EntityName, EntityRepository, GetRepository, QueryResult } from '@mikro-orm/core';
+import type { AnyEntity, ConnectionType, EntityData, EntityName, EntityRepository, GetRepository, QueryResult, FilterQuery } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from './AbstractSqlDriver';
 import { QueryBuilder } from './query';
@@ -39,6 +39,11 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
 
   override getRepository<T extends object, U extends EntityRepository<T> = SqlEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
     return super.getRepository<T, U>(entityName);
+  }
+
+  protected override applyDiscriminatorCondition<Entity extends object>(entityName: string, where: FilterQuery<Entity>): FilterQuery<Entity> {
+    // this is handled in QueryBuilder now for SQL drivers
+    return where;
   }
 
 }
