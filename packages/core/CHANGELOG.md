@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.7](https://github.com/mikro-orm/mikro-orm/compare/v5.7.6...v5.7.7) (2023-05-14)
+
+
+### Bug Fixes
+
+* **core:** deprecate `@Subscriber()` decorator ([033b71d](https://github.com/mikro-orm/mikro-orm/commit/033b71d8ecb3313a51fb042b088c886f303c72f0))
+* **core:** revert the `const enums` as they break projects with `isolatedModules` ([8b23674](https://github.com/mikro-orm/mikro-orm/commit/8b2367401d055590e402241a46a996c2b026e873)), closes [#4350](https://github.com/mikro-orm/mikro-orm/issues/4350)
+
+
+### Features
+
+* **core:** add `options` argument to filter callback ([c57ee5e](https://github.com/mikro-orm/mikro-orm/commit/c57ee5e3efda1d1516a0295a5b395f01dccdcad3)), closes [#4352](https://github.com/mikro-orm/mikro-orm/issues/4352)
+
+
+
+
+
 ## [5.7.6](https://github.com/mikro-orm/mikro-orm/compare/v5.7.5...v5.7.6) (2023-05-13)
 
 
