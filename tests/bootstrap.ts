@@ -108,6 +108,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     extensions: [Migrator, SeedManager, EntityGenerator],
+    subscribers: [new Test2Subscriber()],
   }, additionalOptions));
 
   await orm.schema.ensureDatabase();
@@ -146,6 +147,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     forceEntityConstructor: [FooBar2],
     loadStrategy,
+    subscribers: [Test2Subscriber],
     extensions: [Migrator, SeedManager, EntityGenerator],
   });
 

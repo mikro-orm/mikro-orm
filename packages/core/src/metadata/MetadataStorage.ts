@@ -4,12 +4,10 @@ import { Utils } from '../utils/Utils';
 import { MetadataError } from '../errors';
 import type { EntityManager } from '../EntityManager';
 import { EntityHelper } from '../entity/EntityHelper';
-import type { EventSubscriber } from '../events';
 
 export class MetadataStorage {
 
   private static readonly metadata: Dictionary<EntityMetadata> = Utils.getGlobalStorage('metadata');
-  private static readonly subscribers: Dictionary<EventSubscriber> = Utils.getGlobalStorage('subscribers');
   private readonly metadata: Dictionary<EntityMetadata>;
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
@@ -44,17 +42,12 @@ export class MetadataStorage {
     return meta;
   }
 
-  static getSubscriberMetadata(): Dictionary<EventSubscriber> {
-    return MetadataStorage.subscribers;
-  }
-
   static init(): MetadataStorage {
     return new MetadataStorage(MetadataStorage.metadata);
   }
 
   static clear(): void {
     Object.keys(this.metadata).forEach(k => delete this.metadata[k]);
-    Object.keys(this.subscribers).forEach(k => delete this.subscribers[k]);
   }
 
   getAll(): Dictionary<EntityMetadata> {

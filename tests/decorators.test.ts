@@ -8,7 +8,6 @@ import {
   MetadataStorage,
   ReferenceKind,
   Utils,
-  Subscriber,
   CreateRequestContext,
   EnsureRequestContext,
   RequestContext,
@@ -102,11 +101,8 @@ describe('decorators', () => {
     expect(storage[key].properties.test0).toMatchObject({ kind: ReferenceKind.MANY_TO_MANY, name: 'test0' });
     expect(storage[key].properties.test0.entity()).toBe(Test);
     expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(7);
-    Subscriber()(Test6);
-    expect(Object.keys(MetadataStorage.getSubscriberMetadata())).toHaveLength(1);
     MetadataStorage.clear();
     expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(0);
-    expect(Object.keys(MetadataStorage.getSubscriberMetadata())).toHaveLength(0);
   });
 
   test('ManyToOne', () => {
