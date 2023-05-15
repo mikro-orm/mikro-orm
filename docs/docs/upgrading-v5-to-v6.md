@@ -94,7 +94,15 @@ You might as well want to use the `EntityRepositoryType` symbol, possibly in a c
 
 ## Removed `@Subscriber()` decorator
 
+> Decorators generally work only if you import the file in your code, and as subscribers are often not imported anywhere in your app, the decorator often didn't work. In that case, people often left it there, but also added the subscriber to the ORM config, causing a duplication, as suddenly the decorator is executed and starts to work.
+
 Use `subscribers` array in the ORM config, it now also accepts class reference, not just instances.
+
+```ts
+MikroORM.init({
+   subscribers: [MySubscriber], // or `new MySubscriber()`
+})
+```
 
 ## Removal of static require calls
 
