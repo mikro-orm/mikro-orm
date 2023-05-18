@@ -50,6 +50,20 @@ export class EntityLoader {
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
   async populate<Entity extends object, Hint extends string = never, Fields extends string = never>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Hint, Fields>): Promise<void> {
+    for (const entity of entities) {
+      const wrap = helper(entity);
+
+      if (wrap?.__populating) {
+        await new Promise((resolve, reject) => {
+          wrap.__queue.push(() => {
+            this.populate(entityName, entities, populate, options).then(resolve, reject);
+          });
+        });
+
+        return;
+      }
+    }
+
     if (entities.length === 0 || Utils.isEmpty(populate)) {
       return;
     }
@@ -79,11 +93,23 @@ export class EntityLoader {
       const context = helper(e).__serializationContext;
       context.populate ??= populate as PopulateOptions<Entity>[];
       context.fields ??= options.fields ? [...options.fields as string[]] : undefined;
+
+      helper(e).__populating = true;
     });
 
     for (const pop of populate) {
       await this.populateField<Entity>(entityName, entities, pop, options as Required<EntityLoaderOptions<Entity>>);
     }
+
+    entities.forEach(e => {
+      helper(e).__populating = false;
+    });
+
+    entities.forEach(e => {
+      while (helper(e).__queue.length > 0) {
+        helper(e).__queue.shift()();
+      }
+    });
   }
 
   normalizePopulate<Entity>(entityName: string, populate: PopulateOptions<Entity>[] | true, strategy?: LoadStrategy, lookup = true): PopulateOptions<Entity>[] {

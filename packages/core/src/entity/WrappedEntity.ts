@@ -22,6 +22,7 @@ export class WrappedEntity<Entity extends object> {
   __initialized = true;
   __touched = false;
   __populated?: boolean;
+  __populating = false;
   __managed?: boolean;
   __onLoadFired?: boolean;
   __schema?: string;
@@ -31,6 +32,7 @@ export class WrappedEntity<Entity extends object> {
   __loadedRelations = new Set<string>();
   __data: Dictionary = {};
   __processing = false;
+  __queue = [];
 
   /** stores last known primary key, as its current state might be broken due to propagation/orphan removal, but we need to know the PK to be able t remove the entity */
   __pk?: Primary<Entity>;
