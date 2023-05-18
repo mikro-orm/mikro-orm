@@ -164,6 +164,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = await em.processWhere(entityName, where, options, 'read') as FilterQuery<Entity>;
     em.validator.validateParams(where);
     options.orderBy = options.orderBy || {};
+    const populateAll = options.populate === true;
     options.populate = em.preparePopulate<Entity, Hint, Fields>(entityName, options) as unknown as Populate<Entity, Hint>;
     const populate = options.populate as unknown as PopulateOptions<Entity>[];
     const cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields>[]>(entityName, options.cache, [entityName, 'em.find', options, where], options.refresh, true);
@@ -212,7 +213,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return ret;
     }
 
-    const unique = Utils.unique(ret);
+    const unique = Utils.unique(ret).filter(e => !populateAll || !helper(e).__populating.has(''));
+
     await em.entityLoader.populate<Entity, Hint>(entityName, unique as Entity[], populate, {
       ...options as Dictionary,
       ...em.getPopulateWhere(where as FilterQuery<Entity>, options),

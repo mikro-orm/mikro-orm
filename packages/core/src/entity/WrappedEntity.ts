@@ -22,7 +22,7 @@ export class WrappedEntity<Entity extends object> {
   __initialized = true;
   __touched = false;
   __populated?: boolean;
-  __populating = false;
+  __populating = new Set();
   __managed?: boolean;
   __onLoadFired?: boolean;
   __schema?: string;

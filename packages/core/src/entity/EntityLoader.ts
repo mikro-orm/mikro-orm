@@ -50,22 +50,31 @@ export class EntityLoader {
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
   async populate<Entity extends object, Hint extends string = never, Fields extends string = never>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Hint, Fields>): Promise<void> {
+    if (entities.length === 0 || Utils.isEmpty(populate)) {
+      return;
+    }
+
+    const queues = [];
+
     for (const entity of entities) {
       const wrap = helper(entity);
 
-      if (wrap?.__populating) {
-        await new Promise((resolve, reject) => {
-          wrap.__queue.push(() => {
-            this.populate(entityName, entities, populate, options).then(resolve, reject);
-          });
-        });
-
-        return;
+      if (wrap?.__populating.size > 0) {
+        queues.push(wrap.__queue);
       }
     }
 
-    if (entities.length === 0 || Utils.isEmpty(populate)) {
-      return;
+    if (queues.length > 0) {
+        await new Promise((resolve, reject) => {
+          let resolved = 0;
+
+          for (const queue of queues) {
+            queue.push(() => {
+              resolved += 1;
+              this.populate(entityName, entities, populate, options).then(resolve, reject);
+            });
+          }
+        });
     }
 
     if ((entities as AnyEntity[]).some(e => !e.__helper)) {
@@ -326,8 +335,10 @@ export class EntityLoader {
       return;
     }
 
+    const populateKey = Array.isArray(populate) ? populate.map(p => p.field).join(',') : '';
+
     for (const entity of entities) {
-      helper(entity).__populating = true;
+      helper(entity).__populating.add(populateKey);
     }
 
     const children: Entity[] = [];
@@ -355,7 +366,7 @@ export class EntityLoader {
       }
     } finally {
       for (const entity of entities) {
-        helper(entity).__populating = false;
+        helper(entity).__populating.delete(populateKey);
 
         while (helper(entity).__queue.length > 0) {
           helper(entity).__queue.shift()();

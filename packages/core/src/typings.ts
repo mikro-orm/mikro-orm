@@ -155,7 +155,7 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
   __queue: (() => void)[];
   __schema?: string;
   __populated: boolean;
-  __populating: boolean;
+  __populating: Set<string>;
   __onLoadFired: boolean;
   __reference?: Ref<Entity>;
   __pk?: Primary<Entity>;
