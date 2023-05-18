@@ -93,23 +93,11 @@ export class EntityLoader {
       const context = helper(e).__serializationContext;
       context.populate ??= populate as PopulateOptions<Entity>[];
       context.fields ??= options.fields ? [...options.fields as string[]] : undefined;
-
-      helper(e).__populating = true;
     });
 
     for (const pop of populate) {
       await this.populateField<Entity>(entityName, entities, pop, options as Required<EntityLoaderOptions<Entity>>);
     }
-
-    entities.forEach(e => {
-      helper(e).__populating = false;
-    });
-
-    entities.forEach(e => {
-      while (helper(e).__queue.length > 0) {
-        helper(e).__queue.shift()();
-      }
-    });
   }
 
   normalizePopulate<Entity>(entityName: string, populate: PopulateOptions<Entity>[] | true, strategy?: LoadStrategy, lookup = true): PopulateOptions<Entity>[] {
@@ -338,25 +326,40 @@ export class EntityLoader {
       return;
     }
 
-    const populated = await this.populateMany<Entity>(entityName, entities, populate, options);
-
-    if (!populate.children && !populate.all) {
-      return;
+    for (const entity of entities) {
+      helper(entity).__populating = true;
     }
 
     const children: Entity[] = [];
+    let populated;
 
-    for (const entity of entities) {
-      const ref = entity[populate.field] as unknown;
+    try {
+      populated = await this.populateMany<Entity>(entityName, entities, populate, options);
 
-      if (Utils.isEntity<Entity>(ref)) {
-        children.push(ref);
-      } else if (Reference.isReference<Entity>(ref)) {
-        children.push(ref.unwrap());
-      } else if (Utils.isCollection<Entity>(ref)) {
-        children.push(...ref.getItems());
-      } else if (ref && prop.kind === ReferenceKind.EMBEDDED) {
-        children.push(...Utils.asArray(ref as Entity));
+      if (!populate.children && !populate.all) {
+        return;
+      }
+
+      for (const entity of entities) {
+        const ref = entity[populate.field] as unknown;
+
+        if (Utils.isEntity<Entity>(ref)) {
+          children.push(ref);
+        } else if (Reference.isReference<Entity>(ref)) {
+          children.push(ref.unwrap());
+        } else if (Utils.isCollection<Entity>(ref)) {
+          children.push(...ref.getItems());
+        } else if (ref && prop.kind === ReferenceKind.EMBEDDED) {
+          children.push(...Utils.asArray(ref as Entity));
+        }
+      }
+    } finally {
+      for (const entity of entities) {
+        helper(entity).__populating = false;
+
+        while (helper(entity).__queue.length > 0) {
+          helper(entity).__queue.shift()();
+        }
       }
     }
 
