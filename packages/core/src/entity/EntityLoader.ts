@@ -75,6 +75,8 @@ export class EntityLoader {
             });
           }
         });
+
+        return;
     }
 
     if ((entities as AnyEntity[]).some(e => !e.__helper)) {
