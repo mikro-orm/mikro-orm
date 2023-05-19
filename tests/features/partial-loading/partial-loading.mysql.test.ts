@@ -91,6 +91,23 @@ describe('partial loading (mysql)', () => {
     orm.em.clear();
     mock.mock.calls.length = 0;
 
+    // partial loading with query builder
+    const r3 = await orm.em.qb(Author2, 'a')
+      .select('id')
+      .innerJoinAndSelect('a.books', 'b', {}, ['author', 'title'])
+      .where({ id: god.id })
+      .orderBy({ 'b.title': 1 });
+    expect(r3).toHaveLength(1);
+    expect(r3[0].id).toBe(god.id);
+    expect(r3[0].name).toBeUndefined();
+    expect(r3[0].books[0].uuid).toBe(god.books[0].uuid);
+    expect(r3[0].books[0].title).toBe('Bible 1');
+    expect(r3[0].books[0].price).toBeUndefined();
+    expect(r3[0].books[0].author).toBeDefined();
+    expect(mock.mock.calls[0][0]).toMatch('select `a`.`id`, `b`.`uuid_pk` as `b__uuid_pk`, `b`.`title` as `b__title`, `b`.`author_id` as `b__author_id` from `author2` as `a` inner join `book2` as `b` on `a`.`id` = `b`.`author_id` where `a`.`id` = ? order by `b`.`title` asc');
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+
     // when populating collections, the owner is selected automatically (here book.author)
     const r00 = await orm.em.find(Author2, god, { fields: ['id', 'books.title'] });
     expect(r00).toHaveLength(1);

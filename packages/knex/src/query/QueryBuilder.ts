@@ -208,13 +208,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this.join(field, alias, cond, 'leftJoin');
   }
 
-  joinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string): SelectQueryBuilder<T> {
+  joinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string, fields?: string[]): SelectQueryBuilder<T> {
     if (!this.type) {
       this.select('*');
     }
 
     const prop = this.joinReference(field, alias, cond, type, path);
-    this.addSelect(this.getFieldsForJoinedLoad<T>(prop, alias));
+    this.addSelect(this.getFieldsForJoinedLoad<T>(prop, alias, fields));
     const [fromAlias] = this.helper.splitField(field);
     const populate = this._joinedProps.get(fromAlias);
     const item = { field: prop.name, strategy: LoadStrategy.JOINED, children: [] };
@@ -230,14 +230,18 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this as SelectQueryBuilder<T>;
   }
 
-  leftJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}): SelectQueryBuilder<T> {
-    return this.joinAndSelect(field, alias, cond, 'leftJoin');
+  leftJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, fields: string[]): SelectQueryBuilder<T> {
+    return this.joinAndSelect(field, alias, cond, 'leftJoin', undefined, fields);
   }
 
-  protected getFieldsForJoinedLoad<U extends object>(prop: EntityProperty<U>, alias: string): Field<U>[] {
+  innerJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, fields: string[]): SelectQueryBuilder<T> {
+    return this.joinAndSelect(field, alias, cond, 'innerJoin', undefined, fields);
+  }
+
+  protected getFieldsForJoinedLoad<U extends object>(prop: EntityProperty<U>, alias: string, explicitFields?: string[]): Field<U>[] {
     const fields: Field<U>[] = [];
     prop.targetMeta!.props
-      .filter(prop => this.platform.shouldHaveColumn(prop, this._populate))
+      .filter(prop => explicitFields ? explicitFields.includes(prop.name) || prop.primary : this.platform.shouldHaveColumn(prop, this._populate))
       .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<U>(this as unknown as QueryBuilder<U>, prop, alias)));
 
     return fields;
