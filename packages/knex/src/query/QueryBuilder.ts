@@ -230,11 +230,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this as SelectQueryBuilder<T>;
   }
 
-  leftJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, fields: string[]): SelectQueryBuilder<T> {
+  leftJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, fields?: string[]): SelectQueryBuilder<T> {
     return this.joinAndSelect(field, alias, cond, 'leftJoin', undefined, fields);
   }
 
-  innerJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, fields: string[]): SelectQueryBuilder<T> {
+  innerJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, fields?: string[]): SelectQueryBuilder<T> {
     return this.joinAndSelect(field, alias, cond, 'innerJoin', undefined, fields);
   }
 
