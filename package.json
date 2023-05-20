@@ -41,8 +41,8 @@
   "homepage": "https://mikro-orm.io",
   "scripts": {
     "postinstall": "husky install",
-    "clean": "lerna run clean",
-    "build": "lerna run build",
+    "clean": "yarn workspaces foreach -p run clean",
+    "build": "yarn workspaces foreach -p --topological-dev run build",
     "publish:prod": "lerna publish from-package --contents dist --force-publish",
     "release:prod": "yarn build && yarn publish:prod",
     "publish:next": "lerna publish from-package --contents dist --dist-tag next-6-x --force-publish",
@@ -131,5 +131,5 @@
     "typescript": "5.2.2",
     "uuid": "9.0.1"
   },
-  "packageManager": "yarn@3.6.3"
+  "packageManager": "yarn@4.0.0-rc.44"
 }
