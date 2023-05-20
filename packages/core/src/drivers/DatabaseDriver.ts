@@ -151,15 +151,17 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`${this.constructor.name} does not use ensureIndexes`);
   }
 
-  protected inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
-    Object.keys(data as Dictionary).forEach(k => {
-      if (Utils.isOperator(k)) {
-        Utils.asArray(data[k]).forEach(payload => this.inlineEmbeddables(meta, payload, where));
+  protected inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T, where?: boolean, object = false): void {
+    for (const k of Object.keys(data as Dictionary)) {
+      if (Utils.isOperator(k) && data[k] !== null) {
+        for (const payload of Utils.asArray(data[k])) {
+          this.inlineEmbeddables(meta, payload, where, object);
+        }
       }
-    });
+    }
 
     meta.props.forEach(prop => {
-      if (prop.reference === ReferenceType.EMBEDDED && prop.object && !where && Utils.isObject(data[prop.name])) {
+      if (prop.reference === ReferenceType.EMBEDDED && (object || prop.object) && !where && Utils.isObject(data[prop.name])) {
         return;
       }
 
@@ -175,7 +177,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
             throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.name!, prop.name, data);
           }
 
-          if (prop.object && where) {
+          if ((object || prop.object) && where) {
             const inline: (payload: any, sub: EntityProperty, path: string[]) => void = (payload: any, sub: EntityProperty, path: string[]) => {
               if (sub.reference === ReferenceType.EMBEDDED && Utils.isObject(payload[sub.embedded![1]])) {
                 return Object.keys(payload[sub.embedded![1]]).forEach(kkk => {
