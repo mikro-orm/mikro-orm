@@ -50,8 +50,8 @@
   },
   "scripts": {
     "build": "yarn clean && yarn compile && yarn copy && yarn run -T gen-esm-wrapper dist/index.js dist/index.mjs",
-    "clean": "rimraf ./dist",
-    "compile": "tsc -p tsconfig.build.json",
+    "clean": "yarn run -T rimraf ./dist",
+    "compile": "yarn run -T tsc -p tsconfig.build.json",
     "copy": "node ../../scripts/copy.mjs"
   },
   "publishConfig": {
