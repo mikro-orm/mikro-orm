@@ -750,7 +750,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     // clone array/object properties
     const properties = [
       'flags', '_populate', '_populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
-      '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables',
+      '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having',
     ];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop]));
 
