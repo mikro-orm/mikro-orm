@@ -61,7 +61,7 @@ export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 export type Scalar = boolean | number | string | bigint | symbol | Date | RegExp | Buffer | { toHexString(): string };
 
 export type ExpandScalar<T> = null | (T extends string
-  ? string | RegExp
+  ? T | RegExp
   : T extends Date
     ? Date | string
     : T);
