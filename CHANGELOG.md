@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.8](https://github.com/mikro-orm/mikro-orm/compare/v5.7.7...v5.7.8) (2023-05-21)
+
+
+### Bug Fixes
+
+* **core:** ensure `em.upsert` returns initialized entity ([#4370](https://github.com/mikro-orm/mikro-orm/issues/4370)) ([bad0b37](https://github.com/mikro-orm/mikro-orm/commit/bad0b37b83552cf6da6606b547ccb19d91062acc)), closes [#4242](https://github.com/mikro-orm/mikro-orm/issues/4242)
+* **core:** ensure correct number of results is logged in SQL drivers ([e3cd184](https://github.com/mikro-orm/mikro-orm/commit/e3cd1845365c59fc3e8cdabd97a6be74c6374d79))
+* **core:** ensure strict type-checking of enum queries ([8f8464a](https://github.com/mikro-orm/mikro-orm/commit/8f8464a53cb8125b8fe7f9cf11c4962b435c9f24))
+* **query-builder:** `qb.clone()` shouldn't ignore `groupBy` and `having` clauses ([7127ff6](https://github.com/mikro-orm/mikro-orm/commit/7127ff623b1f64940e9f24d658a2f2a258227c19))
+
+
+### Features
+
+* **query-builder:** add `qb.returning()` ([b5ab66b](https://github.com/mikro-orm/mikro-orm/commit/b5ab66bccf4dc3867194a6ba50626d4891646fe1))
+* **query-builder:** allow partial loading via `qb.(left/inner)JoinAndSelect()` ([22c8c84](https://github.com/mikro-orm/mikro-orm/commit/22c8c84d9852008522e21389b2304f7f646cdb99)), closes [#4364](https://github.com/mikro-orm/mikro-orm/issues/4364)
+
+
+
+
+
 ## [5.7.7](https://github.com/mikro-orm/mikro-orm/compare/v5.7.6...v5.7.7) (2023-05-14)
 
 
