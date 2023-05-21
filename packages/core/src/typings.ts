@@ -265,6 +265,7 @@ export interface EntityProperty<T = any> {
   hasConvertToJSValueSQL: boolean;
   hasConvertToDatabaseValueSQL: boolean;
   autoincrement?: boolean;
+  returning?: boolean;
   primary?: boolean;
   serializedPrimaryKey: boolean;
   lazy?: boolean;
@@ -795,7 +796,7 @@ export interface IHydrator {
     meta: EntityMetadata<T>,
     data: EntityData<T>,
     factory: EntityFactory,
-    type: 'full' | 'returning' | 'reference',
+    type: 'full' | 'reference',
     newEntity?: boolean,
     convertCustomTypes?: boolean,
     schema?: string,

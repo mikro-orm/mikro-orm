@@ -2505,6 +2505,40 @@ describe('QueryBuilder', () => {
     }
 
     {
+      const timestamp = new Date();
+      const qb = pg.em.createQueryBuilder(Author2)
+        .insert({
+          createdAt: timestamp,
+          email: 'ignore@example.com',
+          name: 'John Doe',
+          updatedAt: timestamp,
+        })
+        .onConflict()
+        .ignore()
+        .returning('*');
+
+      expect(qb.getQuery()).toEqual('insert into "author2" ("created_at", "email", "name", "updated_at") values ($1, $2, $3, $4) on conflict do nothing returning *');
+      expect(qb.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
+    }
+
+    {
+      const timestamp = new Date();
+      const qb = pg.em.createQueryBuilder(Author2)
+        .insert({
+          createdAt: timestamp,
+          email: 'ignore@example.com',
+          name: 'John Doe',
+          updatedAt: timestamp,
+        })
+        .onConflict()
+        .ignore()
+        .returning(['id', 'email']);
+
+      expect(qb.getQuery()).toEqual('insert into "author2" ("created_at", "email", "name", "updated_at") values ($1, $2, $3, $4) on conflict do nothing returning "id", "email"');
+      expect(qb.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
+    }
+
+    {
       const qb = pg.em.createQueryBuilder(FooBar2, 'fb1');
       qb.select('*')
         .distinct()
@@ -2643,7 +2677,6 @@ describe('QueryBuilder', () => {
     qb22.select('*').where({ identities: { $gte: ['4', '5', '6'] } });
     expect(qb22.getFormattedQuery()).toEqual(`select "a0".* from "author2" as "a0" where "a0"."identities" >= '{4,5,6}'`);
 
-
     // pessimistic locking
     await pg.em.transactional(async em => {
       const qb1 = em.createQueryBuilder(Book2);
@@ -2686,7 +2719,6 @@ describe('QueryBuilder', () => {
       ') as "b")';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual(['tag name', 20, 1]);
-
 
     // select by regexp operator
     {

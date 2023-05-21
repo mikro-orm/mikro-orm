@@ -1,7 +1,22 @@
 import type { Knex } from 'knex';
 import { inspect } from 'util';
-import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, QBFilterQuery } from '@mikro-orm/core';
-import { LockMode, OptimisticLockError, GroupOperator, QueryOperator, QueryOrderNumeric, ReferenceType, Utils } from '@mikro-orm/core';
+import type {
+  Dictionary,
+  EntityData,
+  EntityMetadata,
+  EntityProperty,
+  FlatQueryOrderMap,
+  QBFilterQuery,
+} from '@mikro-orm/core';
+import {
+  GroupOperator,
+  LockMode,
+  OptimisticLockError,
+  QueryOperator,
+  QueryOrderNumeric,
+  ReferenceType,
+  Utils,
+} from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
@@ -584,12 +599,26 @@ export class QueryBuilderHelper {
     return ret.join(', ');
   }
 
-  finalize(type: QueryType, qb: Knex.QueryBuilder, meta?: EntityMetadata): void {
-    const useReturningStatement = type === QueryType.INSERT && this.platform.usesReturningStatement() && meta && !meta.compositePK;
+  finalize(type: QueryType, qb: Knex.QueryBuilder, meta?: EntityMetadata, data?: Dictionary, returning?: Field<any>[]): void {
+    if (!meta || !data || !this.platform.usesReturningStatement()) {
+      return;
+    }
 
-    if (useReturningStatement) {
-      const returningProps = meta!.hydrateProps.filter(prop => prop.persist !== false && (prop.primary || prop.defaultRaw));
-      qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
+    // always respect explicit returning hint
+    if (returning && returning.length > 0) {
+      qb.returning(returning.map(field => this.mapper(field as string, type)));
+
+      return;
+    }
+
+    if (type === QueryType.INSERT) {
+      const returningProps = meta.hydrateProps
+        .filter(prop => prop.returning || (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)))
+        .filter(prop => !(prop.name in data));
+
+      if (returningProps.length > 0) {
+        qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
+      }
     }
   }
 

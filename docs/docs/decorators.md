@@ -40,6 +40,7 @@ export class Author { ... }
 | `fieldName` | `string` | yes | Override default property name (see [Naming Strategy](naming-strategy.md)). |
 | `type` | `string` &#124; `Constructor<Type>` &#124; `Type` | yes | Explicitly specify the runtime type (see [Metadata Providers](metadata-providers.md) and [Custom Types](custom-types.md)). |
 | `customType` | `Type` | yes | Explicitly specify the mapped type instance for this property (see [Custom Types](custom-types.md)). |
+| `returning` | `boolean` | yes | Whether this property should be part of `returning` clause. Works only in PostgreSQL and SQLite drivers. |
 | `onUpdate` | `() => any` | yes | Automatically update the property value every time entity gets updated. |
 | `persist` | `boolean` | yes | Set to `false` to define [Shadow Property](serializing.md#shadow-properties). |
 | `hydrate` | `boolean` | yes | Set to `false` to disable hydration of this property. Useful for persisted getters. |

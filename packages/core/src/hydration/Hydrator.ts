@@ -16,7 +16,7 @@ export abstract class Hydrator implements IHydrator {
   /**
    * @inheritDoc
    */
-  hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+  hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
     // the running state is used to consider propagation as hydration, saving the values directly to the entity data,
     // but we don't want that for new entities, their propagation should result in entity updates when flushing
     this.running = !newEntity;
@@ -43,13 +43,9 @@ export abstract class Hydrator implements IHydrator {
     return this.running;
   }
 
-  protected getProperties<T extends object>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityProperty<T>[] {
+  protected getProperties<T extends object>(meta: EntityMetadata<T>, type: 'full' | 'reference'): EntityProperty<T>[] {
     if (type === 'reference') {
       return meta.primaryKeys.map(pk => meta.properties[pk]);
-    }
-
-    if (type === 'returning') {
-      return meta.hydrateProps.filter(prop => prop.primary || prop.defaultRaw);
     }
 
     return meta.hydrateProps;

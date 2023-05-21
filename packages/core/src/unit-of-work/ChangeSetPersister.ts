@@ -352,7 +352,7 @@ export class ChangeSetPersister {
 
     for (const changeSet of changeSets) {
       const data = map.get(helper(changeSet.entity).getSerializedPrimaryKey());
-      this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, this.factory, 'returning', false, true);
+      this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, this.factory, 'full', false, true);
     }
   }
 
@@ -392,7 +392,7 @@ export class ChangeSetPersister {
       }, {} as Dictionary);
 
       if (Utils.hasObjectKeys(data)) {
-        this.hydrator.hydrate(entity, meta, data as EntityData<T>, this.factory, 'returning', false, true);
+        this.hydrator.hydrate(entity, meta, data as EntityData<T>, this.factory, 'full', false, true);
         Object.assign(payload, data); // merge to the changeset payload, so it gets saved to the entity snapshot
       }
     }

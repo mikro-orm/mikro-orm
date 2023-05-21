@@ -98,6 +98,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private _orderBy: QueryOrderMap<T>[] = [];
   private _groupBy: Field<T>[] = [];
   private _having: Dictionary = {};
+  private _returning?: Field<T>[];
   private _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[];
   private _limit?: number;
   private _offset?: number;
@@ -377,6 +378,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this;
   }
 
+  returning(fields?: Field<T> | Field<T>[]): this {
+    this._returning = fields != null ? Utils.asArray(fields) : fields;
+    return this;
+  }
+
   /**
    * @internal
    */
@@ -523,7 +529,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.helper.getLockSQL(qb, this.lockMode, this.lockTables);
     }
 
-    this.helper.finalize(this.type ?? QueryType.SELECT, qb, this.mainAlias.metadata);
+    this.helper.finalize(this.type ?? QueryType.SELECT, qb, this.mainAlias.metadata, this._data, this._returning);
 
     return qb;
   }
@@ -750,7 +756,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     // clone array/object properties
     const properties = [
       'flags', '_populate', '_populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
-      '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having',
+      '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
     ];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop]));
 
