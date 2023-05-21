@@ -564,7 +564,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       entity = data as Entity;
 
       if (helper(entity).__managed && helper(entity).__em === em) {
-        em.entityFactory.mergeData(meta, entity, data);
+        em.entityFactory.mergeData(meta, entity, data, { initialized: true });
         return entity;
       }
 
@@ -632,11 +632,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (!helper(entity).hasPrimaryKey()) {
       const pk = await this.driver.findOne(meta.className, where, {
-        fields: meta.primaryKeys as [],
+        fields: meta.hydrateProps.filter(p => !p.lazy && !(p.name in data!)).map(p => p.name) as EntityField<Entity>[],
         ctx: em.transactionContext,
         convertCustomTypes: true,
       });
-      em.entityFactory.mergeData(meta, entity, pk!);
+      em.entityFactory.mergeData(meta, entity, pk!, { initialized: true });
     }
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
@@ -702,7 +702,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         const entity = row as Entity;
 
         if (helper(entity).__managed && helper(entity).__em === em) {
-          em.entityFactory.mergeData(meta, entity, row);
+          em.entityFactory.mergeData(meta, entity, row, { initialized: true });
           entities.set(entity, row);
           entitiesByData.set(row, entity);
           continue;
@@ -798,7 +798,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     // skip if we got the PKs via returning statement (`rows`)
     if (!ret.rows?.length && loadPK.size > 0) {
-      const unique = meta.props.filter(p => p.unique).map(p => p.name);
+      const unique = meta.hydrateProps.filter(p => !p.lazy).map(p => p.name);
       const add = new Set(propIndex! >= 0 ? [unique[propIndex!]] : []);
 
       for (const cond of loadPK.values()) {
@@ -806,15 +806,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       const pks = await this.driver.find(meta.className, { $or: [...loadPK.values()] as Dictionary[] }, {
-        fields: meta.primaryKeys.concat(...add),
+        fields: meta.hydrateProps.filter(p => !p.lazy && !(p.name in data![0] && !add.has(p.name))).map(p => p.name),
         ctx: em.transactionContext,
         convertCustomTypes: true,
       });
 
       for (const [entity, cond] of loadPK.entries()) {
         const pk = pks.find(pk => {
-          const tmp = { ...pk };
-          meta.primaryKeys.forEach(pk => delete tmp[pk]);
+          const tmp = {};
+          add.forEach(k => {
+            if (!meta.properties[k]?.primary) {
+              tmp[k] = pk[k];
+            }
+          });
           return this.comparator.matching(entityName, cond, tmp);
         });
 
@@ -823,7 +827,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
           throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
         }
 
-        em.entityFactory.mergeData(meta, entity, pk);
+        em.entityFactory.mergeData(meta, entity, pk, { initialized: true });
       }
     }
 

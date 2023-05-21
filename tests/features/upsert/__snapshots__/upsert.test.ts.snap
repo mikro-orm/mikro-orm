@@ -17,16 +17,16 @@ exports[`em.upsert [better-sqlite] em.upsert(Type, data) with PK 1`] = `
 exports[`em.upsert [better-sqlite] em.upsert(Type, data) with unique composite property (no additional props) 1`] = `
 [
   [
-    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (1, 'fb1') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`",
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (1, 'fb1') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`, \`prop_name\`",
   ],
   [
-    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
+    "[query] select \`f0\`.\`_id\`, \`f0\`.\`prop_name\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
   ],
   [
-    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (2, 'fb2') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`",
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (2, 'fb2') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`, \`prop_name\`",
   ],
   [
-    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (3, 'fb3') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`",
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (3, 'fb3') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`, \`prop_name\`",
   ],
 ]
 `;
@@ -139,19 +139,19 @@ exports[`em.upsert [mariadb] em.upsert(Type, data) with unique composite propert
     "[query] insert ignore into \`foo_bar\` (\`author__id\`, \`name\`) values (1, 'fb1')",
   ],
   [
-    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
+    "[query] select \`f0\`.\`_id\`, \`f0\`.\`prop_name\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
   ],
   [
     "[query] insert ignore into \`foo_bar\` (\`author__id\`, \`name\`) values (2, 'fb2')",
   ],
   [
-    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 2 and \`f0\`.\`name\` = 'fb2' limit 1",
+    "[query] select \`f0\`.\`_id\`, \`f0\`.\`prop_name\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 2 and \`f0\`.\`name\` = 'fb2' limit 1",
   ],
   [
     "[query] insert ignore into \`foo_bar\` (\`author__id\`, \`name\`) values (3, 'fb3')",
   ],
   [
-    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 3 and \`f0\`.\`name\` = 'fb3' limit 1",
+    "[query] select \`f0\`.\`_id\`, \`f0\`.\`prop_name\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 3 and \`f0\`.\`name\` = 'fb3' limit 1",
   ],
 ]
 `;
@@ -288,19 +288,19 @@ exports[`em.upsert [mongo] em.upsert(Type, data) with unique composite property 
     "[query] db.getCollection('foo-bar').updateMany({ author: 1, name: 'fb1' }, { '$set': { name: 'fb1', author: 1 } }, { upsert: true });",
   ],
   [
-    "[query] db.getCollection('foo-bar').find({ author: 1, name: 'fb1' }, { projection: { _id: 1 } }).limit(1).toArray();",
+    "[query] db.getCollection('foo-bar').find({ author: 1, name: 'fb1' }, { projection: { _id: 1, propName: 1 } }).limit(1).toArray();",
   ],
   [
     "[query] db.getCollection('foo-bar').updateMany({ author: 2, name: 'fb2' }, { '$set': { name: 'fb2', author: 2 } }, { upsert: true });",
   ],
   [
-    "[query] db.getCollection('foo-bar').find({ author: 2, name: 'fb2' }, { projection: { _id: 1 } }).limit(1).toArray();",
+    "[query] db.getCollection('foo-bar').find({ author: 2, name: 'fb2' }, { projection: { _id: 1, propName: 1 } }).limit(1).toArray();",
   ],
   [
     "[query] db.getCollection('foo-bar').updateMany({ author: 3, name: 'fb3' }, { '$set': { name: 'fb3', author: 3 } }, { upsert: true });",
   ],
   [
-    "[query] db.getCollection('foo-bar').find({ author: 3, name: 'fb3' }, { projection: { _id: 1 } }).limit(1).toArray();",
+    "[query] db.getCollection('foo-bar').find({ author: 3, name: 'fb3' }, { projection: { _id: 1, propName: 1 } }).limit(1).toArray();",
   ],
 ]
 `;
@@ -437,19 +437,19 @@ exports[`em.upsert [mysql] em.upsert(Type, data) with unique composite property 
     "[query] insert ignore into \`foo_bar\` (\`author__id\`, \`name\`) values (1, 'fb1')",
   ],
   [
-    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
+    "[query] select \`f0\`.\`_id\`, \`f0\`.\`prop_name\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
   ],
   [
     "[query] insert ignore into \`foo_bar\` (\`author__id\`, \`name\`) values (2, 'fb2')",
   ],
   [
-    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 2 and \`f0\`.\`name\` = 'fb2' limit 1",
+    "[query] select \`f0\`.\`_id\`, \`f0\`.\`prop_name\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 2 and \`f0\`.\`name\` = 'fb2' limit 1",
   ],
   [
     "[query] insert ignore into \`foo_bar\` (\`author__id\`, \`name\`) values (3, 'fb3')",
   ],
   [
-    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 3 and \`f0\`.\`name\` = 'fb3' limit 1",
+    "[query] select \`f0\`.\`_id\`, \`f0\`.\`prop_name\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 3 and \`f0\`.\`name\` = 'fb3' limit 1",
   ],
 ]
 `;
@@ -583,16 +583,16 @@ exports[`em.upsert [postgresql] em.upsert(Type, data) with PK 1`] = `
 exports[`em.upsert [postgresql] em.upsert(Type, data) with unique composite property (no additional props) 1`] = `
 [
   [
-    "[query] insert into "foo_bar" ("author__id", "name") values (1, 'fb1') on conflict ("author__id", "name") do nothing returning "_id"",
+    "[query] insert into "foo_bar" ("author__id", "name") values (1, 'fb1') on conflict ("author__id", "name") do nothing returning "_id", "prop_name"",
   ],
   [
-    "[query] select "f0"."_id" from "foo_bar" as "f0" where "f0"."author__id" = 1 and "f0"."name" = 'fb1' limit 1",
+    "[query] select "f0"."_id", "f0"."prop_name" from "foo_bar" as "f0" where "f0"."author__id" = 1 and "f0"."name" = 'fb1' limit 1",
   ],
   [
-    "[query] insert into "foo_bar" ("author__id", "name") values (2, 'fb2') on conflict ("author__id", "name") do nothing returning "_id"",
+    "[query] insert into "foo_bar" ("author__id", "name") values (2, 'fb2') on conflict ("author__id", "name") do nothing returning "_id", "prop_name"",
   ],
   [
-    "[query] insert into "foo_bar" ("author__id", "name") values (3, 'fb3') on conflict ("author__id", "name") do nothing returning "_id"",
+    "[query] insert into "foo_bar" ("author__id", "name") values (3, 'fb3') on conflict ("author__id", "name") do nothing returning "_id", "prop_name"",
   ],
 ]
 `;
@@ -702,16 +702,16 @@ exports[`em.upsert [sqlite] em.upsert(Type, data) with PK 1`] = `
 exports[`em.upsert [sqlite] em.upsert(Type, data) with unique composite property (no additional props) 1`] = `
 [
   [
-    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (1, 'fb1') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`",
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (1, 'fb1') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`, \`prop_name\`",
   ],
   [
-    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
+    "[query] select \`f0\`.\`_id\`, \`f0\`.\`prop_name\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
   ],
   [
-    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (2, 'fb2') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`",
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (2, 'fb2') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`, \`prop_name\`",
   ],
   [
-    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (3, 'fb3') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`",
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (3, 'fb3') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`, \`prop_name\`",
   ],
 ]
 `;
