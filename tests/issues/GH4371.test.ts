@@ -56,4 +56,9 @@ describe('GH issue 4371', () => {
       },
     });
   });
+
+  test('Read entity correctly', async () => {
+    const entities = await orm.em.find(A, {});
+    expect(entities[0].emBedded.someField).toBe('w');
+  })
 });
