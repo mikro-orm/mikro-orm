@@ -2,7 +2,7 @@
   "packages": [
     "packages/*"
   ],
-  "version": "5.7.8",
+  "version": "5.7.9",
   "command": {
     "version": {
       "conventionalCommits": true,

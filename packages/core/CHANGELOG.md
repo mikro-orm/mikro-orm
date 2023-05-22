@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.9](https://github.com/mikro-orm/mikro-orm/compare/v5.7.8...v5.7.9) (2023-05-22)
+
+
+### Bug Fixes
+
+* **core:** fix mapping of results from partial loading ([541c449](https://github.com/mikro-orm/mikro-orm/commit/541c449e00d49c42e57ca0be536f26a4799bfa3c)), closes [#4377](https://github.com/mikro-orm/mikro-orm/issues/4377)
+
+
+### Performance Improvements
+
+* **core:** don't double clone when merging data to exiting entity ([c175652](https://github.com/mikro-orm/mikro-orm/commit/c175652445a58e26fac79eb6e7546a5397f2ee4c)), closes [#4376](https://github.com/mikro-orm/mikro-orm/issues/4376)
+
+
+
+
+
 ## [5.7.8](https://github.com/mikro-orm/mikro-orm/compare/v5.7.7...v5.7.8) (2023-05-21)
 
 
