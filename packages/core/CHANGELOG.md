@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.10](https://github.com/mikro-orm/mikro-orm/compare/v5.7.9...v5.7.10) (2023-05-23)
+
+
+### Bug Fixes
+
+* **core:** exclude collections from `returning` clause from `em.upsert` ([e342449](https://github.com/mikro-orm/mikro-orm/commit/e342449c1c291b74de8821afc43236f217260165)), closes [#4382](https://github.com/mikro-orm/mikro-orm/issues/4382)
+* **core:** re-export `Reference` class as `Ref` ([50eea37](https://github.com/mikro-orm/mikro-orm/commit/50eea370a43d70366643c8578c51ea427b79a64c)), closes [#4161](https://github.com/mikro-orm/mikro-orm/issues/4161)
+* **core:** respect `skipNull` when serializing object properties/embeddables ([f27ee9a](https://github.com/mikro-orm/mikro-orm/commit/f27ee9a6dcaf4b9ad72c4aba652c1afb23b74577)), closes [#4383](https://github.com/mikro-orm/mikro-orm/issues/4383)
+
+
+### Features
+
+* **core:** add `meta` to `EventArgs` to the upsert events ([ed431ea](https://github.com/mikro-orm/mikro-orm/commit/ed431eaba1c62aa9d3cc5e664c1ec73eef59fceb))
+
+
+### Performance Improvements
+
+* **core:** set `Collection._property` early for managed entities ([23ca682](https://github.com/mikro-orm/mikro-orm/commit/23ca682ad8792de145a5c4c7e32c8ff226c0cae1)), closes [#4376](https://github.com/mikro-orm/mikro-orm/issues/4376)
+
+
+
+
+
 ## [5.7.9](https://github.com/mikro-orm/mikro-orm/compare/v5.7.8...v5.7.9) (2023-05-22)
 
 
