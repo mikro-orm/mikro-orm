@@ -632,7 +632,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (!helper(entity).hasPrimaryKey()) {
       const pk = await this.driver.findOne(meta.className, where, {
-        fields: meta.hydrateProps.filter(p => !p.lazy && !(p.name in data!)).map(p => p.name) as EntityField<Entity>[],
+        fields: meta.comparableProps.filter(p => !p.lazy && !(p.name in data!)).map(p => p.name) as EntityField<Entity>[],
         ctx: em.transactionContext,
         convertCustomTypes: true,
       });
@@ -806,7 +806,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       const pks = await this.driver.find(meta.className, { $or: [...loadPK.values()] as Dictionary[] }, {
-        fields: meta.hydrateProps.filter(p => !p.lazy && !(p.name in data![0] && !add.has(p.name))).map(p => p.name),
+        fields: meta.comparableProps.filter(p => !p.lazy && !(p.name in data![0] && !add.has(p.name))).map(p => p.name),
         ctx: em.transactionContext,
         convertCustomTypes: true,
       });
