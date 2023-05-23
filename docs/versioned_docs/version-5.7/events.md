@@ -36,6 +36,15 @@ All hooks support async methods with one exception - `@OnInit`.
 
 > `@OnInit` can be sometimes fired twice, once when the entity reference is created, and once after its populated. To distinguish between those we can use `wrap(this).isInitialized()`.
 
+## Hook calls on relation updates
+
+### Hook calls on One-To-Many relations.
+ - When an entity instance is added to a collection, an event is only triggered on that entity Via "Update" or "Create" event. No event is not triggered on the owner.
+ - When an entity instance is removed from a collection, an event is triggered on the owner via "Update" event.
+ - Thus when an entity instance is moved to another collection, "Update" is triggered on the old owner(we remove from there) and "Update" is triggered on the entity. But no event is trigerred on the new owner.
+
+These event triggers provide the information of all updated entities. If adding an entity to an owner would trigger an update on the owner (on top of the update on the entity), then event information would be duplciated. This is because we can directly access the owner from the entity, without any additional query.
+
 ## Limitations of lifecycle hooks
 
 Hooks are executed inside the commit action of unit of work, after all change sets are computed. This means that it is not possible to create new entities as usual from inside the hook. Calling `em.flush()` from hooks will result in validation error. Calling `em.persist()` can result in undefined behaviour like locking errors.
