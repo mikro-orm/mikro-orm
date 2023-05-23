@@ -86,7 +86,7 @@ export class EntityFactory {
     }
 
     if (this.eventManager.hasListeners(EventType.onInit, meta2)) {
-      this.eventManager.dispatchEvent(EventType.onInit, { entity, em: this.em });
+      this.eventManager.dispatchEvent(EventType.onInit, { entity, meta: meta2, em: this.em });
     }
 
     wrapped.__processing = false;

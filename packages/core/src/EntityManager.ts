@@ -611,7 +611,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     em.validator.validateParams(data, 'insert data');
 
     if (em.eventManager.hasListeners(EventType.beforeUpsert, meta)) {
-      await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity: data, em }, meta);
+      await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity: data, em, meta }, meta);
     }
 
     const ret = await em.driver.nativeUpdate(entityName, where, data, {
@@ -644,7 +644,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     em.unitOfWork.registerManaged(entity, snapshot, { refresh: true });
 
     if (em.eventManager.hasListeners(EventType.afterUpsert, meta)) {
-      await em.eventManager.dispatchEvent(EventType.afterUpsert, { entity, em }, meta);
+      await em.eventManager.dispatchEvent(EventType.afterUpsert, { entity, em, meta }, meta);
     }
 
     return entity;
@@ -763,7 +763,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (em.eventManager.hasListeners(EventType.beforeUpsert, meta)) {
       for (const dto of data) {
         const entity = entitiesByData.get(dto) ?? dto;
-        await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity, em }, meta);
+        await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity, em, meta }, meta);
       }
     }
 
@@ -839,7 +839,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (em.eventManager.hasListeners(EventType.afterUpsert, meta)) {
       for (const [entity] of entities) {
-        await em.eventManager.dispatchEvent(EventType.afterUpsert, { entity, em }, meta);
+        await em.eventManager.dispatchEvent(EventType.afterUpsert, { entity, em, meta }, meta);
       }
     }
 

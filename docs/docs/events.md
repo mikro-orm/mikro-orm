@@ -36,7 +36,7 @@ All hooks support async methods with one exception - `@OnInit`.
 
 ### Upsert hooks
 
-`em.upsert()` and `em.upsertMany` cannot fire the create/update hooks, as we don't know if the query is an insert or update, those methods offer their own hooks - `beforeUpsert` and `afterUpsert`. The `beforeUpsert` event might provide a DTO instead of entity instance, based on how you call the upsert method. `afterUpsert` event will always receive already managed entity instance.
+`em.upsert()` and `em.upsertMany` cannot fire the create/update hooks, as we don't know if the query is an insert or update, those methods offer their own hooks - `beforeUpsert` and `afterUpsert`. The `beforeUpsert` event might provide a DTO instead of entity instance, based on how you call the upsert method. You can use the `EventArgs.meta` object to detect what kind of entity it belongs to. `afterUpsert` event will always receive already managed entity instance.
 
 ## Limitations of lifecycle hooks
 
