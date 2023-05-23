@@ -139,9 +139,9 @@ describe('EntityManagerMySql', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
-    const err1 = `insert into \`not_existing\` (\`foo\`) values ('bar') - Table 'mikro_orm_test.not_existing' doesn't exist`;
+    const err1 = `insert into \`not_existing\` (\`foo\`) values ('bar') - Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
-    const err2 = `delete from \`not_existing\` - Table 'mikro_orm_test.not_existing' doesn't exist`;
+    const err2 = `delete from \`not_existing\` - Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
   });
 

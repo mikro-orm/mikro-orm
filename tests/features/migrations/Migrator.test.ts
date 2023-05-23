@@ -51,7 +51,7 @@ describe('Migrator', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
-    orm = await initORMMySql('mysql', {}, true);
+    orm = await initORMMySql('mysql', { dbName: 'mikro_orm_test_migrations' }, true);
     await remove(process.cwd() + '/temp/migrations');
   });
   beforeEach(() => orm.config.resetServiceCache());
@@ -404,6 +404,7 @@ describe('Migrator - with explicit migrations', () => {
 
   beforeAll(async () => {
     orm = await initORMMySql(undefined, {
+      dbName: 'mikro_orm_test_migrations',
       migrations: {
         migrationsList: [
           {

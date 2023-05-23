@@ -91,9 +91,9 @@ describe('EntityManagerMariaDb', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
-    const err1 = /insert into `not_existing` \(`foo`\) values \('bar'\) - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test\.not_existing' doesn't exist/;
+    const err1 = /insert into `not_existing` \(`foo`\) values \('bar'\) - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test_\d+\.not_existing' doesn't exist/;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
-    const err2 = /delete from `not_existing` - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test\.not_existing' doesn't exist/;
+    const err2 = /delete from `not_existing` - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test_\d+\.not_existing' doesn't exist/;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
   });
 

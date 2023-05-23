@@ -2,7 +2,7 @@
 
 exports[`Migrator - with explicit migrations runner: migrator-migrations-list 1`] = `
 [
-  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test' (via write connection '127.0.0.1')",
+  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations' (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -828,7 +828,7 @@ export class Migration20191013214813 extends Migration {
 
 exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
 [
-  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test' (via write connection '127.0.0.1')",
+  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations' (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "create table \`mikro_orm_migrations\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp) (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -870,7 +870,7 @@ exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disab
 
 exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = `
 [
-  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test' (via write connection '127.0.0.1')",
+  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations' (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "create table \`mikro_orm_migrations\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp) (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
@@ -927,7 +927,7 @@ exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = 
 exports[`Migrator up/down with explicit transaction: explicit-tx 1`] = `
 [
   "begin (via write connection '127.0.0.1')",
-  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test' (via write connection '127.0.0.1')",
+  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations' (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "create table \`mikro_orm_migrations\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp) (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
