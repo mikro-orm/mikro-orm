@@ -826,7 +826,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
   protected async updateCollectionDiff<T extends object, O extends object>(
     meta: EntityMetadata<O>,
-    prop: EntityProperty<T>,
+    prop: EntityProperty<O>,
     pks: Primary<O>[],
     deleteDiff: Primary<T>[][] | boolean,
     insertDiff: Primary<T>[][],

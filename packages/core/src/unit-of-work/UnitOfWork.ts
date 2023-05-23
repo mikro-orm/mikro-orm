@@ -679,7 +679,9 @@ export class UnitOfWork {
   private processToManyReference<T extends object>(collection: Collection<AnyEntity>, visited: Set<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
     if (this.isCollectionSelfReferenced(collection, visited)) {
       this.extraUpdates.add([parent, prop.name, collection, undefined]);
-      parent[prop.name as keyof T] = new Collection<AnyEntity>(parent) as unknown as T[keyof T];
+      const coll = new Collection<AnyEntity, T>(parent);
+      coll.property = prop;
+      parent[prop.name as keyof T] = coll as unknown as T[keyof T];
 
       return;
     }
@@ -839,10 +841,16 @@ export class UnitOfWork {
       }
     }
 
+    // perf: set the `Collection._property` to skip the getter, as it can be slow when there is a lot of relations
+    if (Utils.isCollection<AnyEntity, T>(reference)) {
+      reference.property = prop;
+    }
+
     const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
 
     if (isCollection && Array.isArray(reference)) {
       const collection = new Collection<AnyEntity>(entity);
+      collection.property = prop as EntityProperty;
       entity[prop.name as keyof T] = collection as unknown as T[keyof T];
       collection.set(reference as AnyEntity[]);
     }
