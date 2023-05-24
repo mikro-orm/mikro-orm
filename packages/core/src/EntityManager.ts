@@ -714,7 +714,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (!helper(entity).hasPrimaryKey()) {
       const pk = await this.driver.findOne(meta.className, where, {
-        fields: meta.comparableProps.filter(p => !p.lazy && !(p.name in data!)).map(p => p.name) as EntityField<Entity>[],
+        fields: meta.comparableProps.filter(p => !p.lazy && !(p.name in data!)).map(p => p.name) as any,
         ctx: em.transactionContext,
         convertCustomTypes: true,
       });
@@ -895,7 +895,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
       for (const [entity, cond] of loadPK.entries()) {
         const pk = pks.find(pk => {
-          const tmp = {};
+          const tmp: Partial<Entity> = {};
           add.forEach(k => {
             if (!meta.properties[k]?.primary) {
               tmp[k] = pk[k];

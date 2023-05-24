@@ -126,7 +126,7 @@ export class EntityAssigner {
    * also makes sure the link is bidirectional when creating new entities from nested structures
    * @internal
    */
-  static autoWireOneToOne<T extends object>(prop: EntityProperty<T>, entity: T): void {
+  static autoWireOneToOne<T extends object, O extends object>(prop: EntityProperty<O, T>, entity: O): void {
     const ref = entity[prop.name] as T;
 
     if (prop.kind !== ReferenceKind.ONE_TO_ONE || !Utils.isEntity(ref)) {
@@ -134,7 +134,7 @@ export class EntityAssigner {
     }
 
     const meta2 = helper(ref).__meta;
-    const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy] as EntityProperty<T>;
+    const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
     /* istanbul ignore next */
     if (prop2 && !ref![prop2.name]) {

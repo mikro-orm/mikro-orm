@@ -8,7 +8,7 @@ class B {
   @PrimaryKey({ type: 'uuid', defaultRaw: 'uuid_generate_v4()' })
   id!: string;
 
-  @ManyToOne(() => D, { onDelete: 'cascade', ref: true })
+  @ManyToOne(() => D, { deleteRule: 'cascade', ref: true })
   d!: Ref<D>;
 
   @Property({ unique: true })
