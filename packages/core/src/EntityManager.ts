@@ -1243,7 +1243,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<Entity extends object>(entityName: EntityName<Entity>, id: Primary<Entity>, options: GetReferenceOptions = {}): Entity | Reference<Entity> {
+  getReference<Entity extends object>(entityName: EntityName<Entity>, id: Primary<Entity>, options: GetReferenceOptions = {}): Entity | Ref<Entity> | Reference<Entity> {
     options.convertCustomTypes ??= false;
     const meta = this.metadata.get(Utils.className(entityName));
 

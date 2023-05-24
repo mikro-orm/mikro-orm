@@ -22,8 +22,9 @@ import {
   NullHighlighter,
   PopulateHint,
   raw,
+  ref,
 } from '@mikro-orm/core';
-import { MySqlDriver, MySqlConnection } from '@mikro-orm/mysql';
+import { MySqlDriver, MySqlConnection, ScalarReference } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql, mockLogger } from './bootstrap';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
@@ -1500,11 +1501,11 @@ describe('EntityManagerMySql', () => {
   test('many to many with composite pk', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
     const book1 = new Book2('My Life on The Wall, part 1', author);
-    book1.perex = 'asd 1';
+    book1.perex = ref('asd 1');
     const book2 = new Book2('My Life on The Wall, part 2', author);
-    book2.perex = 'asd 2';
+    book2.perex = ref('asd 2');
     const book3 = new Book2('My Life on The Wall, part 3', author);
-    book3.perex = 'asd 3';
+    book3.perex = ref('asd 3');
     const tag1 = new BookTag2('silly');
     const tag2 = new BookTag2('funny');
     const tag3 = new BookTag2('sick');
@@ -1533,6 +1534,8 @@ describe('EntityManagerMySql', () => {
       'where `b0`.`author_id` is not null and `b1`.`name` != ? ' +
       'order by `b0`.`title` desc');
     await expect(books.length).toBe(3);
+    expect(books[0].perex).toBeInstanceOf(ScalarReference);
+    expect(books[0].perex?.$).toBe('asd 3');
     await expect(books[0].title).toBe('My Life on The Wall, part 3');
     await expect(books[0].tagsUnordered.getItems().map(t => t.name)).toEqual(['awkward', 'sexy', 'strange']);
     await expect(books[1].title).toBe('My Life on The Wall, part 2');

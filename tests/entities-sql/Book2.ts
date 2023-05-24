@@ -43,8 +43,8 @@ export class Book2 {
   @Property({ nullable: true, default: '' })
   title?: string;
 
-  @Property({ type: t.text, nullable: true, lazy: true })
-  perex?: string;
+  @Property({ type: t.text, nullable: true, lazy: true, ref: true })
+  perex?: Ref<Date>;
 
   @Property({ type: t.decimal, precision: 8, scale: 2, nullable: true })
   price?: number;

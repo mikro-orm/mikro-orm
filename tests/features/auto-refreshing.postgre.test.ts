@@ -1,5 +1,5 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { FlushMode, LoadStrategy, wrap } from '@mikro-orm/core';
+import { FlushMode, LoadStrategy, ref, wrap } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 import { initORMPostgreSql, mockLogger } from '../bootstrap';
@@ -20,13 +20,13 @@ describe('automatic refreshing of already loaded entities', () => {
     god.age = 999;
     god.identities = ['a', 'b', 'c'];
     const b1 = new Book2('Bible 1', god);
-    b1.perex = 'b1 perex';
+    b1.perex = ref('b1 perex');
     b1.price = 123;
     const b2 = new Book2('Bible 2', god);
-    b2.perex = 'b2 perex';
+    b2.perex = ref('b2 perex');
     b2.price = 456;
     const b3 = new Book2('Bible 3', god);
-    b3.perex = 'b3 perex';
+    b3.perex = ref('b3 perex');
     b3.price = 789;
     await orm.em.fork().persistAndFlush(god);
 
@@ -76,7 +76,7 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(r2[0].email).toBe('lol@lol.lol');
     expect(r2[0].books[0].title).toBe('Bible 1');
     expect(r2[0].books[0].price).toBe('123.00');
-    expect(r2[0].books[0].perex).toBe('b1 perex');
+    expect(r2[0].books[0].perex?.$).toBe('b1 perex');
     expect(r1[0]).toBe(r2[0]);
 
     const mock = mockLogger(orm);
@@ -105,7 +105,7 @@ describe('automatic refreshing of already loaded entities', () => {
     // @ts-expect-error
     expect(r1[0].books[0].price).toBeUndefined();
     // @ts-expect-error
-    expect(r1[0].books[0].perex).toBeUndefined();
+    expect(r1[0].books[0].perex.$).toBeUndefined();
     // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
     const r2 = await orm.em.find(Author2, god, { populate: ['books', 'books.perex'], strategy: LoadStrategy.JOINED, flushMode: FlushMode.COMMIT });
     expect(r2).toHaveLength(1);
@@ -115,7 +115,7 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(r2[0].email).toBe('lol@lol.lol');
     expect(r2[0].books[0].title).toBe('lol');
     expect(r2[0].books[0].price).toBe('123.00');
-    expect(r2[0].books[0].perex).toBe('b1 perex');
+    expect(r2[0].books[0].perex?.$).toBe('b1 perex');
     expect(r1[0]).toBe(r2[0]);
 
     const mock = mockLogger(orm);

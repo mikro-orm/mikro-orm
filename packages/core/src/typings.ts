@@ -8,6 +8,7 @@ import type {
   EntityIdentifier,
   EntityLoaderOptions,
   EntityRepository,
+  ScalarReference,
 } from './entity';
 import { EntityHelper, Reference } from './entity';
 import type { SerializationContext, SerializeOptions } from './serialization';
@@ -121,7 +122,7 @@ export type FilterQuery<T> =
   | FilterQuery<T>[];
 export type QBFilterQuery<T = any> = FilterQuery<T> | Dictionary;
 
-export interface IWrappedEntity<Entity extends object> {
+export interface IWrappedEntity<Entity> {
   isInitialized(): boolean;
   isTouched(): boolean;
   populated(populated?: boolean): void;
@@ -139,7 +140,7 @@ export interface IWrappedEntity<Entity extends object> {
   setSchema(schema?: string): void;
 }
 
-export interface IWrappedEntityInternal<Entity extends object> extends IWrappedEntity<Entity> {
+export interface IWrappedEntityInternal<Entity> extends IWrappedEntity<Entity> {
   hasPrimaryKey(): boolean;
   getPrimaryKey(convertCustomTypes?: boolean): Primary<Entity> | null;
   getPrimaryKeys(convertCustomTypes?: boolean): Primary<Entity>[] | null;
@@ -229,9 +230,11 @@ type Relation<T> = {
 /** Identity type that can be used to get around issues with cycles in bidirectional relations. */
 export type Rel<T> = T;
 
-export type Ref<T extends object> = true extends IsUnknown<PrimaryProperty<T>>
-  ? Reference<T>
-  : ({ [K in PrimaryProperty<T> & keyof T]: T[K] } & Reference<T>);
+export type Ref<T> = T extends Scalar
+  ? ScalarReference<T>
+  : true extends IsUnknown<PrimaryProperty<T>>
+    ? Reference<T>
+    : ({ [K in PrimaryProperty<T> & keyof T]: T[K] } & Reference<T>);
 
 type EntityDTONested<T> = T extends undefined | null ? T : EntityDTO<T>;
 export type EntityDTOProp<T> = T extends Scalar
@@ -755,9 +758,11 @@ type LoadedLoadable<T, E extends object> =
   ? LoadedCollection<E>
   : T extends Reference<any>
     ? LoadedReference<E>
-    : T extends Scalar | Scalar[]
-        ? T
-        : E;
+    : T extends ScalarReference<infer U>
+      ? LoadedScalarReference<U>
+      : T extends Scalar | Scalar[]
+          ? T
+          : E;
 
 type Prefix<T, K> = K extends `${infer S}.${string}` ? S : (K extends '*' ? keyof T : K);
 type IsPrefixed<T, K, L extends string> = K extends Prefix<T, L> ? K : (K extends PrimaryProperty<T> ? K : never);
@@ -785,6 +790,11 @@ export type Loaded<T, L extends string = never, F extends string = '*'> = [F] ex
 }) : Selected<T, L, F>;
 
 export interface LoadedReference<T> extends Reference<Defined<T>> {
+  $: Defined<T>;
+  get(): Defined<T>;
+}
+
+export interface LoadedScalarReference<T> extends ScalarReference<Defined<T>> {
   $: Defined<T>;
   get(): Defined<T>;
 }

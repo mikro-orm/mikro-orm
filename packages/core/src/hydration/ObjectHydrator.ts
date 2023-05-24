@@ -1,7 +1,7 @@
 import type { EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { Hydrator } from './Hydrator';
 import { Collection } from '../entity/Collection';
-import { Reference } from '../entity/Reference';
+import { Reference, ScalarReference } from '../entity/Reference';
 import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
 import type { EntityFactory } from '../entity/EntityFactory';
@@ -84,18 +84,24 @@ export class ObjectHydrator extends Hydrator {
       const preCond = preCondition(dataKey);
       const convertorKey = path.filter(k => !k.match(/\[idx_\d+]/)).map(k => this.safeKey(k)).join('_');
       const ret: string[] = [];
+      const idx = this.tmpIndex++;
+
+      if (prop.ref) {
+        context.set('ScalarReference', ScalarReference);
+        ret.push(`  const oldValue_${idx} = entity${entityKey};`);
+      }
+
+      ret.push(`  if (data${dataKey} === null) {`);
+      ret.push(`    entity${entityKey} = null;`);
+      ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
 
       if (prop.type.toLowerCase() === 'date') {
-        ret.push(
-          `  if (${preCond}data${dataKey}) entity${entityKey} = new Date(data${dataKey});`,
-          `  else if (${preCond}data${dataKey} === null) entity${entityKey} = null;`,
-        );
+        ret.push(`    entity${entityKey} = new Date(data${dataKey});`);
       } else if (prop.customType) {
         context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
         context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
         ret.push(
-          `  if (${preCond}typeof data${dataKey} !== 'undefined') {`,
           `    if (convertCustomTypes) {`,
           `      const value = convertToJSValue_${convertorKey}(data${dataKey});`,
         );
@@ -109,12 +115,27 @@ export class ObjectHydrator extends Hydrator {
           `    } else {`,
           `      entity${entityKey} = data${dataKey};`,
           `    }`,
-          `  }`,
         );
       } else if (prop.type.toLowerCase() === 'boolean') {
-        ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey} === null ? null : !!data${dataKey};`);
+        ret.push(`    entity${entityKey} = data${dataKey} === null ? null : !!data${dataKey};`);
       } else {
-        ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey};`);
+        ret.push(`    entity${entityKey} = data${dataKey};`);
+      }
+
+      if (prop.ref) {
+        ret.push(`    const value = entity${entityKey};`);
+        ret.push(`    entity${entityKey} = oldValue_${idx} ?? new ScalarReference(value);`);
+        ret.push(`    entity${entityKey}.bind(entity, '${prop.name}');`);
+        ret.push(`    entity${entityKey}.set(value);`);
+      }
+
+      ret.push(`  }`);
+
+      if (prop.ref) {
+        ret.push(`  if (!entity${entityKey}) {`);
+        ret.push(`    entity${entityKey} = new ScalarReference();`);
+        ret.push(`    entity${entityKey}.bind(entity, '${prop.name}');`);
+        ret.push(`  }`);
       }
 
       return ret;
