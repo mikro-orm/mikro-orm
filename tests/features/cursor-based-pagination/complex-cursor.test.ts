@@ -51,7 +51,7 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
 
     orm = await MikroORM.init({
       entities: [User],
-      dbName: type.includes('sqlite') ? ':memory:' : 'mikro_orm_cursor',
+      dbName: type.includes('sqlite') ? ':memory:' : 'mikro_orm_cursor_complex',
       driver: PLATFORMS[type],
       loggerFactory: options => new SimpleLogger(options),
       ...options,
