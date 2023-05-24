@@ -424,7 +424,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     if (meta && this.platform.usesReturningStatement()) {
-      const returningProps = meta.hydrateProps
+      const returningProps = meta.props
         .filter(prop => prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw || prop.autoincrement))
         .filter(prop => !(prop.name in data[0]) || Utils.isRawSql(data[0][prop.name]));
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
