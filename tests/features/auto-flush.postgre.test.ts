@@ -1,5 +1,5 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { FlushMode, wrap } from '@mikro-orm/core';
+import { FlushMode, ref, wrap } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 import { initORMPostgreSql, mockLogger } from '../bootstrap';
@@ -26,13 +26,13 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     god.age = 999;
     god.identities = ['a', 'b', 'c'];
     const b1 = new Book2('Bible 1', god);
-    b1.perex = 'b1 perex';
+    b1.perex = ref('b1 perex');
     b1.price = 123;
     const b2 = new Book2('Bible 2', god);
-    b2.perex = 'b2 perex';
+    b2.perex = ref('b2 perex');
     b2.price = 456;
     const b3 = new Book2('Bible 3', god);
-    b3.perex = 'b3 perex';
+    b3.perex = ref('b3 perex');
     b3.price = 789;
     await orm.em.fork().persistAndFlush(god);
 
@@ -207,13 +207,13 @@ describe('automatic flushing when querying for overlapping entities via em.find/
       god.age = 999;
       god.identities = ['a', 'b', 'c'];
       const b1 = new Book2(`Bible 1-${i}`, god);
-      b1.perex = `b1-${i} perex`;
+      b1.perex = ref(`b1-${i} perex`);
       b1.price = 123;
       const b2 = new Book2(`Bible 2-${i}`, god);
-      b2.perex = `b2-${i} perex`;
+      b2.perex = ref(`b2-${i} perex`);
       b2.price = 456;
       const b3 = new Book2(`Bible 3-${i}`, god);
-      b3.perex = `b3-${i} perex`;
+      b3.perex = ref(`b3-${i} perex`);
       b3.price = 789;
       fork.persist(god);
     }
