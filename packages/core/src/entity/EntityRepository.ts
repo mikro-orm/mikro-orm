@@ -194,7 +194,7 @@ export class EntityRepository<Entity extends object> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference(id: Primary<Entity>, options?: GetReferenceOptions): Entity | Reference<Entity> {
+  getReference(id: Primary<Entity>, options?: GetReferenceOptions): Entity | Ref<Entity> | Reference<Entity> {
     return this.getEntityManager().getReference<Entity>(this.entityName, id, options);
   }
 
