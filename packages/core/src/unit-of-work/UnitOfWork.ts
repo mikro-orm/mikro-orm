@@ -311,9 +311,10 @@ export class UnitOfWork {
         continue;
       }
 
-      if (relation && Utils.isCollection(relation[inverseProp])) {
-        // @ts-expect-error TS fails to respect the type guard on object props
-        relation[inverseProp].removeWithoutPropagation(entity);
+      const target = relation && relation[inverseProp as keyof typeof relation];
+
+      if (relation && Utils.isCollection(target)) {
+        target.removeWithoutPropagation(entity);
       }
     }
 
@@ -819,7 +820,8 @@ export class UnitOfWork {
   }
 
   private fixMissingReference<T extends object>(entity: T, prop: EntityProperty<T>): void {
-    const kind = Reference.unwrapReference(entity[prop.name] as object);
+    const reference = entity[prop.name] as object;
+    const kind = Reference.unwrapReference(reference);
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && kind && !prop.mapToPk) {
       if (!Utils.isEntity(kind)) {

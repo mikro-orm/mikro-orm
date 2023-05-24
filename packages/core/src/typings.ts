@@ -171,7 +171,7 @@ export type AnyEntity<T = any> = Partial<T>;
 
 export type EntityClass<T> = Function & { prototype: T };
 export type EntityClassGroup<T> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
-export type EntityName<T> = string | EntityClass<T> | EntitySchema<T, any>;
+export type EntityName<T> = string | EntityClass<T> | EntitySchema<T, any> | { name: string };
 
 // we need to restrict the type in the generic argument, otherwise inference don't work, so we use two types here
 export type GetRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = Entity[typeof EntityRepositoryType] extends EntityRepository<Entity> | undefined ? NonNullable<Entity[typeof EntityRepositoryType]> : Fallback;
@@ -261,11 +261,11 @@ export interface CheckConstraint<T = any> {
 
 export type AnyString = string & {};
 
-export interface EntityProperty<T = any> {
-  name: EntityKey<T>;
-  entity: () => EntityName<T>;
+export interface EntityProperty<Owner = any, Target = any> {
+  name: EntityKey<Owner>;
+  entity: () => EntityName<Owner>;
   type: keyof typeof types | AnyString;
-  targetMeta?: EntityMetadata<T>;
+  targetMeta?: EntityMetadata<Target>;
   columnTypes: string[];
   customType: Type<any>;
   hasConvertToJSValueSQL: boolean;
@@ -287,8 +287,8 @@ export interface EntityProperty<T = any> {
   defaultRaw?: string;
   formula?: (alias: string) => string;
   prefix?: string | boolean;
-  embedded?: [EntityKey<T>, EntityKey<T>];
-  embeddable: Constructor<T>;
+  embedded?: [EntityKey<Owner>, EntityKey<Owner>];
+  embeddable: Constructor<Owner>;
   embeddedProps: Dictionary<EntityProperty>;
   discriminatorColumn?: string; // only for poly embeddables currently
   object?: boolean;
@@ -310,18 +310,18 @@ export interface EntityProperty<T = any> {
   eager?: boolean;
   setter?: boolean;
   getter?: boolean;
-  getterName?: keyof T;
+  getterName?: keyof Owner;
   cascade: Cascade[];
   orphanRemoval?: boolean;
-  onCreate?: (entity: T) => any;
-  onUpdate?: (entity: T) => any;
+  onCreate?: (entity: Owner) => any;
+  onUpdate?: (entity: Owner) => any;
   deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
   updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
   strategy?: LoadStrategy;
   owner: boolean;
-  inversedBy: EntityKey<T>;
-  mappedBy: EntityKey<T>;
-  orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
+  inversedBy: EntityKey<Target>;
+  mappedBy: EntityKey<Target>;
+  orderBy?: QueryOrderMap<Owner> | QueryOrderMap<Owner>[];
   customOrder?: string[] | number[] | boolean[];
   fixedOrder?: boolean;
   fixedOrderColumn?: string;
@@ -331,7 +331,7 @@ export interface EntityProperty<T = any> {
   inverseJoinColumns: string[];
   referencedColumnNames: string[];
   referencedTableName: string;
-  referencedPKs: EntityKey<T>[];
+  referencedPKs: EntityKey<Owner>[];
   serializer?: (value: any) => any;
   serializedName?: string;
   comment?: string;

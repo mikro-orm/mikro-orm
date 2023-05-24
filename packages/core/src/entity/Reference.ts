@@ -80,7 +80,7 @@ export class Reference<T extends object> {
   /**
    * Wraps the entity in a `Reference` wrapper if the property is defined as `ref`.
    */
-  static wrapReference<T extends object>(entity: T | Reference<T>, prop: EntityProperty<T>): Reference<T> | T {
+  static wrapReference<T extends object, O extends object>(entity: T | Reference<T>, prop: EntityProperty<O, T>): Reference<T> | T {
     if (entity && prop.ref && !Reference.isReference(entity)) {
       return Reference.create(entity as T);
     }
