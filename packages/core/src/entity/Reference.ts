@@ -1,26 +1,27 @@
 import { inspect } from 'util';
 import type {
+  AddEager,
   ConnectionType,
   Dictionary,
   EntityClass,
+  EntityKey,
   EntityProperty,
   Loaded,
-  EntityKey,
   LoadedReference,
   Populate,
   Primary,
-  Ref, AddEager,
+  Ref,
 } from '../typings';
 import type { EntityFactory } from './EntityFactory';
 import type { LockMode } from '../enums';
 import { helper, wrap } from './wrap';
 import { Utils } from '../utils/Utils';
 
-export class Reference<T extends object> {
+export class Reference<T> {
 
   constructor(private entity: T) {
     this.set(entity);
-    const meta = helper(this.entity).__meta;
+    const meta = helper(this.entity as object).__meta;
 
     meta.primaryKeys.forEach(primaryKey => {
       Object.defineProperty(this, primaryKey, {
@@ -39,23 +40,23 @@ export class Reference<T extends object> {
     }
   }
 
-  static create<T extends object>(entity: T | Ref<T>): Ref<T> {
+  static create<T>(entity: T | Ref<T>): Ref<T> {
     const unwrapped = Reference.unwrapReference(entity);
     const ref = helper(entity).toReference() as Ref<T>;
 
     if (unwrapped !== ref.unwrap()) {
-      ref.set(unwrapped);
+      ref.set(unwrapped as T);
     }
 
     return ref;
   }
 
-  static createFromPK<T extends object>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): Ref<T> {
+  static createFromPK<T>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): Ref<T> {
     const ref = this.createNakedFromPK(entityType, pk, options);
     return helper(ref).toReference();
   }
 
-  static createNakedFromPK<T extends object>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): T {
+  static createNakedFromPK<T>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): T {
     const factory = entityType.prototype.__factory as EntityFactory;
     const entity = factory.createReference(entityType, pk, {
       merge: false,
@@ -67,13 +68,13 @@ export class Reference<T extends object> {
     wrapped.__meta.primaryKeys.forEach(key => wrapped.__loadedProperties.add(key));
     wrapped.__originalEntityData = factory.getComparator().prepareEntity(entity);
 
-    return entity;
+    return entity as T;
   }
 
   /**
    * Checks whether the argument is instance of `Reference` wrapper.
    */
-  static isReference<T extends object>(data: any): data is Reference<T> {
+  static isReference<T>(data: any): data is Reference<T> {
     return data && !!data.__reference;
   }
 
@@ -82,7 +83,7 @@ export class Reference<T extends object> {
    */
   static wrapReference<T extends object, O extends object>(entity: T | Reference<T>, prop: EntityProperty<O, T>): Reference<T> | T {
     if (entity && prop.ref && !Reference.isReference(entity)) {
-      return Reference.create(entity as T);
+      return Reference.create(entity as T) as Reference<T>;
     }
 
     return entity;
@@ -91,7 +92,7 @@ export class Reference<T extends object> {
   /**
    * Returns wrapped entity.
    */
-  static unwrapReference<T extends object>(ref: T | Reference<T>): T {
+  static unwrapReference<T>(ref: T | Reference<T>): T {
     return Reference.isReference<T>(ref) ? (ref as Reference<T>).unwrap() : ref;
   }
 
@@ -112,9 +113,9 @@ export class Reference<T extends object> {
    * Returns either the whole entity, or the requested property.
    */
   async load<TT extends T, K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P> | K): Promise<Loaded<TT, P> | T[K]> {
-    const opts: Dictionary = typeof options === 'object' ? options : { prop: options };
+    const opts: Dictionary = typeof options === 'object' ? options : { prop: options } as LoadReferenceOptions<T, P>;
 
-    if (!this.isInitialized()) {
+    if (!this.isInitialized() || opts.refresh) {
       await helper(this.entity).init(undefined, opts?.populate, opts?.lockMode, opts?.connectionType);
     }
 
@@ -155,7 +156,7 @@ export class Reference<T extends object> {
   }
 
   toJSON(...args: any[]): Dictionary {
-    return wrap(this.entity).toJSON!(...args);
+    return wrap(this.entity as object).toJSON!(...args);
   }
 
   /* istanbul ignore next */
@@ -174,6 +175,57 @@ export class Reference<T extends object> {
 
 }
 
+export class ScalarReference<Value> {
+
+  private entity?: object;
+  private property?: string;
+
+  constructor(private value?: Value, private initialized = value != null) {}
+
+  /**
+   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
+   * Returns either the whole entity, or the requested property.
+   */
+  async load(options?: Omit<LoadReferenceOptions<any, any>, 'populate'>): Promise<Value | undefined> {
+    const opts: Dictionary = typeof options === 'object' ? options : { prop: options } as LoadReferenceOptions<any, any>;
+
+    if (!this.initialized || opts.refresh) {
+      if (this.entity == null || this.property == null) {
+        throw new Error('Cannot load scalar reference that is not bound to an entity property.');
+      }
+
+      await helper(this.entity).populate<any>([this.property], opts);
+    }
+
+    return this.value;
+  }
+
+  set(value: Value): void {
+    this.value = value;
+    this.initialized = true;
+  }
+
+  bind<Entity extends object>(entity: Entity, property: EntityKey<Entity>): void {
+    this.entity = entity;
+    this.property = property;
+    Object.defineProperty(this, 'entity', { enumerable: false, value: entity });
+  }
+
+  unwrap(): Value | undefined {
+    return this.value;
+  }
+
+  isInitialized(): boolean {
+    return this.initialized;
+  }
+
+  /* istanbul ignore next */
+  [inspect.custom]() {
+    return this.initialized ? `Ref<${inspect(this.value)}>` : `Ref<?>`;
+  }
+
+}
+
 Object.defineProperties(Reference.prototype, {
   __reference: { value: true, enumerable: false },
   __meta: { get() { return this.entity.__meta!; } },
@@ -183,10 +235,17 @@ Object.defineProperties(Reference.prototype, {
   get: { get() { return () => this.entity; } },
 });
 
+Object.defineProperties(ScalarReference.prototype, {
+  __scalarReference: { value: true, enumerable: false },
+  $: { get() { return this.value; } },
+  get: { get() { return () => this.value; } },
+});
+
 export interface LoadReferenceOptions<T, P extends string = never> {
   populate?: Populate<T, P>;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   connectionType?: ConnectionType;
+  refresh?: boolean;
 }
 
 /**
@@ -202,7 +261,12 @@ export function ref<T extends object, PKV extends Primary<T> = Primary<T>>(entit
 /**
  * shortcut for `wrap(entity).toReference()`
  */
-export function ref<T extends object, PKV extends Primary<T> = Primary<T>>(entityOrType?: T | Ref<T> | EntityClass<T>, pk?: T | PKV): Ref<T> | undefined | null {
+export function ref<T>(value: T | Ref<T>): Ref<T> & LoadedReference<Loaded<T, AddEager<T>>>;
+
+/**
+ * shortcut for `wrap(entity).toReference()`
+ */
+export function ref<T, PKV extends Primary<T> = Primary<T>>(entityOrType?: T | Ref<T> | EntityClass<T>, pk?: T | PKV): Ref<T> | undefined | null {
   if (entityOrType == null) {
     return entityOrType as unknown as null;
   }
@@ -215,22 +279,26 @@ export function ref<T extends object, PKV extends Primary<T> = Primary<T>>(entit
     return helper(pk).toReference() as Ref<T>;
   }
 
+  if (arguments.length === 1) {
+    return new ScalarReference<T>(entityOrType, true) as Ref<T>;
+  }
+
   if (pk == null) {
     return pk as null;
   }
 
-  return Reference.createFromPK<T>(entityOrType as EntityClass<T>, pk);
+  return Reference.createFromPK<T>(entityOrType as EntityClass<T>, pk as PKV);
 }
 
 /**
  * shortcut for `Reference.createNakedFromPK(entityType, pk)`
  */
-export function rel<T extends object, PK extends Primary<T>>(entityType: EntityClass<T>, pk: T | PK): T;
+export function rel<T, PK extends Primary<T>>(entityType: EntityClass<T>, pk: T | PK): T;
 
 /**
  * shortcut for `Reference.createNakedFromPK(entityType, pk)`
  */
-export function rel<T extends object, PK extends Primary<T>>(entityType: EntityClass<T>, pk?: T | PK): T | undefined | null {
+export function rel<T, PK extends Primary<T>>(entityType: EntityClass<T>, pk?: T | PK): T | undefined | null {
   if (pk == null || Utils.isEntity(pk)) {
     return pk as T;
   }

@@ -121,38 +121,43 @@ export class EntityTransformer {
     const wrapped = helper(entity);
     const property = wrapped.__meta.properties[prop];
     const serializer = property?.serializer;
+    const value = entity[prop];
 
     if (serializer) {
-      return serializer(entity[prop]);
+      return serializer(value);
     }
 
-    if (Utils.isCollection(entity[prop])) {
+    if (Utils.isCollection(value)) {
       return EntityTransformer.processCollection(prop, entity, raw, populated);
     }
 
-    if (Utils.isEntity(entity[prop], true)) {
+    if (Utils.isEntity(value, true)) {
       return EntityTransformer.processEntity(prop, entity, wrapped.__platform, raw, populated);
     }
 
+    if (Utils.isScalarReference(value)) {
+      return value.unwrap();
+    }
+
     if (property.kind === ReferenceKind.EMBEDDED) {
-      if (Array.isArray(entity[prop])) {
-        return (entity[prop] as object[]).map(item => {
+      if (Array.isArray(value)) {
+        return (value as object[]).map(item => {
           const wrapped = item && helper(item);
           return wrapped ? wrapped.toJSON() : item;
         }) as EntityValue<Entity>;
       }
 
-      const wrapped = entity[prop] && helper(entity[prop]!);
-      return wrapped ? wrapped.toJSON() as EntityValue<Entity> : entity[prop];
+      const wrapped = value && helper(value!);
+      return wrapped ? wrapped.toJSON() as EntityValue<Entity> : value;
     }
 
     const customType = property?.customType;
 
     if (customType) {
-      return customType.toJSON(entity[prop], wrapped.__platform);
+      return customType.toJSON(value, wrapped.__platform);
     }
 
-    return wrapped.__platform.normalizePrimaryKey(entity[prop] as unknown as IPrimaryKey) as unknown as EntityValue<Entity>;
+    return wrapped.__platform.normalizePrimaryKey(value as unknown as IPrimaryKey) as unknown as EntityValue<Entity>;
   }
 
   private static processEntity<Entity extends object>(prop: keyof Entity, entity: Entity, platform: Platform, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {

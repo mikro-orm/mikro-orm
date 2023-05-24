@@ -16,7 +16,7 @@ import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import type { Collection } from './Collection';
 import { LoadStrategy, QueryOrder, ReferenceKind, type LockMode, type PopulateHint, type QueryOrderMap } from '../enums';
-import { Reference } from './Reference';
+import { Reference, type ScalarReference } from './Reference';
 import type { EntityField, FindOptions } from '../drivers/IDatabaseDriver';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import type { Platform } from '../platforms/Platform';
@@ -176,7 +176,7 @@ export class EntityLoader {
     const prop = meta.properties[field];
 
     if (prop.kind === ReferenceKind.SCALAR && prop.lazy) {
-      const filtered = entities.filter(e => options.refresh || e[prop.name] === undefined);
+      const filtered = entities.filter(e => options.refresh || (prop.ref ? !(e[prop.name] as ScalarReference<any>)?.isInitialized() : e[prop.name] === undefined));
 
       if (options.ignoreLazyScalarProperties || filtered.length === 0) {
         return entities as AnyEntity[];
