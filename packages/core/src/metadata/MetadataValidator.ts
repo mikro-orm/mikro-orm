@@ -20,11 +20,11 @@ export class MetadataValidator {
     }
   }
 
-  validateEntityDefinition(metadata: MetadataStorage, name: string): void {
-    const meta = metadata.get(name);
+  validateEntityDefinition<T>(metadata: MetadataStorage, name: string): void {
+    const meta = metadata.get<T>(name);
 
     if (meta.virtual || meta.expression) {
-      for (const prop of Object.values(meta.properties)) {
+      for (const prop of Utils.values(meta.properties)) {
         if (![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind)) {
           throw new MetadataError(`Only scalar and embedded properties are allowed inside virtual entity. Found '${prop.kind}' in ${meta.className}.${prop.name}`);
         }
@@ -46,7 +46,7 @@ export class MetadataValidator {
     this.validateIndexes(meta, meta.indexes ?? [], 'index');
     this.validateIndexes(meta, meta.uniques ?? [], 'unique');
 
-    for (const prop of Object.values(meta.properties)) {
+    for (const prop of Utils.values(meta.properties)) {
       if (prop.kind !== ReferenceKind.SCALAR) {
         this.validateReference(meta, prop, metadata);
         this.validateBidirectional(meta, prop, metadata);

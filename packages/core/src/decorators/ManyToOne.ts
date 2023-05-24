@@ -19,8 +19,8 @@ export function ManyToOne<T extends object, O>(
   };
 }
 
-export interface ManyToOneOptions<T, O> extends ReferenceOptions<T, O> {
-  inversedBy?: (string & keyof T) | ((e: T) => any);
+export interface ManyToOneOptions<Owner, Target> extends ReferenceOptions<Owner, Target> {
+  inversedBy?: (string & keyof Target) | ((e: Target) => any);
   ref?: boolean;
   primary?: boolean;
   mapToPk?: boolean;
