@@ -139,6 +139,10 @@ export type PropertyOptions<Owner> = {
    */
   hydrate?: boolean;
   /**
+   * Enable `ScalarReference` wrapper for lazy values. Use this in combination with `lazy: true` to have a type-safe accessor object in place of the value.
+   */
+  ref?: boolean;
+  /**
    * Set false to disable change tracking on a property level.
    *
    * @see https://mikro-orm.io/docs/unit-of-work#change-tracking-and-performance-considerations
