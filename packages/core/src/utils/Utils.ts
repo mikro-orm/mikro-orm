@@ -24,6 +24,7 @@ import { GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enu
 import type { Collection } from '../entity/Collection';
 import type { Platform } from '../platforms';
 import { helper } from '../entity/wrap';
+import type { ScalarReference } from '../entity/Reference';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
@@ -647,6 +648,13 @@ export class Utils {
     }
 
     return !!data.__entity;
+  }
+
+  /**
+   * Checks whether given object is a scalar reference.
+   */
+  static isScalarReference<T = unknown>(data: any, allowReference = false): data is ScalarReference<any> & {} {
+    return typeof data === 'object' && data != null && data.__scalarReference;
   }
 
   /**
