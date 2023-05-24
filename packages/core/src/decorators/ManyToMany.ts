@@ -21,11 +21,11 @@ export function ManyToMany<T extends object, O>(
   };
 }
 
-export interface ManyToManyOptions<T, O> extends ReferenceOptions<T, O> {
+export interface ManyToManyOptions<Owner, Target> extends ReferenceOptions<Owner, Target> {
   owner?: boolean;
-  inversedBy?: (string & keyof T) | ((e: T) => any);
-  mappedBy?: (string & keyof T) | ((e: T) => any);
-  orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
+  inversedBy?: (string & keyof Target) | ((e: Target) => any);
+  mappedBy?: (string & keyof Target) | ((e: Target) => any);
+  orderBy?: QueryOrderMap<Target> | QueryOrderMap<Target>[];
   fixedOrder?: boolean;
   fixedOrderColumn?: string;
   pivotTable?: string;

@@ -48,7 +48,7 @@ export function Property<T extends object>(options: PropertyOptions<T> = {}) {
   };
 }
 
-export type PropertyOptions<T> = {
+export type PropertyOptions<Owner> = {
   /**
    * Alias for `fieldName`.
    */
@@ -101,12 +101,12 @@ export type PropertyOptions<T> = {
    * Automatically set the property value when entity gets created, executed during flush operation.
    * @param entity
    */
-  onCreate?: (entity: T) => any;
+  onCreate?: (entity: Owner) => any;
   /**
    * Automatically update the property value every time entity gets updated, executed during flush operation.
    * @param entity
    */
-  onUpdate?: (entity: T) => any;
+  onUpdate?: (entity: Owner) => any;
   /**
    * Specify default column value for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
    * This is a runtime value, assignable to the entity property. (SQL only)
@@ -170,7 +170,7 @@ export type PropertyOptions<T> = {
    *
    * @see https://mikro-orm.io/docs/defining-entities#check-constraints
    */
-  check?: string | CheckCallback<T>;
+  check?: string | CheckCallback<Owner>;
   /**
    * Set to omit the property from the select clause for lazy loading.
    *
@@ -243,8 +243,8 @@ export type PropertyOptions<T> = {
   ignoreSchemaChanges?: ('type' | 'extra')[];
 };
 
-export interface ReferenceOptions<T, O> extends PropertyOptions<O> {
-  entity?: string | (() => EntityName<T>);
+export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> {
+  entity?: string | (() => EntityName<Target>);
   cascade?: Cascade[];
   eager?: boolean;
   strategy?: LoadStrategy;

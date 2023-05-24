@@ -8,7 +8,7 @@ class B {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => D, { onDelete: 'cascade', ref: true })
+  @ManyToOne(() => D, { deleteRule: 'cascade', ref: true })
   d!: Ref<D>;
 
   @Property({ unique: true })

@@ -529,7 +529,7 @@ export class Utils {
       const prop = meta.properties[pk];
 
       if (prop.targetMeta && Utils.isPlainObject(value)) {
-        return this.getCompositeKeyValue(value as T, prop.targetMeta);
+        return this.getCompositeKeyValue(value, prop.targetMeta);
       }
 
       if (prop.customType && platform && convertCustomTypes) {
