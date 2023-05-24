@@ -1,6 +1,6 @@
 import {
   MikroORM, Entity, PrimaryKey, ManyToOne, Property, SimpleLogger,
-  Unique, Ref, ref, EventSubscriber, EventArgs, OneToMany, Collection,
+  Unique, Ref, ref, EventSubscriber, EventArgs, OneToMany, Collection, Utils, IDatabaseDriver,
 } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 import { PLATFORMS } from '../../bootstrap';

@@ -7,7 +7,8 @@ import type {
   PopulateOptions,
   Primary,
   ConnectionType,
-  EntityKey, FilterKey,
+  EntityKey,
+  FilterKey,
 } from '../typings';
 import type { EntityManager } from '../EntityManager';
 import { QueryHelper } from '../utils/QueryHelper';
