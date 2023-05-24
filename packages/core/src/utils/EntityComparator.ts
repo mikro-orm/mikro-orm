@@ -467,10 +467,11 @@ export class EntityComparator {
 
   private getPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, dataKey: string, entityKey: string, path: string[], level = 1, object?: boolean): string {
     const convertorKey = this.safeKey(prop.name);
+    const unwrap = prop.ref ? '?.unwrap()' : '';
     let ret = `  if (${this.getPropertyCondition(prop, entityKey, path)}) {\n`;
 
     if (['number', 'string', 'boolean'].includes(prop.type.toLowerCase())) {
-      return ret + `    ret${dataKey} = entity${entityKey};\n  }\n`;
+      return ret + `    ret${dataKey} = entity${entityKey}${unwrap};\n  }\n`;
     }
 
     if (prop.kind === ReferenceKind.EMBEDDED) {
@@ -513,18 +514,18 @@ export class EntityComparator {
       context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
       if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
-        return ret + `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(entity${entityKey});\n  }\n`;
+        return ret + `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(entity${entityKey}${unwrap});\n  }\n`;
       }
 
-      return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${convertorKey}(entity${entityKey}));\n  }\n`;
+      return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${convertorKey}(entity${entityKey}${unwrap}));\n  }\n`;
     }
 
     if (prop.type.toLowerCase() === 'date') {
       context.set('processDateProperty', this.platform.processDateProperty.bind(this.platform));
-      return ret + `    ret${dataKey} = clone(processDateProperty(entity${entityKey}));\n  }\n`;
+      return ret + `    ret${dataKey} = clone(processDateProperty(entity${entityKey}${unwrap}));\n  }\n`;
     }
 
-    return ret + `    ret${dataKey} = clone(entity${entityKey});\n  }\n`;
+    return ret + `    ret${dataKey} = clone(entity${entityKey}${unwrap});\n  }\n`;
   }
 
   /**

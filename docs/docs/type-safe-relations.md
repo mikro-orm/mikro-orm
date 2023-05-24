@@ -178,6 +178,22 @@ await book2.author.load(); // no additional query, already loaded
 
 > As opposed to `wrap(e).init()` which always refreshes the entity, `Reference.load()` method will query the database only if the entity is not already loaded in Identity Map.
 
+### `ScalarReference` wrapper
+
+Similarly to the `Reference` wrapper, we can also wrap scalars with `Ref` into a `ScalarReference` object. This is handy for lazy scalar properties.
+
+```ts
+@Property({ lazy: true, ref: true })
+passwordHash!: Ref<string>;
+```
+
+The `Ref` type automatically resolves to `ScalarReference` for non-object types. You can use it explicitly if you want to wrap an object scalar property (e.g. JSON value).
+
+```ts
+const user = await em.findOne(User, 1);
+const passwordHash = await user.passwordHash.load();
+```
+
 ## `Loaded` type
 
 If you check the return type of `em.find` and `em.findOne` methods, you might be a bit confused - instead of the entity, they return `Loaded` type:

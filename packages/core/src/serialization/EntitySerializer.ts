@@ -138,38 +138,43 @@ export class EntitySerializer {
     const wrapped = helper(entity);
     const property = wrapped.__meta.properties[prop];
     const serializer = property?.serializer;
+    const value = entity[prop];
 
     /* istanbul ignore next */
     if (!options.ignoreSerializers && serializer) {
-      return serializer(entity[prop]);
+      return serializer(value);
     }
 
-    if (Utils.isCollection(entity[prop])) {
+    if (Utils.isCollection(value)) {
       return this.processCollection(prop, entity, options);
     }
 
-    if (Utils.isEntity(entity[prop], true)) {
+    if (Utils.isEntity(value, true)) {
       return this.processEntity(prop, entity, wrapped.__platform, options);
+    }
+
+    if (Utils.isScalarReference(value)) {
+      return value.unwrap();
     }
 
     /* istanbul ignore next */
     if (property?.kind === ReferenceKind.EMBEDDED) {
-      if (Array.isArray(entity[prop])) {
-        return (entity[prop] as object[]).map(item => helper(item).toJSON()) as EntityValue<T>;
+      if (Array.isArray(value)) {
+        return (value as object[]).map(item => helper(item).toJSON()) as EntityValue<T>;
       }
 
-      if (Utils.isObject(entity[prop])) {
-        return helper(entity[prop]!).toJSON() as EntityValue<T>;
+      if (Utils.isObject(value)) {
+        return helper(value!).toJSON() as EntityValue<T>;
       }
     }
 
     const customType = property?.customType;
 
     if (customType) {
-      return customType.toJSON(entity[prop], wrapped.__platform);
+      return customType.toJSON(value, wrapped.__platform);
     }
 
-    return wrapped.__platform.normalizePrimaryKey(entity[prop] as unknown as IPrimaryKey) as unknown as EntityValue<T>;
+    return wrapped.__platform.normalizePrimaryKey(value as unknown as IPrimaryKey) as unknown as EntityValue<T>;
   }
 
   private static extractChildOptions<T extends object, U extends object>(options: SerializeOptions<T, any, any>, prop: EntityKey<T>): SerializeOptions<U, any> {
@@ -217,7 +222,7 @@ export class EntitySerializer {
 
 }
 
-export interface SerializeOptions<T extends object, P extends string = never, E extends string = never> {
+export interface SerializeOptions<T, P extends string = never, E extends string = never> {
   /** Specify which relation should be serialized as populated and which as a FK. */
   populate?: readonly AutoPath<T, P>[] | boolean;
 

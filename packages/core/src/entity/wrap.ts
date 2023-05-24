@@ -31,6 +31,6 @@ export function wrap<T extends object>(entity: T & Dictionary, preferHelper = fa
  * use `preferHelper = true` to have access to the internal `__` properties like `__meta` or `__em`
  * @internal
  */
-export function helper<T extends object>(entity: T): IWrappedEntityInternal<T> {
+export function helper<T>(entity: T): IWrappedEntityInternal<T> {
   return (entity as Dictionary).__helper;
 }
