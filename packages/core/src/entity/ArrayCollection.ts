@@ -338,7 +338,7 @@ export class ArrayCollection<T extends object, O extends object> {
   /**
    * @internal
    */
-  get property(): EntityProperty { // cannot be typed to `EntityProperty<O>` as it causes issues in assignability of `Loaded` type
+  get property(): EntityProperty { // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
     if (!this._property) {
       const meta = helper(this.owner).__meta;
 
@@ -356,7 +356,7 @@ export class ArrayCollection<T extends object, O extends object> {
   /**
    * @internal
    */
-  set property(prop: EntityProperty<O>) {
+  set property(prop: EntityProperty) { // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
     this._property = prop;
   }
 
@@ -378,7 +378,7 @@ export class ArrayCollection<T extends object, O extends object> {
 
   protected propagateToOwningSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
     const mappedBy = this.property.mappedBy as EntityKey<T>;
-    const collection = item[mappedBy as keyof T] as unknown as ArrayCollection<O, T>;
+    const collection = item[mappedBy] as ArrayCollection<O, T>;
 
     if (this.property.kind === ReferenceKind.MANY_TO_MANY) {
       if (this.shouldPropagateToCollection(collection, method)) {

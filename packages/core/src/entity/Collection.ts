@@ -12,6 +12,7 @@ import type {
   Dictionary,
   FilterKey,
   EntityKey,
+  EntityValue,
 } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
@@ -43,10 +44,10 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * Creates new Collection instance, assigns it to the owning entity and sets the items to it (propagating them to their inverse sides)
    */
-  static create<T extends object, O extends object = object>(owner: O, prop: keyof O & string, items: undefined | T[], initialized: boolean): Collection<T, O> {
+  static create<T extends object, O extends object = object>(owner: O, prop: EntityKey<O>, items: undefined | T[], initialized: boolean): Collection<T, O> {
     const coll = new Collection<T, O>(owner, undefined, initialized);
-    coll.property = helper(owner).__meta.properties[prop as EntityKey];
-    owner[prop] = coll as unknown as O[keyof O & string];
+    coll.property = helper(owner).__meta.properties[prop as EntityKey] as any;
+    owner[prop] = coll as EntityValue<O>;
 
     if (items) {
       coll.set(items);
@@ -412,7 +413,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
   private createCondition<TT extends T>(cond: FilterQuery<TT> = {}): FilterQuery<TT> {
     if (this.property.kind === ReferenceKind.ONE_TO_MANY) {
-      cond[this.property.mappedBy as FilterKey<TT>] = helper(this.owner).getPrimaryKey() as any;
+      cond[this.property.mappedBy as unknown as FilterKey<TT>] = helper(this.owner).getPrimaryKey() as any;
     } else { // MANY_TO_MANY
       this.createManyToManyCondition(cond);
     }
