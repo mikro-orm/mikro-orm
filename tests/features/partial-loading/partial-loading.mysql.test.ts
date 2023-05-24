@@ -8,7 +8,7 @@ describe('partial loading (mysql)', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
+  beforeAll(async () => orm = await initORMMySql('mysql', { dbName: 'partial_loading' }, true));
   beforeEach(async () => orm.schema.clearDatabase());
   afterAll(async () => {
     await orm.schema.dropDatabase();

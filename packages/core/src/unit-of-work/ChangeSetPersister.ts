@@ -342,7 +342,7 @@ export class ChangeSetPersister {
 
     if (changeSets[0].type === ChangeSetType.CREATE) {
       // do not reload things that already had a runtime value
-      meta.hydrateProps
+      meta.props
         .filter(prop => prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw))
         .filter(prop => (changeSets[0].entity[prop.name] == null && prop.defaultRaw !== 'null') || Utils.isRawSql(changeSets[0].entity[prop.name]))
         .forEach(prop => reloadProps.push(prop));
