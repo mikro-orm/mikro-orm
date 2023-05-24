@@ -1098,6 +1098,22 @@ const b2 = await em.find(Book, 1, { populate: ['text'] }); // this will load the
 
 > If the entity is already loaded and you need to populate a lazy scalar property, you might need to pass `refresh: true` in the `FindOptions`.
 
+### `ScalarReference` wrapper
+
+Similarly to the `Reference` wrapper, we can also wrap lazy scalars with `Ref` into a `ScalarReference` object.
+
+```ts
+@Property({ lazy: true, ref: true })
+passwordHash!: Ref<string>;
+```
+
+The `Ref` type automatically resolves to `ScalarReference` for non-object types. You can use it explicitly if you want to wrap an object scalar property (e.g. JSON value).
+
+```ts
+const user = await em.findOne(User, 1);
+const passwordHash = await user.passwordHash.load();
+```
+
 ## Virtual Properties
 
 We can define our properties as virtual, either as a method, or via JavaScript `get/set`.
