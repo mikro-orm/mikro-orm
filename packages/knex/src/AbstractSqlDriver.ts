@@ -443,7 +443,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     if (meta && this.platform.usesReturningStatement()) {
-      const returningProps = meta.hydrateProps
+      const returningProps = meta.props
         .filter(prop => prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw))
         .filter(prop => !(prop.name in data[0]) || Utils.isRawSql(data[0][prop.name]));
 
