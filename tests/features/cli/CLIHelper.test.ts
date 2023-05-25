@@ -48,6 +48,7 @@ describe('CLIHelper', () => {
       'migration:up',
       'migration:down',
       'migration:list',
+      'migration:check',
       'migration:pending',
       'migration:fresh',
       'debug',

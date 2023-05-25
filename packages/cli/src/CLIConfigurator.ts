@@ -54,6 +54,7 @@ export class CLIConfigurator {
       .command(MigrationCommandFactory.create('up'))
       .command(MigrationCommandFactory.create('down'))
       .command(MigrationCommandFactory.create('list'))
+      .command(MigrationCommandFactory.create('check'))
       .command(MigrationCommandFactory.create('pending'))
       .command(MigrationCommandFactory.create('fresh'))
       .command(new DebugCommand())
