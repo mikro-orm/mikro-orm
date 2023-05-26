@@ -82,7 +82,7 @@ export class SqlitePlatform extends AbstractSqlPlatform {
   }
 
   override quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
-    if (prop.type.toLowerCase() === 'date') {
+    if (prop.runtimeType === 'Date') {
       return escape(value, true, this.timezone).replace(/^'|\.\d{3}'$/g, '');
     }
 

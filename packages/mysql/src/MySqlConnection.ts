@@ -47,7 +47,7 @@ export class MySqlConnection extends AbstractSqlConnection {
     }
 
     ret.supportBigNumbers = true;
-    ret.dateStrings = ['DATE'] as any;
+    ret.dateStrings = true;
 
     return ret;
   }

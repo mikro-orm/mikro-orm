@@ -250,9 +250,9 @@ export class SourceFile {
   }
 
   protected getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
-    let t = prop.type.toLowerCase();
+    let t = prop.type;
 
-    if (t === 'date') {
+    if (t === 'Date') {
       t = 'datetime';
     }
 

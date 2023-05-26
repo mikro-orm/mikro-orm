@@ -105,11 +105,11 @@ export class EntityAssigner {
       return EntityAssigner.assignReference<T>(entity, value, prop, options.em, options);
     }
 
-    if (prop?.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.type.toLowerCase()) && (prop.setter || !prop.getter)) {
+    if (prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType) && (prop.setter || !prop.getter)) {
       return entity[propName as keyof T] = validator.validateProperty(prop, value, entity);
     }
 
-    if (prop?.kind === ReferenceKind.EMBEDDED && EntityAssigner.validateEM(options.em)) {
+    if (prop.kind === ReferenceKind.EMBEDDED && EntityAssigner.validateEM(options.em)) {
       return EntityAssigner.assignEmbeddable(entity, value, prop, options.em, options);
     }
 
