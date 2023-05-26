@@ -10,6 +10,10 @@ describe('EntityAssignerMySql', () => {
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   beforeEach(async () => orm.schema.clearDatabase());
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('assign() should update entity values [mysql]', async () => {
     const god = new Author2('God', 'hello@heaven.god');
@@ -232,7 +236,5 @@ describe('EntityAssignerMySql', () => {
     orm.em.assign(entity, updated); // `updateNestedEntities` defaults to true since v5
     expect(entity.books[0].title).toBe('updated name');
   });
-
-  afterAll(async () => orm.close(true));
 
 });

@@ -1,7 +1,17 @@
 import { EntitySchema, EnumType, MikroORM, ReferenceType, Type, Utils } from '@mikro-orm/core';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import { BASE_DIR, initORMMySql } from '../../bootstrap';
-import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
+import {
+  Address2,
+  Author2,
+  Book2,
+  BookTag2,
+  Configuration2,
+  FooBar2,
+  FooBaz2,
+  Publisher2,
+  Test2,
+} from '../../entities-sql';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
 import { MySqlDriver } from '@mikro-orm/mysql';
@@ -9,10 +19,9 @@ import { MySqlDriver } from '@mikro-orm/mysql';
 describe('SchemaGenerator (no FKs)', () => {
 
   test('create/drop database [mysql]', async () => {
-    const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
-      dbName,
+      dbName: `mikro_orm_test_${Date.now()}`,
       port: 3308,
       baseDir: BASE_DIR,
       driver: MySqlDriver,
@@ -21,7 +30,7 @@ describe('SchemaGenerator (no FKs)', () => {
     });
 
     await orm.schema.ensureDatabase();
-    await orm.schema.dropDatabase(dbName);
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
@@ -197,6 +206,7 @@ describe('SchemaGenerator (no FKs)', () => {
     expect(diff).toMatchSnapshot('mysql-update-schema-drop-1:1');
     await orm.schema.execute(diff);
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
@@ -221,6 +231,7 @@ describe('SchemaGenerator (no FKs)', () => {
     await expect(orm.schema.getUpdateSchemaSQL()).resolves.toMatchSnapshot('mysql-update-schema-rename-column');
     await orm.schema.updateSchema();
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
@@ -279,6 +290,7 @@ describe('SchemaGenerator (no FKs)', () => {
     expect(diff).toMatchSnapshot('mysql-update-schema-enums-4');
     await orm.schema.execute(diff);
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
@@ -299,6 +311,7 @@ describe('SchemaGenerator (no FKs)', () => {
     dropSchema.mockRestore();
     createSchema.mockRestore();
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 });

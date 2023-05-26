@@ -9,6 +9,10 @@ describe('lazy scalar properties (mysql)', () => {
 
   beforeAll(async () => orm = await initORMMySql(undefined, undefined, true));
   beforeEach(async () => orm.schema.clearDatabase());
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('lazy scalar properties', async () => {
     const book = new Book2('b', new Author2('n', 'e'));
@@ -88,7 +92,5 @@ describe('lazy scalar properties (mysql)', () => {
     await orm.em.flush(); // no queries should be made, as the lazy property should be merged to entity snapshot
     expect(mock.mock.calls).toHaveLength(0);
   });
-
-  afterAll(async () => orm.close(true));
 
 });

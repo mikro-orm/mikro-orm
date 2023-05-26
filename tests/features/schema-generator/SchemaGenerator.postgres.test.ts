@@ -43,6 +43,7 @@ describe('SchemaGenerator [postgres]', () => {
     expect(diff2).toMatchSnapshot('postgres-update-schema-1215');
     await orm.schema.execute(diff2);
 
+    await orm.schema.dropDatabase();
     await orm.close();
   });
 

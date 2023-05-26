@@ -10,7 +10,10 @@ describe('partial loading (mysql)', () => {
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   beforeEach(async () => orm.schema.clearDatabase());
-  afterAll(async () => orm.close(true));
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   async function createEntities() {
     const god = new Author2(`God `, `hello@heaven.god`);

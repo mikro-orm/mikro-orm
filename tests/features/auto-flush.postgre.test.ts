@@ -15,7 +15,7 @@ describe('automatic flushing when querying for overlapping entities via em.find/
   });
   beforeEach(async () => orm.schema.clearDatabase());
   afterAll(async () => {
-    await orm.schema.dropSchema();
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 

@@ -25,6 +25,10 @@ describe('EntityManagerMySql', () => {
     FlushSubscriber.log.length = 0;
     Test2Subscriber.log.length = 0;
   });
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
@@ -2407,7 +2411,5 @@ describe('EntityManagerMySql', () => {
     authors.forEach(a => a.termsAccepted = true);
     await orm.em.flush();
   });
-
-  afterAll(async () => orm.close(true));
 
 });

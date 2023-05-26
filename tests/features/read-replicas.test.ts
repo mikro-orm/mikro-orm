@@ -20,6 +20,10 @@ describe('read-replicas', () => {
     FlushSubscriber.log.length = 0;
     Test2Subscriber.log.length = 0;
   });
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   describe('when preferReadReplicas is true (default behaviour)', () => {
     test('will prefer replicas for read operations outside a transaction', async () => {
@@ -227,6 +231,4 @@ describe('read-replicas', () => {
     });
   });
 
-
-  afterAll(async () => orm.close(true));
 });

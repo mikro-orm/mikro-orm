@@ -449,7 +449,8 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     await this.driver.reconnect();
   }
 
-  async dropDatabase(name: string): Promise<void> {
+  override async dropDatabase(name?: string): Promise<void> {
+    name ??= this.config.get('dbName')!;
     this.config.set('dbName', this.helper.getManagementDbName());
     await this.driver.reconnect();
     await this.driver.execute(this.helper.getDropDatabaseSQL('' + this.knex.ref(name)));

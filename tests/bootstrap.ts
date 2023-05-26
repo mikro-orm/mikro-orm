@@ -51,7 +51,7 @@ export async function closeReplSets(): Promise<void> {
 }
 
 export async function initORMMongo(replicaSet = false) {
-  const dbName = `mikro-orm-test-${Utils.randomInt(1, 1000)}`;
+  const dbName = `mikro-orm-test-${(Math.random() + 1).toString(36).substring(7)}`;
   const clientUrl = replicaSet
     ? await initMongoReplSet(dbName)
     : `mongodb://localhost:27017/${dbName}`;
@@ -77,7 +77,7 @@ export async function initORMMongo(replicaSet = false) {
 }
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}, simple?: boolean) {
-  const dbName = `mikro_orm_test_${Utils.randomInt(1, 1000)}`;
+  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(7)}`;
   let orm = await MikroORM.init<AbstractSqlDriver>(Utils.merge({
     entities: ['entities-sql/**/*.js', '!**/Label2.js'],
     entitiesTs: ['entities-sql/**/*.ts', '!**/Label2.ts'],
@@ -119,7 +119,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 }
 
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = []) {
-  const dbName = `mikro_orm_test_${Utils.randomInt(1, 1000)}`;
+  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(7)}`;
   const orm = await MikroORM.init({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, ...entities],
     dbName,

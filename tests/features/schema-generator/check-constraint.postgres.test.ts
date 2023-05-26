@@ -90,6 +90,7 @@ describe('check constraint [postgres]', () => {
       },
     ]);
 
+    await orm.schema.dropDatabase();
     await orm.close();
   });
 
@@ -151,6 +152,7 @@ describe('check constraint [postgres]', () => {
     expect(diff).toMatchSnapshot('postgres-check-constraint-diff-5');
     await orm.schema.execute(diff);
 
+    await orm.schema.dropDatabase();
     await orm.close();
   });
 
