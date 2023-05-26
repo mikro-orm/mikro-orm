@@ -638,6 +638,11 @@ export interface IMigrator {
   getPendingMigrations(): Promise<UmzugMigration[]>;
 
   /**
+   * Returns the schema diff.
+   */
+  getSchemaDiff(blank: boolean, initial: boolean): Promise<{ up: string[]; down: string[] }>;
+
+  /**
    * Executes specified migrations. Without parameter it will migrate up to the latest version.
    */
   up(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;

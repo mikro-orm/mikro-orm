@@ -56,6 +56,10 @@ export class Migrator implements IMigrator {
     return true;
   }
 
+  async getSchemaDiff(blank: boolean, initial: boolean): Promise<{ up: string[]; down: string[] }> {
+    return { up: [], down: [] };
+  }
+
   /**
    * @inheritDoc
    */
