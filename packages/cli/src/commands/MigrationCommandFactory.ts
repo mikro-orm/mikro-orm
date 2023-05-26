@@ -179,7 +179,10 @@ export class MigrationCommandFactory {
     }
     const diff = await migrator.getSchemaDiff(false, false);
     await orm.close(true);
-    CLIHelper.dump(colors.yellow(`Changes detected. Please create migration to update schema.\n\nPending changes:\n${diff.up.join('\n')}`));
+    CLIHelper.dump(colors.yellow(`Changes detected. Please create migration to update schema.`));
+    CLIHelper.dump(colors.yellow(``));
+    CLIHelper.dump(colors.yellow(`Pending changes:`));
+    CLIHelper.dump(colors.yellow(diff.up.join('\n')));
     process.exit(1);
   }
 
