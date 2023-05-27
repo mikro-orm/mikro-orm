@@ -32,4 +32,12 @@ export class JsonType extends Type<unknown, string | null> {
     return !prop.embedded || !meta.properties[prop.embedded[0]].object;
   }
 
+  override compareAsType(): string {
+    return 'any';
+  }
+
+  override get runtimeType(): string {
+    return 'object';
+  }
+
 }
