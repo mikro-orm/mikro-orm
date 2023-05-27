@@ -314,7 +314,11 @@ exports[`embedded entities in postgres diffing 2`] = `
             if (data.profile1_identity_links[idx_8].createdAt === null) {
               entity.profile1.identity.links[idx_8].createdAt = null;
             } else if (typeof data.profile1_identity_links[idx_8].createdAt !== 'undefined') {
-              entity.profile1.identity.links[idx_8].createdAt = new Date(data.profile1_identity_links[idx_8].createdAt);
+              if (data.profile1_identity_links[idx_8].createdAt instanceof Date) {
+                entity.profile1.identity.links[idx_8].createdAt = data.profile1_identity_links[idx_8].createdAt;
+              } else {
+                entity.profile1.identity.links[idx_8].createdAt = new Date(data.profile1_identity_links[idx_8].createdAt);
+              }
             }
             if (data.profile1_identity_links[idx_8].meta != null) {
               if (entity.profile1.identity.links[idx_8].meta == null) {
@@ -475,7 +479,11 @@ exports[`embedded entities in postgres diffing 2`] = `
             if (data.profile1_identity.links[idx_21].createdAt === null) {
               entity.profile1.identity.links[idx_21].createdAt = null;
             } else if (typeof data.profile1_identity.links[idx_21].createdAt !== 'undefined') {
-              entity.profile1.identity.links[idx_21].createdAt = new Date(data.profile1_identity.links[idx_21].createdAt);
+              if (data.profile1_identity.links[idx_21].createdAt instanceof Date) {
+                entity.profile1.identity.links[idx_21].createdAt = data.profile1_identity.links[idx_21].createdAt;
+              } else {
+                entity.profile1.identity.links[idx_21].createdAt = new Date(data.profile1_identity.links[idx_21].createdAt);
+              }
             }
             if (data.profile1_identity.links[idx_21].meta != null) {
               if (entity.profile1.identity.links[idx_21].meta == null) {
@@ -657,7 +665,11 @@ exports[`embedded entities in postgres diffing 2`] = `
             if (data.profile1_identity_links[idx_35].createdAt === null) {
               entity.profile1.identity.links[idx_35].createdAt = null;
             } else if (typeof data.profile1_identity_links[idx_35].createdAt !== 'undefined') {
-              entity.profile1.identity.links[idx_35].createdAt = new Date(data.profile1_identity_links[idx_35].createdAt);
+              if (data.profile1_identity_links[idx_35].createdAt instanceof Date) {
+                entity.profile1.identity.links[idx_35].createdAt = data.profile1_identity_links[idx_35].createdAt;
+              } else {
+                entity.profile1.identity.links[idx_35].createdAt = new Date(data.profile1_identity_links[idx_35].createdAt);
+              }
             }
             if (data.profile1_identity_links[idx_35].meta != null) {
               if (entity.profile1.identity.links[idx_35].meta == null) {
@@ -818,7 +830,11 @@ exports[`embedded entities in postgres diffing 2`] = `
             if (data.profile1.identity.links[idx_48].createdAt === null) {
               entity.profile1.identity.links[idx_48].createdAt = null;
             } else if (typeof data.profile1.identity.links[idx_48].createdAt !== 'undefined') {
-              entity.profile1.identity.links[idx_48].createdAt = new Date(data.profile1.identity.links[idx_48].createdAt);
+              if (data.profile1.identity.links[idx_48].createdAt instanceof Date) {
+                entity.profile1.identity.links[idx_48].createdAt = data.profile1.identity.links[idx_48].createdAt;
+              } else {
+                entity.profile1.identity.links[idx_48].createdAt = new Date(data.profile1.identity.links[idx_48].createdAt);
+              }
             }
             if (data.profile1.identity.links[idx_48].meta != null) {
               if (entity.profile1.identity.links[idx_48].meta == null) {
@@ -974,7 +990,11 @@ exports[`embedded entities in postgres diffing 2`] = `
             if (data.profile2.identity.links[idx_60].createdAt === null) {
               entity.profile2.identity.links[idx_60].createdAt = null;
             } else if (typeof data.profile2.identity.links[idx_60].createdAt !== 'undefined') {
-              entity.profile2.identity.links[idx_60].createdAt = new Date(data.profile2.identity.links[idx_60].createdAt);
+              if (data.profile2.identity.links[idx_60].createdAt instanceof Date) {
+                entity.profile2.identity.links[idx_60].createdAt = data.profile2.identity.links[idx_60].createdAt;
+              } else {
+                entity.profile2.identity.links[idx_60].createdAt = new Date(data.profile2.identity.links[idx_60].createdAt);
+              }
             }
             if (data.profile2.identity.links[idx_60].meta != null) {
               if (entity.profile2.identity.links[idx_60].meta == null) {

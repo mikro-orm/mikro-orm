@@ -25,19 +25,19 @@ export class ReflectMetadataProvider extends MetadataProvider {
   }
 
   protected initPropertyType(meta: EntityMetadata, prop: EntityProperty) {
-    let type = Reflect.getMetadata('design:type', meta.prototype, prop.name);
+    const type = Reflect.getMetadata('design:type', meta.prototype, prop.name);
 
     if (!type || (type === Object && prop.kind !== ReferenceKind.SCALAR)) {
       throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`);
     }
 
-    // Instead of requiring the type everywhere, we default to string, which maintains the behaviour,
-    // as we were mapping it to UnknownType which is a string. This is to prevent defaulting to JSON
-    // column type, which can be often hard to revert and cause hard to understand issues with PKs.
+    // Force mapping to UnknownType which is a string when we see just `Object`, as that often means failed inference.
+    // This is to prevent defaulting to JSON column type, which can be often hard to revert and cause hard to understand issues with PKs.
     // If there are explicitly provided `columnTypes`, we use those instead for the inference, this way
     // we can have things like `columnType: 'timestamp'` be respected as `type: 'Date'`.
     if (prop.kind === ReferenceKind.SCALAR && type === Object && !prop.columnTypes) {
-      type = String;
+      prop.type = 'any';
+      return;
     }
 
     prop.type = type.name;
@@ -45,6 +45,8 @@ export class ReflectMetadataProvider extends MetadataProvider {
     if (prop.type && ['string', 'number', 'boolean', 'array', 'object'].includes(prop.type.toLowerCase())) {
       prop.type = prop.type.toLowerCase();
     }
+
+    prop.runtimeType = prop.type as 'string';
   }
 
 }

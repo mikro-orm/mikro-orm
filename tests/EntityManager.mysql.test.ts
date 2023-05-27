@@ -78,7 +78,7 @@ describe('EntityManagerMySql', () => {
       port: 3308,
       user: 'user',
       timezone: 'Z',
-      dateStrings: ['DATE'],
+      dateStrings: true,
       supportBigNumbers: true,
     });
   });
