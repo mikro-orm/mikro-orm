@@ -22,7 +22,7 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     if (data.pet_canBark === null) {
       entity.pet.canBark = null;
     } else if (typeof data.pet_canBark !== 'undefined') {
-      entity.pet.canBark = data.pet_canBark === null ? null : !!data.pet_canBark;
+      entity.pet.canBark = !!data.pet_canBark;
     }
     if (data.pet_type === null) {
       entity.pet.type = null;
@@ -37,7 +37,7 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     if (data.pet_canMeow === null) {
       entity.pet.canMeow = null;
     } else if (typeof data.pet_canMeow !== 'undefined') {
-      entity.pet.canMeow = data.pet_canMeow === null ? null : !!data.pet_canMeow;
+      entity.pet.canMeow = !!data.pet_canMeow;
     }
   } else if (data.pet === null) {
     entity.pet = null;
@@ -55,7 +55,7 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     if (data.pet.canBark === null) {
       entity.pet.canBark = null;
     } else if (typeof data.pet.canBark !== 'undefined') {
-      entity.pet.canBark = data.pet.canBark === null ? null : !!data.pet.canBark;
+      entity.pet.canBark = !!data.pet.canBark;
     }
     if (data.pet.type === null) {
       entity.pet.type = null;
@@ -70,7 +70,7 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     if (data.pet.canMeow === null) {
       entity.pet.canMeow = null;
     } else if (typeof data.pet.canMeow !== 'undefined') {
-      entity.pet.canMeow = data.pet.canMeow === null ? null : !!data.pet.canMeow;
+      entity.pet.canMeow = !!data.pet.canMeow;
     }
   } else if (data.pet === null) {
     entity.pet = null;
@@ -88,7 +88,7 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     if (data.pet2.canBark === null) {
       entity.pet2.canBark = null;
     } else if (typeof data.pet2.canBark !== 'undefined') {
-      entity.pet2.canBark = data.pet2.canBark === null ? null : !!data.pet2.canBark;
+      entity.pet2.canBark = !!data.pet2.canBark;
     }
     if (data.pet2.type === null) {
       entity.pet2.type = null;
@@ -103,7 +103,7 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     if (data.pet2.canMeow === null) {
       entity.pet2.canMeow = null;
     } else if (typeof data.pet2.canMeow !== 'undefined') {
-      entity.pet2.canMeow = data.pet2.canMeow === null ? null : !!data.pet2.canMeow;
+      entity.pet2.canMeow = !!data.pet2.canMeow;
     }
   } else if (data.pet2 === null) {
     entity.pet2 = null;
@@ -127,7 +127,7 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
         if (data.pets[idx_14].canBark === null) {
           entity.pets[idx_14].canBark = null;
         } else if (typeof data.pets[idx_14].canBark !== 'undefined') {
-          entity.pets[idx_14].canBark = data.pets[idx_14].canBark === null ? null : !!data.pets[idx_14].canBark;
+          entity.pets[idx_14].canBark = !!data.pets[idx_14].canBark;
         }
         if (data.pets[idx_14].type === null) {
           entity.pets[idx_14].type = null;
@@ -142,7 +142,7 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
         if (data.pets[idx_14].canMeow === null) {
           entity.pets[idx_14].canMeow = null;
         } else if (typeof data.pets[idx_14].canMeow !== 'undefined') {
-          entity.pets[idx_14].canMeow = data.pets[idx_14].canMeow === null ? null : !!data.pets[idx_14].canMeow;
+          entity.pets[idx_14].canMeow = !!data.pets[idx_14].canMeow;
         }
       } else if (data.pets[idx_14] === null) {
         entity.pets[idx_14] = null;

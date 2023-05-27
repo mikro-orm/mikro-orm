@@ -18,7 +18,7 @@ export class Sku {
 
 export class SkuType extends Type<Sku, string> {
 
-  override convertToDatabaseValue(value: Sku | string, platform: Platform, fromQuery?: boolean): string {
+  override convertToDatabaseValue(value: Sku | string, platform: Platform): string {
     return value.toString();
   }
 
