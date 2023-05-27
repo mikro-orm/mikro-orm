@@ -222,9 +222,9 @@ export class MetadataValidator {
     }
 
     const prop = meta.properties[meta.versionProperty];
-    const type = prop.type.toLowerCase();
+    const type = prop.runtimeType ?? prop.columnTypes?.[0] ?? prop.type;
 
-    if (type !== 'number' && type !== 'date' && !type.startsWith('timestamp') && !type.startsWith('datetime')) {
+    if (type !== 'number' && type !== 'Date' && !type.startsWith('timestamp') && !type.startsWith('datetime')) {
       throw MetadataError.invalidVersionFieldType(meta);
     }
   }

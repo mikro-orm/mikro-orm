@@ -58,9 +58,9 @@ export class EntityComparator {
   /**
    * Maps database columns to properties.
    */
-  mapResult<T>(entityName: string, result: EntityDictionary<T>): EntityData<T> | null {
+  mapResult<T>(entityName: string, result: EntityDictionary<T>): EntityData<T> {
     const mapper = this.getResultMapper<T>(entityName);
-    return Utils.callCompiledFunction(mapper, result);
+    return Utils.callCompiledFunction(mapper, result)!;
   }
 
   /**
@@ -285,6 +285,24 @@ export class EntityComparator {
       return '[' + parts.join(', ') + ']';
     };
 
+    const tz = this.platform.getTimezone();
+    const parseDate = (key: string, value: string, padding = '') => {
+      lines.push(`${padding}    if (${value} == null || ${value} instanceof Date) {`);
+      lines.push(`${padding}      ${key} = ${value};`);
+
+      if (!tz || tz === 'local') {
+        lines.push(`${padding}    } else {`);
+        lines.push(`${padding}      ${key} = new Date(${value});`);
+      } else {
+        lines.push(`${padding}    } else if (typeof ${value} === 'number' || ${value}.includes('+')) {`);
+        lines.push(`${padding}      ${key} = new Date(${value});`);
+        lines.push(`${padding}    } else {`);
+        lines.push(`${padding}      ${key} = new Date(${value} + '${tz}');`);
+      }
+
+      lines.push(`${padding}    }`);
+    };
+
     lines.push(`  const mapped = {};`);
     meta.props.forEach(prop => {
       if (!prop.fieldNames) {
@@ -301,21 +319,36 @@ export class EntityComparator {
         return;
       }
 
-      if (prop.type === 'boolean') {
+      if (prop.embedded && meta.properties[prop.embedded[0]].object && prop.runtimeType !== 'Date') {
+        return;
+      }
+
+      if (prop.runtimeType === 'boolean') {
         lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
         lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])};`);
         lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
-      } else if (prop.type.toLowerCase() === 'date') {
-        if (prop.embedded && meta.properties[prop.embedded[0]].object) {
+      } else if (prop.runtimeType === 'Date') {
+        if (prop.embedded && meta.properties[prop.embedded[0]].array) {
+          const parentKey = 'ret.' + meta.properties[prop.embedded[0]].fieldNames[0];
+          const idx = this.tmpIndex++;
+          lines.push(`  if (Array.isArray(${parentKey.replace(/\./g, '?.')})) {`);
+          lines.push(`    ${parentKey}.forEach((item_${idx}, idx_${idx}) => {`);
+          const childProp = this.wrap(prop.embedded[1]);
+          lines.push(`      if (typeof item_${idx}${childProp} !== 'undefined') {`);
+          parseDate(`${parentKey}[idx_${idx}]${childProp}`, `${parentKey}[idx_${idx}]${childProp}`, '    ');
+          lines.push(`      }`);
+          lines.push(`    });`);
+          lines.push(`  }`);
+        } else if (prop.embedded && meta.properties[prop.embedded[0]].object) {
           const entityKey = 'ret.' + prop.fieldNames[0];
-          const entityKeyOptional = entityKey.replace(/\./g, '?.');
+          const entityKeyOptional = 'ret.' + prop.fieldNames[0].replace(/\./g, '?.');
           lines.push(`  if (typeof ${entityKeyOptional} !== 'undefined') {`);
-          lines.push(`    ${entityKey} = ${entityKey} == null ? ${entityKey} : new Date(${entityKey});`);
+          parseDate('ret.' + prop.fieldNames[0], entityKey);
           lines.push(`  }`);
         } else {
           lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
-          lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? null : new Date(${propName(prop.fieldNames[0])});`);
+          parseDate('ret' + this.wrap(prop.name), propName(prop.fieldNames[0]));
           lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
           lines.push(`  }`);
         }
@@ -520,7 +553,7 @@ export class EntityComparator {
       return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${convertorKey}(entity${entityKey}${unwrap}));\n  }\n`;
     }
 
-    if (prop.type.toLowerCase() === 'date') {
+    if (prop.runtimeType === 'Date') {
       context.set('processDateProperty', this.platform.processDateProperty.bind(this.platform));
       return ret + `    ret${dataKey} = clone(processDateProperty(entity${entityKey}${unwrap}));\n  }\n`;
     }

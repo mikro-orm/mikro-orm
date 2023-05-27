@@ -11,6 +11,7 @@ import { ReferenceKind } from '../enums';
 export class ChangeSetPersister {
 
   private readonly platform = this.driver.getPlatform();
+  private readonly comparator = this.config.getComparator(this.metadata);
 
   constructor(private readonly driver: IDatabaseDriver,
               private readonly metadata: MetadataStorage,
@@ -419,18 +420,22 @@ export class ChangeSetPersister {
    */
   mapReturnedValues<T extends object>(entity: T, payload: EntityDictionary<T>, row: Dictionary | undefined, meta: EntityMetadata<T>, override = false): void {
     if (this.platform.usesReturningStatement() && row && Utils.hasObjectKeys(row)) {
-      const data = meta.props.reduce((ret, prop) => {
-        if (prop.fieldNames && row[prop.fieldNames[0]] != null && (override || entity[prop.name] == null || Utils.isRawSql(entity[prop.name]))) {
-          ret[prop.name] = row[prop.fieldNames[0]];
-        }
-
-        return ret;
-      }, {} as Dictionary);
-
-      if (Utils.hasObjectKeys(data)) {
-        this.hydrator.hydrate(entity, meta, data as EntityData<T>, this.factory, 'full', false, true);
-        Object.assign(payload, data); // merge to the changeset payload, so it gets saved to the entity snapshot
-      }
+      // FIXME
+      // const data = meta.props.reduce((ret, prop) => {
+      //   if (prop.fieldNames && row[prop.fieldNames[0]] != null && (override || entity[prop.name] == null || Utils.isRawSql(entity[prop.name]))) {
+      //     ret[prop.name] = row[prop.fieldNames[0]];
+      //   }
+      //
+      //   return ret;
+      // }, {} as Dictionary);
+      //
+      // if (Utils.hasObjectKeys(data)) {
+      //   this.hydrator.hydrate(entity, meta, data as EntityData<T>, this.factory, 'full', false, true);
+      //   Object.assign(payload, data); // merge to the changeset payload, so it gets saved to the entity snapshot
+      // }
+      const mapped = this.comparator.mapResult<T>(meta.className, row as EntityDictionary<T>);
+      this.hydrator.hydrate(entity, meta, mapped, this.factory, 'full', false, true);
+      Object.assign(payload, mapped); // merge to the changeset payload, so it gets saved to the entity snapshot
     }
   }
 
