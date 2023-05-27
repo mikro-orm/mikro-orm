@@ -359,3 +359,9 @@ const dtos = serialize([user1, user, ...], { exclude: ['id', 'email'], forceObje
 const [dto1] = serialize(user, { exclude: ['id', 'email'], forceObject: true });
 const dto2 = wrap(user).serialize({ exclude: ['id', 'email'], forceObject: true });
 ```
+
+## Changes in `Date` property mapping 
+
+Previously, mapping of datetime columns to JS `Date` objects was dependent on the driver, while SQLite didn't have this out of box support and required manual conversion on various places. All drivers now have disabled `Date` conversion and this is now handled explicitly, in the same way for all of them.
+
+Moreover, the `date` type was previously seen as a `datetime`, while now only `Date` (with uppercase `D`) will be considered as `datetime`, while `date` is just a `date`.
