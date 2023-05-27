@@ -20,7 +20,7 @@ export class EnumArrayType<T extends string | number = string> extends ArrayType
     super(mapHydrator(items, hydrate));
   }
 
-  override convertToDatabaseValue(value: T[] | null, platform: Platform, context: TransformContext | boolean): string | null {
+  override convertToDatabaseValue(value: T[] | null, platform: Platform, context?: TransformContext): string | null {
     /* istanbul ignore else */
     if (Array.isArray(value) && Array.isArray(this.items)) {
       const invalid = value.filter(v => !this.items!.includes(v));

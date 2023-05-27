@@ -1291,7 +1291,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Object.keys(data).forEach(k => {
       const prop = meta.properties[k];
 
-      if (prop && prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.type.toLowerCase()) && (prop.setter || !prop.getter)) {
+      if (prop && prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType) && (prop.setter || !prop.getter)) {
         data[k] = this.validator.validateProperty(prop, data[k], data);
       }
     });
