@@ -398,6 +398,10 @@ export abstract class Platform {
     return this.config;
   }
 
+  getTimezone() {
+    return this.timezone;
+  }
+
   isNumericColumn(mappedType: Type<unknown>): boolean {
     return [IntegerType, SmallIntType, BigIntType].some(t => mappedType instanceof t);
   }

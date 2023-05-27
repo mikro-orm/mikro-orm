@@ -727,8 +727,20 @@ export class Utils {
    * Gets the type of the argument.
    */
   static getObjectType(value: any): string {
+    const simple = typeof value;
+
+    if (['string', 'number', 'boolean', 'bigint'].includes(simple)) {
+      return simple;
+    }
+
     const objectType = Object.prototype.toString.call(value);
-    return objectType.match(/\[object (\w+)]/)![1].toLowerCase();
+    const type = objectType.match(/\[object (\w+)]/)![1];
+
+    if (type === 'Uint8Array') {
+      return 'Buffer';
+    }
+
+    return ['Date', 'Buffer', 'RegExp'].includes(type) ? type : type.toLowerCase();
   }
 
   /**

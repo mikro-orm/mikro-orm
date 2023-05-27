@@ -11,7 +11,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
     super();
   }
 
-  override convertToDatabaseValue(value: T[] | null, platform: Platform, context?: TransformContext | boolean): string | null {
+  override convertToDatabaseValue(value: T[] | null, platform: Platform, context?: TransformContext): string | null {
     if (!value) {
       return value as null;
     }
@@ -21,7 +21,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
     }
 
     /* istanbul ignore next */
-    if (typeof context === 'boolean' ? context : context?.fromQuery) {
+    if (context?.fromQuery) {
       return value;
     }
 

@@ -1007,8 +1007,7 @@ export class MetadataDiscovery {
 
       // but still use object values for type inference if not explicitly set, e.g. `createdAt = new Date()`
       if (prop.kind === ReferenceKind.SCALAR && prop.type == null && entity1[prop.name] != null) {
-        const type = Utils.getObjectType(entity1[prop.name]);
-        prop.type = type === 'object' ? 'string' : type;
+        prop.type = Utils.getObjectType(entity1[prop.name]);
       }
     } catch {
       // ignore
@@ -1080,8 +1079,17 @@ export class MetadataDiscovery {
       prop.customType = new JsonType();
     }
 
-    if (!prop.customType && this.getMappedType(prop) instanceof BigIntType) {
+    const mappedType = this.getMappedType(prop);
+
+    if (!prop.customType && mappedType instanceof BigIntType) {
       prop.customType = new BigIntType();
+    }
+
+    if (prop.customType && !prop.columnTypes) {
+      const mappedType = this.getMappedType({ columnTypes: [prop.customType.getColumnType(prop, this.platform)] } as EntityProperty);
+      prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
+    } else {
+      prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
     }
 
     if (prop.customType) {
@@ -1094,11 +1102,10 @@ export class MetadataDiscovery {
     }
 
     if (Type.isMappedType(prop.customType) && prop.kind === ReferenceKind.SCALAR && !prop.type?.toString().endsWith('[]')) {
-      prop.type = prop.customType.constructor.name;
+      prop.type = prop.customType.name;
     }
 
     if (prop.kind === ReferenceKind.SCALAR) {
-      const mappedType = this.getMappedType(prop);
       prop.columnTypes ??= [mappedType.getColumnType(prop, this.platform)];
 
       // use only custom types provided by user, we don't need to use the ones provided by ORM,
@@ -1165,7 +1172,11 @@ export class MetadataDiscovery {
   }
 
   private getMappedType(prop: EntityProperty): Type<unknown> {
-    let t = prop.columnTypes?.[0] ?? prop.type.toLowerCase();
+    if (prop.customType) {
+      return prop.customType;
+    }
+
+    let t = prop.columnTypes?.[0] ?? prop.type;
 
     if (prop.nativeEnumName) {
       t = 'enum';
@@ -1173,11 +1184,11 @@ export class MetadataDiscovery {
       t = prop.items?.every(item => Utils.isString(item)) ? 'enum' : 'tinyint';
     }
 
-    if (t === 'date') {
+    if (t === 'Date') {
       t = 'datetime';
     }
 
-    return prop.customType ?? this.platform.getMappedType(t);
+    return this.platform.getMappedType(t);
   }
 
   private initUnsigned(prop: EntityProperty): void {

@@ -81,7 +81,7 @@ export class ObjectHydrator extends Hydrator {
 
     const hydrateScalar = (prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
       const entityKey = path.map(k => this.wrap(k)).join('');
-      const preCond = preCondition(dataKey);
+      const tz = this.platform.getTimezone();
       const convertorKey = path.filter(k => !k.match(/\[idx_\d+]/)).map(k => this.safeKey(k)).join('_');
       const ret: string[] = [];
       const idx = this.tmpIndex++;
@@ -95,9 +95,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    entity${entityKey} = null;`);
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
 
-      if (prop.type.toLowerCase() === 'date') {
-        ret.push(`    entity${entityKey} = new Date(data${dataKey});`);
-      } else if (prop.customType) {
+      if (prop.customType) {
         context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
         context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
@@ -116,8 +114,23 @@ export class ObjectHydrator extends Hydrator {
           `      entity${entityKey} = data${dataKey};`,
           `    }`,
         );
-      } else if (prop.type.toLowerCase() === 'boolean') {
-        ret.push(`    entity${entityKey} = data${dataKey} === null ? null : !!data${dataKey};`);
+      } else if (prop.runtimeType === 'boolean') {
+        ret.push(`    entity${entityKey} = !!data${dataKey};`);
+      } else if (prop.runtimeType === 'Date') {
+        ret.push(`    if (data${dataKey} instanceof Date) {`);
+        ret.push(`      entity${entityKey} = data${dataKey};`);
+
+        if (!tz || tz === 'local') {
+          ret.push(`    } else {`);
+          ret.push(`      entity${entityKey} = new Date(data${dataKey});`);
+        } else {
+          ret.push(`    } else if (typeof data${dataKey} === 'number' || data${dataKey}.includes('+')) {`);
+          ret.push(`      entity${entityKey} = new Date(data${dataKey});`);
+          ret.push(`    } else {`);
+          ret.push(`      entity${entityKey} = new Date(data${dataKey} + '${tz}');`);
+        }
+
+        ret.push(`    }`);
       } else {
         ret.push(`    entity${entityKey} = data${dataKey};`);
       }
