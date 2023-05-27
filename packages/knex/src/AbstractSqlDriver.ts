@@ -281,12 +281,18 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         return;
       }
 
+      const tz = this.platform.getTimezone();
+
       meta2.props
         .filter(prop => this.platform.shouldHaveColumn(prop, p.children as any || []))
         .forEach(prop => {
           if (prop.fieldNames.length > 1) { // composite keys
             relationPojo[prop.name] = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as EntityValue<T>;
             prop.fieldNames.map(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
+          } else if (prop.runtimeType === 'Date') {
+            const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
+            relationPojo[prop.name] = (typeof root![alias] === 'string' ? new Date(root![alias] as string) : root![alias]) as EntityValue<T>;
+            delete root![alias];
           } else {
             const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
             relationPojo[prop.name] = root![alias];
@@ -583,7 +589,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const quotedFieldName = this.platform.quoteIdentifier(versionProperty.fieldNames[0]);
       sql += `${quotedFieldName} = `;
 
-      if (versionProperty.type.toLowerCase() === 'date') {
+      if (versionProperty.runtimeType === 'Date') {
         sql += this.platform.getCurrentTimestampSQL(versionProperty.length);
       } else {
         sql += `${quotedFieldName} + 1`;
