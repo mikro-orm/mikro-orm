@@ -38,6 +38,7 @@ export class MariaDbConnection extends AbstractSqlConnection {
 
     ret.bigNumberStrings = true;
     ret.supportBigNumbers = true;
+    ret.dateStrings = true;
     // @ts-ignore
     ret.checkDuplicate = false;
 
