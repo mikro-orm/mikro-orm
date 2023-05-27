@@ -86,7 +86,7 @@ If you want to have absolute control, you can implement the whole driver yoursel
 ```ts
 import { DatabaseDriver } from '@mikro-orm/core';
 
-export class MyCustomSchemaHelper extends DatabaseDriver {
+export class MyCustomDriver extends DatabaseDriver {
 
   // initialize connection and platform
   protected readonly connection = new MyCustomConnection(this.config);
