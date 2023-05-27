@@ -18,9 +18,9 @@ export class EntityValidator {
         this.validateCollection(entity, prop);
       }
 
-      const SCALAR_TYPES = ['string', 'number', 'boolean', 'date'];
+      const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
-      if (prop.kind !== ReferenceKind.SCALAR || !SCALAR_TYPES.includes(prop.type.toLowerCase())) {
+      if (prop.kind !== ReferenceKind.SCALAR || !SCALAR_TYPES.includes(prop.type)) {
         return;
       }
 
@@ -66,7 +66,7 @@ export class EntityValidator {
       return givenValue;
     }
 
-    const expectedType = prop.type.toLowerCase();
+    const expectedType = prop.runtimeType;
     let givenType = Utils.getObjectType(givenValue);
     let ret = givenValue;
 
@@ -136,7 +136,7 @@ export class EntityValidator {
   }
 
   private fixTypes(expectedType: string, givenType: string, givenValue: any): any {
-    if (expectedType === 'date' && ['string', 'number'].includes(givenType)) {
+    if (expectedType === 'Date' && ['string', 'number'].includes(givenType)) {
       givenValue = this.fixDateType(givenValue);
     }
 

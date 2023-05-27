@@ -269,6 +269,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   name: EntityKey<Owner>;
   entity: () => EntityName<Owner>;
   type: keyof typeof types | AnyString;
+  runtimeType: 'number' | 'string' | 'boolean' | 'bigint' | 'Buffer' | 'Date';
   targetMeta?: EntityMetadata<Target>;
   columnTypes: string[];
   customType: Type<any>;

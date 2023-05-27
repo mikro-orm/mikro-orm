@@ -64,6 +64,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   private initPropertyType(meta: EntityMetadata, prop: EntityProperty): void {
     const { type, optional } = this.readTypeFromSource(meta, prop);
     prop.type = type;
+    prop.runtimeType = type as 'string';
 
     if (optional) {
       prop.optional = true;

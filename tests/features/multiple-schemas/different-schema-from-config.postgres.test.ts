@@ -42,7 +42,7 @@ describe('different schema from config', () => {
     orm = await MikroORM.init({
       driver: PostgreSqlDriver,
       entities: [Book, BookTag],
-      dbName: 'mikro_orm_test_gh_2740',
+      dbName: 'mikro_orm_test_gh_2740_2',
       schema: 'privateschema',
     });
     await orm.schema.refreshDatabase();
