@@ -16,10 +16,10 @@ describe('EntityManagerPostgre', () => {
   let orm: MikroORM<PostgreSqlDriver>;
 
   async function createBooksWithTags() {
-    const author = new Author2('Jon Snow', 'snow@wall.st');
-    const book1 = new Book2('My Life on The Wall, part 1', author);
-    const book2 = new Book2('My Life on The Wall, part 2', author);
-    const book3 = new Book2('My Life on The Wall, part 3', author);
+    const author = await orm.em.upsert(Author2, { name: 'Jon Snow', email: 'snow@wall.st' });
+    const book1 = new Book2('My Life on The Wall, part 1', author.id);
+    const book2 = new Book2('My Life on The Wall, part 2', author.id);
+    const book3 = new Book2('My Life on The Wall, part 3', author.id);
     const publisher = new Publisher2();
     book1.publisher = ref(publisher);
     book2.publisher = ref(publisher);
@@ -32,12 +32,16 @@ describe('EntityManagerPostgre', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persistAndFlush([book1, book2, book3]);
     orm.em.clear();
   }
 
   beforeAll(async () => orm = await initORMPostgreSql());
   beforeEach(async () => orm.schema.clearDatabase());
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('isConnected()', async () => {
     await expect(orm.isConnected()).resolves.toBe(true);
@@ -2224,7 +2228,5 @@ describe('EntityManagerPostgre', () => {
     expect(c2).toBeDefined();
     expect(c2!.id).toBe(322);
   });
-
-  afterAll(async () => orm.close(true));
 
 });

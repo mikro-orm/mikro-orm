@@ -10,6 +10,10 @@ describe('composite keys in mysql', () => {
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   beforeEach(async () => orm.schema.clearDatabase());
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('dynamic attributes', async () => {
     const test = Test2.create('t');
@@ -417,7 +421,5 @@ describe('composite keys in mysql', () => {
     expect(a1!.address!.value).toBe('v1');
     expect(a1!.address!.author).toBe(a1);
   });
-
-  afterAll(async () => orm.close(true));
 
 });

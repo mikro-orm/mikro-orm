@@ -426,7 +426,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         qb.insert(data as T)
           .onConflict(uniqueFields.map(p => meta?.properties[p]?.fieldNames[0] ?? p))
           .merge(Object.keys(data).filter(f => !options.upsertExcludeFields?.includes(f as keyof T) && !uniqueFields.includes(f)))
-          .returning(!meta?.hydrateProps || options.upsertExcludeFields?.length ? '*' :  meta.hydrateProps.filter(p => !p.lazy && !(p.name in data)).map(p => p.name));
+          .returning(!meta || options.upsertExcludeFields?.length ? '*' :  meta.comparableProps.filter(p => !p.lazy && !(p.name in data)).map(p => p.name));
       } else {
         qb.update(data).where(where);
       }
@@ -452,7 +452,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       qb.insert(data)
         .onConflict(uniqueFields.map(p => meta.properties[p]?.fieldNames[0] ?? p))
         .merge(Object.keys(data[0]).filter(f => !uniqueFields.includes(f)))
-        .returning(meta.hydrateProps.filter(p => !p.lazy && !(p.name in data[0])).map(p => p.name) ?? '*');
+        .returning(meta.comparableProps.filter(p => !p.lazy && !(p.name in data[0])).map(p => p.name) ?? '*');
       return qb.execute('run', false);
     }
 
@@ -826,7 +826,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
   protected async updateCollectionDiff<T extends object, O extends object>(
     meta: EntityMetadata<O>,
-    prop: EntityProperty<T>,
+    prop: EntityProperty<O>,
     pks: Primary<O>[],
     deleteDiff: Primary<T>[][] | boolean,
     insertDiff: Primary<T>[][],

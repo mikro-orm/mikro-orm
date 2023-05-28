@@ -25,6 +25,10 @@ describe('EntityManagerMySql', () => {
     FlushSubscriber.log.length = 0;
     Test2Subscriber.log.length = 0;
   });
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
@@ -139,9 +143,9 @@ describe('EntityManagerMySql', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
-    const err1 = `insert into \`not_existing\` (\`foo\`) values ('bar') - Table 'mikro_orm_test.not_existing' doesn't exist`;
+    const err1 = `insert into \`not_existing\` (\`foo\`) values ('bar') - Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
-    const err2 = `delete from \`not_existing\` - Table 'mikro_orm_test.not_existing' doesn't exist`;
+    const err2 = `delete from \`not_existing\` - Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
   });
 
@@ -2020,9 +2024,10 @@ describe('EntityManagerMySql', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const res1 = await orm.em.find(Book2, { publisher: { $ne: null } }, { schema: 'mikro_orm_test_schema_2', populate: ['perex'] });
+    const schema = `${orm.config.get('dbName')}_schema_2`;
+    const res1 = await orm.em.find(Book2, { publisher: { $ne: null } }, { schema, populate: ['perex'] });
     const res2 = await orm.em.find(Book2, { publisher: { $ne: null } }, { populate: ['perex'] });
-    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` from `mikro_orm_test_schema_2`.`book2` as `b0` left join `mikro_orm_test_schema_2`.`test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`publisher_id` is not null');
+    expect(mock.mock.calls[0][0]).toMatch(`select \`b0\`.*, \`b0\`.price * 1.19 as \`price_taxed\`, \`t1\`.\`id\` as \`test_id\` from \`${schema}\`.\`book2\` as \`b0\` left join \`${schema}\`.\`test2\` as \`t1\` on \`b0\`.\`uuid_pk\` = \`t1\`.\`book_uuid_pk\` where \`b0\`.\`author_id\` is not null and \`b0\`.\`publisher_id\` is not null`);
     expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` from `book2` as `b0` left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`publisher_id` is not null');
     expect(res1.length).toBe(0);
     expect(res2.length).toBe(1);
@@ -2406,7 +2411,5 @@ describe('EntityManagerMySql', () => {
     authors.forEach(a => a.termsAccepted = true);
     await orm.em.flush();
   });
-
-  afterAll(async () => orm.close(true));
 
 });

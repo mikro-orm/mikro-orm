@@ -86,7 +86,7 @@ export class EntityFactory {
     }
 
     if (this.eventManager.hasListeners(EventType.onInit, meta2)) {
-      this.eventManager.dispatchEvent(EventType.onInit, { entity, em: this.em });
+      this.eventManager.dispatchEvent(EventType.onInit, { entity, meta: meta2, em: this.em });
     }
 
     wrapped.__processing = false;
@@ -96,7 +96,7 @@ export class EntityFactory {
 
   mergeData<T extends object>(meta: EntityMetadata<T>, entity: T, data: EntityData<T>, options: FactoryOptions = {}): void {
     // merge unchanged properties automatically
-    data = QueryHelper.processParams(Utils.copy(data));
+    data = QueryHelper.processParams(data);
     const existsData = this.comparator.prepareEntity(entity);
     const originalEntityData = helper(entity).__originalEntityData ?? {} as EntityData<T>;
     const diff = this.comparator.diffEntities(meta.className, originalEntityData, existsData);

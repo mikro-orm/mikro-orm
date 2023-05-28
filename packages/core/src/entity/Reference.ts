@@ -241,3 +241,5 @@ export function rel<T extends object, PK extends Primary<T>>(entityType: EntityC
 
   return Reference.createNakedFromPK(entityType, pk) as T;
 }
+
+export { Reference as Ref };

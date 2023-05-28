@@ -14,7 +14,6 @@ import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 import {
   Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
 } from './entities-sql';
-import FooBar from './entities/FooBar';
 import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, IdentitySchema } from './entities-schema';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
@@ -52,9 +51,10 @@ export async function closeReplSets(): Promise<void> {
 }
 
 export async function initORMMongo(replicaSet = false) {
+  const dbName = `mikro-orm-test-${(Math.random() + 1).toString(36).substring(7)}`;
   const clientUrl = replicaSet
-    ? await initMongoReplSet('mikro-orm-test')
-    : 'mongodb://localhost:27017/mikro-orm-test';
+    ? await initMongoReplSet(dbName)
+    : `mongodb://localhost:27017/${dbName}`;
 
   const orm = await MikroORM.init({
     entities: ['entities'],
@@ -77,10 +77,11 @@ export async function initORMMongo(replicaSet = false) {
 }
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}, simple?: boolean) {
+  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(7)}`;
   let orm = await MikroORM.init<AbstractSqlDriver>(Utils.merge({
     entities: ['entities-sql/**/*.js', '!**/Label2.js'],
     entitiesTs: ['entities-sql/**/*.ts', '!**/Label2.ts'],
-    clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
+    clientUrl: `mysql://root@127.0.0.1:3306/${dbName}`,
     port: type === 'mysql' ? 3308 : 3309,
     baseDir: BASE_DIR,
     debug: ['query', 'query-params'],
@@ -100,12 +101,12 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   await connection.loadFile(__dirname + '/mysql-schema.sql');
 
   if (!simple) {
-    orm.config.set('dbName', 'mikro_orm_test_schema_2');
+    orm.config.set('dbName', `${dbName}_schema_2`);
     await orm.schema.ensureDatabase();
     await orm.reconnect();
     await connection.loadFile(__dirname + '/mysql-schema.sql');
     await orm.close(true);
-    orm.config.set('dbName', 'mikro_orm_test');
+    orm.config.set('dbName', dbName);
     orm = await MikroORM.init(orm.config);
   }
 
@@ -118,9 +119,10 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 }
 
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = []) {
+  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(7)}`;
   const orm = await MikroORM.init({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, ...entities],
-    dbName: `mikro_orm_test`,
+    dbName,
     baseDir: BASE_DIR,
     driver: PostgreSqlDriver,
     debug: ['query', 'query-params'],

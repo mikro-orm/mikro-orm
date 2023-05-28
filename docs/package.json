@@ -10,14 +10,14 @@
     "prettier": "prettier --write 'docs/**/*.md' 'blog/**/*.md' 'versioned_docs/**/*.md'"
   },
   "dependencies": {
-    "@docusaurus/core": "2.4.0",
-    "@docusaurus/plugin-client-redirects": "2.4.0",
-    "@docusaurus/preset-classic": "2.4.0",
-    "classnames": "2.3.2",
-    "docusaurus-plugin-typedoc-api": "3.0.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "typescript": "5.0.4"
+    "@docusaurus/core": "^2.4.1",
+    "@docusaurus/plugin-client-redirects": "^2.4.1",
+    "@docusaurus/preset-classic": "^2.4.1",
+    "classnames": "^2.3.2",
+    "docusaurus-plugin-typedoc-api": "^3.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.0.4"
   },
   "browserslist": {
     "production": [

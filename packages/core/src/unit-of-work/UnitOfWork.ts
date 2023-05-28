@@ -135,8 +135,8 @@ export class UnitOfWork {
    */
   async dispatchOnLoadEvent(): Promise<void> {
     for (const entity of this.loadedEntities) {
-      if (this.eventManager.hasListeners(EventType.onLoad, entity.__meta!)) {
-        await this.eventManager.dispatchEvent(EventType.onLoad, { entity, em: this.em });
+      if (this.eventManager.hasListeners(EventType.onLoad, entity.__meta)) {
+        await this.eventManager.dispatchEvent(EventType.onLoad, { entity, meta: entity.__meta, em: this.em });
         helper(entity).__onLoadFired = true;
       }
     }
@@ -679,7 +679,9 @@ export class UnitOfWork {
   private processToManyReference<T extends object>(collection: Collection<AnyEntity>, visited: Set<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
     if (this.isCollectionSelfReferenced(collection, visited)) {
       this.extraUpdates.add([parent, prop.name, collection, undefined]);
-      parent[prop.name as keyof T] = new Collection<AnyEntity>(parent) as unknown as T[keyof T];
+      const coll = new Collection<AnyEntity, T>(parent);
+      coll.property = prop;
+      parent[prop.name as keyof T] = coll as unknown as T[keyof T];
 
       return;
     }
@@ -690,20 +692,22 @@ export class UnitOfWork {
   }
 
   private async runHooks<T extends object>(type: EventType, changeSet: ChangeSet<T>, sync = false): Promise<unknown> {
-    if (!this.eventManager.hasListeners(type, changeSet.meta)) {
+    const meta = changeSet.meta;
+
+    if (!this.eventManager.hasListeners(type, meta)) {
       return;
     }
 
     this.insideHooks = true;
 
     if (!sync) {
-      await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
+      await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, meta, em: this.em, changeSet });
       this.insideHooks = false;
       return;
     }
 
     const copy = this.comparator.prepareEntity(changeSet.entity) as T;
-    await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
+    await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, meta, em: this.em, changeSet });
     const current = this.comparator.prepareEntity(changeSet.entity) as T;
     const diff = this.comparator.diffEntities<T>(changeSet.name, copy, current);
     Object.assign(changeSet.payload, diff);
@@ -839,10 +843,16 @@ export class UnitOfWork {
       }
     }
 
+    // perf: set the `Collection._property` to skip the getter, as it can be slow when there is a lot of relations
+    if (Utils.isCollection<AnyEntity, T>(reference)) {
+      reference.property = prop;
+    }
+
     const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
 
     if (isCollection && Array.isArray(reference)) {
       const collection = new Collection<AnyEntity>(entity);
+      collection.property = prop as EntityProperty;
       entity[prop.name as keyof T] = collection as unknown as T[keyof T];
       collection.set(reference as AnyEntity[]);
     }

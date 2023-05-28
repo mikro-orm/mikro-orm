@@ -16,7 +16,10 @@ describe('EntityFactory', () => {
     factory = orm.em.getEntityFactory();
     expect(orm.config.getNamingStrategy().referenceColumnName()).toBe('_id');
   });
+
   beforeEach(async () => orm.schema.clearDatabase());
+
+  afterAll(async () => orm.close(true));
 
   test('should load entities', async () => {
     const metadata = orm.getMetadata().getAll();
@@ -265,8 +268,5 @@ describe('EntityFactory', () => {
     expect(entity.name).toEqual('this is my name');
     expect(entity.age).toEqual(21);
   });
-
-
-  afterAll(async () => orm.close(true));
 
 });

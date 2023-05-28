@@ -10,8 +10,10 @@ describe('Joined loading strategy', () => {
 
   beforeAll(async () => orm = await initORMPostgreSql(LoadStrategy.JOINED));
   beforeEach(async () => orm.schema.clearDatabase());
-
-  afterAll(async () => orm.close(true));
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('populate OneToMany with joined strategy [findOne()]', async () => {
     const author = new Author2('Albert Camus', 'albert.camus@email.com');

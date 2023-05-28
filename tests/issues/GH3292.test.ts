@@ -6,7 +6,10 @@ let orm: MikroORM;
 
 beforeAll(async () => orm = await initORMPostgreSql());
 beforeEach(async () => orm.schema.clearDatabase());
-afterAll(() => orm.close(true));
+afterAll(async () => {
+  await orm.schema.dropDatabase();
+  await orm.close(true);
+});
 
 test('test findOne without a offset', async () => {
   const author = new Author2('Bartleby', 'bartelby@writer.org');

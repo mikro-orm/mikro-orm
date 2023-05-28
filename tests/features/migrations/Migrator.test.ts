@@ -51,11 +51,14 @@ describe('Migrator', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
-    orm = await initORMMySql('mysql', {}, true);
+    orm = await initORMMySql('mysql', { dbName: 'mikro_orm_test_migrations' }, true);
     await remove(process.cwd() + '/temp/migrations');
   });
   beforeEach(() => orm.config.resetServiceCache());
-  afterAll(async () => orm.close(true));
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('generate js schema migration', async () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
@@ -404,6 +407,7 @@ describe('Migrator - with explicit migrations', () => {
 
   beforeAll(async () => {
     orm = await initORMMySql(undefined, {
+      dbName: 'mikro_orm_test_migrations',
       migrations: {
         migrationsList: [
           {
@@ -414,7 +418,10 @@ describe('Migrator - with explicit migrations', () => {
       },
     }, true);
   });
-  afterAll(async () => orm.close(true));
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('runner', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);

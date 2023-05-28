@@ -291,7 +291,8 @@ export class EntityComparator {
       }
 
       if (prop.targetMeta && prop.fieldNames.length > 1) {
-        lines.push(`  if (${prop.fieldNames.map(field => `${propName(field)} != null`).join(' && ')}) {`);
+        lines.push(`  if (${prop.fieldNames.map(field => `typeof ${propName(field)} === 'undefined'`).join(' && ')}) {`);
+        lines.push(`  } else if (${prop.fieldNames.map(field => `${propName(field)} != null`).join(' && ')}) {`);
         lines.push(`    ret${this.wrap(prop.name)} = ${createCompositeKeyArray(prop)};`);
         lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`));
         lines.push(`  } else if (${prop.fieldNames.map(field => `${propName(field)} == null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = null;`);

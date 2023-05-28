@@ -31,9 +31,10 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * Creates new Collection instance, assigns it to the owning entity and sets the items to it (propagating them to their inverse sides)
    */
-  static create<T extends object, O extends object = object>(owner: O, prop: keyof O, items: undefined | T[], initialized: boolean): Collection<T, O> {
+  static create<T extends object, O extends object = object>(owner: O, prop: keyof O & string, items: undefined | T[], initialized: boolean): Collection<T, O> {
     const coll = new Collection<T, O>(owner, undefined, initialized);
-    owner[prop] = coll as unknown as O[keyof O];
+    coll.property = helper(owner).__meta.properties[prop];
+    owner[prop] = coll as unknown as O[keyof O & string];
 
     if (items) {
       coll.set(items);

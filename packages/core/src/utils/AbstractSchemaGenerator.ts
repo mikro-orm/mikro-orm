@@ -89,7 +89,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
     this.notImplemented();
   }
 
-  async dropDatabase(name: string): Promise<void> {
+  async dropDatabase(name?: string): Promise<void> {
     this.notImplemented();
   }
 

@@ -1,4 +1,7 @@
-import { MikroORM, Entity, PrimaryKey, ManyToOne, Property, SimpleLogger, Unique, Ref, ref, EventSubscriber, EventArgs } from '@mikro-orm/core';
+import {
+  MikroORM, Entity, PrimaryKey, ManyToOne, Property, SimpleLogger,
+  Unique, Ref, ref, EventSubscriber, EventArgs, OneToMany, Collection,
+} from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 
 @Entity()
@@ -14,6 +17,9 @@ export class Author {
 
   @Property({ name: 'current_age' })
   age: number;
+
+  @OneToMany(() => Book, b => b.author)
+  books = new Collection<Book>(this);
 
   constructor(email: string, age: number) {
     this.email = email;

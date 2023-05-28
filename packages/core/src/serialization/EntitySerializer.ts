@@ -77,7 +77,7 @@ export class EntitySerializer {
           root.leave(meta.className, prop);
         }
 
-        if (Utils.isPlainObject(val)) {
+        if (options.skipNull && Utils.isPlainObject(val)) {
           Utils.dropUndefinedProperties(val, null);
         }
 

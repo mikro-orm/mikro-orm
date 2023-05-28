@@ -216,7 +216,7 @@ export class ArrayCollection<T extends object, O extends object> {
   /**
    * @internal
    */
-  get property(): EntityProperty<T> {
+  get property(): EntityProperty<O> {
     if (!this._property) {
       const meta = helper(this.owner).__meta;
 
@@ -225,11 +225,17 @@ export class ArrayCollection<T extends object, O extends object> {
         throw MetadataError.fromUnknownEntity((this.owner as object).constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
       }
 
-      const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
-      this._property = meta.properties[field!];
+      this._property = meta.relations.find(prop => this.owner[prop.name] === this)!;
     }
 
-    return this._property!;
+    return this._property;
+  }
+
+  /**
+   * @internal
+   */
+  set property(prop: EntityProperty<O>) {
+    this._property = prop;
   }
 
   protected propagate(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {

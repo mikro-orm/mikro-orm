@@ -1,4 +1,4 @@
-import type { EntityName } from '../typings';
+import type { EntityName, EntityMetadata } from '../typings';
 import type { EntityManager } from '../EntityManager';
 import type { ChangeSet, UnitOfWork } from '../unit-of-work';
 import type { Transaction } from '../connections';
@@ -6,14 +6,15 @@ import type { Transaction } from '../connections';
 export interface EventArgs<T> {
   entity: T;
   em: EntityManager;
+  meta: EntityMetadata<T>;
   changeSet?: ChangeSet<T>;
 }
 
-export interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity'> {
+export interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity' | 'meta'> {
   uow: UnitOfWork;
 }
 
-export interface TransactionEventArgs extends Omit<EventArgs<unknown>, 'entity' | 'changeSet'> {
+export interface TransactionEventArgs extends Omit<EventArgs<unknown>, 'entity' | 'meta' | 'changeSet'> {
   transaction?: Transaction;
   uow?: UnitOfWork;
 }

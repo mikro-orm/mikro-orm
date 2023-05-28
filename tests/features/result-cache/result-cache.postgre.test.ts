@@ -31,7 +31,10 @@ describe('result cache (postgres)', () => {
 
   beforeAll(async () => orm = await initORMPostgreSql());
   beforeEach(async () => orm.schema.clearDatabase());
-  afterAll(async () => orm.close(true));
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('result caching (find)', async () => {
     await createBooksWithTags();

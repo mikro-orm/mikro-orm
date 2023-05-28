@@ -80,7 +80,7 @@ export class MigrationCommandFactory {
       type: 'string',
       desc: 'Sets path to directory where to save entities',
     });
-    args.option('name', {
+    args.option('n', {
       alias: 'name',
       type: 'string',
       desc: 'Specify custom name for the file',

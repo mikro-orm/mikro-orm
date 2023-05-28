@@ -23,6 +23,10 @@ describe('QueryBuilder', () => {
       },
     }, true);
   });
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('select query', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
@@ -3058,7 +3062,5 @@ describe('QueryBuilder', () => {
     qb2.from(qb1);
     expect(qb2.getQuery()).toEqual('select `e1`.* from (select `e0`.* from `author2` as `e0`) as `e1`');
   });
-
-  afterAll(async () => orm.close(true));
 
 });
