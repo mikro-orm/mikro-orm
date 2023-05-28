@@ -443,4 +443,55 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await assertFooBars([fooBar1, fooBar2, fooBar3], mock);
   });
 
+  test('em.upsert(entity) with excluded properties', async () => {
+    await createEntities();
+
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+    // console.log(await orm.em.findOne(FooBar, 1))
+    const fb1 = orm.em.create(FooBar, { id: 1, name: 'fb1', author: 1, propName: 'val 1' });
+    const fooBar1 = await orm.em.upsert(FooBar, fb1, { excludeFields: ['propName'] }); // exists
+
+    expect(fb1).toBe(fooBar1);
+    expect(fb1.name).toBe('fb1');
+    expect(fb1.propName).toBe(null);
+
+    await orm.em.nativeUpdate(FooBar, { id: 2, name: 'fb2', author: 2 } , { propName : 'test' });
+    const fb2 = orm.em.create(FooBar, { id: 2, name: 'fb2', author: 2, propName: 'val 2' });
+    const fooBar2 = await orm.em.upsert(FooBar, fb2, { excludeFields: ['propName'] }); // exists
+
+    expect(fooBar2).toBe(fb2);
+    expect(fooBar2.propName).toBe('test');
+  });
+
+  test('em.upsert(entity) with excluded properties for entities in uow', async () => {
+    await createEntities();
+
+    orm.em.clear();
+
+    await orm.em.findOneOrFail(FooBar, { id: 1, name: 'fb1', author: 1 });
+    const mock = mockLogger(orm);
+    const fooBar1 = await orm.em.upsert(FooBar, { id: 1, name: 'fb1', author: 1, propName: 'val 1' }, { excludeFields: ['propName'] }); // exists
+
+    expect(fooBar1.id).toBe(1);
+    expect(fooBar1.propName).toBe(null);
+    expect(mock.mock.calls.length).toBe(0);
+  });
+
+  test('em.upsert(entity) with excluded properties for existing entities', async () => {
+    await createEntities();
+
+    orm.em.clear();
+    await orm.em.findOneOrFail(FooBar, { id: 1, name: 'fb1', author: 1 });
+
+    const mock = mockLogger(orm);
+    const fb1 = orm.em.create(FooBar, { id: 1, name: 'fb1', author: 1, propName: 'val 1' });
+    const fooBar1 = await orm.em.upsert(FooBar, fb1, { excludeFields: ['propName'] }); // exists
+
+    expect(fb1).toBe(fooBar1);
+    expect(fb1.name).toBe('fb1');
+    expect(fb1.propName).toBe(null);
+    expect(mock.mock.calls.length).toBe(1);
+  });
 });

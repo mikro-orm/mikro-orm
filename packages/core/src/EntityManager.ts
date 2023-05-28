@@ -17,6 +17,7 @@ import type {
   LockOptions,
   NativeInsertUpdateOptions,
   UpdateOptions,
+  UpsertOptions,
 } from './drivers';
 import type {
   AnyEntity,
@@ -543,7 +544,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | Entity, options: NativeInsertUpdateOptions<Entity> = {}): Promise<Entity> {
+  async upsert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | Entity, options: UpsertOptions<Entity> = {}): Promise<Entity> {
     const em = this.getContext(false);
 
     let entityName: EntityName<Entity>;
@@ -565,6 +566,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
       if (helper(entity).__managed && helper(entity).__em === em) {
         em.entityFactory.mergeData(meta, entity, data, { initialized: true });
+
+        if (options.excludeFields?.length) {
+          await this.refresh(entity, { fields: options.excludeFields });
+        }
+
         return entity;
       }
 
@@ -577,7 +583,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         const exists = em.unitOfWork.getById<Entity>(entityName, where as Primary<Entity>, options.schema);
 
         if (exists) {
-          return em.assign(exists, data);
+          return em.assign(exists, options.excludeFields ? Utils.removeKeys(data, ...options.excludeFields) : data);
         }
       }
     }
@@ -617,6 +623,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret = await em.driver.nativeUpdate(entityName, where, data, {
       ctx: em.transactionContext,
       upsert: true,
+      upsertExcludeFields: options.excludeFields,
       convertCustomTypes,
       ...options,
     });
@@ -628,15 +635,24 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: true,
     });
 
-    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta);
+    // on platforms with returning statements, the excluded upsert fields will be returned via this statement
+    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta, options.excludeFields);
 
     if (!helper(entity).hasPrimaryKey()) {
       const pk = await this.driver.findOne(meta.className, where, {
         fields: meta.hydrateProps.filter(p => !p.lazy && !(p.name in data!)).map(p => p.name) as EntityField<Entity>[],
         ctx: em.transactionContext,
         convertCustomTypes: true,
+        refresh: true,
       });
+
       em.entityFactory.mergeData(meta, entity, pk!, { initialized: true });
+    }
+
+    // on platforms without returning statements, the excluded upsert fields should be refetched from the database
+    // this can be combined with populating the primary key
+    if ((!this.getPlatform().usesReturningStatement() && options.excludeFields && options.excludeFields.length > 0)) {
+      await this.refresh(entity, { fields: options.excludeFields });
     }
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
@@ -675,7 +691,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsertMany<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity[], data?: (EntityData<Entity> | Entity)[], options: NativeInsertUpdateOptions<Entity> = {}): Promise<Entity[]> {
+  async upsertMany<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity[], data?: (EntityData<Entity> | Entity)[], options: UpsertOptions<Entity> = {}): Promise<Entity[]> {
     const em = this.getContext(false);
 
     let entityName: string;

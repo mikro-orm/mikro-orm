@@ -645,6 +645,17 @@ export class Utils {
     return Utils.isObject(key) && key.constructor && key.constructor.name.toLowerCase() === 'objectid';
   }
 
+   /**
+   * Removes keys from an object
+   */
+   static removeKeys<D extends Dictionary>(data: D, ...keys: (keyof D)[]) {
+    for (const key of keys) {
+      delete data[key];
+    }
+
+    return data;
+  }
+
   /**
    * Checks whether the argument is empty (array without items, object without keys or falsy value).
    */

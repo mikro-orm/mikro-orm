@@ -194,12 +194,12 @@ export class MongoConnection extends Connection {
     return this.runQuery<T>('insertMany', collection, data, undefined, ctx);
   }
 
-  async updateMany<T extends object>(collection: string, where: FilterQuery<T>, data: Partial<T>, ctx?: Transaction<ClientSession>, upsert?: boolean): Promise<QueryResult<T>> {
-    return this.runQuery<T>('updateMany', collection, data, where, ctx, upsert);
+  async updateMany<T extends object>(collection: string, where: FilterQuery<T>, data: Partial<T>, ctx?: Transaction<ClientSession>, upsert?: boolean, upsertExcludeFields?: (keyof T)[]): Promise<QueryResult<T>> {
+    return this.runQuery<T>('updateMany', collection, data, where, ctx, upsert, upsertExcludeFields);
   }
 
-  async bulkUpdateMany<T extends object>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean): Promise<QueryResult<T>> {
-    return this.runQuery<T>('bulkUpdateMany', collection, data, where, ctx, upsert);
+  async bulkUpdateMany<T extends object>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean, upsertExcludeFields?: (keyof T)[]): Promise<QueryResult<T>> {
+    return this.runQuery<T>('bulkUpdateMany', collection, data, where, ctx, upsert,upsertExcludeFields);
   }
 
   async deleteMany<T extends object>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
@@ -266,7 +266,7 @@ export class MongoConnection extends Connection {
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
 
-  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean): Promise<U> {
+  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean, upsertExcludeFields?: (keyof T)[]): Promise<U> {
     collection = this.getCollectionName(collection);
     const logger = this.config.getLogger();
     const options: Dictionary = ctx ? { session: ctx, upsert } : { upsert };
@@ -292,7 +292,7 @@ export class MongoConnection extends Connection {
         res = await this.rethrow(this.getCollection<T>(collection).insertMany(data as OptionalUnlessRequiredId<T>[], options), query);
         break;
       case 'updateMany': {
-        const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : this.createUpdatePayload(data as object);
+        const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : this.createUpdatePayload(data as T, upsertExcludeFields);
         query = log(() => `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)}, ${this.logObject(options)});`);
         res = await this.rethrow(this.getCollection<T>(collection).updateMany(where as Filter<T>, payload as UpdateFilter<T>, options), query) as UpdateResult;
         break;
@@ -345,7 +345,7 @@ export class MongoConnection extends Connection {
     });
   }
 
-  private createUpdatePayload<T extends object>(row: T): { $set?: unknown[]; $unset?: unknown[] } {
+  private createUpdatePayload<T extends object>(row: T, upsertExcludeFields?: (keyof T)[]): { $set?: unknown[]; $unset?: unknown[]; $setOnInsert?: unknown[] } {
     const doc: Dictionary = { $set: row };
     const keys = Object.keys(row);
     const $unset: { $set?: unknown[]; $unset?: unknown[] } = {};
@@ -354,6 +354,16 @@ export class MongoConnection extends Connection {
       $unset[k] = '';
       delete row[k];
     });
+
+
+    if (upsertExcludeFields && upsertExcludeFields.length > 0) {
+      doc.$setOnInsert = {};
+
+      upsertExcludeFields.forEach(f => {
+        doc.$setOnInsert[f] = doc.$set[f];
+        delete doc.$set[f];
+      });
+    }
 
     if (Utils.hasObjectKeys($unset)) {
       doc.$unset = $unset;

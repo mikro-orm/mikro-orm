@@ -136,6 +136,12 @@ export interface NativeInsertUpdateOptions<T> {
   schema?: string;
   /** `nativeUpdate()` only option */
   upsert?: boolean;
+  /** `nativeUpdate()` only option */
+  upsertExcludeFields?: (keyof T)[];
+}
+
+export interface UpsertOptions<T> extends Omit<NativeInsertUpdateOptions<T>, 'upsert' | 'upsertExcludeFields'> {
+  excludeFields?: (keyof T)[];
 }
 
 export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOptions<T> {

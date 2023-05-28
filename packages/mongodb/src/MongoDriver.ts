@@ -108,7 +108,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     where = this.renameFields(entityName, where, true);
     data = this.renameFields(entityName, data);
 
-    return this.rethrow(this.getConnection('write').updateMany(entityName, where as object, data, options.ctx, options.upsert)) as Promise<QueryResult<T>>;
+    const excludeFields = options.upsertExcludeFields ? (options.upsertExcludeFields).map(f => this.metadata.find(entityName)?.properties[f as string].fieldNames[0]).filter(f => !!f) as (keyof T)[] : undefined;
+
+    return this.rethrow(this.getConnection('write').updateMany(entityName, where as object, data as T, options.ctx, options.upsert,  excludeFields)) as Promise<QueryResult<T>>;
   }
 
   async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {

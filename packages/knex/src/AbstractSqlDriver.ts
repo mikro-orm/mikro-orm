@@ -425,8 +425,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         /* istanbul ignore next */
         qb.insert(data as T)
           .onConflict(uniqueFields.map(p => meta?.properties[p]?.fieldNames[0] ?? p))
-          .merge(Object.keys(data).filter(f => !uniqueFields.includes(f)))
-          .returning(meta?.hydrateProps.filter(p => !p.lazy && !(p.name in data)).map(p => p.name) ?? '*');
+          .merge(Object.keys(data).filter(f => !options.upsertExcludeFields?.includes(f as keyof T) && !uniqueFields.includes(f)))
+          .returning(!meta?.hydrateProps || options.upsertExcludeFields?.length ? '*' :  meta.hydrateProps.filter(p => !p.lazy && !(p.name in data)).map(p => p.name));
       } else {
         qb.update(data).where(where);
       }
