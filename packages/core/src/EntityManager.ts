@@ -643,7 +643,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         fields: meta.hydrateProps.filter(p => !p.lazy && !(p.name in data!)).map(p => p.name) as EntityField<Entity>[],
         ctx: em.transactionContext,
         convertCustomTypes: true,
-        refresh: true,
       });
 
       em.entityFactory.mergeData(meta, entity, pk!, { initialized: true });
@@ -651,7 +650,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     // on platforms without returning statements, the excluded upsert fields should be refetched from the database
     // this can be combined with populating the primary key
-    if ((!this.getPlatform().usesReturningStatement() && options.excludeFields && options.excludeFields.length > 0)) {
+    if ((!this.getPlatform().usesReturningStatement() && options.excludeFields?.length)) {
       await this.refresh(entity, { fields: options.excludeFields });
     }
 

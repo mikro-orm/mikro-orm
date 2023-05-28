@@ -448,8 +448,6 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
 
     orm.em.clear();
 
-    const mock = mockLogger(orm);
-    // console.log(await orm.em.findOne(FooBar, 1))
     const fb1 = orm.em.create(FooBar, { id: 1, name: 'fb1', author: 1, propName: 'val 1' });
     const fooBar1 = await orm.em.upsert(FooBar, fb1, { excludeFields: ['propName'] }); // exists
 
