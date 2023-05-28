@@ -39,7 +39,7 @@ import type {
   RequiredEntityData,
 } from './typings';
 import type { TransactionOptions } from './enums';
-import { EventType, FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
+import { GroupOperator, EventType, FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
 import type { FlushEventArgs } from './events';
@@ -297,6 +297,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     });
     where = await this.applyFilters(entityName, where, options.filters ?? {}, type, options);
     where = await this.applyDiscriminatorCondition(entityName, where);
+    const preparedPopulate = this.preparePopulate(entityName, options);
+    this.applyPopulateDiscriminatorConditions(entityName, where, preparedPopulate);
+    this.applyQueryDiscriminatorConditions(entityName, where);
 
     return where;
   }
@@ -318,8 +321,62 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return children;
     };
     lookUpChildren(children, meta.className);
+    if (Utils.isPrimaryKey(where, meta.compositePK)) {
+      where = { $eq: where } as FilterQuery<Entity>;
+    }
     where![meta.root.discriminatorColumn!] = children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue;
 
+    return where;
+  }
+
+  /**
+   * Applies the discriminator condition to the FilterQuery object if a relation field is present in it
+   */
+  protected applyQueryDiscriminatorConditions<Entity extends object>(entityName: string, where: FilterQuery<Entity>): FilterQuery<Entity> {
+    if (!Utils.isPlainObject(where) && !Array.isArray(where)) {
+      return where;
+    }
+    for (const [k, w] of Object.entries(where)) {
+      const isIndexOfArray = !Number.isNaN(Number(k));
+      if (isIndexOfArray || k in GroupOperator || Array.isArray(w)) {
+        where[k] = this.applyQueryDiscriminatorConditions(entityName, w!);
+        continue;
+      }
+      const meta = this.metadata.find(entityName);
+      const r = meta?.relations?.find(r => r.name === k);
+      if (!r) {
+        continue;
+      }
+      where[k] = this.applyDiscriminatorCondition(r.type, w!);
+      // recurse inside the sub-object
+      where[k] = this.applyQueryDiscriminatorConditions(r.type, where[k]!);
+    }
+    return where;
+  }
+
+  /**
+   * Applies the discriminator condition to the FilterQuery object based on the populate field
+   */
+  protected applyPopulateDiscriminatorConditions<Entity extends object>(entityName: string, where: FilterQuery<Entity>, populate: PopulateOptions<Entity>[]): FilterQuery<Entity> {
+    const meta = this.metadata.find(entityName);
+    if (!meta) {
+      return where;
+    }
+    for (const p of populate) {
+      if (p.strategy !== LoadStrategy.JOINED) {
+        continue;
+      }
+      const pMeta = meta.properties[p.field];
+
+      let w = this.applyDiscriminatorCondition(pMeta.type, where[p.field] ?? {});
+      if (p.children) {
+        w = this.applyPopulateDiscriminatorConditions(pMeta.type, w, p.children);
+      }
+      if (!!w && Utils.isPlainObject(w) && Utils.hasObjectKeys(w)) {
+        // if the conditions object is not empty
+        where[p.field] = w;
+      }
+    }
     return where;
   }
 
@@ -1565,17 +1622,20 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   private preparePopulate<T extends object, P extends string = never>(entityName: string, options: Pick<FindOptions<T, P>, 'populate' | 'strategy' | 'fields'>): PopulateOptions<T>[] {
+    // clone to avoid side effect
+    let populate: boolean | undefined | readonly AutoPath<P, any>[] = Array.isArray(options.populate) ? [...(options.populate as any[])] : options.populate;
+
     // infer populate hint if only `fields` are available
-    if (!options.populate && options.fields) {
-      options.populate = this.buildFields(options.fields);
+    if (!populate && options.fields) {
+      populate = this.buildFields(options.fields);
     }
 
-    if (!options.populate) {
+    if (!populate) {
       return this.entityLoader.normalizePopulate<T>(entityName, [], options.strategy);
     }
 
-    if (Array.isArray(options.populate)) {
-      options.populate = (options.populate as string[]).map(field => {
+    if (Array.isArray(populate)) {
+      populate = (populate as string[]).map(field => {
         if (Utils.isString(field)) {
           return { field, strategy: options.strategy };
         }
@@ -1584,7 +1644,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }) as unknown as Populate<T>;
     }
 
-    const ret: PopulateOptions<T>[] = this.entityLoader.normalizePopulate<T>(entityName, options.populate as true, options.strategy);
+    const ret: PopulateOptions<T>[] = this.entityLoader.normalizePopulate<T>(entityName, populate as true, options.strategy);
     const invalid = ret.find(({ field }) => !this.canPopulate(entityName, field));
 
     if (invalid) {
@@ -1593,7 +1653,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     return ret.map(field => {
       // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
-      field.strategy = options.populate === true ? LoadStrategy.SELECT_IN : (options.strategy ?? field.strategy);
+      field.strategy = populate === true ? LoadStrategy.SELECT_IN : (options.strategy ?? field.strategy);
       return field;
     });
   }

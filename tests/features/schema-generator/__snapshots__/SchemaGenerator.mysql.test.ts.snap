@@ -24,10 +24,11 @@ drop table if exists \`foo_param2\`;
 drop table if exists \`foo_bar2\`;
 drop table if exists \`foo_baz2\`;
 drop table if exists \`dummy2\`;
+drop table if exists \`base_user2\`;
+drop table if exists \`company2\`;
 drop table if exists \`car_owner2\`;
 drop table if exists \`car2\`;
 drop table if exists \`book_tag2\`;
-drop table if exists \`base_user2\`;
 
 set foreign_key_checks = 1;
 "
@@ -38,6 +39,8 @@ exports[`SchemaGenerator generate schema from metadata [mariadb]: mariadb-update
 set foreign_key_checks = 0;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
+
+alter table \`base_user2\` rename index \`base_user2_company_2_id_foreign\` to \`base_user2_company_id_index\`;
 
 alter table \`publisher2\` modify \`name\` varchar(255) not null default 'asd', modify \`type\` enum('local', 'global') not null default 'local', modify \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL';
 
@@ -55,11 +58,6 @@ exports[`SchemaGenerator generate schema from metadata [mysql]: mysql-create-sch
 "set names utf8mb4;
 set foreign_key_checks = 0;
 
-create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
-alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);
-alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);
-alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);
-
 create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;
 
 create table \`car2\` (\`name\` varchar(100) not null, \`year\` int unsigned not null, \`price\` int not null, primary key (\`name\`, \`year\`)) default character set utf8mb4 engine = InnoDB;
@@ -68,6 +66,14 @@ alter table \`car2\` add index \`car2_year_index\`(\`year\`);
 
 create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;
 alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);
+
+create table \`company2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(100) not null) default character set utf8mb4 engine = InnoDB;
+
+create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`company_id\` int unsigned null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
+alter table \`base_user2\` add index \`base_user2_company_id_index\`(\`company_id\`);
+alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);
+alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);
+alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);
 
 create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
 
@@ -146,10 +152,11 @@ create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \
 alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\`(\`sandwich_id\`);
 alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);
 
+alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;
+
+alter table \`base_user2\` add constraint \`base_user2_company_id_foreign\` foreign key (\`company_id\`) references \`company2\` (\`id\`) on update cascade on delete set null;
 alter table \`base_user2\` add constraint \`base_user2_favourite_employee_id_foreign\` foreign key (\`favourite_employee_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;
 alter table \`base_user2\` add constraint \`base_user2_favourite_manager_id_foreign\` foreign key (\`favourite_manager_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;
-
-alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;
 
 alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;
 alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;
@@ -224,10 +231,11 @@ drop table if exists \`foo_param2\`;
 drop table if exists \`foo_bar2\`;
 drop table if exists \`foo_baz2\`;
 drop table if exists \`dummy2\`;
+drop table if exists \`base_user2\`;
+drop table if exists \`company2\`;
 drop table if exists \`car_owner2\`;
 drop table if exists \`car2\`;
 drop table if exists \`book_tag2\`;
-drop table if exists \`base_user2\`;
 
 set foreign_key_checks = 1;
 "
@@ -267,9 +275,10 @@ alter table \`foo_param2\` drop foreign key \`foo_param2_bar_id_foreign\`;
 alter table \`foo_param2\` drop foreign key \`foo_param2_baz_id_foreign\`;
 alter table \`foo_bar2\` drop foreign key \`foo_bar2_baz_id_foreign\`;
 alter table \`foo_bar2\` drop foreign key \`foo_bar2_foo_bar_id_foreign\`;
-alter table \`car_owner2\` drop foreign key \`car_owner2_car_name_car_year_foreign\`;
+alter table \`base_user2\` drop foreign key \`base_user2_company_2_id_foreign\`;
 alter table \`base_user2\` drop foreign key \`base_user2_favourite_employee_id_foreign\`;
 alter table \`base_user2\` drop foreign key \`base_user2_favourite_manager_id_foreign\`;
+alter table \`car_owner2\` drop foreign key \`car_owner2_car_name_car_year_foreign\`;
 drop table if exists \`user2_sandwiches\`;
 drop table if exists \`user2_cars\`;
 drop table if exists \`user2\`;
@@ -290,15 +299,11 @@ drop table if exists \`foo_param2\`;
 drop table if exists \`foo_bar2\`;
 drop table if exists \`foo_baz2\`;
 drop table if exists \`dummy2\`;
+drop table if exists \`base_user2\`;
+drop table if exists \`company2\`;
 drop table if exists \`car_owner2\`;
 drop table if exists \`car2\`;
 drop table if exists \`book_tag2\`;
-drop table if exists \`base_user2\`;
-
-create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
-alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);
-alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);
-alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);
 
 create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;
 
@@ -308,6 +313,14 @@ alter table \`car2\` add index \`car2_year_index\`(\`year\`);
 
 create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;
 alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);
+
+create table \`company2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(100) not null) default character set utf8mb4 engine = InnoDB;
+
+create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`company_id\` int unsigned null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
+alter table \`base_user2\` add index \`base_user2_company_id_index\`(\`company_id\`);
+alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);
+alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);
+alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);
 
 create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
 
@@ -386,10 +399,11 @@ create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \
 alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\`(\`sandwich_id\`);
 alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);
 
+alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;
+
+alter table \`base_user2\` add constraint \`base_user2_company_id_foreign\` foreign key (\`company_id\`) references \`company2\` (\`id\`) on update cascade on delete set null;
 alter table \`base_user2\` add constraint \`base_user2_favourite_employee_id_foreign\` foreign key (\`favourite_employee_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;
 alter table \`base_user2\` add constraint \`base_user2_favourite_manager_id_foreign\` foreign key (\`favourite_manager_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;
-
-alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;
 
 alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;
 alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;
@@ -446,6 +460,8 @@ set foreign_key_checks = 0;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
+alter table \`base_user2\` rename index \`base_user2_company_2_id_foreign\` to \`base_user2_company_id_index\`;
+
 alter table \`publisher2\` modify \`name\` varchar(255) not null default 'asd', modify \`type\` enum('local', 'global') not null default 'local', modify \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL';
 
 alter table \`book2\` drop \`foo\`;
@@ -462,6 +478,8 @@ exports[`SchemaGenerator rename column [mysql]: mysql-update-schema-rename-colum
 "alter table \`author2\` drop foreign key \`author2_favourite_author_id_foreign\`;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
+
+alter table \`base_user2\` rename index \`base_user2_company_2_id_foreign\` to \`base_user2_company_id_index\`;
 
 alter table \`publisher2\` modify \`name\` varchar(255) not null default 'asd', modify \`type\` enum('local', 'global') not null default 'local', modify \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL';
 
@@ -519,6 +537,8 @@ exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-create-table
 "create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
+
+alter table \`base_user2\` rename index \`base_user2_company_2_id_foreign\` to \`base_user2_company_id_index\`;
 
 alter table \`publisher2\` modify \`name\` varchar(255) not null default 'asd', modify \`type\` enum('local', 'global') not null default 'local', modify \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL';
 
@@ -609,6 +629,8 @@ exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-
 "create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`enum_test\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
+
+alter table \`base_user2\` rename index \`base_user2_company_2_id_foreign\` to \`base_user2_company_id_index\`;
 
 alter table \`publisher2\` modify \`name\` varchar(255) not null default 'asd', modify \`type\` enum('local', 'global') not null default 'local', modify \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL';
 

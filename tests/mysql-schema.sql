@@ -13,6 +13,7 @@ drop table if exists `test2`;
 drop table if exists `book2`;
 drop table if exists `author2`;
 drop table if exists `base_user2`;
+drop table if exists `company2`;
 drop table if exists `book_tag2`;
 drop table if exists `user2_cars`;
 drop table if exists `user2_sandwiches`;
@@ -76,7 +77,9 @@ alter table `user2_cars` add index `user2_cars_car2_name_car2_year_index`(`car2_
 
 create table `book_tag2` (`id` bigint unsigned not null auto_increment primary key, `name` varchar(50) not null) default character set utf8mb4 engine = InnoDB;
 
-create table `base_user2` (`id` int(10) unsigned not null auto_increment primary key, `first_name` varchar(100) not null, `last_name` varchar(100) not null, `type` enum('employee', 'manager', 'owner') not null, `owner_prop` varchar(255) null, `favourite_employee_id` int(10) unsigned null, `favourite_manager_id` int(10) unsigned null, `employee_prop` int(11) null, `manager_prop` varchar(255) null) default character set utf8mb4 engine = InnoDB;
+create table `company2` (`id` int(10) unsigned not null auto_increment primary key, `name` varchar(100) not null) default character set utf8mb4 engine = InnoDB;
+
+create table `base_user2` (`id` int(10) unsigned not null auto_increment primary key, `first_name` varchar(100) not null, `last_name` varchar(100) not null, `type` enum('employee', 'manager', 'owner') not null, `owner_prop` varchar(255) null, `favourite_employee_id` int(10) unsigned null, `favourite_manager_id` int(10) unsigned null, `employee_prop` int(11) null, `manager_prop` varchar(255) null, `company_id` int(10) unsigned null) default character set utf8mb4 engine = InnoDB;
 alter table `base_user2` add index `base_user2_type_index`(`type`);
 alter table `base_user2` add index `base_user2_favourite_employee_id_index`(`favourite_employee_id`);
 alter table `base_user2` add unique `base_user2_favourite_manager_id_unique`(`favourite_manager_id`);
@@ -157,6 +160,7 @@ alter table `user2_cars` add constraint `user2_cars_car2_name_car2_year_foreign`
 
 alter table `base_user2` add constraint `base_user2_favourite_employee_id_foreign` foreign key (`favourite_employee_id`) references `base_user2` (`id`) on update cascade on delete set null;
 alter table `base_user2` add constraint `base_user2_favourite_manager_id_foreign` foreign key (`favourite_manager_id`) references `base_user2` (`id`) on update cascade on delete set null;
+alter table `base_user2` add constraint `base_user2_company_2_id_foreign` foreign key (`company_id`) references `company2` (`id`) on update cascade on delete set null;
 
 alter table `author2` add constraint `author2_favourite_book_uuid_pk_foreign` foreign key (`favourite_book_uuid_pk`) references `book2` (`uuid_pk`) on update no action on delete cascade;
 alter table `author2` add constraint `author2_favourite_author_id_foreign` foreign key (`favourite_author_id`) references `author2` (`id`) on update cascade on delete set null;

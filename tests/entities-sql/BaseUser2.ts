@@ -1,4 +1,5 @@
-import { AfterCreate, AfterUpdate, Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
+import { AfterCreate, AfterUpdate, Entity, Enum, ManyToOne, PrimaryKey, Property, Ref } from '@mikro-orm/core';
+import { Company2 } from './index';
 
 export enum Type {
   Employee = 'employee',
@@ -24,6 +25,9 @@ export abstract class BaseUser2 {
 
   @Property({ length: 100 })
   lastName: string;
+
+  @ManyToOne(() => Company2, { wrappedReference: true, nullable: true })
+  company?: Ref<Company2>;
 
   @Enum()
   type!: Type;

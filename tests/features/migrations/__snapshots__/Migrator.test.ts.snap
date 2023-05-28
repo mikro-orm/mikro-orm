@@ -35,11 +35,6 @@ exports[`Migrator do not log a migration if the schema does not exist yet: initi
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum(\\'employee\\', \\'manager\\', \\'owner\\') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;');
-    this.addSql('alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);');
-    this.addSql('alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);');
-    this.addSql('alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);');
-
     this.addSql('create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;');
 
     this.addSql('create table \`car2\` (\`name\` varchar(100) not null, \`year\` int unsigned not null, \`price\` int not null, primary key (\`name\`, \`year\`)) default character set utf8mb4 engine = InnoDB;');
@@ -48,6 +43,14 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);');
+
+    this.addSql('create table \`company2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(100) not null) default character set utf8mb4 engine = InnoDB;');
+
+    this.addSql('create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`company_id\` int unsigned null, \`type\` enum(\\'employee\\', \\'manager\\', \\'owner\\') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('alter table \`base_user2\` add index \`base_user2_company_id_index\`(\`company_id\`);');
+    this.addSql('alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);');
+    this.addSql('alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);');
+    this.addSql('alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);');
 
     this.addSql('create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;');
 
@@ -126,10 +129,11 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\`(\`sandwich_id\`);');
     this.addSql('alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);');
 
+    this.addSql('alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;');
+
+    this.addSql('alter table \`base_user2\` add constraint \`base_user2_company_id_foreign\` foreign key (\`company_id\`) references \`company2\` (\`id\`) on update cascade on delete set null;');
     this.addSql('alter table \`base_user2\` add constraint \`base_user2_favourite_employee_id_foreign\` foreign key (\`favourite_employee_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;');
     this.addSql('alter table \`base_user2\` add constraint \`base_user2_favourite_manager_id_foreign\` foreign key (\`favourite_manager_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;');
-
-    this.addSql('alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;');
 
     this.addSql('alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;');
     this.addSql('alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;');
@@ -182,11 +186,6 @@ export class Migration20191013214813 extends Migration {
   "diff": {
     "down": [],
     "up": [
-      "create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;",
-      "alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);",
-      "alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);",
-      "alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);",
-      "",
       "create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;",
       "",
       "create table \`car2\` (\`name\` varchar(100) not null, \`year\` int unsigned not null, \`price\` int not null, primary key (\`name\`, \`year\`)) default character set utf8mb4 engine = InnoDB;",
@@ -195,6 +194,14 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);",
+      "",
+      "create table \`company2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(100) not null) default character set utf8mb4 engine = InnoDB;",
+      "",
+      "create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`company_id\` int unsigned null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;",
+      "alter table \`base_user2\` add index \`base_user2_company_id_index\`(\`company_id\`);",
+      "alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);",
+      "alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);",
+      "alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);",
       "",
       "create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;",
       "",
@@ -273,10 +280,11 @@ export class Migration20191013214813 extends Migration {
       "alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\`(\`sandwich_id\`);",
       "alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);",
       "",
+      "alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;",
+      "",
+      "alter table \`base_user2\` add constraint \`base_user2_company_id_foreign\` foreign key (\`company_id\`) references \`company2\` (\`id\`) on update cascade on delete set null;",
       "alter table \`base_user2\` add constraint \`base_user2_favourite_employee_id_foreign\` foreign key (\`favourite_employee_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;",
       "alter table \`base_user2\` add constraint \`base_user2_favourite_manager_id_foreign\` foreign key (\`favourite_manager_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;",
-      "",
-      "alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;",
       "",
       "alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;",
       "alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;",
@@ -339,6 +347,8 @@ class Migration20191013214813 extends Migration {
   async up() {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
+    this.addSql('alter table \`base_user2\` rename index \`base_user2_company_2_id_foreign\` to \`base_user2_company_id_index\`;');
+
     this.addSql('alter table \`book2\` drop \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
@@ -347,6 +357,8 @@ class Migration20191013214813 extends Migration {
   }
 
   async down() {
+    this.addSql('alter table \`base_user2\` rename index \`base_user2_company_id_index\` to \`base_user2_company_2_id_foreign\`;');
+
     this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\'lol\\';');
 
     this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');
@@ -359,6 +371,8 @@ exports.Migration20191013214813 = Migration20191013214813;
 ",
   "diff": {
     "down": [
+      "alter table \`base_user2\` rename index \`base_user2_company_id_index\` to \`base_user2_company_2_id_foreign\`;",
+      "",
       "alter table \`book2\` add \`foo\` varchar(255) null default 'lol';",
       "",
       "alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;",
@@ -367,6 +381,8 @@ exports.Migration20191013214813 = Migration20191013214813;
     ],
     "up": [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
+      "",
+      "alter table \`base_user2\` rename index \`base_user2_company_2_id_foreign\` to \`base_user2_company_id_index\`;",
       "",
       "alter table \`book2\` drop \`foo\`;",
       "",
@@ -390,6 +406,8 @@ class Migration20191013214813 extends Migration {
   async up() {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
+    this.addSql('alter table \`base_user2\` rename index \`base_user2_company_2_id_foreign\` to \`base_user2_company_id_index\`;');
+
     this.addSql('alter table \`book2\` drop \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
@@ -398,6 +416,8 @@ class Migration20191013214813 extends Migration {
   }
 
   async down() {
+    this.addSql('alter table \`base_user2\` rename index \`base_user2_company_id_index\` to \`base_user2_company_2_id_foreign\`;');
+
     this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\'lol\\';');
 
     this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');
@@ -410,6 +430,8 @@ exports.Migration20191013214813 = Migration20191013214813;
 ",
   "diff": {
     "down": [
+      "alter table \`base_user2\` rename index \`base_user2_company_id_index\` to \`base_user2_company_2_id_foreign\`;",
+      "",
       "alter table \`book2\` add \`foo\` varchar(255) null default 'lol';",
       "",
       "alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;",
@@ -418,6 +440,8 @@ exports.Migration20191013214813 = Migration20191013214813;
     ],
     "up": [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
+      "",
+      "alter table \`base_user2\` rename index \`base_user2_company_2_id_foreign\` to \`base_user2_company_id_index\`;",
       "",
       "alter table \`book2\` drop \`foo\`;",
       "",
@@ -439,6 +463,8 @@ export class Migration20191013214813 extends Migration {
   async up(): Promise<void> {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
+    this.addSql('alter table \`base_user2\` rename index \`base_user2_company_2_id_foreign\` to \`base_user2_company_id_index\`;');
+
     this.addSql('alter table \`book2\` drop \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
@@ -447,6 +473,8 @@ export class Migration20191013214813 extends Migration {
   }
 
   async down(): Promise<void> {
+    this.addSql('alter table \`base_user2\` rename index \`base_user2_company_id_index\` to \`base_user2_company_2_id_foreign\`;');
+
     this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\'lol\\';');
 
     this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');
@@ -458,6 +486,8 @@ export class Migration20191013214813 extends Migration {
 ",
   "diff": {
     "down": [
+      "alter table \`base_user2\` rename index \`base_user2_company_id_index\` to \`base_user2_company_2_id_foreign\`;",
+      "",
       "alter table \`book2\` add \`foo\` varchar(255) null default 'lol';",
       "",
       "alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;",
@@ -466,6 +496,8 @@ export class Migration20191013214813 extends Migration {
     ],
     "up": [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
+      "",
+      "alter table \`base_user2\` rename index \`base_user2_company_2_id_foreign\` to \`base_user2_company_id_index\`;",
       "",
       "alter table \`book2\` drop \`foo\`;",
       "",
@@ -487,6 +519,8 @@ export class Migration20191013214813 extends Migration {
   async up(): Promise<void> {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
+    this.addSql('alter table \`base_user2\` rename index \`base_user2_company_2_id_foreign\` to \`base_user2_company_id_index\`;');
+
     this.addSql('alter table \`book2\` drop \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
@@ -495,6 +529,8 @@ export class Migration20191013214813 extends Migration {
   }
 
   async down(): Promise<void> {
+    this.addSql('alter table \`base_user2\` rename index \`base_user2_company_id_index\` to \`base_user2_company_2_id_foreign\`;');
+
     this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\'lol\\';');
 
     this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');
@@ -506,6 +542,8 @@ export class Migration20191013214813 extends Migration {
 ",
   "diff": {
     "down": [
+      "alter table \`base_user2\` rename index \`base_user2_company_id_index\` to \`base_user2_company_2_id_foreign\`;",
+      "",
       "alter table \`book2\` add \`foo\` varchar(255) null default 'lol';",
       "",
       "alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;",
@@ -514,6 +552,8 @@ export class Migration20191013214813 extends Migration {
     ],
     "up": [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
+      "",
+      "alter table \`base_user2\` rename index \`base_user2_company_2_id_foreign\` to \`base_user2_company_id_index\`;",
       "",
       "alter table \`book2\` drop \`foo\`;",
       "",
@@ -533,11 +573,6 @@ exports[`Migrator log a migration when the schema already exists: initial-migrat
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum(\\'employee\\', \\'manager\\', \\'owner\\') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;');
-    this.addSql('alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);');
-    this.addSql('alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);');
-    this.addSql('alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);');
-
     this.addSql('create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;');
 
     this.addSql('create table \`car2\` (\`name\` varchar(100) not null, \`year\` int unsigned not null, \`price\` int not null, primary key (\`name\`, \`year\`)) default character set utf8mb4 engine = InnoDB;');
@@ -546,6 +581,14 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);');
+
+    this.addSql('create table \`company2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(100) not null) default character set utf8mb4 engine = InnoDB;');
+
+    this.addSql('create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`company_id\` int unsigned null, \`type\` enum(\\'employee\\', \\'manager\\', \\'owner\\') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('alter table \`base_user2\` add index \`base_user2_company_id_index\`(\`company_id\`);');
+    this.addSql('alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);');
+    this.addSql('alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);');
+    this.addSql('alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);');
 
     this.addSql('create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;');
 
@@ -624,10 +667,11 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\`(\`sandwich_id\`);');
     this.addSql('alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);');
 
+    this.addSql('alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;');
+
+    this.addSql('alter table \`base_user2\` add constraint \`base_user2_company_id_foreign\` foreign key (\`company_id\`) references \`company2\` (\`id\`) on update cascade on delete set null;');
     this.addSql('alter table \`base_user2\` add constraint \`base_user2_favourite_employee_id_foreign\` foreign key (\`favourite_employee_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;');
     this.addSql('alter table \`base_user2\` add constraint \`base_user2_favourite_manager_id_foreign\` foreign key (\`favourite_manager_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;');
-
-    this.addSql('alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;');
 
     this.addSql('alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;');
     this.addSql('alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;');
@@ -680,11 +724,6 @@ export class Migration20191013214813 extends Migration {
   "diff": {
     "down": [],
     "up": [
-      "create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;",
-      "alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);",
-      "alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);",
-      "alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);",
-      "",
       "create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;",
       "",
       "create table \`car2\` (\`name\` varchar(100) not null, \`year\` int unsigned not null, \`price\` int not null, primary key (\`name\`, \`year\`)) default character set utf8mb4 engine = InnoDB;",
@@ -693,6 +732,14 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);",
+      "",
+      "create table \`company2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(100) not null) default character set utf8mb4 engine = InnoDB;",
+      "",
+      "create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`company_id\` int unsigned null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;",
+      "alter table \`base_user2\` add index \`base_user2_company_id_index\`(\`company_id\`);",
+      "alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);",
+      "alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);",
+      "alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);",
       "",
       "create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;",
       "",
@@ -771,10 +818,11 @@ export class Migration20191013214813 extends Migration {
       "alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\`(\`sandwich_id\`);",
       "alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);",
       "",
+      "alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;",
+      "",
+      "alter table \`base_user2\` add constraint \`base_user2_company_id_foreign\` foreign key (\`company_id\`) references \`company2\` (\`id\`) on update cascade on delete set null;",
       "alter table \`base_user2\` add constraint \`base_user2_favourite_employee_id_foreign\` foreign key (\`favourite_employee_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;",
       "alter table \`base_user2\` add constraint \`base_user2_favourite_manager_id_foreign\` foreign key (\`favourite_manager_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;",
-      "",
-      "alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;",
       "",
       "alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;",
       "alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;",

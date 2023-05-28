@@ -188,6 +188,7 @@ export const Author2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+import { Company2 } from './Company2';
 
 export class BaseUser2 {
   id!: number;
@@ -199,6 +200,7 @@ export class BaseUser2 {
   favouriteManager?: IdentifiedReference<BaseUser2>;
   employeeProp?: number;
   managerProp?: string;
+  company?: IdentifiedReference<Company2>;
   favouriteEmployeeInverse = new Collection<BaseUser2>(this);
   favouriteManagerInverse?: IdentifiedReference<BaseUser2>;
 }
@@ -235,6 +237,15 @@ export const BaseUser2Schema = new EntitySchema({
     },
     employeeProp: { type: 'number', nullable: true },
     managerProp: { type: 'string', length: 255, nullable: true },
+    company: {
+      reference: 'm:1',
+      entity: () => Company2,
+      wrappedReference: true,
+      onUpdateIntegrity: 'cascade',
+      onDelete: 'set null',
+      nullable: true,
+      index: 'base_user2_company_2_id_foreign',
+    },
     favouriteEmployeeInverse: { reference: '1:m', entity: () => BaseUser2, mappedBy: 'favouriteEmployee' },
     favouriteManagerInverse: {
       reference: '1:1',
@@ -410,6 +421,24 @@ export const Car2Schema = new EntitySchema({
       mappedBy: 'favouriteCar',
     },
     carsInverse: { reference: 'm:n', entity: () => User2, mappedBy: 'cars' },
+  },
+});
+",
+  "import { Collection, EntitySchema } from '@mikro-orm/core';
+import { BaseUser2 } from './BaseUser2';
+
+export class Company2 {
+  id!: number;
+  name!: string;
+  companyInverse = new Collection<BaseUser2>(this);
+}
+
+export const Company2Schema = new EntitySchema({
+  class: Company2,
+  properties: {
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 100 },
+    companyInverse: { reference: '1:m', entity: () => BaseUser2, mappedBy: 'company' },
   },
 });
 ",
@@ -878,6 +907,7 @@ export class Author2 {
 }
 ",
   "import { Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Company2 } from './Company2';
 
 @Entity()
 export class BaseUser2 {
@@ -909,6 +939,9 @@ export class BaseUser2 {
 
   @Property({ length: 255, nullable: true })
   managerProp?: string;
+
+  @ManyToOne({ entity: () => Company2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true, index: 'base_user2_company_2_id_foreign' })
+  company?: Company2;
 
 }
 
@@ -1027,6 +1060,19 @@ export class Car2 {
 
   @Property()
   price!: number;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Company2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 100 })
+  name!: string;
 
 }
 ",
@@ -1935,6 +1981,7 @@ export class Author2 {
 }
 ",
   "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Company2 } from './Company2';
 
 @Entity()
 export class BaseUser2 {
@@ -1966,6 +2013,9 @@ export class BaseUser2 {
 
   @Property({ length: 255, nullable: true })
   managerProp?: string;
+
+  @ManyToOne({ entity: () => Company2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true, index: 'base_user2_company_2_id_foreign' })
+  company?: Company2;
 
   @OneToMany({ entity: () => BaseUser2, mappedBy: 'favouriteEmployee' })
   favouriteEmployeeInverse = new Collection<BaseUser2>(this);
@@ -2120,6 +2170,23 @@ export class Car2 {
 
   @ManyToMany({ entity: () => User2, mappedBy: 'cars' })
   carsInverse = new Collection<User2>(this);
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { BaseUser2 } from './BaseUser2';
+
+@Entity()
+export class Company2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 100 })
+  name!: string;
+
+  @OneToMany({ entity: () => BaseUser2, mappedBy: 'company' })
+  companyInverse = new Collection<BaseUser2>(this);
 
 }
 ",
@@ -2511,6 +2578,7 @@ export class Author2 {
 }
 ",
   "import { Collection, Entity, Enum, IdentifiedReference, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Company2 } from './Company2';
 
 @Entity()
 export class BaseUser2 {
@@ -2542,6 +2610,9 @@ export class BaseUser2 {
 
   @Property({ length: 255, nullable: true })
   managerProp?: string;
+
+  @ManyToOne({ entity: () => Company2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true, index: 'base_user2_company_2_id_foreign' })
+  company?: IdentifiedReference<Company2>;
 
   @OneToMany({ entity: () => BaseUser2, mappedBy: 'favouriteEmployee' })
   favouriteEmployeeInverse = new Collection<BaseUser2>(this);
@@ -2696,6 +2767,23 @@ export class Car2 {
 
   @ManyToMany({ entity: () => User2, mappedBy: 'cars' })
   carsInverse = new Collection<User2>(this);
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { BaseUser2 } from './BaseUser2';
+
+@Entity()
+export class Company2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 100 })
+  name!: string;
+
+  @OneToMany({ entity: () => BaseUser2, mappedBy: 'company' })
+  companyInverse = new Collection<BaseUser2>(this);
 
 }
 ",
@@ -3075,6 +3163,7 @@ export class Author2 {
 }
 ",
   "import { Entity, Enum, IdentifiedReference, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Company2 } from './Company2.js';
 
 @Entity()
 export class BaseUser2 {
@@ -3106,6 +3195,9 @@ export class BaseUser2 {
 
   @Property({ length: 255, nullable: true })
   managerProp?: string;
+
+  @ManyToOne({ entity: () => Company2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true, index: 'base_user2_company_2_id_foreign' })
+  company?: IdentifiedReference<Company2>;
 
 }
 
@@ -3224,6 +3316,19 @@ export class Car2 {
 
   @Property()
   price!: number;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Company2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 100 })
+  name!: string;
 
 }
 ",
