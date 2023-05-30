@@ -63,9 +63,14 @@ export abstract class AbstractSqlPlatform extends Platform {
     let pos = 0;
     let ret = '';
 
-    if (sql[0] === '?' && sql[1] !== '?') {
-      ret += this.quoteValue(params[j++]);
-      pos = 1;
+    if (sql[0] === '?') {
+      if (sql[1] === '?') {
+        ret += this.quoteIdentifier(params[j++]);
+        pos = 2;
+      } else {
+        ret += this.quoteValue(params[j++]);
+        pos = 1;
+      }
     }
 
     while (pos < sql.length) {

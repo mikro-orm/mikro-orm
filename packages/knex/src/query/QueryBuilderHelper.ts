@@ -457,6 +457,10 @@ export class QueryBuilderHelper {
   private appendQuerySubCondition(qb: Knex.QueryBuilder, type: QueryType, method: 'where' | 'having', cond: any, key: string, operator?: '$and' | '$or'): void {
     const m = operator === '$or' ? 'orWhere' : method;
 
+    if (cond[key] instanceof RawQueryFragment) {
+      cond[key] = this.knex.raw(cond[key].sql, cond[key].params);
+    }
+
     if (this.isSimpleRegExp(cond[key])) {
       return void qb[m](this.mapper(key, type), 'like', this.getRegExpParam(cond[key]));
     }
@@ -590,9 +594,13 @@ export class QueryBuilderHelper {
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
         const customOrder = prop?.customOrder;
 
-        const colPart = customOrder
+        let colPart = customOrder
           ? this.platform.generateCustomOrder(rawColumn, customOrder)
           : rawColumn;
+
+        if (Utils.isRawSql(colPart)) {
+          colPart = this.platform.formatQuery(colPart.sql, colPart.params);
+        }
 
         ret.push(`${colPart} ${order.toLowerCase()}`);
       });
