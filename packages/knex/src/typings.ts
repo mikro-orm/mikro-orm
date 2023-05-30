@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import type { CheckCallback, Dictionary, EntityProperty, GroupOperator, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
+import type { CheckCallback, Dictionary, EntityProperty, GroupOperator, RawQueryFragment, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
 import type { QueryType } from './query/enums';
 import type { DatabaseSchema, DatabaseTable } from './schema';
 
@@ -15,7 +15,7 @@ export type KnexStringRef = Knex.Ref<string, {
 
 type AnyString = string & {};
 
-export type Field<T> = AnyString | keyof T | KnexStringRef | Knex.QueryBuilder;
+export type Field<T> = AnyString | keyof T | RawQueryFragment | KnexStringRef | Knex.QueryBuilder;
 
 export interface JoinOptions {
   table: string;
