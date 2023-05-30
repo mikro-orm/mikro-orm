@@ -369,13 +369,11 @@ try {
 
 ### Using custom SQL fragments
 
-It is possible to use any SQL fragment in our `WHERE` query or `ORDER BY` clause:
-
-> The `expr()` helper is an identity function - all it does is to return its parameter. We can use it to bypass the strict type checks in `FilterQuery`.
+Any SQL fragment in your `WHERE` query or `ORDER BY` clause need to be wrapped with `raw()` or `sql`:
 
 ```ts
-const users = await em.find(User, { [expr('lower(email)')]: 'foo@bar.baz' }, {
-  orderBy: { [`(point(loc_latitude, loc_longitude) <@> point(0, 0))`]: 'ASC' },
+const users = await em.find(User, { [sql`lower(email)`]: 'foo@bar.baz' }, {
+  orderBy: { [sql`(point(loc_latitude, loc_longitude) <@> point(0, 0))`]: 'ASC' },
 });
 ```
 
@@ -387,6 +385,8 @@ from `user` as `e0`
 where lower(email) = 'foo@bar.baz'
 order by (point(loc_latitude, loc_longitude) <@> point(0, 0)) asc
 ```
+
+Read more about this in [Using raw SQL query fragments](./raw-queries.md) section.
 
 ## Updating references (not loaded entities)
 

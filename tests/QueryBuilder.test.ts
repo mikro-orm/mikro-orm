@@ -682,7 +682,7 @@ describe('QueryBuilder', () => {
 
   test('GH #4104', async () => {
     const qb = orm.em.createQueryBuilder(Author2, 'a');
-    const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: qb.ref('a.id') }).as('Author2.booksTotal');
+    const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: sql.ref('a.id') }).as('Author2.booksTotal');
     qb.select(['*', qb1])
       .where({ books: { title: 'foo' } })
       .limit(1)
@@ -901,18 +901,20 @@ describe('QueryBuilder', () => {
 
   test('select with group by and having', async () => {
     const qb = orm.em.createQueryBuilder(BookTag2, 't');
-    qb.select(['b.*', 't.*', raw('count(t.id) as tags')])
+    qb.select(['b.*', 't.*', sql`count(t.id)`.as('tags')])
+      .addSelect(sql.ref('b.title').as('book_title'))
       .leftJoin('t.books', 'b')
       .where('b.title = ? or b.title = ?', ['test 123', 'lol 321'])
       .groupBy(['b.uuid', 't.id'])
       .having('tags > ?', [0]);
-    const sql = 'select `b`.*, `t`.*, count(t.id) as tags from `book_tag2` as `t` ' +
+    const query = 'select `b`.*, `t`.*, count(t.id) as tags, `b`.`title` as book_title ' +
+      'from `book_tag2` as `t` ' +
       'left join `book2_tags` as `e1` on `t`.`id` = `e1`.`book_tag2_id` ' +
       'left join `book2` as `b` on `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
       'where (b.title = ? or b.title = ?) ' +
       'group by `b`.`uuid_pk`, `t`.`id` ' +
       'having (tags > ?)';
-    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getQuery()).toEqual(query);
     expect(qb.getParams()).toEqual(['test 123', 'lol 321', 0]);
   });
 
@@ -2027,13 +2029,13 @@ describe('QueryBuilder', () => {
 
   test('select with sub-query', async () => {
     const knex = orm.em.getKnex();
-    const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).as('Author2.booksTotal');
+    const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: sql.ref('a.id') }).as('Author2.booksTotal');
     const qb2 = orm.em.createQueryBuilder(Author2, 'a');
     qb2.select(['*', qb1]).orderBy({ booksTotal: 'desc' });
     expect(qb2.getQuery()).toEqual('select `a`.*, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` order by `books_total` desc');
     expect(qb2.getParams()).toEqual([]);
 
-    const qb3 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).as('books_total');
+    const qb3 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: sql.ref('a.id') }).as('books_total');
     const qb4 = orm.em.createQueryBuilder(Author2, 'a');
     qb4.select(['*', qb3]).orderBy({ booksTotal: 'desc' });
     expect(qb4.getQuery()).toEqual('select `a`.*, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` order by `books_total` desc');
@@ -2042,13 +2044,13 @@ describe('QueryBuilder', () => {
 
   test('select where sub-query', async () => {
     const knex = orm.em.getKnex();
-    const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).getKnexQuery();
+    const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: sql.ref('a.id') }).getKnexQuery();
     const qb2 = orm.em.createQueryBuilder(Author2, 'a');
     qb2.select('*').withSubQuery(qb1, 'a.booksTotal').where({ 'a.booksTotal': { $in: [1, 2, 3] } });
     expect(qb2.getQuery()).toEqual('select `a`.* from `author2` as `a` where (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) in (?, ?, ?)');
     expect(qb2.getParams()).toEqual([1, 2, 3]);
 
-    const qb3 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).getKnexQuery();
+    const qb3 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: sql.ref('a.id') }).getKnexQuery();
     const qb4 = orm.em.createQueryBuilder(Author2, 'a');
     qb4.select('*').withSubQuery(qb3, 'a.booksTotal').where({ 'a.booksTotal': 1 });
     expect(qb4.getQuery()).toEqual('select `a`.* from `author2` as `a` where (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) = ?');
