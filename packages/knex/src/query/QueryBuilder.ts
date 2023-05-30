@@ -411,13 +411,6 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this;
   }
 
-  /**
-   * @internal
-   */
-  ref(field: string) {
-    return this.knex.ref(field);
-  }
-
   limit(limit?: number, offset = 0): this {
     this.ensureNotFinalized();
     this._limit = limit;
@@ -1239,7 +1232,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
             addToSelect.push(fieldName);
           }
 
-          orderBy.push({ [raw(`min(${this.ref(fieldName)}${type})`)]: direction });
+          orderBy.push({ [raw(`min(${this.knex.ref(fieldName)}${type})`)]: direction });
         }
       }
 

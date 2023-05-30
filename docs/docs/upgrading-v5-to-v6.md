@@ -304,6 +304,20 @@ await em.flush();
 console.log(ref.age); // real value is available after flush
 ```
 
+Alternatively, you can use the new `sql` tagged template function:
+
+```ts
+ref.age = sql`age * 2`;
+```
+
+This works on query keys as well as parameters, and is required for any SQL fragments.
+
+Read more about this in [Using raw SQL query fragments](./raw-queries.md) section.
+
+## Removed `qb.ref()`
+
+Removed in favour of `sql.ref()`.
+
 ## Changed default PostgreSQL `Date` mapping precision
 
 Previously, all drivers defaulted the `Date` type mapping to a timestamp with 0 precision (so seconds). This is [discouraged in PostgreSQL](https://wiki.postgresql.org/wiki/Don't_Do_This#Don.27t_use_timestamp.280.29_or_timestamptz.280.29), and is no longer valid - the default mapping without the `length` property being explicitly set is now `timestamptz`, which stores microsecond precision, so equivalent to `timestampz(6)`.
