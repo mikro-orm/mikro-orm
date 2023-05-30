@@ -565,12 +565,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       entity = data as Entity;
 
       if (helper(entity).__managed && helper(entity).__em === em) {
-        em.entityFactory.mergeData(meta, entity, data, { initialized: true });
-
         if (options.excludeFields?.length) {
-          await this.refresh(entity, { fields: options.excludeFields });
-        }
+        data = Utils.removeKeys(Utils.copy(data as Entity), ...options.excludeFields);
+      }
 
+
+        em.entityFactory.mergeData(meta, entity, data, { initialized: true });
         return entity;
       }
 
