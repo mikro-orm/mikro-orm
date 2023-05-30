@@ -64,6 +64,25 @@ describe('native enums in postgres', () => {
 
   afterAll(() => orm.close());
 
+  test('generate schema from metadata [postgres]', async () => {
+    orm.getMetadata().reset('NewTable');
+    orm.em.getConnection().execute('drop schema if exists different_schema cascade');
+    const dump = await orm.schema.getCreateSchemaSQL();
+    expect(dump).toMatchSnapshot('postgres-schema-dump');
+
+    const dropDump = await orm.schema.getDropSchemaSQL();
+    expect(dropDump).toMatchSnapshot('postgres-drop-schema-dump');
+    await orm.schema.execute(dropDump, { wrap: true });
+
+    const createDump = await orm.schema.getCreateSchemaSQL();
+    expect(createDump).toMatchSnapshot('postgres-create-schema-dump');
+    await orm.schema.execute(createDump, { wrap: true });
+
+    const updateDump = await orm.schema.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('postgres-update-schema-dump');
+    await orm.schema.execute(updateDump, { wrap: true });
+  });
+
   test('enum diffing', async () => {
     orm.em.getConnection().execute('drop schema if exists different_schema cascade');
     const newTableMeta = new EntitySchema({
@@ -121,25 +140,6 @@ describe('native enums in postgres', () => {
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-4');
     await orm.schema.execute(diff);
-  });
-
-  test('generate schema from metadata [postgres]', async () => {
-    orm.getMetadata().reset('NewTable');
-    orm.em.getConnection().execute('drop schema if exists different_schema cascade');
-    const dump = await orm.schema.getCreateSchemaSQL();
-    expect(dump).toMatchSnapshot('postgres-schema-dump');
-
-    const dropDump = await orm.schema.getDropSchemaSQL();
-    expect(dropDump).toMatchSnapshot('postgres-drop-schema-dump');
-    await orm.schema.execute(dropDump, { wrap: true });
-
-    const createDump = await orm.schema.getCreateSchemaSQL();
-    expect(createDump).toMatchSnapshot('postgres-create-schema-dump');
-    await orm.schema.execute(createDump, { wrap: true });
-
-    const updateDump = await orm.schema.getUpdateSchemaSQL();
-    expect(updateDump).toMatchSnapshot('postgres-update-schema-dump');
-    await orm.schema.execute(updateDump, { wrap: true });
   });
 
 });
