@@ -17,6 +17,10 @@ export class RawQueryFragment {
     this.#key = `[raw]: ${this.sql}${this.params ? ` (#${RawQueryFragment.#index++})` : ''}`;
   }
 
+  as(alias: string): RawQueryFragment {
+    return new RawQueryFragment(`${this.sql} as ${alias}`, this.params);
+  }
+
   valueOf(): string {
     throw new Error(`Trying to modify raw SQL fragment: '${this.sql}'`);
   }
@@ -124,6 +128,10 @@ export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityK
     sql = sql(ALIAS_REPLACEMENT);
   }
 
+  if (sql === '??' && Array.isArray(params)) {
+    return new RawQueryFragment(sql, params) as R;
+  }
+
   if (Array.isArray(sql)) {
     // for composite FK we return just a simple string
     return Utils.getPrimaryKeyHash(sql) as R;
@@ -164,3 +172,5 @@ export function sql(sql: readonly string[], ...values: unknown[]) {
     return valueExists ? text + '?' : text;
   }, ''), values);
 }
+
+sql.ref = <T extends object>(...keys: string[]) => raw<T, RawQueryFragment>('??', [keys.join('.')]);

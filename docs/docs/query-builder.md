@@ -198,13 +198,13 @@ There are multiple ways to construct complex query conditions. You can either wr
 
 ### Using custom SQL fragments
 
-It is possible to use any SQL fragment in your `WHERE` query or `ORDER BY` clause:
+Any SQL fragment in your `WHERE` query or `ORDER BY` clause need to be wrapped with `raw()` or `sql`:
 
 ```ts
 const users = em.createQueryBuilder(User)
   .select('*')
-  .where({ 'lower(email)': 'foo@bar.baz' })
-  .orderBy({ [`(point(loc_latitude, loc_longitude) <@> point(0, 0))`]: 'ASC' })
+  .where({ [sql`lower(email)`]: 'foo@bar.baz' }) // sql tagged template function
+  .orderBy({ [raw(`(point(loc_latitude, loc_longitude) <@> point(0, 0))`)]: 'ASC' }) // raw helper
   .getResultList();
 ```
 
@@ -216,6 +216,8 @@ from `user` as `e0`
 where lower(email) = 'foo@bar.baz'
 order by (point(loc_latitude, loc_longitude) <@> point(0, 0)) asc
 ```
+
+Read more about this in [Using raw SQL query fragments](./raw-queries.md) section.
 
 ### Custom SQL in where
 

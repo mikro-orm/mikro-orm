@@ -41,6 +41,7 @@ import {
   type QueryOrderMap,
   type QueryResult,
   raw,
+  sql,
   ReferenceKind,
   type RequiredEntityData,
   type Transaction,
@@ -881,20 +882,21 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
    * @internal
    */
   mapPropToFieldNames<T extends object>(qb: QueryBuilder<T>, prop: EntityProperty<T>, tableAlias?: string): Field<T>[] {
-    const aliased = qb.ref(tableAlias ? `${tableAlias}__${prop.fieldNames[0]}` : prop.fieldNames[0]).toString();
+    const knex = this.connection.getKnex();
+    const aliased = knex.ref(tableAlias ? `${tableAlias}__${prop.fieldNames[0]}` : prop.fieldNames[0]).toString();
 
     if (prop.customType?.convertToJSValueSQL && tableAlias) {
-      const prefixed = qb.ref(prop.fieldNames[0]).withSchema(tableAlias).toString();
+      const prefixed = knex.ref(prop.fieldNames[0]).withSchema(tableAlias).toString();
       return [raw(`${prop.customType.convertToJSValueSQL(prefixed, this.platform)} as ${aliased}`)];
     }
 
     if (prop.formula) {
-      const alias = qb.ref(tableAlias ?? qb.alias).toString();
+      const alias = knex.ref(tableAlias ?? qb.alias).toString();
       return [raw(`${prop.formula!(alias)} as ${aliased}`)];
     }
 
     if (tableAlias) {
-      return prop.fieldNames.map(fieldName => qb.ref(fieldName).withSchema(tableAlias).as(`${tableAlias}__${fieldName}`));
+      return prop.fieldNames.map(fieldName => knex.ref(fieldName).withSchema(tableAlias).as(`${tableAlias}__${fieldName}`));
     }
 
     return prop.fieldNames;
@@ -1142,8 +1144,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       meta.props
         .filter(prop => prop.formula && !lazyProps.includes(prop))
         .forEach(prop => {
-          const alias = qb.ref(qb.alias).toString();
-          const aliased = qb.ref(prop.fieldNames[0]).toString();
+          const alias = this.connection.getKnex().ref(qb.alias).toString();
+          const aliased = this.connection.getKnex().ref(prop.fieldNames[0]).toString();
           ret.push(raw(`${prop.formula!(alias)} as ${aliased}`));
         });
 

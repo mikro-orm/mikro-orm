@@ -45,5 +45,17 @@ await em.find(User, { time: sql`now()` });
 await em.find(User, { [sql`lower(name)`]: name.toLowerCase() });
 
 // value can be empty array
-await em.find(User, { [sql`(select 1 = 1)`]: [] });
+await em.find(User, { [sql`(select ${1} = ${1})`]: [] });
 ```
+
+### `sql.ref()`
+
+When you want to refer to a column, you can use the `sql.ref()` function:
+
+```ts
+await em.find(User, { foo: sql`bar` });
+```
+
+### Aliasing
+
+To select a raw fragment, we need to alias it. For that, we can use ```sql`(select 1 + 1)`.as('<alias>')```.
