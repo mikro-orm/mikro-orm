@@ -2116,7 +2116,7 @@ __metadata:
   dependencies:
     acorn-loose: 8.3.0
     acorn-walk: 8.2.0
-    dotenv: 16.1.0
+    dotenv: 16.1.1
     fs-extra: 11.1.1
     globby: 11.1.0
     mikro-orm: ~5.7.10
@@ -5136,10 +5136,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:16.1.0":
-  version: 16.1.0
-  resolution: "dotenv@npm:16.1.0"
-  checksum: 5c193d6405663faefbacd58bc9cadc4a6af02317a0fa67dd1555cf909388f0f498f69d441eebd1e2ed4d3599d19f8e2036428154d6f84f7b43f5996179a6f500
+"dotenv@npm:16.1.1":
+  version: 16.1.1
+  resolution: "dotenv@npm:16.1.1"
+  checksum: e3786267ce7951e747edef6bf45ac60fdba8b846201f82f8811b7222e78aef9cdc51763f07696934d4feebab2ab4d01b1d61ac9301919a8f317dc66672127814
   languageName: node
   linkType: hard
 
