@@ -121,6 +121,7 @@ export class EntityFactory {
     this.hydrate(entity, meta, diff2, options);
 
     // we need to update the entity data only with keys that were not present before
+    const nullVal = this.config.get('forceUndefined') ? undefined : null;
     Object.keys(diff2).forEach(key => {
       const prop = meta.properties[key];
 
@@ -128,7 +129,7 @@ export class EntityFactory {
         diff2[key] = helper(entity[prop.name]).getPrimaryKey(options.convertCustomTypes);
       }
 
-      originalEntityData[key] = diff2[key];
+      originalEntityData[key] = diff2[key] === null ? nullVal : diff2[key];
       helper(entity).__loadedProperties.add(key);
     });
 

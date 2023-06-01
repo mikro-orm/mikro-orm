@@ -84,11 +84,12 @@ export class ObjectHydrator extends Hydrator {
       const preCond = preCondition(dataKey);
       const convertorKey = path.filter(k => !k.match(/\[idx_\d+]/)).map(k => this.safeKey(k)).join('_');
       const ret: string[] = [];
+      const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
 
       if (prop.type.toLowerCase() === 'date') {
         ret.push(
           `  if (${preCond}data${dataKey}) entity${entityKey} = new Date(data${dataKey});`,
-          `  else if (${preCond}data${dataKey} === null) entity${entityKey} = null;`,
+          `  else if (${preCond}data${dataKey} === null) entity${entityKey} = ${nullVal};`,
         );
       } else if (prop.customType) {
         context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
@@ -112,7 +113,7 @@ export class ObjectHydrator extends Hydrator {
           `  }`,
         );
       } else if (prop.type.toLowerCase() === 'boolean') {
-        ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey} === null ? null : !!data${dataKey};`);
+        ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey} === null ? ${nullVal} : !!data${dataKey};`);
       } else {
         ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey};`);
       }
@@ -123,7 +124,8 @@ export class ObjectHydrator extends Hydrator {
     const hydrateToOne = (prop: EntityProperty, dataKey: string, entityKey: string) => {
       const ret: string[] = [];
 
-      ret.push(`  if (data${dataKey} === null) {\n    entity${entityKey} = null;`);
+      const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
+      ret.push(`  if (data${dataKey} === null) {\n    entity${entityKey} = ${nullVal};`);
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
       ret.push(`    if (isPrimaryKey(data${dataKey}, true)) {`);
 
