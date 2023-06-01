@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.11](https://github.com/mikro-orm/mikro-orm/compare/v5.7.10...v5.7.11) (2023-06-01)
+
+
+### Bug Fixes
+
+* **core:** fix change tracking of optional properties with `forceUndefined` ([9303c3f](https://github.com/mikro-orm/mikro-orm/commit/9303c3f58c05b266307c774134cb0057e03d29fa)), closes [#4412](https://github.com/mikro-orm/mikro-orm/issues/4412)
+* **core:** fix populating relations in parallel via `Promise.all` ([#4415](https://github.com/mikro-orm/mikro-orm/issues/4415)) ([f4127a7](https://github.com/mikro-orm/mikro-orm/commit/f4127a7e9f28151c1043a0463c17cc0480ee3e90)), closes [#4213](https://github.com/mikro-orm/mikro-orm/issues/4213) [#4343](https://github.com/mikro-orm/mikro-orm/issues/4343)
+
+
+
+
+
 ## [5.7.10](https://github.com/mikro-orm/mikro-orm/compare/v5.7.9...v5.7.10) (2023-05-23)
 
 
