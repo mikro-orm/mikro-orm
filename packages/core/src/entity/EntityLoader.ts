@@ -50,6 +50,7 @@ export class EntityLoader {
       throw ValidationError.notDiscoveredEntity(entity, meta, 'populate');
     }
 
+    const visited = (options as Dictionary).visited ??= new Set<AnyEntity>();
     options.where ??= {} as FilterQuery<T>;
     options.orderBy ??= {};
     options.filters ??= {};
@@ -65,6 +66,8 @@ export class EntityLoader {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
+    entities = entities.filter(e => !visited.has(e));
+    entities.forEach(e => visited.add(e));
     entities.forEach(e => helper(e).__serializationContext.populate ??= populate as PopulateOptions<T>[]);
 
     for (const pop of populate) {
@@ -257,10 +260,6 @@ export class EntityLoader {
   }
 
   private async findChildren<T extends object>(entities: T[], prop: EntityProperty<T>, populate: PopulateOptions<T>, options: Required<EntityLoaderOptions<T>>): Promise<AnyEntity[]> {
-    if (!options.refresh) {
-      entities = entities.filter(e => !helper(e).__loadedRelations.has(prop.name));
-    }
-
     const children = this.getChildReferences<T>(entities, prop, options.refresh);
     const meta = this.metadata.find(prop.type)!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
@@ -289,13 +288,13 @@ export class EntityLoader {
     const fields = this.buildFields(options.fields, prop);
     const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType } = options;
 
-    entities.forEach(e => helper(e).__loadedRelations.add(prop.name));
-
     return this.em.find(prop.type, where, {
       refresh, filters, convertCustomTypes, lockMode, populateWhere,
       orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy), { [fk]: QueryOrder.ASC }] as QueryOrderMap<T>[],
       populate: populate.children as never ?? populate.all ?? [],
       strategy, fields, schema, connectionType,
+      // @ts-ignore not a public option, will be propagated to the populate call
+      visited: options.visited,
     });
   }
 
@@ -357,6 +356,8 @@ export class EntityLoader {
       ignoreLazyScalarProperties,
       populateWhere,
       connectionType,
+      // @ts-ignore not a public option, will be propagated to the populate call
+      visited: options.visited,
     });
   }
 

@@ -150,7 +150,6 @@ export interface IWrappedEntityInternal<
   __touched: boolean;
   __originalEntityData?: EntityData<T>;
   __loadedProperties: Set<string>;
-  __loadedRelations: Set<string>;
   __identifier?: EntityIdentifier;
   __managed: boolean;
   __processing: boolean;
