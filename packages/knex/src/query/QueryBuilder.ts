@@ -1253,7 +1253,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const pivotMeta = this.metadata.find(field)!;
     const owner = pivotMeta.relations[0];
     const inverse = pivotMeta.relations[1];
-    const prop = this._cond[pivotMeta.name + '.' + owner.name] || (this._orderBy as Dictionary)[pivotMeta.name + '.' + owner.name] ? inverse : owner;
+    const inCond = this._cond[pivotMeta.name + '.' + owner.name] || this._cond.$and?.some((c: Dictionary) => !!c[pivotMeta.name + '.' + owner.name]);
+    const prop = inCond || (this._orderBy as Dictionary)[pivotMeta.name + '.' + owner.name] ? inverse : owner;
     const pivotAlias = this.getNextAlias(pivotMeta.name!);
 
     this._joins[field] = this.helper.joinPivotTable(field, prop, this.mainAlias.aliasName, pivotAlias, 'leftJoin');
