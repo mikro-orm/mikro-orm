@@ -474,13 +474,13 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
   test('em.upsert(entity) with embeddable', async () => {
     const testEntity = orm.em.create(FooBarWithEmbeddable, { fooBarEmbeddable: {} });
 
-    const insertedEntity = await orm.em.upsert(FooBarWithEmbeddable, testEntity);
+    await orm.em.upsert(testEntity);
 
-    expect(insertedEntity.id).toBeDefined();
+    expect(testEntity.id).toBeDefined();
 
     const [insertedEntity2] = await orm.em.upsertMany(FooBarWithEmbeddable, [{ id: testEntity.id, fooBarEmbeddable: {} }]);
 
-    expect(insertedEntity2).toBe(insertedEntity);
+    expect(insertedEntity2).toBe(testEntity);
   });
 
 });
