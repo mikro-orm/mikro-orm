@@ -1,6 +1,6 @@
 import {
   MikroORM, Entity, PrimaryKey, ManyToOne, Property, SimpleLogger,
-  Unique, Ref, ref, EventSubscriber, EventArgs, OneToMany, Collection,
+  Unique, Ref, ref, EventSubscriber, EventArgs, OneToMany, Collection, Embeddable, Embedded,
 } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 
@@ -74,6 +74,27 @@ export class FooBar {
 
 }
 
+@Entity()
+export class FooBarWithEmbeddable {
+
+  static id = 1;
+
+  @PrimaryKey({ name: '_id' })
+  id: number = FooBar.id++;
+
+  @Embedded(() => FooBarEmbeddable)
+  fooBarEmbeddable = new FooBarEmbeddable();
+
+}
+
+@Embeddable()
+export class FooBarEmbeddable {
+
+  @Property({ nullable: true })
+  name?: string;
+
+}
+
 class Subscriber implements EventSubscriber {
 
   static log: any[] = [];
@@ -106,7 +127,7 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Author, Book, FooBar],
+      entities: [Author, Book, FooBar, FooBarWithEmbeddable],
       type,
       loggerFactory: options => new SimpleLogger(options),
       subscribers: [new Subscriber()],
@@ -447,6 +468,19 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     expect(fb3).toBe(fooBar3);
 
     await assertFooBars([fooBar1, fooBar2, fooBar3], mock);
+  });
+
+
+  test('em.upsert(entity) with embeddable', async () => {
+    const testEntity = orm.em.create(FooBarWithEmbeddable, { fooBarEmbeddable: {} });
+
+    await orm.em.upsert(testEntity);
+
+    expect(testEntity.id).toBeDefined();
+
+    const [insertedEntity2] = await orm.em.upsertMany(FooBarWithEmbeddable, [{ id: testEntity.id, fooBarEmbeddable: {} }]);
+
+    expect(insertedEntity2).toBe(testEntity);
   });
 
 });
