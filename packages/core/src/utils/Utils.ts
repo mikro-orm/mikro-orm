@@ -1215,101 +1215,135 @@ export class Utils {
     return typeof value === 'object' && !!value && '__raw' in value;
   }
 
+  /**
+   * Groups identified references by entity and returns a Map with the
+   * class name as the index and the corresponging primary keys as the value.
+   */
   static groupPrimaryKeysByEntity(
     refs: readonly Ref<any>[],
   ): Map<string, Set<Primary<any>>> {
     const map = new Map<string, Set<Primary<any>>>();
     for (const ref of refs) {
       const className = helper(ref).__meta.className;
-      let primaryKeys = map.get(className);
-      if (primaryKeys == null) {
-        primaryKeys = new Set();
-        map.set(className, primaryKeys);
+      let primaryKeysSet = map.get(className);
+      if (primaryKeysSet == null) {
+        primaryKeysSet = new Set();
+        map.set(className, primaryKeysSet);
       }
-      primaryKeys.add(helper(ref).getPrimaryKey() as Primary<any>);
+      primaryKeysSet.add(helper(ref).getPrimaryKey() as Primary<any>);
     }
     return map;
   }
 
+  /**
+   * Returns the reference dataloader batchLoadFn, which aggregates references by entity,
+   * makes one query per entity and maps each input reference to the corresponging result.
+   */
   static getRefBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<Ref<any>, any> {
     return async (refs: readonly Ref<any>[]): Promise<ArrayLike<any | Error>> => {
-      const groupedIds = Utils.groupPrimaryKeysByEntity(refs);
-      const promises = Array.from(groupedIds).map(
-        ([entityName, ids]) =>
-          em.find(entityName, Array.from(ids)),
+      const groupedIdsMap = Utils.groupPrimaryKeysByEntity(refs);
+      const promises = Array.from(groupedIdsMap).map(
+        ([entityName, idsSet]) =>
+          em.find(entityName, Array.from(idsSet)),
       );
       await Promise.all(promises);
       /* Instead of assigning each find result to the original reference we use a shortcut
         which takes advantage of the already existing Mikro-ORM caching mechanism:
-        when it calls ref.load it will automatically retrieve the entry the entity
+        when it calls ref.load it will automatically retrieve the entity
         from the cache (it will hit the cache because of the previous find query).
-        This trick won't be possible for collections where we have to map the results. */
+        This trick won't be possible for collections where we will be forced to map the results. */
       return await Promise.all(refs.map(async ref => await ref.load({ dataloader: false })));
     };
   }
 
+  /**
+   * Groups collections by entity and returns a Map whose keys are the entity names and whose values are filter Maps
+   * which we can use to narrow down the find query to return just the items of the collections that have been dataloaded.
+   * The entries of the filter Map will be used as the values of an $or operator so we end up with a query per entity.
+   */
   static groupInversedOrMappedKeysByEntity(
     collections: readonly Collection<any>[],
   ): Map<string, Map<string, Set<Primary<any>>>> {
     const entitiesMap = new Map<string, Map<string, Set<Primary<any>>>>();
     for (const col of collections) {
-      const className = col.property.type;
-      let propMap = entitiesMap.get(className);
-      if (propMap == null) {
-        propMap = new Map();
-        entitiesMap.set(className, propMap);
+      /*
+      We first get the entity name of the Collection and we use it as the key of the first Map.
+      With that we know that we have to look for entities of this type in order to fulfill the collection.
+      The value is another Map which we can use to filter the find query to get results pertaining to the collections that have been dataloaded:
+      its keys are the props we are going to filter to and its values are the corresponding PKs.
+      */
+      const entityName = col.property.type; // The Entity Name we will search for
+      let filterMap = entitiesMap.get(entityName); // We are going to use this map to filter the entities pertaining to the collections that have been dataloaded.
+      if (filterMap == null) {
+        filterMap = new Map();
+        entitiesMap.set(entityName, filterMap);
       }
-      // Many to Many vs One to Many
-      const inversedProp: string | undefined = col.property.inversedBy ?? col.property.mappedBy;
+      // The Collection dataloader relies on the inverse side of the relationship (inversedBy/mappedBy), which is going to be
+      // the key of the filter Map and it's the prop that we use to filter the results pertaining to the Collection.
+      const inversedProp: string | undefined = col.property.inversedBy ?? col.property.mappedBy; // Many to Many vs One to Many
       if (inversedProp == null) {
         throw new Error(
           'Cannot find inversedBy or mappedBy prop: did you forget to set the inverse side of a many-to-many relationship?',
         );
       }
-      let primaryKeys = propMap.get(inversedProp);
+      let primaryKeys = filterMap.get(inversedProp);
       if (primaryKeys == null) {
         primaryKeys = new Set();
-        propMap.set(inversedProp, primaryKeys);
+        filterMap.set(inversedProp, primaryKeys);
       }
+      // This is the PK that in conjunction with the filter Map key (the prop) will lead to this specific Collection
       primaryKeys.add(helper(col.owner).getPrimaryKey());
     }
     return entitiesMap;
   }
 
+  /**
+   * Returns the collection dataloader batchLoadFn, which aggregates collections by entity,
+   * makes one query per entity and maps each input collection to the corresponging result.
+   */
   static getColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<Collection<any>, any> {
     return async (collections: readonly Collection<any>[]) => {
       const entitiesMap = Utils.groupInversedOrMappedKeysByEntity(collections);
       const promises: Promise<any[]>[] = Array.from(entitiesMap.entries()).map(
-        async ([entityName, propMap]) =>
+        async ([entityName, filterMap]) =>
           await em.find(
             entityName,
             {
-              $or: Array.from(propMap.entries()).map(([prop, pks]) => ({ [prop]: Array.from(pks) })),
+              // The entries of the filter Map will be used as the values of the $or operator
+              $or: Array.from(filterMap.entries()).map(([prop, pks]) => ({ [prop]: Array.from(pks) })),
             },
             {
-              // We need to populate collections in order to later retrieve the PKs from its items
-              populate: Array.from(propMap.keys()).filter(
+              // We need to populate the inverse side of the relationship in order to be able to later retrieve the PK(s) from its item(s)
+              populate: Array.from(filterMap.keys()).filter(
+                // We need to do so only if the inverse side is a collection, because we can already retrieve the PK from a reference without having to load it
                 prop => em.getMetadata().get(entityName).properties[prop]?.ref !== true,
               ) as any,
             },
           ),
       );
       const results = (await Promise.all(promises)).flat();
+      // We need to filter the results in order to map each input collection
+      // to a subset of each query matching the collection items.
       return collections.map(collection =>
         results.filter(result => {
           // Entity matches
           if (helper(result).__meta.className === collection.property.type) {
+            // This is the inverse side of the relationship where the filtering will be done in order to match the target collection
             // Either inversedBy or mappedBy exist because we already checked in groupInversedOrMappedKeysByEntity
             const refOrCol = result[(collection.property.inversedBy ?? collection.property.mappedBy)] as
               | Ref<any>
               | Collection<any>;
             if (refOrCol instanceof Collection) {
+              // The inverse side is a Collcetion
+              // We keep the result if any of PKs of the inverse side matches the PK of the collection owner
               for (const item of refOrCol.getItems()) {
                 if (helper(item).getPrimaryKey() === helper(collection.owner).getPrimaryKey()) {
                   return true;
                 }
               }
             } else {
+              // The inverse side is a Reference
+              // We keep the result if the PK of the inverse side matches the PK of the collection owner
               return helper(refOrCol).getPrimaryKey() === helper(collection.owner).getPrimaryKey();
             }
 
