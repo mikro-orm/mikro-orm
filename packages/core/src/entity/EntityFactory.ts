@@ -70,7 +70,15 @@ export class EntityFactory {
     wrapped = helper(entity);
     wrapped.__processing = true;
     wrapped.__initialized = options.initialized;
-    this.hydrate(entity, meta2, data, options);
+
+    if (meta.forceConstructor) {
+      const tmp = { ...data };
+      meta.constructorParams.forEach(prop => delete tmp[prop]);
+      this.hydrate(entity, meta2, tmp, options);
+    } else {
+      this.hydrate(entity, meta2, data, options);
+    }
+
     wrapped.__touched = false;
 
     if (exists && meta.discriminatorColumn && !(entity instanceof meta2.class)) {
@@ -205,7 +213,6 @@ export class EntityFactory {
       options.initialized = options.newEntity || options.initialized;
       const params = this.extractConstructorParams<T>(meta, data, options);
       const Entity = meta.class;
-      meta.constructorParams.forEach(prop => delete data[prop]);
 
       // creates new instance via constructor as this is the new entity
       const entity = new Entity(...params);
