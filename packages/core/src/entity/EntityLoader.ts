@@ -234,13 +234,13 @@ export class EntityLoader {
 
     if (mapToPk) {
       children.forEach(child => {
-        const pk = child.__helper.__data[prop.mappedBy];
+        const pk = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
         const key = helper(this.em.getReference(prop.type, pk)).getSerializedPrimaryKey();
         map[key].push(child as T);
       });
     } else {
       children.forEach(child => {
-        const entity = child.__helper.__data[prop.mappedBy];
+        const entity = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
         const key = helper(entity).getSerializedPrimaryKey();
         map[key].push(child as T);
       });
