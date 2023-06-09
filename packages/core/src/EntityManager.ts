@@ -590,7 +590,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         where = { [unique[propIndex]]: data[unique[propIndex]] } as FilterQuery<Entity>;
       } else if (meta.uniques.length > 0) {
         for (const u of meta.uniques) {
-          if (Utils.asArray(u.properties).every(p => data![p])) {
+          if (Utils.asArray(u.properties).every(p => data![p] != null)) {
             where = Utils.asArray(u.properties).reduce((o, key) => {
               o[key] = data![key];
               return o;
@@ -726,16 +726,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       const unique = meta.props.filter(p => p.unique).map(p => p.name);
-      propIndex = unique.findIndex(p => row![p] != null);
+      propIndex = unique.findIndex(p => row[p] != null);
 
       if (where == null) {
         if (propIndex >= 0) {
           where = { [unique[propIndex]]: row[unique[propIndex]] } as FilterQuery<Entity>;
         } else if (meta.uniques.length > 0) {
           for (const u of meta.uniques) {
-            if (Utils.asArray(u.properties).every(p => row![p])) {
+            if (Utils.asArray(u.properties).every(p => row[p] != null)) {
               where = Utils.asArray(u.properties).reduce((o, key) => {
-                o[key] = row![key];
+                o[key] = row[key];
                 return o;
               }, {} as FilterQuery<Entity>);
               break;
