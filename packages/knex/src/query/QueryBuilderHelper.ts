@@ -213,6 +213,7 @@ export class QueryBuilderHelper {
 
     return {
       prop, type, cond, ownerAlias, alias,
+      inverseAlias: ownerAlias,
       table: pivotMeta.collection,
       schema: pivotMeta.schema,
       joinColumns: prop.joinColumns,
@@ -249,7 +250,7 @@ export class QueryBuilderHelper {
 
       if (join.prop.targetMeta!.discriminatorValue && !join.path?.endsWith('[pivot]')) {
         const typeProperty = join.prop.targetMeta!.root.discriminatorColumn!;
-        const alias = !join.prop.owner ? join.inverseAlias ?? join.alias : join.ownerAlias;
+        const alias = join.inverseAlias ?? join.alias;
         join.cond[`${alias}.${typeProperty}`] = join.prop.targetMeta!.discriminatorValue;
       }
 
