@@ -16,7 +16,7 @@ export class JavaScriptMetadataProvider extends MetadataProvider {
       }
     });
 
-    Utils.merge(meta, schema);
+    Utils.mergeConfig(meta, schema);
     Object.entries(meta.properties).forEach(([name, prop]) => {
       this.initProperty(prop, name);
     });
@@ -26,7 +26,7 @@ export class JavaScriptMetadataProvider extends MetadataProvider {
    * Re-hydrates missing attributes like `onUpdate` (functions are lost when caching to JSON)
    */
   loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
-    Utils.merge(meta, cache);
+    Utils.mergeConfig(meta, cache);
     const schema = this.getSchema(meta);
 
     Object.entries(schema.properties).forEach(([name, prop]) => {

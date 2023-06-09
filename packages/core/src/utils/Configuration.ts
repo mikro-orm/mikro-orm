@@ -154,7 +154,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       Utils.setDynamicImportProvider(options.dynamicImportProvider);
     }
 
-    this.options = Utils.merge({}, Configuration.DEFAULTS, options);
+    this.options = Utils.mergeConfig({}, Configuration.DEFAULTS, options);
     this.options.baseDir = Utils.absolutePath(this.options.baseDir);
 
     if (validate) {

@@ -6,7 +6,7 @@ import type { FindOptions } from '../drivers/IDatabaseDriver';
 export function Entity(options: EntityOptions<any> = {}) {
   return function <T>(target: T & Dictionary) {
     const meta = MetadataStorage.getMetadataFromDecorator(target);
-    Utils.merge(meta, options);
+    Utils.mergeConfig(meta, options);
     meta.class = target as unknown as Constructor<T>;
 
     if (!options.abstract || meta.discriminatorColumn) {

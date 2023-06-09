@@ -40,12 +40,12 @@ export class ConfigurationLoader {
 
         const esmConfigOptions = await this.isESM() ? { entityGenerator: { esmImport: true } } : {};
 
-        return new Configuration(Utils.merge({}, esmConfigOptions, tmp, options, env), validate);
+        return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env), validate);
       }
     }
 
     if (Utils.hasObjectKeys(env)) {
-      return new Configuration(Utils.merge({}, options, env), validate);
+      return new Configuration(Utils.mergeConfig({}, options, env), validate);
     }
 
     throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);

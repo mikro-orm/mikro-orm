@@ -150,7 +150,7 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   protected getKnexOptions(type: string): Knex.Config {
-    const config = Utils.merge({
+    const config = Utils.mergeConfig({
       client: type,
       connection: this.getConnectionOptions(),
       pool: this.config.get('pool'),

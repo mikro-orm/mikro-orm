@@ -31,7 +31,7 @@ export class SqliteConnection extends AbstractSqlConnection {
   }
 
   protected getKnexOptions(type: string): Knex.Config {
-    return Utils.merge({
+    return Utils.mergeConfig({
       client: type,
       connection: {
         filename: this.config.get('dbName'),

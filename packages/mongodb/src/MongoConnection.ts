@@ -123,7 +123,7 @@ export class MongoConnection extends Connection {
       ret.maxPoolSize = pool.max;
     }
 
-    return Utils.merge(ret, this.config.get('driverOptions'));
+    return Utils.mergeConfig(ret, this.config.get('driverOptions'));
   }
 
   getClientUrl(): string {

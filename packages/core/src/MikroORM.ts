@@ -35,7 +35,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     let opts = options instanceof Configuration ? options.getAll() : options;
-    opts = Utils.merge(opts, env);
+    opts = Utils.mergeConfig(opts, env);
     await ConfigurationLoader.commonJSCompat(opts as object);
 
     if ('DRIVER' in this && !opts.driver && !opts.type) {
