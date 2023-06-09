@@ -914,7 +914,9 @@ export class UnitOfWork {
     }
 
     const props = changeSets[0].meta.relations.filter(prop => {
-      return (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE;
+      return (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner)
+        || prop.reference === ReferenceType.MANY_TO_ONE
+        || (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && !this.platform.usesPivotTable());
     });
 
     for (const changeSet of changeSets) {
@@ -932,11 +934,25 @@ export class UnitOfWork {
 
   private findExtraUpdates<T extends object>(changeSet: ChangeSet<T>, props: EntityProperty<T>[]): void {
     for (const prop of props) {
-      if (!changeSet.entity[prop.name]) {
+      const ref = changeSet.entity[prop.name];
+
+      if (!ref) {
         continue;
       }
 
-      const cs = this.changeSets.get(Reference.unwrapReference(changeSet.entity[prop.name] as object));
+      if (Utils.isCollection(ref)) {
+        ref.getItems(false).some(item => {
+          const cs = this.changeSets.get(Reference.unwrapReference(item));
+          const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
+
+          if (isScheduledForInsert) {
+            this.scheduleExtraUpdate(changeSet, [prop]);
+            return true;
+          }
+        });
+      }
+
+      const cs = this.changeSets.get(Reference.unwrapReference(ref));
       const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
 
       if (isScheduledForInsert) {
