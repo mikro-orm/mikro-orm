@@ -3,6 +3,7 @@ import type { MongoDriver } from '@mikro-orm/mongodb';
 import { MongoSchemaGenerator } from '@mikro-orm/mongodb';
 import { initORMMongo } from '../../bootstrap';
 import FooBar from '../../entities/FooBar';
+import { FooBaz } from '../../entities/FooBaz';
 
 describe('SchemaGenerator', () => {
 
@@ -54,7 +55,7 @@ describe('SchemaGenerator', () => {
   test('ensureIndexes also recreates changed indexes and removes not defined ones', async () => {
     const dropIndexesSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'dropIndexes');
     const ensureIndexesSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'ensureIndexes');
-    const meta = orm.getMetadata().get('FooBaz');
+    const meta = orm.getMetadata(FooBaz);
     meta.properties.name.nullable = false;
     await orm.schema.ensureIndexes();
     meta.properties.name.nullable = true;

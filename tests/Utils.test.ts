@@ -180,7 +180,7 @@ describe('Utils', () => {
   });
 
   test('extractPK with PK id/_id', () => {
-    const meta = orm.getMetadata().get(Author.name);
+    const meta = orm.getMetadata(Author);
     expect(Utils.extractPK('abcd')).toBe('abcd');
     expect(Utils.extractPK(123)).toBe(123);
     const id = new ObjectId(1);

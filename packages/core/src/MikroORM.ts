@@ -5,7 +5,7 @@ import type { Logger } from './logging';
 import { Configuration, ConfigurationLoader, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
 import type { EntityManager } from './EntityManager';
-import type { Constructor, IEntityGenerator, IMigrator, ISeedManager } from './typings';
+import type { Constructor, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings';
 import { colors } from './logging';
 
 /**
@@ -140,9 +140,24 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Gets the MetadataStorage.
+   * Gets the `MetadataStorage`.
    */
-  getMetadata(): MetadataStorage {
+  getMetadata(): MetadataStorage;
+
+  /**
+   * Gets the `EntityMetadata` instance when provided with the `entityName` parameter.
+   */
+  getMetadata<Entity extends object>(entityName: EntityName<Entity>): EntityMetadata<Entity>;
+
+  /**
+   * Gets the `MetadataStorage` (without parameters) or `EntityMetadata` instance when provided with the `entityName` parameter.
+   */
+  getMetadata<Entity extends object>(entityName?: EntityName<Entity>): EntityMetadata<Entity> | MetadataStorage {
+    if (entityName) {
+      entityName = Utils.className(entityName);
+      return this.metadata.get(entityName);
+    }
+
     return this.metadata;
   }
 

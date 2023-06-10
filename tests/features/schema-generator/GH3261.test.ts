@@ -33,7 +33,7 @@ test('retry limit to 3 when ensureIndex() fails', async () => {
   await orm.em.persistAndFlush(
     [user1, user2],
   );
-  const userMeta = orm.em.getMetadata().get('User');
+  const userMeta = orm.em.getMetadata(User);
   userMeta.uniques = [{
     properties: 'email',
   }];

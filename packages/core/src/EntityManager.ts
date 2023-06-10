@@ -1506,9 +1506,24 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Gets the MetadataStorage.
+   * Gets the `MetadataStorage`.
    */
-  getMetadata(): MetadataStorage {
+  getMetadata(): MetadataStorage;
+
+  /**
+   * Gets the `EntityMetadata` instance when provided with the `entityName` parameter.
+   */
+  getMetadata<Entity extends object>(entityName: EntityName<Entity>): EntityMetadata<Entity>;
+
+  /**
+   * Gets the `MetadataStorage` (without parameters) or `EntityMetadata` instance when provided with the `entityName` parameter.
+   */
+  getMetadata<Entity extends object>(entityName?: EntityName<Entity>): EntityMetadata<Entity> | MetadataStorage {
+    if (entityName) {
+      entityName = Utils.className(entityName);
+      return this.metadata.get(entityName);
+    }
+
     return this.metadata;
   }
 
