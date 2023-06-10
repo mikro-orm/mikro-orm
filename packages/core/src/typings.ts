@@ -58,7 +58,7 @@ export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
 export type IPrimaryKeyValue = number | string | bigint | Date | { toHexString(): string };
 export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
-export type Scalar = boolean | number | string | bigint | symbol | Date | RegExp | Buffer | { toHexString(): string };
+export type Scalar = boolean | number | string | bigint | symbol | Date | RegExp | Uint8Array | { toHexString(): string };
 
 export type ExpandScalar<T> = null | (T extends string
   ? T | RegExp

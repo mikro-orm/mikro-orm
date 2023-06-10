@@ -1715,6 +1715,7 @@ describe('EntityManagerPostgre', () => {
 
     const bar = FooBar2.create('b1 "b" \'1\'');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
+    bar.blob2 = new Uint8Array([1, 2, 3, 4, 5]);
     bar.array = [];
     bar.objectProperty = { foo: `bar 'lol' baz "foo"`, bar: 3 };
     await orm.em.persistAndFlush(bar);
@@ -1723,6 +1724,8 @@ describe('EntityManagerPostgre', () => {
     const b1 = await orm.em.findOneOrFail(FooBar2, bar.id);
     expect(b1.blob).toEqual(Buffer.from([1, 2, 3, 4, 5]));
     expect(b1.blob).toBeInstanceOf(Buffer);
+    expect(b1.blob2).toEqual(new Uint8Array([1, 2, 3, 4, 5]));
+    expect(b1.blob2).toBeInstanceOf(Uint8Array);
     expect(b1.array).toEqual([]);
     expect(b1.array).toBeInstanceOf(Array);
     expect(b1.objectProperty).toEqual({ foo: `bar 'lol' baz "foo"`, bar: 3 });

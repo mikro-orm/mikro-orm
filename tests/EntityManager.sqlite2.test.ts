@@ -1033,6 +1033,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
 
     const bar = orm.em.create(FooBar4, { name: 'b1 \'the bad\' lol' });
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
+    bar.blob2 = new Uint8Array([1, 2, 3, 4, 5]);
     bar.array = [];
     bar.object = { foo: 'bar "lol" \'wut\' escaped', bar: 3 };
     await orm.em.persistAndFlush(bar);
@@ -1041,6 +1042,8 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     const b1 = await orm.em.findOneOrFail(FooBar4, bar.id);
     expect(b1.blob).toEqual(Buffer.from([1, 2, 3, 4, 5]));
     expect(b1.blob).toBeInstanceOf(Buffer);
+    expect(b1.blob2).toEqual(new Uint8Array([1, 2, 3, 4, 5]));
+    expect(b1.blob2).toBeInstanceOf(Uint8Array);
     expect(b1.array).toEqual([]);
     expect(b1.array).toBeInstanceOf(Array);
     expect(b1.object).toEqual({ foo: 'bar "lol" \'wut\' escaped', bar: 3 });

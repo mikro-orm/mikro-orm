@@ -8,7 +8,7 @@ import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import {
-  ArrayType, BigIntType, BlobType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
+  ArrayType, BigIntType, BlobType, Uint8ArrayType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
   TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType,
 } from '../types';
 import { parseJsonSafe, Utils } from '../utils/Utils';
@@ -262,6 +262,7 @@ export abstract class Platform {
       case 'boolean': return Type.getType(BooleanType);
       case 'blob':
       case 'buffer': return Type.getType(BlobType);
+      case 'uint8array': return Type.getType(Uint8ArrayType);
       case 'uuid': return Type.getType(UuidType);
       case 'date': return Type.getType(DateType);
       case 'datetime': return Type.getType(DateTimeType);
