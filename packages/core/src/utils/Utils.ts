@@ -654,7 +654,7 @@ export class Utils {
    * Checks whether given object is a scalar reference.
    */
   static isScalarReference<T = unknown>(data: any, allowReference = false): data is ScalarReference<any> & {} {
-    return typeof data === 'object' && data != null && data.__scalarReference;
+    return typeof data === 'object' && data?.__scalarReference;
   }
 
   /**

@@ -130,7 +130,7 @@ export class EntityValidator {
   }
 
   private validateCollection<T extends object>(entity: T, prop: EntityProperty): void {
-    if (helper(entity).__initialized && !entity[prop.name as keyof T]) {
+    if (prop.hydrate !== false && helper(entity).__initialized && !entity[prop.name as keyof T]) {
       throw ValidationError.fromCollectionNotInitialized(entity, prop);
     }
   }
