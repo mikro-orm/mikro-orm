@@ -13,9 +13,9 @@ describe('filters [mongo]', () => {
 
   test('global filters', async () => {
     const em = orm.em.fork();
-    em.addFilter('writtenBy', args => ({ author: args.author }), Book, false);
-    em.addFilter('tenant', args => ({ tenant: args.tenant }));
-    em.addFilter('withoutParams2', () => ({}));
+    em.addFilter('writtenBy', async args => ({ author: args.author }), Book, false);
+    em.addFilter('tenant', async args => ({ tenant: args.tenant }), [Author, Book, FooBar]);
+    em.addFilter('withoutParams2', async () => ({}));
     em.addFilter('fresh', { createdAt: { $gte: new Date('2020-01-01') } }, [Author, Book], false);
 
     const author1 = new Author('n1', 'e1');
