@@ -67,7 +67,7 @@ describe('GH issue 234', () => {
     mock.mock.calls.length = 0;
     const res2 = await orm.em.find(A, { bCollection: [1, 2, 3] }, { populate: ['bCollection'], populateWhere: PopulateHint.INFER });
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.* from `a` as `a0` left join `b_a_collection` as `b1` on `a0`.`id` = `b1`.`a_id` where `b1`.`b_id` in (?, ?, ?)');
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b1`.`b_id` as `fk__b_id`, `b1`.`a_id` as `fk__a_id` from `b` as `b0` left join `b_a_collection` as `b1` on `b0`.`id` = `b1`.`b_id` where `b0`.`id` in (?, ?, ?) and `b1`.`a_id` in (?, ?, ?) order by `b1`.`id` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b1`.`a_id` as `fk__a_id`, `b1`.`b_id` as `fk__b_id` from `b` as `b0` left join `b_a_collection` as `b1` on `b0`.`id` = `b1`.`b_id` where `b0`.`id` in (?, ?, ?) and `b1`.`a_id` in (?, ?, ?) order by `b1`.`id` asc');
     expect(res2.map(a => a.id)).toEqual([a1.id, a2.id, a3.id]);
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -81,7 +81,7 @@ describe('GH issue 234', () => {
     mock.mock.calls.length = 0;
     const res4 = await orm.em.find(A, { bCollection: [1, 2, 3] }, { populate: ['bCollection'] });
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.* from `a` as `a0` left join `b_a_collection` as `b1` on `a0`.`id` = `b1`.`a_id` where `b1`.`b_id` in (?, ?, ?)');
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b1`.`b_id` as `fk__b_id`, `b1`.`a_id` as `fk__a_id` from `b` as `b0` left join `b_a_collection` as `b1` on `b0`.`id` = `b1`.`b_id` where `b1`.`a_id` in (?, ?, ?) order by `b1`.`id` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b1`.`a_id` as `fk__a_id`, `b1`.`b_id` as `fk__b_id` from `b` as `b0` left join `b_a_collection` as `b1` on `b0`.`id` = `b1`.`b_id` where `b1`.`a_id` in (?, ?, ?) order by `b1`.`id` asc');
     expect(res4.map(a => a.id)).toEqual([a1.id, a2.id, a3.id]);
     orm.em.clear();
     mock.mock.calls.length = 0;
