@@ -1,5 +1,4 @@
-import { raw, Type } from '@mikro-orm/core';
-import type { TransformContext, RawQueryFragment } from '@mikro-orm/core';
+import { raw, Type, type TransformContext, type RawQueryFragment } from '@mikro-orm/core';
 import type { PostgreSqlPlatform } from '../PostgreSqlPlatform';
 
 // Postgres has four levels of full text weights

@@ -2,8 +2,7 @@ import { Reference, type Ref } from './Reference';
 import type { AutoPath, EntityData, EntityDTO, Loaded, LoadedReference, AddEager, EntityKey } from '../typings';
 import { EntityAssigner, type AssignOptions } from './EntityAssigner';
 import type { EntityLoaderOptions } from './EntityLoader';
-import type { SerializeOptions } from '../serialization/EntitySerializer';
-import { EntitySerializer } from '../serialization/EntitySerializer';
+import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer';
 import { helper } from './wrap';
 
 export abstract class BaseEntity {
