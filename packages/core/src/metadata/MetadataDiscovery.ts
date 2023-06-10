@@ -595,6 +595,26 @@ export class MetadataDiscovery {
   private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
     const pivotMeta = this.metadata.find(prop.pivotEntity);
 
+    // ensure inverse side exists so we can join it when populating via pivot tables
+    if (!prop.inversedBy && prop.targetMeta) {
+      const inverseName = `${meta.className}_${prop.name}__inverse`;
+      prop.inversedBy = inverseName;
+      const inverseProp = {
+        name: inverseName,
+        kind: ReferenceKind.MANY_TO_MANY,
+        type: meta.className,
+        mappedBy: prop.name,
+        pivotEntity: prop.pivotEntity,
+        pivotTable: prop.pivotTable,
+        persist: false,
+        hydrate: false,
+      } as EntityProperty;
+      this.applyNamingStrategy(prop.targetMeta, inverseProp);
+      this.initCustomType(prop.targetMeta, inverseProp);
+      this.initRelation(inverseProp);
+      prop.targetMeta!.properties[inverseName] = inverseProp;
+    }
+
     if (pivotMeta) {
       this.ensureCorrectFKOrderInPivotEntity(pivotMeta, prop);
       return pivotMeta;
