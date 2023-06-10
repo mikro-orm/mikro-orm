@@ -79,7 +79,7 @@ export class DefaultLogger implements Logger {
 
     if (context.took != null) {
       if (context.results != null) {
-        msg += colors.grey(` [took ${context.took} ms, ${context.results} result${context.results > 1 ? 's' : ''}]`);
+        msg += colors.grey(` [took ${context.took} ms, ${context.results} result${context.results === 0 || context.results > 1 ? 's' : ''}]`);
       } else {
         msg += colors.grey(` [took ${context.took} ms]`);
       }
