@@ -47,6 +47,7 @@ import {
   sql,
   ReferenceKind,
   Utils,
+  QueryOrder,
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
@@ -677,9 +678,15 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
   override async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<any> = {} as FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
+    const prop2 = prop.targetMeta!.properties[prop.mappedBy ?? prop.inversedBy];
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
     const pivotMeta = this.metadata.find(prop.pivotEntity)!;
-    const cond = { [`${prop.pivotEntity}.${pivotProp2.name}`]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) } };
+    const qb = this.createQueryBuilder<T>(prop.type, ctx, options?.connectionType).withSchema(this.getSchemaName(prop.targetMeta, options));
+    const pivotAlias = qb.getNextAlias(pivotMeta.tableName);
+    const pivotKey = pivotProp2.joinColumns.map(column => `${pivotAlias}.${column}`).join(Utils.PK_SEPARATOR);
+    const cond = {
+      [pivotKey]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) },
+    };
 
     /* istanbul ignore if */
     if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => Utils.isOperator(k, false))) {
@@ -688,13 +695,22 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       where = { ...(where as Dictionary), ...cond } as FilterQuery<T>;
     }
 
-    orderBy = this.getPivotOrderBy(prop, orderBy);
-    const qb = this.createQueryBuilder<T>(prop.type, ctx, options?.connectionType)
-      .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
-      .withSchema(this.getSchemaName(prop.targetMeta, options));
-    const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, [{ field: prop.pivotEntity }]);
+    orderBy = this.getPivotOrderBy(prop, pivotAlias, orderBy);
+    const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, []);
     const fields = this.buildFields(prop.targetMeta!, (options?.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options?.fields as unknown as Field<T>[]);
-    qb.select(fields).populate(populate).where(where).orderBy(orderBy!).setLockMode(options?.lockMode, options?.lockTableAliases);
+    const k1 = !prop.owner ? 'joinColumns' : 'inverseJoinColumns';
+    const k2 = prop.owner ? 'joinColumns' : 'inverseJoinColumns';
+    const cols = [
+      ...prop[k1].map(col => `${pivotAlias}.${col} as fk__${col}`),
+      ...prop[k2].map(col => `${pivotAlias}.${col} as fk__${col}`),
+    ];
+    fields.push(...cols as string[]);
+    qb.select(fields)
+      .join(prop2.name, pivotAlias, {}, 'pivotJoin', undefined, options?.schema)
+      .populate(populate)
+      .where(where)
+      .orderBy(orderBy!)
+      .setLockMode(options?.lockMode, options?.lockTableAliases);
 
     if (owners.length === 1 && (options?.offset != null || options?.limit != null)) {
       qb.limit(options.limit, options.offset);
@@ -732,6 +748,22 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     });
 
     return map;
+  }
+
+  private getPivotOrderBy<T>(prop: EntityProperty<T>, pivotAlias: string, orderBy?: OrderDefinition<T>): QueryOrderMap<T>[] {
+    if (!Utils.isEmpty(orderBy)) {
+      return orderBy as QueryOrderMap<T>[];
+    }
+
+    if (!Utils.isEmpty(prop.orderBy)) {
+      return Utils.asArray(prop.orderBy);
+    }
+
+    if (prop.fixedOrder) {
+      return [{ [`${pivotAlias}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>];
+    }
+
+    return [];
   }
 
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
@@ -928,9 +960,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     if (deleteDiff === true || deleteDiff.length > 0) {
-      const qb1 = this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')
-        .withSchema(this.getSchemaName(meta, options))
-        .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
+      const qb1 = this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write').withSchema(this.getSchemaName(meta, options));
       const knex = qb1.getKnex();
 
       if (Array.isArray(deleteDiff)) {
@@ -963,7 +993,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     } else {
       await Utils.runSerial(items, item => {
         return this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')
-          .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
           .withSchema(this.getSchemaName(meta, options))
           .insert(item)
           .execute('run', false);
@@ -973,7 +1002,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
   override async lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
     const meta = helper(entity).__meta;
-    const qb = this.createQueryBuilder((entity as object).constructor.name, options.ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).withSchema(options.schema ?? meta.schema);
+    const qb = this.createQueryBuilder((entity as object).constructor.name, options.ctx).withSchema(options.schema ?? meta.schema);
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select(raw('1')).where(cond!).setLockMode(options.lockMode, options.lockTableAliases);
     await this.rethrow(qb.execute());

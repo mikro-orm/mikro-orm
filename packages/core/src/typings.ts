@@ -120,7 +120,7 @@ export type FilterQuery<T> =
   | NonNullable<ExpandScalar<Primary<T>>>
   | NonNullable<EntityProps<T> & OperatorMap<T>>
   | FilterQuery<T>[];
-export type QBFilterQuery<T = any> = FilterQuery<T> | Dictionary;
+export type QBFilterQuery<T = any> = ObjectQuery<T> | Dictionary;
 
 export interface IWrappedEntity<Entity> {
   isInitialized(): boolean;
