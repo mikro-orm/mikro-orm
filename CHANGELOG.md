@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.12](https://github.com/mikro-orm/mikro-orm/compare/v5.7.11...v5.7.12) (2023-06-10)
+
+
+### Bug Fixes
+
+* **core:** allow async filter callbacks in `em.addFilter()` on type level ([308c45b](https://github.com/mikro-orm/mikro-orm/commit/308c45bcdc0ae88b263cf6f35f7ab66f91cf97df))
+* **core:** fallback to direct property access ([320c52f](https://github.com/mikro-orm/mikro-orm/commit/320c52f8066bb5471a72c70e6bb87aa9b562e17f)), closes [#4434](https://github.com/mikro-orm/mikro-orm/issues/4434) [#4216](https://github.com/mikro-orm/mikro-orm/issues/4216)
+* **core:** fix extra updates when `forceEntityConstructor` enabled ([41874eb](https://github.com/mikro-orm/mikro-orm/commit/41874eb8c8c5ec3f62894d0b79e66df2ef799b56)), closes [#4426](https://github.com/mikro-orm/mikro-orm/issues/4426)
+* **core:** fix returning clause for upsert with embeddables ([#4427](https://github.com/mikro-orm/mikro-orm/issues/4427)) ([b9682f0](https://github.com/mikro-orm/mikro-orm/commit/b9682f03b34dc028cc593f8a3ffbd672d3e9bcee))
+* **core:** respect `undefined` when assigning to object properties ([217ff8f](https://github.com/mikro-orm/mikro-orm/commit/217ff8f7321b6ed2551df5214f9f5934bb6d8896)), closes [#4428](https://github.com/mikro-orm/mikro-orm/issues/4428)
+* **core:** respect falsy values in `em.upsert` ([ef22b21](https://github.com/mikro-orm/mikro-orm/commit/ef22b21ad853c020fcd1c149d61714b40d7d390a)), closes [#4420](https://github.com/mikro-orm/mikro-orm/issues/4420)
+* **mongo:** allow saving self-references inside M:N properties in one flush ([c1b5fc4](https://github.com/mikro-orm/mikro-orm/commit/c1b5fc49de2b962e4d44b5673a8df1437f0f71ab)), closes [#4431](https://github.com/mikro-orm/mikro-orm/issues/4431)
+
+
+### Features
+
+* **core:** add `em.getMetadata(Entity)` shortcut ([e5834b4](https://github.com/mikro-orm/mikro-orm/commit/e5834b4314c190c1557aeddf31c88131ea855d89))
+* **core:** support Uint8Array ([#4419](https://github.com/mikro-orm/mikro-orm/issues/4419)) ([01a9c59](https://github.com/mikro-orm/mikro-orm/commit/01a9c5973d723827e485ce0f9a36ea03b24db676)), closes [#4418](https://github.com/mikro-orm/mikro-orm/issues/4418)
+
+
+
+
+
 ## [5.7.11](https://github.com/mikro-orm/mikro-orm/compare/v5.7.10...v5.7.11) (2023-06-01)
 
 
