@@ -36,6 +36,9 @@ export default class FooBar {
   @Property({ nullable: true })
   blob?: Buffer;
 
+  @Property({ nullable: true })
+  blob2?: Uint8Array;
+
   @Property({ type: new ArrayType(i => +i), nullable: true })
   array?: number[];
 
