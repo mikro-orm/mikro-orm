@@ -300,7 +300,7 @@ Uint8Array type can be used to store binary data in the database.
 
 ```ts
 @Property({ type: Uint8ArrayType, nullable: true })
-blob?: Uint8ArrayType;
+blob?: Uint8Array;
 ```
 
 ### JsonType
