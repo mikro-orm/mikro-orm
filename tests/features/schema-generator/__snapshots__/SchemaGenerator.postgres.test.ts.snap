@@ -10,7 +10,7 @@ create table "book_tag2" ("id" bigserial primary key, "name" varchar(50) not nul
 
 create table "foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));
 
-create table "foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "array" text[] null, "object_property" jsonb null);
+create table "foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "blob2" bytea null, "array" text[] null, "object_property" jsonb null);
 alter table "foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");
 alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");
 
@@ -156,7 +156,7 @@ create table "book_tag2" ("id" bigserial primary key, "name" varchar(50) not nul
 
 create table "foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));
 
-create table "foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "array" text[] null, "object_property" jsonb null);
+create table "foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "blob2" bytea null, "array" text[] null, "object_property" jsonb null);
 alter table "foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");
 alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");
 
@@ -258,7 +258,7 @@ create table "book_tag2" ("id" bigserial primary key, "name" varchar(50) not nul
 
 create table "foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));
 
-create table "foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "array" text[] null, "object_property" jsonb null);
+create table "foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "blob2" bytea null, "array" text[] null, "object_property" jsonb null);
 alter table "foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");
 alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");
 

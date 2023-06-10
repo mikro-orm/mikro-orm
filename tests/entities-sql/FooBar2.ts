@@ -1,4 +1,14 @@
-import { ManyToMany, Collection, Entity, Formula, JsonType, OneToOne, PrimaryKey, Property, OptionalProps } from '@mikro-orm/core';
+import {
+  ManyToMany,
+  Collection,
+  Entity,
+  Formula,
+  JsonType,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  OptionalProps,
+} from '@mikro-orm/core';
 import { BaseEntity22 } from './BaseEntity22';
 import { FooBaz2 } from './FooBaz2';
 import { Test2 } from './Test2';

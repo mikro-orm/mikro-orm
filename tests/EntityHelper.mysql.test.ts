@@ -42,6 +42,7 @@ describe('EntityHelperMySql', () => {
           version: a.version,
           array: null,
           blob: null,
+          blob2: null,
           fooBar: null,
         }, // circular reference breaks the cycle
         id: 1,
@@ -57,6 +58,7 @@ describe('EntityHelperMySql', () => {
       array: null,
       objectProperty: null,
       blob: null,
+      blob2: null,
     });
   });
 

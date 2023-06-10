@@ -320,7 +320,7 @@ describe('Joined loading strategy', () => {
     const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, { populate: ['bar'], strategy: LoadStrategy.JOINED }))!;
     expect(mock.mock.calls).toHaveLength(2);
     expect(mock.mock.calls[1][0]).toMatch('select "f0"."id", "f0"."name", "f0"."version", ' +
-      '"b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."name with space" as "b1__name with space", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random", "b1"."id" as "bar_id" ' +
+      '"b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."name with space" as "b1__name with space", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."blob2" as "b1__blob2", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random", "b1"."id" as "bar_id" ' +
       'from "foo_baz2" as "f0" ' +
       'left join "foo_bar2" as "b1" on "f0"."id" = "b1"."baz_id" ' +
       'where "f0"."id" = $1');
@@ -334,7 +334,7 @@ describe('Joined loading strategy', () => {
     const b2 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, { populate: ['bar'] });
     expect(mock.mock.calls).toHaveLength(3);
     expect(mock.mock.calls[2][0]).toMatch('select "f0"."id", "f0"."name", "f0"."version", ' +
-      '"b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."name with space" as "b1__name with space", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random", "b1"."id" as "bar_id" ' +
+      '"b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."name with space" as "b1__name with space", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."blob2" as "b1__blob2", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random", "b1"."id" as "bar_id" ' +
       'from "foo_baz2" as "f0" ' +
       'left join "foo_bar2" as "b1" on "f0"."id" = "b1"."baz_id" ' +
       'where "b1"."id" = $1');
@@ -348,7 +348,7 @@ describe('Joined loading strategy', () => {
     const b3 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, { populate: ['bar.lazyRandom'] });
     expect(mock.mock.calls).toHaveLength(4);
     expect(mock.mock.calls[3][0]).toMatch('select "f0"."id", "f0"."name", "f0"."version", ' +
-      '"b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."name with space" as "b1__name with space", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random", (select 456) as "b1__lazy_random", "b1"."id" as "bar_id" ' +
+      '"b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."name with space" as "b1__name with space", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."blob2" as "b1__blob2", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random", (select 456) as "b1__lazy_random", "b1"."id" as "bar_id" ' +
       'from "foo_baz2" as "f0" ' +
       'left join "foo_bar2" as "b1" on "f0"."id" = "b1"."baz_id" ' +
       'where "b1"."id" = $1');
@@ -362,7 +362,7 @@ describe('Joined loading strategy', () => {
     await orm.em.find(FooBaz2, { id: baz.id }, { populate: ['bar'], strategy: LoadStrategy.JOINED, flags: [QueryFlag.PAGINATE], limit: 3, offset: 10 });
     expect(mock.mock.calls).toHaveLength(5);
     expect(mock.mock.calls[4][0]).toMatch('select "f0"."id", "f0"."name", "f0"."version", ' +
-      '"b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."name with space" as "b1__name with space", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random", "b1"."id" as "bar_id" ' +
+      '"b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."name with space" as "b1__name with space", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."blob2" as "b1__blob2", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random", "b1"."id" as "bar_id" ' +
       'from "foo_baz2" as "f0" ' +
       'left join "foo_bar2" as "b1" on "f0"."id" = "b1"."baz_id" ' +
       'where "f0"."id" in (' +

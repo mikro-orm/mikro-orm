@@ -463,6 +463,7 @@ export class FooBar2 {
   fooBar?: IdentifiedReference<FooBar2>;
   version!: Date;
   blob?: Buffer;
+  blob2?: Buffer;
   array?: string;
   objectProperty?: any;
   fooBarInverse?: IdentifiedReference<Test2>;
@@ -494,6 +495,7 @@ export const FooBar2Schema = new EntitySchema({
     },
     version: { type: 'Date', defaultRaw: \`CURRENT_TIMESTAMP\` },
     blob: { type: 'Buffer', length: 65535, nullable: true },
+    blob2: { type: 'Buffer', length: 65535, nullable: true },
     array: { type: 'string', columnType: 'text', length: 65535, nullable: true },
     objectProperty: { type: 'any', columnType: 'json', nullable: true },
     fooBarInverse: {
@@ -1086,6 +1088,9 @@ export class FooBar2 {
   @Property({ length: 65535, nullable: true })
   blob?: Buffer;
 
+  @Property({ length: 65535, nullable: true })
+  blob2?: Buffer;
+
   @Property({ columnType: 'text', length: 65535, nullable: true })
   array?: string;
 
@@ -1488,6 +1493,9 @@ export class FooBar2 {
 
   @Property({ nullable: true })
   blob?: Buffer;
+
+  @Property({ nullable: true })
+  blob2?: Buffer;
 
   @Property({ nullable: true })
   array?: string[];
@@ -2181,6 +2189,9 @@ export class FooBar2 {
   @Property({ length: 65535, nullable: true })
   blob?: Buffer;
 
+  @Property({ length: 65535, nullable: true })
+  blob2?: Buffer;
+
   @Property({ columnType: 'text', length: 65535, nullable: true })
   array?: string;
 
@@ -2757,6 +2768,9 @@ export class FooBar2 {
   @Property({ length: 65535, nullable: true })
   blob?: Buffer;
 
+  @Property({ length: 65535, nullable: true })
+  blob2?: Buffer;
+
   @Property({ columnType: 'text', length: 65535, nullable: true })
   array?: string;
 
@@ -3282,6 +3296,9 @@ export class FooBar2 {
 
   @Property({ length: 65535, nullable: true })
   blob?: Buffer;
+
+  @Property({ length: 65535, nullable: true })
+  blob2?: Buffer;
 
   @Property({ columnType: 'text', length: 65535, nullable: true })
   array?: string;

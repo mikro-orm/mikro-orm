@@ -11,7 +11,7 @@ import { EntitySchema } from './EntitySchema';
 import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import type { Platform } from '../platforms';
-import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, t, Type } from '../types';
+import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, t, Type, Uint8ArrayType } from '../types';
 import { colors } from '../logging/colors';
 
 export class MetadataDiscovery {
@@ -1015,6 +1015,10 @@ export class MetadataDiscovery {
 
     if (!prop.customType && prop.type === 'Buffer') {
       prop.customType = new BlobType();
+    }
+
+    if (!prop.customType && prop.type === 'Uint8Array') {
+      prop.customType = new Uint8ArrayType();
     }
 
     if (!prop.customType && ['json', 'jsonb'].includes(prop.type)) {

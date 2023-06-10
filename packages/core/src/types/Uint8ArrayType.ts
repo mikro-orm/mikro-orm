@@ -5,6 +5,10 @@ import type { EntityProperty } from '../typings';
 export class Uint8ArrayType extends Type<Uint8Array | null> {
 
   convertToDatabaseValue(value: Uint8Array): Buffer {
+    if (!value) {
+      return value;
+    }
+
     return Buffer.from(value);
   }
 

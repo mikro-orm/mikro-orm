@@ -11,7 +11,7 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);');
 
-    this.addSql('create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default \\'asd\\', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);');
+    this.addSql('create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default \\'asd\\', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);');
     this.addSql('create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);');
     this.addSql('create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);');
 
@@ -49,7 +49,7 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);",
       "",
-      "create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);",
+      "create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);",
       "create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);",
       "create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);",
       "",
@@ -93,7 +93,7 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);');
 
-    this.addSql('create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default \\'asd\\', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);');
+    this.addSql('create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default \\'asd\\', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);');
     this.addSql('create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);');
     this.addSql('create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);');
 
@@ -131,7 +131,7 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);",
       "",
-      "create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);",
+      "create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);",
       "create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);",
       "create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);",
       "",
