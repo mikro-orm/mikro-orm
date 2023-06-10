@@ -168,31 +168,31 @@ export class QueryBuilderHelper {
     return data;
   }
 
-  joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
+  joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}, schema?: string): JoinOptions {
     const prop2 = prop.targetMeta!.properties[prop.mappedBy || prop.inversedBy];
     const table = this.getTableName(prop.type);
-    const schema = prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta);
     const joinColumns = prop.owner ? prop.referencedColumnNames : prop2.joinColumns;
     const inverseJoinColumns = prop.referencedColumnNames;
     const primaryKeys = prop.owner ? prop.joinColumns : prop2.referencedColumnNames;
 
     return {
-      prop, type, cond, ownerAlias, alias, table, schema,
+      prop, type, cond, ownerAlias, alias, table,
       joinColumns, inverseJoinColumns, primaryKeys,
+      schema: this.driver.getSchemaName(prop.targetMeta, { schema }),
     };
   }
 
-  joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
+  joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}, schema?: string): JoinOptions {
     return {
       prop, type, cond, ownerAlias, alias,
       table: this.getTableName(prop.type),
-      schema: prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta),
+      schema: prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta, { schema }),
       joinColumns: prop.referencedColumnNames,
       primaryKeys: prop.fieldNames,
     };
   }
 
-  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary, path: string): Dictionary<JoinOptions> {
+  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary, path: string, schema?: string): Dictionary<JoinOptions> {
     const pivotMeta = this.metadata.find(prop.pivotEntity)!;
     const ret = {
       [`${ownerAlias}.${prop.name}#${pivotAlias}`]: {
@@ -204,7 +204,7 @@ export class QueryBuilderHelper {
         primaryKeys: prop.referencedColumnNames,
         cond: {},
         table: pivotMeta.tableName,
-        schema: prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(pivotMeta),
+        schema: prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(pivotMeta, { schema }),
         path: path.endsWith('[pivot]') ? path : `${path}[pivot]`,
       } as JoinOptions,
     };
@@ -214,25 +214,10 @@ export class QueryBuilderHelper {
     }
 
     const prop2 = prop.owner ? pivotMeta.relations[1] : pivotMeta.relations[0];
-    ret[`${pivotAlias}.${prop2.name}#${alias}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type, cond);
+    ret[`${pivotAlias}.${prop2.name}#${alias}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type, cond, schema);
     ret[`${pivotAlias}.${prop2.name}#${alias}`].path = path;
 
     return ret;
-  }
-
-  joinPivotTable(field: string, prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
-    const pivotMeta = this.metadata.find(field)!;
-    const prop2 = pivotMeta.relations[0] === prop ? pivotMeta.relations[1] : pivotMeta.relations[0];
-
-    return {
-      prop, type, cond, ownerAlias, alias,
-      inverseAlias: ownerAlias,
-      table: pivotMeta.collection,
-      schema: pivotMeta.schema,
-      joinColumns: prop.joinColumns,
-      inverseJoinColumns: prop2.joinColumns,
-      primaryKeys: prop.referencedColumnNames,
-    };
   }
 
   processJoins(qb: Knex.QueryBuilder, joins: Dictionary<JoinOptions>, schema?: string): void {
