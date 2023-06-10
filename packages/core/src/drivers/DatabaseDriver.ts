@@ -28,8 +28,8 @@ import type { MetadataStorage } from '../metadata';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { Configuration, ConnectionOptions } from '../utils';
 import { Cursor, EntityComparator, Utils } from '../utils';
-import type { QueryOrderKeys, QueryOrderMap } from '../enums';
-import { QueryOrder, QueryOrderNumeric, ReferenceKind } from '../enums';
+import type { QueryOrderKeys, QueryOrder } from '../enums';
+import { QueryOrderNumeric, ReferenceKind } from '../enums';
 import type { Platform } from '../platforms';
 import type { Collection } from '../entity/Collection';
 import { EntityManager } from '../EntityManager';
@@ -311,22 +311,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         }
       }
     });
-  }
-
-  protected getPivotOrderBy<T>(prop: EntityProperty<T>, orderBy?: OrderDefinition<T>): QueryOrderMap<T>[] {
-    if (!Utils.isEmpty(orderBy)) {
-      return orderBy as QueryOrderMap<T>[];
-    }
-
-    if (!Utils.isEmpty(prop.orderBy)) {
-      return Utils.asArray(prop.orderBy);
-    }
-
-    if (prop.fixedOrder) {
-      return [{ [`${prop.pivotEntity}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>];
-    }
-
-    return [];
   }
 
   protected getPrimaryKeyFields(entityName: string): string[] {

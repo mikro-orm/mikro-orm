@@ -1554,7 +1554,7 @@ describe('EntityManagerMySql', () => {
       populateWhere: PopulateHint.INFER,
       orderBy: { name: QueryOrder.ASC },
     });
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `b1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `b1`.`book_tag2_id` as `fk__book_tag2_id`, `t2`.`id` as `test_id` from `book2` as `b0` ' +
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `b1`.`book_tag2_id` as `fk__book_tag2_id`, `b1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `t2`.`id` as `test_id` from `book2` as `b0` ' +
       'left join `book_to_tag_unordered` as `b1` on `b0`.`uuid_pk` = `b1`.`book2_uuid_pk` ' +
       'left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and `b0`.`title` != ? and `b1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?)');
