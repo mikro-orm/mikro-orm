@@ -1,4 +1,4 @@
-import { MikroORM, Collection, Utils, Ref, Entity, PrimaryKey, Property, OneToMany, ManyToMany, ManyToOne, Enum, Reference, SqliteDriver, QueryOrder } from '@mikro-orm/sqlite';
+import { MikroORM, Collection, Utils, Ref, Entity, PrimaryKey, Property, OneToMany, ManyToMany, ManyToOne, Enum, Reference, SqliteDriver, QueryOrder, Unique, PrimaryKeyProp } from '@mikro-orm/sqlite';
 import { PublisherType } from './entities';
 
 @Entity()
@@ -16,8 +16,19 @@ export class Author {
   @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
 
+  // No inverse side exists
   @ManyToMany(() => Author)
   friends = new Collection<Author>(this);
+
+  // Inverse side exists
+  @ManyToMany(() => Author, author => author.buddiesInverse)
+  buddies = new Collection<Author>(this);
+
+  @ManyToMany(() => Author)
+  buddiesInverse = new Collection<Author>(this);
+
+  @OneToMany(() => Chat, chat => chat.owner)
+  ownedChats: Collection<Chat> = new Collection<Chat>(this);
 
   constructor({ id, name, email }: { id?: number; name: string; email: string }) {
     if (id) {
@@ -79,6 +90,31 @@ export class Publisher {
 
 }
 
+@Unique({ properties: ['owner', 'recipient'] })
+@Entity()
+export class Chat {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => Author, { primary: true })
+  owner: Ref<Author>;
+
+  @ManyToOne(() => Author, { primary: true })
+  recipient: Ref<Author>;
+
+  [PrimaryKeyProp]?: ['owner', 'recipient'];
+
+  constructor({ id, owner, recipient }: { id?: number; owner: Author | Ref<Author>; recipient: Author | Ref<Author> }) {
+    if (id) {
+      this.id = id;
+    }
+    this.owner = Reference.create(owner);
+    this.recipient = Reference.create(recipient);
+  }
+
+}
+
 async function populateDatabase(em: MikroORM['em']) {
     const authors = [
       new Author({ id : 1, name: 'a', email: 'a@a.com' }),
@@ -88,11 +124,26 @@ async function populateDatabase(em: MikroORM['em']) {
       new Author({ id: 5, name: 'e', email: 'e@e.com' }),
     ];
     authors[0].friends.add([authors[1], authors[3], authors[4]]);
+    authors[0].friends.add([authors[1], authors[3], authors[4]]);
     authors[1].friends.add([authors[0]]);
     authors[2].friends.add([authors[3]]);
     authors[3].friends.add([authors[0], authors[2]]);
     authors[4].friends.add([authors[0]]);
+    authors[0].buddies.add([authors[1], authors[3], authors[4]]);
+    authors[0].buddies.add([authors[1], authors[3], authors[4]]);
+    authors[1].buddies.add([authors[0]]);
+    authors[2].buddies.add([authors[3]]);
+    authors[3].buddies.add([authors[0], authors[2]]);
+    authors[4].buddies.add([authors[0]]);
     em.persist(authors);
+
+    const chats = [
+      new Chat({ id: 1, owner: authors[0], recipient: authors[1] }),
+      new Chat({ id: 2, owner: authors[0], recipient: authors[2] }),
+      new Chat({ id: 3, owner: authors[0], recipient: authors[4] }),
+      new Chat({ id: 4, owner: authors[2], recipient: authors[0] }),
+    ];
+    em.persist(chats);
 
     const publishers = [
       new Publisher({ id: 1, name: 'AAA' }),
@@ -133,6 +184,7 @@ async function getCollections(em: MikroORM['em']): Promise<Collection<any>[]> {
   return [
     ...authors.map(author => author.books),
     ...publishers.map(publisher => publisher.books),
+    ...authors.map(author => author.buddies),
   ];
 }
 
@@ -143,7 +195,7 @@ describe('Dataloader', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       dbName: ':memory:',
-      entities: [Author, Book],
+      entities: [Author, Book, Chat],
     });
 
     await orm.schema.createSchema();
@@ -194,7 +246,7 @@ describe('Dataloader', () => {
     expect(collections).toBeDefined();
 
     const map = Utils.groupInversedOrMappedKeysByEntity(collections);
-    expect(JSON.stringify(Array.from(map.keys()))).toEqual(JSON.stringify(['Book']));
+    expect(JSON.stringify(Array.from(map.keys()))).toEqual(JSON.stringify(['Book', 'Author']));
     const mapObj = Array.from(map.entries()).reduce<Record<string, Record<string, number[]>>>((acc, [className, filterMap]) => {
       acc[className] = Array.from(filterMap.entries()).reduce<Record<string, number[]>>((acc, [prop, set]) => {
         acc[prop] = Array.from(set.values());
@@ -202,7 +254,7 @@ describe('Dataloader', () => {
       }, {});
       return acc;
     }, {});
-    expect(JSON.stringify(mapObj)).toEqual(JSON.stringify({ Book: { author: [ 1, 2, 3 ], publisher: [ 1, 2 ] } }));
+    expect(JSON.stringify(mapObj)).toEqual(JSON.stringify({ Book: { author: [ 1, 2, 3 ], publisher: [ 1, 2 ] }, Author: { buddiesInverse: [1,2,3] } }));
   });
 
   test('groupInversedOrMappedKeysByEntity should throw if the collection has no inverse side', async () => {
