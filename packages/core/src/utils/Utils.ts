@@ -1334,17 +1334,17 @@ export class Utils {
               | Ref<any>
               | Collection<any>;
             if (refOrCol instanceof Collection) {
-              // The inverse side is a Collcetion
+              // The inverse side is a Collection
               // We keep the result if any of PKs of the inverse side matches the PK of the collection owner
               for (const item of refOrCol.getItems()) {
-                if (helper(item).getPrimaryKey() === helper(collection.owner).getPrimaryKey()) {
+                if (helper(item).getSerializedPrimaryKey() === helper(collection.owner).getSerializedPrimaryKey()) {
                   return true;
                 }
               }
             } else {
               // The inverse side is a Reference
               // We keep the result if the PK of the inverse side matches the PK of the collection owner
-              return helper(refOrCol).getPrimaryKey() === helper(collection.owner).getPrimaryKey();
+              return helper(refOrCol).getSerializedPrimaryKey() === helper(collection.owner).getSerializedPrimaryKey();
             }
 
           }

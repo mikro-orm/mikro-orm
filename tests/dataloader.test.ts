@@ -94,9 +94,6 @@ export class Publisher {
 @Entity()
 export class Chat {
 
-  @PrimaryKey()
-  id!: number;
-
   @ManyToOne(() => Author, { primary: true })
   owner: Ref<Author>;
 
@@ -105,12 +102,36 @@ export class Chat {
 
   [PrimaryKeyProp]?: ['owner', 'recipient'];
 
-  constructor({ id, owner, recipient }: { id?: number; owner: Author | Ref<Author>; recipient: Author | Ref<Author> }) {
+  @OneToMany(() => Message, message => message.chat)
+  messages: Collection<Message> = new Collection<Message>(this);
+
+  constructor({ owner, recipient }: { owner: Author | Ref<Author>; recipient: Author | Ref<Author> }) {
+    this.owner = Reference.create(owner);
+    this.recipient = Reference.create(recipient);
+  }
+
+}
+
+@Entity()
+export class Message {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => Chat)
+  chat!: Ref<Chat>;
+
+  @Property()
+  content: string;
+
+  constructor({ id, chat, content }: { id?: number; chat?: Chat | Ref<Chat>; content: string }) {
     if (id) {
       this.id = id;
     }
-    this.owner = Reference.create(owner);
-    this.recipient = Reference.create(recipient);
+    if (chat) {
+      this.chat = Reference.create(chat);
+    }
+    this.content = content;
   }
 
 }
@@ -138,11 +159,14 @@ async function populateDatabase(em: MikroORM['em']) {
     em.persist(authors);
 
     const chats = [
-      new Chat({ id: 1, owner: authors[0], recipient: authors[1] }),
-      new Chat({ id: 2, owner: authors[0], recipient: authors[2] }),
-      new Chat({ id: 3, owner: authors[0], recipient: authors[4] }),
-      new Chat({ id: 4, owner: authors[2], recipient: authors[0] }),
+      new Chat({ owner: authors[0], recipient: authors[1] }),
+      new Chat({ owner: authors[0], recipient: authors[2] }),
+      new Chat({ owner: authors[0], recipient: authors[4] }),
+      new Chat({ owner: authors[2], recipient: authors[0] }),
     ];
+    chats[0].messages.add([new Message({ content: 'A1' }), new Message({ content: 'A2' })]);
+    chats[1].messages.add([new Message({ content: 'B1' }), new Message({ content: 'B2' })]);
+    chats[3].messages.add([new Message({ content: 'C1' })]);
     em.persist(chats);
 
     const publishers = [
@@ -181,10 +205,13 @@ async function getCollections(em: MikroORM['em']): Promise<Collection<any>[]> {
   for (const publisher of publishers) {
     expect(publisher.books.isInitialized()).toBe(false);
   }
+  const chats = await em.fork().find(Chat, {}, { first: 2 });
   return [
     ...authors.map(author => author.books),
     ...publishers.map(publisher => publisher.books),
     ...authors.map(author => author.buddies),
+    ...authors.map(author => author.ownedChats),
+    ...chats.map(chat => chat.messages),
   ];
 }
 
@@ -195,7 +222,7 @@ describe('Dataloader', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       dbName: ':memory:',
-      entities: [Author, Book, Chat],
+      entities: [Author, Book, Chat, Message],
     });
 
     await orm.schema.createSchema();
@@ -231,14 +258,19 @@ describe('Dataloader', () => {
     const res = await refBatchLoadFn([
       ...[1, 2].map(id => orm.em.getReference(Author, id, { wrapped: true })),
       ...[5, 3, 4].map(id => orm.em.getReference(Book, id, { wrapped: true })),
+      ...([[1, 2], [1, 3], [3, 1]] as const).map(pk => orm.em.getReference(Chat, pk, { wrapped: true })),
     ] as Ref<any>[]);
-    expect(res.length).toBe(5);
+    expect(res.length).toBe(8);
     expect(res[0] instanceof Author).toBe(true);
     expect(res[1] instanceof Author).toBe(true);
     expect(res[2] instanceof Book).toBe(true);
     expect(res[3] instanceof Book).toBe(true);
     expect(res[4] instanceof Book).toBe(true);
-    expect(JSON.stringify(Array.from(res).map((el => el.id)))).toBe(JSON.stringify([1, 2, 5, 3, 4]));
+    expect(res[5] instanceof Chat).toBe(true);
+    expect(res[6] instanceof Chat).toBe(true);
+    expect(res[7] instanceof Chat).toBe(true);
+    expect(JSON.stringify(Array.from(res).slice(0, 5).map((el => el.id)))).toBe(JSON.stringify([1, 2, 5, 3, 4]));
+    expect(JSON.stringify(Array.from(res).slice(5).map((({ owner: { id: ownerId }, recipient: { id: recipientId } }) => [ownerId, recipientId])))).toBe(JSON.stringify([[1, 2], [1, 3], [3, 1]]));
   });
 
   test('groupInversedOrMappedKeysByEntity', async () => {
@@ -246,7 +278,7 @@ describe('Dataloader', () => {
     expect(collections).toBeDefined();
 
     const map = Utils.groupInversedOrMappedKeysByEntity(collections);
-    expect(JSON.stringify(Array.from(map.keys()))).toEqual(JSON.stringify(['Book', 'Author']));
+    expect(JSON.stringify(Array.from(map.keys()))).toEqual(JSON.stringify(['Book', 'Author', 'Chat', 'Message']));
     const mapObj = Array.from(map.entries()).reduce<Record<string, Record<string, number[]>>>((acc, [className, filterMap]) => {
       acc[className] = Array.from(filterMap.entries()).reduce<Record<string, number[]>>((acc, [prop, set]) => {
         acc[prop] = Array.from(set.values());
@@ -254,7 +286,12 @@ describe('Dataloader', () => {
       }, {});
       return acc;
     }, {});
-    expect(JSON.stringify(mapObj)).toEqual(JSON.stringify({ Book: { author: [ 1, 2, 3 ], publisher: [ 1, 2 ] }, Author: { buddiesInverse: [1,2,3] } }));
+    expect(JSON.stringify(mapObj)).toEqual(JSON.stringify({
+      Book: { author: [ 1, 2, 3 ], publisher: [ 1, 2 ] },
+      Author: { buddiesInverse: [1,2,3] },
+      Chat: { owner: [1, 2, 3 ] },
+      Message: { chat: [{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }] },
+    }));
   });
 
   test('groupInversedOrMappedKeysByEntity should throw if the collection has no inverse side', async () => {
