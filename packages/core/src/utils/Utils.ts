@@ -1280,12 +1280,7 @@ export class Utils {
       }
       // The Collection dataloader relies on the inverse side of the relationship (inversedBy/mappedBy), which is going to be
       // the key of the filter Map and it's the prop that we use to filter the results pertaining to the Collection.
-      const inversedProp: string | undefined = col.property.inversedBy ?? col.property.mappedBy; // Many to Many vs One to Many
-      if (inversedProp == null) {
-        throw new Error(
-          'Cannot find inversedBy or mappedBy prop: did you forget to set the inverse side of a many-to-many relationship?',
-        );
-      }
+      const inversedProp = col.property.inversedBy ?? col.property.mappedBy; // Many to Many vs One to Many
       let primaryKeys = filterMap.get(inversedProp);
       if (primaryKeys == null) {
         primaryKeys = new Set();

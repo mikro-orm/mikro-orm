@@ -294,11 +294,6 @@ describe('Dataloader', () => {
     }));
   });
 
-  test('groupInversedOrMappedKeysByEntity should throw if the collection has no inverse side', async () => {
-    const author = await orm.em.fork().findOneOrFail(Author, 1);
-    expect(() => Utils.groupInversedOrMappedKeysByEntity([author.friends])).toThrow();
-  });
-
   test('getColBatchLoadFn', async () => {
     const refBatchLoadFn = Utils.getColBatchLoadFn(orm.em);
     const collections = await getCollections(orm.em);
