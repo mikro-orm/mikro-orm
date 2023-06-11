@@ -312,7 +312,7 @@ export class UnitOfWork {
         continue;
       }
 
-      const target = relation && relation[inverseProp as keyof typeof relation];
+      const target = relation && relation[inverseProp as keyof typeof relation] as unknown;
 
       if (relation && Utils.isCollection(target)) {
         target.removeWithoutPropagation(entity);
@@ -939,6 +939,8 @@ export class UnitOfWork {
             this.scheduleExtraUpdate(changeSet, [prop]);
             return true;
           }
+
+          return false;
         });
       }
 

@@ -113,10 +113,10 @@ export function compareBooleans(a: unknown, b: unknown): boolean {
   return a === b;
 }
 
-export function compareBuffers(a: ArrayBufferView, b: ArrayBufferView): boolean {
-  const length = a.byteLength;
+export function compareBuffers(a: Uint8Array, b: Uint8Array): boolean {
+  const length = a.length;
 
-  if (length !== b.byteLength) {
+  if (length !== b.length) {
     return false;
   }
 
@@ -143,7 +143,7 @@ export function equals(a: any, b: any): boolean {
     }
 
     if (ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
-      return compareBuffers(a, b);
+      return compareBuffers(a as Uint8Array, b as Uint8Array);
     }
 
     return compareObjects(a, b);
