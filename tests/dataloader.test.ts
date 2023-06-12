@@ -1,4 +1,4 @@
-import { MikroORM, Collection, Utils, Ref, Entity, PrimaryKey, Property, OneToMany, ManyToMany, ManyToOne, Enum, Reference, SqliteDriver, QueryOrder, Unique, PrimaryKeyProp } from '@mikro-orm/sqlite';
+import { MikroORM, Collection, Utils, Ref, Entity, PrimaryKey, Property, OneToMany, ManyToMany, ManyToOne, Enum, Reference, SqliteDriver, QueryOrder, Unique, PrimaryKeyProp, helper } from '@mikro-orm/sqlite';
 import { PublisherType } from './entities';
 
 @Entity()
@@ -195,17 +195,27 @@ async function populateDatabase(em: MikroORM['em']) {
     em.clear();
 }
 
+function getReferences(em: MikroORM['em']): Ref<any>[] {
+  const forkedEm = em.fork();
+  return [
+    ...[1, 2].map(id => forkedEm.getReference(Author, id, { wrapped: true })),
+    ...[5, 3, 4].map(id => forkedEm.getReference(Book, id, { wrapped: true })),
+    ...([[1, 2], [1, 3], [3, 1]] as const).map(pk => forkedEm.getReference(Chat, pk, { wrapped: true })),
+  ] as Ref<any>[];
+}
+
 async function getCollections(em: MikroORM['em']): Promise<Collection<any>[]> {
-  const authors = await em.fork().find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+  const forkedEm = em.fork();
+  const authors = await forkedEm.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
   for (const author of authors) {
     expect(author.books.isInitialized()).toBe(false);
     expect(author.friends.isInitialized()).toBe(false);
   }
-  const publishers = await em.fork().find(Publisher, {}, { first: 2, orderBy: { id: QueryOrder.ASC } });
+  const publishers = await forkedEm.find(Publisher, {}, { first: 2, orderBy: { id: QueryOrder.ASC } });
   for (const publisher of publishers) {
     expect(publisher.books.isInitialized()).toBe(false);
   }
-  const chats = await em.fork().find(Chat, {}, { first: 2 });
+  const chats = await forkedEm.find(Chat, {}, { first: 2 });
   return [
     ...authors.map(author => author.books),
     ...publishers.map(publisher => publisher.books),
@@ -255,11 +265,7 @@ describe('Dataloader', () => {
 
   test('getRefBatchLoadFn', async () => {
     const refBatchLoadFn = Utils.getRefBatchLoadFn(orm.em);
-    const res = await refBatchLoadFn([
-      ...[1, 2].map(id => orm.em.getReference(Author, id, { wrapped: true })),
-      ...[5, 3, 4].map(id => orm.em.getReference(Book, id, { wrapped: true })),
-      ...([[1, 2], [1, 3], [3, 1]] as const).map(pk => orm.em.getReference(Chat, pk, { wrapped: true })),
-    ] as Ref<any>[]);
+    const res = await refBatchLoadFn(getReferences(orm.em));
     expect(res.length).toBe(8);
     expect(res[0] instanceof Author).toBe(true);
     expect(res[1] instanceof Author).toBe(true);
@@ -271,6 +277,14 @@ describe('Dataloader', () => {
     expect(res[7] instanceof Chat).toBe(true);
     expect(JSON.stringify(Array.from(res).slice(0, 5).map((el => el.id)))).toBe(JSON.stringify([1, 2, 5, 3, 4]));
     expect(JSON.stringify(Array.from(res).slice(5).map((({ owner: { id: ownerId }, recipient: { id: recipientId } }) => [ownerId, recipientId])))).toBe(JSON.stringify([[1, 2], [1, 3], [3, 1]]));
+  });
+
+  test('Reference.load', async () => {
+    const refsA = getReferences(orm.em);
+    const refsB = getReferences(orm.em);
+    await Promise.all(refsA.map(ref => ref.load()));
+    await Promise.all(refsB.map(ref => ref.load({ dataloader: true })));
+    expect(JSON.stringify(refsA)).toBe(JSON.stringify(refsB));
   });
 
   test('groupInversedOrMappedKeysByEntity', async () => {
@@ -301,6 +315,19 @@ describe('Dataloader', () => {
     expect(res.length).toBe(collections.length);
     for (let i = 0; i < collections.length; i++) {
       expect(JSON.stringify(res[i].map((el: any) => el.id))).toBe(JSON.stringify((await collections[i].loadItems()).map((el: any) => el.id)));
+    }
+  });
+
+  test('Collection.load', async () => {
+    const colsA = await getCollections(orm.em);
+    const colsB = await getCollections(orm.em);
+    await Promise.all(colsA.map(ref => ref.loadItems()));
+    await Promise.all(colsB.map(ref => ref.load({ dataloader: true })));
+    expect(colsA.length).toBe(colsB.length);
+    for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
+      expect(colA.isInitialized()).toBe(true);
+      expect(colB.isInitialized()).toBe(true);
+      expect(JSON.stringify(colA.getItems().map(el => helper(el).getPrimaryKey()))).toBe(JSON.stringify(colB.getItems().map(el => helper(el).getPrimaryKey())));
     }
   });
 

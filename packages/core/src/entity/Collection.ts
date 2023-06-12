@@ -62,7 +62,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
    * Ensures the collection is loaded first (without reloading it if it already is loaded).
    * Returns the Collection instance (itself), works the same as `Reference.load()`.
    */
-  async load<TT extends T, P extends string = never>(options: InitOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
+  async load<TT extends T, P extends string = never>(options: InitOptions<TT, P> & { dataloader?: boolean } = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
     if (!this.isInitialized(true)) {
       await this.init(options);
     }
@@ -74,9 +74,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
    * Initializes the collection and returns the items
    */
   async loadItems<TT extends T, P extends string = never>(options?: InitOptions<TT, P> & { dataloader?: boolean }): Promise<Loaded<TT, P>[]> {
-    if (options?.dataloader && !this.isInitialized()) {
-      return this.getEntityManager().colLoader.load(this);
-    }
     await this.load(options);
     return super.getItems() as Loaded<TT, P>[];
   }
@@ -251,12 +248,33 @@ export class Collection<T extends object, O extends object = object> extends Arr
     this._populated = populated;
   }
 
-  async init<TT extends T, P extends string = never>(options: InitOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
+  async init<TT extends T, P extends string = never>(options: InitOptions<TT, P> & { dataloader?: boolean } = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
     if (this.dirty) {
       const items = [...this.items];
       this.dirty = false;
       await this.init(options);
       items.forEach(i => this.add(i));
+
+      return this as unknown as LoadedCollection<Loaded<TT, P>>;
+    }
+
+    if (options.dataloader) {
+      const order = [...this.items]; // copy order of references
+      const customOrder = !!options.orderBy;
+      const items: TT[] = await this.getEntityManager().colLoader.load(this);
+      if (!customOrder) {
+        this.reorderItems(items, order);
+      }
+
+      this.items.clear();
+      let i = 0;
+      items.forEach(item => {
+        this.items.add(item);
+        this[i++] = item;
+      });
+
+      this.initialized = true;
+      this.dirty = false;
 
       return this as unknown as LoadedCollection<Loaded<TT, P>>;
     }
@@ -386,6 +404,15 @@ export class Collection<T extends object, O extends object = object> extends Arr
   private checkInitialized(): void {
     if (!this.isInitialized()) {
       throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${helper(this.owner).getSerializedPrimaryKey()}] not initialized`);
+    }
+  }
+
+  /**
+   * re-orders items after searching with `$in` operator
+   */
+  private reorderItems(items: T[], order: T[]): void {
+    if (this.property.kind === ReferenceKind.MANY_TO_MANY && this.property.owner) {
+      items.sort((a, b) => order.indexOf(a) - order.indexOf(b));
     }
   }
 
