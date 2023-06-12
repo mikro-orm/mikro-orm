@@ -78,6 +78,9 @@ export class SerializationContext<T> {
   isMarkedAsPopulated(entityName: string, prop: string): boolean {
     let populate: PopulateOptions<T>[] | undefined = this.populate;
 
+    if (populate.length === 1 && populate[0].field === '*') {
+      return true;
+    }
     for (const segment of this.path) {
       if (!populate) {
         return false;
@@ -110,12 +113,16 @@ export class SerializationContext<T> {
         return true;
       }
 
+      if (fields.length === 1 && fields[0] === '*') {
+        break;
+      }
+
       fields = fields
         .filter(field => field.startsWith(`${segment[1]}.`))
         .map(field => field.substring(segment[1].length + 1));
     }
 
-    return fields.some(p => p === prop);
+    return fields.some(p => p === prop || p === '*');
   }
 
   private register(entity: AnyEntity) {
