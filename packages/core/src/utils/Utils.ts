@@ -1221,14 +1221,15 @@ export class Utils {
    */
   static groupPrimaryKeysByEntity(
     refs: readonly Ref<any>[],
-  ): Map<string, Set<Primary<any>>> {
-    const map = new Map<string, Set<Primary<any>>>();
+  ): Map<EntityMetadata<any>, Set<Primary<any>>> {
+    const map = new Map<EntityMetadata<any>, Set<Primary<any>>>();
     for (const ref of refs) {
-      const className = helper(ref).__meta.className;
-      let primaryKeysSet = map.get(className);
+      // We use EntityMetadata objects as the key instead of __meta.className because it will be more performant
+      const meta = helper(ref).__meta;
+      let primaryKeysSet = map.get(meta);
       if (primaryKeysSet == null) {
         primaryKeysSet = new Set();
-        map.set(className, primaryKeysSet);
+        map.set(meta, primaryKeysSet);
       }
       primaryKeysSet.add(helper(ref).getPrimaryKey() as Primary<any>);
     }
@@ -1243,8 +1244,8 @@ export class Utils {
     return async (refs: readonly Ref<any>[]): Promise<ArrayLike<any | Error>> => {
       const groupedIdsMap = Utils.groupPrimaryKeysByEntity(refs);
       const promises = Array.from(groupedIdsMap).map(
-        ([entityName, idsSet]) =>
-          em.find(entityName, Array.from(idsSet)),
+        ([{ className }, idsSet]) =>
+          em.find(className, Array.from(idsSet)),
       );
       await Promise.all(promises);
       /* Instead of assigning each find result to the original reference we use a shortcut
@@ -1263,8 +1264,8 @@ export class Utils {
    */
   static groupInversedOrMappedKeysByEntity(
     collections: readonly Collection<any>[],
-  ): Map<string, Map<string, Set<Primary<any>>>> {
-    const entitiesMap = new Map<string, Map<string, Set<Primary<any>>>>();
+  ): Map<EntityMetadata<any>, Map<string, Set<Primary<any>>>> {
+    const entitiesMap = new Map<EntityMetadata<any>, Map<string, Set<Primary<any>>>>();
     for (const col of collections) {
       /*
       We first get the entity name of the Collection and we use it as the key of the first Map.
@@ -1272,11 +1273,12 @@ export class Utils {
       The value is another Map which we can use to filter the find query to get results pertaining to the collections that have been dataloaded:
       its keys are the props we are going to filter to and its values are the corresponding PKs.
       */
-      const entityName = col.property.type; // The Entity Name we will search for
-      let filterMap = entitiesMap.get(entityName); // We are going to use this map to filter the entities pertaining to the collections that have been dataloaded.
+      // We use EntityMetadata objects as the key instead of __meta.className because it will be more performant
+      const entityMeta = col.property.targetMeta!; // The Entity Name (targetMeta.className) we will search for
+      let filterMap = entitiesMap.get(entityMeta); // We are going to use this map to filter the entities pertaining to the collections that have been dataloaded.
       if (filterMap == null) {
-        filterMap = new Map();
-        entitiesMap.set(entityName, filterMap);
+        filterMap = new Map<string, Set<Primary<any>>>();
+        entitiesMap.set(entityMeta, filterMap);
       }
       // The Collection dataloader relies on the inverse side of the relationship (inversedBy/mappedBy), which is going to be
       // the key of the filter Map and it's the prop that we use to filter the results pertaining to the Collection.
@@ -1300,9 +1302,9 @@ export class Utils {
     return async (collections: readonly Collection<any>[]) => {
       const entitiesMap = Utils.groupInversedOrMappedKeysByEntity(collections);
       const promises: Promise<any[]>[] = Array.from(entitiesMap.entries()).map(
-        ([entityName, filterMap]) =>
+        ([{ className }, filterMap]) =>
           em.find(
-            entityName,
+            className,
             {
               // The entries of the filter Map will be used as the values of the $or operator
               $or: Array.from(filterMap.entries()).map(([prop, pks]) => ({ [prop]: Array.from(pks) })),
@@ -1311,7 +1313,7 @@ export class Utils {
               // We need to populate the inverse side of the relationship in order to be able to later retrieve the PK(s) from its item(s)
               populate: Array.from(filterMap.keys()).filter(
                 // We need to do so only if the inverse side is a collection, because we can already retrieve the PK from a reference without having to load it
-                prop => em.getMetadata().get(entityName).properties[prop]?.ref !== true,
+                prop => em.getMetadata().get(className).properties[prop]?.ref !== true,
               ) as any,
             },
           ),

@@ -252,10 +252,10 @@ describe('Dataloader', () => {
       orm.em.getReference(Book, 3, { wrapped: true }),
     ] as Ref<any>[]);
     expect(Array.from(map.keys()).length).toBe(2);
-    expect(map.has('Author')).toBe(true);
-    expect(map.has('Book')).toBe(true);
-    const authorIds = Array.from(map.get('Author')!.values());
-    const bookIds = Array.from(map.get('Book')!.values());
+    expect(map.has(orm.em.getMetadata().get('Author'))).toBe(true);
+    expect(map.has(orm.em.getMetadata().get('Book'))).toBe(true);
+    const authorIds = Array.from(map.get(orm.em.getMetadata().get('Author'))!.values());
+    const bookIds = Array.from(map.get(orm.em.getMetadata().get('Book'))!.values());
     expect(authorIds.length).toBe(2);
     expect(bookIds.length).toBe(1);
     expect(authorIds.includes(1)).toBe(true);
@@ -292,8 +292,8 @@ describe('Dataloader', () => {
     expect(collections).toBeDefined();
 
     const map = Utils.groupInversedOrMappedKeysByEntity(collections);
-    expect(JSON.stringify(Array.from(map.keys()))).toEqual(JSON.stringify(['Book', 'Author', 'Chat', 'Message']));
-    const mapObj = Array.from(map.entries()).reduce<Record<string, Record<string, number[]>>>((acc, [className, filterMap]) => {
+    expect(JSON.stringify(Array.from(map.keys()).map(({ className }) => className))).toEqual(JSON.stringify(['Book', 'Author', 'Chat', 'Message']));
+    const mapObj = Array.from(map.entries()).reduce<Record<string, Record<string, number[]>>>((acc, [{ className }, filterMap]) => {
       acc[className] = Array.from(filterMap.entries()).reduce<Record<string, number[]>>((acc, [prop, set]) => {
         acc[prop] = Array.from(set.values());
         return acc;
