@@ -745,6 +745,9 @@ export type AutoPath<O, P extends string, E extends string = never, D extends Pr
       : never
     : never;
 
+export type ArrayElement<ArrayType extends unknown[]> =
+  ArrayType extends (infer ElementType)[] ? ElementType : never;
+
 export type ExpandProperty<T> = T extends Reference<infer U>
   ? NonNullable<U>
   : T extends Collection<infer U, any>
