@@ -2296,7 +2296,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": ^5.7.12
     "@mikro-orm/knex": ~5.7.12
-    mysql2: 3.3.4
+    mysql2: 3.3.5
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
     "@mikro-orm/entity-generator": ^5.0.0
@@ -8764,9 +8764,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.3.4":
-  version: 3.3.4
-  resolution: "mysql2@npm:3.3.4"
+"mysql2@npm:3.3.5":
+  version: 3.3.5
+  resolution: "mysql2@npm:3.3.5"
   dependencies:
     denque: ^2.1.0
     generate-function: ^2.3.1
@@ -8776,7 +8776,7 @@ __metadata:
     named-placeholders: ^1.1.3
     seq-queue: ^0.0.5
     sqlstring: ^2.3.2
-  checksum: ad2d6ff7cd8711af45aeca5a3c26183133a15f777f110c88b92387a2030081873fc5c31879dcfda1b77e8507f04a0a879f2a005fcf86c24ff1fd1227d5f4a8c8
+  checksum: ead89234541e19eb4b5190e76d3877aa3891abb4275f7e62effb229361ab0f905fcab327832e75cee80d7096f86e4556315ced2f07fb1c9e8be09566d023c65d
   languageName: node
   linkType: hard
 
