@@ -327,7 +327,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       this.set('implicitTransactions', this.platform.usesImplicitTransactions());
     }
 
-    const url = this.getClientUrl().match(/:\/\/.+\/([^?]+)/);
+    const url = this.getClientUrl().match(/:\/\/.*\/([^?]+)/);
 
     if (url) {
       this.options.dbName = this.get('dbName', decodeURIComponent(url[1]));
