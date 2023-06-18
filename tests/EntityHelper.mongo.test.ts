@@ -277,7 +277,7 @@ describe('EntityHelperMongo', () => {
     orm.em.clear();
 
     const jon = await orm.em.findOneOrFail(Author, god, { populate: true });
-    const [o] = serialize([jon], { populate: true });
+    const o = serialize(jon, { populate: true });
     expect(o).toMatchObject({
       id: jon.id,
       createdAt: jon.createdAt,
