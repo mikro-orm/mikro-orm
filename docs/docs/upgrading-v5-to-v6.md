@@ -362,18 +362,6 @@ const dto = wrap(user).toObject();
 
 **This also works for embeddables, including nesting and object mode.**
 
-## `serialize` helper always returns array
-
-This method used to return a single object conditionally based on its inputs, but the solution broke intellisense for the `populate` option. The method signature still accepts single object or an array of objects, but always returns an array.
-
-To serialize single entity, you can use array destructing, or use `wrap(entity).serialize()` which handles a single entity only.
-
-```ts
-const dtos = serialize([user1, user, ...], { exclude: ['id', 'email'], forceObject: true });
-const [dto1] = serialize(user, { exclude: ['id', 'email'], forceObject: true });
-const dto2 = wrap(user).serialize({ exclude: ['id', 'email'], forceObject: true });
-```
-
 ## Changes in `Date` property mapping 
 
 Previously, mapping of datetime columns to JS `Date` objects was dependent on the driver, while SQLite didn't have this out of box support and required manual conversion on various places. All drivers now have disabled `Date` conversion and this is now handled explicitly, in the same way for all of them.
