@@ -242,7 +242,7 @@ export interface SerializeOptions<T, P extends string = never, E extends string 
 /**
  * Converts entity instance to POJO, converting the `Collection`s to arrays and unwrapping the `Reference` wrapper, while respecting the serialization options.
  */
-export function serialize<T extends object, P extends string = never, E extends string = never>(entity: T, options?: SerializeOptions<T, P, E>): T extends object[] ? EntityDTO<Loaded<ArrayElement<T>, P>>[] : EntityDTO<Loaded<T, P>>;
+export function serialize<T extends object, P extends string = never, E extends string = never>(entity: T, options?: SerializeOptions<T extends object[] ? ArrayElement<T> : T, P, E>): T extends object[] ? EntityDTO<Loaded<ArrayElement<T>, P>>[] : EntityDTO<Loaded<T, P>>;
 
 /**
  * Converts entity instance to POJO, converting the `Collection`s to arrays and unwrapping the `Reference` wrapper, while respecting the serialization options.
