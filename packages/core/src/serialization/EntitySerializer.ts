@@ -241,6 +241,15 @@ export interface SerializeOptions<T, P extends string = never, E extends string 
 }
 /**
  * Converts entity instance to POJO, converting the `Collection`s to arrays and unwrapping the `Reference` wrapper, while respecting the serialization options.
+ * This method accepts either a single entity or an array of entities, and returns the corresponding POJO or an array of POJO.
+ * To serialize single entity, you can also use `wrap(entity).serialize()` which handles a single entity only.
+ *
+ * ```ts
+ * const dtos = serialize([user1, user, ...], { exclude: ['id', 'email'], forceObject: true });
+ * const [dto2, dto3] = serialize([user2, user3], { exclude: ['id', 'email'], forceObject: true });
+ * const dto1 = serialize(user, { exclude: ['id', 'email'], forceObject: true });
+ * const dto2 = wrap(user).serialize({ exclude: ['id', 'email'], forceObject: true });
+ * ```
  */
 export function serialize<T extends object, P extends string = never, E extends string = never>(entity: T, options?: SerializeOptions<T extends object[] ? ArrayElement<T> : T, P, E>): T extends object[] ? EntityDTO<Loaded<ArrayElement<T>, P>>[] : EntityDTO<Loaded<T, P>>;
 
@@ -257,11 +266,9 @@ export function serialize<T extends object, P extends string = never, E extends 
  * ```
  */
 export function serialize<T extends object, P extends string = never, E extends string = never>(entities: T | T[], options?: SerializeOptions<T, P, E>): EntityDTO<Loaded<T, P>> | EntityDTO<Loaded<T, P>>[] {
-  const ret = Utils.asArray(entities).map(e => EntitySerializer.serialize(e, options));
-
   if (Array.isArray(entities)) {
-    return ret;
+    return entities.map(e => EntitySerializer.serialize(e, options));
   }
 
-  return ret[0];
+  return EntitySerializer.serialize(entities, options);
 }
