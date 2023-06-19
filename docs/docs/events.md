@@ -30,13 +30,11 @@ All hooks support async methods with one exception - `@OnInit`.
 
 - `@AfterDelete()` is fired right after the record gets deleted from database and it is unset from the identity map.
 
+> `em.upsert()` and `em.upsertMany` cannot fire the create/update hooks, as we don't know if the query is an insert or update, those methods offer their own hooks - `beforeUpsert` and `afterUpsert`.
+
 > `@OnInit` is not fired when we create the entity manually via its constructor (`new MyEntity()`)
 
 > `@OnInit` can be sometimes fired twice, once when the entity reference is created, and once after its populated. To distinguish between those we can use `wrap(this).isInitialized()`.
-
-### Upsert hooks
-
-`em.upsert()` and `em.upsertMany` cannot fire the create/update hooks, as we don't know if the query is an insert or update, those methods offer their own hooks - `beforeUpsert` and `afterUpsert`. The `beforeUpsert` event might provide a DTO instead of entity instance, based on how you call the upsert method. You can use the `EventArgs.meta` object to detect what kind of entity it belongs to. `afterUpsert` event will always receive already managed entity instance.
 
 ## Limitations of lifecycle hooks
 
@@ -89,7 +87,7 @@ Additionally, future versions of MikroORM will be dropping support for the`@Subs
 Another example, where we register to all the events and all entities:
 
 ```ts
-import { EventArgs, EventSubscriber } from '@mikro-orm/core';
+import { EventArgs, TransactionEventArgs, EventSubscriber } from '@mikro-orm/core';
 
 export class EverythingSubscriber implements EventSubscriber {
 
@@ -106,9 +104,9 @@ export class EverythingSubscriber implements EventSubscriber {
   async afterDelete<T>(args: EventArgs<T>): Promise<void> { ... }
 
   // flush events
-  async beforeFlush<T>(args: EventArgs<T>): Promise<void> { ... }
-  async onFlush<T>(args: EventArgs<T>): Promise<void> { ... }
-  async afterFlush<T>(args: EventArgs<T>): Promise<void> { ... }
+  async beforeFlush<T>(args: FlushEventArgs): Promise<void> { ... }
+  async onFlush<T>(args: FlushEventArgs): Promise<void> { ... }
+  async afterFlush<T>(args: FlushEventArgs): Promise<void> { ... }
 
   // transaction events
   async beforeTransactionStart(args: TransactionEventArgs): Promise<void> { ... }
