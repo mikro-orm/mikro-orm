@@ -437,6 +437,9 @@ properties: {
   </TabItem>
 </Tabs>
 
+### Type validation of properties with default values
+Having defined the default value for our property, we also need to make sure that TypeScript understands that the property is in fact optional when its entity is created or updated, but required when the entity is read. Read about how to inform TypeScript about this [here](property-validation.md#properties-with-default-value).
+
 ## Enums
 
 To define an enum property, use `@Enum()` decorator. Enums can be either numeric or string values.
