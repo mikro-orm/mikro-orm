@@ -1,19 +1,9 @@
-import {
-  Collection,
-  Entity,
-  LoadStrategy,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  wrap,
-} from '@mikro-orm/core';
+import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 
 @Entity({ schema: '*' })
-export class Topic {
+class Topic {
 
   @PrimaryKey()
   id!: number;
@@ -27,7 +17,7 @@ export class Topic {
 }
 
 @Entity({ schema: '*' })
-export class Category {
+class Category {
 
   @PrimaryKey()
   id!: number;
@@ -53,7 +43,7 @@ describe('multiple connected schemas in postgres', () => {
     }
 
     // `*` schema will be ignored
-    await orm.schema.updateSchema(); // `*` schema will be ignored
+    await orm.schema.updateSchema();
 
     // we need to pass schema for book
     await orm.schema.updateSchema({ schema: 'n2' });
@@ -76,16 +66,6 @@ describe('multiple connected schemas in postgres', () => {
   });
 
   test('should same schema', async () => {
-    const topic = new Topic();
-    topic.name = 't1';
-    wrap(topic).setSchema('n5');
-    orm.em.persist(topic);
-
-    const category = new Category();
-    category.topic = topic;
-    topic.category.add(category);
-    await orm.em.flush();
-
     const mock = mockLogger(orm);
     mock.mockReset();
 
@@ -107,10 +87,6 @@ describe('multiple connected schemas in postgres', () => {
   });
 
   test('should default schema on not define schema', async () => {
-    const topic = new Topic();
-    topic.name = 't1';
-    orm.em.persist(topic);
-
     const mock = mockLogger(orm);
     mock.mockReset();
 
