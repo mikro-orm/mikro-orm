@@ -151,7 +151,7 @@ export class QueryBuilderHelper {
   joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
     const prop2 = prop.targetMeta!.properties[prop.mappedBy || prop.inversedBy];
     const table = this.getTableName(prop.type);
-    const schema = this.driver.getSchemaName(prop.targetMeta);
+    const schema = prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta);
     const joinColumns = prop.owner ? prop.referencedColumnNames : prop2.joinColumns;
     const inverseJoinColumns = prop.referencedColumnNames;
     const primaryKeys = prop.owner ? prop.joinColumns : prop2.referencedColumnNames;
