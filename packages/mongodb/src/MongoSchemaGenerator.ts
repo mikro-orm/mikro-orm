@@ -112,11 +112,13 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     if (res.some(r => r.status === 'rejected') && options.retry !== false) {
       const skipIndexes = [];
       const collectionsWithFailedIndexes = [];
+      const reasons = [];
 
       for (let i = 0; i < res.length; i++) {
         const r: Dictionary = res[i];
         if (r.status === 'rejected') {
           collectionsWithFailedIndexes.push(promises[i][0]);
+          reasons.push(r.reason);
         } else {
           skipIndexes.push({ collection: promises[i][0], indexName: r.value });
         }
@@ -125,7 +127,8 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       await this.dropIndexes({ skipIndexes, collectionsWithFailedIndexes });
 
       if (options.retryLimit === 0) {
-        throw new Error(`Failed to create indexes: ${collectionsWithFailedIndexes.join(', ')}`);
+        const e = new Error(`Failed to create indexes: ${collectionsWithFailedIndexes.join(', ')}`);
+        e.errors = reasons.map((e) => `${e.name}: ${e.message}`);
       }
 
       await this.ensureIndexes({
