@@ -129,6 +129,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       if (options.retryLimit === 0) {
         const e = new Error(`Failed to create indexes: ${collectionsWithFailedIndexes.join(', ')}`);
         e.errors = reasons.map((e) => `${e.name}: ${e.message}`);
+        throw e;
       }
 
       await this.ensureIndexes({
