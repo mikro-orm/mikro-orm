@@ -177,7 +177,7 @@ export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite'
     forceUndefined: true,
     logger: i => i,
     cache: { pretty: true },
-    migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
+    migrations: { path: BASE_DIR + '/../temp/migrations-2', snapshot: false },
   });
   await orm.schema.refreshDatabase();
 
