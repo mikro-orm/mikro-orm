@@ -352,7 +352,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         const keys: string[] = [];
         props.forEach(prop => {
           if (prop.fieldNames.length > 1) {
-            const param = row[prop.name] as unknown[] ?? prop.fieldNames.map(() => null);
+            const param = [...row[prop.name] as unknown[] ?? prop.fieldNames.map(() => null)];
             const key = (row[prop.name] as unknown[] ?? prop.fieldNames).map(() => '?');
             prop.fieldNames.forEach((field, idx) => {
               if (duplicates.includes(field)) {
