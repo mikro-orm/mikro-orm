@@ -65,4 +65,17 @@ describe('full text search tsvector in postgres', () => {
     expect(fullTextBooks).toHaveLength(3);
   });
 
+  test('update entity', async () => {
+    const book1 = new Book('My Life on The Wall');
+    await orm.em.persist(book1).flush();
+
+    const newTitle = 'My Life on The ? Wall, part ? ?';
+    book1.title = newTitle;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const reloadedBook = await orm.em.findOne(Book, { id: book1.id });
+    expect(reloadedBook?.title).toBe(newTitle);
+  });
+
 });
