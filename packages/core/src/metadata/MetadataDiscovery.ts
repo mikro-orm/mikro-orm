@@ -1118,7 +1118,7 @@ export class MetadataDiscovery {
   }
 
   private getMappedType(prop: EntityProperty): Type<unknown> {
-    let t = prop.columnTypes?.[0] ?? prop.type.toLowerCase();
+    let t = prop.columnTypes?.[0] ?? prop.type?.toLowerCase();
 
     if (prop.enum) {
       t = prop.items?.every(item => Utils.isString(item)) ? 'enum' : 'tinyint';
