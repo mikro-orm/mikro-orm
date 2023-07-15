@@ -27,7 +27,8 @@ export class MigrationStorage implements UmzugStorage {
   async unlogMigration(params: MigrationParams<any>): Promise<void> {
     const { tableName, schemaName } = this.getTableName();
     const withoutExt = this.getMigrationName(params.name);
-    const qb = this.knex.delete().from(tableName).withSchema(schemaName).where('name', 'in', [params.name, withoutExt]);
+    const names = [withoutExt, withoutExt + '.js', withoutExt + '.ts'];
+    const qb = this.knex.delete().from(tableName).withSchema(schemaName).where('name', 'in', [params.name, ...names]);
 
     if (this.masterTransaction) {
       qb.transacting(this.masterTransaction);

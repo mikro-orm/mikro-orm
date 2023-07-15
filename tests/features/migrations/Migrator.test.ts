@@ -256,6 +256,24 @@ describe('Migrator', () => {
     await expect(migrator.getPendingMigrations()).resolves.toEqual([]);
   });
 
+  test('unlogging migrations work even if they have extension', async () => {
+    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    const migrator = new Migrator(orm.em);
+    // @ts-ignore
+    const storage = migrator.storage;
+
+    await storage.ensureTable(); // creates the table
+    await storage.logMigration({ name: 'test.migration.ts', context: null }); // can have extension
+    await expect(storage.getExecutedMigrations()).resolves.toMatchObject([{ name: 'test.migration' }]);
+    await orm.em.execute(`update ${orm.config.get('migrations').tableName!} set name = 'test.migration.ts'`);
+    await expect(storage.executed()).resolves.toEqual(['test.migration']);
+
+    await storage.unlogMigration({ name: 'test.migration', context: null });
+    await expect(storage.executed()).resolves.toEqual([]);
+
+    await expect(migrator.getPendingMigrations()).resolves.toEqual([]);
+  });
+
   test('runner', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
