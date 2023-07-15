@@ -21,6 +21,10 @@ describe('SchemaGenerator', () => {
     await orm.schema.createSchema();
     collections = await driver.getConnection().listCollections();
     expect(collections).toContain('foo-bar');
+    expect(collections).toContain('mikro_orm_migrations');
+    await orm.schema.dropSchema({ dropMigrationsTable: true });
+    collections = await driver.getConnection().listCollections();
+    expect(collections).toHaveLength(0);
   });
 
   test('refresh collections', async () => {

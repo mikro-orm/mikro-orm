@@ -12,6 +12,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     options.ensureIndexes ??= true;
     const existing = await this.connection.listCollections();
     const metadata = this.getOrderedMetadata();
+    metadata.push({ collection: this.config.get('migrations').tableName } as any);
 
     /* istanbul ignore next */
     const promises = metadata
@@ -32,11 +33,16 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await Promise.all(promises);
   }
 
-  async dropSchema(): Promise<void> {
+  async dropSchema(options: { dropMigrationsTable?: boolean } = {}): Promise<void> {
     const db = this.connection.getDb();
     const collections = await db.listCollections().toArray();
     const existing = collections.map(c => c.name);
     const metadata = this.getOrderedMetadata();
+
+    if (options.dropMigrationsTable) {
+      metadata.push({ collection: this.config.get('migrations').tableName } as any);
+    }
+
     const promises = metadata
       .filter(meta => existing.includes(meta.collection))
       .map(meta => this.connection.dropCollection(meta.collection));
