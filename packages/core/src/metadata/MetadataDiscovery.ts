@@ -834,6 +834,7 @@ export class MetadataDiscovery {
         meta.properties[name].fieldNames = [path.join('.')]; // store path for ObjectHydrator
         meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(path.join('->'), prop.type, true); // for querying in SQL drivers
         meta.properties[name].persist = false; // only virtual as we store the whole object
+        meta.properties[name].userDefined = false; // mark this as a generated/internal property, so we can distinguish from user-defined non-persist properties
       }
 
       this.initEmbeddables(meta, meta.properties[name], visited);
