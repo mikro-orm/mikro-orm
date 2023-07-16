@@ -2,6 +2,8 @@
   "extends": "../tsconfig.json", /* omg */
   "include": ["**/*", "../packages/*/src/**/*"],
   "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "sourceMap": true
   }
 }

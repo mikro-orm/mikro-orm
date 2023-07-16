@@ -9,8 +9,6 @@
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
     "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "preserveConstEnums": true,
     "ignoreDeprecations": "5.0"
   },
