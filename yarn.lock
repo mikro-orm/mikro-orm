@@ -2261,7 +2261,7 @@ __metadata:
     "@mikro-orm/core": ^5.7.12
     "@mikro-orm/mongodb": ~5.7.12
     fs-extra: 11.1.1
-    mongodb: 5.6.0
+    mongodb: 5.7.0
     umzug: 3.2.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -2296,8 +2296,8 @@ __metadata:
   resolution: "@mikro-orm/mongodb@workspace:packages/mongodb"
   dependencies:
     "@mikro-orm/core": ^5.7.12
-    bson: ^5.3.0
-    mongodb: 5.6.0
+    bson: ^5.4.0
+    mongodb: 5.7.0
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
     "@mikro-orm/entity-generator": ^5.0.0
@@ -2391,7 +2391,7 @@ __metadata:
     "@types/webpack-env": 1.18.1
     "@typescript-eslint/eslint-plugin": 5.61.0
     "@typescript-eslint/parser": 5.61.0
-    bson: ^5.3.0
+    bson: ^5.4.0
     conditional-type-checks: 1.0.6
     eslint: 8.44.0
     fs-extra: 11.1.1
@@ -2401,7 +2401,7 @@ __metadata:
     jest: 29.6.1
     lerna: 6.6.2
     lint-staged: 13.2.3
-    mongodb: 5.6.0
+    mongodb: 5.7.0
     mongodb-memory-server: ^8.12.2
     node-gyp: ^9.3.1
     rimraf: 5.0.1
@@ -4172,10 +4172,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bson@npm:^5.3.0":
-  version: 5.3.0
-  resolution: "bson@npm:5.3.0"
-  checksum: c1e57630fea6b82ad8bc0fb83fd8f16a2620a836ab69f6b9433250cd19704c0c8995681a3bfab9f967eae30512f0c8ee921d42ace4c1781726600c4a367593cf
+"bson@npm:^5.4.0":
+  version: 5.4.0
+  resolution: "bson@npm:5.4.0"
+  checksum: 1c07e3d09f139d414bd226bf7f4e9aaa7a726e0c9718c55b53bb23ffa2805cac8b66e4fa46b424c73a35c6e292ed5f7432df5c76ea5d08052642b2ac9e0399e3
   languageName: node
   linkType: hard
 
@@ -8720,16 +8720,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:5.6.0":
-  version: 5.6.0
-  resolution: "mongodb@npm:5.6.0"
+"mongodb@npm:5.7.0":
+  version: 5.7.0
+  resolution: "mongodb@npm:5.7.0"
   dependencies:
-    bson: ^5.3.0
+    bson: ^5.4.0
     mongodb-connection-string-url: ^2.6.0
     saslprep: ^1.0.3
     socks: ^2.7.1
   peerDependencies:
     "@aws-sdk/credential-providers": ^3.201.0
+    "@mongodb-js/zstd": ^1.1.0
+    kerberos: ^2.0.1
     mongodb-client-encryption: ">=2.3.0 <3"
     snappy: ^7.2.2
   dependenciesMeta:
@@ -8738,11 +8740,15 @@ __metadata:
   peerDependenciesMeta:
     "@aws-sdk/credential-providers":
       optional: true
+    "@mongodb-js/zstd":
+      optional: true
+    kerberos:
+      optional: true
     mongodb-client-encryption:
       optional: true
     snappy:
       optional: true
-  checksum: 5b1594b24795b2a7824095a917ede2fc37aaef31e60320c833ee9b11cc2f3de9dd87d5afacea2e41eb5eb579ac9780f5bc4b0bb11d3b1be78e8bf0014528192a
+  checksum: 16357b6229abac165aecea15a6efa873ec8662a00411ecb9e49853f05a590be31aab63d404486125778eedaafe76d70e84eea682fa89b138decc247f4870d2ec
   languageName: node
   linkType: hard
 
