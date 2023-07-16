@@ -237,7 +237,7 @@ describe('EntityManagerPostgre', () => {
       }, { isolationLevel: IsolationLevel.READ_UNCOMMITTED });
     } catch { }
 
-    expect(mock.mock.calls[0][0]).toMatch('begin isolation level read uncommitted');
+    expect(mock.mock.calls[0][0]).toMatch('begin transaction isolation level read uncommitted');
     expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
     expect(mock.mock.calls[2][0]).toMatch('rollback');
   });
