@@ -2218,7 +2218,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": ^5.7.12
     fs-extra: 11.1.1
-    knex: 2.4.2
+    knex: 2.5.1
     sqlstring: 2.3.3
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -2293,7 +2293,7 @@ __metadata:
     "@mikro-orm/core": ^5.7.12
     "@mikro-orm/knex": ~5.7.12
     fs-extra: 11.1.1
-    knex: 2.4.2
+    knex: 2.5.1
     umzug: 3.2.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -4769,13 +4769,6 @@ __metadata:
   version: 10.0.0
   resolution: "commander@npm:10.0.0"
   checksum: 9f6495651f878213005ac744dd87a85fa3d9f2b8b90d1c19d0866d666bda7f735adfd7c2f10dfff345782e2f80ea258f98bb4efcef58e4e502f25f883940acfd
-  languageName: node
-  linkType: hard
-
-"commander@npm:^9.1.0":
-  version: 9.4.1
-  resolution: "commander@npm:9.4.1"
-  checksum: bfb18e325a5bdf772763c2213d5c7d9e77144d944124e988bcd8e5e65fb6d45d5d4e86b09155d0f2556c9a59c31e428720e57968bcd050b2306e910a0bf3cf13
   languageName: node
   linkType: hard
 
@@ -8217,12 +8210,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knex@npm:2.4.2":
-  version: 2.4.2
-  resolution: "knex@npm:2.4.2"
+"knex@npm:2.5.1":
+  version: 2.5.1
+  resolution: "knex@npm:2.5.1"
   dependencies:
     colorette: 2.0.19
-    commander: ^9.1.0
+    commander: ^10.0.0
     debug: 4.3.4
     escalade: ^3.1.1
     esm: ^3.2.25
@@ -8230,7 +8223,7 @@ __metadata:
     getopts: 2.3.0
     interpret: ^2.2.0
     lodash: ^4.17.21
-    pg-connection-string: 2.5.0
+    pg-connection-string: 2.6.1
     rechoir: ^0.8.0
     resolve-from: ^5.0.0
     tarn: ^3.0.2
@@ -8252,7 +8245,7 @@ __metadata:
       optional: true
   bin:
     knex: bin/cli.js
-  checksum: cfb6436c0e3df3cd1f55d3637e4f222d1acbc7b6ec3757e52c92cbf0a7da4055d40156d707ffede57dc155af75d7f5739a49d1b31d8755bc77bc0e4e2a570748
+  checksum: 4f2da7fda51a450de25274eb76034c869de0427c17831dc8472b8116e879d23aae0592c2ce4e9b2a473417867063ac6e7b29021b39b4a4d502335017a5a09278
   languageName: node
   linkType: hard
 
@@ -10371,14 +10364,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-connection-string@npm:2.5.0":
-  version: 2.5.0
-  resolution: "pg-connection-string@npm:2.5.0"
-  checksum: a6f3a068f7c9416a5b33a326811caf0dfaaee045c225b7c628b4c9b4e9a2b25bdd12a21e4c48940e1000ea223a4e608ca122d2ff3dd08c8b1db0fc9f5705133a
-  languageName: node
-  linkType: hard
-
-"pg-connection-string@npm:^2.6.1":
+"pg-connection-string@npm:2.6.1, pg-connection-string@npm:^2.6.1":
   version: 2.6.1
   resolution: "pg-connection-string@npm:2.6.1"
   checksum: 882344a47e1ecf3a91383e0809bf2ac48facea97fcec0358d6e060e1cbcb8737acde419b4c86f05da4ce4a16634ee50fff1d2bb787d73b52ccbfde697243ad8a
