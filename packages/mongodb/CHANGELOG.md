@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.13](https://github.com/mikro-orm/mikro-orm/compare/v5.7.12...v5.7.13) (2023-07-16)
+
+
+### Bug Fixes
+
+* **mongo:** drop migrations table when requested ([278ba3a](https://github.com/mikro-orm/mikro-orm/commit/278ba3a36b087fc1e8a65a1b9114a7a21c8da76c)), closes [#4513](https://github.com/mikro-orm/mikro-orm/issues/4513)
+
+
+
+
+
 ## [5.7.12](https://github.com/mikro-orm/mikro-orm/compare/v5.7.11...v5.7.12) (2023-06-10)
 
 

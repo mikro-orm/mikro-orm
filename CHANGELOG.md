@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.13](https://github.com/mikro-orm/mikro-orm/compare/v5.7.12...v5.7.13) (2023-07-16)
+
+
+### Bug Fixes
+
+* **core:** deprecate `wrappedReference` on m:1 decorator options ([d7f362e](https://github.com/mikro-orm/mikro-orm/commit/d7f362eae354437e0d2427f680420f370c6038fd))
+* **core:** do not fail when detecting mapped type for enum columns ([b94048b](https://github.com/mikro-orm/mikro-orm/commit/b94048bc2aa8cd537edd9bf34333996f2c4bef7c)), closes [#2323](https://github.com/mikro-orm/mikro-orm/issues/2323)
+* **core:** fix handling shared columns in composite foreign keys ([fbb6958](https://github.com/mikro-orm/mikro-orm/commit/fbb6958944998ca1abee331002e5aedd8bfa9c37))
+* **core:** fix multiple `?` in fulltext fields updates ([9c9915e](https://github.com/mikro-orm/mikro-orm/commit/9c9915eb54b3d6989ea05938498f6e0b84397e5f)), closes [#4484](https://github.com/mikro-orm/mikro-orm/issues/4484)
+* **core:** fix updating composite key entities via flush ([733cb80](https://github.com/mikro-orm/mikro-orm/commit/733cb80918fa83a2d028b59ee807e0a3bb9b72b7)), closes [#4533](https://github.com/mikro-orm/mikro-orm/issues/4533)
+* **core:** respect `persist: false` on relations ([a127fff](https://github.com/mikro-orm/mikro-orm/commit/a127fff66914add81a6f54fd1f8f9f5ae56366ee)), closes [#4504](https://github.com/mikro-orm/mikro-orm/issues/4504)
+* **migrations:** support reverting migrations that had extenion in the database ([72df9ad](https://github.com/mikro-orm/mikro-orm/commit/72df9ad3dfa497111fa7c949ae1a0d60e5cca6d0)), closes [#4528](https://github.com/mikro-orm/mikro-orm/issues/4528)
+* **mongo:** drop migrations table when requested ([278ba3a](https://github.com/mikro-orm/mikro-orm/commit/278ba3a36b087fc1e8a65a1b9114a7a21c8da76c)), closes [#4513](https://github.com/mikro-orm/mikro-orm/issues/4513)
+* **postgres:** fix hydration of 1:1 properties when entity has version fields ([474eb73](https://github.com/mikro-orm/mikro-orm/commit/474eb73c1551a3a9ee05170760b9f377fe10d749)), closes [#4497](https://github.com/mikro-orm/mikro-orm/issues/4497)
+* **sqlite:** allow using `clientUrl` without a `host` ([#4447](https://github.com/mikro-orm/mikro-orm/issues/4447)) ([9a01bbd](https://github.com/mikro-orm/mikro-orm/commit/9a01bbd5f535a4c31520bce3c27eb8fb2b461283))
+* **sqlite:** fix processing queries with large parameters ([48ee8c2](https://github.com/mikro-orm/mikro-orm/commit/48ee8c28ecb7664c0cd3d8540162687ec96c4bd1)), closes [#4526](https://github.com/mikro-orm/mikro-orm/issues/4526)
+* **sql:** schema not inherited in query with relations ([#4477](https://github.com/mikro-orm/mikro-orm/issues/4477)) ([b680477](https://github.com/mikro-orm/mikro-orm/commit/b680477ddda430b443c1127ab4a9c91ec4c96a5f)), closes [#4472](https://github.com/mikro-orm/mikro-orm/issues/4472)
+
+
+
+
+
 ## [5.7.12](https://github.com/mikro-orm/mikro-orm/compare/v5.7.11...v5.7.12) (2023-06-10)
 
 

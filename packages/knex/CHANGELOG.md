@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.13](https://github.com/mikro-orm/mikro-orm/compare/v5.7.12...v5.7.13) (2023-07-16)
+
+
+### Bug Fixes
+
+* **core:** fix handling shared columns in composite foreign keys ([fbb6958](https://github.com/mikro-orm/mikro-orm/commit/fbb6958944998ca1abee331002e5aedd8bfa9c37))
+* **core:** fix multiple `?` in fulltext fields updates ([9c9915e](https://github.com/mikro-orm/mikro-orm/commit/9c9915eb54b3d6989ea05938498f6e0b84397e5f)), closes [#4484](https://github.com/mikro-orm/mikro-orm/issues/4484)
+* **sql:** schema not inherited in query with relations ([#4477](https://github.com/mikro-orm/mikro-orm/issues/4477)) ([b680477](https://github.com/mikro-orm/mikro-orm/commit/b680477ddda430b443c1127ab4a9c91ec4c96a5f)), closes [#4472](https://github.com/mikro-orm/mikro-orm/issues/4472)
+
+
+
+
+
 ## [5.7.12](https://github.com/mikro-orm/mikro-orm/compare/v5.7.11...v5.7.12) (2023-06-10)
 
 

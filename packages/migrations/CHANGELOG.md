@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.13](https://github.com/mikro-orm/mikro-orm/compare/v5.7.12...v5.7.13) (2023-07-16)
+
+
+### Bug Fixes
+
+* **migrations:** support reverting migrations that had extenion in the database ([72df9ad](https://github.com/mikro-orm/mikro-orm/commit/72df9ad3dfa497111fa7c949ae1a0d60e5cca6d0)), closes [#4528](https://github.com/mikro-orm/mikro-orm/issues/4528)
+
+
+
+
+
 ## [5.7.12](https://github.com/mikro-orm/mikro-orm/compare/v5.7.11...v5.7.12) (2023-06-10)
 
 **Note:** Version bump only for package @mikro-orm/migrations

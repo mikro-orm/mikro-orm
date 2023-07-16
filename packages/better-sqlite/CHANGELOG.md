@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.13](https://github.com/mikro-orm/mikro-orm/compare/v5.7.12...v5.7.13) (2023-07-16)
+
+
+### Bug Fixes
+
+* **sqlite:** fix processing queries with large parameters ([48ee8c2](https://github.com/mikro-orm/mikro-orm/commit/48ee8c28ecb7664c0cd3d8540162687ec96c4bd1)), closes [#4526](https://github.com/mikro-orm/mikro-orm/issues/4526)
+
+
+
+
+
 ## [5.7.12](https://github.com/mikro-orm/mikro-orm/compare/v5.7.11...v5.7.12) (2023-06-10)
 
 
