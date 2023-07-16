@@ -144,7 +144,7 @@ test('4062', async () => {
     ["[query] select `a0`.`id`, `a0`.`category_id`, `a0`.`created_at` from `article` as `a0` where (`a0`.`id`, `a0`.`category_id`) in (('article2', 'category1'))"],
     ["[query] insert into `article_attribute` (`id`, `article_id`, `article_category_id`, `name`) values ('articleAttribute2', 'article1', 'category1', 'secondNameAfterUpdate')"],
     ["[query] select `a0`.`id`, `a0`.`article_id`, `a0`.`article_category_id`, `a0`.`created_at` from `article_attribute` as `a0` where (`a0`.`id`, `a0`.`article_id`, `a0`.`article_category_id`) in (('articleAttribute2', 'article1', 'category1'))"],
-    ["[query] update `article_attribute` set `name` = 'nameAfterUpdate' where (`id`, `article_id`, `article_category_id`) in (('articleAttribute1', 'article1', 'category1'))"],
+    ["[query] update `article_attribute` set `name` = 'nameAfterUpdate' where `id` = 'articleAttribute1' and (`article_id`, `article_category_id`) = ('article1', 'category1')"],
     ['[query] commit'],
   ]);
 });

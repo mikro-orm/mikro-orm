@@ -258,15 +258,14 @@ export class ChangeSetPersister {
   }
 
   private async updateEntity<T extends object>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, options?: DriverMethodOptions): Promise<QueryResult<T>> {
+    const cond = changeSet.getPrimaryKey(true) as Dictionary;
     options = this.propagateSchemaFromMetadata(meta, options, {
       convertCustomTypes: false,
     });
 
     if (meta.concurrencyCheckKeys.size === 0 && (!meta.versionProperty || changeSet.entity[meta.versionProperty] == null)) {
-      return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as FilterQuery<T>, changeSet.payload, options);
+      return this.driver.nativeUpdate(changeSet.name, cond as FilterQuery<T>, changeSet.payload, options);
     }
-
-    const cond = changeSet.getPrimaryKey(true) as Dictionary;
 
     if (meta.versionProperty) {
       cond[meta.versionProperty] = this.platform.quoteVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);

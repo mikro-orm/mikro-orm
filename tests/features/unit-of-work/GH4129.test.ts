@@ -81,7 +81,7 @@ test('GH 4129 (1/3)', async () => {
 
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock.mock.calls[1][0]).toBe('[query] update `device_channel` set `last_time` = 1678803173316 where (`device_id`, `channel_id`) in ((2, 1))');
+  expect(mock.mock.calls[1][0]).toBe('[query] update `device_channel` set `last_time` = 1678803173316 where `device_id` = 2 and `channel_id` = 1');
 });
 
 test('GH 4129 (2/3)', async () => {
@@ -93,7 +93,7 @@ test('GH 4129 (2/3)', async () => {
 
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock.mock.calls[1][0]).toBe('[query] update `device_channel` set `last_time` = 1678803173316 where (`device_id`, `channel_id`) in ((2, 1))');
+  expect(mock.mock.calls[1][0]).toBe('[query] update `device_channel` set `last_time` = 1678803173316 where `device_id` = 2 and `channel_id` = 1');
 });
 
 test('GH 4129 (3/3)', async () => {
@@ -105,5 +105,5 @@ test('GH 4129 (3/3)', async () => {
 
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock.mock.calls[1][0]).toBe('[query] update `device_channel` set `last_time` = 1678803173316 where (`device_id`, `channel_id`) in ((2, 1))');
+  expect(mock.mock.calls[1][0]).toBe('[query] update `device_channel` set `last_time` = 1678803173316 where `device_id` = 2 and `channel_id` = 1');
 });

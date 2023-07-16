@@ -359,7 +359,7 @@ describe('composite keys in mysql', () => {
     const mock = mockLogger(orm);
     await orm.em.flush();
     expect(mock).toBeCalledTimes(3);
-    expect(mock.mock.calls[1][0]).toMatch("update `car2` set `year` = 2015 where (`name`, `year`) in (('Audi A8', 2010))");
+    expect(mock.mock.calls[1][0]).toMatch("update `car2` set `year` = 2015 where `name` = 'Audi A8' and `year` = 2010");
 
     const c = await orm.em.fork().findOne(Car2, car);
     expect(c).toBeDefined();
