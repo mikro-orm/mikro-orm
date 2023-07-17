@@ -201,10 +201,10 @@ But middlewares are executed only for regular HTTP request handles, what if we n
 
 We can use the `@UseRequestContext()` decorator. It requires you to first inject the `MikroORM` instance to current context, it will be then used to create the context for you. Under the hood, the decorator will register new request context for your method and execute it inside the context.
 
-Keep in mind, that all handlers that are decorated with @UseRequestContext(), should NOT return anything.
+> `@UseRequestContext()` should be used only on the top level methods. It should not be nested - a method decorated with it should not call another method that is also decorated with it.
 
 ```ts
-@Injectable()
+@Controller()
 export class MyService {
 
   constructor(private readonly orm: MikroORM) { }
