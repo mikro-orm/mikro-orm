@@ -597,7 +597,7 @@ describe('GH issue 1175', () => {
     beforeAll(async () => {
       orm = await MikroORM.init({
         entities: [Entity1175],
-        clientUrl: await initMongoReplSet('mikro-orm-test'),
+        clientUrl: await initMongoReplSet('mikro-orm-1175'),
         driver: MongoDriver,
         implicitTransactions: true,
         subscribers: [testSubscriber],
@@ -608,7 +608,7 @@ describe('GH issue 1175', () => {
     });
 
     afterAll(async () => {
-      await orm.close();
+      await orm.close(true);
       await closeReplSets();
     });
 

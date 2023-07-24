@@ -76,8 +76,8 @@ describe('changing PK column type [mysql] (GH 1480)', () => {
     const generator = orm.schema;
     const testMigration = async (e1: Constructor, e2: Constructor | undefined, snap: string) => {
       if (e2) {
-        await orm.discoverEntity(e2);
         orm.getMetadata().reset(e1.name);
+        await orm.discoverEntity(e2);
       }
 
       const diff = await generator.getUpdateSchemaMigrationSQL({ wrap: false });

@@ -253,24 +253,22 @@ You can use pessimistic locks in three different scenarios:
 
 Optionally we can also pass list of table aliases we want to lock via `lockTableAliases` option:
 
-> The root entity is always aliased as `e0` when using `em.find()` or `em.findOne()`.
-
 ```ts
 const res = await em.find(User, { name: 'Jon' }, {
   populate: ['identities'],
   strategy: LoadStrategy.JOINED,
   lockMode: LockMode.PESSIMISTIC_READ,
-  lockTableAliases: ['e0'],
+  lockTableAliases: ['u0'],
 });
 
 // select ...
-//   from "user" as "e0"
-//   left join "identity" as "i1" on "e0"."id" = "i1"."user_id"
-//   where "e0"."name" = 'Jon'
-//   for update of "e0" skip locked
+//   from "user" as "u0"
+//   left join "identity" as "i1" on "u0"."id" = "i1"."user_id"
+//   where "u0"."name" = 'Jon'
+//   for update of "u0" skip locked
 ```
 
-### Isolation levels
+## Isolation levels
 
 We can set the transaction isolation levels:
 
@@ -287,5 +285,26 @@ Available isolation levels:
 - `IsolationLevel.SNAPSHOT`
 - `IsolationLevel.REPEATABLE_READ`
 - `IsolationLevel.SERIALIZABLE`
+
+## Disabling transactions
+
+Since v5.7 is it possible to disable transactions, either globally via `disableTransactions` config option, or locally when using `em.transactional()`.
+
+```ts
+// only the outer transaction will be opened
+await orm.em.transactional(async em => {
+  // but the inner calls to both em.transactional and em.begin will be no-op
+  await em.transactional(...);
+}, { disableTransactions: true });
+```
+
+Alternatively, you can disable transactions when creating new forks:
+
+```ts
+const em = await orm.em.fork({ disableTransactions: true });
+await em.transactional(...); // no-op
+await em.begin(...); // no-op
+await em.commit(...); // commit still calls `flush`
+```
 
 > This part of documentation is highly inspired by [doctrine internals docs](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/reference/transactions-and-concurrency.html) as the behaviour here is pretty much the same.

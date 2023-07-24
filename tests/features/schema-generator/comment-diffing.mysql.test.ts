@@ -64,8 +64,8 @@ describe('comment diffing in mysql', () => {
   afterAll(() => orm.close(true));
 
   test('schema orm.schema updates comments', async () => {
-    await orm.discoverEntity(Book1);
     orm.getMetadata().reset('Book0');
+    await orm.discoverEntity(Book1);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);

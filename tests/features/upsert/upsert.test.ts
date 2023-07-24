@@ -1,4 +1,7 @@
-import { MikroORM, Entity, PrimaryKey, ManyToOne, Property, SimpleLogger, Unique, Ref, ref } from '@mikro-orm/core';
+import {
+  MikroORM, Entity, PrimaryKey, ManyToOne, Property, SimpleLogger,
+  Unique, Ref, ref, EventSubscriber, EventArgs, OneToMany, Collection, Embeddable, Embedded,
+} from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 
 @Entity()
@@ -14,6 +17,9 @@ export class Author {
 
   @Property({ name: 'current_age' })
   age: number;
+
+  @OneToMany(() => Book, b => b.author)
+  books = new Collection<Book>(this);
 
   constructor(email: string, age: number) {
     this.email = email;
@@ -68,6 +74,45 @@ export class FooBar {
 
 }
 
+@Entity()
+export class FooBarWithEmbeddable {
+
+  static id = 1;
+
+  @PrimaryKey({ name: '_id' })
+  id: number = FooBar.id++;
+
+  @Embedded(() => FooBarEmbeddable)
+  fooBarEmbeddable = new FooBarEmbeddable();
+
+}
+
+@Embeddable()
+export class FooBarEmbeddable {
+
+  @Property({ nullable: true })
+  name?: string;
+
+}
+
+class Subscriber implements EventSubscriber {
+
+  static log: any[] = [];
+
+  beforeUpsert(args: EventArgs<any>): void | Promise<void> {
+    Subscriber.log.push(['beforeUpsert', args]);
+  }
+
+  afterUpsert(args: EventArgs<any>): void | Promise<void> {
+    Subscriber.log.push(['afterUpsert', args]);
+  }
+
+  onInit(args: EventArgs<any>) {
+    Subscriber.log.push(['onInit', args]);
+  }
+
+}
+
 const options = {
   'sqlite': { dbName: ':memory:' },
   'better-sqlite': { dbName: ':memory:' },
@@ -82,9 +127,10 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Author, Book, FooBar],
+      entities: [Author, Book, FooBar, FooBarWithEmbeddable],
       type,
       loggerFactory: options => new SimpleLogger(options),
+      subscribers: [new Subscriber()],
       ...options[type],
     });
     await orm.schema.refreshDatabase();
@@ -93,6 +139,7 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
   beforeEach(async () => {
     await orm.schema.clearDatabase();
     Author.id = Book.id = FooBar.id = 1;
+    Subscriber.log.length = 0;
   });
 
   afterAll(() => orm.close());
@@ -186,6 +233,18 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     const author2 = await orm.em.upsert(Author, { id: 2, email: 'a2', age: 42 }); // inserts
     const author3 = await orm.em.upsert(Author, { id: 3, email: 'a3', age: 43 }); // inserts
 
+    expect(Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['afterUpsert', 'Author'],
+    ]);
+
     await assert(author2, mock);
   });
 
@@ -199,6 +258,18 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     const author1 = await orm.em.upsert(Author, { email: 'a1', age: 41 }); // exists
     const author2 = await orm.em.upsert(Author, { email: 'a2', age: 42 }); // inserts
     const author3 = await orm.em.upsert(Author, { email: 'a3', age: 43 }); // inserts
+
+    expect(Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['afterUpsert', 'Author'],
+    ]);
 
     await assert(author2, mock);
   });
@@ -214,6 +285,18 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
       { id: 1, email: 'a1', age: 41 }, // exists
       { id: 2, email: 'a2', age: 42 }, // inserts
       { id: 3, email: 'a3', age: 43 }, // inserts
+    ]);
+
+    expect(Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['beforeUpsert', 'Object'],
+      ['beforeUpsert', 'Object'],
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['afterUpsert', 'Author'],
     ]);
 
     await assert(author2, mock);
@@ -235,6 +318,18 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     expect(author2.id).toBeDefined();
     expect(author3.id).toBeDefined();
 
+    expect(Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['beforeUpsert', 'Object'],
+      ['beforeUpsert', 'Object'],
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['afterUpsert', 'Author'],
+    ]);
+
     await assert(author2, mock);
   });
 
@@ -248,6 +343,21 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     const fooBar1 = await orm.em.upsert(FooBar, { name: 'fb1', author: 1 }); // exists
     const fooBar2 = await orm.em.upsert(FooBar, { name: 'fb2', author: 2 }); // inserts
     const fooBar3 = await orm.em.upsert(FooBar, { name: 'fb3', author: 3 }); // inserts
+
+    expect(Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['onInit', 'FooBar'],
+      ['afterUpsert', 'FooBar'],
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['onInit', 'FooBar'],
+      ['afterUpsert', 'FooBar'],
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['onInit', 'FooBar'],
+      ['afterUpsert', 'FooBar'],
+    ]);
 
     await assertFooBars([fooBar1, fooBar2, fooBar3], mock);
   });
@@ -282,6 +392,18 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     expect(a1).toBe(author1);
     expect(a2).toBe(author2);
     expect(a3).toBe(author3);
+
+    expect(Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['beforeUpsert', 'Object'],
+      ['afterUpsert', 'Author'],
+      ['beforeUpsert', 'Object'],
+      ['afterUpsert', 'Author'],
+      ['beforeUpsert', 'Object'],
+      ['afterUpsert', 'Author'],
+    ]);
 
     await assert(author2, mock);
   });
@@ -346,6 +468,19 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     expect(fb3).toBe(fooBar3);
 
     await assertFooBars([fooBar1, fooBar2, fooBar3], mock);
+  });
+
+
+  test('em.upsert(entity) with embeddable', async () => {
+    const testEntity = orm.em.create(FooBarWithEmbeddable, { fooBarEmbeddable: {} });
+
+    await orm.em.upsert(testEntity);
+
+    expect(testEntity.id).toBeDefined();
+
+    const [insertedEntity2] = await orm.em.upsertMany(FooBarWithEmbeddable, [{ id: testEntity.id, fooBarEmbeddable: {} }]);
+
+    expect(insertedEntity2).toBe(testEntity);
   });
 
 });

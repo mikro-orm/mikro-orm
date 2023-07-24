@@ -103,7 +103,7 @@ export class EntityAssigner {
       return EntityAssigner.assignEmbeddable(entity, value, prop, options.em, options);
     }
 
-    if (options.mergeObjects && Utils.isPlainObject(value)) {
+    if (options.mergeObjects && Utils.isPlainObject(entity[propName]) && Utils.isPlainObject(value)) {
       entity[propName] ??= {};
       Utils.merge(entity[propName], value);
     } else if (!prop || prop.setter || !prop.getter) {

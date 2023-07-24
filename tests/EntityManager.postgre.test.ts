@@ -16,10 +16,10 @@ describe('EntityManagerPostgre', () => {
   let orm: MikroORM<PostgreSqlDriver>;
 
   async function createBooksWithTags() {
-    const author = new Author2('Jon Snow', 'snow@wall.st');
-    const book1 = new Book2('My Life on The Wall, part 1', author);
-    const book2 = new Book2('My Life on The Wall, part 2', author);
-    const book3 = new Book2('My Life on The Wall, part 3', author);
+    const author = await orm.em.upsert(Author2, { name: 'Jon Snow', email: 'snow@wall.st' });
+    const book1 = new Book2('My Life on The Wall, part 1', author.id);
+    const book2 = new Book2('My Life on The Wall, part 2', author.id);
+    const book3 = new Book2('My Life on The Wall, part 3', author.id);
     const publisher = new Publisher2();
     book1.publisher = ref(publisher);
     book2.publisher = ref(publisher);
@@ -32,12 +32,16 @@ describe('EntityManagerPostgre', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persistAndFlush([book1, book2, book3]);
     orm.em.clear();
   }
 
   beforeAll(async () => orm = await initORMPostgreSql());
   beforeEach(async () => orm.schema.clearDatabase());
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('isConnected()', async () => {
     await expect(orm.isConnected()).resolves.toBe(true);
@@ -58,7 +62,7 @@ describe('EntityManagerPostgre', () => {
       forceUtcTimezone: true,
     } as any, false);
     const driver = new PostgreSqlDriver(config);
-    expect(driver.getConnection().getConnectionOptions()).toEqual({
+    expect(driver.getConnection().getConnectionOptions()).toMatchObject({
       database: 'db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -233,7 +237,7 @@ describe('EntityManagerPostgre', () => {
       }, { isolationLevel: IsolationLevel.READ_UNCOMMITTED });
     } catch { }
 
-    expect(mock.mock.calls[0][0]).toMatch('begin isolation level read uncommitted');
+    expect(mock.mock.calls[0][0]).toMatch('begin transaction isolation level read uncommitted');
     expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
     expect(mock.mock.calls[2][0]).toMatch('rollback');
   });
@@ -1711,6 +1715,7 @@ describe('EntityManagerPostgre', () => {
 
     const bar = FooBar2.create('b1 "b" \'1\'');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
+    bar.blob2 = new Uint8Array([1, 2, 3, 4, 5]);
     bar.array = [];
     bar.objectProperty = { foo: `bar 'lol' baz "foo"`, bar: 3 };
     await orm.em.persistAndFlush(bar);
@@ -1719,6 +1724,8 @@ describe('EntityManagerPostgre', () => {
     const b1 = await orm.em.findOneOrFail(FooBar2, bar.id);
     expect(b1.blob).toEqual(Buffer.from([1, 2, 3, 4, 5]));
     expect(b1.blob).toBeInstanceOf(Buffer);
+    expect(b1.blob2).toEqual(new Uint8Array([1, 2, 3, 4, 5]));
+    expect(b1.blob2).toBeInstanceOf(Uint8Array);
     expect(b1.array).toEqual([]);
     expect(b1.array).toBeInstanceOf(Array);
     expect(b1.objectProperty).toEqual({ foo: `bar 'lol' baz "foo"`, bar: 3 });
@@ -1886,14 +1893,14 @@ describe('EntityManagerPostgre', () => {
       ],
     } as any, false);
     const driver = new PostgreSqlDriver(config);
-    expect(driver.getConnection('write').getConnectionOptions()).toEqual({
+    expect(driver.getConnection('write').getConnectionOptions()).toMatchObject({
       database: 'db_name',
       host: '127.0.0.10',
       password: 'secret',
       user: 'user',
       port: 1234,
     });
-    expect(driver.getConnection('read').getConnectionOptions()).toEqual({
+    expect(driver.getConnection('read').getConnectionOptions()).toMatchObject({
       database: 'db_name',
       host: 'read_host_1',
       password: 'secret',
@@ -2224,7 +2231,5 @@ describe('EntityManagerPostgre', () => {
     expect(c2).toBeDefined();
     expect(c2!.id).toBe(322);
   });
-
-  afterAll(async () => orm.close(true));
 
 });

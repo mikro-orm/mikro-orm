@@ -51,11 +51,14 @@ describe('Migrator', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
-    orm = await initORMMySql('mysql', {}, true);
+    orm = await initORMMySql('mysql', { dbName: 'mikro_orm_test_migrations' }, true);
     await remove(process.cwd() + '/temp/migrations');
   });
   beforeEach(() => orm.config.resetServiceCache());
-  afterAll(async () => orm.close(true));
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('generate js schema migration', async () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
@@ -253,6 +256,24 @@ describe('Migrator', () => {
     await expect(migrator.getPendingMigrations()).resolves.toEqual([]);
   });
 
+  test('unlogging migrations work even if they have extension', async () => {
+    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    const migrator = new Migrator(orm.em);
+    // @ts-ignore
+    const storage = migrator.storage;
+
+    await storage.ensureTable(); // creates the table
+    await storage.logMigration({ name: 'test.migration.ts', context: null }); // can have extension
+    await expect(storage.getExecutedMigrations()).resolves.toMatchObject([{ name: 'test.migration' }]);
+    await orm.em.execute(`update ${orm.config.get('migrations').tableName!} set name = 'test.migration.ts'`);
+    await expect(storage.executed()).resolves.toEqual(['test.migration']);
+
+    await storage.unlogMigration({ name: 'test.migration', context: null });
+    await expect(storage.executed()).resolves.toEqual([]);
+
+    await expect(migrator.getPendingMigrations()).resolves.toEqual([]);
+  });
+
   test('runner', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
@@ -316,7 +337,7 @@ describe('Migrator', () => {
     await remove(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx\\d+');
     });
@@ -356,7 +377,7 @@ describe('Migrator', () => {
     await remove(path + '/' + migration2.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx_xx');
     });
@@ -389,7 +410,7 @@ describe('Migrator', () => {
     await remove(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx_xx');
     });
@@ -404,6 +425,7 @@ describe('Migrator - with explicit migrations', () => {
 
   beforeAll(async () => {
     orm = await initORMMySql(undefined, {
+      dbName: 'mikro_orm_test_migrations',
       migrations: {
         migrationsList: [
           {
@@ -414,7 +436,10 @@ describe('Migrator - with explicit migrations', () => {
       },
     }, true);
   });
-  afterAll(async () => orm.close(true));
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('runner', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
@@ -431,7 +456,7 @@ describe('Migrator - with explicit migrations', () => {
     expect(spy1).toBeCalledWith('select 1 - 1');
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx_xx');
     });

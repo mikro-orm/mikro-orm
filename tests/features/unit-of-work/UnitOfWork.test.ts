@@ -155,6 +155,12 @@ describe('UnitOfWork', () => {
           args.uow.computeChangeSet(baz);
           args.uow.recomputeSingleChangeSet(cs.entity);
         }
+
+        const toRemove = changeSets.find(cs => cs.entity instanceof FooBar && cs.entity.name === 'remove me');
+
+        if (toRemove) {
+          args.uow.computeChangeSet(toRemove.entity, ChangeSetType.DELETE);
+        }
       }
 
       async afterFlush(args: FlushEventArgs): Promise<void> {
@@ -176,6 +182,14 @@ describe('UnitOfWork', () => {
     expect(changeSets.map(cs => [cs.type, cs.name])).toEqual([
       [ChangeSetType.CREATE, 'FooBar'],
       [ChangeSetType.CREATE, 'FooBaz'],
+    ]);
+    mock.mockReset();
+
+    bar.name = 'remove me';
+    await em.flush();
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('foo-bar'\)\.deleteMany\(\{ _id: \{ '\$in': \[ ObjectId\('\w{24}'\) ] } }, \{}\)/);
+    expect(changeSets.map(cs => [cs.type, cs.name])).toEqual([
+      [ChangeSetType.DELETE, 'FooBar'],
     ]);
   });
 

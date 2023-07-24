@@ -147,11 +147,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     for (const check of allChecks) {
       const key = this.getTableKey(check);
       ret[key] ??= [];
+      const m = check.expression.match(/^check \(\((.*)\)\)$/i);
+      const def = m?.[1].replace(/\((.*?)\)::\w+/g, '$1');
       ret[key].push({
         name: check.name,
         columnName: check.column_name,
         definition: check.expression,
-        expression: check.expression.replace(/^check \(\((.+)\)\)$/i, '$1'),
+        expression: def,
       });
     }
 
@@ -208,15 +210,21 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
       if (item.columnName && m1 && m2) {
         const m3 = m2[1].match(/('[^']+'::text)/g);
+        let items: (string | undefined)[];
 
         /* istanbul ignore else */
         if (m3) {
-          o[item.columnName] = m3.map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+          items = m3.map((item: string) => item.trim().match(/^\(?'(.*)'/)?.[1]);
         } else {
-          o[item.columnName] = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+          items = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)?.[1]);
         }
 
-        found.push(index);
+        items = items.filter(Boolean);
+
+        if (items.length > 0) {
+          o[item.columnName] = items as string[];
+          found.push(index);
+        }
       }
 
       return o;

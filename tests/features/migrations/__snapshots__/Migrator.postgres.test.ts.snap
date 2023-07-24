@@ -13,7 +13,7 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table "custom"."foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));');
 
-    this.addSql('create table "custom"."foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "array" text[] null, "object_property" jsonb null);');
+    this.addSql('create table "custom"."foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "blob2" bytea null, "array" text[] null, "object_property" jsonb null);');
     this.addSql('alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");');
     this.addSql('alter table "custom"."foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");');
 
@@ -104,7 +104,7 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table "custom"."foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));",
       "",
-      "create table "custom"."foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "array" text[] null, "object_property" jsonb null);",
+      "create table "custom"."foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "blob2" bytea null, "array" text[] null, "object_property" jsonb null);",
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");",
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");",
       "",
@@ -201,7 +201,7 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table "custom"."foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));');
 
-    this.addSql('create table "custom"."foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "array" text[] null, "object_property" jsonb null);');
+    this.addSql('create table "custom"."foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "blob2" bytea null, "array" text[] null, "object_property" jsonb null);');
     this.addSql('alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");');
     this.addSql('alter table "custom"."foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");');
 
@@ -292,7 +292,7 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table "custom"."foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));",
       "",
-      "create table "custom"."foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "array" text[] null, "object_property" jsonb null);",
+      "create table "custom"."foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "name with space" varchar(255) null, "baz_id" int null, "foo_bar_id" int null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "blob2" bytea null, "array" text[] null, "object_property" jsonb null);",
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");",
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");",
       "",
@@ -428,31 +428,17 @@ import { Migration } from '@mikro-orm/migrations';
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('alter table
-                   "custom"."book2"
-                 alter column
-                   "double" type double precision using ("double" :: double precision);');
-    this.addSql('alter table
-                   "custom"."book2" drop column "foo";');
+    this.addSql('alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);');
+    this.addSql('alter table "custom"."book2" drop column "foo";');
 
-    this.addSql('alter table
-                   "custom"."test2" drop column "path";');
+    this.addSql('alter table "custom"."test2" drop column "path";');
   }
 
   async down(): Promise<void> {
-    this.addSql('alter table
-                   "custom"."book2"
-                 add
-                   column "foo" varchar null default \\'lol\\';');
-    this.addSql('alter table
-                   "custom"."book2"
-                 alter column
-                   "double" type numeric using ("double" :: numeric);');
+    this.addSql('alter table "custom"."book2" add column "foo" varchar null default \\'lol\\';');
+    this.addSql('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
 
-    this.addSql('alter table
-                   "custom"."test2"
-                 add
-                   column "path" polygon null default null;');
+    this.addSql('alter table "custom"."test2" add column "path" polygon null default null;');
   }
 
 }
@@ -472,6 +458,46 @@ export class Migration20191013214813 extends Migration {
     ],
   },
   "fileName": "Migration20191013214813.ts",
+}
+`;
+
+exports[`Migrator (postgres) generate migration with custom name with name option: migration-dump 1`] = `
+{
+  "code": "import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20191013214813_custom_name extends Migration {
+
+  async up(): Promise<void> {
+    this.addSql('alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);');
+    this.addSql('alter table "custom"."book2" drop column "foo";');
+
+    this.addSql('alter table "custom"."test2" drop column "path";');
+  }
+
+  async down(): Promise<void> {
+    this.addSql('alter table "custom"."book2" add column "foo" varchar null default \\'lol\\';');
+    this.addSql('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
+
+    this.addSql('alter table "custom"."test2" add column "path" polygon null default null;');
+  }
+
+}
+",
+  "diff": {
+    "down": [
+      "alter table "custom"."book2" add column "foo" varchar null default 'lol';",
+      "alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);",
+      "",
+      "alter table "custom"."test2" add column "path" polygon null default null;",
+    ],
+    "up": [
+      "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
+      "alter table "custom"."book2" drop column "foo";",
+      "",
+      "alter table "custom"."test2" drop column "path";",
+    ],
+  },
+  "fileName": "migration20191013214813_custom_name.ts",
 }
 `;
 
@@ -621,7 +647,7 @@ exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-no
   "select * from "custom"."mikro_orm_migrations" order by "id" asc",
   "begin",
   "commit",
-  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2)",
+  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2, $3, $4)",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "select * from "custom"."mikro_orm_migrations" order by "id" asc",
   "begin",
@@ -632,7 +658,7 @@ exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-no
   "select * from "custom"."mikro_orm_migrations" order by "id" asc",
   "begin",
   "commit",
-  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2)",
+  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2, $3, $4)",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "select * from "custom"."mikro_orm_migrations" order by "id" asc",
   "begin",
@@ -645,7 +671,7 @@ exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-no
   "select * from "custom"."mikro_orm_migrations" order by "id" asc",
   "begin",
   "commit",
-  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2)",
+  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2, $3, $4)",
 ]
 `;
 
@@ -667,7 +693,7 @@ exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-not
   "select * from "custom"."mikro_orm_migrations" order by "id" asc",
   "savepointtrx\\d+",
   "release savepointtrx\\d+",
-  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2)",
+  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2, $3, $4)",
   "commit",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "begin",
@@ -682,7 +708,7 @@ exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-not
   "select * from "custom"."mikro_orm_migrations" order by "id" asc",
   "savepointtrx\\d+",
   "release savepointtrx\\d+",
-  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2)",
+  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2, $3, $4)",
   "commit",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "begin",
@@ -701,7 +727,7 @@ exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-not
   "select * from "custom"."mikro_orm_migrations" order by "id" asc",
   "savepointtrx\\d+",
   "release savepointtrx\\d+",
-  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2)",
+  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2, $3, $4)",
   "commit",
 ]
 `;
@@ -726,12 +752,12 @@ exports[`Migrator (postgres) up/down with explicit transaction: explicit-tx 1`] 
   "select * from "custom"."mikro_orm_migrations" order by "id" asc",
   "savepointtrx_xx",
   "release savepointtrx_xx",
-  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2)",
+  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2, $3, $4)",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "select * from "custom"."mikro_orm_migrations" order by "id" asc",
   "savepointtrx_xx",
   "release savepointtrx_xx",
-  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2)",
+  "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2, $3, $4)",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "select * from "custom"."mikro_orm_migrations" order by "id" asc",
   "commit",

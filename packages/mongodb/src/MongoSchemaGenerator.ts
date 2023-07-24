@@ -12,6 +12,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     options.ensureIndexes ??= true;
     const existing = await this.connection.listCollections();
     const metadata = this.getOrderedMetadata();
+    metadata.push({ collection: this.config.get('migrations').tableName } as any);
 
     /* istanbul ignore next */
     const promises = metadata
@@ -32,11 +33,16 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await Promise.all(promises);
   }
 
-  async dropSchema(): Promise<void> {
+  async dropSchema(options: { dropMigrationsTable?: boolean } = {}): Promise<void> {
     const db = this.connection.getDb();
     const collections = await db.listCollections().toArray();
     const existing = collections.map(c => c.name);
     const metadata = this.getOrderedMetadata();
+
+    if (options.dropMigrationsTable) {
+      metadata.push({ collection: this.config.get('migrations').tableName } as any);
+    }
+
     const promises = metadata
       .filter(meta => existing.includes(meta.collection))
       .map(meta => this.connection.dropCollection(meta.collection));
@@ -141,6 +147,10 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       let fieldOrSpec: string | Dictionary;
       const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
       const collection = this.connection.getCollection(meta.name!);
+
+      if (Array.isArray(index.options) && index.options.length === 2 && properties.length === 0) {
+        return res.push([collection.collectionName, collection.createIndex(index.options[0], index.options[1])]);
+      }
 
       if (index.options && properties.length === 0) {
         return res.push([collection.collectionName, collection.createIndex(index.options)]);

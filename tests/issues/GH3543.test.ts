@@ -30,25 +30,6 @@ class Order {
 
 }
 
-@Entity({ tableName: 'order' })
-class Order2 {
-
-  [OptionalProps]?: 'orderId';
-
-  @PrimaryKey()
-  orderId: string = v4();
-
-  @PrimaryKey()
-  customerId!: string;
-
-  @PrimaryKey()
-  companyId!: string;
-
-  @OneToMany(() => OrderEvent, orderEvent => orderEvent.order)
-  events = new Collection<OrderEvent>(this);
-
-}
-
 @Entity()
 class OrderEvent {
 
@@ -131,7 +112,11 @@ test('GH issue 3543 without orphan removal builds correct query', async () => {
     orderId: order.orderId,
   }, { populate: true });
 
-  // disconnecting the relation without orphan removal means nulling it on the owning side, which fails as it is a non-null PK column
-  order.events.removeAll();
-  await expect(orm.em.flush()).rejects.toThrowError(NotNullConstraintViolationException);
+  // disconnecting the relation without orphan removal throws, as it means nulling it on the owning side, which would fail as it is a non-null PK column
+  expect(() => order.events.removeAll()).toThrowError(
+    'Removing items from collection Order.events without `orphanRemoval: true` would break non-null constraint on the owning side. You have several options: \n' +
+    ' - add `orphanRemoval: true` to the collection options\n' +
+    ' - add `onDelete: \'cascade\'` to the owning side options\n' +
+    ' - add `nullable: true` to the owning side options',
+  );
 });

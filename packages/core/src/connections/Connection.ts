@@ -107,7 +107,7 @@ export abstract class Connection {
 
     try {
       const res = await cb();
-      this.logQuery(query, { ...context, took: Date.now() - now });
+      this.logQuery(query, { ...context, took: Date.now() - now, results: Array.isArray(res) ? res.length : undefined });
 
       return res;
     } catch (e) {

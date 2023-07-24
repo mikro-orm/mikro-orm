@@ -1,12 +1,6 @@
-import { Type } from './Type';
-import type { Platform } from '../platforms';
-import type { EntityProperty } from '../typings';
+import { Uint8ArrayType } from './Uint8ArrayType';
 
-export class BlobType extends Type<Buffer | null> {
-
-  convertToDatabaseValue(value: Buffer): Buffer {
-    return value;
-  }
+export class BlobType extends Uint8ArrayType {
 
   convertToJSValue(value: Buffer): Buffer | null {
     if (value as unknown instanceof Buffer || !value) {
@@ -20,18 +14,6 @@ export class BlobType extends Type<Buffer | null> {
 
     /* istanbul ignore next */
     return Buffer.from(value);
-  }
-
-  compareAsType(): string {
-    return 'Buffer';
-  }
-
-  ensureComparable(): boolean {
-    return false;
-  }
-
-  getColumnType(prop: EntityProperty, platform: Platform): string {
-    return platform.getBlobDeclarationSQL();
   }
 
 }

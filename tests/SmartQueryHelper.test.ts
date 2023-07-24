@@ -9,7 +9,10 @@ describe('QueryHelper', () => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  afterAll(async () => orm.close(true));
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('test operators `>, <, >=, <=, !`', async () => {
     expect(QueryHelper.processWhere({

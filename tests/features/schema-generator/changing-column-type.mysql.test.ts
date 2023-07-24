@@ -73,26 +73,26 @@ describe('changing column in mysql (GH 2407)', () => {
   afterAll(() => orm.close(true));
 
   test('schema generator respect indexes on FKs on column update', async () => {
-    await orm.discoverEntity(Book2);
     orm.getMetadata().reset('Book1');
+    await orm.discoverEntity(Book2);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toBe('alter table `book` modify `my_column` tinyint(1) not null default 1 comment \'this is a comment\';\n\n');
     await orm.schema.execute(diff1);
 
-    await orm.discoverEntity(Book3);
     orm.getMetadata().reset('Book2');
+    await orm.discoverEntity(Book3);
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toBe('alter table `book` modify `my_column` tinyint(1) null default 123;\n\n');
     await orm.schema.execute(diff3);
 
-    await orm.discoverEntity(Book4);
     orm.getMetadata().reset('Book3');
+    await orm.discoverEntity(Book4);
     const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff4).toBe('alter table `book` modify `my_column` tinyint(1) null default 123 comment \'lalala\';\n\n');
     await orm.schema.execute(diff4);
 
-    await orm.discoverEntity(Book5);
     orm.getMetadata().reset('Book4');
+    await orm.discoverEntity(Book5);
     const diff5 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff5).toBe('alter table `book` modify `my_column` tinyint(1) null default 123 comment \'lololo\';\n\n');
     await orm.schema.execute(diff5);

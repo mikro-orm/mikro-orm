@@ -53,6 +53,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     discovery: {
       warnWhenNoEntities: true,
       requireEntitiesArray: false,
+      checkDuplicateTableNames: true,
       alwaysAnalyseProperties: true,
       disableDynamicFileAccess: false,
     },
@@ -97,7 +98,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       safe: false,
       snapshot: true,
       emit: 'ts',
-      fileName: (timestamp: string) => `Migration${timestamp}`,
+      fileName: (timestamp: string, name?: string) => `Migration${timestamp}${name ? '_' + name : ''}`,
     },
     schemaGenerator: {
       disableForeignKeys: true,
@@ -153,7 +154,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       Utils.setDynamicImportProvider(options.dynamicImportProvider);
     }
 
-    this.options = Utils.merge({}, Configuration.DEFAULTS, options);
+    this.options = Utils.mergeConfig({}, Configuration.DEFAULTS, options);
     this.options.baseDir = Utils.absolutePath(this.options.baseDir);
 
     if (validate) {
@@ -326,7 +327,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       this.set('implicitTransactions', this.platform.usesImplicitTransactions());
     }
 
-    const url = this.getClientUrl().match(/:\/\/.+\/([^?]+)/);
+    const url = this.getClientUrl().match(/:\/\/.*\/([^?]+)/);
 
     if (url) {
       this.options.dbName = this.get('dbName', decodeURIComponent(url[1]));
@@ -452,7 +453,7 @@ export type MigrationsOptions = {
   snapshotName?: string;
   emit?: 'js' | 'ts' | 'cjs';
   generator?: Constructor<IMigrationGenerator>;
-  fileName?: (timestamp: string) => string;
+  fileName?: (timestamp: string, name?: string) => string;
   migrationsList?: MigrationObject[];
 };
 
@@ -498,6 +499,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   discovery: {
     warnWhenNoEntities?: boolean;
     requireEntitiesArray?: boolean;
+    checkDuplicateTableNames?: boolean;
     alwaysAnalyseProperties?: boolean;
     disableDynamicFileAccess?: boolean;
     getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
@@ -508,6 +510,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   driverOptions: Dictionary;
   namingStrategy?: { new(): NamingStrategy };
   implicitTransactions?: boolean;
+  disableTransactions?: boolean;
   connect: boolean;
   verbose: boolean;
   autoJoinOneToOneOwner: boolean;

@@ -11,6 +11,10 @@ describe('EntityManagerMariaDb', () => {
 
   beforeAll(async () => orm = await initORMMySql<MariaDbDriver>('mariadb', {}, true));
   beforeEach(async () => orm.schema.clearDatabase());
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
@@ -31,7 +35,7 @@ describe('EntityManagerMariaDb', () => {
       forceUtcTimezone: true,
     } as any, false);
     const driver = new MariaDbDriver(config);
-    expect(driver.getConnection().getConnectionOptions()).toEqual({
+    expect(driver.getConnection().getConnectionOptions()).toMatchObject({
       database: 'db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -91,9 +95,9 @@ describe('EntityManagerMariaDb', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
-    const err1 = /insert into `not_existing` \(`foo`\) values \('bar'\) - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test\.not_existing' doesn't exist/;
+    const err1 = /insert into `not_existing` \(`foo`\) values \('bar'\) - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test_\w+\.not_existing' doesn't exist/;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
-    const err2 = /delete from `not_existing` - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test\.not_existing' doesn't exist/;
+    const err2 = /delete from `not_existing` - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test_\w+\.not_existing' doesn't exist/;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
   });
 
@@ -226,7 +230,5 @@ describe('EntityManagerMariaDb', () => {
     expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
     await orm.em.getRepository(Book2).remove(lastBook[0]).flush();
   });
-
-  afterAll(async () => orm.close(true));
 
 });

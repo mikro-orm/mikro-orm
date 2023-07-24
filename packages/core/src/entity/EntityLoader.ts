@@ -50,6 +50,7 @@ export class EntityLoader {
       throw ValidationError.notDiscoveredEntity(entity, meta, 'populate');
     }
 
+    const visited = (options as Dictionary).visited ??= new Set<AnyEntity>();
     options.where ??= {} as FilterQuery<T>;
     options.orderBy ??= {};
     options.filters ??= {};
@@ -65,6 +66,8 @@ export class EntityLoader {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
+    entities = entities.filter(e => !visited.has(e));
+    entities.forEach(e => visited.add(e));
     entities.forEach(e => helper(e).__serializationContext.populate ??= populate as PopulateOptions<T>[]);
 
     for (const pop of populate) {
@@ -231,13 +234,13 @@ export class EntityLoader {
 
     if (mapToPk) {
       children.forEach(child => {
-        const pk = child.__helper.__data[prop.mappedBy];
+        const pk = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
         const key = helper(this.em.getReference(prop.type, pk)).getSerializedPrimaryKey();
         map[key].push(child as T);
       });
     } else {
       children.forEach(child => {
-        const entity = child.__helper.__data[prop.mappedBy];
+        const entity = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
         const key = helper(entity).getSerializedPrimaryKey();
         map[key].push(child as T);
       });
@@ -290,6 +293,8 @@ export class EntityLoader {
       orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy), { [fk]: QueryOrder.ASC }] as QueryOrderMap<T>[],
       populate: populate.children as never ?? populate.all ?? [],
       strategy, fields, schema, connectionType,
+      // @ts-ignore not a public option, will be propagated to the populate call
+      visited: options.visited,
     });
   }
 
@@ -351,6 +356,8 @@ export class EntityLoader {
       ignoreLazyScalarProperties,
       populateWhere,
       connectionType,
+      // @ts-ignore not a public option, will be propagated to the populate call
+      visited: options.visited,
     });
   }
 
@@ -424,7 +431,7 @@ export class EntityLoader {
     }
 
     if (filters) {
-      return this.em.applyFilters(prop.type, subCond, options.filters, 'read');
+      return this.em.applyFilters(prop.type, subCond, options.filters, 'read', options);
     }
 
     return subCond;
@@ -560,7 +567,7 @@ export class EntityLoader {
         if (nested.length > 0) {
           ret.push(...nested);
         } else {
-          const selfReferencing = [meta.className, meta.root.className].includes(prop.type) && prop.eager;
+          const selfReferencing = [meta.className, meta.root.className, ...visited].includes(prop.type) && prop.eager;
           ret.push({
             field: prefixed,
             // enforce select-in strategy for self-referencing relations

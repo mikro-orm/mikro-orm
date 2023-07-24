@@ -7,9 +7,6 @@ import { Utils } from '@mikro-orm/core';
 
 export class BetterSqliteConnection extends AbstractSqlConnection {
 
-  static readonly RUN_QUERY_RE = /^insert into|^update|^delete|^truncate/;
-  static readonly RUN_QUERY_RETURNING = /^insert into ([\s\S])* returning .*/;
-
   async connect(): Promise<void> {
     await ensureDir(dirname(this.config.get('dbName')!));
     this.getPatchedDialect();
@@ -32,7 +29,7 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
   }
 
   protected getKnexOptions(type: string): Knex.Config {
-    return Utils.merge({
+    return Utils.mergeConfig({
       client: type,
       connection: {
         filename: this.config.get('dbName'),
@@ -79,7 +76,7 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
     const processResponse = Sqlite3Dialect.prototype.processResponse;
     Sqlite3Dialect.prototype.__patched = true;
     Sqlite3Dialect.prototype.processResponse = (obj: any, runner: any) => {
-      if (obj.method === 'raw' && obj.sql.trim().match(BetterSqliteConnection.RUN_QUERY_RE)) {
+      if (obj.method === 'raw' && this.isRunQuery(obj.sql)) {
         return obj.response ?? obj.context;
       }
 
@@ -161,13 +158,30 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
     return Sqlite3Dialect;
   }
 
-  private getCallMethod(obj: any): string {
-    if (obj.method === 'raw' && obj.sql.trim().match(BetterSqliteConnection.RUN_QUERY_RETURNING)) {
-      return 'all';
+  private isRunQuery(query: string): boolean {
+    query = query.trim().toLowerCase();
+
+    if (query.startsWith('insert into') && query.includes(' returning ')) {
+      return false;
     }
 
-    if (obj.method === 'raw' && obj.sql.trim().match(BetterSqliteConnection.RUN_QUERY_RE)) {
-      return 'run';
+    return query.startsWith('insert into') ||
+      query.startsWith('update') ||
+      query.startsWith('delete') ||
+      query.startsWith('truncate');
+  }
+
+  private getCallMethod(obj: any): string {
+    if (obj.method === 'raw') {
+      const query = obj.sql.trim().toLowerCase();
+
+      if (query.startsWith('insert into') && query.includes(' returning ')) {
+        return 'all';
+      }
+
+      if (this.isRunQuery(query)) {
+        return 'run';
+      }
     }
 
     /* istanbul ignore next */

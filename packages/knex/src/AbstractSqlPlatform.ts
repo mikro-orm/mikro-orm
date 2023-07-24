@@ -1,6 +1,6 @@
 import { escape } from 'sqlstring';
 import type { Constructor, EntityManager, EntityRepository, IDatabaseDriver, MikroORM } from '@mikro-orm/core';
-import { JsonProperty, Platform, Utils } from '@mikro-orm/core';
+import { expr, JsonProperty, Platform, Utils } from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
 import type { SchemaHelper } from './schema';
 import { SchemaGenerator } from './schema';
@@ -99,6 +99,17 @@ export abstract class AbstractSqlPlatform extends Platform {
 
   getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {
     return this.getSearchJsonPropertyKey(path.split('->'), type, aliased);
+  }
+
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
+    const [a, ...b] = path;
+    const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
+
+    if (aliased) {
+      return expr(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(quoteKey).join('.')}')`);
+    }
+
+    return `json_extract(${this.quoteIdentifier(a)}, '$.${b.map(quoteKey).join('.')}')`;
   }
 
   isRaw(value: any): boolean {

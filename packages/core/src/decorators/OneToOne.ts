@@ -16,8 +16,8 @@ export function OneToOne<T, O>(
 export interface OneToOneOptions<T, O> extends Partial<Omit<OneToManyOptions<T, O>, 'orderBy'>> {
   owner?: boolean;
   inversedBy?: (string & keyof T) | ((e: T) => any);
+  /** @deprecated use `ref` instead, `wrappedReference` option will be removed in v6 */
   wrappedReference?: boolean;
-  /** alias for `wrappedReference` */
   ref?: boolean;
   primary?: boolean;
   mapToPk?: boolean;

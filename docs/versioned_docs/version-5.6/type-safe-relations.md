@@ -238,7 +238,7 @@ You can also use the `Loaded` type in your own methods, to require on type level
 
 ```ts
 function checkIdentity(user: Loaded<User, 'identity'>) {
-  if (!user.idenity.$.email.includes('@')) {
+  if (!user.identity.$.email.includes('@')) {
     throw new Error(`That's a weird e-mail!`);
   }
 }

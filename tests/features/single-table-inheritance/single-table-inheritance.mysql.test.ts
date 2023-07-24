@@ -11,6 +11,10 @@ describe('single table inheritance in mysql', () => {
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   beforeEach(async () => orm.schema.clearDatabase());
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   async function createEntities() {
     const employee1 = new Employee2('Emp', '1');
@@ -239,7 +243,5 @@ describe('single table inheritance in mysql', () => {
     expect(sql).toMatchSnapshot();
     await orm.close(true);
   });
-
-  afterAll(async () => orm.close(true));
 
 });

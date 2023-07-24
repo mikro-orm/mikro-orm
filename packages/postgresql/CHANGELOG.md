@@ -3,6 +3,140 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.13](https://github.com/mikro-orm/mikro-orm/compare/v5.7.12...v5.7.13) (2023-07-16)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.7.12](https://github.com/mikro-orm/mikro-orm/compare/v5.7.11...v5.7.12) (2023-06-10)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.7.11](https://github.com/mikro-orm/mikro-orm/compare/v5.7.10...v5.7.11) (2023-06-01)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.7.10](https://github.com/mikro-orm/mikro-orm/compare/v5.7.9...v5.7.10) (2023-05-23)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.7.9](https://github.com/mikro-orm/mikro-orm/compare/v5.7.8...v5.7.9) (2023-05-22)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.7.8](https://github.com/mikro-orm/mikro-orm/compare/v5.7.7...v5.7.8) (2023-05-21)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.7.7](https://github.com/mikro-orm/mikro-orm/compare/v5.7.6...v5.7.7) (2023-05-14)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.7.6](https://github.com/mikro-orm/mikro-orm/compare/v5.7.5...v5.7.6) (2023-05-13)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.7.5](https://github.com/mikro-orm/mikro-orm/compare/v5.7.4...v5.7.5) (2023-05-09)
+
+
+### Bug Fixes
+
+* **postgres:** improve enum/check constraint inspection in schema diffing ([6c44b42](https://github.com/mikro-orm/mikro-orm/commit/6c44b4277976c2c4bd79818d997a1a6bff861d7c)), closes [#4312](https://github.com/mikro-orm/mikro-orm/issues/4312)
+
+
+
+
+
+## [5.7.4](https://github.com/mikro-orm/mikro-orm/compare/v5.7.3...v5.7.4) (2023-05-01)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.7.3](https://github.com/mikro-orm/mikro-orm/compare/v5.7.2...v5.7.3) (2023-04-28)
+
+
+### Bug Fixes
+
+* **postgres:** do not convert `date` column type to `Date` object automatically ([a7d1d09](https://github.com/mikro-orm/mikro-orm/commit/a7d1d09e710497d08d2c12346a76c664ed2d67e5)), closes [#4194](https://github.com/mikro-orm/mikro-orm/issues/4194) [#4276](https://github.com/mikro-orm/mikro-orm/issues/4276)
+
+
+
+
+
+## [5.7.2](https://github.com/mikro-orm/mikro-orm/compare/v5.7.1...v5.7.2) (2023-04-25)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.7.1](https://github.com/mikro-orm/mikro-orm/compare/v5.7.0...v5.7.1) (2023-04-25)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+# [5.7.0](https://github.com/mikro-orm/mikro-orm/compare/v5.6.16...v5.7.0) (2023-04-23)
+
+
+### Bug Fixes
+
+* **core:** detect `JsonType` based on `columnType` ([#4252](https://github.com/mikro-orm/mikro-orm/issues/4252)) ([2e01622](https://github.com/mikro-orm/mikro-orm/commit/2e01622963c8b22c6468b93a9cd3bc4d8e13bada)), closes [#4229](https://github.com/mikro-orm/mikro-orm/issues/4229)
+* **core:** rework JSON value processing ([#4194](https://github.com/mikro-orm/mikro-orm/issues/4194)) ([5594c46](https://github.com/mikro-orm/mikro-orm/commit/5594c469f05d2c1fc76f3cc1a388f5e7162f4e72)), closes [#4193](https://github.com/mikro-orm/mikro-orm/issues/4193)
+
+
+
+
+
+## [5.6.16](https://github.com/mikro-orm/mikro-orm/compare/v5.6.15...v5.6.16) (2023-04-04)
+
+
+### Reverts
+
+* Revert "chore(release): v5.6.16 [skip ci]" ([49faac9](https://github.com/mikro-orm/mikro-orm/commit/49faac95c86d4c65fb6f66f76efa98ba221dd67e))
+* Revert "chore(release): update internal dependencies to use tilde [skip ci]" ([381cba1](https://github.com/mikro-orm/mikro-orm/commit/381cba1fbf1141e1f754d25e1fd5748906425caa))
+
+
+
+
+
 ## [5.6.15](https://github.com/mikro-orm/mikro-orm/compare/v5.6.14...v5.6.15) (2023-03-18)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

@@ -96,8 +96,9 @@ describe('Utils', () => {
     expect(Utils.merge({ a: 'a', b: ['c'] }, { b: [] })).toEqual({ a: 'a', b: [] });
     expect(Utils.merge({ a: 'a', b: ['c'] }, { a: 'b' })).toEqual({ a: 'b', b: ['c'] });
     expect(Utils.merge({ a: 'a', b: ['c'] }, { a: null })).toEqual({ a: null, b: ['c'] });
-    expect(Utils.merge({ a: 'a', b: ['c'] }, { a: undefined })).toEqual({ a: 'a', b: ['c'] });
+    expect(Utils.merge({ a: 'a', b: ['c'] }, { a: undefined })).toEqual({ a: undefined, b: ['c'] });
     expect(Utils.merge('a', 'b')).toEqual('a');
+    expect(Utils.mergeConfig({ a: 'a', b: ['c'] }, { a: undefined })).toEqual({ a: 'a', b: ['c'] });
 
     // GH #4101
     const source = {
@@ -179,7 +180,7 @@ describe('Utils', () => {
   });
 
   test('extractPK with PK id/_id', () => {
-    const meta = orm.getMetadata().get(Author.name);
+    const meta = orm.getMetadata(Author);
     expect(Utils.extractPK('abcd')).toBe('abcd');
     expect(Utils.extractPK(123)).toBe(123);
     const id = new ObjectId(1);

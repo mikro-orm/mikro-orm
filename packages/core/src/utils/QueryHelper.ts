@@ -61,12 +61,12 @@ export class QueryHelper {
     }
 
     if (meta.primaryKeys.every(pk => pk in where) && Utils.getObjectKeysSize(where) === meta.primaryKeys.length) {
-      return !GroupOperator[key as string] && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => {
+      return !!key && !GroupOperator[key as string] && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => {
         if (Utils.isOperator(v, false)) {
           return false;
         }
 
-        if ([ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(meta.properties[k].reference)) {
+        if (meta.properties[k].primary && [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(meta.properties[k].reference)) {
           return this.inlinePrimaryKeyObjects(where[k], meta.properties[k].targetMeta, metadata, v);
         }
 
@@ -108,7 +108,12 @@ export class QueryHelper {
 
     if (Array.isArray(where) && root) {
       const rootPrimaryKey = meta ? Utils.getPrimaryKeyHash(meta.primaryKeys) : entityName;
-      const cond = { [rootPrimaryKey]: { $in: where } } as ObjectQuery<T>;
+      let cond = { [rootPrimaryKey]: { $in: where } } as FilterQuery<T>;
+
+      // detect tuple comparison, use `$or` in case the number of constituents don't match
+      if (meta && !where.every(c => Utils.isPrimaryKey(c) || Array.isArray(c) && c.length === meta.primaryKeys.length && c.every(i => Utils.isPrimaryKey(i)))) {
+        cond = { $or: where } as FilterQuery<T>;
+      }
 
       return QueryHelper.processWhere({ ...options, where: cond, root: false });
     }
@@ -124,7 +129,7 @@ export class QueryHelper {
       const composite = keys > 1;
 
       if (key in GroupOperator) {
-        o[key] = value.map((sub: any) => QueryHelper.processWhere<T>({ ...options, where: sub, root: false }));
+        o[key] = value.map((sub: any) => QueryHelper.processWhere<T>({ ...options, where: sub, root }));
         return o;
       }
 
@@ -235,6 +240,10 @@ export class QueryHelper {
 
     if (Array.isArray(cond) && !(key && ARRAY_OPERATORS.includes(key))) {
       return (cond as ObjectQuery<T>[]).map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as unknown as ObjectQuery<T>;
+    }
+
+    if (platform.isRaw(cond)) {
+      return cond;
     }
 
     return prop.customType.convertToDatabaseValue(cond, platform, { fromQuery, key, mode: 'query' });

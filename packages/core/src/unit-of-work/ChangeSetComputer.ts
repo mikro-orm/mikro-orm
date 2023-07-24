@@ -48,7 +48,7 @@ export class ChangeSetComputer {
       this.validator.validate(changeSet.entity, changeSet.payload, meta);
     }
 
-    for (const prop of meta.relations) {
+    for (const prop of meta.relations.filter(prop => prop.persist !== false || prop.userDefined === false)) {
       this.processProperty(changeSet, prop);
     }
 

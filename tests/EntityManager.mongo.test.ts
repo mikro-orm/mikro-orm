@@ -2101,6 +2101,7 @@ describe('EntityManagerMongo', () => {
 
     const bar = FooBar.create('b1');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
+    bar.blob2 = new Uint8Array([1, 2, 3, 4, 5]);
     bar.array = [];
     bar.object = { foo: 'bar', bar: 3 };
     await orm.em.persistAndFlush(bar);
@@ -2109,6 +2110,8 @@ describe('EntityManagerMongo', () => {
     const b1 = await orm.em.findOneOrFail(FooBar, bar.id);
     expect(b1.blob).toEqual(Buffer.from([1, 2, 3, 4, 5]));
     expect(b1.blob).toBeInstanceOf(Buffer);
+    expect(b1.blob2).toEqual(new Uint8Array([1, 2, 3, 4, 5]));
+    expect(b1.blob2).toBeInstanceOf(Uint8Array);
     expect(b1.array).toEqual([]);
     expect(b1.array).toBeInstanceOf(Array);
     expect(b1.object).toEqual({ foo: 'bar', bar: 3 });
@@ -2224,6 +2227,37 @@ describe('EntityManagerMongo', () => {
       dbName: 'bar',
       driver: MongoDriver,
     })).rejects.toThrowError(`WrongPrimaryKeyEntity.id has wrong field name, '_id' is required in current driver`);
+  });
+
+  test('GH #4431', async () => {
+    const authors = [
+      new Author('a', 'a@a.com'),
+      new Author('b', 'b@b.com'),
+      new Author('c', 'c@c.com'),
+      new Author('d', 'd@d.com'),
+      new Author('e', 'e@e.com'),
+    ];
+
+    authors[0].friends.add([authors[1], authors[3]]);
+
+    orm.em.persist(authors);
+    await orm.em.flush();
+
+    const books = [
+      new Book('One', authors[0]),
+      new Book('Two', authors[0]),
+      new Book('Three', authors[1]),
+      new Book('Four', authors[2]),
+      new Book('Five', authors[2]),
+      new Book('Six', authors[2]),
+    ];
+    orm.em.persist(books);
+
+    await orm.em.flush();
+    orm.em.clear();
+
+    const res = await orm.em.find(Author, {}, {});
+    expect(res).toHaveLength(5);
   });
 
   test('extracting child condition when populating (GH #1891)', async () => {

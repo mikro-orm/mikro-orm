@@ -1,4 +1,14 @@
-import { ManyToMany, Collection, Entity, Formula, JsonType, OneToOne, PrimaryKey, Property, OptionalProps } from '@mikro-orm/core';
+import {
+  ManyToMany,
+  Collection,
+  Entity,
+  Formula,
+  JsonType,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  OptionalProps,
+} from '@mikro-orm/core';
 import { BaseEntity22 } from './BaseEntity22';
 import { FooBaz2 } from './FooBaz2';
 import { Test2 } from './Test2';
@@ -28,6 +38,9 @@ export class FooBar2 extends BaseEntity22 {
 
   @Property({ nullable: true })
   blob?: Buffer;
+
+  @Property({ nullable: true })
+  blob2?: Uint8Array;
 
   @Property({ type: 'number[]', nullable: true })
   array?: number[];

@@ -5,7 +5,7 @@ import type { Logger } from './logging';
 import { Configuration, ConfigurationLoader, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
 import type { EntityManager } from './EntityManager';
-import type { Constructor, IEntityGenerator, IMigrator, ISeedManager } from './typings';
+import type { Constructor, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings';
 import { colors } from './logging';
 
 /**
@@ -35,7 +35,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     let opts = options instanceof Configuration ? options.getAll() : options;
-    opts = Utils.merge(opts, env);
+    opts = Utils.mergeConfig(opts, env);
     await ConfigurationLoader.commonJSCompat(opts as object);
 
     if ('DRIVER' in this && !opts.driver && !opts.type) {
@@ -76,10 +76,12 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       this.config = new Configuration(options);
     }
 
-    if (this.config.get('discovery').disableDynamicFileAccess) {
+    const discovery = this.config.get('discovery');
+
+    if (discovery.disableDynamicFileAccess) {
       this.config.set('metadataProvider', ReflectMetadataProvider);
       this.config.set('cache', { adapter: NullCacheAdapter });
-      this.config.set('discovery', { disableDynamicFileAccess: true, requireEntitiesArray: true, alwaysAnalyseProperties: false });
+      discovery.requireEntitiesArray = true;
     }
 
     this.driver = this.config.getDriver();
@@ -138,9 +140,24 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Gets the MetadataStorage.
+   * Gets the `MetadataStorage`.
    */
-  getMetadata(): MetadataStorage {
+  getMetadata(): MetadataStorage;
+
+  /**
+   * Gets the `EntityMetadata` instance when provided with the `entityName` parameter.
+   */
+  getMetadata<Entity extends object>(entityName: EntityName<Entity>): EntityMetadata<Entity>;
+
+  /**
+   * Gets the `MetadataStorage` (without parameters) or `EntityMetadata` instance when provided with the `entityName` parameter.
+   */
+  getMetadata<Entity extends object>(entityName?: EntityName<Entity>): EntityMetadata<Entity> | MetadataStorage {
+    if (entityName) {
+      entityName = Utils.className(entityName);
+      return this.metadata.get(entityName);
+    }
+
     return this.metadata;
   }
 
@@ -159,7 +176,8 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   async discoverEntity(entities: Constructor | Constructor[]): Promise<void> {
     entities = Utils.asArray(entities);
     const tmp = await this.discovery.discoverReferences(entities);
-    new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], this.config.get('discovery').warnWhenNoEntities!);
+    const options = this.config.get('discovery');
+    new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], options.warnWhenNoEntities, options.checkDuplicateTableNames);
     const metadata = await this.discovery.processDiscoveredEntities(tmp);
     metadata.forEach(meta => this.metadata.set(meta.className, meta));
     this.metadata.decorate(this.em);

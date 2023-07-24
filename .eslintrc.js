@@ -18,14 +18,15 @@ module.exports = {
   },
   plugins: [
     '@typescript-eslint',
+    'import',
   ],
   rules: {
     '@typescript-eslint/consistent-type-imports': 'error',
-    '@typescript-eslint/no-duplicate-imports': 'error',
     '@typescript-eslint/prefer-optional-chain': 'error',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-unsafe-declaration-merging': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/naming-convention': [
@@ -74,6 +75,7 @@ module.exports = {
     'constructor-super': 'error',
     'for-direction': 'error',
     'getter-return': 'error',
+    "import/no-duplicates": ["error", { "prefer-inline": true }],
     'no-async-promise-executor': 'error',
     'no-case-declarations': 'error',
     'no-class-assign': 'error',

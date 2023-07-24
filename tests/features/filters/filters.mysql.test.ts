@@ -10,7 +10,10 @@ describe('filters [mysql]', () => {
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   beforeEach(async () => orm.schema.clearDatabase());
-  afterAll(async () => orm.close(true));
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('filters', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');

@@ -1,7 +1,22 @@
 import type { Knex } from 'knex';
 import { inspect } from 'util';
-import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, QBFilterQuery } from '@mikro-orm/core';
-import { LockMode, OptimisticLockError, GroupOperator, QueryOperator, QueryOrderNumeric, ReferenceType, Utils } from '@mikro-orm/core';
+import type {
+  Dictionary,
+  EntityData,
+  EntityMetadata,
+  EntityProperty,
+  FlatQueryOrderMap,
+  QBFilterQuery,
+} from '@mikro-orm/core';
+import {
+  GroupOperator,
+  LockMode,
+  OptimisticLockError,
+  QueryOperator,
+  QueryOrderNumeric,
+  ReferenceType,
+  Utils,
+} from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
@@ -84,7 +99,7 @@ export class QueryBuilderHelper {
       return this.knex.raw(`${prop.formula(alias2)}${as}`);
     }
 
-    if (prop?.customType?.convertToJSValueSQL) {
+    if (prop?.hasConvertToJSValueSQL) {
       const prefixed = this.prefix(field, isTableNameAliasRequired, true);
       const valueSQL = prop.customType.convertToJSValueSQL!(prefixed, this.platform);
 
@@ -136,7 +151,7 @@ export class QueryBuilderHelper {
   joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
     const prop2 = prop.targetMeta!.properties[prop.mappedBy || prop.inversedBy];
     const table = this.getTableName(prop.type);
-    const schema = this.driver.getSchemaName(prop.targetMeta);
+    const schema = prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta);
     const joinColumns = prop.owner ? prop.referencedColumnNames : prop2.joinColumns;
     const inverseJoinColumns = prop.referencedColumnNames;
     const primaryKeys = prop.owner ? prop.joinColumns : prop2.referencedColumnNames;
@@ -386,7 +401,7 @@ export class QueryBuilderHelper {
 
   appendOnConflictClause<T>(type: QueryType, onConflict: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[], qb: Knex.QueryBuilder): void {
     onConflict.forEach(item => {
-      const sub = qb.onConflict(item.fields);
+      const sub = item.fields.length > 0 ? qb.onConflict(item.fields) : qb.onConflict();
       Utils.runIfNotEmpty(() => sub.ignore(), item.ignore);
       Utils.runIfNotEmpty(() => {
         let mergeParam: Dictionary | string[] = item.merge!;
@@ -584,12 +599,26 @@ export class QueryBuilderHelper {
     return ret.join(', ');
   }
 
-  finalize(type: QueryType, qb: Knex.QueryBuilder, meta?: EntityMetadata): void {
-    const useReturningStatement = type === QueryType.INSERT && this.platform.usesReturningStatement() && meta && !meta.compositePK;
+  finalize(type: QueryType, qb: Knex.QueryBuilder, meta?: EntityMetadata, data?: Dictionary, returning?: Field<any>[]): void {
+    if (!meta || !data || !this.platform.usesReturningStatement()) {
+      return;
+    }
 
-    if (useReturningStatement) {
-      const returningProps = meta!.hydrateProps.filter(prop => prop.persist !== false && (prop.primary || prop.defaultRaw));
-      qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
+    // always respect explicit returning hint
+    if (returning && returning.length > 0) {
+      qb.returning(returning.map(field => this.mapper(field as string, type)));
+
+      return;
+    }
+
+    if (type === QueryType.INSERT) {
+      const returningProps = meta.hydrateProps
+        .filter(prop => prop.returning || (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)))
+        .filter(prop => !(prop.name in data));
+
+      if (returningProps.length > 0) {
+        qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
+      }
     }
   }
 
@@ -786,12 +815,13 @@ export class QueryBuilderHelper {
       }
 
       if (prop.customType && convertCustomTypes && !this.platform.isRaw(data[k])) {
-        data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, { fromQuery: true, key: k, mode: 'query' });
+        data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, { fromQuery: true, key: k, mode: 'query-data' });
       }
 
-      if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(data[k])) {
+      if (prop.hasConvertToDatabaseValueSQL && !this.platform.isRaw(data[k])) {
         const quoted = this.platform.quoteValue(data[k]);
-        data[k] = this.knex.raw(prop.customType.convertToDatabaseValueSQL!(quoted, this.platform).replace(/\?/, '\\?'));
+        const sql = prop.customType.convertToDatabaseValueSQL!(quoted, this.platform);
+        data[k] = this.knex.raw(sql.replace(/\?/g, '\\?'));
       }
 
       if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {

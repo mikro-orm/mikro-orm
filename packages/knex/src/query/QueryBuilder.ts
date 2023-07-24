@@ -98,6 +98,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private _orderBy: QueryOrderMap<T>[] = [];
   private _groupBy: Field<T>[] = [];
   private _having: Dictionary = {};
+  private _returning?: Field<T>[];
   private _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[];
   private _limit?: number;
   private _offset?: number;
@@ -208,13 +209,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this.join(field, alias, cond, 'leftJoin');
   }
 
-  joinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string): SelectQueryBuilder<T> {
+  joinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string, fields?: string[]): SelectQueryBuilder<T> {
     if (!this.type) {
       this.select('*');
     }
 
     const prop = this.joinReference(field, alias, cond, type, path);
-    this.addSelect(this.getFieldsForJoinedLoad<T>(prop, alias));
+    this.addSelect(this.getFieldsForJoinedLoad<T>(prop, alias, fields));
     const [fromAlias] = this.helper.splitField(field);
     const populate = this._joinedProps.get(fromAlias);
     const item = { field: prop.name, strategy: LoadStrategy.JOINED, children: [] };
@@ -230,14 +231,18 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this as SelectQueryBuilder<T>;
   }
 
-  leftJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}): SelectQueryBuilder<T> {
-    return this.joinAndSelect(field, alias, cond, 'leftJoin');
+  leftJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, fields?: string[]): SelectQueryBuilder<T> {
+    return this.joinAndSelect(field, alias, cond, 'leftJoin', undefined, fields);
   }
 
-  protected getFieldsForJoinedLoad<U extends object>(prop: EntityProperty<U>, alias: string): Field<U>[] {
+  innerJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, fields?: string[]): SelectQueryBuilder<T> {
+    return this.joinAndSelect(field, alias, cond, 'innerJoin', undefined, fields);
+  }
+
+  protected getFieldsForJoinedLoad<U extends object>(prop: EntityProperty<U>, alias: string, explicitFields?: string[]): Field<U>[] {
     const fields: Field<U>[] = [];
     prop.targetMeta!.props
-      .filter(prop => this.platform.shouldHaveColumn(prop, this._populate))
+      .filter(prop => explicitFields ? explicitFields.includes(prop.name) || prop.primary : this.platform.shouldHaveColumn(prop, this._populate))
       .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<U>(this as unknown as QueryBuilder<U>, prop, alias)));
 
     return fields;
@@ -373,6 +378,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this;
   }
 
+  returning(fields?: Field<T> | Field<T>[]): this {
+    this._returning = fields != null ? Utils.asArray(fields) : fields;
+    return this;
+  }
+
   /**
    * @internal
    */
@@ -495,6 +505,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   getKnexQuery(): Knex.QueryBuilder {
     this.finalize();
     const qb = this.getQueryBase();
+    (qb as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
 
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type ?? QueryType.SELECT, this._cond, qb), this._cond && !this._onConflict);
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), this._groupBy);
@@ -518,7 +529,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.helper.getLockSQL(qb, this.lockMode, this.lockTables);
     }
 
-    this.helper.finalize(this.type ?? QueryType.SELECT, qb, this.mainAlias.metadata);
+    this.helper.finalize(this.type ?? QueryType.SELECT, qb, this.mainAlias.metadata, this._data, this._returning);
 
     return qb;
   }
@@ -745,7 +756,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     // clone array/object properties
     const properties = [
       'flags', '_populate', '_populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
-      '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables',
+      '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
     ];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop]));
 
@@ -787,12 +798,18 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): EntityProperty {
     this.ensureNotFinalized();
     const [fromAlias, fromField] = this.helper.splitField(field);
-    const entityName = this._aliases[fromAlias]?.entityName;
+    const q = (str: string) => `'${str}'`;
+
+    if (!this._aliases[fromAlias]) {
+      throw new Error(`Trying to join ${q(fromField)} with alias ${q(fromAlias)}, but ${q(fromAlias)} is not a known alias. Available aliases are: ${Object.keys(this._aliases).map(q).join(', ')}.`);
+    }
+
+    const entityName = this._aliases[fromAlias].entityName;
     const meta = this.metadata.get(entityName);
     const prop = meta.properties[fromField];
 
     if (!prop) {
-      throw new Error(`Trying to join ${field}, but ${fromField} is not a defined relation on ${meta.className}`);
+      throw new Error(`Trying to join ${q(field)}, but ${q(fromField)} is not a defined relation on ${meta.className}.`);
     }
 
     this.createAlias(prop.type, alias);
@@ -886,7 +903,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     const meta = this.mainAlias.metadata;
     /* istanbul ignore next */
-    const requiresSQLConversion = meta?.props.filter(p => p.customType?.convertToJSValueSQL) ?? [];
+    const requiresSQLConversion = meta?.props.filter(p => p.hasConvertToJSValueSQL) ?? [];
 
     if (this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES) && (fields.includes('*') || fields.includes(`${this.mainAlias.aliasName}.*`)) && requiresSQLConversion.length > 0) {
       requiresSQLConversion.forEach(p => ret.push(this.helper.mapper(p.name, this.type)));
@@ -1041,8 +1058,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
     QueryHelper.processObjectParams(this._cond);
     QueryHelper.processObjectParams(this._having);
 
-    // automatically enable paginate flag when we detect to-many joins
-    if (!this.flags.has(QueryFlag.DISABLE_PAGINATE) && this.hasToManyJoins()) {
+    // automatically enable paginate flag when we detect to-many joins, but only if there is no `group by` clause
+    if (!this.flags.has(QueryFlag.DISABLE_PAGINATE) && this._groupBy.length === 0 && this.hasToManyJoins()) {
       this.flags.add(QueryFlag.PAGINATE);
     }
 
@@ -1117,6 +1134,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     // multiple sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
     // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu
     const subSubQuery = this.getKnex().select(pks).from(knexQuery);
+    (subSubQuery as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
     this._limit = undefined;
     this._offset = undefined;
     const cond = this._cond;

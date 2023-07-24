@@ -2,7 +2,7 @@
 
 exports[`Migrator - with explicit migrations runner: migrator-migrations-list 1`] = `
 [
-  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test' (via write connection '127.0.0.1')",
+  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations' (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -23,7 +23,7 @@ exports[`Migrator - with explicit migrations runner: migrator-migrations-list 1`
   "select 1 - 1 (via write connection '127.0.0.1')",
   "set foreign_key_checks = 1; (via write connection '127.0.0.1')",
   "release savepointtrx_xx (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
 ]
 `;
@@ -53,7 +53,7 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);');
     this.addSql('alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);');
 
@@ -200,7 +200,7 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
       "",
-      "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;",
+      "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);",
       "alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);",
       "",
@@ -551,7 +551,7 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);');
     this.addSql('alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);');
 
@@ -698,7 +698,7 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
       "",
-      "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;",
+      "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);",
       "alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);",
       "",
@@ -828,7 +828,7 @@ export class Migration20191013214813 extends Migration {
 
 exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
 [
-  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test' (via write connection '127.0.0.1')",
+  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations' (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "create table \`mikro_orm_migrations\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp) (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -840,7 +840,7 @@ exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disab
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
@@ -851,7 +851,7 @@ exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disab
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
@@ -864,13 +864,13 @@ exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disab
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
 ]
 `;
 
 exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = `
 [
-  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test' (via write connection '127.0.0.1')",
+  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations' (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "create table \`mikro_orm_migrations\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp) (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
@@ -885,7 +885,7 @@ exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = 
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx\\d+ (via write connection '127.0.0.1')",
   "release savepointtrx\\d+ (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
@@ -900,7 +900,7 @@ exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = 
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx\\d+ (via write connection '127.0.0.1')",
   "release savepointtrx\\d+ (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
@@ -919,7 +919,7 @@ exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = 
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx\\d+ (via write connection '127.0.0.1')",
   "release savepointtrx\\d+ (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
 ]
 `;
@@ -927,7 +927,7 @@ exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = 
 exports[`Migrator up/down with explicit transaction: explicit-tx 1`] = `
 [
   "begin (via write connection '127.0.0.1')",
-  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test' (via write connection '127.0.0.1')",
+  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations' (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "create table \`mikro_orm_migrations\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp) (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -943,12 +943,12 @@ exports[`Migrator up/down with explicit transaction: explicit-tx 1`] = `
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx_xx (via write connection '127.0.0.1')",
   "release savepointtrx_xx (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx_xx (via write connection '127.0.0.1')",
   "release savepointtrx_xx (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",

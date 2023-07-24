@@ -7,7 +7,10 @@ let orm: MikroORM;
 
 beforeAll(async () => orm = await initORMPostgreSql());
 beforeEach(() => orm.schema.clearDatabase());
-afterAll(() => orm.close(true));
+afterAll(async () => {
+  await orm.schema.dropDatabase();
+  await orm.close(true);
+});
 
 async function createEntities() {
   const god = new Author2('God', 'hello@heaven.god');

@@ -108,8 +108,8 @@ describe('length diffing in mysql', () => {
   afterAll(() => orm.close(true));
 
   test('schema generator updates column types when length changes (varchar, decimal, ...)', async () => {
-    await orm.discoverEntity(Book1);
     orm.getMetadata().reset('Book0');
+    await orm.discoverEntity(Book1);
     const diff1 = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await generator.execute(diff1);

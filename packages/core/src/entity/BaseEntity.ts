@@ -1,8 +1,9 @@
 import type { IdentifiedReference } from './Reference';
 import { Reference } from './Reference';
-import type { EntityData, EntityDTO, Loaded } from '../typings';
+import type { AutoPath, EntityData, EntityDTO, Loaded } from '../typings';
 import type { AssignOptions } from './EntityAssigner';
 import { EntityAssigner } from './EntityAssigner';
+import type { EntityLoaderOptions } from './EntityLoader';
 import { helper } from './wrap';
 
 export abstract class BaseEntity<Entity extends object, Primary extends keyof Entity, Populate extends string = string> {
@@ -17,6 +18,13 @@ export abstract class BaseEntity<Entity extends object, Primary extends keyof En
 
   populated(populated = true): void {
     helper(this).populated(populated);
+  }
+
+  async populate<This extends this, Hint extends string = never>(
+    populate: AutoPath<This, Hint>[] | boolean,
+    options: EntityLoaderOptions<This, Hint> = {},
+  ): Promise<Loaded<This, Hint>> {
+    return helper(this as This).populate(populate, options);
   }
 
   toReference(): IdentifiedReference<Entity, Primary> {

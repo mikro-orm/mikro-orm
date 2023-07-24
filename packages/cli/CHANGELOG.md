@@ -3,6 +3,142 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.13](https://github.com/mikro-orm/mikro-orm/compare/v5.7.12...v5.7.13) (2023-07-16)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.7.12](https://github.com/mikro-orm/mikro-orm/compare/v5.7.11...v5.7.12) (2023-06-10)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.7.11](https://github.com/mikro-orm/mikro-orm/compare/v5.7.10...v5.7.11) (2023-06-01)
+
+
+### Bug Fixes
+
+* **cli:** expose missing `migration:check` command ([#4388](https://github.com/mikro-orm/mikro-orm/issues/4388)) ([79e128e](https://github.com/mikro-orm/mikro-orm/commit/79e128e34fd1587e345716174fcb7c11ce983568))
+
+
+
+
+
+## [5.7.10](https://github.com/mikro-orm/mikro-orm/compare/v5.7.9...v5.7.10) (2023-05-23)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.7.9](https://github.com/mikro-orm/mikro-orm/compare/v5.7.8...v5.7.9) (2023-05-22)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.7.8](https://github.com/mikro-orm/mikro-orm/compare/v5.7.7...v5.7.8) (2023-05-21)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.7.7](https://github.com/mikro-orm/mikro-orm/compare/v5.7.6...v5.7.7) (2023-05-14)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.7.6](https://github.com/mikro-orm/mikro-orm/compare/v5.7.5...v5.7.6) (2023-05-13)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.7.5](https://github.com/mikro-orm/mikro-orm/compare/v5.7.4...v5.7.5) (2023-05-09)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.7.4](https://github.com/mikro-orm/mikro-orm/compare/v5.7.3...v5.7.4) (2023-05-01)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.7.3](https://github.com/mikro-orm/mikro-orm/compare/v5.7.2...v5.7.3) (2023-04-28)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.7.2](https://github.com/mikro-orm/mikro-orm/compare/v5.7.1...v5.7.2) (2023-04-25)
+
+
+### Bug Fixes
+
+* **cli:** await the yargs.parse call in esm.ts ([#4272](https://github.com/mikro-orm/mikro-orm/issues/4272)) ([dcdf70a](https://github.com/mikro-orm/mikro-orm/commit/dcdf70a537eb733d7b4f0dea054bbef0b72b48a0))
+
+
+
+
+
+## [5.7.1](https://github.com/mikro-orm/mikro-orm/compare/v5.7.0...v5.7.1) (2023-04-25)
+
+
+### Bug Fixes
+
+* **cli:** await the `yargs.parse` call ([3757472](https://github.com/mikro-orm/mikro-orm/commit/37574723d0ce37a8d0d3284124d836a517f451a7)), closes [#4265](https://github.com/mikro-orm/mikro-orm/issues/4265)
+
+
+
+
+
+# [5.7.0](https://github.com/mikro-orm/mikro-orm/compare/v5.6.16...v5.7.0) (2023-04-23)
+
+
+### Features
+
+* **migrations:** add support for custom migration names ([#4250](https://github.com/mikro-orm/mikro-orm/issues/4250)) ([fb2879e](https://github.com/mikro-orm/mikro-orm/commit/fb2879e21575a54d1b05c7d1fc250d5f713d9b44))
+
+
+
+
+
+## [5.6.16](https://github.com/mikro-orm/mikro-orm/compare/v5.6.15...v5.6.16) (2023-04-04)
+
+
+### Reverts
+
+* Revert "chore(release): v5.6.16 [skip ci]" ([49faac9](https://github.com/mikro-orm/mikro-orm/commit/49faac95c86d4c65fb6f66f76efa98ba221dd67e))
+* Revert "chore(release): update internal dependencies to use tilde [skip ci]" ([381cba1](https://github.com/mikro-orm/mikro-orm/commit/381cba1fbf1141e1f754d25e1fd5748906425caa))
+
+
+
+
+
 ## [5.6.15](https://github.com/mikro-orm/mikro-orm/compare/v5.6.14...v5.6.15) (2023-03-18)
 
 **Note:** Version bump only for package @mikro-orm/cli

@@ -237,6 +237,7 @@ export const types = {
   datetime: DateTimeType,
   bigint: BigIntType,
   blob: BlobType,
+  uint8array: Uint8ArrayType,
   array: ArrayType,
   enumArray: EnumArrayType,
   enum: EnumType,
@@ -289,6 +290,17 @@ Blob type can be used to store binary data in the database.
 ```ts
 @Property({ type: BlobType, nullable: true })
 blob?: Buffer;
+```
+
+### Uint8ArrayType
+
+Uint8Array type can be used to store binary data in the database.
+
+> `Uint8ArrayType` will be used automatically if you specify the type hint as `Uint8Array`. This means that the following example should work even without the explicit `type: Uint8ArrayType` option (with both reflect-metadata and ts-morph providers).
+
+```ts
+@Property({ type: Uint8ArrayType, nullable: true })
+blob?: Uint8Array;
 ```
 
 ### JsonType

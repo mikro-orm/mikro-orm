@@ -132,7 +132,8 @@ export interface IQueryBuilder<T> {
   join(field: string, alias: string, cond?: QBFilterQuery, type?: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): this;
   leftJoin(field: string, alias: string, cond?: QBFilterQuery): this;
   joinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
-  leftJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
+  leftJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;
+  innerJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;
   withSubQuery(subQuery: Knex.QueryBuilder, alias: string): this;
   where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
   where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
@@ -145,6 +146,7 @@ export interface IQueryBuilder<T> {
   having(cond?: QBFilterQuery | string, params?: any[]): this;
   getAliasForJoinPath(path: string): string | undefined;
   getNextAlias(entityName?: string): string;
+  raw(field: string): any;
 }
 
 export interface ICriteriaNode {

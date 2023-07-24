@@ -34,6 +34,7 @@ import type {
   GetRepository,
   IHydrator,
   Loaded,
+  MaybePromise,
   PaginatedResult,
   Populate,
   PopulateOptions,
@@ -42,7 +43,7 @@ import type {
   SimplePaginatedResult,
 } from './typings';
 import type { TransactionOptions } from './enums';
-import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
+import { EventType, FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
 import type { FlushEventArgs } from './events';
@@ -71,6 +72,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private filters: Dictionary<FilterDef> = {};
   private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;
+  private disableTransactions = this.config.get('disableTransactions');
   private flushMode?: FlushMode;
 
   /**
@@ -195,10 +197,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         convertCustomTypes: true,
       }) as Entity;
 
-      if (!meta.virtual) {
-        em.unitOfWork.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
-      }
-
       ret.push(entity);
     }
 
@@ -245,22 +243,22 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter<T1>(name: string, cond: FilterQuery<T1> | ((args: Dictionary) => FilterQuery<T1>), entityName?: EntityName<T1> | [EntityName<T1>], enabled?: boolean): void;
+  addFilter<T1>(name: string, cond: FilterQuery<T1> | ((args: Dictionary) => MaybePromise<FilterQuery<T1>>), entityName?: EntityName<T1> | [EntityName<T1>], enabled?: boolean): void;
 
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter<T1, T2>(name: string, cond: FilterQuery<T1 | T2> | ((args: Dictionary) => FilterQuery<T1 | T2>), entityName?: [EntityName<T1>, EntityName<T2>], enabled?: boolean): void;
+  addFilter<T1, T2>(name: string, cond: FilterQuery<T1 | T2> | ((args: Dictionary) => MaybePromise<FilterQuery<T1 | T2>>), entityName?: [EntityName<T1>, EntityName<T2>], enabled?: boolean): void;
 
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter<T1, T2, T3>(name: string, cond: FilterQuery<T1 | T2 | T3> | ((args: Dictionary) => FilterQuery<T1 | T2 | T3>), entityName?: [EntityName<T1>, EntityName<T2>, EntityName<T3>], enabled?: boolean): void;
+  addFilter<T1, T2, T3>(name: string, cond: FilterQuery<T1 | T2 | T3> | ((args: Dictionary) => MaybePromise<FilterQuery<T1 | T2 | T3>>), entityName?: [EntityName<T1>, EntityName<T2>, EntityName<T3>], enabled?: boolean): void;
 
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter(name: string, cond: Dictionary | ((args: Dictionary) => FilterQuery<AnyEntity>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], enabled = true): void {
+  addFilter(name: string, cond: Dictionary | ((args: Dictionary) => MaybePromise<FilterQuery<AnyEntity>>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], enabled = true): void {
     const options: FilterDef = { name, cond, default: enabled };
 
     if (entityName) {
@@ -301,7 +299,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: options.convertCustomTypes,
       aliased: type === 'read',
     });
-    where = await this.applyFilters(entityName, where, options.filters ?? {}, type);
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, type, options);
     where = await this.applyDiscriminatorCondition(entityName, where);
 
     return where;
@@ -332,7 +330,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  async applyFilters<Entity extends object>(entityName: string, where: FilterQuery<Entity>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<Entity>> {
+  async applyFilters<Entity extends object>(entityName: string, where: FilterQuery<Entity>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete', findOptions?: FindOptions<any, any> | FindOneOptions<any, any>): Promise<FilterQuery<Entity>> {
     const meta = this.metadata.find<Entity>(entityName);
     const filters: FilterDef[] = [];
     const ret: Dictionary[] = [];
@@ -367,7 +365,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
           throw new Error(`No arguments provided for filter '${filter.name}'`);
         }
 
-        cond = await filter.cond(args, type, this);
+        cond = await filter.cond(args, type, this, findOptions);
       } else {
         cond = filter.cond;
       }
@@ -534,7 +532,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     });
 
     if (!meta.virtual) {
-      em.unitOfWork.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
       await em.lockAndPopulate(entityName, entity, where, options);
     }
 
@@ -618,7 +615,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       entity = data as Entity;
 
       if (helper(entity).__managed && helper(entity).__em === em) {
-        em.entityFactory.mergeData(meta, entity, data);
+        em.entityFactory.mergeData(meta, entity, data, { initialized: true });
         return entity;
       }
 
@@ -644,7 +641,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         where = { [unique[propIndex]]: data[unique[propIndex]] } as FilterQuery<Entity>;
       } else if (meta.uniques.length > 0) {
         for (const u of meta.uniques) {
-          if (Utils.asArray(u.properties).every(p => data![p])) {
+          if (Utils.asArray(u.properties).every(p => data![p] != null)) {
             where = Utils.asArray(u.properties).reduce((o, key) => {
               o[key] = data![key];
               return o;
@@ -663,6 +660,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     data = QueryHelper.processObjectParams(data) as EntityData<Entity>;
     em.validator.validateParams(data, 'insert data');
+
+    if (em.eventManager.hasListeners(EventType.beforeUpsert, meta)) {
+      await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity: data, em, meta }, meta);
+    }
+
     const ret = await em.driver.nativeUpdate(entityName, where, data, {
       ctx: em.transactionContext,
       upsert: true,
@@ -677,20 +679,24 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: true,
     });
 
-    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, ret.row, meta);
+    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta);
 
     if (!helper(entity).hasPrimaryKey()) {
       const pk = await this.driver.findOne(meta.className, where, {
-        fields: meta.primaryKeys as [],
+        fields: meta.comparableProps.filter(p => !p.lazy && !(p.name in data!)).map(p => p.name) as EntityField<Entity>[],
         ctx: em.transactionContext,
         convertCustomTypes: true,
       });
-      em.entityFactory.mergeData(meta, entity, pk!);
+      em.entityFactory.mergeData(meta, entity, pk!, { initialized: true });
     }
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
     const snapshot = this.comparator.prepareEntity(entity);
     em.unitOfWork.registerManaged(entity, snapshot, { refresh: true });
+
+    if (em.eventManager.hasListeners(EventType.afterUpsert, meta)) {
+      await em.eventManager.dispatchEvent(EventType.afterUpsert, { entity, em, meta }, meta);
+    }
 
     return entity;
   }
@@ -738,6 +744,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const allData: EntityData<Entity>[] = [];
     const allWhere: FilterQuery<Entity>[] = [];
     const entities = new Map<Entity, EntityData<Entity>>();
+    const entitiesByData = new Map<EntityData<Entity>, Entity>();
 
     for (let row of data) {
       let where: FilterQuery<Entity>;
@@ -746,8 +753,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         const entity = row as Entity;
 
         if (helper(entity).__managed && helper(entity).__em === em) {
-          em.entityFactory.mergeData(meta, entity, row);
+          em.entityFactory.mergeData(meta, entity, row, { initialized: true });
           entities.set(entity, row);
+          entitiesByData.set(row, entity);
           continue;
         }
 
@@ -762,22 +770,23 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
           if (exists) {
             em.assign(exists, row);
             entities.set(exists, row);
+            entitiesByData.set(row, exists);
             continue;
           }
         }
       }
 
       const unique = meta.props.filter(p => p.unique).map(p => p.name);
-      propIndex = unique.findIndex(p => row![p] != null);
+      propIndex = unique.findIndex(p => row[p] != null);
 
       if (where == null) {
         if (propIndex >= 0) {
           where = { [unique[propIndex]]: row[unique[propIndex]] } as FilterQuery<Entity>;
         } else if (meta.uniques.length > 0) {
           for (const u of meta.uniques) {
-            if (Utils.asArray(u.properties).every(p => row![p])) {
+            if (Utils.asArray(u.properties).every(p => row[p] != null)) {
               where = Utils.asArray(u.properties).reduce((o, key) => {
-                o[key] = row![key];
+                o[key] = row[key];
                 return o;
               }, {} as FilterQuery<Entity>);
               break;
@@ -802,6 +811,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return [...entities.keys()];
     }
 
+    if (em.eventManager.hasListeners(EventType.beforeUpsert, meta)) {
+      for (const dto of data) {
+        const entity = entitiesByData.get(dto) ?? dto;
+        await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity, em, meta }, meta);
+      }
+    }
+
     const ret = await em.driver.nativeUpdateMany(entityName, allWhere, allData, {
       ctx: em.transactionContext,
       upsert: true,
@@ -810,6 +826,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     });
 
     entities.clear();
+    entitiesByData.clear();
     const loadPK = new Map<Entity, FilterQuery<Entity>>();
 
     allData.forEach((row, i) => {
@@ -820,18 +837,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         convertCustomTypes: true,
       });
 
-      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, ret.rows?.[i], meta);
+      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data![i], ret.rows?.[i], meta);
 
       if (!helper(entity).hasPrimaryKey()) {
         loadPK.set(entity, allWhere[i]);
       }
 
       entities.set(entity, row);
+      entitiesByData.set(row, entity);
     });
 
     // skip if we got the PKs via returning statement (`rows`)
     if (!ret.rows?.length && loadPK.size > 0) {
-      const unique = meta.props.filter(p => p.unique).map(p => p.name);
+      const unique = meta.hydrateProps.filter(p => !p.lazy).map(p => p.name);
       const add = new Set(propIndex! >= 0 ? [unique[propIndex!]] : []);
 
       for (const cond of loadPK.values()) {
@@ -839,15 +857,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       const pks = await this.driver.find(meta.className, { $or: [...loadPK.values()] as Dictionary[] }, {
-        fields: meta.primaryKeys.concat(...add),
+        fields: meta.comparableProps.filter(p => !p.lazy && !(p.name in data![0] && !add.has(p.name))).map(p => p.name),
         ctx: em.transactionContext,
         convertCustomTypes: true,
       });
 
       for (const [entity, cond] of loadPK.entries()) {
         const pk = pks.find(pk => {
-          const tmp = { ...pk };
-          meta.primaryKeys.forEach(pk => delete tmp[pk]);
+          const tmp = {};
+          add.forEach(k => {
+            if (!meta.properties[k]?.primary) {
+              tmp[k] = pk[k];
+            }
+          });
           return this.comparator.matching(entityName, cond, tmp);
         });
 
@@ -856,7 +878,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
           throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
         }
 
-        em.entityFactory.mergeData(meta, entity, pk);
+        em.entityFactory.mergeData(meta, entity, pk, { initialized: true });
       }
     }
 
@@ -864,6 +886,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       // recompute the data as there might be some values missing (e.g. those with db column defaults)
       const snapshot = this.comparator.prepareEntity(entity);
       em.unitOfWork.registerManaged(entity, snapshot, { refresh: true });
+    }
+
+    if (em.eventManager.hasListeners(EventType.afterUpsert, meta)) {
+      for (const [entity] of entities) {
+        await em.eventManager.dispatchEvent(EventType.afterUpsert, { entity, em, meta }, meta);
+      }
     }
 
     return [...entities.keys()];
@@ -874,10 +902,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
     const em = this.getContext(false);
+
+    if (this.disableTransactions) {
+      return cb(em);
+    }
+
     const fork = em.fork({
       clear: false, // state will be merged once resolves
       flushMode: options.flushMode,
       cloneEventManager: true,
+      disableTransactions: options.ignoreNestedTransactions,
     });
     options.ctx ??= em.transactionContext;
 
@@ -908,7 +942,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Starts new transaction bound to this EntityManager. Use `ctx` parameter to provide the parent when nesting transactions.
    */
-  async begin(options: TransactionOptions = {}): Promise<void> {
+  async begin(options: Omit<TransactionOptions, 'ignoreNestedTransactions'> = {}): Promise<void> {
+    if (this.disableTransactions) {
+      return;
+    }
+
     const em = this.getContext(false);
     em.transactionContext = await em.getConnection('write').begin({ ...options, eventBroadcaster: new TransactionEventBroadcaster(em) });
   }
@@ -918,6 +956,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async commit(): Promise<void> {
     const em = this.getContext(false);
+
+    if (this.disableTransactions) {
+      await em.flush();
+      return;
+    }
 
     if (!em.transactionContext) {
       throw ValidationError.transactionRequired();
@@ -932,6 +975,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Rollbacks the transaction bound to this EntityManager.
    */
   async rollback(): Promise<void> {
+    if (this.disableTransactions) {
+      return;
+    }
+
     const em = this.getContext(false);
 
     if (!em.transactionContext) {
@@ -1407,6 +1454,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     em.config.set('allowGlobalContext', true);
     const fork = new (em.constructor as typeof EntityManager)(em.config, em.driver, em.metadata, options.useContext, eventManager);
     fork.setFlushMode(options.flushMode ?? em.flushMode);
+    fork.disableTransactions = options.disableTransactions ?? this.disableTransactions ?? this.config.get('disableTransactions');
     em.config.set('allowGlobalContext', allowGlobalContext);
 
     fork.filters = { ...em.filters };
@@ -1508,9 +1556,24 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Gets the MetadataStorage.
+   * Gets the `MetadataStorage`.
    */
-  getMetadata(): MetadataStorage {
+  getMetadata(): MetadataStorage;
+
+  /**
+   * Gets the `EntityMetadata` instance when provided with the `entityName` parameter.
+   */
+  getMetadata<Entity extends object>(entityName: EntityName<Entity>): EntityMetadata<Entity>;
+
+  /**
+   * Gets the `MetadataStorage` (without parameters) or `EntityMetadata` instance when provided with the `entityName` parameter.
+   */
+  getMetadata<Entity extends object>(entityName?: EntityName<Entity>): EntityMetadata<Entity> | MetadataStorage {
+    if (entityName) {
+      entityName = Utils.className(entityName);
+      return this.metadata.get(entityName);
+    }
+
     return this.metadata;
   }
 
@@ -1727,5 +1790,8 @@ export interface ForkOptions {
   cloneEventManager?: boolean;
   /** use this flag to ignore current async context - this is required if we want to call `em.fork()` inside the `getContext` handler */
   disableContextResolution?: boolean;
+  /** set flush mode for this fork, overrides the global option, can be overridden locally via FindOptions */
   flushMode?: FlushMode;
+  /** disable transactions for this fork */
+  disableTransactions?: boolean;
 }

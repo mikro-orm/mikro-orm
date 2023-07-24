@@ -113,17 +113,16 @@ export abstract class AbstractSqlConnection extends Connection {
 
     const formatted = this.platform.formatQuery(queryOrKnex, params);
     const sql = this.getSql(queryOrKnex, formatted);
-    const res = await this.executeQuery<any>(sql, () => {
+    return this.executeQuery<T>(sql, async () => {
       const query = this.client.raw(formatted);
 
       if (ctx) {
         query.transacting(ctx);
       }
 
-      return query;
+      const res = await query;
+      return this.transformRawResult<T>(res, method);
     }, { query: queryOrKnex, params });
-
-    return this.transformRawResult<T>(res, method);
   }
 
   /**
@@ -151,7 +150,7 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   protected getKnexOptions(type: string): Knex.Config {
-    const config = Utils.merge({
+    const config = Utils.mergeConfig({
       client: type,
       connection: this.getConnectionOptions(),
       pool: this.config.get('pool'),

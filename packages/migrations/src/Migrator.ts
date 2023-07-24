@@ -47,9 +47,9 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async createMigration(path?: string, blank = false, initial = false): Promise<MigrationResult> {
+  async createMigration(path?: string, blank = false, initial = false, name?: string): Promise<MigrationResult> {
     if (initial) {
-      return this.createInitialMigration(path);
+      return this.createInitialMigration(path, name);
     }
 
     await this.ensureMigrationsDirExists();
@@ -60,8 +60,7 @@ export class Migrator implements IMigrator {
     }
 
     await this.storeCurrentSchema();
-    const migration = await this.generator.generate(diff, path);
-
+    const migration = await this.generator.generate(diff, path, name);
     return {
       fileName: migration[1],
       code: migration[0],
@@ -78,12 +77,12 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async createInitialMigration(path?: string): Promise<MigrationResult> {
+  async createInitialMigration(path?: string, name?: string): Promise<MigrationResult> {
     await this.ensureMigrationsDirExists();
     const schemaExists = await this.validateInitialMigration();
     const diff = await this.getSchemaDiff(false, true);
     await this.storeCurrentSchema();
-    const migration = await this.generator.generate(diff, path);
+    const migration = await this.generator.generate(diff, path, name);
 
     if (schemaExists) {
       await this.storage.logMigration({ name: migration[1], context: null });
@@ -241,9 +240,9 @@ export class Migrator implements IMigrator {
     };
   }
 
-  protected async getCurrentSchema(): Promise<DatabaseSchema> {
+  protected async getSchemaFromSnapshot() {
     if (!this.options.snapshot || !await pathExists(this.snapshotPath)) {
-      return DatabaseSchema.create(this.driver.getConnection(), this.driver.getPlatform(), this.config);
+      return undefined;
     }
 
     const data = await Utils.dynamicImport(this.snapshotPath);
@@ -300,7 +299,7 @@ export class Migrator implements IMigrator {
         wrap: false,
         safe: this.options.safe,
         dropTables: this.options.dropTables,
-        fromSchema: await this.getCurrentSchema(),
+        fromSchema: await this.getSchemaFromSnapshot(),
       });
       up.push(...diff.up.split('\n'));
       down.push(...diff.down.split('\n'));

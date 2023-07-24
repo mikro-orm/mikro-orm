@@ -38,6 +38,8 @@ export class MariaDbConnection extends AbstractSqlConnection {
 
     ret.bigNumberStrings = true;
     ret.supportBigNumbers = true;
+    // @ts-ignore
+    ret.checkDuplicate = false;
 
     return ret;
   }

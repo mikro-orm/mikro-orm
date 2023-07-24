@@ -1,7 +1,15 @@
 import type { Transaction } from './connections';
 import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrderMap } from './enums';
 import { ReferenceType } from './enums';
-import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference } from './entity';
+import type {
+  AssignOptions,
+  Collection,
+  EntityFactory,
+  EntityIdentifier,
+  EntityLoaderOptions,
+  EntityRepository,
+  IdentifiedReference,
+} from './entity';
 import { EntityHelper, Reference } from './entity';
 import type { SerializationContext } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
@@ -12,7 +20,7 @@ import { Utils } from './utils/Utils';
 import { EntityComparator } from './utils/EntityComparator';
 import type { EntityManager } from './EntityManager';
 import type { EventSubscriber } from './events';
-import type { FindOptions } from './drivers';
+import type { FindOneOptions, FindOptions } from './drivers';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -50,10 +58,10 @@ export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
 export type IPrimaryKeyValue = number | string | bigint | Date | { toHexString(): string };
 export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
-export type Scalar = boolean | number | string | bigint | symbol | Date | RegExp | Buffer | { toHexString(): string };
+export type Scalar = boolean | number | string | bigint | symbol | Date | RegExp | Uint8Array | { toHexString(): string };
 
 export type ExpandScalar<T> = null | (T extends string
-  ? string | RegExp
+  ? T | RegExp
   : T extends Date
     ? Date | string
     : T);
@@ -111,6 +119,7 @@ export interface IWrappedEntity<
   isInitialized(): boolean;
   isTouched(): boolean;
   populated(populated?: boolean): void;
+  populate<Hint extends string = never>(populate: AutoPath<T, Hint>[] | boolean, options?: EntityLoaderOptions<T, Hint>): Promise<Loaded<T, Hint>>;
   init<P extends string = never>(populated?: boolean, populate?: Populate<T, P>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<T, P>>;
   toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends string = string>(): IdentifiedReference<T, PK2> & LoadedReference<T>;
   toObject(ignoreFields?: string[]): EntityDTO<T>;
@@ -228,7 +237,7 @@ export type EntityDTOProp<T> = T extends Scalar
         : T extends { $: infer U }
           ? (U extends readonly (infer V)[] ? EntityDTO<V>[] : EntityDTO<U>)
           : T extends readonly (infer U)[]
-            ? U[]
+            ? (T extends readonly [infer U, ...infer V] ? T : U[])
             : T extends Relation<T>
               ? EntityDTO<T>
               : T;
@@ -252,7 +261,10 @@ export interface EntityProperty<T = any> {
   targetMeta?: EntityMetadata;
   columnTypes: string[];
   customType: Type<any>;
+  hasConvertToJSValueSQL: boolean;
+  hasConvertToDatabaseValueSQL: boolean;
   autoincrement?: boolean;
+  returning?: boolean;
   primary?: boolean;
   serializedPrimaryKey: boolean;
   lazy?: boolean;
@@ -261,6 +273,7 @@ export interface EntityProperty<T = any> {
   precision?: number;
   scale?: number;
   reference: ReferenceType;
+  /** @deprecated use `ref` instead, `wrappedReference` option will be removed in v6 */
   wrappedReference?: boolean;
   fieldNames: string[];
   fieldNameRaw?: string;
@@ -395,6 +408,7 @@ export class EntityMetadata<T = any> {
       return !prop.inherited && prop.hydrate !== false && !discriminator && !prop.embedded && !onlyGetter;
     });
     this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.type));
+    this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
     this.virtual = !!this.expression;
 
     if (this.virtual) {
@@ -519,6 +533,7 @@ export interface EntityMetadata<T = any> {
   collection: string;
   path: string;
   primaryKeys: (keyof T & string)[];
+  simplePK: boolean; // whether the PK can be compared via `===`, e.g. simple scalar without a custom mapped type
   compositePK: boolean;
   versionProperty: keyof T & string;
   concurrencyCheckKeys: Set<keyof T & string>;
@@ -542,6 +557,7 @@ export interface EntityMetadata<T = any> {
   filters: Dictionary<FilterDef>;
   comment?: string;
   selfReferencing?: boolean;
+  hasUniqueProps?: boolean;
   readonly?: boolean;
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<T>;
@@ -560,7 +576,7 @@ export interface ISchemaGenerator {
   getUpdateSchemaSQL(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean; schema?: string }): Promise<string>;
   getUpdateSchemaMigrationSQL(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<{ up: string; down: string }>;
   createDatabase(name: string): Promise<void>;
-  dropDatabase(name: string): Promise<void>;
+  dropDatabase(name?: string): Promise<void>;
   execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
   ensureIndexes(): Promise<void>;
   refreshDatabase(): Promise<void>;
@@ -595,7 +611,7 @@ export interface IMigrator {
   /**
    * Checks current schema for changes, generates new migration if there are any.
    */
-  createMigration(path?: string, blank?: boolean, initial?: boolean): Promise<MigrationResult>;
+  createMigration(path?: string, blank?: boolean, initial?: boolean, name?: string): Promise<MigrationResult>;
 
   /**
    * Checks current schema for changes.
@@ -645,7 +661,7 @@ export interface IMigrationGenerator {
   /**
    * Generates the full contents of migration file. Uses `generateMigrationFile` to get the file contents.
    */
-  generate(diff: MigrationDiff, path?: string): Promise<[string, string]>;
+  generate(diff: MigrationDiff, path?: string, name?: string): Promise<[string, string]>;
 
   /**
    * Creates single migration statement. By default adds `this.addSql(sql);` to the code.
@@ -670,7 +686,7 @@ export interface MigrationObject {
 
 export type FilterDef = {
   name: string;
-  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any) => Dictionary | Promise<Dictionary>);
+  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<any, any> | FindOneOptions<any, any>) => Dictionary | Promise<Dictionary>);
   default?: boolean;
   entity?: string[];
   args?: boolean;
@@ -798,7 +814,7 @@ export interface IHydrator {
     meta: EntityMetadata<T>,
     data: EntityData<T>,
     factory: EntityFactory,
-    type: 'full' | 'returning' | 'reference',
+    type: 'full' | 'reference',
     newEntity?: boolean,
     convertCustomTypes?: boolean,
     schema?: string,

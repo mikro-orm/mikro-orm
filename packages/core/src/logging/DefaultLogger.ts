@@ -1,5 +1,4 @@
 import type { Logger, LoggerNamespace, LogContext, LoggerOptions } from './Logger';
-import { Utils } from '../utils/Utils';
 import { colors } from './colors';
 
 export class DefaultLogger implements Logger {
@@ -69,8 +68,15 @@ export class DefaultLogger implements Logger {
     }
 
     /* istanbul ignore next */
-    const query = this.highlighter?.highlight(context.query) ?? context.query;
-    let msg = query + (Utils.isDefined(context.took) ? colors.grey(` [took ${context.took} ms]`) : '');
+    let msg = this.highlighter?.highlight(context.query) ?? context.query;
+
+    if (context.took != null) {
+      if (context.results != null) {
+        msg += colors.grey(` [took ${context.took} ms, ${context.results} result${context.results > 1 ? 's' : ''}]`);
+      } else {
+        msg += colors.grey(` [took ${context.took} ms]`);
+      }
+    }
 
     if (this.usesReplicas && context.connection) {
       msg += colors.cyan(` (via ${context.connection.type} connection '${context.connection.name}')`);

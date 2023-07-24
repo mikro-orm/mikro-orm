@@ -19,7 +19,7 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     entity.pet = null;
   }
   if (typeof data.pet === 'string') {
-    data.pet = JSON.parse(data.pet);
+    data.pet = parseJsonSafe(data.pet);
   }
   if (data.pet != null) {
     if (data.pet.type == '1' && entity.pet == null) {
@@ -36,7 +36,7 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     entity.pet = null;
   }
   if (typeof data.pet2 === 'string') {
-    data.pet2 = JSON.parse(data.pet2);
+    data.pet2 = parseJsonSafe(data.pet2);
   }
   if (data.pet2 != null) {
     if (data.pet2.type == '1' && entity.pet2 == null) {
@@ -53,13 +53,13 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     entity.pet2 = null;
   }
   if (typeof data.pets === 'string') {
-    data.pets = JSON.parse(data.pets);
+    data.pets = parseJsonSafe(data.pets);
   }
   if (Array.isArray(data.pets)) {
     entity.pets = [];
     data.pets.forEach((_, idx_0) => {
       if (typeof data.pets[idx_0] === 'string') {
-        data.pets[idx_0] = JSON.parse(data.pets[idx_0]);
+        data.pets[idx_0] = parseJsonSafe(data.pets[idx_0]);
       }
       if (data.pets[idx_0] != null) {
         if (data.pets[idx_0].type == '1' && entity.pets[idx_0] == null) {

@@ -8,12 +8,13 @@ import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import {
-  ArrayType, BigIntType, BlobType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
+  ArrayType, BigIntType, BlobType, Uint8ArrayType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
   TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType,
 } from '../types';
-import { Utils } from '../utils/Utils';
+import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
 import type { MikroORM } from '../MikroORM';
+import type { TransformContext } from '../types/Type';
 
 export const JsonProperty = Symbol('JsonProperty');
 
@@ -29,7 +30,7 @@ export abstract class Platform {
   }
 
   supportsTransactions(): boolean {
-    return true;
+    return !this.config.get('disableTransactions');
   }
 
   usesImplicitTransactions(): boolean {
@@ -261,6 +262,7 @@ export abstract class Platform {
       case 'boolean': return Type.getType(BooleanType);
       case 'blob':
       case 'buffer': return Type.getType(BlobType);
+      case 'uint8array': return Type.getType(Uint8ArrayType);
       case 'uuid': return Type.getType(UuidType);
       case 'date': return Type.getType(DateType);
       case 'datetime': return Type.getType(DateTimeType);
@@ -320,8 +322,17 @@ export abstract class Platform {
     throw new Error('Full text searching is not supported by this driver.');
   }
 
+  // TODO v6: remove the `marshall` parameter
   convertsJsonAutomatically(marshall = false): boolean {
-    return !marshall;
+    return true;
+  }
+
+  convertJsonToDatabaseValue(value: unknown, context?: TransformContext): unknown {
+    return JSON.stringify(value);
+  }
+
+  convertJsonToJSValue(value: unknown): unknown {
+    return parseJsonSafe(value);
   }
 
   getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
@@ -460,7 +471,14 @@ export abstract class Platform {
   /**
    * @internal
    */
-  castColumn(prop?: EntityProperty): string {
+  castColumn(prop?: { columnTypes?: string[] }): string {
+    return '';
+  }
+
+  /**
+   * @internal
+   */
+  castJsonValue(prop?: { columnTypes?: string[] }): string {
     return '';
   }
 

@@ -21,7 +21,7 @@ services:
       - mysql8:/var/lib/mysql
 
   mariadb:
-    image: mariadb:10.11
+    image: mariadb:11.0
     ports:
       - "3309:3306"
     environment:
@@ -30,7 +30,7 @@ services:
       - mariadb:/var/lib/mysql
 
   postgre:
-    image: postgres:15.2
+    image: postgres:15.3
     ports:
       - "5432:5432"
     volumes:

@@ -3,7 +3,7 @@ import type { EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings
 import { Reference } from './Reference';
 import { helper, wrap } from './wrap';
 import { ReferenceType } from '../enums';
-import { MetadataError } from '../errors';
+import { MetadataError, ValidationError } from '../errors';
 import { Utils } from '../utils/Utils';
 
 export class ArrayCollection<T extends object, O extends object> {
@@ -80,8 +80,28 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   set(items: (T | Reference<T>)[]): void {
+    if (this.compare(items.map(item => Reference.unwrapReference(item)))) {
+      return;
+    }
+
     this.removeAll();
     this.add(items);
+  }
+
+  private compare(items: T[]): boolean {
+    if (items.length !== this.items.size) {
+      return false;
+    }
+
+    let idx = 0;
+
+    for (const item of this.items) {
+      if (item !== items[idx++]) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /**
@@ -196,7 +216,7 @@ export class ArrayCollection<T extends object, O extends object> {
   /**
    * @internal
    */
-  get property(): EntityProperty<T> {
+  get property(): EntityProperty<O> {
     if (!this._property) {
       const meta = helper(this.owner).__meta;
 
@@ -205,11 +225,17 @@ export class ArrayCollection<T extends object, O extends object> {
         throw MetadataError.fromUnknownEntity((this.owner as object).constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
       }
 
-      const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
-      this._property = meta.properties[field!];
+      this._property = meta.relations.find(prop => this.owner[prop.name] === this)!;
     }
 
-    return this._property!;
+    return this._property;
+  }
+
+  /**
+   * @internal
+   */
+  set property(prop: EntityProperty<O>) {
+    this._property = prop;
   }
 
   protected propagate(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
@@ -243,6 +269,14 @@ export class ArrayCollection<T extends object, O extends object> {
       if (this.property.orphanRemoval && method === 'remove') {
         // cache the PK before we propagate, as its value might be needed when flushing
         helper(item).__pk = helper(item).getPrimaryKey()!;
+      }
+
+      if (!prop2.nullable && prop2.onDelete !== 'cascade' && method === 'remove') {
+        if (!this.property.orphanRemoval) {
+          throw ValidationError.cannotRemoveFromCollectionWithoutOrphanRemoval(this.owner, this.property);
+        }
+
+        return;
       }
 
       // skip if already propagated

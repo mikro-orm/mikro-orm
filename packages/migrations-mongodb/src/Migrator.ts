@@ -37,10 +37,10 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async createMigration(path?: string): Promise<MigrationResult> {
+  async createMigration(path?: string, blank = false, initial = false, name?: string): Promise<MigrationResult> {
     await this.ensureMigrationsDirExists();
     const diff = { up: [], down: [] };
-    const migration = await this.generator.generate(diff, path);
+    const migration = await this.generator.generate(diff, path, name);
 
     return {
       fileName: migration[1],

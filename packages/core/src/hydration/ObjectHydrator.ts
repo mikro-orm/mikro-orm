@@ -2,18 +2,17 @@ import type { EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { Hydrator } from './Hydrator';
 import { Collection } from '../entity/Collection';
 import { Reference } from '../entity/Reference';
-import { Utils } from '../utils/Utils';
+import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
 import type { EntityFactory } from '../entity/EntityFactory';
 
-type EntityHydrator<T> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string) => void;
+type EntityHydrator<T extends object> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string) => void;
 
 export class ObjectHydrator extends Hydrator {
 
   private readonly hydrators = {
     full: new Map<string, EntityHydrator<any>>(),
     reference: new Map<string, EntityHydrator<any>>(),
-    returning: new Map<string, EntityHydrator<any>>(),
   };
 
   private tmpIndex = 0;
@@ -21,10 +20,12 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @inheritDoc
    */
-  hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+  hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, type);
     const running = this.running;
-    this.running = true;
+    // the running state is used to consider propagation as hydration, saving the values directly to the entity data,
+    // but we don't want that for new entities, their propagation should result in entity updates when flushing
+    this.running = !newEntity;
     Utils.callCompiledFunction(hydrate, entity, data, factory, newEntity, convertCustomTypes, schema);
     this.running = running;
   }
@@ -32,7 +33,7 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @inheritDoc
    */
-  hydrateReference<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
+  hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, 'reference');
     const running = this.running;
     this.running = true;
@@ -43,7 +44,7 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getEntityHydrator<T>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityHydrator<T> {
+  getEntityHydrator<T extends object>(meta: EntityMetadata<T>, type: 'full' | 'reference'): EntityHydrator<T> {
     const exists = this.hydrators[type].get(meta.className);
 
     if (exists) {
@@ -78,16 +79,17 @@ export class ObjectHydrator extends Hydrator {
       return ret;
     };
 
-    const hydrateScalar = <T, U>(prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
+    const hydrateScalar = (prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
       const entityKey = path.map(k => this.wrap(k)).join('');
       const preCond = preCondition(dataKey);
       const convertorKey = path.filter(k => !k.match(/\[idx_\d+]/)).map(k => this.safeKey(k)).join('_');
       const ret: string[] = [];
+      const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
 
       if (prop.type.toLowerCase() === 'date') {
         ret.push(
           `  if (${preCond}data${dataKey}) entity${entityKey} = new Date(data${dataKey});`,
-          `  else if (${preCond}data${dataKey} === null) entity${entityKey} = null;`,
+          `  else if (${preCond}data${dataKey} === null) entity${entityKey} = ${nullVal};`,
         );
       } else if (prop.customType) {
         context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
@@ -99,7 +101,7 @@ export class ObjectHydrator extends Hydrator {
           `      const value = convertToJSValue_${convertorKey}(data${dataKey});`,
         );
 
-        if (prop.customType.ensureComparable()) {
+        if (prop.customType.ensureComparable(meta, prop)) {
           ret.push(`      data${dataKey} = convertToDatabaseValue_${convertorKey}(value);`);
         }
 
@@ -111,7 +113,7 @@ export class ObjectHydrator extends Hydrator {
           `  }`,
         );
       } else if (prop.type.toLowerCase() === 'boolean') {
-        ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey} === null ? null : !!data${dataKey};`);
+        ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey} === null ? ${nullVal} : !!data${dataKey};`);
       } else {
         ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey};`);
       }
@@ -122,7 +124,8 @@ export class ObjectHydrator extends Hydrator {
     const hydrateToOne = (prop: EntityProperty, dataKey: string, entityKey: string) => {
       const ret: string[] = [];
 
-      ret.push(`  if (data${dataKey} === null) {\n    entity${entityKey} = null;`);
+      const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
+      ret.push(`  if (data${dataKey} === null) {\n    entity${entityKey} = ${nullVal};`);
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
       ret.push(`    if (isPrimaryKey(data${dataKey}, true)) {`);
 
@@ -152,13 +155,13 @@ export class ObjectHydrator extends Hydrator {
         const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
         if (prop2 && !prop2.mapToPk) {
-          ret.push(`  if (entity${entityKey} && !entity${entityKey}.${this.safeKey(prop2.name)}) {`);
+          ret.push(`  if (data${dataKey} && entity${entityKey} && !entity${entityKey}.${this.safeKey(prop2.name)}) {`);
           ret.push(`    entity${entityKey}.${prop.wrappedReference ? 'unwrap().' : ''}${this.safeKey(prop2.name)} = ${prop2.wrappedReference ? 'Reference.create(entity)' : 'entity'};`);
           ret.push(`  }`);
         }
       }
 
-      if (prop.customType?.ensureComparable()) {
+      if (prop.customType?.ensureComparable(meta, prop)) {
         context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
         ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
@@ -210,9 +213,10 @@ export class ObjectHydrator extends Hydrator {
 
     const parseObjectEmbeddable = (prop: EntityProperty, dataKey: string, ret: string[]): void => {
       if (!this.platform.convertsJsonAutomatically() && (prop.object || prop.array)) {
+        context.set('parseJsonSafe', parseJsonSafe);
         ret.push(
           `  if (typeof data${dataKey} === 'string') {`,
-          `    data${dataKey} = JSON.parse(data${dataKey});`,
+          `    data${dataKey} = parseJsonSafe(data${dataKey});`,
           `  }`,
         );
       }
@@ -341,7 +345,7 @@ export class ObjectHydrator extends Hydrator {
     return hydrator;
   }
 
-  private createCollectionItemMapper<T>(prop: EntityProperty): string[] {
+  private createCollectionItemMapper<T extends object>(prop: EntityProperty): string[] {
     const meta = this.metadata.get(prop.type);
     const lines: string[] = [];
 

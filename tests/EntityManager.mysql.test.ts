@@ -25,6 +25,10 @@ describe('EntityManagerMySql', () => {
     FlushSubscriber.log.length = 0;
     Test2Subscriber.log.length = 0;
   });
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
@@ -47,7 +51,7 @@ describe('EntityManagerMySql', () => {
     } as any, false);
     config.reset('debug');
     const driver = new MySqlDriver(config);
-    expect(driver.getConnection().getConnectionOptions()).toEqual({
+    expect(driver.getConnection().getConnectionOptions()).toMatchObject({
       database: 'db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -139,9 +143,9 @@ describe('EntityManagerMySql', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
-    const err1 = `insert into \`not_existing\` (\`foo\`) values ('bar') - Table 'mikro_orm_test.not_existing' doesn't exist`;
+    const err1 = `insert into \`not_existing\` (\`foo\`) values ('bar') - Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
-    const err2 = `delete from \`not_existing\` - Table 'mikro_orm_test.not_existing' doesn't exist`;
+    const err2 = `delete from \`not_existing\` - Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
   });
 
@@ -807,24 +811,30 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(bible);
     orm.em.clear();
 
-    const qb1 = orm.em.createQueryBuilder(Book2);
+    const qb1 = orm.em.fork().createQueryBuilder(Book2);
     const res1 = await qb1.select('*').where({ 'JSON_CONTAINS(`b0`.`meta`, ?)': [{ foo: 'bar' }, false] }).execute('get');
     expect(res1.createdAt).toBeDefined();
     // @ts-expect-error
     expect(res1.created_at).not.toBeDefined();
     expect(res1.meta).toEqual({ category: 'foo', items: 1 });
 
-    const qb2 = orm.em.createQueryBuilder(Book2);
+    const qb2 = orm.em.fork().createQueryBuilder(Book2);
     const res2 = await qb2.select('*').where({ 'JSON_CONTAINS(meta, ?)': [{ category: 'foo' }, true] }).execute('get', false);
     expect(res2.createdAt).not.toBeDefined();
     // @ts-expect-error
     expect(res2.created_at).toBeDefined();
     expect(res2.meta).toEqual({ category: 'foo', items: 1 });
 
-    const res3 = await orm.em.findOneOrFail(Book2, { [expr('JSON_CONTAINS(meta, ?)')]: [{ items: 1 }, true] });
+    const qb3 = orm.em.fork().createQueryBuilder(Book2);
+    const res3 = await qb3.select('*').where({ 'JSON_CONTAINS(meta, ?)': [{ category: 'foo' }, true] }).getSingleResult();
     expect(res3).toBeInstanceOf(Book2);
-    expect(res3.createdAt).toBeDefined();
-    expect(res3.meta).toEqual({ category: 'foo', items: 1 });
+    expect(res3!.createdAt).toBeDefined();
+    expect(res3!.meta).toEqual({ category: 'foo', items: 1 });
+
+    const res4 = await orm.em.fork().findOneOrFail(Book2, { [expr('JSON_CONTAINS(meta, ?)')]: [{ items: 1 }, true] });
+    expect(res4).toBeInstanceOf(Book2);
+    expect(res4.createdAt).toBeDefined();
+    expect(res4.meta).toEqual({ category: 'foo', items: 1 });
   });
 
   test('tuple comparison', async () => {
@@ -2014,9 +2024,10 @@ describe('EntityManagerMySql', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const res1 = await orm.em.find(Book2, { publisher: { $ne: null } }, { schema: 'mikro_orm_test_schema_2', populate: ['perex'] });
+    const schema = `${orm.config.get('dbName')}_schema_2`;
+    const res1 = await orm.em.find(Book2, { publisher: { $ne: null } }, { schema, populate: ['perex'] });
     const res2 = await orm.em.find(Book2, { publisher: { $ne: null } }, { populate: ['perex'] });
-    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` from `mikro_orm_test_schema_2`.`book2` as `b0` left join `mikro_orm_test_schema_2`.`test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`publisher_id` is not null');
+    expect(mock.mock.calls[0][0]).toMatch(`select \`b0\`.*, \`b0\`.price * 1.19 as \`price_taxed\`, \`t1\`.\`id\` as \`test_id\` from \`${schema}\`.\`book2\` as \`b0\` left join \`${schema}\`.\`test2\` as \`t1\` on \`b0\`.\`uuid_pk\` = \`t1\`.\`book_uuid_pk\` where \`b0\`.\`author_id\` is not null and \`b0\`.\`publisher_id\` is not null`);
     expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` from `book2` as `b0` left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`publisher_id` is not null');
     expect(res1.length).toBe(0);
     expect(res2.length).toBe(1);
@@ -2130,7 +2141,6 @@ describe('EntityManagerMySql', () => {
       orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
       limit: 5,
       groupBy: ['id', 'name', 'b1.title'],
-      flags: [QueryFlag.DISABLE_PAGINATE],
       having: { $or: [{ age: { $gt: 0 } }, { age: { $lte: 0 } }, { age: null }] }, // no-op just for testing purposes
     });
 
@@ -2216,13 +2226,16 @@ describe('EntityManagerMySql', () => {
     const b1 = await orm.em.findOneOrFail(FooBar2, b.id);
     expect(b1.random).toBe(123);
     expect(b1.lazyRandom).toBeUndefined();
+    await wrap(b1).populate(['lazyRandom']);
+    expect(b1.lazyRandom).toBe(456);
     expect(mock.mock.calls[0][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where `f0`.`id` = ? limit ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `f0`.`id`, (select 456) as `lazy_random` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
     orm.em.clear();
 
     const b2 = await orm.em.findOneOrFail(FooBar2, b.id, { populate: ['lazyRandom'] });
     expect(b2.random).toBe(123);
     expect(b2.lazyRandom).toBe(456);
-    expect(mock.mock.calls[1][0]).toMatch('select `f0`.*, (select 123) as `random`, (select 456) as `lazy_random` from `foo_bar2` as `f0` where `f0`.`id` = ? limit ?');
+    expect(mock.mock.calls[2][0]).toMatch('select `f0`.*, (select 123) as `random`, (select 456) as `lazy_random` from `foo_bar2` as `f0` where `f0`.`id` = ? limit ?');
   });
 
   test('search by formulas (gh #3048)', async () => {
@@ -2315,6 +2328,7 @@ describe('EntityManagerMySql', () => {
 
     const bar = FooBar2.create('b1');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
+    bar.blob2 = new Uint8Array([1, 2, 3, 4, 5]);
     bar.array = [];
     bar.objectProperty = { foo: 'bar', bar: 3 };
     await orm.em.persistAndFlush(bar);
@@ -2323,6 +2337,8 @@ describe('EntityManagerMySql', () => {
     const b1 = await orm.em.findOneOrFail(FooBar2, bar.id);
     expect(b1.blob).toEqual(Buffer.from([1, 2, 3, 4, 5]));
     expect(b1.blob).toBeInstanceOf(Buffer);
+    expect(b1.blob2).toEqual(new Uint8Array([1, 2, 3, 4, 5]));
+    expect(b1.blob2).toBeInstanceOf(Uint8Array);
     expect(b1.array).toEqual([]);
     expect(b1.array).toBeInstanceOf(Array);
     expect(b1.objectProperty).toEqual({ foo: 'bar', bar: 3 });
@@ -2398,7 +2414,5 @@ describe('EntityManagerMySql', () => {
     authors.forEach(a => a.termsAccepted = true);
     await orm.em.flush();
   });
-
-  afterAll(async () => orm.close(true));
 
 });

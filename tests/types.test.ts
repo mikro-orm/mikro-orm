@@ -324,6 +324,44 @@ describe('check typings', () => {
     ok01 = { rels: ['abc'] };
   });
 
+  test('FilterQuery with ', async () => {
+    enum ABC {
+      A,
+      B,
+      C,
+    }
+
+    enum DEF {
+      D = 'd',
+      E = 'e',
+      F = 'f',
+    }
+
+    interface Publisher {
+      id: string;
+      enum1: 'a' | 'b' | 'c';
+      enum2: ABC;
+      enum3: DEF;
+    }
+
+    let query: FilterQuery<Publisher>;
+    query = { enum1: 'a' };
+    query = { enum1: 'b' };
+    // @ts-expect-error
+    query = { enum1: 'd' };
+    query = { enum2: ABC.A };
+    // @ts-expect-error
+    query = { enum2: 'a' };
+    query = { enum2: ABC.A };
+    // @ts-expect-error
+    query = { enum2: DEF.D };
+    // @ts-expect-error
+    query = { enum3: 'd' };
+    // @ts-expect-error
+    query = { enum3: ABC.A };
+    query = { enum3: DEF.D };
+  });
+
   test('AutoPath with optional nullable properties', async () => {
     interface MessageRecipient {
       id: string;
@@ -562,4 +600,7 @@ describe('check typings', () => {
     q = { [OptionalProps]: 'bar' };
   });
 
+  test('tuple type after entity serializized', async () => {
+    assert<IsExact<EntityDTO<Book>['point'], [number, number] | undefined>>(true);
+  });
 });

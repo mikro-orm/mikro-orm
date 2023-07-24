@@ -1,6 +1,5 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import { Umzug } from 'umzug';
-import { format } from 'sql-formatter';
 import { MetadataStorage, MikroORM } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
 import type { DatabaseTable } from '@mikro-orm/postgresql';
@@ -82,7 +81,6 @@ describe('Migrator (postgres)', () => {
       }
 
       createStatement(sql: string, padLeft: number): string {
-        sql = format(sql, { language: 'postgresql' });
         sql = sql.split('\n').map((l, i) => i === 0 ? l : `${' '.repeat(padLeft + 13)}${l}`).join('\n');
 
         return super.createStatement(sql, padLeft);
@@ -114,6 +112,30 @@ describe('Migrator (postgres)', () => {
     await migrator.down(migration.fileName);
     await migrator.up();
     await migrator.down(migration.fileName.replace('migration-', '').replace('.ts', ''));
+    orm.config.set('migrations', migrationsSettings); // Revert migration config changes
+    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    upMock.mockRestore();
+    downMock.mockRestore();
+  });
+
+  test('generate migration with custom name with name option', async () => {
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const migrationsSettings = orm.config.get('migrations');
+    orm.config.set('migrations', { ...migrationsSettings, fileName: (time, name) => `migration${time}_${name}` });
+    const migrator = orm.migrator;
+    const migration = await migrator.createMigration(undefined, false, false, 'custom_name');
+    expect(migration).toMatchSnapshot('migration-dump');
+    expect(migration.fileName).toEqual('migration20191013214813_custom_name.ts');
+    const upMock = jest.spyOn(Umzug.prototype, 'up');
+    upMock.mockImplementation(() => void 0 as any);
+    const downMock = jest.spyOn(Umzug.prototype, 'down');
+    downMock.mockImplementation(() => void 0 as any);
+    await migrator.up();
+    await migrator.down(migration.fileName.replace('.ts', ''));
+    await migrator.up();
+    await migrator.down(migration.fileName);
+    await migrator.up();
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
     upMock.mockRestore();
@@ -321,7 +343,7 @@ describe('Migrator (postgres)', () => {
     await remove(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx\\d+');
     });
@@ -361,7 +383,7 @@ describe('Migrator (postgres)', () => {
     await remove(path + '/' + migration2.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx_xx');
     });
@@ -394,7 +416,7 @@ describe('Migrator (postgres)', () => {
     await remove(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx_xx');
     });

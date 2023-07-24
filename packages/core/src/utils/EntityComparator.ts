@@ -10,7 +10,7 @@ import type {
 } from '../typings';
 import { ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
-import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals, Utils } from './Utils';
+import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals, parseJsonSafe, Utils } from './Utils';
 import { JsonType } from '../types/JsonType';
 
 type Comparator<T> = (a: T, b: T) => EntityData<T>;
@@ -291,7 +291,8 @@ export class EntityComparator {
       }
 
       if (prop.targetMeta && prop.fieldNames.length > 1) {
-        lines.push(`  if (${prop.fieldNames.map(field => `${propName(field)} != null`).join(' && ')}) {`);
+        lines.push(`  if (${prop.fieldNames.map(field => `typeof ${propName(field)} === 'undefined'`).join(' && ')}) {`);
+        lines.push(`  } else if (${prop.fieldNames.map(field => `${propName(field)} != null`).join(' && ')}) {`);
         lines.push(`    ret${this.wrap(prop.name)} = ${createCompositeKeyArray(prop)};`);
         lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`));
         lines.push(`  } else if (${prop.fieldNames.map(field => `${propName(field)} == null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = null;`);
@@ -318,8 +319,9 @@ export class EntityComparator {
           lines.push(`  }`);
         }
       } else if (prop.reference === ReferenceType.EMBEDDED && prop.object && !this.platform.convertsJsonAutomatically()) {
+        context.set('parseJsonSafe', parseJsonSafe);
         lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
-        lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : JSON.parse(${propName(prop.fieldNames[0])});`);
+        lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : parseJsonSafe(${propName(prop.fieldNames[0])});`);
         lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
       } else {

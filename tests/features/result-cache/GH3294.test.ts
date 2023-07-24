@@ -31,9 +31,7 @@ beforeEach(async () => {
   await orm.schema.clearDatabase();
 });
 
-afterAll(() => {
-  orm.close(true);
-});
+afterAll(() => orm.close(true));
 
 
 describe('hidden properties are still included when cached (GH 3294)', () => {

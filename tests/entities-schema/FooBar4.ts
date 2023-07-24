@@ -1,5 +1,5 @@
 import type { OptionalProps } from '@mikro-orm/core';
-import { ArrayType, BlobType, EntitySchema, JsonType } from '@mikro-orm/core';
+import { ArrayType, BlobType, EntitySchema, JsonType, Uint8ArrayType } from '@mikro-orm/core';
 import type { IFooBaz4, IBaseEntity5 } from './index';
 
 export interface IFooBar4 extends Omit<IBaseEntity5, typeof OptionalProps> {
@@ -9,6 +9,7 @@ export interface IFooBar4 extends Omit<IBaseEntity5, typeof OptionalProps> {
   fooBar?: IFooBar4;
   version: number;
   blob?: Buffer;
+  blob2?: Uint8Array;
   array?: number[];
   object?: { foo: string; bar: number } | any;
   virtual?: string;
@@ -23,6 +24,7 @@ export const FooBar4 = new EntitySchema<IFooBar4, IBaseEntity5>({
     fooBar: { reference: '1:1', entity: 'FooBar4', nullable: true },
     version: { type: 'number', version: true },
     blob: { type: BlobType, nullable: true },
+    blob2: { type: Uint8ArrayType, nullable: true },
     array: { customType: new ArrayType(i => +i), nullable: true },
     object: { type: JsonType, nullable: true },
     virtual: { type: String, persist: false },

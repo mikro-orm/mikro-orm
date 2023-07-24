@@ -36,7 +36,7 @@ export class UnitOfWork {
   private readonly orphanRemoveStack = new Set<AnyEntity>();
   private readonly changeSets = new Map<AnyEntity, ChangeSet<any>>();
   private readonly collectionUpdates = new Set<Collection<AnyEntity>>();
-  private readonly extraUpdates = new Set<[AnyEntity, string | string[], AnyEntity | AnyEntity[] | Reference<any> | Collection<any>]>();
+  private readonly extraUpdates = new Set<[AnyEntity, string | string[], AnyEntity | AnyEntity[] | Reference<any> | Collection<any>, ChangeSet<any> | undefined]>();
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getPlatform();
   private readonly eventManager = this.em.getEventManager();
@@ -104,6 +104,25 @@ export class UnitOfWork {
           data[prop.name as string] = Utils.getPrimaryKeyValues(data[prop.name as string], prop.targetMeta!.primaryKeys, true);
         }
       });
+
+      wrapped.__meta.props.forEach(prop => {
+        if (prop.reference === ReferenceType.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name as string])) {
+          prop.targetMeta?.props.forEach(p => {
+            const prefix = prop.prefix === false ? '' : prop.prefix === true ? prop.name + '_' : prop.prefix;
+            data[prefix + p.name] = data[prop.name as string][p.name];
+          });
+          data[prop.name as string] = Utils.getPrimaryKeyValues(data[prop.name as string], prop.targetMeta!.primaryKeys, true);
+        }
+      });
+
+      if (this.em.config.get('forceUndefined')) {
+        Object.keys(data).forEach(key => {
+          if (data[key] === null) {
+            data[key] = undefined;
+          }
+        });
+      }
+
       wrapped.__originalEntityData = data;
       wrapped.__touched = false;
     }
@@ -116,8 +135,8 @@ export class UnitOfWork {
    */
   async dispatchOnLoadEvent(): Promise<void> {
     for (const entity of this.loadedEntities) {
-      if (this.eventManager.hasListeners(EventType.onLoad, entity.__meta!)) {
-        await this.eventManager.dispatchEvent(EventType.onLoad, { entity, em: this.em });
+      if (this.eventManager.hasListeners(EventType.onLoad, entity.__meta)) {
+        await this.eventManager.dispatchEvent(EventType.onLoad, { entity, meta: entity.__meta, em: this.em });
         helper(entity).__onLoadFired = true;
       }
     }
@@ -134,7 +153,15 @@ export class UnitOfWork {
     }
 
     const meta = this.metadata.find(entityName)!.root;
-    let hash = Array.isArray(id) ? Utils.getPrimaryKeyHash(Utils.flatten(id as string[][])) : '' + id;
+    let hash: string;
+
+    if (meta.simplePK) {
+      hash = '' + id;
+    } else {
+      const keys = Array.isArray(id) ? Utils.flatten(id as string[][]) : [id as string];
+      hash = Utils.getPrimaryKeyHash(keys);
+    }
+
     schema ??= meta.schema;
 
     if (schema) {
@@ -200,7 +227,7 @@ export class UnitOfWork {
     return [...this.collectionUpdates];
   }
 
-  getExtraUpdates(): Set<[AnyEntity, string | string[], (AnyEntity | AnyEntity[] | Reference<any> | Collection<any>)]> {
+  getExtraUpdates(): Set<[AnyEntity, string | string[], (AnyEntity | AnyEntity[] | Reference<any> | Collection<any>), ChangeSet<any> | undefined]> {
     return this.extraUpdates;
   }
 
@@ -226,7 +253,14 @@ export class UnitOfWork {
     this.queuedActions.clear();
   }
 
-  computeChangeSet<T extends object>(entity: T): void {
+  computeChangeSet<T extends object>(entity: T, type?: ChangeSetType): void {
+    const wrapped = helper(entity);
+
+    if (type) {
+      this.changeSets.set(entity, new ChangeSet(entity, type, {}, wrapped.__meta));
+      return;
+    }
+
     const cs = this.changeSetComputer.computeChangeSet(entity);
 
     if (!cs || this.checkUniqueProps(cs)) {
@@ -236,8 +270,8 @@ export class UnitOfWork {
     this.initIdentifier(entity);
     this.changeSets.set(entity, cs);
     this.persistStack.delete(entity);
-    helper(entity).__originalEntityData = this.comparator.prepareEntity(entity);
-    helper(entity).__touched = false;
+    wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
+    wrapped.__touched = false;
   }
 
   recomputeSingleChangeSet<T extends object>(entity: T): void {
@@ -258,7 +292,7 @@ export class UnitOfWork {
   }
 
   persist<T extends object>(entity: T, visited?: Set<AnyEntity>, options: { checkRemoveStack?: boolean; cascade?: boolean } = {}): void {
-    if (options.checkRemoveStack && (this.removeStack.has(entity))) {
+    if (options.checkRemoveStack && this.removeStack.has(entity)) {
       return;
     }
 
@@ -394,12 +428,17 @@ export class UnitOfWork {
       const rel = Reference.unwrapReference(entity[prop.name]);
 
       if (Utils.isCollection(rel) && rel.isInitialized()) {
-        rel.removeAll();
+        rel.getItems(false).forEach(item => rel.removeWithoutPropagation(item));
+        continue;
+      }
+
+      if (Utils.isCollection(rel?.[inverse]) && rel[inverse].isInitialized()) {
+        rel[inverse].removeWithoutPropagation(entity);
         continue;
       }
 
       // there is a value, and it is still a self-reference (e.g. not replaced by user manually)
-      if (rel?.[inverse] && entity === rel[inverse]) {
+      if (rel?.[inverse] && entity === Reference.unwrapReference(rel[inverse])) {
         delete helper(rel).__data[inverse];
       }
     }
@@ -473,7 +512,7 @@ export class UnitOfWork {
         }
       }
 
-      this.changeSets.set(entity, new ChangeSet(entity, type, {}, entity.__meta!));
+      this.computeChangeSet(entity, type);
     }
   }
 
@@ -482,7 +521,7 @@ export class UnitOfWork {
       return;
     }
 
-    this.extraUpdates.add([changeSet.entity, props.map(p => p.name), props.map(p => changeSet.entity[p.name])]);
+    this.extraUpdates.add([changeSet.entity, props.map(p => p.name), props.map(p => changeSet.entity[p.name]), changeSet]);
     props.forEach(p => delete changeSet.entity[p.name]);
     props.forEach(p => delete changeSet.payload[p.name]);
   }
@@ -555,21 +594,46 @@ export class UnitOfWork {
   private expandUniqueProps<T extends object>(entity: T): string[] {
     const wrapped = helper(entity);
 
-    return wrapped.__meta.uniqueProps.map(prop => {
-      if (entity[prop.name]) {
+    if (!wrapped.__meta.hasUniqueProps) {
+      return [];
+    }
+
+    const simpleUniqueHashes = wrapped.__meta.uniqueProps.map(prop => {
+      if (entity[prop.name] != null) {
         return prop.reference === ReferenceType.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]).getSerializedPrimaryKey();
       }
 
-      if (wrapped.__originalEntityData?.[prop.name as string]) {
+      if (wrapped.__originalEntityData?.[prop.name as string] != null) {
         return Utils.getPrimaryKeyHash(Utils.asArray(wrapped.__originalEntityData![prop.name as string]));
       }
 
       return undefined;
     }).filter(i => i) as string[];
+
+    const compoundUniqueHashes = wrapped.__meta.uniques.map(unique => {
+      const props = Utils.asArray(unique.properties);
+
+      if (props.every(prop => entity[prop] != null)) {
+        return Utils.getPrimaryKeyHash(props.map(p => {
+          const prop = wrapped.__meta.properties[p];
+          return prop.reference === ReferenceType.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]).getSerializedPrimaryKey();
+        }) as any);
+      }
+
+      if (props.every(prop => wrapped.__originalEntityData?.[prop as string] != null)) {
+        return Utils.getPrimaryKeyHash(props.map(p => {
+          return wrapped.__originalEntityData![p as string];
+        }));
+      }
+
+      return undefined;
+    }).filter(i => i) as string[];
+
+    return simpleUniqueHashes.concat(compoundUniqueHashes);
   }
 
   private initIdentifier<T extends object>(entity: T): void {
-    const wrapped = helper(entity);
+    const wrapped = entity && helper(entity);
 
     if (!wrapped || wrapped.__identifier || wrapped.hasPrimaryKey()) {
       return;
@@ -579,7 +643,7 @@ export class UnitOfWork {
 
     if (pk.reference === ReferenceType.SCALAR) {
       wrapped.__identifier = new EntityIdentifier();
-    } else {
+    } else if (entity[pk.name]) {
       this.initIdentifier(entity[pk.name] as object);
       wrapped.__identifier = helper(entity[pk.name] as AnyEntity)?.__identifier;
     }
@@ -614,8 +678,10 @@ export class UnitOfWork {
 
   private processToManyReference<T extends object>(collection: Collection<AnyEntity>, visited: Set<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
     if (this.isCollectionSelfReferenced(collection, visited)) {
-      this.extraUpdates.add([parent, prop.name, collection]);
-      parent[prop.name as keyof T] = new Collection<AnyEntity>(parent) as unknown as T[keyof T];
+      this.extraUpdates.add([parent, prop.name, collection, undefined]);
+      const coll = new Collection<AnyEntity, T>(parent);
+      coll.property = prop;
+      parent[prop.name as keyof T] = coll as unknown as T[keyof T];
 
       return;
     }
@@ -626,22 +692,22 @@ export class UnitOfWork {
   }
 
   private async runHooks<T extends object>(type: EventType, changeSet: ChangeSet<T>, sync = false): Promise<unknown> {
-    const hasListeners = this.eventManager.hasListeners(type, changeSet.meta);
+    const meta = changeSet.meta;
 
-    if (!hasListeners) {
+    if (!this.eventManager.hasListeners(type, meta)) {
       return;
     }
 
     this.insideHooks = true;
 
     if (!sync) {
-      await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
+      await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, meta, em: this.em, changeSet });
       this.insideHooks = false;
       return;
     }
 
     const copy = this.comparator.prepareEntity(changeSet.entity) as T;
-    await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
+    await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, meta, em: this.em, changeSet });
     const current = this.comparator.prepareEntity(changeSet.entity) as T;
     const diff = this.comparator.diffEntities<T>(changeSet.name, copy, current);
     Object.assign(changeSet.payload, diff);
@@ -777,10 +843,16 @@ export class UnitOfWork {
       }
     }
 
+    // perf: set the `Collection._property` to skip the getter, as it can be slow when there is a lot of relations
+    if (Utils.isCollection<AnyEntity, T>(reference)) {
+      reference.property = prop;
+    }
+
     const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
 
     if (isCollection && Array.isArray(reference)) {
       const collection = new Collection<AnyEntity>(entity);
+      collection.property = prop as EntityProperty;
       entity[prop.name as keyof T] = collection as unknown as T[keyof T];
       collection.set(reference as AnyEntity[]);
     }
@@ -815,23 +887,7 @@ export class UnitOfWork {
     }
 
     // 5. extra updates
-    const extraUpdates: ChangeSet<any>[] = [];
-
-    for (const extraUpdate of this.extraUpdates) {
-      if (Array.isArray(extraUpdate[1])) {
-        extraUpdate[1].forEach((p, i) => extraUpdate[0][p] = extraUpdate[2][i]);
-      } else {
-        extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
-      }
-
-      const changeSet = this.changeSetComputer.computeChangeSet(extraUpdate[0])!;
-
-      if (changeSet) {
-        extraUpdates.push(changeSet);
-      }
-    }
-
-    await this.commitUpdateChangeSets(extraUpdates, ctx, false);
+    await this.commitExtraUpdates(ctx);
 
     // 6. collection updates
     for (const coll of this.collectionUpdates) {
@@ -858,7 +914,9 @@ export class UnitOfWork {
     }
 
     const props = changeSets[0].meta.relations.filter(prop => {
-      return (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE;
+      return (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner)
+        || prop.reference === ReferenceType.MANY_TO_ONE
+        || (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && !this.platform.usesPivotTable());
     });
 
     for (const changeSet of changeSets) {
@@ -876,11 +934,25 @@ export class UnitOfWork {
 
   private findExtraUpdates<T extends object>(changeSet: ChangeSet<T>, props: EntityProperty<T>[]): void {
     for (const prop of props) {
-      if (!changeSet.entity[prop.name]) {
+      const ref = changeSet.entity[prop.name];
+
+      if (!ref) {
         continue;
       }
 
-      const cs = this.changeSets.get(Reference.unwrapReference(changeSet.entity[prop.name] as object));
+      if (Utils.isCollection(ref)) {
+        ref.getItems(false).some(item => {
+          const cs = this.changeSets.get(Reference.unwrapReference(item));
+          const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
+
+          if (isScheduledForInsert) {
+            this.scheduleExtraUpdate(changeSet, [prop]);
+            return true;
+          }
+        });
+      }
+
+      const cs = this.changeSets.get(Reference.unwrapReference(ref));
       const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
 
       if (isScheduledForInsert) {
@@ -941,6 +1013,33 @@ export class UnitOfWork {
     for (const changeSet of changeSets) {
       this.unsetIdentity(changeSet.entity);
       await this.runHooks(EventType.afterDelete, changeSet);
+    }
+  }
+
+  private async commitExtraUpdates<T extends object>(ctx?: Transaction): Promise<void> {
+    const extraUpdates: [ChangeSet<any>, ChangeSet<any> | undefined][] = [];
+
+    for (const extraUpdate of this.extraUpdates) {
+      if (Array.isArray(extraUpdate[1])) {
+        extraUpdate[1].forEach((p, i) => extraUpdate[0][p] = extraUpdate[2][i]);
+      } else {
+        extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
+      }
+
+      const changeSet = this.changeSetComputer.computeChangeSet(extraUpdate[0])!;
+
+      if (changeSet) {
+        extraUpdates.push([changeSet, extraUpdate[3]]);
+      }
+    }
+
+    await this.commitUpdateChangeSets(extraUpdates.map(u => u[0]), ctx, false);
+
+    // propagate the new values to the original changeset
+    for (const extraUpdate of extraUpdates) {
+      if (extraUpdate[1]) {
+        Object.assign(extraUpdate[1].payload, extraUpdate[0].payload);
+      }
     }
   }
 

@@ -1,5 +1,5 @@
 import type { Dictionary } from '@mikro-orm/core';
-import { ReferenceType, MetadataStorage, MetadataValidator } from '@mikro-orm/core';
+import { ReferenceType, MetadataStorage, MetadataValidator, EntitySchema } from '@mikro-orm/core';
 
 describe('MetadataValidator', () => {
 
@@ -135,6 +135,28 @@ describe('MetadataValidator', () => {
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).toThrowError(`Only scalar and embedded properties are allowed inside virtual entity. Found '1:m' in AuthorProfile.invalid1`);
     delete properties.invalid1;
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).not.toThrowError();
+  });
+
+  test('validates duplicities in tableName', async () => {
+    const properties: Dictionary = {
+      id: { reference: 'scalar', primary: true, name: 'id', type: 'number' },
+      name: { reference: 'scalar', name: 'name', type: 'string' },
+      age: { reference: 'scalar', name: 'age', type: 'string' },
+    };
+    const schema1 = EntitySchema.fromMetadata({
+      name: 'Foo1',
+      tableName: 'foo',
+      properties,
+    } as any);
+    const schema2 = EntitySchema.fromMetadata({
+      name: 'Foo2',
+      schema: 'other',
+      tableName: 'foo',
+      properties,
+    } as any);
+    expect(() => validator.validateDiscovered([schema1.meta, schema2.meta], true, true)).not.toThrowError();
+    schema2.meta.schema = '';
+    expect(() => validator.validateDiscovered([schema1.meta, schema2.meta], true, true)).toThrowError(`Duplicate table names are not allowed: foo`);
   });
 
   test('MetadataStorage.get throws when no metadata found', async () => {

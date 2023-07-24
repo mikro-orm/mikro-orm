@@ -70,7 +70,15 @@ export class EntityFactory {
     wrapped = helper(entity);
     wrapped.__processing = true;
     wrapped.__initialized = options.initialized;
-    this.hydrate(entity, meta2, data, options);
+
+    if (meta.forceConstructor) {
+      const tmp = { ...data };
+      meta.constructorParams.forEach(prop => delete tmp[prop]);
+      this.hydrate(entity, meta2, tmp, options);
+    } else {
+      this.hydrate(entity, meta2, data, options);
+    }
+
     wrapped.__touched = false;
 
     if (exists && meta.discriminatorColumn && !(entity instanceof meta2.class)) {
@@ -86,7 +94,7 @@ export class EntityFactory {
     }
 
     if (this.eventManager.hasListeners(EventType.onInit, meta2)) {
-      this.eventManager.dispatchEvent(EventType.onInit, { entity, em: this.em });
+      this.eventManager.dispatchEvent(EventType.onInit, { entity, meta: meta2, em: this.em });
     }
 
     wrapped.__processing = false;
@@ -96,7 +104,7 @@ export class EntityFactory {
 
   mergeData<T extends object>(meta: EntityMetadata<T>, entity: T, data: EntityData<T>, options: FactoryOptions = {}): void {
     // merge unchanged properties automatically
-    data = QueryHelper.processParams({ ...data });
+    data = QueryHelper.processParams(data);
     const existsData = this.comparator.prepareEntity(entity);
     const originalEntityData = helper(entity).__originalEntityData ?? {} as EntityData<T>;
     const diff = this.comparator.diffEntities(meta.className, originalEntityData, existsData);
@@ -111,9 +119,17 @@ export class EntityFactory {
     // do not override values changed by user
     Object.keys(diff).forEach(key => delete diff2[key]);
     Object.keys(diff2).filter(key => diff2[key] === undefined).forEach(key => delete diff2[key]);
+
+    // but always add collection properties and formulas if they are part of the `data`
+    Object.keys(data)
+      .filter(key => meta.properties[key]?.formula || [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(meta.properties[key]?.reference))
+      .forEach(key => diff2[key] = data[key]);
+
+    // rehydrated with the new values, skip those changed by user
     this.hydrate(entity, meta, diff2, options);
 
     // we need to update the entity data only with keys that were not present before
+    const nullVal = this.config.get('forceUndefined') ? undefined : null;
     Object.keys(diff2).forEach(key => {
       const prop = meta.properties[key];
 
@@ -121,7 +137,7 @@ export class EntityFactory {
         diff2[key] = helper(entity[prop.name]).getPrimaryKey(options.convertCustomTypes);
       }
 
-      originalEntityData[key] = diff2[key];
+      originalEntityData[key] = diff2[key] === null ? nullVal : diff2[key];
       helper(entity).__loadedProperties.add(key);
     });
 
@@ -160,7 +176,7 @@ export class EntityFactory {
       id = Utils.getPrimaryKeyCondFromArray(id, meta);
     }
 
-    const pks = Utils.getOrderedPrimaryKeys<T>(id, meta, this.platform, options.convertCustomTypes);
+    const pks = Utils.getOrderedPrimaryKeys<T>(id, meta);
 
     const exists = this.unitOfWork.getById<T>(entityName, pks as Primary<T>, schema);
 
@@ -197,10 +213,17 @@ export class EntityFactory {
       options.initialized = options.newEntity || options.initialized;
       const params = this.extractConstructorParams<T>(meta, data, options);
       const Entity = meta.class;
-      meta.constructorParams.forEach(prop => delete data[prop]);
 
       // creates new instance via constructor as this is the new entity
       const entity = new Entity(...params);
+
+      // creating managed entity instance when `forceEntityConstructor` is enabled,
+      // we need to wipe all the values as they would cause update queries on next flush
+      if (!options.initialized && this.config.get('forceEntityConstructor')) {
+        meta.props
+          .filter(prop => prop.persist !== false && !prop.primary && data[prop.name as string] === undefined)
+          .forEach(prop => delete entity[prop.name]);
+      }
 
       if (meta.virtual) {
         return entity;
@@ -251,7 +274,7 @@ export class EntityFactory {
   private findEntity<T extends object>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T | undefined {
     const schema = this.driver.getSchemaName(meta, options);
 
-    if (!meta.compositePK && !meta.getPrimaryProps()[0]?.customType) {
+    if (meta.simplePK) {
       return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0] as string] as Primary<T>, schema);
     }
 
@@ -259,7 +282,7 @@ export class EntityFactory {
       return undefined;
     }
 
-    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.platform, options.convertCustomTypes);
+    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta);
 
     return this.unitOfWork.getById<T>(meta.name!, pks, schema);
   }

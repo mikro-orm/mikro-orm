@@ -180,7 +180,10 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   }
 
   async getUpdateSchemaMigrationSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<{ up: string; down: string }> {
-    await this.ensureDatabase();
+    if (!options.fromSchema) {
+      await this.ensureDatabase();
+    }
+
     const { fromSchema, toSchema } = await this.prepareSchemaForComparison(options);
     const comparator = new SchemaComparator(this.platform);
     const diffUp = comparator.compare(fromSchema, toSchema);
@@ -446,7 +449,8 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     await this.driver.reconnect();
   }
 
-  async dropDatabase(name: string): Promise<void> {
+  override async dropDatabase(name?: string): Promise<void> {
+    name ??= this.config.get('dbName')!;
     this.config.set('dbName', this.helper.getManagementDbName());
     await this.driver.reconnect();
     await this.driver.execute(this.helper.getDropDatabaseSQL('' + this.knex.ref(name)));

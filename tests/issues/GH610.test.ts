@@ -52,7 +52,7 @@ describe('GH issue 610', () => {
   });
 
   test('GH issue 781', async () => {
-    expect(orm.em.getMetadata().get('Test').constructorParams[0]).toBe(ObjectBindingPattern);
+    expect(orm.em.getMetadata(Test).constructorParams[0]).toBe(ObjectBindingPattern);
     const t1 = orm.em.create(Test, { name: 't1' });
     expect(t1.name).toBe('t1');
   });

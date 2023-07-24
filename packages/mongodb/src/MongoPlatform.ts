@@ -70,6 +70,14 @@ export class MongoPlatform extends Platform {
     return true;
   }
 
+  convertJsonToDatabaseValue(value: unknown): unknown {
+    return value;
+  }
+
+  convertJsonToJSValue(value: unknown): unknown {
+    return value;
+  }
+
   marshallArray(values: string[]): string {
     return values as unknown as string;
   }

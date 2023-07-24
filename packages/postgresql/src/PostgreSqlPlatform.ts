@@ -269,12 +269,24 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   /**
    * @inheritDoc
    */
-  castColumn(prop?: EntityProperty): string {
+  castColumn(prop?: { columnTypes?: string[] }): string {
     switch (prop?.columnTypes?.[0]) {
       case this.getUuidTypeDeclarationSQL({}): return '::text';
       case this.getBooleanTypeDeclarationSQL(): return '::int';
+      case 'json': return '::jsonb';
       default: return '';
     }
+  }
+
+  /**
+   * @inheritDoc
+   */
+  castJsonValue(prop?: { columnTypes?: string[] }): string {
+    if (prop?.columnTypes?.[0] === 'json') {
+      return '::text';
+    }
+
+    return '';
   }
 
 }

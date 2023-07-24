@@ -28,7 +28,7 @@ export abstract class MetadataProvider {
       }
     });
 
-    Utils.merge(meta, cache);
+    Utils.mergeConfig(meta, cache);
   }
 
   useCache(): boolean {

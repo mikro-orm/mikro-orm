@@ -10,6 +10,10 @@ describe('EntityHelperMySql', () => {
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   beforeEach(async () => orm.schema.clearDatabase());
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test(`toObject allows to hide PK (GH issue 644)`, async () => {
     const bar = FooBar2.create('fb');
@@ -38,6 +42,7 @@ describe('EntityHelperMySql', () => {
           version: a.version,
           array: null,
           blob: null,
+          blob2: null,
           fooBar: null,
         }, // circular reference breaks the cycle
         id: 1,
@@ -53,9 +58,8 @@ describe('EntityHelperMySql', () => {
       array: null,
       objectProperty: null,
       blob: null,
+      blob2: null,
     });
   });
-
-  afterAll(async () => orm.close(true));
 
 });

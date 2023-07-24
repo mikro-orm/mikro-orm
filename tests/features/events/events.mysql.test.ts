@@ -21,7 +21,10 @@ describe('events (mysql)', () => {
     FlushSubscriber.log.length = 0;
     Test2Subscriber.log.length = 0;
   });
-  afterAll(async () => orm.close(true));
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   async function createBooksWithTags() {
     const author = new Author2('Jon Snow', 'snow@wall.st');

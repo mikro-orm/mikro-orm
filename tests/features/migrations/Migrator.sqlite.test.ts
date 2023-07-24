@@ -39,7 +39,7 @@ describe('Migrator (sqlite)', () => {
 
   beforeAll(async () => {
     orm = await initORMSqlite2();
-    await remove(process.cwd() + '/temp/migrations');
+    await remove(process.cwd() + '/temp/migrations-2');
   });
   afterAll(async () => orm.close(true));
 
@@ -52,7 +52,7 @@ describe('Migrator (sqlite)', () => {
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-2/' + migration.fileName);
   });
 
   test('generate migration with custom name', async () => {
@@ -74,7 +74,7 @@ describe('Migrator (sqlite)', () => {
     await migrator.up();
     await migrator.down(migration.fileName.replace('migration-', '').replace('.ts', ''));
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-2/' + migration.fileName);
     upMock.mockRestore();
     downMock.mockRestore();
   });
@@ -85,7 +85,7 @@ describe('Migrator (sqlite)', () => {
     const migrator = new Migrator(orm.em);
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
-    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-2/' + migration.fileName);
   });
 
   test('generate migration with snapshot', async () => {
@@ -97,7 +97,7 @@ describe('Migrator (sqlite)', () => {
     const migrator = new Migrator(orm.em);
     const migration1 = await migrator.createMigration();
     expect(migration1).toMatchSnapshot('migration-snapshot-dump-1');
-    await remove(process.cwd() + '/temp/migrations/' + migration1.fileName);
+    await remove(process.cwd() + '/temp/migrations-2/' + migration1.fileName);
 
     // will use the snapshot, so should be empty
     const migration2 = await migrator.createMigration();
@@ -138,13 +138,13 @@ describe('Migrator (sqlite)', () => {
     const migration1 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).not.toBeCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
-    await remove(process.cwd() + '/temp/migrations/' + migration1.fileName);
+    await remove(process.cwd() + '/temp/migrations-2/' + migration1.fileName);
 
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration2 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).toBeCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
-    await remove(process.cwd() + '/temp/migrations/' + migration2.fileName);
+    await remove(process.cwd() + '/temp/migrations-2/' + migration2.fileName);
   });
 
   test('migration storage getter', async () => {
@@ -177,7 +177,7 @@ describe('Migrator (sqlite)', () => {
   });
 
   test('run schema migration without existing migrations folder (GH #907)', async () => {
-    await remove(process.cwd() + '/temp/migrations');
+    await remove(process.cwd() + '/temp/migrations-2');
     const migrator = new Migrator(orm.em);
     await migrator.up();
   });
@@ -245,7 +245,7 @@ describe('Migrator (sqlite)', () => {
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
-    const path = process.cwd() + '/temp/migrations';
+    const path = process.cwd() + '/temp/migrations-2';
 
     const migration = await migrator.createMigration(path, true);
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
@@ -264,7 +264,7 @@ describe('Migrator (sqlite)', () => {
     await remove(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx\\d+');
     });
@@ -278,7 +278,7 @@ describe('Migrator (sqlite)', () => {
     migrator.options.disableForeignKeys = false;
     // @ts-ignore
     migrator.options.allOrNothing = false;
-    const path = process.cwd() + '/temp/migrations';
+    const path = process.cwd() + '/temp/migrations-2';
 
     const migration = await migrator.createMigration(path, true);
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
@@ -297,7 +297,7 @@ describe('Migrator (sqlite)', () => {
     await remove(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
-        .replace(/ \[took \d+ ms]/, '')
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
         .replace(/ trx\d+/, 'trx_xx');
     });

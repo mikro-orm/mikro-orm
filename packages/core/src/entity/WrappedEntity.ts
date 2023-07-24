@@ -2,13 +2,14 @@ import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
 import type {
   AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, IHydrator,
-  IWrappedEntityInternal, Populate, PopulateOptions, Primary,
+  IWrappedEntityInternal, Populate, PopulateOptions, Primary, AutoPath, Loaded,
 } from '../typings';
 import type { IdentifiedReference } from './Reference';
 import { Reference } from './Reference';
 import { EntityTransformer } from '../serialization/EntityTransformer';
 import type { AssignOptions } from './EntityAssigner';
 import { EntityAssigner } from './EntityAssigner';
+import type { EntityLoaderOptions } from './EntityLoader';
 import { Utils } from '../utils/Utils';
 import type { LockMode } from '../enums';
 import { ValidationError } from '../errors';
@@ -98,6 +99,19 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
     this.__lazyInitialized = true;
 
     return this.entity;
+  }
+
+  async populate<Hint extends string = never>(
+    populate: AutoPath<T, Hint>[] | boolean,
+    options: EntityLoaderOptions<T, Hint> = {},
+  ): Promise<Loaded<T, Hint>> {
+    if (!this.__em) {
+      throw ValidationError.entityNotManaged(this.entity);
+    }
+
+    await this.__em.populate(this.entity, populate, options);
+
+    return this.entity as Loaded<T, Hint>;
   }
 
   hasPrimaryKey(): boolean {

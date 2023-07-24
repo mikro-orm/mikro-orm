@@ -83,6 +83,7 @@ describe('EntityHelperMongo', () => {
     expect(wrap(god, true).__touched).toBe(true);
     expect(god.isTouched()).toBe(true);
     god.populated();
+    await expect(god.populate(['favouriteAuthor'])).rejects.toThrowError('Entity Author is not managed.');
     expect(wrap(god, true).__populated).toBe(true);
     expect(wrap(god, true).__platform).toBe(orm.em.getDriver().getPlatform());
 
@@ -91,6 +92,7 @@ describe('EntityHelperMongo', () => {
     expect(ref.getEntity()).toBe(god);
 
     await orm.em.persistAndFlush(god);
+    await god.populate(['favouriteAuthor']);
     expect(wrap(god, true).__touched).toBe(false);
     expect(god.isTouched()).toBe(false);
     god.name = '123';

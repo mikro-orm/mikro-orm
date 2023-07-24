@@ -115,7 +115,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     em.setTransactionContext(options.ctx);
     const res = meta.expression(em, where, options);
 
-    if (res instanceof QueryBuilder<T[]>) {
+    if (res instanceof QueryBuilder) {
       return this.wrapVirtualExpressionInSubquery(meta, res.getFormattedQuery(), where, options);
     }
 
@@ -139,7 +139,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     em.setTransactionContext(options.ctx);
     const res = meta.expression(em, where, options as Dictionary);
 
-    if (res instanceof QueryBuilder<T[]>) {
+    if (res instanceof QueryBuilder) {
       return this.wrapVirtualExpressionInSubquery(meta, res.getFormattedQuery(), where, options as Dictionary, QueryType.COUNT);
     }
 
@@ -341,7 +341,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const addParams = (prop: EntityProperty<T>, row: Dictionary) => {
       if (options.convertCustomTypes && prop.customType) {
-        return params.push(prop.customType.convertToDatabaseValue(row[prop.name], this.platform, { key: prop.name, mode: 'query' }));
+        return params.push(prop.customType.convertToDatabaseValue(row[prop.name], this.platform, { key: prop.name, mode: 'query-data' }));
       }
 
       params.push(row[prop.name]);
@@ -352,7 +352,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         const keys: string[] = [];
         props.forEach(prop => {
           if (prop.fieldNames.length > 1) {
-            const param = row[prop.name] as unknown[] ?? prop.fieldNames.map(() => null);
+            const param = [...row[prop.name] as unknown[] ?? prop.fieldNames.map(() => null)];
             const key = (row[prop.name] as unknown[] ?? prop.fieldNames).map(() => '?');
             prop.fieldNames.forEach((field, idx) => {
               if (duplicates.includes(field)) {
@@ -425,7 +425,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         /* istanbul ignore next */
         qb.insert(data as T)
           .onConflict(uniqueFields.map(p => meta?.properties[p]?.fieldNames[0] ?? p))
-          .merge(Object.keys(data).filter(f => !uniqueFields.includes(f)));
+          .merge(Object.keys(data).filter(f => !uniqueFields.includes(f)))
+          .returning(meta?.comparableProps.filter(p => !p.lazy && !p.embeddable && !(p.name in data)).map(p => p.name) ?? '*');
       } else {
         qb.update(data).where(where);
       }
@@ -449,8 +450,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const uniqueFields = Utils.isPlainObject(where[0]) ? Object.keys(where[0]) : meta.primaryKeys;
       const qb = this.createQueryBuilder(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
       qb.insert(data)
-        .onConflict(uniqueFields.map(p => meta?.properties[p]?.fieldNames[0] ?? p))
-        .merge(Object.keys(data[0]).filter(f => !uniqueFields.includes(f)));
+        .onConflict(uniqueFields.map(p => meta.properties[p]?.fieldNames[0] ?? p))
+        .merge(Object.keys(data[0]).filter(f => !uniqueFields.includes(f)))
+        .returning(meta.comparableProps.filter(p => !p.lazy && !p.embeddable && !(p.name in data[0])).map(p => p.name) ?? '*');
       return qb.execute('run', false);
     }
 
@@ -824,7 +826,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
   protected async updateCollectionDiff<T extends object, O extends object>(
     meta: EntityMetadata<O>,
-    prop: EntityProperty<T>,
+    prop: EntityProperty<O>,
     pks: Primary<O>[],
     deleteDiff: Primary<T>[][] | boolean,
     insertDiff: Primary<T>[][],
@@ -949,6 +951,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return;
     }
 
+    if (prop.formula) {
+      ret.push(prop.name);
+      return;
+    }
+
     if (prop.fieldNames) {
       ret.push(...prop.fieldNames);
     }
@@ -1001,7 +1008,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         });
 
       meta.props
-        .filter(prop => prop.customType?.convertToDatabaseValueSQL || prop.customType?.convertToJSValueSQL)
+        .filter(prop => prop.hasConvertToDatabaseValueSQL || prop.hasConvertToJSValueSQL)
         .forEach(prop => ret.push(prop.name));
     }
 

@@ -1,7 +1,7 @@
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
-import type { SimpleColumnMeta, Type } from '@mikro-orm/core';
+import type { SimpleColumnMeta, Type, TransformContext } from '@mikro-orm/core';
 import { expr, Utils } from '@mikro-orm/core';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
@@ -13,14 +13,12 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return 'utf8mb4';
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
-    const [a, ...b] = path;
-
-    if (aliased) {
-      return expr(alias => `${this.quoteIdentifier(`${alias}.${a}`)}->'$.${b.join('.')}'`);
+  convertJsonToDatabaseValue(value: unknown, context?: TransformContext): unknown {
+    if (context?.mode === 'query') {
+      return value;
     }
 
-    return `${this.quoteIdentifier(a)}->'$.${b.join('.')}'`;
+    return JSON.stringify(value);
   }
 
   getBooleanTypeDeclarationSQL(): string {

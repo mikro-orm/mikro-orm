@@ -21,8 +21,8 @@ export function ManyToOne<T, O>(
 
 export interface ManyToOneOptions<T, O> extends ReferenceOptions<T, O> {
   inversedBy?: (string & keyof T) | ((e: T) => any);
+  /** @deprecated use `ref` instead, `wrappedReference` option will be removed in v6 */
   wrappedReference?: boolean;
-  /** alias for `wrappedReference` */
   ref?: boolean;
   primary?: boolean;
   mapToPk?: boolean;

@@ -41,6 +41,25 @@ exports.Migration20191013214813 = Migration20191013214813;
 }
 `;
 
+exports[`Migrator (mongo) generate migration with custom name with name option: migration-dump 1`] = `
+{
+  "code": "import { Migration } from '@mikro-orm/migrations-mongodb';
+
+export class Migration20191013214813_custom_name extends Migration {
+
+  async up(): Promise<void> {
+  }
+
+}
+",
+  "diff": {
+    "down": [],
+    "up": [],
+  },
+  "fileName": "migration20191013214813_custom_name.ts",
+}
+`;
+
 exports[`Migrator (mongo) generate migration with custom name: migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations-mongodb';

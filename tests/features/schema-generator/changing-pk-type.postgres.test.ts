@@ -73,8 +73,8 @@ describe('changing PK column type [postgres] (GH 1480)', () => {
   test('changing PK type', async () => {
     const testMigration = async (e1: Constructor, e2: Constructor | undefined, snap: string) => {
       if (e2) {
-        await orm.discoverEntity(e2);
         orm.getMetadata().reset(e1.name);
+        await orm.discoverEntity(e2);
       }
 
       const diff = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });

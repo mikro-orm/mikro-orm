@@ -34,6 +34,10 @@ All hooks support async methods with one exception - `@OnInit`.
 
 > `@OnInit` can be sometimes fired twice, once when the entity reference is created, and once after its populated. To distinguish between those we can use `wrap(this).isInitialized()`.
 
+### Upsert hooks
+
+`em.upsert()` and `em.upsertMany` cannot fire the create/update hooks, as we don't know if the query is an insert or update, those methods offer their own hooks - `beforeUpsert` and `afterUpsert`. The `beforeUpsert` event might provide a DTO instead of entity instance, based on how you call the upsert method. You can use the `EventArgs.meta` object to detect what kind of entity it belongs to. `afterUpsert` event will always receive already managed entity instance.
+
 ## Limitations of lifecycle hooks
 
 Hooks are executed inside the commit action of unit of work, after all change sets are computed. This means that it is not possible to create new entities as usual from inside the hook. Calling `em.flush()` from hooks will result in validation error. Calling `em.persist()` can result in undefined behaviour like locking errors.
@@ -74,13 +78,19 @@ export class AuthorSubscriber implements EventSubscriber<Author> {
 
 }
 ```
+:::caution Warning
+Do not mix and match the `@Subscriber()` decorator and the `subscribers` array in the configuration. If you use the decorator, you **should not use** the `subscribers` array, and vice versa.
+
+This is due to an issue that will cause each subscriber in the configuration array annotated with `@Subscriber()` to be registered twice, **which will result in duplicate events being fired.**
+
+Additionally, future versions of MikroORM will be dropping support for the`@Subscriber()` decorator in favor of the `subscribers` array in the configuration. Therefore, it is not recommended to use the `@Subscriber()` decorator and to instead use the `subscribers` array in the configuration.
+:::
 
 Another example, where we register to all the events and all entities:
 
 ```ts
-import { EventArgs, EventSubscriber, Subscriber } from '@mikro-orm/core';
+import { EventArgs, TransactionEventArgs, EventSubscriber } from '@mikro-orm/core';
 
-@Subscriber()
 export class EverythingSubscriber implements EventSubscriber {
 
   // entity life cycle events
@@ -90,13 +100,15 @@ export class EverythingSubscriber implements EventSubscriber {
   async afterCreate<T>(args: EventArgs<T>): Promise<void> { ... }
   async beforeUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
   async afterUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
+  async beforeUpsert<T>(args: EventArgs<T>): Promise<void> { ... }
+  async afterUpsert<T>(args: EventArgs<T>): Promise<void> { ... }
   async beforeDelete<T>(args: EventArgs<T>): Promise<void> { ... }
   async afterDelete<T>(args: EventArgs<T>): Promise<void> { ... }
 
   // flush events
-  async beforeFlush<T>(args: EventArgs<T>): Promise<void> { ... }
-  async onFlush<T>(args: EventArgs<T>): Promise<void> { ... }
-  async afterFlush<T>(args: EventArgs<T>): Promise<void> { ... }
+  async beforeFlush<T>(args: FlushEventArgs): Promise<void> { ... }
+  async onFlush<T>(args: FlushEventArgs): Promise<void> { ... }
+  async afterFlush<T>(args: FlushEventArgs): Promise<void> { ... }
 
   // transaction events
   async beforeTransactionStart(args: TransactionEventArgs): Promise<void> { ... }
@@ -199,7 +211,6 @@ We first use `uow.getChangeSets()` method to look up the change set of entity we
 2. Call `uow.recomputeSingleChangeSet(cs.entity)` to recalculate the existing change set of the `FooBar` entity.
 
 ```ts
-@Subscriber()
 export class FooBarSubscriber implements EventSubscriber {
 
   async onFlush(args: FlushEventArgs): Promise<void> {
@@ -220,6 +231,19 @@ export class FooBarSubscriber implements EventSubscriber {
 const bar = new FooBar();
 bar.name = 'bar';
 await em.persistAndFlush(bar);
+```
+
+To create a `DELETE` changeset, you can use the second parameter of `uow.computeChangeSet()`:
+
+```ts
+async onFlush(args: FlushEventArgs): Promise<void> {
+  const changeSets = args.uow.getChangeSets();
+  const cs = changeSets.find(cs => cs.type === ChangeSetType.UPDATE && cs.entity instanceof FooBar);
+
+  if (cs) {
+    args.uow.computeChangeSet(cs.entity, ChangeSetType.DELETE);
+  }
+}
 ```
 
 ## Transaction events

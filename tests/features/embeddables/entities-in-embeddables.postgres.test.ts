@@ -368,7 +368,9 @@ describe('embedded entities in postgres', () => {
     const u5 = await orm.em.findOneOrFail(User, { $or: [{ profile1: { identity: { meta: { foo: 'foooooooo' } } } }, { profile2: { identity: { meta: { bar: 'bababar' } } } }] });
     expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" where ("u0"."profile1_identity_meta_foo" = 'foooooooo' or "u0"."profile2"->'identity'->'meta'->>'bar' = 'bababar') limit 1`);
     expect(u5.id).toEqual(u1.id);
+  });
 
+  test('invalid embedded property query', async () => {
     const err1 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
     await expect(orm.em.findOneOrFail(User, { profile1: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err1);
 

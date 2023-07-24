@@ -1,6 +1,7 @@
 import { v4, parse, stringify } from 'uuid';
 import { Entity, LoadStrategy, ManyToOne, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType, Property, Type, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
+import { mockLogger } from '../../helpers';
 
 export class UuidBinaryType extends Type<string, Buffer> {
 
@@ -92,6 +93,10 @@ describe('GH issue 446', () => {
     orm.em.clear();
 
     const c1 = await orm.em.findOneOrFail(C, c.b.a.id, { populate: ['b.a'] });
+    const mock = mockLogger(orm);
+    const c23 = await orm.em.findOneOrFail(C, c.b.a.id);
+    expect(mock).not.toBeCalled();
+    expect(c1).toBe(c23);
     expect(c1).toBeInstanceOf(C);
     expect(c1.b).toBeInstanceOf(B);
     expect(wrap(c1.b).isInitialized()).toBe(true);

@@ -25,6 +25,12 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(msg);
   }
 
+  static fromWrongRepositoryType(entityName: string, repoType: string, method: string): ValidationError {
+    const msg = `Trying to use EntityRepository.${method}() with '${entityName}' entity while the repository is of type '${repoType}'`;
+
+    return new ValidationError(msg);
+  }
+
   static fromCollectionNotInitialized(entity: AnyEntity, prop: EntityProperty): ValidationError {
     const entityName = entity.constructor.name;
     const msg = `${entityName}.${prop.name} is not initialized, define it as '${prop.name} = new Collection<${prop.type}>(this);'`;
@@ -92,6 +98,15 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
   static cannotModifyReadonlyCollection(owner: AnyEntity, property: EntityProperty): ValidationError {
     return new ValidationError(`You cannot modify collection ${owner.constructor.name}.${property.name} as it is marked as readonly.`, owner);
+  }
+
+  static cannotRemoveFromCollectionWithoutOrphanRemoval(owner: AnyEntity, property: EntityProperty): ValidationError {
+    const options = [
+      ' - add `orphanRemoval: true` to the collection options',
+      ' - add `onDelete: \'cascade\'` to the owning side options',
+      ' - add `nullable: true` to the owning side options',
+    ].join('\n');
+    return new ValidationError(`Removing items from collection ${owner.constructor.name}.${property.name} without \`orphanRemoval: true\` would break non-null constraint on the owning side. You have several options: \n${options}`, owner);
   }
 
   static invalidCompositeIdentifier(meta: EntityMetadata): ValidationError {
@@ -205,8 +220,8 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError('Only abstract entities were discovered, maybe you forgot to use @Entity() decorator?');
   }
 
-  static duplicateEntityDiscovered(paths: string[]): MetadataError {
-    return new MetadataError(`Duplicate entity names are not allowed: ${paths.join(', ')}`);
+  static duplicateEntityDiscovered(paths: string[], subject = 'entity names'): MetadataError {
+    return new MetadataError(`Duplicate ${subject} are not allowed: ${paths.join(', ')}`);
   }
 
   static multipleDecorators(entityName: string, propertyName: string): MetadataError {

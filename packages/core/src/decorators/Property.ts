@@ -92,6 +92,10 @@ export type PropertyOptions<T> = {
    */
   autoincrement?: boolean;
   /**
+   * Add the property to the `returning` statement.
+   */
+  returning?: boolean;
+  /**
    * Automatically set the property value when entity gets created, executed during flush operation.
    * @param entity
    */

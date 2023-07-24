@@ -11,7 +11,7 @@ import { EntitySchema } from './EntitySchema';
 import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import type { Platform } from '../platforms';
-import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, t, Type } from '../types';
+import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, t, Type, Uint8ArrayType } from '../types';
 import { colors } from '../logging/colors';
 
 export class MetadataDiscovery {
@@ -94,18 +94,19 @@ export class MetadataDiscovery {
   private async findEntities(preferTsNode: boolean): Promise<EntityMetadata[]> {
     this.discovered.length = 0;
 
+    const options = this.config.get('discovery');
     const key = (preferTsNode && this.config.get('tsNode', Utils.detectTsNode()) && this.config.get('entitiesTs').length > 0) ? 'entitiesTs' : 'entities';
     const paths = this.config.get(key).filter(item => Utils.isString(item)) as string[];
     const refs = this.config.get(key).filter(item => !Utils.isString(item)) as Constructor<AnyEntity>[];
 
-    if (this.config.get('discovery').requireEntitiesArray && paths.length > 0) {
+    if (options.requireEntitiesArray && paths.length > 0) {
       throw new Error(`[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`);
     }
 
     await this.discoverDirectories(paths);
     await this.discoverReferences(refs);
     await this.discoverMissingTargets();
-    this.validator.validateDiscovered(this.discovered, this.config.get('discovery').warnWhenNoEntities!);
+    this.validator.validateDiscovered(this.discovered, options.warnWhenNoEntities, options.checkDuplicateTableNames);
 
     return this.discovered;
   }
@@ -487,6 +488,7 @@ export class MetadataDiscovery {
       this.initRelation(prop);
     }
 
+    meta.simplePK = pks.length === 1 && pks[0].reference === ReferenceType.SCALAR && !pks[0].customType;
     meta.serializedPrimaryKey = this.platform.getSerializedPrimaryKeyField(meta.primaryKeys[0]);
     const serializedPKProp = meta.properties[meta.serializedPrimaryKey];
 
@@ -832,6 +834,7 @@ export class MetadataDiscovery {
         meta.properties[name].fieldNames = [path.join('.')]; // store path for ObjectHydrator
         meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(path.join('->'), prop.type, true); // for querying in SQL drivers
         meta.properties[name].persist = false; // only virtual as we store the whole object
+        meta.properties[name].userDefined = false; // mark this as a generated/internal property, so we can distinguish from user-defined non-persist properties
       }
 
       this.initEmbeddables(meta, meta.properties[name], visited);
@@ -997,6 +1000,10 @@ export class MetadataDiscovery {
       prop.type = prop.customType.constructor.name;
     }
 
+    if (prop.reference === ReferenceType.SCALAR && !prop.customType && prop.columnTypes && ['json', 'jsonb'].includes(prop.columnTypes[0])) {
+      prop.customType = new JsonType();
+    }
+
     if (!prop.customType && prop.array && prop.items) {
       prop.customType = new EnumArrayType(`${meta.className}.${prop.name}`, prop.items);
     }
@@ -1015,7 +1022,11 @@ export class MetadataDiscovery {
       prop.customType = new BlobType();
     }
 
-    if (!prop.customType && prop.type === 'json') {
+    if (!prop.customType && prop.type === 'Uint8Array') {
+      prop.customType = new Uint8ArrayType();
+    }
+
+    if (!prop.customType && ['json', 'jsonb'].includes(prop.type)) {
       prop.customType = new JsonType();
     }
 
@@ -1028,6 +1039,8 @@ export class MetadataDiscovery {
       prop.customType.meta = meta;
       prop.customType.prop = prop;
       prop.columnTypes ??= [prop.customType.getColumnType(prop, this.platform)];
+      prop.hasConvertToJSValueSQL = !!prop.customType.convertToJSValueSQL && prop.customType.convertToJSValueSQL('', this.platform) !== '';
+      prop.hasConvertToDatabaseValueSQL = !!prop.customType.convertToDatabaseValueSQL && prop.customType.convertToDatabaseValueSQL('', this.platform) !== '';
     }
 
     if (Type.isMappedType(prop.customType) && prop.reference === ReferenceType.SCALAR && !prop.type?.toString().endsWith('[]')) {
@@ -1106,7 +1119,7 @@ export class MetadataDiscovery {
   }
 
   private getMappedType(prop: EntityProperty): Type<unknown> {
-    let t = prop.columnTypes?.[0] ?? prop.type.toLowerCase();
+    let t = prop.columnTypes?.[0] ?? prop.type?.toLowerCase();
 
     if (prop.enum) {
       t = prop.items?.every(item => Utils.isString(item)) ? 'enum' : 'tinyint';

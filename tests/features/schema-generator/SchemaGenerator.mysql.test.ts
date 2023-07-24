@@ -92,6 +92,7 @@ describe('SchemaGenerator', () => {
     const updateDump = await orm.schema.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('mysql-update-schema-dump');
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
@@ -110,6 +111,7 @@ describe('SchemaGenerator', () => {
     const updateDump = await orm.schema.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('mariadb-update-schema-dump');
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
@@ -247,6 +249,7 @@ describe('SchemaGenerator', () => {
     expect(diff).toMatchSnapshot('mysql-update-schema-drop-1:1');
     await orm.schema.execute(diff);
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
@@ -270,6 +273,7 @@ describe('SchemaGenerator', () => {
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('mysql-update-schema-rename-column');
     await orm.schema.updateSchema();
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
@@ -327,6 +331,7 @@ describe('SchemaGenerator', () => {
     expect(diff).toMatchSnapshot('mysql-update-schema-enums-4');
     await orm.schema.execute(diff);
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
@@ -347,6 +352,7 @@ describe('SchemaGenerator', () => {
     dropSchema.mockRestore();
     createSchema.mockRestore();
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 });

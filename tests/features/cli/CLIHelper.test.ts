@@ -32,7 +32,7 @@ describe('CLIHelper', () => {
   test('configures yargs instance', async () => {
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(cli.getCommandInstance().getCommands()).toEqual([
+    expect(cli.getInternalMethods().getCommandInstance().getCommands()).toEqual([
       'cache:clear',
       'cache:generate',
       'generate-entities',
@@ -48,6 +48,7 @@ describe('CLIHelper', () => {
       'migration:up',
       'migration:down',
       'migration:list',
+      'migration:check',
       'migration:pending',
       'migration:fresh',
       'debug',

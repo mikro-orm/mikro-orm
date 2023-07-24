@@ -15,6 +15,7 @@ describe('EntityGenerator', () => {
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
     await remove('./temp/entities');
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
@@ -25,6 +26,7 @@ describe('EntityGenerator', () => {
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
     await remove('./temp/entities');
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
@@ -40,6 +42,7 @@ describe('EntityGenerator', () => {
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
     await remove('./temp/entities');
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
@@ -54,6 +57,7 @@ describe('EntityGenerator', () => {
     const dump = await orm.entityGenerator.generate({ save: true, baseDir: './temp/entities' });
     expect(dump).toMatchSnapshot('mysql-entity-schema-bidirectional-dump');
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
+    await orm.schema.dropDatabase();
     await orm.close(true);
 
     // try to discover the entities to verify they are valid
@@ -79,6 +83,7 @@ describe('EntityGenerator', () => {
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
     await remove('./temp/entities');
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 

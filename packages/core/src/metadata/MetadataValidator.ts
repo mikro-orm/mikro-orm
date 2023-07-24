@@ -53,7 +53,7 @@ export class MetadataValidator {
     }
   }
 
-  validateDiscovered(discovered: EntityMetadata[], warnWhenNoEntities: boolean): void {
+  validateDiscovered(discovered: EntityMetadata[], warnWhenNoEntities?: boolean, checkDuplicateTableNames?: boolean): void {
     if (discovered.length === 0 && warnWhenNoEntities) {
       throw MetadataError.noEntityDiscovered();
     }
@@ -62,6 +62,16 @@ export class MetadataValidator {
 
     if (duplicates.length > 0) {
       throw MetadataError.duplicateEntityDiscovered(duplicates);
+    }
+
+    const tableNames = discovered.filter(meta => !meta.abstract && meta === meta.root && (meta.tableName || meta.collection) && meta.schema !== '*');
+    const duplicateTableNames = Utils.findDuplicates(tableNames.map(meta => {
+      const tableName = meta.tableName || meta.collection;
+      return (meta.schema ? '.' + meta.schema : '') + tableName;
+    }));
+
+    if (duplicateTableNames.length > 0 && checkDuplicateTableNames) {
+      throw MetadataError.duplicateEntityDiscovered(duplicateTableNames, 'table names');
     }
 
     // validate we found at least one entity (not just abstract/base entities)

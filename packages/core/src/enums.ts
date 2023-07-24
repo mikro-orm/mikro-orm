@@ -1,7 +1,7 @@
 import type { Dictionary, ExcludeFunctions, ExpandProperty } from './typings';
 import type { Transaction } from './connections';
 
-export const enum FlushMode {
+export enum FlushMode {
   /** The `EntityManager` tries to delay the flush until the current Transaction is committed, although it might flush prematurely too. */
   COMMIT,
   /** This is the default mode, and it flushes the `EntityManager` only if necessary. */
@@ -150,6 +150,8 @@ export enum EventType {
   afterCreate = 'afterCreate',
   beforeUpdate = 'beforeUpdate',
   afterUpdate = 'afterUpdate',
+  beforeUpsert = 'beforeUpsert',
+  afterUpsert = 'afterUpsert',
   beforeDelete = 'beforeDelete',
   afterDelete = 'afterDelete',
   beforeFlush = 'beforeFlush',
@@ -169,6 +171,7 @@ export interface TransactionOptions {
   ctx?: Transaction;
   isolationLevel?: IsolationLevel;
   flushMode?: FlushMode;
+  ignoreNestedTransactions?: boolean;
 }
 
 export abstract class PlainObject {

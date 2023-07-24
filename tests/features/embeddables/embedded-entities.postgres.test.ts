@@ -281,7 +281,7 @@ describe('embedded entities in postgresql', () => {
     expect(mock.mock.calls[2][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_city" from "user" as "u0"');
   });
 
-  test('partial loading', async () => {
+  test('partial loading 2', async () => {
     const mock = mockLogger(orm, ['query']);
 
     await orm.em.fork().qb(User).select('address1.city').where({ address1: { city: 'London 1' } }).execute();

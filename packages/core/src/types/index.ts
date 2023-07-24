@@ -1,9 +1,10 @@
-import { Type } from './Type';
+import { Type, TransformContext } from './Type';
 import { DateType } from './DateType';
 import { TimeType } from './TimeType';
 import { DateTimeType } from './DateTimeType';
 import { BigIntType } from './BigIntType';
 import { BlobType } from './BlobType';
+import { Uint8ArrayType } from './Uint8ArrayType';
 import { ArrayType } from './ArrayType';
 import { EnumArrayType } from './EnumArrayType';
 import { EnumType } from './EnumType';
@@ -22,9 +23,9 @@ import { TextType } from './TextType';
 import { UnknownType } from './UnknownType';
 
 export {
-  Type, DateType, TimeType, DateTimeType, BigIntType, BlobType, ArrayType, EnumArrayType, EnumType,
+  Type, DateType, TimeType, DateTimeType, BigIntType, BlobType, Uint8ArrayType, ArrayType, EnumArrayType, EnumType,
   JsonType, IntegerType, SmallIntType, TinyIntType, MediumIntType, FloatType, DoubleType, BooleanType, DecimalType,
-  StringType, UuidType, TextType, UnknownType,
+  StringType, UuidType, TextType, UnknownType, TransformContext,
 };
 
 export const types = {
@@ -33,6 +34,7 @@ export const types = {
   datetime: DateTimeType,
   bigint: BigIntType,
   blob: BlobType,
+  uint8array: Uint8ArrayType,
   array: ArrayType,
   enumArray: EnumArrayType,
   enum: EnumType,
