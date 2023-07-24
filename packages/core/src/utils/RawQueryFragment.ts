@@ -43,18 +43,22 @@ export class RawQueryFragment {
     this.#used = true;
   }
 
+  clone(): RawQueryFragment {
+    return new RawQueryFragment(this.sql, this.params);
+  }
+
   static isKnownFragment(key: string) {
     return this.#rawQueryCache.has(key);
   }
 
-  static getKnownFragment(key: string | RawQueryFragment) {
+  static getKnownFragment(key: string | RawQueryFragment, cleanup = true) {
     if (key instanceof RawQueryFragment) {
       return key;
     }
 
     const raw = this.#rawQueryCache.get(key);
 
-    if (raw) {
+    if (raw && cleanup) {
       this.#rawQueryCache.delete(key);
     }
 
