@@ -99,7 +99,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
 
     const promises: [string, Promise<string>][] = [];
 
-    for (const meta of Object.values(this.metadata.getAll())) {
+    for (const meta of this.getOrderedMetadata()) {
       if (Array.isArray(options?.retry) && !options.retry.includes(meta.collection)) {
         continue;
       }
