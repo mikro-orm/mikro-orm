@@ -697,7 +697,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     if (this.type === QueryType.COUNT) {
       res = await this.execute<{ count: number }>('get', false);
     } else {
-      const qb = this.clone();
+      const qb = this.type === undefined ? this : this.clone();
       qb.count(field, distinct ?? qb.hasToManyJoins()).limit(undefined).offset(undefined).orderBy([]);
       res = await qb.execute<{ count: number }>('get', false);
     }
