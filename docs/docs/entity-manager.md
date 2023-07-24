@@ -275,8 +275,24 @@ const author = await em.findOne(Author, '...', { fields: ['name', { books: ['tit
 > Same problem can occur in mongo with M:N collections - those are stored as array property on the owning entity, so we need to make sure to mark such properties too.
 
 ### Fetching Paginated Results
+To paginate the results, we can use `em.paginate()` or `em.simplePaginate` method:
 
-If we are going to paginate our results, we can use `em.findAndCount()` that will return total count of entities before applying limit and offset.
+```ts
+const { data, meta } = await em.paginate(Author, { ... }, { page: 2, perPage: 20 });
+
+console.log(data); // Author[]
+console.log(meta); // { totalItems: number; perPage: number; totalPages: number; currentPage: number; }
+```
+`em.paginate()` will return total count of entities before applying limit and offset, so it is a bit slower than `em.simplePaginate()`, which will return only the paginated results:
+
+```ts
+const { data, meta } = await em.simplePaginate(Author, { ... }, { page: 2, perPage: 20 });
+
+console.log(data); // Author[]
+console.log(meta); // { perPage: number; currentPage: number; hasNextPage: boolean; }
+```
+
+An alternative and more customizable way is to use `em.findAndCount()` method which will return total count of entities before applying limit and offset.
 
 ```ts
 const [authors, count] = await em.findAndCount(Author, { ... }, { limit: 10, offset: 50 });
