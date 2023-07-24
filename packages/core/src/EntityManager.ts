@@ -464,9 +464,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Fields extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint, Fields> = {}): Promise<[Loaded<Entity, Hint, Fields>[], number]> {
     const em = this.getContext(false);
+    const copy = Utils.copy(where);
     const [entities, count] = await Promise.all([
       em.find<Entity, Hint, Fields>(entityName, where, options),
-      em.count(entityName, where, options),
+      em.count(entityName, copy, options),
     ]);
 
     return [entities, count];
