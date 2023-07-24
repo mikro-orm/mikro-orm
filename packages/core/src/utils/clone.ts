@@ -5,6 +5,7 @@
  */
 
 import { EventEmitter } from 'events';
+import { RawQueryFragment } from './RawQueryFragment';
 
 export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
   const allParents: unknown[] = [];
@@ -14,6 +15,12 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
     // cloning null always returns null
     if (parent === null) {
       return null;
+    }
+
+    const raw = RawQueryFragment.getKnownFragment(parent, false);
+
+    if (raw) {
+      return raw.clone();
     }
 
     if (typeof parent !== 'object' || parent instanceof EventEmitter) {
@@ -102,6 +109,14 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
       }
 
       if (attrs && attrs.set == null) {
+        continue;
+      }
+
+      const raw = RawQueryFragment.getKnownFragment(i, false);
+
+      if (raw) {
+        const i2 = raw.clone().toString();
+        (child as any)[i2] = _clone(parent[i]);
         continue;
       }
 
