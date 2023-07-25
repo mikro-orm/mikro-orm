@@ -1000,6 +1000,10 @@ export class MetadataDiscovery {
       prop.type = prop.customType.constructor.name;
     }
 
+    if (!prop.customType && ['json', 'jsonb'].includes(prop.type)) {
+      prop.customType = new JsonType();
+    }
+
     if (prop.reference === ReferenceType.SCALAR && !prop.customType && prop.columnTypes && ['json', 'jsonb'].includes(prop.columnTypes[0])) {
       prop.customType = new JsonType();
     }
@@ -1024,10 +1028,6 @@ export class MetadataDiscovery {
 
     if (!prop.customType && prop.type === 'Uint8Array') {
       prop.customType = new Uint8ArrayType();
-    }
-
-    if (!prop.customType && ['json', 'jsonb'].includes(prop.type)) {
-      prop.customType = new JsonType();
     }
 
     if (!prop.customType && this.getMappedType(prop) instanceof BigIntType) {
