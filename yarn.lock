@@ -2402,7 +2402,7 @@ __metadata:
     "@types/fs-extra": 11.0.1
     "@types/jest": 29.5.3
     "@types/mysql2": "https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
-    "@types/node": 20.4.4
+    "@types/node": 20.4.5
     "@types/pg": 8.10.2
     "@types/sqlstring": 2.3.0
     "@types/uuid": 9.0.2
@@ -3355,10 +3355,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.4.4":
-  version: 20.4.4
-  resolution: "@types/node@npm:20.4.4"
-  checksum: 43f3c4a8acc38ae753e15a0e79bae0447d255b3742fa87f8e065d7b9d20ecb0e03d6c5b46c00d5d26f4552160381a00255f49205595a8ee48c2423e00263c930
+"@types/node@npm:20.4.5":
+  version: 20.4.5
+  resolution: "@types/node@npm:20.4.5"
+  checksum: 36a0304a8dc346a1b2d2edac4c4633eecf70875793d61a5274d0df052d7a7af7a8e34f29884eac4fbd094c4f0201477dcb39c0ecd3307ca141688806538d1138
   languageName: node
   linkType: hard
 
