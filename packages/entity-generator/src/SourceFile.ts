@@ -98,9 +98,9 @@ export class SourceFile {
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
 
     if (prop.wrappedReference) {
-      this.coreImports.add('IdentifiedReference');
+      this.coreImports.add('Ref');
       this.entityImports.add(prop.type);
-      return `${padding}${prop.name}${optional}: IdentifiedReference<${prop.type}>;\n`;
+      return `${padding}${prop.name}${optional}: Ref<${prop.type}>;\n`;
     }
 
     const ret = `${prop.name}${optional}: ${prop.type}`;
@@ -311,7 +311,7 @@ export class SourceFile {
     options.entity = `() => ${className}`;
 
     if (prop.wrappedReference) {
-      options.wrappedReference = true;
+      options.ref = true;
     }
 
     if (prop.mappedBy) {
