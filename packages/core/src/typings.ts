@@ -822,7 +822,7 @@ export interface ISeedManager {
 }
 
 export interface Seeder<T extends Dictionary = Dictionary> {
-  run(em: EntityManager, context?: T): Promise<void>;
+  run(em: EntityManager, context?: T): void | Promise<void>;
 }
 
 export type MaybePromise<T> = T | Promise<T>;
