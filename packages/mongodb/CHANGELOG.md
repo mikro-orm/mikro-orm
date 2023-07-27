@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.14](https://github.com/mikro-orm/mikro-orm/compare/v5.7.13...v5.7.14) (2023-07-27)
+
+
+### Bug Fixes
+
+* **mongo:** do not create collections for embeddable entities ([0759df0](https://github.com/mikro-orm/mikro-orm/commit/0759df0f463a575940d3f8514291c59c8482b4d9)), closes [#4495](https://github.com/mikro-orm/mikro-orm/issues/4495)
+
+
+
+
+
 ## [5.7.13](https://github.com/mikro-orm/mikro-orm/compare/v5.7.12...v5.7.13) (2023-07-16)
 
 

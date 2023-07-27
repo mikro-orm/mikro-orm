@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.14](https://github.com/mikro-orm/mikro-orm/compare/v5.7.13...v5.7.14) (2023-07-27)
+
+
+### Bug Fixes
+
+* **core:** ensure JSON arrays are correctly handled ([5327bcc](https://github.com/mikro-orm/mikro-orm/commit/5327bccd52596fe1368f2766e38300b0d4cda03c)), closes [#4555](https://github.com/mikro-orm/mikro-orm/issues/4555)
+* **core:** inferring JSON type based on `columnType` when mapping to array ([96d87ba](https://github.com/mikro-orm/mikro-orm/commit/96d87ba50b0e31dd66ae194caab70f41c0747e73)), closes [#4548](https://github.com/mikro-orm/mikro-orm/issues/4548)
+* **entity-generator:** use ref instead of wrappedReference ([#4559](https://github.com/mikro-orm/mikro-orm/issues/4559)) ([be02aa4](https://github.com/mikro-orm/mikro-orm/commit/be02aa4eba3706023eb474e8cfa222f31a95a494))
+* **mongo:** do not create collections for embeddable entities ([0759df0](https://github.com/mikro-orm/mikro-orm/commit/0759df0f463a575940d3f8514291c59c8482b4d9)), closes [#4495](https://github.com/mikro-orm/mikro-orm/issues/4495)
+* **seeder:** allow run method to return without promise ([#4541](https://github.com/mikro-orm/mikro-orm/issues/4541)) ([8012507](https://github.com/mikro-orm/mikro-orm/commit/80125071510ace0c0376d026065b607f9e7b33bd))
+
+
+
+
+
 ## [5.7.13](https://github.com/mikro-orm/mikro-orm/compare/v5.7.12...v5.7.13) (2023-07-16)
 
 
