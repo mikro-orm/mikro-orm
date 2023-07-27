@@ -58,7 +58,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^5.7.14",
+    "@mikro-orm/knex": "~5.7.14",
     "pg": "8.11.1"
   },
   "devDependencies": {
