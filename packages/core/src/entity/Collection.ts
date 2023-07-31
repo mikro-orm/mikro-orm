@@ -23,6 +23,7 @@ import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
 import type { FindOptions } from '../drivers/IDatabaseDriver';
 import { helper } from './wrap';
+import type { LoggingOptions } from '../logging/Logger';
 
 export interface MatchingOptions<T extends object, P extends string = never> extends FindOptions<T, P> {
   where?: FilterQuery<T>;
@@ -258,48 +259,19 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     const em = this.getEntityManager();
 
-    if (!this.initialized && this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
-      const cond = await em.applyFilters(this.property.type, options.where, {}, 'read');
-      const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, options.orderBy, undefined, options);
-      this.hydrate(map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })), true);
-
-      return this as unknown as LoadedCollection<Loaded<TT, P>>;
-    }
-
-    // do not make db call if we know we will get no results
-    if (this.property.kind === ReferenceKind.MANY_TO_MANY && (this.property.owner || em.getPlatform().usesPivotTable()) && this.length === 0) {
-      this.initialized = true;
-      this.dirty = false;
-
-      return this as unknown as LoadedCollection<Loaded<TT, P>>;
-    }
-
-    const where = this.createCondition(options.where);
-    const order = [...this.items]; // copy order of references
-    const customOrder = !!options.orderBy;
-    const items: TT[] = await em.find(this.property.type, where, {
-      populate: options.populate,
-      lockMode: options.lockMode,
-      orderBy: this.createOrderBy(options.orderBy as QueryOrderMap<TT>),
+    const populate = Array.isArray(options.populate)
+      ? options.populate.map(f => `${this.property.name}.${f}`)
+      : [this.property.name];
+    await em.populate(this.owner, populate, {
+      ...options,
+      refresh: true,
       connectionType: options.connectionType,
       schema: this.property.targetMeta!.schema === '*'
         ? helper(this.owner).__schema
         : this.property.targetMeta!.schema,
+      where: { [this.property.name]: options.where },
+      orderBy: { [this.property.name]: options.orderBy },
     });
-
-    if (!customOrder) {
-      this.reorderItems(items, order);
-    }
-
-    this.items.clear();
-    let i = 0;
-    items.forEach(item => {
-      this.items.add(item);
-      this[i++] = item;
-    });
-
-    this.initialized = true;
-    this.dirty = false;
 
     return this as unknown as LoadedCollection<Loaded<TT, P>>;
   }
@@ -480,6 +452,7 @@ export interface InitOptions<T, P extends string = never> {
   where?: FilterQuery<T>;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   connectionType?: ConnectionType;
+  logging?: LoggingOptions;
 }
 
 export interface LoadCountOptions<T> {

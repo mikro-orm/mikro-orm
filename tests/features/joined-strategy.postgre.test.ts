@@ -399,6 +399,7 @@ describe('Joined loading strategy', () => {
 
     const tags = await repo.findAll({
       populate: ['books.author', 'books.publisher.tests'],
+      // TODO maybe this could be resolved too when we fix the ordering via em.populate?
       orderBy: { name: 'asc', books: { publisher: { tests: { name: 'asc' } } } }, // TODO should be implicit as we have fixed order there
       strategy: LoadStrategy.JOINED,
     });

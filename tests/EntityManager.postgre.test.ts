@@ -351,7 +351,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[3][0]).toMatch(`select "t0".*, "p1"."test2_id" as "fk__test2_id", "p1"."publisher2_id" as "fk__publisher2_id" from "test2" as "t0" left join "publisher2_tests" as "p1" on "t0"."id" = "p1"."test2_id" where "p1"."publisher2_id" in ($1) order by "p1"."id" asc for update`);
     expect(mock.mock.calls[4][0]).toMatch(`savepoint trx`);
     expect(mock.mock.calls[5][0]).toMatch(`release savepoint trx`);
-    expect(mock.mock.calls[6][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."publisher_id" = $1 order by "b0"."uuid_pk" asc for update`);
+    expect(mock.mock.calls[6][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."publisher_id" in ($1) for update`);
     expect(mock.mock.calls[7][0]).toMatch(`commit`);
   });
 
@@ -863,7 +863,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls.length).toBe(5);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null for update skip locked`);
-    expect(mock.mock.calls[2][0]).toMatch(`select "a0".* from "author2" as "a0" where "a0"."id" in ($1) and "a0"."id" is not null order by "a0"."id" asc for update skip locked`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "a0".* from "author2" as "a0" where "a0"."id" in ($1) and "a0"."id" is not null for update skip locked`);
     expect(mock.mock.calls[3][0]).toMatch(`select "b0".*, "b1"."book_tag2_id" as "fk__book_tag2_id", "b1"."book2_uuid_pk" as "fk__book2_uuid_pk" from "book_tag2" as "b0" left join "book2_tags" as "b1" on "b0"."id" = "b1"."book_tag2_id" where "b1"."book2_uuid_pk" in ($1, $2, $3) order by "b1"."order" asc for update skip locked`);
     expect(mock.mock.calls[4][0]).toMatch('commit');
   });
@@ -1023,7 +1023,7 @@ describe('EntityManagerPostgre', () => {
 
     const b1 = await orm.em.findOneOrFail(FooBaz2, { id: baz.id }, { populate: ['bar'] });
     expect(mock.mock.calls[1][0]).toMatch('select "f0".*, "f1"."id" as "bar_id" from "foo_baz2" as "f0" left join "foo_bar2" as "f1" on "f0"."id" = "f1"."baz_id" where "f0"."id" = $1 limit $2');
-    expect(mock.mock.calls[2][0]).toMatch('select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where "f0"."baz_id" in ($1) order by "f0"."baz_id" asc');
+    expect(mock.mock.calls[2][0]).toMatch('select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where "f0"."baz_id" in ($1)');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
     expect(wrap(b1).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
@@ -1031,7 +1031,7 @@ describe('EntityManagerPostgre', () => {
 
     const b2 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, { populate: ['bar'] });
     expect(mock.mock.calls[3][0]).toMatch('select "f0".*, "f1"."id" as "bar_id" from "foo_baz2" as "f0" left join "foo_bar2" as "f1" on "f0"."id" = "f1"."baz_id" where "f1"."id" = $1 limit $2');
-    expect(mock.mock.calls[4][0]).toMatch('select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where "f0"."baz_id" in ($1) order by "f0"."baz_id" asc');
+    expect(mock.mock.calls[4][0]).toMatch('select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where "f0"."baz_id" in ($1)');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
@@ -1283,7 +1283,7 @@ describe('EntityManagerPostgre', () => {
       'new book',
     ]);
 
-    expect(mock.mock.calls[0][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" = $1 order by "b0"."title" asc`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" in ($1) order by "b0"."title" asc`);
     expect(mock.mock.calls[1][0]).toMatch(`begin`);
     expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5)`);
     expect(mock.mock.calls[3][0]).toMatch(`commit`);

@@ -49,7 +49,7 @@ describe('partial loading (mongo)', () => {
     expect(r1[0].books[0].tenant).toBeUndefined();
     expect(r1[0].books[0].author).toBeDefined();
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.find\({ _id: ObjectId\('.*'\) }, { projection: { _id: 1 } }\)\.toArray\(\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ author: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, author: 1, title: 1 } }\)\.sort\(\[ \[ 'author', 1 ] ]\)\.toArray\(\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ author: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, author: 1, title: 1 } }\)\.toArray\(\);/);
     orm.em.clear();
     mock.mock.calls.length = 0;
 
@@ -67,7 +67,7 @@ describe('partial loading (mongo)', () => {
     expect(r2[0].books[0].tenant).toBeUndefined();
     expect(r2[0].books[0].author).toBeDefined();
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.find\({ _id: ObjectId\('.*'\) }, { projection: { _id: 1 } }\)\.toArray\(\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ author: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, author: 1, title: 1 } }\)\.sort\(\[ \[ 'author', 1 ] ]\)\.toArray\(\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ author: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, author: 1, title: 1 } }\)\.toArray\(\);/);
   });
 
   test('partial nested loading (m:1)', async () => {
@@ -99,7 +99,7 @@ describe('partial loading (mongo)', () => {
     expect(r1[0].author.name).toBeUndefined();
     expect(r1[0].author.email).toBeDefined();
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ _id: ObjectId\('.*'\) }, { projection: { _id: 1, title: 1, author: 1 } }\)\.toArray\(\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.find\({ _id: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, email: 1 } }\)\.sort\(\[ \[ '_id', 1 ] ]\)\.toArray\(\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.find\({ _id: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, email: 1 } }\)\.toArray\(\);/);
     orm.em.clear();
     mock.mock.calls.length = 0;
 
@@ -119,7 +119,7 @@ describe('partial loading (mongo)', () => {
     expect(r2[0].author.name).toBeUndefined();
     expect(r2[0].author.email).toBeDefined();
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ _id: ObjectId\('.*'\) }, { projection: { _id: 1, title: 1, author: 1 } }\)\.toArray\(\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.find\({ _id: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, email: 1 } }\)\.sort\(\[ \[ '_id', 1 ] ]\)\.toArray\(\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.find\({ _id: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, email: 1 } }\)\.toArray\(\);/);
   });
 
   test('partial nested loading (m:n)', async () => {
@@ -152,7 +152,7 @@ describe('partial loading (mongo)', () => {
     // @ts-expect-error
     expect(r1[0].books[0].author).toBeUndefined();
     expect(mock.mock.calls[0][0]).toMatch('db.getCollection(\'book-tag\').find({}, { projection: { _id: 1, name: 1 } }).toArray();');
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ tags: { '\$in': \[ ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\) ] } }, { projection: { _id: 1, title: 1, tags: 1 } }\)\.sort\(\[ \[ 'tags', 1 ] ]\)\.toArray\(\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ tags: { '\$in': \[ ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\) ] } }, { projection: { _id: 1, title: 1, tags: 1 } }\)\.toArray\(\);/);
     orm.em.clear();
     mock.mock.calls.length = 0;
 
@@ -169,7 +169,7 @@ describe('partial loading (mongo)', () => {
     // @ts-expect-error
     expect(r2[0].books[0].author).toBeUndefined();
     expect(mock.mock.calls[0][0]).toMatch('db.getCollection(\'book-tag\').find({ name: \'t1\' }, { projection: { _id: 1, name: 1 } }).toArray();');
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ tags: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, title: 1, tags: 1 } }\)\.sort\(\[ \[ 'tags', 1 ] ]\)\.toArray\(\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ tags: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, title: 1, tags: 1 } }\)\.toArray\(\);/);
   });
 
   test('partial nested loading (mixed)', async () => {
@@ -204,8 +204,8 @@ describe('partial loading (mongo)', () => {
     expect(r1[0].books[0].author.name).toBeUndefined();
     expect(r1[0].books[0].author.email).toBe(god.email);
     expect(mock.mock.calls[0][0]).toMatch('db.getCollection(\'book-tag\').find({}, { projection: { _id: 1, name: 1 } }).toArray();');
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ tags: { '\$in': \[ ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\) ] } }, { projection: { _id: 1, title: 1, tags: 1, author: 1 } }\)\.sort\(\[ \[ 'tags', 1 ] ]\)\.toArray\(\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.find\({ _id: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, email: 1 } }\)\.sort\(\[ \[ '_id', 1 ] ]\)\.toArray\(\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ tags: { '\$in': \[ ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\) ] } }, { projection: { _id: 1, title: 1, tags: 1, author: 1 } }\)\.toArray\(\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.find\({ _id: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, email: 1 } }\)\.toArray\(\);/);
     orm.em.clear();
     mock.mock.calls.length = 0;
 
@@ -225,8 +225,8 @@ describe('partial loading (mongo)', () => {
     expect(r2[0].books[0].author.name).toBeUndefined();
     expect(r2[0].books[0].author.email).toBe(god.email);
     expect(mock.mock.calls[0][0]).toMatch('db.getCollection(\'book-tag\').find({}, { projection: { _id: 1, name: 1 } }).toArray();');
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ tags: { '\$in': \[ ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\) ] } }, { projection: { _id: 1, title: 1, tags: 1, author: 1 } }\)\.sort\(\[ \[ 'tags', 1 ] ]\)\.toArray\(\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.find\({ _id: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, email: 1 } }\)\.sort\(\[ \[ '_id', 1 ] ]\)\.toArray\(\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ tags: { '\$in': \[ ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\), ObjectId\('.*'\) ] } }, { projection: { _id: 1, title: 1, tags: 1, author: 1 } }\)\.toArray\(\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.find\({ _id: { '\$in': \[ ObjectId\('.*'\) ] } }, { projection: { _id: 1, email: 1 } }\)\.toArray\(\);/);
   });
 
 });
