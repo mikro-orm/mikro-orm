@@ -1,6 +1,18 @@
 import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager';
 import type { AssignOptions } from './EntityAssigner';
-import type { EntityData, EntityName, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData, Ref } from '../typings';
+import type {
+  EntityData,
+  EntityName,
+  Primary,
+  Loaded,
+  FilterQuery,
+  EntityDictionary,
+  AutoPath,
+  RequiredEntityData,
+  Ref,
+  PaginatedResult,
+  SimplePaginatedResult,
+} from '../typings';
 import type {
   CountOptions,
   DeleteOptions,
@@ -10,6 +22,7 @@ import type {
   FindOptions,
   GetReferenceOptions,
   NativeInsertUpdateOptions,
+  PaginateOptions,
   UpdateOptions,
 } from '../drivers/IDatabaseDriver';
 import type { Reference } from './Reference';
@@ -119,6 +132,26 @@ export class EntityRepository<Entity extends object> {
     Fields extends string = never,
   >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields>): Promise<[Loaded<Entity, Hint, Fields>[], number]> {
     return this.getEntityManager().findAndCount<Entity, Hint, Fields>(this.entityName, where, options);
+  }
+
+  /**
+   * Finds entities matching your `where` query and returns them as a `PaginatedResult` object.
+   * It will return total entities count and total pages.
+   * Default page is 1 and default per page is 10.
+   * To use pagination without counting all the rows and only use the next & previous, then use `repository.simplePaginate()`.
+   */
+  async paginate<Hint extends string = never>(where: FilterQuery<Entity>, paginateOptions?: PaginateOptions<Entity, Hint>): Promise<PaginatedResult<Entity, Hint>> {
+    return this.em.paginate<Entity, Hint>(this.entityName, where, paginateOptions);
+  }
+
+  /**
+   * Finds entities matching your `where` query and returns them as a `SimplePaginatedResult` object.
+   * It will return total entities count and total pages.
+   * Default page is 1 and default per page is 10.
+   * To use pagination without counting all the rows and only use the next & previous, then use `em.simplePaginate()`.
+   */
+  async simplePaginate<Hint extends string = never>(where: FilterQuery<Entity>, paginateOptions?: PaginateOptions<Entity, Hint>): Promise<SimplePaginatedResult<Entity, Hint>> {
+    return this.em.simplePaginate<Entity, Hint>(this.entityName, where, paginateOptions);
   }
 
   /**

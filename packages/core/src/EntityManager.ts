@@ -17,6 +17,7 @@ import type {
   IDatabaseDriver,
   LockOptions,
   NativeInsertUpdateOptions,
+  PaginateOptions,
   UpdateOptions,
 } from './drivers';
 import type {
@@ -37,11 +38,13 @@ import type {
   MaybePromise,
   Populate,
   PopulateOptions,
+  PaginatedResult,
   Primary,
   RequiredEntityData,
   Ref,
   EntityKey,
   AnyString,
+  SimplePaginatedResult,
 } from './typings';
 import type { TransactionOptions } from './enums';
 import { EventType, FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceKind, SCALAR_TYPES } from './enums';
@@ -405,6 +408,53 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     ]);
 
     return [entities, count];
+  }
+
+  /**
+   * Finds all entities matching your `where` query and returns them as a `PaginatedResult` object.
+   * It will return total entities count and total pages.
+   * Default page is 1 and default per page is 10.
+   * To use pagination without counting all the rows and only use the next & previous, then use `em.simplePaginate()`.
+   */
+  async paginate<
+    Entity extends object,
+    Hint extends string = never,
+  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, paginateOptions: PaginateOptions<Entity, Hint> = {}): Promise<PaginatedResult<Entity, Hint>> {
+    const { page = 1, perPage = 10, ...options } = paginateOptions;
+    const [entities, count] = await this.findAndCount<Entity, Hint>(entityName, where, { ...options, limit: perPage, offset: (page - 1) * perPage });
+
+    return {
+      data: entities,
+      meta: {
+        totalItems: count,
+        totalPages: Math.ceil(count / perPage),
+        currentPage: page,
+        perPage,
+      },
+    };
+  }
+
+  /**
+   * Finds entities matching your `where` query and returns them as a `SimplePaginatedResult` object.
+   * It will return total entities count and total pages.
+   * Default page is 1 and default per page is 10.
+   * To use pagination without counting all the rows and only use the next & previous, then use `em.simplePaginate()`.
+   */
+  async simplePaginate<
+    Entity extends object,
+    Hint extends string = never,
+  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, paginateOptions: PaginateOptions<Entity, Hint> = {}): Promise<SimplePaginatedResult<Entity, Hint>> {
+    const { page = 1, perPage = 10, ...options } = paginateOptions;
+    const entities = await this.find<Entity, Hint>(entityName, where, { ...options, limit: perPage + 1, offset: (page - 1) * perPage });
+
+    return {
+      data: entities.length > perPage ? entities.slice(0, -1) : entities,
+      meta: {
+        currentPage: page,
+        perPage,
+        hasNextPage: entities.length > perPage,
+      },
+    };
   }
 
   /**

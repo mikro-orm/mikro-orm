@@ -867,3 +867,22 @@ export interface Seeder<T extends Dictionary = Dictionary> {
 export type MaybePromise<T> = T | Promise<T>;
 
 export type ConnectionType = 'read' | 'write';
+
+export interface PaginatedResult<T, P extends string = never> {
+  data: Loaded<T, P>[];
+  meta: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    perPage: number;
+  };
+}
+
+export interface SimplePaginatedResult<T, P extends string = never> {
+  data: Loaded<T, P>[];
+  meta: {
+    currentPage: number;
+    perPage: number;
+    hasNextPage: boolean;
+  };
+}

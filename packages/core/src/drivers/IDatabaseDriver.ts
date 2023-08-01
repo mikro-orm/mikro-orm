@@ -145,6 +145,11 @@ export interface FindOneOrFailOptions<T extends object, P extends string = never
   strict?: boolean;
 }
 
+export type PaginateOptions<T extends object, P extends string = never> = Omit<FindOptions<T, P>, 'limit' | 'offset'> & {
+  page?: number;
+  perPage?: number;
+};
+
 export interface NativeInsertUpdateOptions<T> {
   convertCustomTypes?: boolean;
   ctx?: Transaction;
