@@ -18,7 +18,7 @@ import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import type { LockMode, QueryOrderMap } from '../enums';
-import { QueryOrder, ReferenceKind } from '../enums';
+import { ReferenceKind } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
 import type { FindOptions } from '../drivers/IDatabaseDriver';
@@ -93,7 +93,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     const pivotMeta = em.getMetadata().find(this.property.pivotEntity)!;
     const where = this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta);
 
-    if (!em.getPlatform().usesPivotTable() && this.property.kind === ReferenceKind.MANY_TO_MANY) {
+    if (!em.getPlatform().usesPivotTable() && this.property.kind === ReferenceKind.MANY_TO_MANY && this.property.owner) {
       return this._count = this.length;
     }
 
@@ -108,6 +108,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
       return count;
     }
+
     const count = await em.count(this.property.type, where);
 
     if (!options.where) {
@@ -331,11 +332,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
   }
 
   private createOrderBy<TT extends T>(orderBy: QueryOrderMap<TT> | QueryOrderMap<TT>[] = []): QueryOrderMap<TT>[] {
-    if (Utils.isEmpty(orderBy) && this.property.kind === ReferenceKind.ONE_TO_MANY) {
-      const defaultOrder = this.property.referencedColumnNames.map(name => {
-        return { [name]: QueryOrder.ASC };
-      });
-      orderBy = this.property.orderBy as QueryOrderMap<TT> || defaultOrder;
+    if (Utils.isEmpty(orderBy) && this.property.orderBy) {
+      orderBy = this.property.orderBy;
     }
 
     return Utils.asArray(orderBy);
@@ -385,15 +383,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
   private checkInitialized(): void {
     if (!this.isInitialized()) {
       throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${helper(this.owner).getSerializedPrimaryKey()}] not initialized`);
-    }
-  }
-
-  /**
-   * re-orders items after searching with `$in` operator
-   */
-  private reorderItems(items: T[], order: T[]): void {
-    if (this.property.kind === ReferenceKind.MANY_TO_MANY && this.property.owner) {
-      items.sort((a, b) => order.indexOf(a) - order.indexOf(b));
     }
   }
 

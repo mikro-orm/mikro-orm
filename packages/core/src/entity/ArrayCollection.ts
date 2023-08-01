@@ -247,7 +247,7 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   protected propagateToInverseSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
-    const collection = item[this.property.inversedBy as keyof T] as unknown as ArrayCollection<O, T>;
+    const collection = item[this.property.inversedBy as keyof T] as ArrayCollection<O, T>;
 
     if (this.shouldPropagateToCollection(collection, method)) {
       collection[method as 'add'](this.owner);
@@ -303,7 +303,7 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   protected incrementCount(value: number) {
-    if (typeof this._count === 'number') {
+    if (typeof this._count === 'number' && this.initialized) {
       this._count += value;
     }
   }
