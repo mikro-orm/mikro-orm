@@ -1,7 +1,25 @@
 import type { EntityDTO, Dictionary } from '@mikro-orm/core';
 import {
-  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType, Collection, Filter,
-  Cascade, Entity, ManyToMany, ManyToOne, OneToMany, Property, Index, Unique, EntityAssigner, EntityRepositoryType,
+  AfterCreate,
+  AfterDelete,
+  AfterUpdate,
+  BeforeCreate,
+  BeforeDelete,
+  BeforeUpdate,
+  DateType,
+  Collection,
+  Filter,
+  Cascade,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  Property,
+  Index,
+  Unique,
+  EntityAssigner,
+  EntityRepositoryType,
+  QueryOrder,
 } from '@mikro-orm/core';
 
 import { Book } from './Book';
@@ -50,7 +68,12 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'vers
   @Index()
   born?: Date;
 
-  @OneToMany(() => Book, book => book.author, { referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
+  @OneToMany(() => Book, book => book.author, {
+    referenceColumnName: '_id',
+    cascade: [Cascade.PERSIST],
+    orphanRemoval: true,
+    orderBy: { title: QueryOrder.ASC },
+  })
   books = new Collection<Book>(this);
 
   @ManyToMany(() => Author)
