@@ -729,6 +729,10 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
       tags: books[0].tags.getItems().map(t => ({ name: t.name })),
     });
 
+    const [book11, ...rest] = await tags[0].books.matching({ where: { title: 'book 11' } });
+    expect(book11.title).toBe('book 11');
+    expect(rest).toHaveLength(0);
+
     orm.em.addFilter('testFilter', { name: 'tag 11-08' }, BookTag4, false);
     const filteredTags = await books[0].tags.matching({ filters: { testFilter: true } });
     expect(filteredTags).toHaveLength(1);
@@ -1311,6 +1315,24 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     await expect(ent.tests.loadCount()).resolves.toBe(3);
     await ent.tests.init();
     await expect(ent.tests.loadCount()).resolves.toBe(3);
+  });
+
+  test('loadCount with m:n relationships', async () => {
+    let bible = orm.em.create(Book4, { title: 'Bible' });
+    bible.author = orm.em.create(Author4, { name: 'a', email: 'b' });
+    bible.tags.add(orm.em.create(BookTag4, { name: 't1' }), orm.em.create(BookTag4, { name: 't2' }), orm.em.create(BookTag4, { name: 't3' }));
+    await orm.em.persistAndFlush(bible);
+    orm.em.clear();
+
+    bible = await orm.em.findOneOrFail(Book4, bible.id);
+    await expect(bible.tags.loadCount()).resolves.toEqual(3);
+    const tag1 = await orm.em.findOneOrFail(BookTag4, { name: 't1' });
+    await expect(tag1.books.loadCount()).resolves.toEqual(1);
+    await bible.tags.init();
+    await expect(tag1.books.loadCount()).resolves.toEqual(1);
+    bible.tags.removeAll();
+    await expect(bible.tags.loadCount()).resolves.toEqual(0);
+    await expect(tag1.books.loadCount()).resolves.toEqual(1);
   });
 
   test('findAndCount with populate (GH issue #1736)', async () => {

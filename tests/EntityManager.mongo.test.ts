@@ -802,7 +802,7 @@ describe('EntityManagerMongo', () => {
     }
 
     orm.em.clear();
-    const tags = await orm.em.find(BookTag, {});
+    let tags = await orm.em.find(BookTag, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
@@ -812,6 +812,7 @@ describe('EntityManagerMongo', () => {
 
     // test M:N lazy load
     orm.em.clear();
+    tags = await orm.em.find(BookTag, {});
     await tags[0].books.init();
     expect(tags[0].books.count()).toBe(2);
     expect(tags[0].books.getItems()[0]).toBeInstanceOf(Book);
@@ -1409,7 +1410,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persistAndFlush(publisher);
     orm.em.clear();
 
-    const ent = (await repo.findOne(publisher.id))!;
+    const ent = await repo.findOneOrFail(publisher.id);
     await expect(ent.tests.count()).toBe(3);
     await expect(ent.tests.getIdentifiers('id')).toEqual([t2.id, t1.id, t3.id]);
 
