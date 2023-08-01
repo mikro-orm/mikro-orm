@@ -252,7 +252,7 @@ describe('custom order [sqlite]', () => {
     const ret = users.flatMap(u => u.tasks.getItems()).map(({ owner, label }) => `${owner?.name}-${label}`);
     expect(ret).toEqual(['u1-1c', 'u1-1b', 'u1-1a', 'u2-2b', 'u2-2a', 'u2-2c']);
     expect(mock.mock.calls[4][0]).toMatch('select `u0`.* from `user` as `u0` left join `task` as `t1` on `u0`.`id` = `t1`.`owner_id` order by `u0`.`name` asc, (case when `t1`.`priority` = \'low\' then 0 when `t1`.`priority` = \'medium\' then 1 when `t1`.`priority` = \'high\' then 2 else null end) asc');
-    expect(mock.mock.calls[5][0]).toMatch('select `t0`.* from `task` as `t0` where `t0`.`owner_id` in (1, 2) order by (case when `t0`.`priority` = \'low\' then 0 when `t0`.`priority` = \'medium\' then 1 when `t0`.`priority` = \'high\' then 2 else null end) asc, `t0`.`owner_id` asc');
+    expect(mock.mock.calls[5][0]).toMatch('select `t0`.* from `task` as `t0` where `t0`.`owner_id` in (1, 2) order by (case when `t0`.`priority` = \'low\' then 0 when `t0`.`priority` = \'medium\' then 1 when `t0`.`priority` = \'high\' then 2 else null end) asc');
   });
 
 });
