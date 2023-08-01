@@ -91,7 +91,7 @@ describe('lazy scalar properties (mysql)', () => {
 
     expect(mock.mock.calls).toHaveLength(3);
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a1`.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`.`id` = `a1`.`author_id`');
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` from `book2` as `b0` left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`author_id` in (?) order by `b0`.`title` asc, `b0`.`author_id` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` from `book2` as `b0` left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`author_id` in (?) order by `b0`.`title` asc');
     expect(mock.mock.calls[2][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`perex` from `book2` as `b0` where `b0`.`author_id` is not null and `b0`.`uuid_pk` in (?)');
 
     mock.mockReset();
