@@ -1012,7 +1012,7 @@ describe('EntityManagerMySql', () => {
 
     const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, { populate: ['bar'] }))!;
     expect(mock.mock.calls[1][0]).toMatch('select `f0`.*, `f1`.`id` as `bar_id` from `foo_baz2` as `f0` left join `foo_bar2` as `f1` on `f0`.`id` = `f1`.`baz_id` where `f0`.`id` = ? limit ?');
-    expect(mock.mock.calls[2][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where `f0`.`id` in (?) order by `f0`.`id` asc');
+    expect(mock.mock.calls[2][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
     expect(wrap(b1).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
@@ -1020,7 +1020,7 @@ describe('EntityManagerMySql', () => {
 
     const b2 = (await orm.em.findOne(FooBaz2, { bar: bar.id }, { populate: ['bar'] }))!;
     expect(mock.mock.calls[3][0]).toMatch('select `f0`.*, `f1`.`id` as `bar_id` from `foo_baz2` as `f0` left join `foo_bar2` as `f1` on `f0`.`id` = `f1`.`baz_id` where `f1`.`id` = ? limit ?');
-    expect(mock.mock.calls[4][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where `f0`.`id` in (?) order by `f0`.`id` asc');
+    expect(mock.mock.calls[4][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
@@ -2326,7 +2326,7 @@ describe('EntityManagerMySql', () => {
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and `b0`.`author_id` in (?) ' +
-      'order by `b0`.`title` asc, `b0`.`author_id` asc');
+      'order by `b0`.`title` asc');
 
     const a2 = await orm.em.fork().find(Author2, { favouriteBook: { $or: [{ priceTaxed: '1190.0000' }] } }, { populate: ['books'] });
     expect(a2[0].books[0].price).toBe('1000.00');
@@ -2340,7 +2340,7 @@ describe('EntityManagerMySql', () => {
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and `b0`.`author_id` in (?) ' +
-      'order by `b0`.`title` asc, `b0`.`author_id` asc');
+      'order by `b0`.`title` asc');
   });
 
   test('refreshing already loaded entity', async () => {
