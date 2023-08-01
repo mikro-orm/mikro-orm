@@ -768,12 +768,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       qb.limit(options.limit, options.offset);
     }
 
+    const schema = this.config.get('schema');
+
     if (prop.targetMeta!.schema !== '*' && pivotMeta.schema === '*' && options.schema) {
       // eslint-disable-next-line dot-notation
       qb['finalize']();
       // eslint-disable-next-line dot-notation
       Object.values(qb['_joins']).forEach(join => {
-        join.schema = options!.schema;
+        join.schema = schema;
       });
     }
 

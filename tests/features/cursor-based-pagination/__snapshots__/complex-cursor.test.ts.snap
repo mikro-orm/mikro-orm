@@ -24,7 +24,7 @@ exports[`simple cursor based pagination (better-sqlite) complex joined cursor ba
 exports[`simple cursor based pagination (better-sqlite) complex joined cursor based pagination using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` left join \`user\` as \`u1\` on \`u0\`.\`best_friend__id\` = \`u1\`.\`_id\` where \`u1\`.\`name\` = 'User 3' and \`u1\`.\`email\` <= 'email-96' and \`u1\`.\`name\` <= 'User 3' and ((\`u1\`.\`email\` < 'email-96' and \`u1\`.\`name\` < 'User 3') or (\`u0\`.\`name\` >= 'User 3' and (\`u0\`.\`name\` > 'User 3' or (\`u0\`.\`age\` <= 38 and (\`u0\`.\`age\` < 38 or \`u0\`.\`email\` < 'email-76'))))) order by \`u1\`.\`email\` desc, \`u1\`.\`name\` desc, \`u0\`.\`name\` asc, \`u0\`.\`age\` desc, \`u0\`.\`email\` desc limit 6",
-  "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` in (5) order by \`u0\`.\`email\` asc, \`u0\`.\`name\` asc, \`u0\`.\`_id\` asc",
+  "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` in (5) order by \`u0\`.\`email\` asc, \`u0\`.\`name\` asc",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\` left join \`user\` as \`u1\` on \`u0\`.\`best_friend__id\` = \`u1\`.\`_id\` where \`u1\`.\`name\` = 'User 3'",
 ]
 `;
@@ -67,7 +67,7 @@ exports[`simple cursor based pagination (mysql) complex joined cursor based pagi
 exports[`simple cursor based pagination (mysql) complex joined cursor based pagination using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` left join \`user\` as \`u1\` on \`u0\`.\`best_friend__id\` = \`u1\`.\`_id\` where \`u1\`.\`name\` = 'User 3' and \`u1\`.\`email\` <= 'email-96' and \`u1\`.\`name\` <= 'User 3' and ((\`u1\`.\`email\` < 'email-96' and \`u1\`.\`name\` < 'User 3') or (\`u0\`.\`name\` >= 'User 3' and (\`u0\`.\`name\` > 'User 3' or (\`u0\`.\`age\` <= 38 and (\`u0\`.\`age\` < 38 or \`u0\`.\`email\` < 'email-76'))))) order by \`u1\`.\`email\` desc, \`u1\`.\`name\` desc, \`u0\`.\`name\` asc, \`u0\`.\`age\` desc, \`u0\`.\`email\` desc limit 6",
-  "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` in (5) order by \`u0\`.\`email\` asc, \`u0\`.\`name\` asc, \`u0\`.\`_id\` asc",
+  "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` in (5) order by \`u0\`.\`email\` asc, \`u0\`.\`name\` asc",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\` left join \`user\` as \`u1\` on \`u0\`.\`best_friend__id\` = \`u1\`.\`_id\` where \`u1\`.\`name\` = 'User 3'",
 ]
 `;
@@ -96,7 +96,7 @@ exports[`simple cursor based pagination (postgresql) complex joined cursor based
 exports[`simple cursor based pagination (postgresql) complex joined cursor based pagination using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select "u0".* from "user" as "u0" left join "user" as "u1" on "u0"."best_friend__id" = "u1"."_id" where "u1"."name" = 'User 3' and "u1"."email" <= 'email-96' and "u1"."name" <= 'User 3' and (("u1"."email" < 'email-96' and "u1"."name" < 'User 3') or ("u0"."name" >= 'User 3' and ("u0"."name" > 'User 3' or ("u0"."age" <= 38 and ("u0"."age" < 38 or "u0"."email" < 'email-76'))))) order by "u1"."email" desc, "u1"."name" desc, "u0"."name" asc, "u0"."age" desc, "u0"."email" desc limit 6",
-  "[query] select "u0".* from "user" as "u0" where "u0"."_id" in (5) order by "u0"."email" asc, "u0"."name" asc, "u0"."_id" asc",
+  "[query] select "u0".* from "user" as "u0" where "u0"."_id" in (5) order by "u0"."email" asc, "u0"."name" asc",
   "[query] select count(*) as "count" from "user" as "u0" left join "user" as "u1" on "u0"."best_friend__id" = "u1"."_id" where "u1"."name" = 'User 3'",
 ]
 `;
@@ -125,7 +125,7 @@ exports[`simple cursor based pagination (sqlite) complex joined cursor based pag
 exports[`simple cursor based pagination (sqlite) complex joined cursor based pagination using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` left join \`user\` as \`u1\` on \`u0\`.\`best_friend__id\` = \`u1\`.\`_id\` where \`u1\`.\`name\` = 'User 3' and \`u1\`.\`email\` <= 'email-96' and \`u1\`.\`name\` <= 'User 3' and ((\`u1\`.\`email\` < 'email-96' and \`u1\`.\`name\` < 'User 3') or (\`u0\`.\`name\` >= 'User 3' and (\`u0\`.\`name\` > 'User 3' or (\`u0\`.\`age\` <= 38 and (\`u0\`.\`age\` < 38 or \`u0\`.\`email\` < 'email-76'))))) order by \`u1\`.\`email\` desc, \`u1\`.\`name\` desc, \`u0\`.\`name\` asc, \`u0\`.\`age\` desc, \`u0\`.\`email\` desc limit 6",
-  "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` in (5) order by \`u0\`.\`email\` asc, \`u0\`.\`name\` asc, \`u0\`.\`_id\` asc",
+  "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` in (5) order by \`u0\`.\`email\` asc, \`u0\`.\`name\` asc",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\` left join \`user\` as \`u1\` on \`u0\`.\`best_friend__id\` = \`u1\`.\`_id\` where \`u1\`.\`name\` = 'User 3'",
 ]
 `;

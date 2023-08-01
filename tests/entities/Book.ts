@@ -46,7 +46,7 @@ export class Book extends BaseEntity3 {
   @Index({ name: 'publisher_idx' })
   publisher!: Ref<Publisher> | null;
 
-  @ManyToMany(() => BookTag)
+  @ManyToMany(() => BookTag, undefined, { orderBy: { title: 'asc' } })
   tags = new Collection<BookTag>(this);
 
   @Property({ type: 'json', nullable: true })
