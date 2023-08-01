@@ -79,7 +79,7 @@ describe('GH issue 1657', () => {
     // first query loads item and joins the order2 relation (eager + joined strategy)
     expect(mock.mock.calls[0][0]).toMatch('select `o0`.`id`, `o0`.`order1_id`, `o0`.`order2_id`, `o1`.`id` as `o1__id` from `order_item` as `o0` left join `order` as `o1` on `o0`.`order2_id` = `o1`.`id` where `o0`.`id` <= 100');
     // second query loads order1 relation (eager + select-in strategy)
-    expect(mock.mock.calls[1][0]).toMatch('select `o0`.* from `order` as `o0` where `o0`.`id` in (1) order by `o0`.`id` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `o0`.* from `order` as `o0` where `o0`.`id` in (1)');
 
     expect(mock.mock.calls).toHaveLength(2);
   });

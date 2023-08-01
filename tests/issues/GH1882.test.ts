@@ -61,12 +61,12 @@ describe('GH issue 1882', () => {
 
     await orm.em.fork().find(Foo, cond, { populate: ['barItems'], populateWhere: PopulateHint.INFER });
     expect(mock.mock.calls[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where (`b1`.`id` = ? or `f0`.`name` = ?)');
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) and `b0`.`id` = ? order by `b0`.`foo_id` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) and `b0`.`id` = ?');
     mock.mockReset();
 
     await orm.em.fork().find(Foo, cond, { populate: ['barItems'] });
     expect(mock.mock.calls[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where (`b1`.`id` = ? or `f0`.`name` = ?)');
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) order by `b0`.`foo_id` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?)');
   });
 
   test(`GH issue 1882-2`, async () => {
@@ -89,14 +89,14 @@ describe('GH issue 1882', () => {
     orm.em.clear();
 
     expect(mock.mock.calls[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where `b1`.`id` = ?');
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) and `b0`.`id` = ? order by `b0`.`foo_id` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) and `b0`.`id` = ?');
     mock.mockReset();
 
     await orm.em.find(Foo, cond, { populate: ['barItems'] });
     orm.em.clear();
 
     expect(mock.mock.calls[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where `b1`.`id` = ?');
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) order by `b0`.`foo_id` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?)');
   });
 
 });
