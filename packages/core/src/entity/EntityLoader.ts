@@ -201,10 +201,11 @@ export class EntityLoader {
     if (prop.kind === ReferenceKind.EMBEDDED) {
       return [];
     }
+
     const filtered = this.filterCollections<Entity>(entities, field, options);
     const innerOrderBy = Utils.asArray(options.orderBy)
-      .filter(orderBy => Utils.isObject(orderBy[prop.name]))
-      .map(orderBy => orderBy[prop.name]);
+      .filter(orderBy => (Array.isArray(orderBy[prop.name]) && (orderBy[prop.name] as unknown[]).length > 0) || Utils.isObject(orderBy[prop.name]))
+      .flatMap(orderBy => orderBy[prop.name]);
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
       return this.findChildrenFromPivotTable<Entity>(filtered, prop, options, innerOrderBy as QueryOrderMap<Entity>[], populate);
@@ -212,18 +213,18 @@ export class EntityLoader {
 
     const where = await this.extractChildCondition(options, prop);
     const data = await this.findChildren<Entity>(entities, prop, populate, { ...options, where, orderBy: innerOrderBy! });
-    this.initializeCollections<Entity>(filtered, prop, field, data);
+    this.initializeCollections<Entity>(filtered, prop, field, data, innerOrderBy.length > 0);
 
     return data;
   }
 
-  private initializeCollections<Entity extends object>(filtered: Entity[], prop: EntityProperty, field: keyof Entity, children: AnyEntity[]): void {
+  private initializeCollections<Entity extends object>(filtered: Entity[], prop: EntityProperty, field: keyof Entity, children: AnyEntity[], customOrder: boolean): void {
     if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this.initializeOneToMany<Entity>(filtered, children, prop, field);
     }
 
-    if (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner && !this.driver.getPlatform().usesPivotTable()) {
-      this.initializeManyToMany<Entity>(filtered, children, prop, field);
+    if (prop.kind === ReferenceKind.MANY_TO_MANY && !this.driver.getPlatform().usesPivotTable()) {
+      this.initializeManyToMany<Entity>(filtered, children, prop, field, customOrder);
     }
   }
 
@@ -262,10 +263,23 @@ export class EntityLoader {
     });
   }
 
-  private initializeManyToMany<Entity>(filtered: Entity[], children: AnyEntity[], prop: EntityProperty, field: keyof Entity): void {
-    for (const entity of filtered) {
-      const items = children.filter(child => (child[prop.mappedBy] as unknown as Collection<AnyEntity>).contains(entity as AnyEntity));
-      (entity[field] as unknown as Collection<AnyEntity>).hydrate(items, true);
+  private initializeManyToMany<Entity>(filtered: Entity[], children: AnyEntity[], prop: EntityProperty<Entity>, field: keyof Entity, customOrder: boolean): void {
+    if (prop.mappedBy) {
+      for (const entity of filtered) {
+        const items = children.filter(child => (child[prop.mappedBy] as Collection<AnyEntity>).contains(entity as AnyEntity, false));
+        (entity[field] as Collection<AnyEntity>).hydrate(items, true);
+      }
+    } else { // owning side of M:N without pivot table needs to be reordered
+      for (const entity of filtered) {
+        const order = !customOrder ? [...(entity[prop.name] as Collection<AnyEntity>).getItems(false)] : []; // copy order of references
+        const items = children.filter(child => (entity[prop.name] as Collection<AnyEntity>).contains(child, false));
+
+        if (!customOrder) {
+          items.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+        }
+
+        (entity[field] as Collection<AnyEntity>).hydrate(items, true);
+      }
     }
   }
 
@@ -300,7 +314,7 @@ export class EntityLoader {
 
     return this.em.find(prop.type, where, {
       refresh, filters, convertCustomTypes, lockMode, populateWhere, logging,
-      orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy), { [fk]: QueryOrder.ASC }] as QueryOrderMap<Entity>[],
+      orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy)] as QueryOrderMap<Entity>[],
       populate: populate.children as never ?? populate.all ?? [],
       strategy, fields, schema, connectionType,
       // @ts-ignore not a public option, will be propagated to the populate call
