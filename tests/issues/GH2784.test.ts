@@ -38,7 +38,7 @@ describe('GH issue 2784', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Address],
-      dbName: 'mikro_orm_test_2781',
+      dbName: 'mikro_orm_test_2784',
     });
     await orm.schema.refreshDatabase();
   });
