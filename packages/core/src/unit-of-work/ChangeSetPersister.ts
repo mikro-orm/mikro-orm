@@ -352,6 +352,7 @@ export class ChangeSetPersister {
     for (const changeSet of changeSets) {
       const data = map.get(helper(changeSet.entity).getSerializedPrimaryKey());
       this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, this.factory, 'full', false, true);
+      Object.assign(changeSet.payload, data); // merge to the changeset payload, so it gets saved to the entity snapshot
     }
   }
 
