@@ -2280,7 +2280,7 @@ __metadata:
     "@mikro-orm/mongodb": ~5.7.14
     fs-extra: 11.1.1
     mongodb: 5.7.0
-    umzug: 3.3.0
+    umzug: 3.3.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
   languageName: unknown
@@ -2294,7 +2294,7 @@ __metadata:
     "@mikro-orm/knex": ~5.7.14
     fs-extra: 11.1.1
     knex: 2.5.1
-    umzug: 3.3.0
+    umzug: 3.3.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
   languageName: unknown
@@ -2402,7 +2402,7 @@ __metadata:
     "@types/fs-extra": 11.0.1
     "@types/jest": 29.5.3
     "@types/mysql2": "https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
-    "@types/node": 20.4.5
+    "@types/node": 20.4.6
     "@types/pg": 8.10.2
     "@types/sqlstring": 2.3.0
     "@types/uuid": 9.0.2
@@ -3355,10 +3355,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.4.5":
-  version: 20.4.5
-  resolution: "@types/node@npm:20.4.5"
-  checksum: 36a0304a8dc346a1b2d2edac4c4633eecf70875793d61a5274d0df052d7a7af7a8e34f29884eac4fbd094c4f0201477dcb39c0ecd3307ca141688806538d1138
+"@types/node@npm:20.4.6":
+  version: 20.4.6
+  resolution: "@types/node@npm:20.4.6"
+  checksum: 28dfc13da87f579264840bc5b8a2cde2dcb93662464a0d58f0fa98eba1aae978e3c73e893474238c4a1226d0b1a14e3936520ff9795e1c4e06fad3282be83d18
   languageName: node
   linkType: hard
 
@@ -12538,16 +12538,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"umzug@npm:3.3.0":
-  version: 3.3.0
-  resolution: "umzug@npm:3.3.0"
+"umzug@npm:3.3.1":
+  version: 3.3.1
+  resolution: "umzug@npm:3.3.1"
   dependencies:
     "@rushstack/ts-command-line": ^4.12.2
     emittery: ^0.13.0
     glob: ^8.0.3
     pony-cause: ^2.1.4
     type-fest: ^3.0.0
-  checksum: 9e4486e8751b254e76c134d45688878de6f34108f67b4245140c6bfb632fa501416c39035fc858fed0c7c87163fe71d6cb1bfd51f7fc1810b93c8c71f122e86e
+  checksum: 3a6ce3dca1de1178e46484641cd306fc06bfa8c1313bd2b8e475458c69e11782fd1ea1974b363563ce09af2deca32ac29055949fd1a66713db8222ea490cdf62
   languageName: node
   linkType: hard
 
