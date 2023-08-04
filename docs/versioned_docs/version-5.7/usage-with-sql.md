@@ -203,9 +203,7 @@ const orm = await MikroORM.init<BetterSqliteDriver>({
   // ...
   pool: {
     afterCreate: (conn: any, done: any) => {
-      conn.loadExtension(
-        '/Users/me/Downloads/sqlean-macos-arm64/sqlean'
-      );
+      conn.loadExtension('/.../sqlean-macos-arm64/sqlean');
       done(null, conn);
     },
   },
