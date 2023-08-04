@@ -191,3 +191,21 @@ qb.select('*').where({ id: { $in: [...] } });
 const res = await em.getDriver().execute(qb);
 console.log(res); // unprocessed result of underlying database driver
 ```
+
+## Using SQLite extensions
+
+SQLite extensions like [sqlean](https://github.com/nalgeon/sqlean) can add many useful features that are notably missing by default (e.g. regexp).
+
+Once you've downloaded the binaries for the extensions you wish to use, they can be added by providing a `pool.afterCreate` handler in the SQLite initialization options. The handler should call `loadExtension` on the underlying database connection, passing the path to the extension binary:
+
+```ts
+const orm = await MikroORM.init<BetterSqliteDriver>({
+  // ...
+  pool: {
+    afterCreate: (conn: any, done: any) => {
+      conn.loadExtension('/.../sqlean-macos-arm64/sqlean');
+      done(null, conn);
+    },
+  },
+});
+```
