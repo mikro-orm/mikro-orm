@@ -205,7 +205,7 @@ export abstract class Platform {
 
   getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
     if (column.items?.every(item => Utils.isString(item))) {
-      return `enum('${column.items.join("', '")}')`;
+      return `enum('${column.items.join("','")}')`;
     }
 
     return this.getTinyIntTypeDeclarationSQL(column);

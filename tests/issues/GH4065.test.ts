@@ -7,7 +7,7 @@ describe('GH4065', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMongo(true));
+  beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => orm.schema.clearDatabase());
 
   afterAll(async () => {
