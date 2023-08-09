@@ -134,12 +134,12 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return 'text';
     }
 
-    if (column.columnTypes.length > 1) {
+    if (column.columnTypes?.length > 1) {
       throw new Error('Can only have a single column type for enums.');
     }
 
-    if (column.columnTypes.length > 0 && column.columnTypes[0] !== 'enum') {
-      return platform.getMappedType(column.columnTypes[0]).getColumnType(column, platform);
+    if (column.columnTypes?.length > 0 && column.columnTypes?.[0] !== 'enum') {
+      return platform.getMappedType(column.columnTypes?.[0]).getColumnType(column, platform);
     }
 
     return `smallint`;
