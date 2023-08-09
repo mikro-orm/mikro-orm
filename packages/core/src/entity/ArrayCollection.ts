@@ -64,6 +64,7 @@ export class ArrayCollection<T extends object, O extends object> {
     }) as unknown as U[];
   }
 
+
   add(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
     entities = Utils.asArray(entity).concat(entities);
 
@@ -197,6 +198,10 @@ export class ArrayCollection<T extends object, O extends object> {
 
   isDirty(): boolean {
     return this.dirty;
+  }
+
+  isEmpty(): boolean {
+    return this.count() === 0;
   }
 
   setDirty(dirty = true): void {

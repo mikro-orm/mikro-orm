@@ -687,6 +687,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     orm.em.clear();
     book = (await orm.em.findOne(Book4, book.id, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(0);
+    expect(book.tags.isEmpty()).toBe(true);
   });
 
   test('partial loading of collections', async () => {

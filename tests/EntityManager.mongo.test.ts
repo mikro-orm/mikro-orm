@@ -859,6 +859,7 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
     book = (await orm.em.findOne(Book, book._id))!;
     expect(book.tags.count()).toBe(0);
+    expect(book.tags.isEmpty()).toBe(true);
   });
 
   test('populating many to many relation', async () => {
