@@ -438,7 +438,7 @@ export class UnitOfWork {
       }
 
       // there is a value, and it is still a self-reference (e.g. not replaced by user manually)
-      if (rel?.[inverse] && entity === Reference.unwrapReference(rel[inverse])) {
+      if (!Utils.isCollection(rel) && rel?.[inverse] && entity === Reference.unwrapReference(rel[inverse])) {
         delete helper(rel).__data[inverse];
       }
     }
