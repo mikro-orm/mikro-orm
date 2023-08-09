@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import type { EntityProperty, Type, SimpleColumnMeta } from '@mikro-orm/core';
+import type { EntityProperty, Type, SimpleColumnMeta , Platform } from '@mikro-orm/core';
 import { expr, JsonProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
@@ -129,9 +129,17 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'double precision';
   }
 
-  getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[] }): string {
+  getEnumTypeDeclarationSQL(column: EntityProperty, platform: Platform): string {
     if (column.items?.every(item => Utils.isString(item))) {
       return 'text';
+    }
+
+    if (column.columnTypes.length > 1) {
+      throw new Error('Can only have a single column type for enums.');
+    }
+
+    if (column.columnTypes.length > 0 && column.columnTypes[0] !== 'enum') {
+      return platform.getMappedType(column.columnTypes[0]).getColumnType(column, platform);
     }
 
     return `smallint`;

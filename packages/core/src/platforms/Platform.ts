@@ -203,9 +203,17 @@ export abstract class Platform {
     return `text`;
   }
 
-  getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+  getEnumTypeDeclarationSQL(column: EntityProperty, platform: Platform): string {
     if (column.items?.every(item => Utils.isString(item))) {
       return `enum('${column.items.join("', '")}')`;
+    }
+
+    if (column.columnTypes.length > 1) {
+      throw new Error('Can only have a single column type for enums.');
+    }
+
+    if (column.columnTypes.length > 0 && column.columnTypes[0] !== 'enum') {
+      return platform.getMappedType(column.columnTypes[0]).getColumnType(column, platform);
     }
 
     return this.getTinyIntTypeDeclarationSQL(column);
