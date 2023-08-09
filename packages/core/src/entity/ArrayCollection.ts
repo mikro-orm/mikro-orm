@@ -64,7 +64,6 @@ export class ArrayCollection<T extends object, O extends object> {
     }) as unknown as U[];
   }
 
-
   add(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
     entities = Utils.asArray(entity).concat(entities);
 
