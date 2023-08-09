@@ -63,6 +63,19 @@ describe('EntityAssignerMongo', () => {
     expect((jon as any).unknown).toBeUndefined();
   });
 
+  test('#assign() should ignore undefined properties in nullability validation (#4566)', async () => {
+    const jon = new Author('Jon Snow', 'snow@wall.st');
+    assign<any>(jon, { name: 'test', emptyUnknown1: null, emptyUnknown2: undefined }, { onlyProperties: true });
+    expect('emptyUnknown1' in jon).toBe(false);
+    expect('emptyUnknown2' in jon).toBe(false);
+
+    assign<any>(jon, { name: 'test', emptyUnknown1: null, emptyUnknown2: undefined });
+    expect('emptyUnknown1' in jon).toBe(true);
+    expect('emptyUnknown2' in jon).toBe(true);
+    expect((jon as any).emptyUnknown1).toBeNull();
+    expect((jon as any).emptyUnknown2).toBeUndefined();
+  });
+
   test('#assign() should merge references', async () => {
     const jon = new Author('Jon Snow', 'snow@wall.st');
     orm.em.assign(jon, { favouriteBook: { _id: ObjectId.createFromTime(1), title: 'b1' } }, { merge: false });
