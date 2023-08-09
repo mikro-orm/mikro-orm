@@ -294,13 +294,15 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   test('builder (schema fresh)', async () => {
     const args = { option: jest.fn() };
     SchemaCommandFactory.configureSchemaCommand(args as any, 'fresh');
-    expect(args.option.mock.calls).toHaveLength(3);
+    expect(args.option.mock.calls).toHaveLength(4);
     expect(args.option.mock.calls[0][0]).toBe('r');
     expect(args.option.mock.calls[0][1]).toMatchObject({ alias: 'run', type: 'boolean' });
     expect(args.option.mock.calls[1][0]).toBe('schema');
     expect(args.option.mock.calls[1][1]).toMatchObject({ type: 'string' });
     expect(args.option.mock.calls[2][0]).toBe('seed');
     expect(args.option.mock.calls[2][1]).toMatchObject({ type: 'string' });
+    expect(args.option.mock.calls[3][0]).toBe('drop-db');
+    expect(args.option.mock.calls[3][1]).toMatchObject({ type: 'boolean' });
   });
 
   test('dump', async () => {

@@ -121,6 +121,10 @@ export class MigrationCommandFactory {
       type: 'string',
       desc: 'Allows to seed the database after dropping it and rerunning all migrations',
     });
+    args.option('drop-db', {
+      type: 'boolean',
+      desc: 'Drop the whole database',
+    });
   }
 
   private static async handleUpDownCommand(args: ArgumentsCamelCase<Options>, migrator: IMigrator, method: MigratorMethod) {
@@ -184,7 +188,7 @@ export class MigrationCommandFactory {
 
   private static async handleFreshCommand(args: ArgumentsCamelCase<Options>, migrator: IMigrator, orm: MikroORM) {
     const generator = orm.getSchemaGenerator();
-    await generator.dropSchema({ dropMigrationsTable: true });
+    await generator.dropSchema({ dropMigrationsTable: true, dropDb: args.dropDb });
     CLIHelper.dump(colors.green('Dropped schema successfully'));
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator.up(opts);
@@ -243,4 +247,4 @@ export class MigrationCommandFactory {
 type MigratorMethod = 'create' | 'check' | 'up' | 'down' | 'list' | 'pending' | 'fresh';
 type CliUpDownOptions = { to?: string | number; from?: string | number; only?: string };
 type GenerateOptions = { dump?: boolean; blank?: boolean; initial?: boolean; path?: string; disableFkChecks?: boolean; seed: string; name?: string };
-type Options = GenerateOptions & CliUpDownOptions;
+type Options = GenerateOptions & CliUpDownOptions & { dropDb?: boolean };
