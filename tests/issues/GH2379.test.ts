@@ -110,7 +110,7 @@ describe('GH issue 2379', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Order, Job, VendorBuyerRelationship,Member],
+      entities: [Order, Job, VendorBuyerRelationship, Member],
       dbName: ':memory:',
       driver: SqliteDriver,
     });

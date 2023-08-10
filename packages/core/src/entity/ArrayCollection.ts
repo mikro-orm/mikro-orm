@@ -201,7 +201,6 @@ export class ArrayCollection<T extends object, O extends object> {
     }
 
     return items;
-
   }
 
   count(): number {

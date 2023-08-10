@@ -1190,9 +1190,9 @@ describe('EntityManagerMySql', () => {
 
     // slice
     expect(book.tags.slice().length).toBe(3);
-    expect(book.tags.slice(0,3).length).toBe(3);
-    expect(book.tags.slice(0,1)).toEqual([book.tags[0]]);
-    expect(book.tags.slice(1,2)).toEqual([book.tags[1]]);
+    expect(book.tags.slice(0, 3).length).toBe(3);
+    expect(book.tags.slice(0, 1)).toEqual([book.tags[0]]);
+    expect(book.tags.slice(1, 2)).toEqual([book.tags[1]]);
 
     // contains
     expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);
