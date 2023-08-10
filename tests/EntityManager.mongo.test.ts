@@ -846,6 +846,12 @@ describe('EntityManagerMongo', () => {
     book = (await orm.em.findOne(Book, book._id))!;
     expect(book.tags.count()).toBe(2);
 
+    // slice
+    expect(book.tags.slice()).toEqual(items);
+    expect(book.tags.slice(0, 2)).toEqual(items);
+    expect(book.tags.slice(1)).toEqual(items[1]);
+    expect(book.tags.slice(0, 1)).toEqual(items[0]);
+
     // contains
     expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);
     expect(book.tags.contains(tagRepository.getReference(tag2.id))).toBe(false);

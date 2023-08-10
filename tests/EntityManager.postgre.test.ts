@@ -1133,6 +1133,8 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(3);
+    expect(book.tags.slice().length).toBe(3);
+    expect(book.tags.slice(0,1)).toEqual(book.tags[0]);
 
     // contains
     expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);

@@ -204,6 +204,14 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.isEmpty();
   }
 
+  /**
+   * @inheritDoc
+   */
+  slice(start = 0, end?: number): T[]  {
+    this.checkInitialized();
+    return super.slice(start, end);
+  }
+
   shouldPopulate(): boolean {
     return this._populated && !this._lazyInitialized;
   }
