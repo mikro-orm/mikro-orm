@@ -189,7 +189,9 @@ export class ArrayCollection<T extends object, O extends object> {
 
     for (const item of this.items) {
 
-    if (counter === end) { break; } // break the loop if we reach the end of the slice
+    if (counter === end) {
+      break;
+    }
 
     if (counter >= start &&  counter < end) {
       items.add(item);
