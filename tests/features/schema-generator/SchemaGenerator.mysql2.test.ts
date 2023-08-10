@@ -42,7 +42,7 @@ describe('SchemaGenerator (no FKs)', () => {
       port: 3308,
       baseDir: BASE_DIR,
       driver: MySqlDriver,
-      migrations: { path: BASE_DIR + '/../temp/migrations' },
+      migrations: { path: BASE_DIR + '/../temp/migrations-mysql2' },
       schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false },
       multipleStatements: true,
     });

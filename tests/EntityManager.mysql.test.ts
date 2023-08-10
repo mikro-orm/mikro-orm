@@ -835,14 +835,17 @@ describe('EntityManagerMySql', () => {
     expect(res1.createdAt).toBeDefined();
     // @ts-expect-error
     expect(res1.created_at).not.toBeDefined();
-    expect(res1.meta).toEqual({ category: 'foo', items: 1 });
+    expect(res1.createdAt).toBeInstanceOf(Date); // mapped to Date
+    expect(res1.meta).toEqual({ category: 'foo', items: 1 }); // parsed to object
 
     const qb2 = orm.em.fork().createQueryBuilder(Book2);
     const res2 = await qb2.select('*').where({ [raw('JSON_CONTAINS(meta, ?)', [{ category: 'foo' }])]: true }).execute('get', false);
     expect(res2.createdAt).not.toBeDefined();
     // @ts-expect-error
     expect(res2.created_at).toBeDefined();
-    expect(res2.meta).toEqual({ category: 'foo', items: 1 });
+    // @ts-expect-error
+    expect(typeof res2.created_at).toBe('string'); // kept as string
+    expect(res2.meta).toEqual('{"items": 1, "category": "foo"}'); // kept as string
 
     const qb3 = orm.em.fork().createQueryBuilder(Book2);
     const res3 = await qb3.select('*').where({ [raw('JSON_CONTAINS(meta, ?)', [{ category: 'foo' }])]: true }).getSingleResult();

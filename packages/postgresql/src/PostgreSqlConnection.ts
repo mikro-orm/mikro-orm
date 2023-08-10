@@ -19,7 +19,8 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   override getConnectionOptions(): Knex.PgConnectionConfig {
     const ret = super.getConnectionOptions() as Knex.PgConnectionConfig;
     const types = new TypeOverrides();
-    [1082, 1114, 1184].forEach(oid => types.setTypeParser(oid, str => str)); // date, timestamp, timestamptz type
+    // disable parsing for following types: `date`, `timestamp`, `timestamptz`, `json`, `jsonb`
+    [1082, 1114, 1184, 114, 3802].forEach(oid => types.setTypeParser(oid, str => str));
     ret.types = types as any;
 
     return ret;

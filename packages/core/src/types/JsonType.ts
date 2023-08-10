@@ -21,7 +21,7 @@ export class JsonType extends Type<unknown, string | null> {
     return key + platform.castColumn(this.prop);
   }
 
-  override convertToJSValue(value: string | unknown, platform: Platform): unknown {
+  override convertToJSValue(value: string, platform: Platform): unknown {
     return platform.convertJsonToJSValue(value);
   }
 

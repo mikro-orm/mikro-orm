@@ -59,10 +59,6 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return 'text';
   }
 
-  override convertsJsonAutomatically(): boolean {
-    return false;
-  }
-
   override allowsComparingTuples() {
     return false;
   }

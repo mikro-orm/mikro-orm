@@ -155,6 +155,7 @@ export function equals(a: any, b: any): boolean {
 const equalsFn = equals;
 
 export function parseJsonSafe<T = unknown>(value: unknown): T {
+  // return JSON.parse(value);
   if (typeof value === 'string') {
     try {
       return JSON.parse(value);

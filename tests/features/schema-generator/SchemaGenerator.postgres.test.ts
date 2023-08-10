@@ -129,7 +129,7 @@ describe('SchemaGenerator [postgres]', () => {
       dbName,
       baseDir: BASE_DIR,
       driver: PostgreSqlDriver,
-      migrations: { path: BASE_DIR + '/../temp/migrations', tableName: 'public.mikro_orm_migrations' },
+      migrations: { path: BASE_DIR + '/../temp/migrations-pg', tableName: 'public.mikro_orm_migrations' },
     });
 
     await orm.schema.createSchema();

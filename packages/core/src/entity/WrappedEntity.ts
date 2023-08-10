@@ -88,6 +88,7 @@ export class WrappedEntity<Entity extends object> {
     if ('assign' in this.entity) {
       return (this.entity as Dictionary).assign(data, options);
     }
+    [].slice();
 
     return EntityAssigner.assign(this.entity, data, options);
   }

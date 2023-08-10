@@ -32,7 +32,7 @@ describe('SchemaGenerator', () => {
       port: 3308,
       baseDir: BASE_DIR,
       driver: MySqlDriver,
-      migrations: { path: BASE_DIR + '/../temp/migrations' },
+      migrations: { path: BASE_DIR + '/../temp/migrations-mysql' },
     });
 
     await orm.schema.createSchema();
@@ -67,7 +67,7 @@ describe('SchemaGenerator', () => {
       port: 3308,
       baseDir: BASE_DIR,
       driver: MariaDbDriver,
-      migrations: { path: BASE_DIR + '/../temp/migrations' },
+      migrations: { path: BASE_DIR + '/../temp/migrations-mysql' },
       multipleStatements: true,
     });
 

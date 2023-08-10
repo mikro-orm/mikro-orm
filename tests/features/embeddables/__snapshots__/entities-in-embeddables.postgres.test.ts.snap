@@ -273,6 +273,9 @@ exports[`embedded entities in postgres diffing 2`] = `
       } else if (data.profile1_identity_meta === null) {
         entity.profile1.identity.meta = null;
       }
+      if (typeof data.profile1_identity_meta === 'string') {
+        data.profile1_identity_meta = parseJsonSafe(data.profile1_identity_meta);
+      }
       if (data.profile1_identity_meta != null) {
         if (entity.profile1.identity.meta == null) {
           entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data.profile1_identity_meta, { newEntity, convertCustomTypes });
@@ -299,9 +302,15 @@ exports[`embedded entities in postgres diffing 2`] = `
       } else if (data.profile1_identity_meta === null) {
         entity.profile1.identity.meta = null;
       }
+      if (typeof data.profile1_identity_links === 'string') {
+        data.profile1_identity_links = parseJsonSafe(data.profile1_identity_links);
+      }
       if (Array.isArray(data.profile1_identity_links)) {
         entity.profile1.identity.links = [];
         data.profile1_identity_links.forEach((_, idx_8) => {
+          if (typeof data.profile1_identity_links[idx_8] === 'string') {
+            data.profile1_identity_links[idx_8] = parseJsonSafe(data.profile1_identity_links[idx_8]);
+          }
           if (data.profile1_identity_links[idx_8] != null) {
             if (entity.profile1.identity.links[idx_8] == null) {
               entity.profile1.identity.links[idx_8] = factory.createEmbeddable('IdentityLink', data.profile1_identity_links[idx_8], { newEntity, convertCustomTypes });
@@ -319,6 +328,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               } else {
                 entity.profile1.identity.links[idx_8].createdAt = new Date(data.profile1_identity_links[idx_8].createdAt);
               }
+            }
+            if (typeof data.profile1_identity_links[idx_8].meta === 'string') {
+              data.profile1_identity_links[idx_8].meta = parseJsonSafe(data.profile1_identity_links[idx_8].meta);
             }
             if (data.profile1_identity_links[idx_8].meta != null) {
               if (entity.profile1.identity.links[idx_8].meta == null) {
@@ -346,9 +358,15 @@ exports[`embedded entities in postgres diffing 2`] = `
             } else if (data.profile1_identity_links[idx_8].meta === null) {
               entity.profile1.identity.links[idx_8].meta = null;
             }
+            if (typeof data.profile1_identity_links[idx_8].metas === 'string') {
+              data.profile1_identity_links[idx_8].metas = parseJsonSafe(data.profile1_identity_links[idx_8].metas);
+            }
             if (Array.isArray(data.profile1_identity_links[idx_8].metas)) {
               entity.profile1.identity.links[idx_8].metas = [];
               data.profile1_identity_links[idx_8].metas.forEach((_, idx_13) => {
+                if (typeof data.profile1_identity_links[idx_8].metas[idx_13] === 'string') {
+                  data.profile1_identity_links[idx_8].metas[idx_13] = parseJsonSafe(data.profile1_identity_links[idx_8].metas[idx_13]);
+                }
                 if (data.profile1_identity_links[idx_8].metas[idx_13] != null) {
                   if (entity.profile1.identity.links[idx_8].metas[idx_13] == null) {
                     entity.profile1.identity.links[idx_8].metas[idx_13] = factory.createEmbeddable('IdentityMeta', data.profile1_identity_links[idx_8].metas[idx_13], { newEntity, convertCustomTypes });
@@ -403,6 +421,9 @@ exports[`embedded entities in postgres diffing 2`] = `
     } else if (data.profile1_identity === null) {
       entity.profile1.identity = null;
     }
+    if (typeof data.profile1_identity === 'string') {
+      data.profile1_identity = parseJsonSafe(data.profile1_identity);
+    }
     if (data.profile1_identity != null) {
       if (entity.profile1.identity == null) {
         entity.profile1.identity = factory.createEmbeddable('Identity', data.profile1_identity, { newEntity, convertCustomTypes });
@@ -438,6 +459,9 @@ exports[`embedded entities in postgres diffing 2`] = `
       } else if (data.profile1_identity.meta === null) {
         entity.profile1.identity.meta = null;
       }
+      if (typeof data.profile1_identity.meta === 'string') {
+        data.profile1_identity.meta = parseJsonSafe(data.profile1_identity.meta);
+      }
       if (data.profile1_identity.meta != null) {
         if (entity.profile1.identity.meta == null) {
           entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data.profile1_identity.meta, { newEntity, convertCustomTypes });
@@ -464,9 +488,15 @@ exports[`embedded entities in postgres diffing 2`] = `
       } else if (data.profile1_identity.meta === null) {
         entity.profile1.identity.meta = null;
       }
+      if (typeof data.profile1_identity.links === 'string') {
+        data.profile1_identity.links = parseJsonSafe(data.profile1_identity.links);
+      }
       if (Array.isArray(data.profile1_identity.links)) {
         entity.profile1.identity.links = [];
         data.profile1_identity.links.forEach((_, idx_21) => {
+          if (typeof data.profile1_identity.links[idx_21] === 'string') {
+            data.profile1_identity.links[idx_21] = parseJsonSafe(data.profile1_identity.links[idx_21]);
+          }
           if (data.profile1_identity.links[idx_21] != null) {
             if (entity.profile1.identity.links[idx_21] == null) {
               entity.profile1.identity.links[idx_21] = factory.createEmbeddable('IdentityLink', data.profile1_identity.links[idx_21], { newEntity, convertCustomTypes });
@@ -484,6 +514,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               } else {
                 entity.profile1.identity.links[idx_21].createdAt = new Date(data.profile1_identity.links[idx_21].createdAt);
               }
+            }
+            if (typeof data.profile1_identity.links[idx_21].meta === 'string') {
+              data.profile1_identity.links[idx_21].meta = parseJsonSafe(data.profile1_identity.links[idx_21].meta);
             }
             if (data.profile1_identity.links[idx_21].meta != null) {
               if (entity.profile1.identity.links[idx_21].meta == null) {
@@ -511,9 +544,15 @@ exports[`embedded entities in postgres diffing 2`] = `
             } else if (data.profile1_identity.links[idx_21].meta === null) {
               entity.profile1.identity.links[idx_21].meta = null;
             }
+            if (typeof data.profile1_identity.links[idx_21].metas === 'string') {
+              data.profile1_identity.links[idx_21].metas = parseJsonSafe(data.profile1_identity.links[idx_21].metas);
+            }
             if (Array.isArray(data.profile1_identity.links[idx_21].metas)) {
               entity.profile1.identity.links[idx_21].metas = [];
               data.profile1_identity.links[idx_21].metas.forEach((_, idx_26) => {
+                if (typeof data.profile1_identity.links[idx_21].metas[idx_26] === 'string') {
+                  data.profile1_identity.links[idx_21].metas[idx_26] = parseJsonSafe(data.profile1_identity.links[idx_21].metas[idx_26]);
+                }
                 if (data.profile1_identity.links[idx_21].metas[idx_26] != null) {
                   if (entity.profile1.identity.links[idx_21].metas[idx_26] == null) {
                     entity.profile1.identity.links[idx_21].metas[idx_26] = factory.createEmbeddable('IdentityMeta', data.profile1_identity.links[idx_21].metas[idx_26], { newEntity, convertCustomTypes });
@@ -580,6 +619,9 @@ exports[`embedded entities in postgres diffing 2`] = `
   } else if (data.profile1 === null) {
     entity.profile1 = null;
   }
+  if (typeof data.profile1 === 'string') {
+    data.profile1 = parseJsonSafe(data.profile1);
+  }
   if (data.profile1 != null) {
     if (entity.profile1 == null) {
       entity.profile1 = factory.createEmbeddable('Profile', data.profile1, { newEntity, convertCustomTypes });
@@ -624,6 +666,9 @@ exports[`embedded entities in postgres diffing 2`] = `
       } else if (data.profile1_identity_meta === null) {
         entity.profile1.identity.meta = null;
       }
+      if (typeof data.profile1_identity_meta === 'string') {
+        data.profile1_identity_meta = parseJsonSafe(data.profile1_identity_meta);
+      }
       if (data.profile1_identity_meta != null) {
         if (entity.profile1.identity.meta == null) {
           entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data.profile1_identity_meta, { newEntity, convertCustomTypes });
@@ -650,9 +695,15 @@ exports[`embedded entities in postgres diffing 2`] = `
       } else if (data.profile1_identity_meta === null) {
         entity.profile1.identity.meta = null;
       }
+      if (typeof data.profile1_identity_links === 'string') {
+        data.profile1_identity_links = parseJsonSafe(data.profile1_identity_links);
+      }
       if (Array.isArray(data.profile1_identity_links)) {
         entity.profile1.identity.links = [];
         data.profile1_identity_links.forEach((_, idx_35) => {
+          if (typeof data.profile1_identity_links[idx_35] === 'string') {
+            data.profile1_identity_links[idx_35] = parseJsonSafe(data.profile1_identity_links[idx_35]);
+          }
           if (data.profile1_identity_links[idx_35] != null) {
             if (entity.profile1.identity.links[idx_35] == null) {
               entity.profile1.identity.links[idx_35] = factory.createEmbeddable('IdentityLink', data.profile1_identity_links[idx_35], { newEntity, convertCustomTypes });
@@ -670,6 +721,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               } else {
                 entity.profile1.identity.links[idx_35].createdAt = new Date(data.profile1_identity_links[idx_35].createdAt);
               }
+            }
+            if (typeof data.profile1_identity_links[idx_35].meta === 'string') {
+              data.profile1_identity_links[idx_35].meta = parseJsonSafe(data.profile1_identity_links[idx_35].meta);
             }
             if (data.profile1_identity_links[idx_35].meta != null) {
               if (entity.profile1.identity.links[idx_35].meta == null) {
@@ -697,9 +751,15 @@ exports[`embedded entities in postgres diffing 2`] = `
             } else if (data.profile1_identity_links[idx_35].meta === null) {
               entity.profile1.identity.links[idx_35].meta = null;
             }
+            if (typeof data.profile1_identity_links[idx_35].metas === 'string') {
+              data.profile1_identity_links[idx_35].metas = parseJsonSafe(data.profile1_identity_links[idx_35].metas);
+            }
             if (Array.isArray(data.profile1_identity_links[idx_35].metas)) {
               entity.profile1.identity.links[idx_35].metas = [];
               data.profile1_identity_links[idx_35].metas.forEach((_, idx_40) => {
+                if (typeof data.profile1_identity_links[idx_35].metas[idx_40] === 'string') {
+                  data.profile1_identity_links[idx_35].metas[idx_40] = parseJsonSafe(data.profile1_identity_links[idx_35].metas[idx_40]);
+                }
                 if (data.profile1_identity_links[idx_35].metas[idx_40] != null) {
                   if (entity.profile1.identity.links[idx_35].metas[idx_40] == null) {
                     entity.profile1.identity.links[idx_35].metas[idx_40] = factory.createEmbeddable('IdentityMeta', data.profile1_identity_links[idx_35].metas[idx_40], { newEntity, convertCustomTypes });
@@ -754,6 +814,9 @@ exports[`embedded entities in postgres diffing 2`] = `
     } else if (data.profile1.identity === null) {
       entity.profile1.identity = null;
     }
+    if (typeof data.profile1.identity === 'string') {
+      data.profile1.identity = parseJsonSafe(data.profile1.identity);
+    }
     if (data.profile1.identity != null) {
       if (entity.profile1.identity == null) {
         entity.profile1.identity = factory.createEmbeddable('Identity', data.profile1.identity, { newEntity, convertCustomTypes });
@@ -789,6 +852,9 @@ exports[`embedded entities in postgres diffing 2`] = `
       } else if (data.profile1.identity.meta === null) {
         entity.profile1.identity.meta = null;
       }
+      if (typeof data.profile1.identity.meta === 'string') {
+        data.profile1.identity.meta = parseJsonSafe(data.profile1.identity.meta);
+      }
       if (data.profile1.identity.meta != null) {
         if (entity.profile1.identity.meta == null) {
           entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data.profile1.identity.meta, { newEntity, convertCustomTypes });
@@ -815,9 +881,15 @@ exports[`embedded entities in postgres diffing 2`] = `
       } else if (data.profile1.identity.meta === null) {
         entity.profile1.identity.meta = null;
       }
+      if (typeof data.profile1.identity.links === 'string') {
+        data.profile1.identity.links = parseJsonSafe(data.profile1.identity.links);
+      }
       if (Array.isArray(data.profile1.identity.links)) {
         entity.profile1.identity.links = [];
         data.profile1.identity.links.forEach((_, idx_48) => {
+          if (typeof data.profile1.identity.links[idx_48] === 'string') {
+            data.profile1.identity.links[idx_48] = parseJsonSafe(data.profile1.identity.links[idx_48]);
+          }
           if (data.profile1.identity.links[idx_48] != null) {
             if (entity.profile1.identity.links[idx_48] == null) {
               entity.profile1.identity.links[idx_48] = factory.createEmbeddable('IdentityLink', data.profile1.identity.links[idx_48], { newEntity, convertCustomTypes });
@@ -835,6 +907,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               } else {
                 entity.profile1.identity.links[idx_48].createdAt = new Date(data.profile1.identity.links[idx_48].createdAt);
               }
+            }
+            if (typeof data.profile1.identity.links[idx_48].meta === 'string') {
+              data.profile1.identity.links[idx_48].meta = parseJsonSafe(data.profile1.identity.links[idx_48].meta);
             }
             if (data.profile1.identity.links[idx_48].meta != null) {
               if (entity.profile1.identity.links[idx_48].meta == null) {
@@ -862,9 +937,15 @@ exports[`embedded entities in postgres diffing 2`] = `
             } else if (data.profile1.identity.links[idx_48].meta === null) {
               entity.profile1.identity.links[idx_48].meta = null;
             }
+            if (typeof data.profile1.identity.links[idx_48].metas === 'string') {
+              data.profile1.identity.links[idx_48].metas = parseJsonSafe(data.profile1.identity.links[idx_48].metas);
+            }
             if (Array.isArray(data.profile1.identity.links[idx_48].metas)) {
               entity.profile1.identity.links[idx_48].metas = [];
               data.profile1.identity.links[idx_48].metas.forEach((_, idx_53) => {
+                if (typeof data.profile1.identity.links[idx_48].metas[idx_53] === 'string') {
+                  data.profile1.identity.links[idx_48].metas[idx_53] = parseJsonSafe(data.profile1.identity.links[idx_48].metas[idx_53]);
+                }
                 if (data.profile1.identity.links[idx_48].metas[idx_53] != null) {
                   if (entity.profile1.identity.links[idx_48].metas[idx_53] == null) {
                     entity.profile1.identity.links[idx_48].metas[idx_53] = factory.createEmbeddable('IdentityMeta', data.profile1.identity.links[idx_48].metas[idx_53], { newEntity, convertCustomTypes });
@@ -931,6 +1012,9 @@ exports[`embedded entities in postgres diffing 2`] = `
   } else if (data.profile1 === null) {
     entity.profile1 = null;
   }
+  if (typeof data.profile2 === 'string') {
+    data.profile2 = parseJsonSafe(data.profile2);
+  }
   if (data.profile2 != null) {
     if (entity.profile2 == null) {
       entity.profile2 = factory.createEmbeddable('Profile', data.profile2, { newEntity, convertCustomTypes });
@@ -940,6 +1024,9 @@ exports[`embedded entities in postgres diffing 2`] = `
     } else if (typeof data.profile2.username !== 'undefined') {
       entity.profile2.username = data.profile2.username;
     }
+    if (typeof data.profile2.identity === 'string') {
+      data.profile2.identity = parseJsonSafe(data.profile2.identity);
+    }
     if (data.profile2.identity != null) {
       if (entity.profile2.identity == null) {
         entity.profile2.identity = factory.createEmbeddable('Identity', data.profile2.identity, { newEntity, convertCustomTypes });
@@ -948,6 +1035,9 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile2.identity.email = null;
       } else if (typeof data.profile2.identity.email !== 'undefined') {
         entity.profile2.identity.email = data.profile2.identity.email;
+      }
+      if (typeof data.profile2.identity.meta === 'string') {
+        data.profile2.identity.meta = parseJsonSafe(data.profile2.identity.meta);
       }
       if (data.profile2.identity.meta != null) {
         if (entity.profile2.identity.meta == null) {
@@ -975,9 +1065,15 @@ exports[`embedded entities in postgres diffing 2`] = `
       } else if (data.profile2.identity.meta === null) {
         entity.profile2.identity.meta = null;
       }
+      if (typeof data.profile2.identity.links === 'string') {
+        data.profile2.identity.links = parseJsonSafe(data.profile2.identity.links);
+      }
       if (Array.isArray(data.profile2.identity.links)) {
         entity.profile2.identity.links = [];
         data.profile2.identity.links.forEach((_, idx_60) => {
+          if (typeof data.profile2.identity.links[idx_60] === 'string') {
+            data.profile2.identity.links[idx_60] = parseJsonSafe(data.profile2.identity.links[idx_60]);
+          }
           if (data.profile2.identity.links[idx_60] != null) {
             if (entity.profile2.identity.links[idx_60] == null) {
               entity.profile2.identity.links[idx_60] = factory.createEmbeddable('IdentityLink', data.profile2.identity.links[idx_60], { newEntity, convertCustomTypes });
@@ -995,6 +1091,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               } else {
                 entity.profile2.identity.links[idx_60].createdAt = new Date(data.profile2.identity.links[idx_60].createdAt);
               }
+            }
+            if (typeof data.profile2.identity.links[idx_60].meta === 'string') {
+              data.profile2.identity.links[idx_60].meta = parseJsonSafe(data.profile2.identity.links[idx_60].meta);
             }
             if (data.profile2.identity.links[idx_60].meta != null) {
               if (entity.profile2.identity.links[idx_60].meta == null) {
@@ -1022,9 +1121,15 @@ exports[`embedded entities in postgres diffing 2`] = `
             } else if (data.profile2.identity.links[idx_60].meta === null) {
               entity.profile2.identity.links[idx_60].meta = null;
             }
+            if (typeof data.profile2.identity.links[idx_60].metas === 'string') {
+              data.profile2.identity.links[idx_60].metas = parseJsonSafe(data.profile2.identity.links[idx_60].metas);
+            }
             if (Array.isArray(data.profile2.identity.links[idx_60].metas)) {
               entity.profile2.identity.links[idx_60].metas = [];
               data.profile2.identity.links[idx_60].metas.forEach((_, idx_65) => {
+                if (typeof data.profile2.identity.links[idx_60].metas[idx_65] === 'string') {
+                  data.profile2.identity.links[idx_60].metas[idx_65] = parseJsonSafe(data.profile2.identity.links[idx_60].metas[idx_65]);
+                }
                 if (data.profile2.identity.links[idx_60].metas[idx_65] != null) {
                   if (entity.profile2.identity.links[idx_60].metas[idx_65] == null) {
                     entity.profile2.identity.links[idx_60].metas[idx_65] = factory.createEmbeddable('IdentityMeta', data.profile2.identity.links[idx_60].metas[idx_65], { newEntity, convertCustomTypes });
