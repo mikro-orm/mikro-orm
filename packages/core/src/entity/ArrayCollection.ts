@@ -182,8 +182,7 @@ export class ArrayCollection<T extends object, O extends object> {
    * Extracts a slice of elements starting at position start to end (exclusive) of the Collection.
    * If end is null it returns all elements from $start to the end of the Collection.
    */
-
-  slice(start = 0, end?: number): T[]  {
+  slice(start = 0, end?: number): T[] {
     let counter = 0;               // counter to keep track of the index of the collection
     end = end ?? this.items.size; // if end is undefined, set it to the size of the collection
     const items = new Set<T>();
