@@ -1,5 +1,5 @@
 import type { Dictionary, EntityMetadata, EntityOptions, EntityProperty, NamingStrategy, Platform } from '@mikro-orm/core';
-import { ReferenceType, UnknownType, Utils } from '@mikro-orm/core';
+import { DateType, DecimalType, ReferenceType, UnknownType, Utils } from '@mikro-orm/core';
 
 export class SourceFile {
 
@@ -264,11 +264,24 @@ export class SourceFile {
     const columnType2 = mappedType2.getColumnType({ ...prop, autoincrement: false }, this.platform);
 
     if (columnType1 !== columnType2 || [mappedType1, mappedType2].some(t => t instanceof UnknownType)) {
-      options.columnType = this.quote(prop.columnTypes[0]);
+      options.columnType = this.quote(columnType2);
     }
 
-    if (prop.length) {
-      options.length = prop.length;
+    const assign = (key: keyof EntityProperty) => {
+      if (prop[key] != null) {
+        options[key] = prop[key];
+      }
+    };
+
+    if (!(mappedType2 instanceof DateType) && !options.columnType) {
+      assign('length');
+    }
+
+    // those are already included in the `columnType` in most cases, and when that option is present, they would be ignored anyway
+    /* istanbul ignore next */
+    if (mappedType2 instanceof DecimalType && !options.columnType) {
+      assign('precision');
+      assign('scale');
     }
   }
 

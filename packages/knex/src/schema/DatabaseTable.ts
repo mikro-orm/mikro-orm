@@ -277,6 +277,8 @@ export class DatabaseTable {
       primary: column.primary,
       fieldName: column.name,
       length: column.length,
+      precision: column.precision,
+      scale: column.scale,
       index: index ? index.keyName : undefined,
       unique: unique ? unique.keyName : undefined,
       enum: !!column.enumItems?.length,

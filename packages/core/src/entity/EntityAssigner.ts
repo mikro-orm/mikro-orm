@@ -52,7 +52,7 @@ export class EntityAssigner {
     let value = data[propName];
     const prop = { ...props[propName], name: propName } as EntityProperty<T>;
 
-    if (prop && !prop.nullable && value == null) {
+    if (propName in props && !prop.nullable && value == null) {
       throw new Error(`You must pass a non-${value} value to the property ${propName} of entity ${(entity as Dictionary).constructor.name}.`);
     }
 
@@ -271,7 +271,6 @@ export interface AssignOptions {
   merge?: boolean;
   schema?: string;
   em?: EntityManager;
-  /** @internal */
 }
 
 interface InternalAssignOptions extends AssignOptions {

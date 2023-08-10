@@ -8,6 +8,10 @@ enum Food {
   MuffinsOrPancakes = 'Muffins,Pancakes',
 }
 
+enum Num {
+  A, B, C,
+}
+
 @Entity()
 export class Something {
 
@@ -16,6 +20,9 @@ export class Something {
 
   @Enum({ items: () => Food })
   favoriteFood!: Food;
+
+  @Enum({ items: () => Num, columnType: 'int', nullable: true })
+  num?: Num;
 
 }
 

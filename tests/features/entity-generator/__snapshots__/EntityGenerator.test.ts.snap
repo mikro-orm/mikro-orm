@@ -144,7 +144,7 @@ export const Author2Schema = new EntitySchema({
     age: { type: 'number', nullable: true },
     termsAccepted: { type: 'boolean', default: false, index: 'author2_terms_accepted_index' },
     optional: { type: 'boolean', nullable: true },
-    identities: { type: 'string', columnType: 'text', length: 65535, nullable: true },
+    identities: { type: 'string', columnType: 'text', nullable: true },
     born: {
       type: 'string',
       columnType: 'date',
@@ -296,8 +296,8 @@ export const Book2Schema = new EntitySchema({
     uuidPk: { primary: true, type: 'string', length: 36 },
     createdAt: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
     title: { type: 'string', length: 255, nullable: true, index: 'book2_title_index' },
-    perex: { type: 'string', columnType: 'text', length: 65535, nullable: true },
-    price: { type: 'string', columnType: 'decimal(8,2)', nullable: true },
+    perex: { type: 'string', columnType: 'text', nullable: true },
+    price: { type: 'string', columnType: 'numeric(8,2)', nullable: true },
     double: { type: 'string', columnType: 'double', nullable: true },
     meta: { type: 'any', columnType: 'json', nullable: true },
     author: { reference: 'm:1', entity: () => Author2, ref: true },
@@ -483,10 +483,10 @@ export const FooBar2Schema = new EntitySchema({
       onDelete: 'set null',
       nullable: true,
     },
-    version: { type: 'Date', defaultRaw: \`CURRENT_TIMESTAMP\` },
+    version: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
     blob: { type: 'Buffer', length: 65535, nullable: true },
     blob2: { type: 'Buffer', length: 65535, nullable: true },
-    array: { type: 'string', columnType: 'text', length: 65535, nullable: true },
+    array: { type: 'string', columnType: 'text', nullable: true },
     objectProperty: { type: 'any', columnType: 'json', nullable: true },
     fooBarInverse: { reference: '1:1', entity: () => Test2, ref: true, mappedBy: 'fooBar' },
     barInverse: { reference: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
@@ -839,7 +839,7 @@ export class Author2 {
   @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ columnType: 'text', length: 65535, nullable: true })
+  @Property({ columnType: 'text', nullable: true })
   identities?: string;
 
   @Index({ name: 'author2_born_index' })
@@ -938,10 +938,10 @@ export class Book2 {
   @Property({ length: 255, nullable: true })
   title?: string;
 
-  @Property({ columnType: 'text', length: 65535, nullable: true })
+  @Property({ columnType: 'text', nullable: true })
   perex?: string;
 
-  @Property({ columnType: 'decimal(8,2)', nullable: true })
+  @Property({ columnType: 'numeric(8,2)', nullable: true })
   price?: string;
 
   @Property({ columnType: 'double', nullable: true })
@@ -1067,7 +1067,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date;
 
   @Property({ length: 65535, nullable: true })
@@ -1076,7 +1076,7 @@ export class FooBar2 {
   @Property({ length: 65535, nullable: true })
   blob2?: Buffer;
 
-  @Property({ columnType: 'text', length: 65535, nullable: true })
+  @Property({ columnType: 'text', nullable: true })
   array?: string;
 
   @Property({ columnType: 'json', nullable: true })
@@ -1340,7 +1340,7 @@ export class Author2 {
   born?: string;
 
   @Index({ name: 'born_time_idx' })
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ columnType: 'time(0)', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, onDelete: 'cascade', nullable: true })
@@ -1362,7 +1362,7 @@ export class Author2 {
 @Entity()
 export class BookTag2 {
 
-  @PrimaryKey({ columnType: 'int8' })
+  @PrimaryKey({ columnType: 'bigint' })
   id!: string;
 
   @Property({ length: 50 })
@@ -1392,10 +1392,10 @@ export class Book2 {
   @Property({ columnType: 'text', nullable: true })
   perex?: string;
 
-  @Property({ columnType: 'numeric', nullable: true })
+  @Property({ columnType: 'numeric(8,2)', nullable: true })
   price?: string;
 
-  @Property({ columnType: 'numeric', nullable: true })
+  @Property({ columnType: 'numeric(10,0)', nullable: true })
   double?: string;
 
   @Property({ columnType: 'jsonb', nullable: true })
@@ -1473,7 +1473,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ defaultRaw: \`current_timestamp(0)\` })
+  @Property({ length: 0, defaultRaw: \`current_timestamp(0)\` })
   version!: Date;
 
   @Property({ nullable: true })
@@ -1579,13 +1579,13 @@ export class Publisher2 {
   @Enum({ items: () => Publisher2Type2 })
   type2!: Publisher2Type2;
 
-  @Property({ columnType: 'int2', nullable: true })
+  @Property({ columnType: 'smallint', nullable: true })
   enum1?: number;
 
-  @Property({ columnType: 'int2', nullable: true })
+  @Property({ columnType: 'smallint', nullable: true })
   enum2?: number;
 
-  @Property({ columnType: 'int2', nullable: true })
+  @Property({ columnType: 'smallint', nullable: true })
   enum3?: number;
 
   @Enum({ items: () => Publisher2Enum4, nullable: true })
@@ -1705,10 +1705,10 @@ export class Author3 {
   @Property({ nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date(3)', nullable: true })
+  @Property({ columnType: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time(3)', nullable: true })
+  @Property({ columnType: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book3, onUpdateIntegrity: 'cascade', nullable: true, index: 'author3_favourite_book_idx' })
@@ -1890,7 +1890,7 @@ export class Author2 {
   @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ columnType: 'text', length: 65535, nullable: true })
+  @Property({ columnType: 'text', nullable: true })
   identities?: string;
 
   @Index({ name: 'author2_born_index' })
@@ -2017,10 +2017,10 @@ export class Book2 {
   @Property({ length: 255, nullable: true })
   title?: string;
 
-  @Property({ columnType: 'text', length: 65535, nullable: true })
+  @Property({ columnType: 'text', nullable: true })
   perex?: string;
 
-  @Property({ columnType: 'decimal(8,2)', nullable: true })
+  @Property({ columnType: 'numeric(8,2)', nullable: true })
   price?: string;
 
   @Property({ columnType: 'double', nullable: true })
@@ -2168,7 +2168,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date;
 
   @Property({ length: 65535, nullable: true })
@@ -2177,7 +2177,7 @@ export class FooBar2 {
   @Property({ length: 65535, nullable: true })
   blob2?: Buffer;
 
-  @Property({ columnType: 'text', length: 65535, nullable: true })
+  @Property({ columnType: 'text', nullable: true })
   array?: string;
 
   @Property({ columnType: 'json', nullable: true })
@@ -2469,7 +2469,7 @@ export class Author2 {
   @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ columnType: 'text', length: 65535, nullable: true })
+  @Property({ columnType: 'text', nullable: true })
   identities?: string;
 
   @Index({ name: 'author2_born_index' })
@@ -2596,10 +2596,10 @@ export class Book2 {
   @Property({ length: 255, nullable: true })
   title?: string;
 
-  @Property({ columnType: 'text', length: 65535, nullable: true })
+  @Property({ columnType: 'text', nullable: true })
   perex?: string;
 
-  @Property({ columnType: 'decimal(8,2)', nullable: true })
+  @Property({ columnType: 'numeric(8,2)', nullable: true })
   price?: string;
 
   @Property({ columnType: 'double', nullable: true })
@@ -2747,7 +2747,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, ref: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   fooBar?: Ref<FooBar2>;
 
-  @Property({ defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date;
 
   @Property({ length: 65535, nullable: true })
@@ -2756,7 +2756,7 @@ export class FooBar2 {
   @Property({ length: 65535, nullable: true })
   blob2?: Buffer;
 
-  @Property({ columnType: 'text', length: 65535, nullable: true })
+  @Property({ columnType: 'text', nullable: true })
   array?: string;
 
   @Property({ columnType: 'json', nullable: true })
@@ -3048,7 +3048,7 @@ export class Author2 {
   @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ columnType: 'text', length: 65535, nullable: true })
+  @Property({ columnType: 'text', nullable: true })
   identities?: string;
 
   @Index({ name: 'author2_born_index' })
@@ -3147,10 +3147,10 @@ export class Book2 {
   @Property({ length: 255, nullable: true })
   title?: string;
 
-  @Property({ columnType: 'text', length: 65535, nullable: true })
+  @Property({ columnType: 'text', nullable: true })
   perex?: string;
 
-  @Property({ columnType: 'decimal(8,2)', nullable: true })
+  @Property({ columnType: 'numeric(8,2)', nullable: true })
   price?: string;
 
   @Property({ columnType: 'double', nullable: true })
@@ -3276,7 +3276,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, ref: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   fooBar?: Ref<FooBar2>;
 
-  @Property({ defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date;
 
   @Property({ length: 65535, nullable: true })
@@ -3285,7 +3285,7 @@ export class FooBar2 {
   @Property({ length: 65535, nullable: true })
   blob2?: Buffer;
 
-  @Property({ columnType: 'text', length: 65535, nullable: true })
+  @Property({ columnType: 'text', nullable: true })
   array?: string;
 
   @Property({ columnType: 'json', nullable: true })
@@ -3503,10 +3503,10 @@ export class Vrf {
   @Property({ length: 150, nullable: true })
   comments?: string;
 
-  @Property({ nullable: true, defaultRaw: \`current_timestamp()\` })
+  @Property({ length: 0, nullable: true, defaultRaw: \`current_timestamp()\` })
   createdAt?: Date;
 
-  @Property({ nullable: true, defaultRaw: \`current_timestamp()\` })
+  @Property({ length: 0, nullable: true, defaultRaw: \`current_timestamp()\` })
   updatedAt?: Date;
 
 }
@@ -3530,10 +3530,10 @@ export class Vrf {
   @Property({ length: 150, nullable: true })
   comments?: string;
 
-  @Property({ nullable: true, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ length: 0, nullable: true, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt?: Date;
 
-  @Property({ nullable: true, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ length: 0, nullable: true, defaultRaw: \`CURRENT_TIMESTAMP\` })
   updatedAt?: Date;
 
 }

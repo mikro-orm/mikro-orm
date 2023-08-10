@@ -53,7 +53,7 @@ export class SchemaCommandFactory {
       desc: 'Set the current schema for wildcard schema entities',
     });
 
-    if (command === 'create' || command === 'fresh') {
+    if (['create', 'fresh'].includes(command)) {
       args.option('seed', {
         type: 'string',
         desc: 'Allows to seed the database on create or drop and recreate',
@@ -78,6 +78,9 @@ export class SchemaCommandFactory {
         type: 'boolean',
         desc: 'Drop also migrations table',
       });
+    }
+
+    if (['drop', 'fresh'].includes(command)) {
       args.option('drop-db', {
         type: 'boolean',
         desc: 'Drop the whole database',
