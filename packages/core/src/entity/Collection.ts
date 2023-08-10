@@ -207,7 +207,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  slice(start = 0, end?: number): T[]  {
+  slice(start?: number, end?: number): T[]  {
     this.checkInitialized();
     return super.slice(start, end);
   }
