@@ -193,7 +193,7 @@ export class ArrayCollection<T extends object, O extends object> {
       break;
     }
 
-    if (counter >= start &&  counter < end) {
+    if (counter >= start && counter < end) {
       items.add(item);
     }
 
