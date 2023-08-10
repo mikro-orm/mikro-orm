@@ -1147,6 +1147,7 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(0);
+    expect(book.tags.isEmpty()).toBe(true);
   });
 
   test('bigint support', async () => {

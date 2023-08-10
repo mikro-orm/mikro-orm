@@ -684,6 +684,7 @@ describe('EntityManagerSqlite', () => {
     orm.em.clear();
     book = (await orm.em.findOne(Book3, book.id, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(0);
+    expect(book.tags.isEmpty()).toBe(true);
   });
 
   test('populating many to many relation', async () => {

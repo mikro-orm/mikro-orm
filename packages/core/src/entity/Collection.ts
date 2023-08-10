@@ -199,6 +199,11 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.count();
   }
 
+  isEmpty(): boolean {
+    this.checkInitialized();
+    return super.isEmpty();
+  }
+
   shouldPopulate(): boolean {
     return this._populated && !this._lazyInitialized;
   }

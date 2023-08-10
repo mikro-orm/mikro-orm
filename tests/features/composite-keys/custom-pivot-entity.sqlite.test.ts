@@ -211,6 +211,7 @@ describe('custom pivot entity for m:n with additional properties (bidirectional)
     orm.em.clear();
     order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
     expect(order.products.count()).toBe(0);
+    expect(order.products.isEmpty()).toBe(true);
   });
 
   test(`search by m:n property and loadCount() works`, async () => {

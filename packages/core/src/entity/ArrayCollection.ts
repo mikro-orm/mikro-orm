@@ -199,6 +199,10 @@ export class ArrayCollection<T extends object, O extends object> {
     return this.dirty;
   }
 
+  isEmpty(): boolean {
+    return this.count() === 0;
+  }
+
   setDirty(dirty = true): void {
     this.dirty = dirty;
   }
