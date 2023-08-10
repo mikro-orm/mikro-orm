@@ -41,6 +41,7 @@ console.log(author.books.contains(book)); // false
 author.books.add(book);
 console.log(author.books.count()); // 1
 author.books.removeAll();
+console.log(author.books.isEmpty()); // true
 console.log(author.books.contains(book)); // false
 console.log(author.books.count()); // 0
 console.log(author.books.getItems()); // Book[]
