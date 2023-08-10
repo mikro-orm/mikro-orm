@@ -849,8 +849,8 @@ describe('EntityManagerMongo', () => {
     // slice
     expect(book.tags.slice()).toEqual(items);
     expect(book.tags.slice(0, 2)).toEqual(items);
-    expect(book.tags.slice(1)).toEqual(items[1]);
-    expect(book.tags.slice(0, 1)).toEqual(items[0]);
+    expect(book.tags.slice(1)).toEqual([items[1], items[2]]);
+    expect(book.tags.slice(0, 1)).toEqual([items[0]]);
 
     // contains
     expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);

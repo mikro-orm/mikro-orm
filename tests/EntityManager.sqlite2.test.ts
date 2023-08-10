@@ -677,7 +677,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     // slice
     expect(book.tags.slice().length).toBe(2);
     expect(book.tags.slice(0,2).length).toBe(2);
-    expect(book.tags.slice(0,1)).toEqual(book.tags[0]);
+    expect(book.tags.slice(0,1)).toEqual([book.tags[0]]);
 
     // contains
     expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);

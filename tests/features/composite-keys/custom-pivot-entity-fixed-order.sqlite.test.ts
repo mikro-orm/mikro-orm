@@ -165,7 +165,7 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     // slice
     expect(order.products.slice().length).toBe(3);
     expect(order.products.slice(0,3).length).toBe(3);
-    expect(order.products.slice(0,1)).toEqual(order.products[0]);
+    expect(order.products.slice(0,1)).toEqual([order.products[0]]);
 
     // contains
     expect(order.products.contains(productRepository.getReference(product1.id))).toBe(true);
