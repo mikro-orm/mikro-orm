@@ -184,7 +184,7 @@ export class ArrayCollection<T extends object, O extends object> {
    */
   slice(start = 0, end?: number): T[] {
     let index = 0;
-    end = end ?? this.items.size; // if end is undefined, set it to the size of the collection
+    end ??= this.items.size;
     const items = new Set<T>();
 
     for (const item of this.items) {
