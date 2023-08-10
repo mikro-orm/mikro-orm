@@ -25,6 +25,8 @@ class MigrationTest2 extends Migration {
     this.addSql(knex.select(knex.raw('2 + 2 as count2')));
     const res = await this.execute('select 1 + 1 as count1');
     expect(res).toEqual([{ count1: 2 }]);
+
+    await this.getEntityManager().persistAndFlush(FooBar2.create('fb'));
   }
 
   isTransactional(): boolean {
@@ -312,11 +314,14 @@ describe('Migrator (postgres)', () => {
     migrator.options.disableForeignKeys = false;
     const migration2 = new MigrationTest2(orm.em.getDriver(), orm.config);
     await runner.run(migration2, 'up');
-    expect(mock.mock.calls.length).toBe(4);
+    expect(mock.mock.calls.length).toBe(7);
     expect(mock.mock.calls[0][0]).toMatch('select 1 + 1 as count1');
-    expect(mock.mock.calls[1][0]).toMatch('select 1 + 1');
-    expect(mock.mock.calls[2][0]).toMatch('select 1 + 1');
-    expect(mock.mock.calls[3][0]).toMatch('select 2 + 2 as count2');
+    expect(mock.mock.calls[1][0]).toMatch('begin');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "custom"."foo_bar2" ("name") values ($1) returning "id", "version"');
+    expect(mock.mock.calls[3][0]).toMatch('commit');
+    expect(mock.mock.calls[4][0]).toMatch('select 1 + 1');
+    expect(mock.mock.calls[5][0]).toMatch('select 1 + 1');
+    expect(mock.mock.calls[6][0]).toMatch('select 2 + 2 as count2');
   });
 
   test('up/down params [all or nothing enabled]', async () => {

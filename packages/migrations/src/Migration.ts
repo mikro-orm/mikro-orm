@@ -1,5 +1,5 @@
 import type { Configuration, Transaction } from '@mikro-orm/core';
-import type { AbstractSqlDriver, Knex } from '@mikro-orm/knex';
+import type { AbstractSqlDriver, Knex, EntityManager } from '@mikro-orm/knex';
 
 export type Query = string | Knex.QueryBuilder | Knex.Raw;
 
@@ -7,6 +7,7 @@ export abstract class Migration {
 
   private readonly queries: Query[] = [];
   protected ctx?: Transaction<Knex.Transaction>;
+  private em?: EntityManager;
 
   constructor(protected readonly driver: AbstractSqlDriver,
               protected readonly config: Configuration) { }
@@ -44,6 +45,19 @@ export abstract class Migration {
 
   getKnex() {
     return this.driver.getConnection('write').getKnex();
+  }
+
+  /**
+   * Creates a cached `EntityManager` instance for this migration, which will respect
+   * the current transaction context.
+   */
+  getEntityManager(): EntityManager {
+    if (!this.em) {
+      this.em = this.driver.createEntityManager() as EntityManager;
+      this.em.setTransactionContext(this.ctx);
+    }
+
+    return this.em;
   }
 
   getQueries(): Query[] {

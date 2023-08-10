@@ -34,6 +34,25 @@ Migrations are by default wrapped in a transaction. You can override this behavi
 
 You can execute queries in the migration via `Migration.execute()` method, which will run queries in the same transaction as the rest of the migration. The `Migration.addSql()` method also accepts instances of knex. Knex instance can be accessed via `Migration.getKnex()`;
 
+### Working with `EntityManager`
+
+While the purpose of migrations is mainly to alter your SQL schema, you can as well use them to modify your data, either by using `this.execute()`, or through an `EntityManager`:
+
+```ts
+import { Migration } from '@mikro-orm/migrations';
+import { User } from '../entities/User';
+
+export class Migration20191019195930 extends Migration {
+
+    async up(): Promise<void> {
+        const em = this.getEntityManager();
+        em.create(User, { ... });
+        await em.flush();
+    }
+
+}
+```
+
 ## Initial migration
 
 > This is optional and only needed for the specific use case, when both entities and schema already exist.
