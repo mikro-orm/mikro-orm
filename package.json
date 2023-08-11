@@ -112,7 +112,7 @@
     "@typescript-eslint/parser": "6.3.0",
     "bson": "^5.4.0",
     "conditional-type-checks": "1.0.6",
-    "eslint": "8.46.0",
+    "eslint": "8.47.0",
     "eslint-plugin-import": "^2.27.5",
     "fs-extra": "11.1.1",
     "gen-esm-wrapper": "1.1.3",
