@@ -179,8 +179,8 @@ export class ArrayCollection<T extends object, O extends object> {
 
 
   /**
-   * Extracts a slice of elements starting at position start to end (exclusive) of the Collection.
-   * If end is null it returns all elements from start to the end of the Collection.
+   * Extracts a slice of elements starting at position start to end (exclusive) of the collection.
+   * If end is null it returns all elements from start to the end of the collection.
    */
   slice(start = 0, end?: number): T[] {
     let index = 0;
@@ -188,7 +188,6 @@ export class ArrayCollection<T extends object, O extends object> {
     const items: T[] = [];
 
     for (const item of this.items) {
-
       if (index === end) {
         break;
       }

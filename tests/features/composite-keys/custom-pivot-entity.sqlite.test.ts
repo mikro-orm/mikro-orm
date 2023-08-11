@@ -197,7 +197,6 @@ describe('custom pivot entity for m:n with additional properties (bidirectional)
     order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
     expect(order.products.count()).toBe(3);
 
-
     // slice
     expect(order.products.slice().length).toBe(3);
     expect(order.products.slice(0, 3).length).toBe(3);

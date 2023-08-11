@@ -149,7 +149,7 @@ module.exports = {
     'brace-style': ['error', '1tbs', { allowSingleLine: true }],
     'keyword-spacing': ['error', { before: true, after: true }],
     'space-in-parens': ['error', 'never'],
-    'comma-spacing': 'error'
+    'comma-spacing': 'error',
   },
   'settings': {}
 };
