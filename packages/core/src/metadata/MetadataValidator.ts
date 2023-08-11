@@ -53,14 +53,14 @@ export class MetadataValidator {
     }
   }
 
-  validateDiscovered(discovered: EntityMetadata[], warnWhenNoEntities?: boolean, checkDuplicateTableNames?: boolean): void {
+  validateDiscovered(discovered: EntityMetadata[], warnWhenNoEntities?: boolean, checkDuplicateTableNames?: boolean, duplicateEntityStrategy: 'forbidden' | 'keep' | 'replace' = 'forbidden'): void {
     if (discovered.length === 0 && warnWhenNoEntities) {
       throw MetadataError.noEntityDiscovered();
     }
 
     const duplicates = Utils.findDuplicates(discovered.map(meta => meta.className));
 
-    if (duplicates.length > 0) {
+    if (duplicates.length > 0 && duplicateEntityStrategy === 'forbidden') {
       throw MetadataError.duplicateEntityDiscovered(duplicates);
     }
 
