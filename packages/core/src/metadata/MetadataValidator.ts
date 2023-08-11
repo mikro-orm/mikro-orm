@@ -53,14 +53,14 @@ export class MetadataValidator {
     }
   }
 
-  validateDiscovered(discovered: EntityMetadata[], warnWhenNoEntities?: boolean, checkDuplicateTableNames?: boolean, duplicateEntityStrategy: 'forbidden' | 'keep' | 'replace' = 'forbidden'): void {
+  validateDiscovered(discovered: EntityMetadata[], warnWhenNoEntities?: boolean, checkDuplicateTableNames?: boolean, checkDuplicateEntities = true): void {
     if (discovered.length === 0 && warnWhenNoEntities) {
       throw MetadataError.noEntityDiscovered();
     }
 
     const duplicates = Utils.findDuplicates(discovered.map(meta => meta.className));
 
-    if (duplicates.length > 0 && duplicateEntityStrategy === 'forbidden') {
+    if (duplicates.length > 0 && checkDuplicateEntities) {
       throw MetadataError.duplicateEntityDiscovered(duplicates);
     }
 
@@ -70,7 +70,7 @@ export class MetadataValidator {
       return (meta.schema ? '.' + meta.schema : '') + tableName;
     }));
 
-    if (duplicateTableNames.length > 0 && checkDuplicateTableNames && duplicateEntityStrategy === 'forbidden') {
+    if (duplicateTableNames.length > 0 && checkDuplicateTableNames && checkDuplicateEntities) {
       throw MetadataError.duplicateEntityDiscovered(duplicateTableNames, 'table names');
     }
 

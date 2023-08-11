@@ -106,7 +106,7 @@ export class MetadataDiscovery {
     await this.discoverDirectories(paths);
     await this.discoverReferences(refs);
     await this.discoverMissingTargets();
-    this.validator.validateDiscovered(this.discovered, options.warnWhenNoEntities, options.checkDuplicateTableNames, this.config.get('discovery').duplicateEntityStrategy);
+    this.validator.validateDiscovered(this.discovered, options.warnWhenNoEntities, options.checkDuplicateTableNames, options.checkDuplicateEntities);
 
     return this.discovered;
   }
