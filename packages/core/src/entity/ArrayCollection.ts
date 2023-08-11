@@ -177,6 +177,31 @@ export class ArrayCollection<T extends object, O extends object> {
     return this.items.has(entity);
   }
 
+
+  /**
+   * Extracts a slice of elements starting at position start to end (exclusive) of the collection.
+   * If end is null it returns all elements from start to the end of the collection.
+   */
+  slice(start = 0, end?: number): T[] {
+    let index = 0;
+    end ??= this.items.size;
+    const items: T[] = [];
+
+    for (const item of this.items) {
+      if (index === end) {
+        break;
+      }
+
+      if (index >= start && index < end) {
+        items.push(item);
+      }
+
+      index++;
+    }
+
+    return items;
+  }
+
   count(): number {
     return this.items.size;
   }

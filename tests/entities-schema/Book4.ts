@@ -1,4 +1,4 @@
-import type { Collection, Reference , OptionalProps } from '@mikro-orm/core';
+import type { Collection, Reference, OptionalProps } from '@mikro-orm/core';
 import { EntitySchema, t } from '@mikro-orm/core';
 import type { IBaseEntity5 } from './BaseEntity5';
 import type { IAuthor4 } from './Author4';

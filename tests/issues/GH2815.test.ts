@@ -29,7 +29,7 @@ export class Position2 {
   @PrimaryKey()
   id!: number;
 
-  @OneToOne(() => Leg2, (leg: Leg2) => leg.position, { owner: true, nullable: true , orphanRemoval: true })
+  @OneToOne(() => Leg2, (leg: Leg2) => leg.position, { owner: true, nullable: true, orphanRemoval: true })
   leg?: any;
 
 }

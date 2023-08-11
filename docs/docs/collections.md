@@ -40,6 +40,9 @@ author.books.remove(book);
 console.log(author.books.contains(book)); // false
 author.books.add(book);
 console.log(author.books.count()); // 1
+console.log(author.books.slice(0, 1)); // Book[]
+console.log(author.books.slice()); // Book[]
+console.log(author.books.slice().length); // 1
 author.books.removeAll();
 console.log(author.books.isEmpty()); // true
 console.log(author.books.contains(book)); // false

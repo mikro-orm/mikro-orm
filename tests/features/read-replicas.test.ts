@@ -81,7 +81,7 @@ describe('read-replicas', () => {
       expect(mock.mock.calls[4][0]).toMatch(/via read connection 'read-.*'/);
 
       // explicitly set to read
-      await orm.em.findOne(Author2, author, { connectionType: 'read',refresh: true });
+      await orm.em.findOne(Author2, author, { connectionType: 'read', refresh: true });
       expect(mock.mock.calls[5][0]).toMatch(/via read connection 'read-.*'/);
 
       // explicitly set to write
@@ -109,16 +109,16 @@ describe('read-replicas', () => {
       expect(mock.mock.calls[4][0]).toMatch(/via read connection 'read-.*'/);
 
       // explicitly set to read
-      await orm.em.count(Author2, {},{ connectionType: 'read' });
+      await orm.em.count(Author2, {}, { connectionType: 'read' });
       expect(mock.mock.calls[5][0]).toMatch(/via read connection 'read-.*'/);
 
       // explicitly set to write
-      await orm.em.count(Author2, {},{ connectionType: 'write' });
+      await orm.em.count(Author2, {}, { connectionType: 'write' });
       expect(mock.mock.calls[6][0]).toMatch(/via write connection '127\.0\.0\.1'/);
 
       // when running in a transaction will always use a write connection
       await orm.em.transactional(async em => {
-        return em.count(Author2, {},{ connectionType: 'read' });
+        return em.count(Author2, {}, { connectionType: 'read' });
       });
       expect(mock.mock.calls[7][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[8][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);
@@ -185,7 +185,7 @@ describe('read-replicas', () => {
       expect(mock.mock.calls[4][0]).toMatch(/via write connection '127\.0\.0\.1'/);
 
       // explicitly set to read
-      await orm.em.findOne(Author2, author, { connectionType: 'read',refresh: true });
+      await orm.em.findOne(Author2, author, { connectionType: 'read', refresh: true });
       expect(mock.mock.calls[5][0]).toMatch(/via read connection 'read-.*'/);
 
       // explicitly set to write
@@ -215,16 +215,16 @@ describe('read-replicas', () => {
       expect(mock.mock.calls[4][0]).toMatch(/via write connection '127\.0\.0\.1'/);
 
       // explicitly set to read
-      await orm.em.count(Author2, {},{ connectionType: 'read' });
+      await orm.em.count(Author2, {}, { connectionType: 'read' });
       expect(mock.mock.calls[5][0]).toMatch(/via read connection 'read-.*'/);
 
       // explicitly set to write
-      await orm.em.count(Author2, {},{ connectionType: 'write' });
+      await orm.em.count(Author2, {}, { connectionType: 'write' });
       expect(mock.mock.calls[6][0]).toMatch(/via write connection '127\.0\.0\.1'/);
 
       // when running in a transaction will always use a write connection
       await orm.em.transactional(async em => {
-        return em.count(Author2, {},{ connectionType: 'read' });
+        return em.count(Author2, {}, { connectionType: 'read' });
       });
       expect(mock.mock.calls[7][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[8][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);

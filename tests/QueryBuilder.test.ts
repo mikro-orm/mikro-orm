@@ -2942,7 +2942,7 @@ describe('QueryBuilder', () => {
     spy.mockRestore();
   });
 
-  test('limit of 0 limits results to 0',()=>{
+  test('limit of 0 limits results to 0', () => {
     const expected = 'select `e0`.`id` from `book2` as `e0` limit 0';
     const sql = orm.em.createQueryBuilder(Book2).select('id').limit(0).getFormattedQuery();
     expect(sql).toBe(expected);
