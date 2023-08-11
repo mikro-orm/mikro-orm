@@ -70,7 +70,7 @@ export class MetadataValidator {
       return (meta.schema ? '.' + meta.schema : '') + tableName;
     }));
 
-    if (duplicateTableNames.length > 0 && checkDuplicateTableNames) {
+    if (duplicateTableNames.length > 0 && checkDuplicateTableNames && duplicateEntityStrategy === 'forbidden') {
       throw MetadataError.duplicateEntityDiscovered(duplicateTableNames, 'table names');
     }
 

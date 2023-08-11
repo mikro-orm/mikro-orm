@@ -41,6 +41,7 @@ import { EntityComparator } from './EntityComparator';
 import type { Type } from '../types/Type';
 import type { MikroORM } from '../MikroORM';
 
+
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
   static readonly DEFAULTS: MikroORMOptions = {
@@ -56,6 +57,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       checkDuplicateTableNames: true,
       alwaysAnalyseProperties: true,
       disableDynamicFileAccess: false,
+      duplicateEntityStrategy: 'forbidden',
     },
     strict: false,
     validate: false,
@@ -490,6 +492,8 @@ export interface PoolConfig {
   Promise?: any;
 }
 
+export type DuplicateEntityStrategy = 'forbidden' | 'keep' | 'replace';
+
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {
   entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
   entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
@@ -503,6 +507,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     alwaysAnalyseProperties?: boolean;
     disableDynamicFileAccess?: boolean;
     getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
+    duplicateEntityStrategy?: DuplicateEntityStrategy;
   };
   /** @deprecated type option will be removed in v6, use `defineConfig` exported from the driver package to define your ORM config */
   type?: keyof typeof Configuration.PLATFORMS;
