@@ -42,6 +42,13 @@ export class MariaDbConnection extends AbstractSqlConnection {
     ret.dateStrings = true;
     // @ts-ignore
     ret.checkDuplicate = false;
+    ret.typeCast = (field: any, next: any) => {
+      if (field.type === 'BLOB') {
+        return field.string('utf8');
+      }
+
+      return next();
+    };
 
     return ret;
   }

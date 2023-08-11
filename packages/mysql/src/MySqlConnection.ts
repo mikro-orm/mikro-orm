@@ -48,6 +48,13 @@ export class MySqlConnection extends AbstractSqlConnection {
 
     ret.supportBigNumbers = true;
     ret.dateStrings = true;
+    ret.typeCast = (field: any, next: any) => {
+      if (field.type === 'JSON') {
+        return field.string('utf8');
+      }
+
+      return next();
+    };
 
     return ret;
   }

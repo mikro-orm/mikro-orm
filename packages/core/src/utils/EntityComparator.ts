@@ -352,7 +352,10 @@ export class EntityComparator {
           lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
           lines.push(`  }`);
         }
-      } else if (prop.kind === ReferenceKind.EMBEDDED && prop.object && !this.platform.convertsJsonAutomatically()) {
+      } else if (((prop.kind === ReferenceKind.EMBEDDED && prop.object) || prop.customType instanceof JsonType) && !this.platform.convertsJsonAutomatically()) {
+        // We need to parse inside a try/catch block, mainly because the mapping is done in hydration layer and that might
+        // be also called from inside `em.create()` which can get the parsed data provided by user, as well as encoded data
+        // from the database.
         context.set('parseJsonSafe', parseJsonSafe);
         lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
         lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : parseJsonSafe(${propName(prop.fieldNames[0])});`);

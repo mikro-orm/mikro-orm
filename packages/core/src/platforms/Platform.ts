@@ -11,7 +11,7 @@ import {
   ArrayType, BigIntType, BlobType, Uint8ArrayType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
   TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType,
 } from '../types';
-import { parseJsonSafe, Utils } from '../utils/Utils';
+import { Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
 import type { MikroORM } from '../MikroORM';
 import type { TransformContext } from '../types/Type';
@@ -328,7 +328,7 @@ export abstract class Platform {
   }
 
   convertsJsonAutomatically(): boolean {
-    return true;
+    return false;
   }
 
   convertJsonToDatabaseValue(value: unknown, context?: TransformContext): unknown {
@@ -336,7 +336,9 @@ export abstract class Platform {
   }
 
   convertJsonToJSValue(value: unknown): unknown {
-    return parseJsonSafe(value);
+    // parsing is implemented in the result mapper layer, so we have the values
+    // parsed without the need to hydrate entity (e.g. when using `qb.execute()`)
+    return value;
   }
 
   getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {

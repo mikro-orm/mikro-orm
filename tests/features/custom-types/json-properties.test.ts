@@ -94,6 +94,24 @@ describe.each(Utils.keys(options))('JSON properties [%s]',  type => {
     expect(mock).not.toBeCalled();
   });
 
+  test('em.flush() with numeric string', async () => {
+    orm.em.create(User, { value: '123' });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const res = await orm.em.findOneOrFail(User, { value: '123' });
+    expect(res.value).toBe('123');
+
+    const mock = mockLogger(orm);
+    await orm.em.flush();
+    expect(mock).not.toBeCalled();
+    res.value = 456;
+    await orm.em.flush();
+
+    const res2 = await orm.em.findOneOrFail(User, { value: 456 });
+    expect(res2.value).toBe(456);
+  });
+
   test('em.flush() with various JSON values', async () => {
     orm.em.create(User, { value: { foo: 'test' } });
     await orm.em.flush();

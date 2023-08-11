@@ -194,7 +194,7 @@ export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite'
     propagateToOneOwner: false,
     forceUndefined: true,
     logger: i => i,
-    migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
+    migrations: { path: BASE_DIR + '/../temp/migrations-sqlite', snapshot: false },
     extensions: [Migrator, SeedManager, EntityGenerator],
   });
   await orm.schema.refreshDatabase();
