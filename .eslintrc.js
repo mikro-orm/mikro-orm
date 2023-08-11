@@ -66,7 +66,9 @@ module.exports = {
       asyncArrow: 'always',
     }],
     "@typescript-eslint/space-infix-ops": "error",
+    '@typescript-eslint/comma-spacing': 'error',
     'arrow-parens': ['error', 'as-needed'],
+    'arrow-spacing': 'error',
     "space-infix-ops": "off",
     'no-var': 'error',
     'prefer-const': 'error',
@@ -149,7 +151,6 @@ module.exports = {
     'brace-style': ['error', '1tbs', { allowSingleLine: true }],
     'keyword-spacing': ['error', { before: true, after: true }],
     'space-in-parens': ['error', 'never'],
-    'comma-spacing': 'error',
   },
   'settings': {}
 };
