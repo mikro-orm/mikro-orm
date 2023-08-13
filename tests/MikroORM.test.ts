@@ -58,6 +58,8 @@ describe('MikroORM', () => {
     const ormInitCommandPromise = MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'], discovery: { checkDuplicateEntities: false } });
 
     await expect(ormInitCommandPromise).resolves.toBeTruthy();
+
+    await ormInitCommandPromise.then(orm => orm.close());
   });
 
   test('should throw when only abstract entities were discovered', async () => {
