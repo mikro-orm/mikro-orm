@@ -120,7 +120,7 @@
     "husky": "8.0.3",
     "jest": "29.6.2",
     "lerna": "6.6.2",
-    "lint-staged": "13.2.3",
+    "lint-staged": "14.0.0",
     "mongodb": "5.7.0",
     "mongodb-memory-server": "^8.12.2",
     "node-gyp": "^9.3.1",
