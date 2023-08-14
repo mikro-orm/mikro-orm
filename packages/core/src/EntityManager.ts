@@ -442,6 +442,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * });
    * ```
    *
+   * The options also support an `includeCount` (true by default) option. If set to false, the `totalCount` is not
+   * returned as part of the cursor. This is useful for performance reason, when you don't care about the total number
+   * of pages.
+   *
    * The `Cursor` object provides following interface:
    *
    * ```ts
@@ -451,7 +455,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    *     User { ... },
    *     User { ... },
    *   ],
-   *   totalCount: 50,
+   *   totalCount: 50, // not included if count is excluded
    *   startCursor: 'WzRd',
    *   endCursor: 'WzZd',
    *   hasPrevPage: true,
@@ -467,14 +471,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext(false);
     entityName = Utils.className(entityName);
     options.overfetch ??= true;
+    options.includeCount ??= true;
 
     if (Utils.isEmpty(options.orderBy)) {
       throw new Error('Explicit `orderBy` option required');
     }
 
-    const [entities, count] = await em.findAndCount(entityName, where, options);
+    if (options.includeCount) {
+      const [entities, count] = await em.findAndCount(entityName, where, options);
+      return new Cursor<Entity, Hint, Fields>(entities, options, this.metadata.get(entityName), count);
+    }
 
-    return new Cursor<Entity, Hint, Fields>(entities, count, options, this.metadata.get(entityName));
+    const entities = await em.find(entityName, where, options);
+    return new Cursor<Entity, Hint, Fields>(entities, options, this.metadata.get(entityName));
   }
 
   /**
