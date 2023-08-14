@@ -672,6 +672,12 @@ exports[`simple cursor based pagination (postgresql) using \`last\` and \`before
 ]
 `;
 
+exports[`simple cursor based pagination (sqlite) exclude count when \`includeCount\` is set to false 1`] = `
+[
+  "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
+]
+`;
+
 exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
