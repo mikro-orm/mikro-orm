@@ -164,4 +164,80 @@ describe('MetadataValidator', () => {
     expect(() => storage.get('Test')).toThrowError('Metadata for entity Test not found');
   });
 
+  describe('Duplicate Entity Strategy', () => {
+    test('allows duplicate classNames when "checkDuplicateEntities" is "false"', async () => {
+      // Arrange
+      const properties: Dictionary = {
+        id: { reference: 'scalar', primary: true, name: 'id', type: 'number' },
+        name: { reference: 'scalar', name: 'name', type: 'string' },
+        age: { reference: 'scalar', name: 'age', type: 'string' },
+      };
+      const schema1 = EntitySchema.fromMetadata({
+        name: 'Foo1',
+        tableName: 'foo',
+        properties,
+      } as any);
+      const schema2 = EntitySchema.fromMetadata({
+        name: 'Foo1',
+        tableName: 'foo2',
+        properties,
+      } as any);
+
+      // Act
+      const validateDiscoveryCommand = () => validator.validateDiscovered([schema1.meta, schema2.meta], true, true, false);
+
+      // Assert
+      expect(validateDiscoveryCommand).not.toThrowError();
+    });
+
+    test('allows duplicate tableNames when "checkDuplicateTableNames" is true but "checkDuplicateEntities" is false', async () => {
+      // Arrange
+      const properties: Dictionary = {
+        id: { reference: 'scalar', primary: true, name: 'id', type: 'number' },
+        name: { reference: 'scalar', name: 'name', type: 'string' },
+        age: { reference: 'scalar', name: 'age', type: 'string' },
+      };
+      const schema1 = EntitySchema.fromMetadata({
+        name: 'Foo1',
+        tableName: 'foo',
+        properties,
+      } as any);
+      const schema2 = EntitySchema.fromMetadata({
+        name: 'Foo1',
+        tableName: 'foo2',
+        properties,
+      } as any);
+
+      // Act
+      const validateDiscoveryCommand = () => validator.validateDiscovered([schema1.meta, schema2.meta], true, true, false);
+
+      // Assert
+      expect(validateDiscoveryCommand).not.toThrowError();
+    });
+
+    test('throws an error when duplicate entity is not provided', async () => {
+      // Arrange
+      const properties: Dictionary = {
+        id: { reference: 'scalar', primary: true, name: 'id', type: 'number' },
+        name: { reference: 'scalar', name: 'name', type: 'string' },
+        age: { reference: 'scalar', name: 'age', type: 'string' },
+      };
+      const schema1 = EntitySchema.fromMetadata({
+        name: 'Foo1',
+        tableName: 'foo',
+        properties,
+      } as any);
+      const schema2 = EntitySchema.fromMetadata({
+        name: 'Foo1',
+        tableName: 'foo2',
+        properties,
+      } as any);
+
+      // Act
+      const validateDiscoveryCommand = () => validator.validateDiscovered([schema1.meta, schema2.meta], true, true);
+
+      // Assert
+      expect(validateDiscoveryCommand).toThrowError('Duplicate entity names are not allowed: Foo1');
+    });
+  });
 });

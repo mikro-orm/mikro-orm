@@ -11,7 +11,7 @@ jest.mock('knex', () => ({ knex }));
 
 (global as any).process.env.FORCE_COLOR = 0;
 
-import { Configuration, EntityManager, MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
+import { Configuration, Dictionary, EntityManager, EntitySchema, MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
 import fs from 'fs-extra';
 import { BASE_DIR } from './helpers';
 import { Author, Test } from './entities';
@@ -52,6 +52,14 @@ describe('MikroORM', () => {
 
   test('should throw when multiple entities with same file name discovered', async () => {
     await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'] })).rejects.toThrowError('Duplicate entity names are not allowed: Dup1, Dup2');
+  });
+
+  test('should NOT throw when multiple entities with same file name discovered ("checkDuplicateEntities" false)', async () => {
+    const ormInitCommandPromise = MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'], discovery: { checkDuplicateEntities: false } });
+
+    await expect(ormInitCommandPromise).resolves.toBeTruthy();
+
+    await ormInitCommandPromise.then(orm => orm.close());
   });
 
   test('should throw when only abstract entities were discovered', async () => {
