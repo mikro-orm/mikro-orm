@@ -57,7 +57,6 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
 
   readonly hasPrevPage: boolean;
   readonly hasNextPage: boolean;
-  readonly totalCount: number | null;
 
   private readonly definition: (readonly [EntityKey<Entity>, QueryOrder])[];
 
@@ -65,7 +64,7 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
     readonly items: Loaded<Entity, Hint, Fields>[],
     options: FindByCursorOptions<Entity, Hint, Fields>,
     meta: EntityMetadata<Entity>,
-    totalCount?: number | undefined,
+    readonly totalCount?: number,
   ) {
     const { first, last, before, after, orderBy, overfetch } = options;
     const limit = first || last;
@@ -73,7 +72,6 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
     const hasMorePages = !!overfetch && limit != null && items.length > limit;
     this.hasPrevPage = before || after ? true : (isLast && hasMorePages);
     this.hasNextPage = !(isLast && !before && !after) && hasMorePages;
-    this.totalCount = totalCount ?? null;
 
     if (hasMorePages) {
       if (isLast) {

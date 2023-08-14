@@ -455,7 +455,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    *     User { ... },
    *     User { ... },
    *   ],
-   *   totalCount: 50, // not included if count is excluded
+   *   totalCount: 50, // not included if `includeCount: false`
    *   startCursor: 'WzRd',
    *   endCursor: 'WzZd',
    *   hasPrevPage: true,
