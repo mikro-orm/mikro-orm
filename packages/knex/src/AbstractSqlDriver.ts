@@ -488,10 +488,16 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       if (options.upsert) {
         /* istanbul ignore next */
         const uniqueFields = Utils.isPlainObject(where) ? Utils.keys(where) as EntityKey<T>[] : meta!.primaryKeys;
+        const uniqueFieldsContainPK = uniqueFields.filter(value => meta!.primaryKeys.includes(value)).length > 0;
+        const pk = pks.map(pk => Utils.extractPK<T>(data[pk] || where, meta)!) as Primary<T>[];
+        let mergeFields = [] as Field<T>[];
+        if (uniqueFieldsContainPK || pk.filter(value => value !== null).length === 0) {
+          mergeFields = Utils.keys(data as T).filter(f => !uniqueFields.includes(f as EntityKey<T>)) as Field<T>[];
+        }
         /* istanbul ignore next */
         qb.insert(data as T)
           .onConflict(uniqueFields.map(p => meta?.properties[p]?.fieldNames[0] ?? p))
-          .merge(Utils.keys(data as T).filter(f => !uniqueFields.includes(f as EntityKey<T>)) as Field<T>[])
+          .merge(mergeFields)
           .returning(meta?.comparableProps.filter(p => !p.lazy && !p.embeddable && !(p.name in data)).map(p => p.name) ?? '*');
       } else {
         qb.update(data).where(where);

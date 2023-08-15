@@ -42,7 +42,7 @@ test('GH issue 4602', async () => {
   await orm.em.upsert(User, user2, { onConflictFields: ['email'] });
 
   expect(mock.mock.calls).toEqual([
-    ['[query] insert into `user` (`email`, `id`) values (\'test@test.com\', 123) on conflict (`email`) do update set `id` = excluded.`id`'],
-    ['[query] insert into `user` (`email`, `id`) values (\'test@test.com\', 456) on conflict (`email`) do update set `id` = excluded.`id`'],
+    ['[query] insert into `user` (`email`, `id`) values (\'test@test.com\', 123) on conflict (`email`) do nothing'],
+    ['[query] insert into `user` (`email`, `id`) values (\'test@test.com\', 456) on conflict (`email`) do nothing'],
   ]);
 });
