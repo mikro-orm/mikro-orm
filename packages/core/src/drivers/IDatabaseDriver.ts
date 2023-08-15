@@ -151,6 +151,7 @@ export interface NativeInsertUpdateOptions<T> {
   schema?: string;
   /** `nativeUpdate()` only option */
   upsert?: boolean;
+  onConflictFields?: string[];
 }
 
 export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOptions<T> {

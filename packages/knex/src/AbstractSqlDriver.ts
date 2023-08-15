@@ -488,6 +488,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       if (options.upsert) {
         /* istanbul ignore next */
         const uniqueFields = Utils.isPlainObject(where) ? Utils.keys(where) as EntityKey<T>[] : meta!.primaryKeys;
+
         /* istanbul ignore next */
         qb.insert(data as T)
           .onConflict(uniqueFields.map(p => meta?.properties[p]?.fieldNames[0] ?? p))

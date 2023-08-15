@@ -666,10 +666,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    const unique = meta.props.filter(p => p.unique).map(p => p.name);
+    const unique = options.onConflictFields || meta.props.filter(p => p.unique).map(p => p.name);
     const propIndex = unique.findIndex(p => data![p] != null);
 
-    if (where == null) {
+    if (where == null || options.onConflictFields) {
       if (propIndex >= 0) {
         where = { [unique[propIndex]]: data[unique[propIndex]] } as FilterQuery<Entity>;
       } else if (meta.uniques.length > 0) {
