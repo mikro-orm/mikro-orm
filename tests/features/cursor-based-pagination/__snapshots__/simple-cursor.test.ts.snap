@@ -1,5 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`simple cursor based pagination (better-sqlite) exclude count when \`includeCount\` is set to false 1`] = `
+[
+  "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
+]
+`;
+
 exports[`simple cursor based pagination (better-sqlite) using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
@@ -501,6 +507,12 @@ exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (i
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 50 order by \`u0\`.\`_id\` asc limit 2",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
+]
+`;
+
+exports[`simple cursor based pagination (postgresql) exclude count when \`includeCount\` is set to false 1`] = `
+[
+  "[query] select "u0".* from "user" as "u0" order by "u0"."_id" asc limit 4",
 ]
 `;
 
