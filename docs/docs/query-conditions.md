@@ -79,8 +79,8 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 The `$re` operator takes a string as input value, and by default uses the case-sensitive operator. If you would like to use a `RegExp` object, i.e. to be able to set flags, then search directly on the field name without using the operator:
 
 ```ts
-const res = await orm.em.find(Painter, {
-  lastName: /m[oa]net/i        // or new RegExp('m[oa]net', 'i')
+const res = await em.find(Painter, {
+  lastName: /m[oa]net/i, // or `new RegExp('m[oa]net', 'i')`
 });
 ```
 
