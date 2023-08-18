@@ -2085,7 +2085,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": ^5.7.14
     "@mikro-orm/knex": ~5.7.14
-    better-sqlite3: 8.5.0
+    better-sqlite3: 8.5.1
     fs-extra: 11.1.1
     sqlstring-sqlite: 0.1.1
   peerDependencies:
@@ -2362,7 +2362,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": ^5.7.14
     "@mikro-orm/knex": ~5.7.14
-    pg: 8.11.2
+    pg: 8.11.3
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
     "@mikro-orm/entity-generator": ^5.0.0
@@ -4150,14 +4150,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:8.5.0":
-  version: 8.5.0
-  resolution: "better-sqlite3@npm:8.5.0"
+"better-sqlite3@npm:8.5.1":
+  version: 8.5.1
+  resolution: "better-sqlite3@npm:8.5.1"
   dependencies:
     bindings: ^1.5.0
     node-gyp: latest
     prebuild-install: ^7.1.0
-  checksum: 98243cb08a410fad0b5c443410428c8ea00376a4eb7d2c9a8a5a695970bc7a2a4007221930460939594d728e7d6bcb1889f46ec11a3bbb2257b996c80fbaacb1
+  checksum: ba06e7ae5d150f8d9dc77daff6299689476337b820fd82dae5bd844d39009c605e595758145b453362dc68e37041c285ae4cc73d63028b9e4a085b5ad2d3a2c4
   languageName: node
   linkType: hard
 
@@ -10450,9 +10450,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg@npm:8.11.2":
-  version: 8.11.2
-  resolution: "pg@npm:8.11.2"
+"pg@npm:8.11.3":
+  version: 8.11.3
+  resolution: "pg@npm:8.11.3"
   dependencies:
     buffer-writer: 2.0.0
     packet-reader: 1.0.0
@@ -10470,7 +10470,7 @@ __metadata:
   peerDependenciesMeta:
     pg-native:
       optional: true
-  checksum: dfea8a2269d500dee8c17291207e5a25897163480037beb7a59be35f51e33b519c297c943ea6898b285d6a74a0d661901dc9cff2e587cc4be0bbf09b833a71a5
+  checksum: 8af9468b8969fa0d73a6b349216c8cbc953d938fcae5594f2d24043060e9226a072c8085fc4230172b5576fcab4c39c8563c655f271dc2a9209b6ad5370cafe5
   languageName: node
   linkType: hard
 

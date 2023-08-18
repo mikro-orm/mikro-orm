@@ -59,7 +59,7 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$ne`        | not equal        | Matches all values that are not equal to a specified value.                                 |
 | `$nin`       | not contains     | Matches none of the values specified in an array.                                           |
 | `$like`      | like             | Uses LIKE operator                                                                          |
-| `$re`        | regexp           | Uses REGEXP operator                                                                        |
+| `$re`        | regexp           | Uses REGEXP operator. See info [below](#regular-expressions)                                |
 | `$fulltext`  | full text        | A driver specific full text search function. See requirements [below](#full-text-searching) |
 | `$ilike`     | ilike            | (postgres only)                                                                             |
 | `$overlap`   | &&               | (postgres only)                                                                             |
@@ -73,6 +73,16 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$and`   | Joins query clauses with a logical AND returns all documents that match the conditions of both clauses. |
 | `$not`   | Inverts the effect of a query expression and returns documents that do not match the query expression.  |
 | `$or`    | Joins query clauses with a logical OR returns all documents that match the conditions of either clause. |
+
+## Regular Expressions
+
+The `$re` operator takes a string as input value, and by default uses the case-sensitive operator. If you would like to use a `RegExp` object, i.e. to be able to set flags, then search directly on the field name without using the operator:
+
+```ts
+const res = await em.find(Painter, {
+  lastName: /m[oa]net/i, // or `new RegExp('m[oa]net', 'i')`
+});
+```
 
 ## Full text searching
 
