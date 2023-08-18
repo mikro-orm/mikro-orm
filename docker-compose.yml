@@ -2,7 +2,7 @@ version: "3.4"
 
 services:
   mongo:
-    image: mongo:6.0
+    image: mongo:7.0
     expose:
       - 27017
     ports:
