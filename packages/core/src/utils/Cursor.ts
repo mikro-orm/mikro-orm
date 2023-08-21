@@ -62,9 +62,9 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
 
   constructor(
     readonly items: Loaded<Entity, Hint, Fields>[],
-    readonly totalCount: number,
     options: FindByCursorOptions<Entity, Hint, Fields>,
     meta: EntityMetadata<Entity>,
+    readonly totalCount?: number,
   ) {
     const { first, last, before, after, orderBy, overfetch } = options;
     const limit = first || last;

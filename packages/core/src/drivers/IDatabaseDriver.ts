@@ -133,6 +133,7 @@ export interface FindOptions<T, P extends string = never, F extends string = nev
 }
 
 export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = never> extends Omit<FindOptions<T, P, F>, 'limit' | 'offset'> {
+  includeCount?: boolean;
 }
 
 export interface FindOneOptions<T extends object, P extends string = never, F extends string = never> extends Omit<FindOptions<T, P, F>, 'limit' | 'lockMode'> {
