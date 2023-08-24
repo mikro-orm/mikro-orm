@@ -2279,7 +2279,7 @@ __metadata:
     "@mikro-orm/core": ^5.7.14
     "@mikro-orm/mongodb": ~5.7.14
     fs-extra: 11.1.1
-    mongodb: 5.8.0
+    mongodb: 5.8.1
     umzug: 3.3.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -2315,7 +2315,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": ^5.7.14
     bson: ^5.4.0
-    mongodb: 5.8.0
+    mongodb: 5.8.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
     "@mikro-orm/entity-generator": ^5.0.0
@@ -2402,7 +2402,7 @@ __metadata:
     "@types/fs-extra": 11.0.1
     "@types/jest": 29.5.4
     "@types/mysql2": "https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
-    "@types/node": 20.5.3
+    "@types/node": 20.5.4
     "@types/pg": 8.10.2
     "@types/sqlstring": 2.3.0
     "@types/uuid": 9.0.2
@@ -2420,7 +2420,7 @@ __metadata:
     jest: 29.6.3
     lerna: 6.6.2
     lint-staged: 14.0.1
-    mongodb: 5.8.0
+    mongodb: 5.8.1
     mongodb-memory-server: ^8.12.2
     node-gyp: ^9.3.1
     rimraf: 5.0.1
@@ -3371,10 +3371,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.5.3":
-  version: 20.5.3
-  resolution: "@types/node@npm:20.5.3"
-  checksum: fe67a0fd7402218bdf91523a2b1c2e41d619f7294b1a471e0a778b8bc7bb3fcf291aed12041bcbe9622d50a3d1295a9adea0e7e19bb9386a246bf66071404721
+"@types/node@npm:20.5.4":
+  version: 20.5.4
+  resolution: "@types/node@npm:20.5.4"
+  checksum: 18de76c990e1c298183661cfc7cf16c9384531538c8090cc27bc3cab801e7c46b9f6943591ab0433955dd57961601684cc0fb19ba2deee9609e137c91afd2e25
   languageName: node
   linkType: hard
 
@@ -9289,9 +9289,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:5.8.0":
-  version: 5.8.0
-  resolution: "mongodb@npm:5.8.0"
+"mongodb@npm:5.8.1":
+  version: 5.8.1
+  resolution: "mongodb@npm:5.8.1"
   dependencies:
     "@mongodb-js/saslprep": ^1.1.0
     bson: ^5.4.0
@@ -9317,7 +9317,7 @@ __metadata:
       optional: true
     snappy:
       optional: true
-  checksum: 48e552a210f2666a13766a1029bde36e961573317f5972d48b5b99f0035bcdc36d7a4154be4ae68a1aefe0aac2b682395196d5a20a0da14dbd2ebbce39b4f2f8
+  checksum: da8fc05952266f9b636000d74e6c8889306fc287922651526029a61ede3c75f793edb504a02c1f64fec9fea9aa17323bf95eb4902776778a1def5eba07b32b72
   languageName: node
   linkType: hard
 
