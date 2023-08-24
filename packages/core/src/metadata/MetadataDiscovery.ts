@@ -316,6 +316,8 @@ export class MetadataDiscovery {
           .forEach(k => delete (prop as Dictionary)[k]);
       });
 
+    delete (copy as Dictionary).checks;
+
     // base entity without properties might not have path, but nothing to cache there
     if (meta.path) {
       await this.cache.set(meta.className + extname(meta.path), copy, meta.path);

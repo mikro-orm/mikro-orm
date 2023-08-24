@@ -1,5 +1,7 @@
 import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
+import { rm } from 'fs-extra';
 
 @Entity()
 @Check<FooEntity>({ expression: columns => `${columns.price} >= 0` })
@@ -29,6 +31,70 @@ describe('check constraint [mysql8]', () => {
       driver: MySqlDriver,
       port: 3308,
     });
+
+    const diff = await orm.schema.getCreateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('mysql8-check-constraint-decorator');
+
+    await orm.close();
+  });
+
+  test('GH #4505', async () => {
+    await rm(`${__dirname}/temp`, { recursive: true, force: true });
+
+    const orm0 = await MikroORM.init({
+      entities: [FooEntity],
+      dbName: `mikro_orm_test_checks`,
+      driver: MySqlDriver,
+      port: 3308,
+      metadataProvider: TsMorphMetadataProvider,
+      cache: { options: { cacheDir: `${__dirname}/temp` } },
+    });
+    const meta0 = orm0.getMetadata().get(FooEntity.name);
+    expect(meta0.checks).toEqual([
+      {
+        expression: 'price2 >= 0',
+        property: 'price2',
+        name: 'foo_entity_price2_check',
+      },
+      {
+        property: 'price3',
+        expression: 'price3 >= 0',
+        name: 'foo_entity_price3_check',
+      },
+      {
+        expression: 'price >= 0',
+        property: undefined,
+        name: 'foo_entity_check',
+      },
+    ]);
+    await orm0.close(true);
+
+    const orm = await MikroORM.init({
+      entities: [FooEntity],
+      dbName: `mikro_orm_test_checks`,
+      driver: MySqlDriver,
+      port: 3308,
+      metadataProvider: TsMorphMetadataProvider,
+      cache: { options: { cacheDir: `${__dirname}/temp` } },
+    });
+    const meta = orm.getMetadata().get(FooEntity.name);
+    expect(meta.checks).toEqual([
+      {
+        expression: 'price2 >= 0',
+        property: 'price2',
+        name: 'foo_entity_price2_check',
+      },
+      {
+        property: 'price3',
+        expression: 'price3 >= 0',
+        name: 'foo_entity_price3_check',
+      },
+      {
+        expression: 'price >= 0',
+        property: undefined,
+        name: 'foo_entity_check',
+      },
+    ]);
 
     const diff = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-decorator');

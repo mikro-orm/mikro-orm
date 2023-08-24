@@ -1,5 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`check constraint [mysql8] GH #4505: mysql8-check-constraint-decorator 1`] = `
+"create table \`foo_entity\` (\`id\` int unsigned not null auto_increment primary key, \`price\` int not null, \`price2\` int not null, \`price3\` int not null, constraint foo_entity_price2_check check (price2 >= 0), constraint foo_entity_price3_check check (price3 >= 0), constraint foo_entity_check check (price >= 0)) default character set utf8mb4 engine = InnoDB;
+
+"
+`;
+
 exports[`check constraint [mysql8] check constraint diff [mysql8]: mysql8-check-constraint-diff-1 1`] = `
 "create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`priceColumn\` int not null, constraint foo check (priceColumn >= 0)) default character set utf8mb4 engine = InnoDB;
 
