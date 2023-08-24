@@ -3,6 +3,7 @@
 /data
 /coverage
 /temp
+/tests/**/temp
 /tests/generated-entities
 /.idea
 /.vscode
