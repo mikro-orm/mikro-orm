@@ -176,12 +176,13 @@ export class QueryBuilderHelper {
     const pivotMeta = this.metadata.find(prop.pivotEntity)!;
     const ret = {
       [`${ownerAlias}.${prop.name}#${pivotAlias}`]: {
-        prop, type, cond, ownerAlias,
+        prop, type, ownerAlias,
         alias: pivotAlias,
         inverseAlias: alias,
         joinColumns: prop.joinColumns,
         inverseJoinColumns: prop.inverseJoinColumns,
         primaryKeys: prop.referencedColumnNames,
+        cond: {},
         table: pivotMeta.tableName,
         schema: this.driver.getSchemaName(pivotMeta),
         path: path.endsWith('[pivot]') ? path : `${path}[pivot]`,
@@ -193,7 +194,7 @@ export class QueryBuilderHelper {
     }
 
     const prop2 = prop.owner ? pivotMeta.relations[1] : pivotMeta.relations[0];
-    ret[`${pivotAlias}.${prop2.name}#${alias}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
+    ret[`${pivotAlias}.${prop2.name}#${alias}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type, cond);
     ret[`${pivotAlias}.${prop2.name}#${alias}`].path = path;
 
     return ret;
