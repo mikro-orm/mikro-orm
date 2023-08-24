@@ -1196,11 +1196,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Hint extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity> = {} as FilterQuery<Entity>, options: CountOptions<Entity, Hint> = {}): Promise<number> {
+    options = { ...options };
     const em = this.getContext(false);
     entityName = Utils.className(entityName);
     where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read') as FilterQuery<Entity>;
     options.populate = em.preparePopulate(entityName, options) as unknown as Populate<Entity>;
     em.validator.validateParams(where);
+    delete (options as FindOptions<Entity>).orderBy;
 
     const cached = await em.tryCache<Entity, number>(entityName, options.cache, [entityName, 'em.count', options, where]);
 
