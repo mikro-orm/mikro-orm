@@ -1,8 +1,12 @@
-import { MikroORM, Collection, Utils, Ref, Entity, PrimaryKey, Property, OneToMany, ManyToMany, ManyToOne, Enum, Reference, SqliteDriver, QueryOrder, Unique, PrimaryKeyProp, helper } from '@mikro-orm/sqlite';
-import { PublisherType } from './entities';
+import { MikroORM, Collection, Utils, Ref, Entity, PrimaryKey, Property, OneToMany, ManyToMany, ManyToOne, Enum, ref, QueryOrder, PrimaryKeyProp, helper } from '@mikro-orm/sqlite';
+
+enum PublisherType {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
 
 @Entity()
-export class Author {
+class Author {
 
   @PrimaryKey()
   id!: number;
@@ -21,10 +25,10 @@ export class Author {
   friends = new Collection<Author>(this);
 
   // Inverse side exists
-  @ManyToMany(() => Author, author => author.buddiesInverse)
+  @ManyToMany(() => Author)
   buddies = new Collection<Author>(this);
 
-  @ManyToMany(() => Author)
+  @ManyToMany(() => Author, author => author.buddies)
   buddiesInverse = new Collection<Author>(this);
 
   @OneToMany(() => Chat, chat => chat.owner)
@@ -41,7 +45,7 @@ export class Author {
 }
 
 @Entity()
-export class Book {
+class Book {
 
   @PrimaryKey()
   id!: number;
@@ -49,10 +53,10 @@ export class Book {
   @Property()
   title: string;
 
-  @ManyToOne(() => Author)
+  @ManyToOne(() => Author, { ref: true })
   author: Ref<Author>;
 
-  @ManyToOne(() => Publisher)
+  @ManyToOne(() => Publisher, { ref: true, nullable: true })
   publisher!: Ref<Publisher> | null;
 
   constructor({ id, title, author }: { id?: number; title: string; author: Author | Ref<Author> }) {
@@ -60,13 +64,13 @@ export class Book {
       this.id = id;
     }
     this.title = title;
-    this.author = Reference.create(author);
+    this.author = ref(author);
   }
 
 }
 
 @Entity()
-export class Publisher {
+class Publisher {
 
   @PrimaryKey()
   id!: number;
@@ -90,14 +94,13 @@ export class Publisher {
 
 }
 
-@Unique({ properties: ['owner', 'recipient'] })
 @Entity()
-export class Chat {
+class Chat {
 
-  @ManyToOne(() => Author, { primary: true })
+  @ManyToOne(() => Author, { ref: true, primary: true })
   owner: Ref<Author>;
 
-  @ManyToOne(() => Author, { primary: true })
+  @ManyToOne(() => Author, { ref: true, primary: true })
   recipient: Ref<Author>;
 
   [PrimaryKeyProp]?: ['owner', 'recipient'];
@@ -106,19 +109,19 @@ export class Chat {
   messages: Collection<Message> = new Collection<Message>(this);
 
   constructor({ owner, recipient }: { owner: Author | Ref<Author>; recipient: Author | Ref<Author> }) {
-    this.owner = Reference.create(owner);
-    this.recipient = Reference.create(recipient);
+    this.owner = ref(owner);
+    this.recipient = ref(recipient);
   }
 
 }
 
 @Entity()
-export class Message {
+class Message {
 
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Chat)
+  @ManyToOne(() => Chat, { ref: true })
   chat!: Ref<Chat>;
 
   @Property()
@@ -129,7 +132,7 @@ export class Message {
       this.id = id;
     }
     if (chat) {
-      this.chat = Reference.create(chat);
+      this.chat = ref(chat);
     }
     this.content = content;
   }
@@ -137,62 +140,62 @@ export class Message {
 }
 
 async function populateDatabase(em: MikroORM['em']) {
-    const authors = [
-      new Author({ id : 1, name: 'a', email: 'a@a.com' }),
-      new Author({ id: 2, name: 'b', email: 'b@b.com' }),
-      new Author({ id: 3, name: 'c', email: 'c@c.com' }),
-      new Author({ id: 4, name: 'd', email:  'd@d.com' }),
-      new Author({ id: 5, name: 'e', email: 'e@e.com' }),
-    ];
-    authors[0].friends.add([authors[1], authors[3], authors[4]]);
-    authors[0].friends.add([authors[1], authors[3], authors[4]]);
-    authors[1].friends.add([authors[0]]);
-    authors[2].friends.add([authors[3]]);
-    authors[3].friends.add([authors[0], authors[2]]);
-    authors[4].friends.add([authors[0]]);
-    authors[0].buddies.add([authors[1], authors[3], authors[4]]);
-    authors[0].buddies.add([authors[1], authors[3], authors[4]]);
-    authors[1].buddies.add([authors[0]]);
-    authors[2].buddies.add([authors[3]]);
-    authors[3].buddies.add([authors[0], authors[2]]);
-    authors[4].buddies.add([authors[0]]);
-    em.persist(authors);
+  const authors = [
+    new Author({ id : 1, name: 'a', email: 'a@a.com' }),
+    new Author({ id: 2, name: 'b', email: 'b@b.com' }),
+    new Author({ id: 3, name: 'c', email: 'c@c.com' }),
+    new Author({ id: 4, name: 'd', email:  'd@d.com' }),
+    new Author({ id: 5, name: 'e', email: 'e@e.com' }),
+  ];
+  authors[0].friends.add([authors[1], authors[3], authors[4]]);
+  authors[0].friends.add([authors[1], authors[3], authors[4]]);
+  authors[1].friends.add([authors[0]]);
+  authors[2].friends.add([authors[3]]);
+  authors[3].friends.add([authors[0], authors[2]]);
+  authors[4].friends.add([authors[0]]);
+  authors[0].buddies.add([authors[1], authors[3], authors[4]]);
+  authors[0].buddies.add([authors[1], authors[3], authors[4]]);
+  authors[1].buddies.add([authors[0]]);
+  authors[2].buddies.add([authors[3]]);
+  authors[3].buddies.add([authors[0], authors[2]]);
+  authors[4].buddies.add([authors[0]]);
+  em.persist(authors);
 
-    const chats = [
-      new Chat({ owner: authors[0], recipient: authors[1] }),
-      new Chat({ owner: authors[0], recipient: authors[2] }),
-      new Chat({ owner: authors[0], recipient: authors[4] }),
-      new Chat({ owner: authors[2], recipient: authors[0] }),
-    ];
-    chats[0].messages.add([new Message({ content: 'A1' }), new Message({ content: 'A2' })]);
-    chats[1].messages.add([new Message({ content: 'B1' }), new Message({ content: 'B2' })]);
-    chats[3].messages.add([new Message({ content: 'C1' })]);
-    em.persist(chats);
+  const chats = [
+    new Chat({ owner: authors[0], recipient: authors[1] }),
+    new Chat({ owner: authors[0], recipient: authors[2] }),
+    new Chat({ owner: authors[0], recipient: authors[4] }),
+    new Chat({ owner: authors[2], recipient: authors[0] }),
+  ];
+  chats[0].messages.add([new Message({ content: 'A1' }), new Message({ content: 'A2' })]);
+  chats[1].messages.add([new Message({ content: 'B1' }), new Message({ content: 'B2' })]);
+  chats[3].messages.add([new Message({ content: 'C1' })]);
+  em.persist(chats);
 
-    const publishers = [
-      new Publisher({ id: 1, name: 'AAA' }),
-      new Publisher({ id: 2, name: 'BBB' }),
-    ];
-    em.persist(publishers);
+  const publishers = [
+    new Publisher({ id: 1, name: 'AAA' }),
+    new Publisher({ id: 2, name: 'BBB' }),
+  ];
+  em.persist(publishers);
 
-    const books = [
-      new Book({ id: 1, title: 'One', author: authors[0] }),
-      new Book({ id: 2, title: 'Two', author: authors[0] }),
-      new Book({ id: 3, title: 'Three', author: authors[1] }),
-      new Book({ id: 4, title: 'Four', author: authors[2] }),
-      new Book({ id: 5, title: 'Five', author: authors[2] }),
-      new Book({ id: 6, title: 'Six', author: authors[2] }),
-    ];
-    books[0].publisher = Reference.create(publishers[0]);
-    books[1].publisher = Reference.create(publishers[1]);
-    books[2].publisher = Reference.create(publishers[1]);
-    books[3].publisher = Reference.create(publishers[1]);
-    books[4].publisher = Reference.create(publishers[1]);
-    books[5].publisher = Reference.create(publishers[1]);
-    em.persist(books);
+  const books = [
+    new Book({ id: 1, title: 'One', author: authors[0] }),
+    new Book({ id: 2, title: 'Two', author: authors[0] }),
+    new Book({ id: 3, title: 'Three', author: authors[1] }),
+    new Book({ id: 4, title: 'Four', author: authors[2] }),
+    new Book({ id: 5, title: 'Five', author: authors[2] }),
+    new Book({ id: 6, title: 'Six', author: authors[2] }),
+  ];
+  books[0].publisher = ref(publishers[0]);
+  books[1].publisher = ref(publishers[1]);
+  books[2].publisher = ref(publishers[1]);
+  books[3].publisher = ref(publishers[1]);
+  books[4].publisher = ref(publishers[1]);
+  books[5].publisher = ref(publishers[1]);
+  em.persist(books);
 
-    await em.flush();
-    em.clear();
+  await em.flush();
+  em.clear();
 }
 
 function getReferences(em: MikroORM['em']): Ref<any>[] {
@@ -275,8 +278,8 @@ describe('Dataloader', () => {
     expect(res[5] instanceof Chat).toBe(true);
     expect(res[6] instanceof Chat).toBe(true);
     expect(res[7] instanceof Chat).toBe(true);
-    expect(JSON.stringify(Array.from(res).slice(0, 5).map((el => el.id)))).toBe(JSON.stringify([1, 2, 5, 3, 4]));
-    expect(JSON.stringify(Array.from(res).slice(5).map((({ owner: { id: ownerId }, recipient: { id: recipientId } }) => [ownerId, recipientId])))).toBe(JSON.stringify([[1, 2], [1, 3], [3, 1]]));
+    expect(Array.from(res).slice(0, 5).map((el => el.id))).toEqual([1, 2, 5, 3, 4]);
+    expect(Array.from(res).slice(5).map((({ owner: { id: ownerId }, recipient: { id: recipientId } }) => [ownerId, recipientId]))).toEqual([[1, 2], [1, 3], [3, 1]]);
   });
 
   test('Reference.load', async () => {
@@ -284,7 +287,7 @@ describe('Dataloader', () => {
     const refsB = getReferences(orm.em);
     await Promise.all(refsA.map(ref => ref.load()));
     await Promise.all(refsB.map(ref => ref.load({ dataloader: true })));
-    expect(JSON.stringify(refsA)).toBe(JSON.stringify(refsB));
+    expect(refsA).toEqual(refsB);
   });
 
   test('groupInversedOrMappedKeysByEntity', async () => {
@@ -292,7 +295,7 @@ describe('Dataloader', () => {
     expect(collections).toBeDefined();
 
     const map = Utils.groupInversedOrMappedKeysByEntity(collections);
-    expect(JSON.stringify(Array.from(map.keys()).map(({ className }) => className))).toEqual(JSON.stringify(['Book', 'Author', 'Chat', 'Message']));
+    expect(Array.from(map.keys()).map(({ className }) => className)).toEqual(['Book', 'Author', 'Chat', 'Message']);
     const mapObj = Array.from(map.entries()).reduce<Record<string, Record<string, number[]>>>((acc, [{ className }, filterMap]) => {
       acc[className] = Array.from(filterMap.entries()).reduce<Record<string, number[]>>((acc, [prop, set]) => {
         acc[prop] = Array.from(set.values());
@@ -300,12 +303,12 @@ describe('Dataloader', () => {
       }, {});
       return acc;
     }, {});
-    expect(JSON.stringify(mapObj)).toEqual(JSON.stringify({
-      Book: { author: [ 1, 2, 3 ], publisher: [ 1, 2 ] },
-      Author: { buddiesInverse: [1,2,3] },
-      Chat: { owner: [1, 2, 3 ] },
+    expect(mapObj).toEqual({
+      Book: { author: [1, 2, 3], publisher: [1, 2] },
+      Author: { buddiesInverse: [1, 2, 3] },
+      Chat: { owner: [1, 2, 3] },
       Message: { chat: [{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }] },
-    }));
+    });
   });
 
   test('getColBatchLoadFn', async () => {
@@ -314,7 +317,7 @@ describe('Dataloader', () => {
     const res = await refBatchLoadFn(collections);
     expect(res.length).toBe(collections.length);
     for (let i = 0; i < collections.length; i++) {
-      expect(JSON.stringify(res[i].map((el: any) => el.id))).toBe(JSON.stringify((await collections[i].loadItems()).map((el: any) => el.id)));
+      expect(res[i].map((el: any) => el.id)).toEqual((await collections[i].loadItems()).map((el: any) => el.id));
     }
   });
 
@@ -327,7 +330,7 @@ describe('Dataloader', () => {
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
       expect(colB.isInitialized()).toBe(true);
-      expect(JSON.stringify(colA.getItems().map(el => helper(el).getPrimaryKey()))).toBe(JSON.stringify(colB.getItems().map(el => helper(el).getPrimaryKey())));
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
     }
   });
 
