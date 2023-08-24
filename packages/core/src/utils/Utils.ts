@@ -1253,7 +1253,7 @@ export class Utils {
         when it calls ref.load it will automatically retrieve the entity
         from the cache (it will hit the cache because of the previous find query).
         This trick won't be possible for collections where we will be forced to map the results. */
-      return await Promise.all(refs.map(ref => ref.load({ dataloader: false })));
+      return Promise.all(refs.map(ref => ref.load({ dataloader: false })));
     };
   }
 
