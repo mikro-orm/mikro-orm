@@ -887,6 +887,8 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
 
   test('EM supports native insert/update/delete', async () => {
     orm.config.getLogger().setDebugMode(false);
+    const res0 = await orm.em.insertMany<IAuthor4>('Author4', []);
+    expect(res0).toEqual([]);
     const res1 = await orm.em.nativeInsert<IAuthor4>('Author4', { name: 'native name 1', email: 'native1@email.com' });
     expect(typeof res1).toBe('number');
 

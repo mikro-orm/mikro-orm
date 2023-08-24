@@ -1002,6 +1002,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       entityName = Utils.className(entityNameOrEntities as EntityName<Entity>);
     }
 
+    if (data.length === 0) {
+      return [];
+    }
+
     if (Utils.isEntity<Entity>(data[0])) {
       const meta = helper<Entity>(data[0]).__meta;
       const css = data.map(row => {
