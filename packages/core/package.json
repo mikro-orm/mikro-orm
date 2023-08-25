@@ -19,6 +19,7 @@
     "type": "git",
     "url": "git+ssh://git@github.com/mikro-orm/mikro-orm.git"
   },
+  "funding": "https://github.com/sponsors/b4nan",
   "keywords": [
     "orm",
     "mongo",
