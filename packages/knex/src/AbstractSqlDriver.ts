@@ -573,12 +573,29 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     if (coll.property.reference === ReferenceType.ONE_TO_MANY) {
       const cols = coll.property.referencedColumnNames;
       const qb = this.createQueryBuilder(coll.property.type, ctx, 'write')
-        .withSchema(this.getSchemaName(meta, options))
-        .update({ [coll.property.mappedBy]: pks })
+        .withSchema(this.getSchemaName(meta, options));
+
+      if (coll.getSnapshot() === undefined) {
+        if (coll.property.orphanRemoval) {
+          const kqb = qb.delete({ [coll.property.mappedBy]: pks })
+            .getKnexQuery()
+            .whereNotIn(cols, insertDiff as string[][]);
+
+          return this.rethrow(this.execute<any>(kqb));
+        }
+
+        const kqb = qb.update({ [coll.property.mappedBy]: null })
+          .getKnexQuery()
+          .whereNotIn(cols, insertDiff as string[][]);
+
+        return this.rethrow(this.execute<any>(kqb));
+      }
+
+      const kqb = qb.update({ [coll.property.mappedBy]: pks })
         .getKnexQuery()
         .whereIn(cols, insertDiff as string[][]);
 
-      return this.rethrow(this.execute<any>(qb));
+      return this.rethrow(this.execute<any>(kqb));
     }
 
     /* istanbul ignore next */
