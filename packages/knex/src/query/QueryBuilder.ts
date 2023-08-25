@@ -898,6 +898,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
         return;
       }
 
+      if (prop && prop.fieldNames.length > 1) {
+        ret.push(...prop.fieldNames.map(f => this.helper.mapper(f, this.type) as string));
+        return;
+      }
+
       ret.push(this.helper.mapper(field, this.type) as string);
     });
 

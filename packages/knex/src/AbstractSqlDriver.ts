@@ -935,7 +935,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     if (prop.reference === ReferenceType.EMBEDDED) {
       if (prop.object) {
-        ret.push(prop.fieldNames[0]);
+        ret.push(prop.name);
         return;
       }
 
@@ -951,14 +951,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return;
     }
 
-    if (prop.formula) {
-      ret.push(prop.name);
-      return;
-    }
-
-    if (prop.fieldNames) {
-      ret.push(...prop.fieldNames);
-    }
+    ret.push(prop.name);
   }
 
   protected buildFields<T extends object>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>, fields?: Field<T>[]): Field<T>[] {

@@ -2972,12 +2972,6 @@ describe('QueryBuilder', () => {
       'from `book2` as `b` ' +
       'left join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'left join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id` and `t`.`name` = \'t1\'');
-
-    // const sql2 = orm.em.createQueryBuilder(Book2, 'b')
-    //   .select('*')
-    //   .joinAndSelect('author', 'a', { 'a.born': new Date('1990-03-23') })
-    //   .getFormattedQuery();
-    // expect(sql2).toBe("select `b`.*, `a`.`id` as `a__id`, `a`.`created_at` as `a__created_at`, `a`.`updated_at` as `a__updated_at`, `a`.`name` as `a__name`, `a`.`email` as `a__email`, `a`.`age` as `a__age`, `a`.`terms_accepted` as `a__terms_accepted`, `a`.`optional` as `a__optional`, `a`.`identities` as `a__identities`, `a`.`born` as `a__born`, `a`.`born_time` as `a__born_time`, `a`.`favourite_book_uuid_pk` as `a__favourite_book_uuid_pk`, `a`.`favourite_author_id` as `a__favourite_author_id`, `b`.price * 1.19 as `price_taxed` from `book2` as `b` inner join `author2` as `a` on `b`.`author_id` = `a`.`id` and `a`.`born` = '1990-03-23'");
   });
 
   test('sub-query order-by fields are always fully qualified', () => {

@@ -168,6 +168,29 @@ describe('custom types [mysql]', () => {
     expect(meta.properties.extendedPoint.customType).toBeInstanceOf(ExtendedPointType);
   });
 
+  test('partial loading with custom types (gh issue 4622)', async () => {
+    const mock = mockLogger(orm, ['query']);
+
+    const loc = new Location();
+    const addr = new Address(loc);
+    loc.point = new Point(1.23, 4.56);
+    loc.extendedPoint = new Point(5.23, 9.56);
+    await orm.em.persistAndFlush(addr);
+    orm.em.clear();
+
+    const l1 = await orm.em.findOneOrFail(Location, loc, { fields: ['point', 'extendedPoint'] });
+    expect(l1.point).toBeInstanceOf(Point);
+    expect(l1.point).toMatchObject({ latitude: 1.23, longitude: 4.56 });
+    expect(l1.extendedPoint).toBeInstanceOf(Point);
+    expect(l1.extendedPoint).toMatchObject({ latitude: 5.23, longitude: 9.56 });
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `location` (`point`, `extended_point`) values (ST_PointFromText(?), ST_PointFromText(?))');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `address` (`location_id`) values (?)');
+    expect(mock.mock.calls[3][0]).toMatch('commit');
+    expect(mock.mock.calls[4][0]).toMatch('select `l0`.`id`, ST_AsText(`l0`.`point`) as `point`, ST_AsText(`l0`.`extended_point`) as `extended_point` from `location` as `l0` where `l0`.`id` = ? limit ?');
+    expect(mock.mock.calls).toHaveLength(5);
+  });
+
   test('create and update many records with custom types (gh issue 1625)', async () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
 
