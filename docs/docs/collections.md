@@ -36,6 +36,10 @@ for (const book of author.books) {
 // collection needs to be initialized before we can work with it
 author.books.add(book);
 console.log(author.books.contains(book)); // true
+console.log(author.books.exists(item => item === book)); // true
+console.log(author.books.findFirst(item => item === book)); // book
+console.log(author.books.map(item => item.title)); // array of book titles
+console.log(author.books.filter(item => item.title.startsWith('Foo'))); // array of books matching the callback
 author.books.remove(book);
 console.log(author.books.contains(book)); // false
 author.books.add(book);
@@ -283,4 +287,27 @@ const tags = await books[0].tags.matching({
 console.log(tags); // [BookTag, BookTag, BookTag]
 console.log(books[0].tags.isInitialized()); // true
 console.log(books[0].tags.getItems()); // [BookTag, BookTag, BookTag]
+```
+
+## Mapping Collection items
+
+The `Collection` class offers several handy helper methods to filter, map, or convert the collection items.
+
+[//]: # (TODO: document `map`, `filter`, `reduce` and other helpers)
+
+### `indexBy`
+
+When you want to convert the collection to a simple key-value dictionary, use the `indexBy()` method:
+
+```ts
+// given `user.settings` is `Collection<Option>`
+const settingsDictionary = user.settings.indexBy('key');
+// `settingsDictionary` is `Record<string, Option>`
+```
+
+The second argument lets you map to property values instead of the target entity:
+
+```ts
+const settingsDictionary = user.settings.indexBy('key', 'value');
+// `settingsDictionary` is `Record<string, string>`
 ```

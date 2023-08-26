@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import type { EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
+import type { Dictionary, EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
 import { helper, wrap } from './wrap';
 import { ReferenceType } from '../enums';
@@ -177,9 +177,8 @@ export class ArrayCollection<T extends object, O extends object> {
     return this.items.has(entity);
   }
 
-
   /**
-   * Extracts a slice of elements starting at position start to end (exclusive) of the collection.
+   * Extracts a slice of the collection items starting at position start to end (exclusive) of the collection.
    * If end is null it returns all elements from start to the end of the collection.
    */
   slice(start = 0, end?: number): T[] {
@@ -200,6 +199,100 @@ export class ArrayCollection<T extends object, O extends object> {
     }
 
     return items;
+  }
+
+  /**
+   * Tests for the existence of an element that satisfies the given predicate.
+   */
+  exists(cb: (item: T) => boolean): boolean {
+    for (const item of this.items) {
+      if (cb(item)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns the first element of this collection that satisfies the predicate.
+   */
+  findFirst(cb: (item: T, index: number) => boolean): T | undefined {
+    let index = 0;
+
+    for (const item of this.items) {
+      if (cb(item, index++)) {
+        return item;
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Extracts a subset of the collection items.
+   */
+  filter(cb: (item: T, index: number) => boolean): T[] {
+    const items: T[] = [];
+    let index = 0;
+
+    for (const item of this.items) {
+      if (cb(item, index++)) {
+        items.push(item);
+      }
+    }
+
+    return items;
+  }
+
+  /**
+   * Maps the collection items based on your provided mapper function.
+   */
+  map<R>(mapper: (item: T, index: number) => R): R[] {
+    const items: R[] = [];
+    let index = 0;
+
+    for (const item of this.items) {
+      items.push(mapper(item, index++));
+    }
+
+    return items;
+  }
+
+  /**
+   * Maps the collection items based on your provided mapper function to a single object.
+   */
+  reduce<R>(cb: (obj: R, item: T, index: number) => R, initial = {} as R): R {
+    let index = 0;
+
+    for (const item of this.items) {
+      initial = cb(initial, item, index++);
+    }
+
+    return initial;
+  }
+
+  /**
+   * Maps the collection items to a dictionary, indexed by the key you specify.
+   * If there are more items with the same key, only the first one will be present.
+   */
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1): Record<T[K1], T>;
+
+  /**
+   * Maps the collection items to a dictionary, indexed by the key you specify.
+   * If there are more items with the same key, only the first one will be present.
+   */
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey: K2): Record<T[K1], T[K2]>;
+
+  /**
+   * Maps the collection items to a dictionary, indexed by the key you specify.
+   * If there are more items with the same key, only the first one will be present.
+   */
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey?: K2): Record<T[K1], T> | Record<T[K1], T[K2]> {
+    return this.reduce((obj, item) => {
+      obj[item[key] as string] ??= valueKey ? item[valueKey] : item;
+      return obj;
+    }, {} as Dictionary);
   }
 
   count(): number {

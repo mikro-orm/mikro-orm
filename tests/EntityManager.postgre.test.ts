@@ -1133,8 +1133,25 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(3);
+
+    // slice
     expect(book.tags.slice().length).toBe(3);
     expect(book.tags.slice(0, 1)).toEqual([book.tags[0]]);
+
+    // exists
+    expect(book.tags.exists(tag => tag === tagRepository.getReference(tag1.id))).toBe(true);
+    expect(book.tags.exists(tag => tag === tagRepository.getReference(tag2.id))).toBe(false);
+
+    // findFirst
+    expect(book.tags.findFirst(tag => tag === tagRepository.getReference(tag1.id))).toEqual(tagRepository.getReference(tag1.id));
+    expect(book.tags.findFirst(() => false)).toBeUndefined();
+
+    // filter
+    expect(book.tags.filter(tag => tag === tagRepository.getReference(tag1.id))).toEqual([tagRepository.getReference(tag1.id)]);
+    expect(book.tags.filter(() => false)).toEqual([]);
+
+    // map
+    expect(book.tags.map(tag => tag.name)).toEqual([tag3.name, tag1.name, 'fresh']);
 
     // contains
     expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);

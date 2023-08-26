@@ -212,6 +212,57 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.slice(start, end);
   }
 
+  /**
+   * @inheritDoc
+   */
+  exists(cb: (item: T) => boolean): boolean {
+    this.checkInitialized();
+    return super.exists(cb);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  findFirst(cb: (item: T, index: number) => boolean): T | undefined {
+    this.checkInitialized();
+    return super.findFirst(cb);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  filter(cb: (item: T, index: number) => boolean): T[] {
+    this.checkInitialized();
+    return super.filter(cb);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  map<R>(mapper: (item: T, index: number) => R): R[] {
+    this.checkInitialized();
+    return super.map(mapper);
+  }
+
+
+  /**
+   * @inheritDoc
+   */
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1): Record<T[K1], T>;
+
+  /**
+   * @inheritDoc
+   */
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey: K2): Record<T[K1], T[K2]>;
+
+  /**
+   * @inheritDoc
+   */
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey?: K2): Record<T[K1], T> | Record<T[K1], T[K2]> {
+    this.checkInitialized();
+    return super.indexBy(key, valueKey as never);
+  }
+
   shouldPopulate(): boolean {
     return this._populated && !this._lazyInitialized;
   }
