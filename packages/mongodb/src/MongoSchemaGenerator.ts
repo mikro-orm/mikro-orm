@@ -146,7 +146,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     meta.indexes.forEach(index => {
       let fieldOrSpec: string | Dictionary;
       const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-      const collection = this.connection.getCollection(meta.name!);
+      const collection = this.connection.getCollection(meta.className);
 
       if (Array.isArray(index.options) && index.options.length === 2 && properties.length === 0) {
         return res.push([collection.collectionName, collection.createIndex(index.options[0], index.options[1])]);
@@ -183,7 +183,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     meta.uniques.forEach(index => {
       const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
       const fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {});
-      const collection = this.connection.getCollection(meta.name!);
+      const collection = this.connection.getCollection(meta.className);
       res.push([collection.collectionName, collection.createIndex(fieldOrSpec, {
         name: index.name,
         unique: true,
@@ -199,7 +199,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       return [];
     }
 
-    const collection = this.connection.getCollection(meta.name!);
+    const collection = this.connection.getCollection(meta.className);
     const fieldOrSpec = prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {});
 
     return [[collection.collectionName, collection.createIndex(fieldOrSpec, {
