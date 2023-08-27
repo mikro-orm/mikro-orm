@@ -853,9 +853,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       deleteDiff = [];
     }
 
+    const pivotMeta = this.metadata.find(prop.pivotEntity)!;
+
     if (deleteDiff === true || deleteDiff.length > 0) {
       const qb1 = this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')
-        .withSchema(this.getSchemaName(meta, options))
+        .withSchema(this.getSchemaName(pivotMeta, options))
         .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
       const knex = qb1.getKnex();
 
@@ -886,7 +888,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       await Utils.runSerial(items, item => {
         return this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')
           .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
-          .withSchema(this.getSchemaName(meta, options))
+          .withSchema(this.getSchemaName(pivotMeta, options))
           .insert(item)
           .execute('run', false);
       });
