@@ -1,5 +1,5 @@
 import { ensureDir, writeFile } from 'fs-extra';
-import type { EntityProperty, EntityMetadata, MikroORM } from '@mikro-orm/core';
+import type { EntityMetadata, EntityProperty, GenerateOptions, MikroORM } from '@mikro-orm/core';
 import { ReferenceType, Utils } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/knex';
 import { DatabaseSchema } from '@mikro-orm/knex';
@@ -22,14 +22,36 @@ export class EntityGenerator {
     orm.config.registerExtension('@mikro-orm/entity-generator', new EntityGenerator(orm.em as EntityManager));
   }
 
-  async generate(options: { baseDir?: string; save?: boolean; schema?: string } = {}): Promise<string[]> {
+  async generate(options: GenerateOptions = {}): Promise<string[]> {
     const baseDir = Utils.normalizePath(options.baseDir ?? (this.config.get('baseDir') + '/generated-entities'));
     const schema = await DatabaseSchema.create(this.connection, this.platform, this.config);
 
-    const metadata = schema.getTables()
+    let metadata = schema.getTables()
       .filter(table => !options.schema || table.schema === options.schema)
       .sort((a, b) => a.name!.localeCompare(b.name!))
-      .map(table => table.getEntityDeclaration(this.namingStrategy, this.helper));
+      .map(table => {
+        const skipColumns = options.skipColumns?.[table.getShortestName()];
+        if (skipColumns) {
+          table.getColumns().forEach(col => {
+            if (skipColumns.includes(col.name)) {
+              table.removeColumn(col.name);
+            }
+          });
+        }
+        return table.getEntityDeclaration(this.namingStrategy, this.helper);
+      });
+
+    for (const meta of metadata) {
+      for (const prop of meta.relations) {
+        if (options.skipTables?.includes(prop.referencedTableName)) {
+          prop.reference = ReferenceType.SCALAR;
+          const meta2 = metadata.find(m => m.className === prop.type)!;
+          prop.type = meta2.getPrimaryProps().map(pk => pk.type).join(' | ');
+        }
+      }
+    }
+
+    metadata = metadata.filter(table => !options.skipTables || !options.skipTables.includes(table.tableName));
 
     this.detectManyToManyRelations(metadata);
 
@@ -71,7 +93,12 @@ export class EntityGenerator {
         meta.relations.every(prop => prop.reference === ReferenceType.MANY_TO_ONE)  // all relations are m:1
       ) {
         meta.pivotTable = true;
-        const owner = metadata.find(m => m.className === meta.relations[0].type)!;
+        const owner = metadata.find(m => m.className === meta.relations[0].type);
+
+        if (!owner) {
+          continue;
+        }
+
         const name = this.namingStrategy.columnNameToProperty(meta.tableName.replace(new RegExp('^' + owner.tableName + '_'), ''));
         owner.addProperty({
           name,

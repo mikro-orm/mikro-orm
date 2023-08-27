@@ -583,8 +583,16 @@ export interface ISchemaGenerator {
   clearDatabase(options?: { schema?: string }): Promise<void>;
 }
 
+export interface GenerateOptions {
+  baseDir?: string;
+  save?: boolean;
+  schema?: string;
+  skipTables?: string[];
+  skipColumns?: Record<string, string[]>;
+}
+
 export interface IEntityGenerator {
-  generate(options?: { baseDir?: string; save?: boolean; schema?: string }): Promise<string[]>;
+  generate(options?: GenerateOptions): Promise<string[]>;
 }
 
 type UmzugMigration = { name: string; path?: string };

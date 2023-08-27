@@ -51,6 +51,24 @@ By default, the `EntityGenerator` generates only owning sides of relations (e.g.
 - `identifiedReferences` to generate M:1 and 1:1 relations as wrapped references
 - `entitySchema` to generate the entities using `EntitySchema` instead of decorators
 - `esmImport` to use esm style import for imported entities e.x. when `esmImport=true`, generated entities include `import Author from './Author.js'`
+- `skipTables` to ignore some database tables (accepts array of table names)
+- `skipColumns` to ignore some database tables columns (accepts an object, keys are table names with schema prefix if available, values are arrays of column names)
+
+```ts
+const dump = await orm.entityGenerator.generate({
+  save: true,
+  entitySchema: true,
+  bidirectionalRelations: true,
+  identifiedReferences: true,
+  esmImport: true,
+  baseDir: process.cwd() + '/my-entities',
+  skipTables: ['book', 'author'],
+  skipColumns: {
+    'public.user': ['email', 'middle_name'],
+  },
+});
+
+```
 
 ## Current limitations
 

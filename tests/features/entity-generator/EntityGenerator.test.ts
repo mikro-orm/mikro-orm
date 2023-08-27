@@ -19,6 +19,22 @@ describe('EntityGenerator', () => {
     await orm.close(true);
   });
 
+  test('skipTables [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {}, true);
+    const dump = await orm.entityGenerator.generate({
+      save: true,
+      baseDir: './temp/entities',
+      skipTables: ['test2', 'test2_bars'],
+      skipColumns: { book2: ['price'] },
+    });
+    expect(dump).toMatchSnapshot('mysql-entity-dump-skipTables');
+    await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
+    await remove('./temp/entities');
+
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
+
   test('generate entities with bidirectional relations [mysql]', async () => {
     const orm = await initORMMySql('mysql', { entityGenerator: { bidirectionalRelations: true } }, true);
     const dump = await orm.entityGenerator.generate({ save: true, baseDir: './temp/entities' });
@@ -134,6 +150,22 @@ describe('EntityGenerator', () => {
     expect(meta.properties.test.nullable).toBe(true);
     expect(meta.properties.test.columnTypes[0]).toBe('varchar(50)');
 
+    await orm.close(true);
+  });
+
+  test('skipTables [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const dump = await orm.entityGenerator.generate({
+      save: true,
+      baseDir: './temp/entities',
+      skipTables: ['test2', 'test2_bars'],
+      skipColumns: { 'public.book2': ['price'] },
+    });
+    expect(dump).toMatchSnapshot('postgres-entity-dump-skipTables');
+    await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
+    await remove('./temp/entities');
+
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 

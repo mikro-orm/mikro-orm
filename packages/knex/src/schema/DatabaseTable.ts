@@ -31,6 +31,10 @@ export class DatabaseTable {
     return this.columns[name];
   }
 
+  removeColumn(name: string): void {
+    delete this.columns[name];
+  }
+
   getIndexes(): Index[] {
     return this.indexes;
   }
