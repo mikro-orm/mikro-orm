@@ -62,7 +62,7 @@ import type { Field, JoinOptions } from '../typings';
  */
 export class QueryBuilder<T extends object = AnyEntity> {
 
-  get mainAlias(): Alias {
+  get mainAlias(): Alias<T> {
     this.ensureFromClause();
     return this._mainAlias!;
   }
@@ -110,8 +110,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private lockMode?: LockMode;
   private lockTables?: string[];
   private subQueries: Dictionary<string> = {};
-  private _mainAlias?: Alias;
-  private _aliases: Dictionary<Alias> = {};
+  private _mainAlias?: Alias<T>;
+  private _aliases: Dictionary<Alias<any>> = {};
   private _helper?: QueryBuilderHelper;
   private readonly platform = this.driver.getPlatform();
   private readonly knex = this.driver.getConnection(this.connectionType).getKnex();
@@ -350,9 +350,16 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   onConflict(fields: Field<T> | Field<T>[] = []): this {
+    const meta = this.mainAlias.metadata as EntityMetadata<T>;
     this.ensureNotFinalized();
-    this._onConflict = this._onConflict || [];
-    this._onConflict.push({ fields: Utils.asArray(fields).map(f => f.toString()) });
+    this._onConflict ??= [];
+    this._onConflict.push({
+      fields: Utils.asArray(fields).flatMap(f => {
+        const key = f.toString();
+        /* istanbul ignore next */
+        return meta.properties[key]?.fieldNames ?? [key];
+      }),
+    });
     return this;
   }
 
@@ -584,7 +591,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * @internal
    */
   getAliasMap(): Dictionary<string> {
-    return Object.fromEntries(Object.entries(this._aliases).map(([key, value]: [string, Alias]) => [key, value.entityName]));
+    return Object.fromEntries(Object.entries(this._aliases).map(([key, value]: [string, Alias<any>]) => [key, value.entityName]));
   }
 
   /**
@@ -614,13 +621,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     if (method === 'all' && Array.isArray(res)) {
       const map: Dictionary = {};
-      const mapped = res.map(r => this.driver.mapResult(r, meta, this._populate, this, map)) as unknown as U;
+      const mapped = res.map(r => this.driver.mapResult<T>(r, meta, this._populate, this, map)) as unknown as U;
       await this.em?.storeCache(this._cache, cached!, mapped);
 
       return mapped;
     }
 
-    const mapped = this.driver.mapResult(res, meta, this._populate, this) as unknown as U;
+    const mapped = this.driver.mapResult(res as T, meta, this._populate, this) as unknown as U;
     await this.em?.storeCache(this._cache, cached!, mapped);
 
     return mapped;
@@ -1180,20 +1187,20 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this._populateMap[field] = this._joins[field].alias;
   }
 
-  private getSchema(alias: Alias): string | undefined {
+  private getSchema(alias: Alias<any>): string | undefined {
     const { metadata } = alias;
     const metaSchema = metadata?.schema && metadata.schema !== '*' ? metadata.schema : undefined;
     return this._schema ?? metaSchema ?? this.em?.config.get('schema');
   }
 
-  private createAlias(entityName: string, aliasName: string, subQuery?: Knex.QueryBuilder): Alias {
+  private createAlias<U = unknown>(entityName: string, aliasName: string, subQuery?: Knex.QueryBuilder): Alias<U> {
     const metadata = this.metadata.find(entityName)!;
     const alias = { aliasName, entityName, metadata, subQuery };
     this._aliases[aliasName] = alias;
     return alias;
   }
 
-  private createMainAlias(entityName: string, aliasName: string, subQuery?: Knex.QueryBuilder): Alias {
+  private createMainAlias(entityName: string, aliasName: string, subQuery?: Knex.QueryBuilder): Alias<T> {
     this._mainAlias = this.createAlias(entityName, aliasName, subQuery);
     this._helper = this.createQueryBuilderHelper();
     return this._mainAlias;

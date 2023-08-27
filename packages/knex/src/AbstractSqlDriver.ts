@@ -424,7 +424,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         const uniqueFields = Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys;
         /* istanbul ignore next */
         qb.insert(data as T)
-          .onConflict(uniqueFields.map(p => meta?.properties[p]?.fieldNames[0] ?? p))
+          .onConflict(uniqueFields)
           .merge(Object.keys(data).filter(f => !uniqueFields.includes(f)))
           .returning(meta?.comparableProps.filter(p => !p.lazy && !p.embeddable && !(p.name in data)).map(p => p.name) ?? '*');
       } else {
@@ -450,7 +450,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const uniqueFields = Utils.isPlainObject(where[0]) ? Object.keys(where[0]) : meta.primaryKeys;
       const qb = this.createQueryBuilder(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
       qb.insert(data)
-        .onConflict(uniqueFields.map(p => meta.properties[p]?.fieldNames[0] ?? p))
+        .onConflict(uniqueFields)
         .merge(Object.keys(data[0]).filter(f => !uniqueFields.includes(f)))
         .returning(meta.comparableProps.filter(p => !p.lazy && !p.embeddable && !(p.name in data[0])).map(p => p.name) ?? '*');
       return qb.execute('run', false);

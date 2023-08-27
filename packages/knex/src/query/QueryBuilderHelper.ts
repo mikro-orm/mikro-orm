@@ -31,7 +31,7 @@ export class QueryBuilderHelper {
 
   constructor(private readonly entityName: string,
               private readonly alias: string,
-              private readonly aliasMap: Dictionary<Alias>,
+              private readonly aliasMap: Dictionary<Alias<any>>,
               private readonly subQueries: Dictionary<string>,
               private readonly knex: Knex,
               private readonly driver: AbstractSqlDriver) { }
@@ -839,9 +839,9 @@ export class QueryBuilderHelper {
 
 }
 
-export interface Alias {
+export interface Alias<T> {
   aliasName: string;
   entityName: string;
-  metadata?: EntityMetadata;
+  metadata?: EntityMetadata<T>;
   subQuery?: Knex.QueryBuilder;
 }
