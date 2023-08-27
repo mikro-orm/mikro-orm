@@ -302,6 +302,24 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await assert(author2, mock);
   });
 
+  test('em.upsertMany(Type, [data1, data2, data3]) with batching', async () => {
+    await createEntities();
+
+    await orm.em.nativeDelete(Book, [2, 3]);
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+    const data = [];
+
+    for (let i = 0; i < 1000; i++) {
+      data.push({ id: i + 1, email: 'a' + i, age: Math.floor(41 * Math.random()) });
+    }
+
+    const entities = await orm.em.upsertMany(Author, data, { batchSize: 100 });
+    expect(mock).toBeCalledTimes(10);
+    expect(entities).toHaveLength(1000);
+  });
+
   test('em.upsertMany(Type, [data1, data2, data3]) with unique property', async () => {
     await createEntities();
 

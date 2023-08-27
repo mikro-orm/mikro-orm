@@ -48,6 +48,10 @@ import { EventManager, TransactionEventBroadcaster } from './events';
 import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
 
+export interface UpsertManyOptions<Entity> extends Omit<NativeInsertUpdateOptions<Entity>, 'upsert'> {
+  batchSize?: number;
+}
+
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
  * such as UnitOfWork, Query Language and Repository API.
@@ -676,7 +680,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsertMany<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity[], data?: (EntityData<Entity> | Entity)[], options: NativeInsertUpdateOptions<Entity> = {}): Promise<Entity[]> {
+  async upsertMany<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity[], data?: (EntityData<Entity> | Entity)[], options: UpsertManyOptions<Entity> = {}): Promise<Entity[]> {
     const em = this.getContext(false);
 
     let entityName: string;
@@ -687,6 +691,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       data = entityNameOrEntity as Entity[];
     } else {
       entityName = Utils.className(entityNameOrEntity as EntityName<Entity>);
+    }
+
+    const batchSize = options.batchSize ?? this.config.get('batchSize');
+
+    if (data.length > batchSize) {
+      const ret: Entity[] = [];
+
+      for (let i = 0; i < data.length; i += batchSize) {
+        const chunk = data.slice(i, i + batchSize);
+        ret.push(...await this.upsertMany(entityName, chunk));
+      }
+
+      return ret;
     }
 
     const meta = this.metadata.get(entityName);
@@ -768,7 +785,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    const ret = await em.driver.nativeUpdateMany(entityName, allWhere, allData, {
+    const res = await em.driver.nativeUpdateMany(entityName, allWhere, allData, {
       ctx: em.transactionContext,
       upsert: true,
       convertCustomTypes,
@@ -787,7 +804,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         convertCustomTypes: true,
       });
 
-      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data![i], ret.rows?.[i], meta);
+      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data![i], res.rows?.[i], meta);
 
       if (!helper(entity).hasPrimaryKey()) {
         loadPK.set(entity, allWhere[i]);
@@ -798,7 +815,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     });
 
     // skip if we got the PKs via returning statement (`rows`)
-    if (!ret.rows?.length && loadPK.size > 0) {
+    if (!res.rows?.length && loadPK.size > 0) {
       const unique = meta.hydrateProps.filter(p => !p.lazy).map(p => p.name);
       const add = new Set(propIndex! >= 0 ? [unique[propIndex!]] : []);
 
