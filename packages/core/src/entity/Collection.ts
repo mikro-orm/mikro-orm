@@ -223,9 +223,9 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  findFirst(cb: (item: T, index: number) => boolean): T | undefined {
+  find(cb: (item: T, index: number) => boolean): T | undefined {
     this.checkInitialized();
-    return super.findFirst(cb);
+    return super.find(cb);
   }
 
   /**

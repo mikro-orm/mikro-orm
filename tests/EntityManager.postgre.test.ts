@@ -1155,9 +1155,9 @@ describe('EntityManagerPostgre', () => {
     expect(book.tags.exists(tag => tag === tagRepository.getReference(tag1.id))).toBe(true);
     expect(book.tags.exists(tag => tag === tagRepository.getReference(tag2.id))).toBe(false);
 
-    // findFirst
-    expect(book.tags.findFirst(tag => tag === tagRepository.getReference(tag1.id))).toEqual(tagRepository.getReference(tag1.id));
-    expect(book.tags.findFirst(() => false)).toBeUndefined();
+    // find
+    expect(book.tags.find(tag => tag === tagRepository.getReference(tag1.id))).toEqual(tagRepository.getReference(tag1.id));
+    expect(book.tags.find(() => false)).toBeUndefined();
 
     // filter
     expect(book.tags.filter(tag => tag === tagRepository.getReference(tag1.id))).toEqual([tagRepository.getReference(tag1.id)]);

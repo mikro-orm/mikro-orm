@@ -217,7 +217,7 @@ export class ArrayCollection<T extends object, O extends object> {
   /**
    * Returns the first element of this collection that satisfies the predicate.
    */
-  findFirst(cb: (item: T, index: number) => boolean): T | undefined {
+  find(cb: (item: T, index: number) => boolean): T | undefined {
     let index = 0;
 
     for (const item of this.items) {

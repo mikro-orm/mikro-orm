@@ -37,7 +37,7 @@ for (const book of author.books) {
 author.books.add(book);
 console.log(author.books.contains(book)); // true
 console.log(author.books.exists(item => item === book)); // true
-console.log(author.books.findFirst(item => item === book)); // book
+console.log(author.books.find(item => item === book)); // book
 console.log(author.books.map(item => item.title)); // array of book titles
 console.log(author.books.filter(item => item.title.startsWith('Foo'))); // array of books matching the callback
 author.books.remove(book);
