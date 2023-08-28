@@ -171,6 +171,7 @@ export interface TransactionOptions {
   ctx?: Transaction;
   isolationLevel?: IsolationLevel;
   readOnly?: boolean;
+  clear?: boolean;
   flushMode?: FlushMode;
   ignoreNestedTransactions?: boolean;
 }

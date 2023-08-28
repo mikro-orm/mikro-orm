@@ -875,7 +875,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const fork = em.fork({
-      clear: false, // state will be merged once resolves
+      clear: options.clear ?? false, // state will be merged once resolves
       flushMode: options.flushMode,
       cloneEventManager: true,
       disableTransactions: options.ignoreNestedTransactions,
