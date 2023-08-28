@@ -53,11 +53,11 @@ export abstract class Connection {
    */
   abstract getDefaultClientUrl(): string;
 
-  async transactional<T>(cb: (trx: Transaction) => Promise<T>, options?: { isolationLevel?: IsolationLevel; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<T> {
+  async transactional<T>(cb: (trx: Transaction) => Promise<T>, options?: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<T> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async begin(options?: { isolationLevel?: IsolationLevel; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<Transaction> {
+  async begin(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<Transaction> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 

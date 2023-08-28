@@ -44,7 +44,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async transactional<T>(cb: (trx: Transaction<Knex.Transaction>) => Promise<T>, options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<T> {
+  async transactional<T>(cb: (trx: Transaction<Knex.Transaction>) => Promise<T>, options: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<T> {
     const trx = await this.begin(options);
 
     try {
@@ -58,12 +58,15 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async begin(options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
+  async begin(options: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
     if (!options.ctx) {
       await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
     }
 
-    const trx = await (options.ctx || this.client).transaction(null, { isolationLevel: options.isolationLevel });
+    const trx = await (options.ctx || this.client).transaction(null, {
+      isolationLevel: options.isolationLevel,
+      readOnly: options.readOnly,
+    });
 
     if (!options.ctx) {
       await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);

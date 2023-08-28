@@ -170,6 +170,7 @@ export type TransactionEventType = EventType.beforeTransactionStart | EventType.
 export interface TransactionOptions {
   ctx?: Transaction;
   isolationLevel?: IsolationLevel;
+  readOnly?: boolean;
   flushMode?: FlushMode;
   ignoreNestedTransactions?: boolean;
 }
