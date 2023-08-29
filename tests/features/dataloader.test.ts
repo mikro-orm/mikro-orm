@@ -1,4 +1,5 @@
-import { MikroORM, Collection, Utils, Ref, Entity, PrimaryKey, Property, OneToMany, ManyToMany, ManyToOne, Enum, ref, QueryOrder, PrimaryKeyProp, helper, Primary } from '@mikro-orm/sqlite';
+import { MikroORM, Collection, Utils, Ref, Entity, PrimaryKey, Property, OneToMany, ManyToMany, ManyToOne, Enum, ref, QueryOrder, PrimaryKeyProp, helper, Primary, SimpleLogger } from '@mikro-orm/sqlite';
+import { mockLogger } from '../helpers';
 
 enum PublisherType {
   LOCAL = 'local',
@@ -236,6 +237,7 @@ describe('Dataloader', () => {
     orm = await MikroORM.init({
       dbName: ':memory:',
       entities: [Author, Book, Chat, Message],
+      loggerFactory: options => new SimpleLogger(options),
     });
 
     await orm.schema.createSchema();
@@ -268,7 +270,10 @@ describe('Dataloader', () => {
 
   test('getRefBatchLoadFn', async () => {
     const refBatchLoadFn = Utils.getRefBatchLoadFn(orm.em);
+    const mock = mockLogger(orm);
     const res = await refBatchLoadFn(getReferences(orm.em));
+    await orm.em.flush();
+    expect(mock.mock.calls).toMatchSnapshot();
     expect(res.length).toBe(8);
     expect(res[0] instanceof Author).toBe(true);
     expect(res[1] instanceof Author).toBe(true);
@@ -286,7 +291,10 @@ describe('Dataloader', () => {
     const refsA = getReferences(orm.em);
     const refsB = getReferences(orm.em);
     await Promise.all(refsA.map(ref => ref.load()));
+    const mock = mockLogger(orm);
     await Promise.all(refsB.map(ref => ref.load({ dataloader: true })));
+    await orm.em.flush();
+    expect(mock.mock.calls).toMatchSnapshot();
     expect(refsA).toEqual(refsB);
   });
 
@@ -363,7 +371,10 @@ describe('Dataloader', () => {
   test('getColBatchLoadFn', async () => {
     const refBatchLoadFn = Utils.getColBatchLoadFn(orm.em);
     const collections = await getCollections(orm.em);
+    const mock = mockLogger(orm);
     const res = await refBatchLoadFn(collections);
+    await orm.em.flush();
+    expect(mock.mock.calls).toMatchSnapshot();
     expect(res.length).toBe(collections.length);
     for (let i = 0; i < collections.length; i++) {
       expect(res[i].map((el: any) => el.id)).toEqual((await collections[i].loadItems()).map((el: any) => el.id));
@@ -374,7 +385,10 @@ describe('Dataloader', () => {
     const colsA = await getCollections(orm.em);
     const colsB = await getCollections(orm.em);
     await Promise.all(colsA.map(ref => ref.loadItems()));
+    const mock = mockLogger(orm);
     await Promise.all(colsB.map(ref => ref.load({ dataloader: true })));
+    await orm.em.flush();
+    expect(mock.mock.calls).toMatchSnapshot();
     expect(colsA.length).toBe(colsB.length);
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);

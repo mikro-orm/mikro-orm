@@ -23,7 +23,7 @@ import type {
   Primary,
   Ref,
 } from '../typings';
-import { GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
+import { GroupOperator, LoadStrategy, PlainObject, QueryOperator, ReferenceKind } from '../enums';
 import { Collection } from '../entity/Collection';
 import type { Platform } from '../platforms';
 import { helper } from '../entity/wrap';
@@ -1250,10 +1250,10 @@ export class Utils {
       await Promise.all(promises);
       /* Instead of assigning each find result to the original reference we use a shortcut
         which takes advantage of the already existing Mikro-ORM caching mechanism:
-        when it calls ref.load it will automatically retrieve the entity
+        when it calls ref.unwrap it will automatically retrieve the entity
         from the cache (it will hit the cache because of the previous find query).
         This trick won't be possible for collections where we will be forced to map the results. */
-      return Promise.all(refs.map(ref => ref.load({ dataloader: false })));
+      return refs.map(ref => ref.unwrap());
     };
   }
 
@@ -1317,6 +1317,8 @@ export class Utils {
               // We need to do so only if the inverse side is a collection, because we can already retrieve the PK from a reference without having to load it
               prop => em.getMetadata().get(className).properties[prop]?.ref !== true,
             ) as any,
+            // To enforce a single query
+            strategy: LoadStrategy.JOINED,
           },
         ),
     );
