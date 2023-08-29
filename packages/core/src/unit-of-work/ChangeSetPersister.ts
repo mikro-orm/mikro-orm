@@ -378,10 +378,10 @@ export class ChangeSetPersister {
    * No need to handle composite keys here as they need to be set upfront.
    * We do need to map to the change set payload too, as it will be used in the originalEntityData for new entities.
    */
-  mapReturnedValues<T extends object>(entity: T, payload: EntityDictionary<T>, row: Dictionary | undefined, meta: EntityMetadata<T>): void {
+  mapReturnedValues<T extends object>(entity: T, payload: EntityDictionary<T>, row: Dictionary | undefined, meta: EntityMetadata<T>, override = false): void {
     if (this.platform.usesReturningStatement() && row && Utils.hasObjectKeys(row)) {
       const data = meta.props.reduce((ret, prop) => {
-        if (prop.fieldNames && row[prop.fieldNames[0]] != null && entity[prop.name] == null) {
+        if (prop.fieldNames && row[prop.fieldNames[0]] != null && (override || entity[prop.name] == null)) {
           ret[prop.name] = row[prop.fieldNames[0]];
         }
 

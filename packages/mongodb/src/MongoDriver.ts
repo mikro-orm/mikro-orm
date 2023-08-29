@@ -1,10 +1,29 @@
 import type { ClientSession } from 'mongodb';
 import { ObjectId } from 'bson';
 import {
- DatabaseDriver, EntityManagerType, ReferenceType, Utils, type
-  EntityData, type FilterQuery, type Configuration, type FindOneOptions, type FindOptions, type
-  QueryResult, type Transaction, type IDatabaseDriver, type EntityManager, type Dictionary, type PopulateOptions, type
-  CountOptions, type EntityDictionary, type EntityField, type NativeInsertUpdateOptions, type NativeInsertUpdateManyOptions } from '@mikro-orm/core';
+  DatabaseDriver,
+  EntityManagerType,
+  ReferenceType,
+  Utils,
+  type EntityData,
+  type FilterQuery,
+  type Configuration,
+  type FindOneOptions,
+  type FindOptions,
+  type QueryResult,
+  type Transaction,
+  type IDatabaseDriver,
+  type EntityManager,
+  type Dictionary,
+  type PopulateOptions,
+  type CountOptions,
+  type EntityDictionary,
+  type EntityField,
+  type NativeInsertUpdateOptions,
+  type NativeInsertUpdateManyOptions,
+  type UpsertOptions,
+  type UpsertManyOptions,
+} from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
 import { MongoEntityManager } from './MongoEntityManager';
@@ -99,18 +118,35 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return res as QueryResult<T>;
   }
 
-  async nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> & UpsertOptions<T> = {}): Promise<QueryResult<T>> {
     if (Utils.isPrimaryKey(where)) {
       where = this.buildFilterById(entityName, where as string);
     }
 
     where = this.renameFields(entityName, where, true);
     data = this.renameFields(entityName, data);
+    options = { ...options };
 
-    return this.rethrow(this.getConnection('write').updateMany(entityName, where as object, data, options.ctx, options.upsert)) as Promise<QueryResult<T>>;
+    const meta = this.metadata.find(entityName);
+    /* istanbul ignore next */
+    const rename = (field: keyof T) => meta ? (meta.properties[field as string]?.fieldNames[0] as keyof T ?? field) : field;
+
+    if (options.onConflictFields) {
+      options.onConflictFields = options.onConflictFields.map(rename);
+    }
+
+    if (options.onConflictMergeFields) {
+      options.onConflictMergeFields = options.onConflictMergeFields.map(rename);
+    }
+
+    if (options.onConflictExcludeFields) {
+      options.onConflictExcludeFields = options.onConflictExcludeFields.map(rename);
+    }
+
+    return this.rethrow(this.getConnection('write').updateMany<T>(entityName, where as object, data as object, options.ctx, options.upsert, options));
   }
 
-  async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
     where = where.map(row => {
       if (Utils.isPlainObject(row)) {
         return this.renameFields(entityName, row, true);
@@ -119,8 +155,25 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return row;
     });
     data = data.map(row => this.renameFields(entityName, row));
+    options = { ...options };
 
-    return this.rethrow(this.getConnection('write').bulkUpdateMany(entityName, where as FilterQuery<object>[], data as object[], options.ctx, options.upsert)) as Promise<QueryResult<T>>;
+    const meta = this.metadata.find(entityName);
+    /* istanbul ignore next */
+    const rename = (field: keyof T) => meta ? (meta.properties[field as string]?.fieldNames[0] as keyof T ?? field) : field;
+
+    if (options.onConflictFields) {
+      options.onConflictFields = options.onConflictFields.map(rename);
+    }
+
+    if (options.onConflictMergeFields) {
+      options.onConflictMergeFields = options.onConflictMergeFields.map(rename);
+    }
+
+    if (options.onConflictExcludeFields) {
+      options.onConflictExcludeFields = options.onConflictExcludeFields.map(rename);
+    }
+
+    return this.rethrow(this.getConnection('write').bulkUpdateMany<T>(entityName, where as object[], data as object[], options.ctx, options.upsert, options));
   }
 
   async nativeDelete<T extends object>(entityName: string, where: FilterQuery<T>, options: { ctx?: Transaction<ClientSession> } = {}): Promise<QueryResult<T>> {

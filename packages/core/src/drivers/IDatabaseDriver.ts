@@ -152,6 +152,17 @@ export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOpti
   processCollections?: boolean;
 }
 
+export interface UpsertOptions<Entity> extends Omit<NativeInsertUpdateOptions<Entity>, 'upsert'> {
+  onConflictFields?: (keyof Entity)[];
+  onConflictAction?: 'ignore' | 'merge';
+  onConflictMergeFields?: (keyof Entity)[];
+  onConflictExcludeFields?: (keyof Entity)[];
+}
+
+export interface UpsertManyOptions<Entity> extends UpsertOptions<Entity> {
+  batchSize?: number;
+}
+
 export interface CountOptions<T extends object, P extends string = never>  {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   schema?: string;

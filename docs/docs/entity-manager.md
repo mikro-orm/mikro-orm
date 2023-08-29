@@ -384,6 +384,37 @@ const [author1, author2, author3] = await em.upsertMany(Author, [
 ]);
 ```
 
+By default, the EntityManager will prefer using the primary key, and fallback to the first unique property with a value. Sometimes this might not be the wanted behaviour, one example is when you generate the primary key via property initializer, e.g. with `uuid.v4()`. For those advanced cases, you can control how the underlying upserting logic works via the following options:
+
+- `onConflictFields?: (keyof T)[]` to control the conflict clause
+- `onConflictAction?: 'ignore' | 'merge'` used ignore and merge as that is how the QB methods are called
+- `onConflictMergeFields?: (keyof T)[]` to control the merge clause
+- `onConflictExcludeFields?: (keyof T)[]` to omit fields from the merge clause
+
+```ts
+const [author1, author2, author3] = await em.upsertMany(Author, [{ ... }, { ... }, { ... }], {
+  onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+  onConflictAction: 'merge',
+  onConflictExcludeFields: ['id'],
+});
+```
+
+This will generate query similar to the following:
+
+```sql
+insert into "author" 
+  ("id", "current_age", "email", "foo")
+  values
+    (1, 41, 'a1', true),
+    (2, 42, 'a2', true),
+    (5, 43, 'a3', true)
+  on conflict ("email") 
+  do update set
+    "current_age" = excluded."current_age",
+    "foo" = excluded."foo" 
+  returning "_id", "current_age", "foo", "bar"
+```
+
 ## Refreshing entity state
 
 We can use `em.refresh(entity)` to synchronize the entity state with database. This is a shortcut for calling `em.findOne()` with `refresh: true` and disabled auto-flush.

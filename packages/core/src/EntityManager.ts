@@ -1,6 +1,6 @@
 import { inspect } from 'util';
-import { QueryHelper, TransactionContext, Utils, type Configuration } from './utils';
-import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, helper, Reference, type AssignOptions, type EntityLoaderOptions, type EntityRepository, type IdentifiedReference } from './entity';
+import { QueryHelper, TransactionContext, Utils, type Configuration, getOnConflictReturningFields } from './utils';
+import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, helper, Reference, type AssignOptions, type EntityLoaderOptions, type EntityRepository } from './entity';
 import { ChangeSet, ChangeSetType, UnitOfWork } from './unit-of-work';
 import type {
   CountOptions,
@@ -15,6 +15,8 @@ import type {
   LockOptions,
   NativeInsertUpdateOptions,
   UpdateOptions,
+  UpsertOptions,
+  UpsertManyOptions,
 } from './drivers';
 import type {
   AnyEntity,
@@ -36,6 +38,7 @@ import type {
   PopulateOptions,
   Primary,
   RequiredEntityData,
+  Ref,
 } from './typings';
 import { EventType, FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES, type TransactionOptions } from './enums';
 import type { MetadataStorage } from './metadata';
@@ -43,10 +46,6 @@ import type { Transaction } from './connections';
 import { EventManager, TransactionEventBroadcaster, type FlushEventArgs } from './events';
 import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
-
-export interface UpsertManyOptions<Entity> extends Omit<NativeInsertUpdateOptions<Entity>, 'upsert'> {
-  batchSize?: number;
-}
 
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
@@ -544,7 +543,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | Entity, options: NativeInsertUpdateOptions<Entity> = {}): Promise<Entity> {
+  async upsert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | Entity, options: UpsertOptions<Entity> = {}): Promise<Entity> {
     const em = this.getContext(false);
 
     let entityName: EntityName<Entity>;
@@ -583,10 +582,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    const unique = meta.props.filter(p => p.unique).map(p => p.name);
+    const unique = options.onConflictFields as string[] ?? meta.props.filter(p => p.unique).map(p => p.name);
     const propIndex = unique.findIndex(p => data![p] != null);
 
-    if (where == null) {
+    if (options.onConflictFields || where == null) {
       if (propIndex >= 0) {
         where = { [unique[propIndex]]: data[unique[propIndex]] } as FilterQuery<Entity>;
       } else if (meta.uniques.length > 0) {
@@ -629,15 +628,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: true,
     });
 
-    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta);
+    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta, true);
+    const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys) as (keyof Entity)[];
+    const returning = getOnConflictReturningFields(meta, data, uniqueFields, options) as string[];
 
-    if (!helper(entity).hasPrimaryKey()) {
-      const pk = await this.driver.findOne(meta.className, where, {
-        fields: meta.comparableProps.filter(p => !p.lazy && !(p.name in data!)).map(p => p.name) as EntityField<Entity>[],
+    if (options.onConflictAction === 'ignore' || !helper(entity).hasPrimaryKey() || (returning.length > 0 && !this.getPlatform().usesReturningStatement())) {
+      const where = {} as FilterQuery<Entity>;
+      uniqueFields.forEach(prop => where[prop as string] = data![prop as string]);
+      const data2 = await this.driver.findOne(meta.className, where, {
+        fields: returning as EntityField<Entity>[],
         ctx: em.transactionContext,
         convertCustomTypes: true,
       });
-      em.entityFactory.mergeData(meta, entity, pk!, { initialized: true });
+      em.getHydrator().hydrate(entity, meta, data2!, em.entityFactory, 'full');
     }
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
@@ -742,7 +745,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       const unique = meta.props.filter(p => p.unique).map(p => p.name);
       propIndex = unique.findIndex(p => row[p] != null);
 
-      if (where == null) {
+      if (options.onConflictFields || where == null) {
         if (propIndex >= 0) {
           where = { [unique[propIndex]]: row[unique[propIndex]] } as FilterQuery<Entity>;
         } else if (meta.uniques.length > 0) {
@@ -800,7 +803,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         convertCustomTypes: true,
       });
 
-      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data![i], res.rows?.[i], meta);
+      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, Utils.isEntity(data![i]) ? {} : data![i], res.rows?.[i], meta, true);
 
       if (!helper(entity).hasPrimaryKey()) {
         loadPK.set(entity, allWhere[i]);
@@ -811,7 +814,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     });
 
     // skip if we got the PKs via returning statement (`rows`)
-    if (!res.rows?.length && loadPK.size > 0) {
+    const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(allWhere![0]) ? Object.keys(allWhere![0]) : meta!.primaryKeys) as (keyof Entity)[];
+    const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options) as string[];
+    const reloadFields = returning.length > 0 && !this.getPlatform().usesReturningStatement();
+
+    if (options.onConflictAction === 'ignore' || (!res.rows?.length && loadPK.size > 0) || reloadFields) {
       const unique = meta.hydrateProps.filter(p => !p.lazy).map(p => p.name);
       const add = new Set(propIndex! >= 0 ? [unique[propIndex!]] : []);
 
@@ -819,14 +826,18 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         Object.keys(cond).forEach(key => add.add(key));
       }
 
-      const pks = await this.driver.find(meta.className, { $or: [...loadPK.values()] as Dictionary[] }, {
-        fields: meta.comparableProps.filter(p => !p.lazy && !(p.name in data![0] && !add.has(p.name))).map(p => p.name),
+      const where = { $or: [] as Dictionary[] };
+      data.forEach((item, idx) => {
+        uniqueFields.forEach(prop => where.$or[idx] = { [prop]: item[prop as string] });
+      });
+      const data2 = await this.driver.find(meta.className, where, {
+        fields: returning.concat(...add).concat(...uniqueFields as string[]),
         ctx: em.transactionContext,
         convertCustomTypes: true,
       });
 
       for (const [entity, cond] of loadPK.entries()) {
-        const pk = pks.find(pk => {
+        const row = data2.find(pk => {
           const tmp = {};
           add.forEach(k => {
             if (!meta.properties[k]?.primary) {
@@ -837,11 +848,38 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         });
 
         /* istanbul ignore next */
-        if (!pk) {
+        if (!row) {
           throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
         }
 
-        em.entityFactory.mergeData(meta, entity, pk, { initialized: true });
+        em.getHydrator().hydrate(entity, meta, row, em.entityFactory, 'full');
+      }
+
+      if (loadPK.size !== data2.length) {
+        for (let i = 0; i < allData.length; i++) {
+          const data = allData[i];
+          const cond = uniqueFields.reduce((a, b) => {
+            // @ts-ignore
+            a[b] = data[b];
+            return a;
+          }, {});
+          const entity = entitiesByData.get(data);
+          const row = data2.find(item => {
+            const pk = uniqueFields.reduce((a, b) => {
+              // @ts-ignore
+              a[b] = item[b];
+              return a;
+            }, {});
+            return this.comparator.matching(entityName, cond, pk);
+          });
+
+          /* istanbul ignore next */
+          if (!row) {
+            throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
+          }
+
+          em.getHydrator().hydrate(entity, meta, row, em.entityFactory, 'full');
+        }
       }
     }
 
@@ -1161,7 +1199,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<Entity extends object, PK extends keyof Entity>(entityName: EntityName<Entity>, id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): IdentifiedReference<Entity, PK>;
+  getReference<Entity extends object, PK extends keyof Entity>(entityName: EntityName<Entity>, id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): Ref<Entity, PK>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
