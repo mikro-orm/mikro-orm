@@ -1317,8 +1317,6 @@ export class Utils {
               // We need to do so only if the inverse side is a collection, because we can already retrieve the PK from a reference without having to load it
               prop => em.getMetadata().get(className).properties[prop]?.ref !== true,
             ) as any,
-            // To enforce a single query
-            strategy: LoadStrategy.JOINED,
           },
         ),
     );
