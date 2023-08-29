@@ -1295,58 +1295,80 @@ export class Utils {
   }
 
   /**
+   * Turn the entity map into actual queries.
+   * The keys are the entity names and the values are filter Maps which will be used as the values of an $or operator so we end up with a query per entity.
+   * We must populate the inverse side of the relationship in order to be able to later retrieve the PK(s) from its item(s).
+   */
+  static entitiesMapToQueries(
+    entitiesMap: Map<EntityMetadata<any>, Map<string, Set<Primary<any>>>>,
+    em: EntityManager,
+  ): Promise<any[]>[] {
+    return Array.from(entitiesMap.entries()).map(
+      ([{ className }, filterMap]) =>
+        em.find(
+          className,
+          {
+            // The entries of the filter Map will be used as the values of the $or operator
+            $or: Array.from(filterMap.entries()).map(([prop, pks]) => ({ [prop]: Array.from(pks) })),
+          },
+          {
+            // We need to populate the inverse side of the relationship in order to be able to later retrieve the PK(s) from its item(s)
+            populate: Array.from(filterMap.keys()).filter(
+              // We need to do so only if the inverse side is a collection, because we can already retrieve the PK from a reference without having to load it
+              prop => em.getMetadata().get(className).properties[prop]?.ref !== true,
+            ) as any,
+          },
+        ),
+    );
+  }
+
+  /**
+   * Creates a filter which returns the results pertaining to a certain collection.
+   * First checks if the Entity type matches, then retrieves the inverse side of the relationship
+   * where the filtering will be done in order to match the target collection.
+   */
+  static getColFilter<T, S extends T>(
+    collection: Collection<any, object>,
+  ): (result: T) => result is S {
+    return (result): result is S => {
+      // First check if Entity matches
+      if (helper(result).__meta.className === collection.property.type) {
+        // This is the inverse side of the relationship where the filtering will be done in order to match the target collection
+        // Either inversedBy or mappedBy exist because we already checked in groupInversedOrMappedKeysByEntity
+        const refOrCol = result[((collection.property.inversedBy ?? collection.property.mappedBy) as keyof T)] as
+          | Ref<any>
+          | Collection<any>;
+        if (refOrCol instanceof Collection) {
+          // The inverse side is a Collection
+          // We keep the result if any of PKs of the inverse side matches the PK of the collection owner
+          for (const item of refOrCol.getItems()) {
+            if (helper(item).getSerializedPrimaryKey() === helper(collection.owner).getSerializedPrimaryKey()) {
+              return true;
+            }
+          }
+        } else {
+          // The inverse side is a Reference
+          // We keep the result if the PK of the inverse side matches the PK of the collection owner
+          return helper(refOrCol).getSerializedPrimaryKey() === helper(collection.owner).getSerializedPrimaryKey();
+        }
+      }
+      return false;
+    };
+  }
+
+  /**
    * Returns the collection dataloader batchLoadFn, which aggregates collections by entity,
    * makes one query per entity and maps each input collection to the corresponging result.
    */
   static getColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<Collection<any>, any> {
     return async (collections: readonly Collection<any>[]) => {
       const entitiesMap = Utils.groupInversedOrMappedKeysByEntity(collections);
-      const promises: Promise<any[]>[] = Array.from(entitiesMap.entries()).map(
-        ([{ className }, filterMap]) =>
-          em.find(
-            className,
-            {
-              // The entries of the filter Map will be used as the values of the $or operator
-              $or: Array.from(filterMap.entries()).map(([prop, pks]) => ({ [prop]: Array.from(pks) })),
-            },
-            {
-              // We need to populate the inverse side of the relationship in order to be able to later retrieve the PK(s) from its item(s)
-              populate: Array.from(filterMap.keys()).filter(
-                // We need to do so only if the inverse side is a collection, because we can already retrieve the PK from a reference without having to load it
-                prop => em.getMetadata().get(className).properties[prop]?.ref !== true,
-              ) as any,
-            },
-          ),
-      );
+      const promises = Utils.entitiesMapToQueries(entitiesMap, em);
       const results = (await Promise.all(promises)).flat();
       // We need to filter the results in order to map each input collection
       // to a subset of each query matching the collection items.
       return collections.map(collection =>
-        results.filter(result => {
-          // Entity matches
-          if (helper(result).__meta.className === collection.property.type) {
-            // This is the inverse side of the relationship where the filtering will be done in order to match the target collection
-            // Either inversedBy or mappedBy exist because we already checked in groupInversedOrMappedKeysByEntity
-            const refOrCol = result[(collection.property.inversedBy ?? collection.property.mappedBy)] as
-              | Ref<any>
-              | Collection<any>;
-            if (refOrCol instanceof Collection) {
-              // The inverse side is a Collection
-              // We keep the result if any of PKs of the inverse side matches the PK of the collection owner
-              for (const item of refOrCol.getItems()) {
-                if (helper(item).getSerializedPrimaryKey() === helper(collection.owner).getSerializedPrimaryKey()) {
-                  return true;
-                }
-              }
-            } else {
-              // The inverse side is a Reference
-              // We keep the result if the PK of the inverse side matches the PK of the collection owner
-              return helper(refOrCol).getSerializedPrimaryKey() === helper(collection.owner).getSerializedPrimaryKey();
-            }
-
-          }
-          return false;
-        }),
+        results.filter(Utils.getColFilter(collection)),
       );
     };
   }

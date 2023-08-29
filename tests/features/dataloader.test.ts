@@ -1,4 +1,4 @@
-import { MikroORM, Collection, Utils, Ref, Entity, PrimaryKey, Property, OneToMany, ManyToMany, ManyToOne, Enum, ref, QueryOrder, PrimaryKeyProp, helper } from '@mikro-orm/sqlite';
+import { MikroORM, Collection, Utils, Ref, Entity, PrimaryKey, Property, OneToMany, ManyToMany, ManyToOne, Enum, ref, QueryOrder, PrimaryKeyProp, helper, Primary } from '@mikro-orm/sqlite';
 
 enum PublisherType {
   LOCAL = 'local',
@@ -309,6 +309,55 @@ describe('Dataloader', () => {
       Chat: { owner: [1, 2, 3] },
       Message: { chat: [{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }] },
     });
+  });
+
+  test('entitiesMapToQueries', async () => {
+    const map = new Map([
+      [orm.em.getMetadata().get('Book'), new Map([
+        ['author', new Set<Primary<any>>([1, 2, 3])],
+        ['publisher', new Set<Primary<any>>([1, 2])],
+      ])],
+      [orm.em.getMetadata().get('Author'), new Map([
+        ['buddiesInverse', new Set<Primary<any>>([1, 2, 3])],
+      ])],
+      [orm.em.getMetadata().get('Chat'), new Map([
+        ['owner', new Set<Primary<any>>([1, 2, 3])],
+      ])],
+      [orm.em.getMetadata().get('Message'), new Map([
+        ['chat', new Set<Primary<any>>([{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }])],
+      ])],
+    ]);
+    const queries = Utils.entitiesMapToQueries(map, orm.em);
+    expect(queries).toHaveLength(4);
+    for (const query of queries) {
+      expect(query instanceof Promise).toBeTruthy();
+    }
+  });
+
+  test('getColFilter', async () => {
+    const promises = Utils.entitiesMapToQueries(new Map([
+      [orm.em.getMetadata().get('Book'), new Map([
+        ['author', new Set<Primary<any>>([1, 2, 3])],
+        ['publisher', new Set<Primary<any>>([1, 2])],
+      ])],
+      [orm.em.getMetadata().get('Author'), new Map([
+        ['buddiesInverse', new Set<Primary<any>>([1, 2, 3])],
+      ])],
+      [orm.em.getMetadata().get('Chat'), new Map([
+        ['owner', new Set<Primary<any>>([1, 2, 3])],
+      ])],
+      [orm.em.getMetadata().get('Message'), new Map([
+        ['chat', new Set<Primary<any>>([{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }])],
+      ])],
+    ]), orm.em);
+    const results = (await Promise.all(promises)).flat();
+
+    const collections = await getCollections(orm.em);
+    for (const collection of collections) {
+      const filtered = results.filter(Utils.getColFilter(collection));
+      expect(filtered.map((el: any) => el.id)).toEqual((await collection.loadItems()).map((el: any) => el.id));
+    }
+    expect(true).toBeTruthy();
   });
 
   test('getColBatchLoadFn', async () => {
