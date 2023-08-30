@@ -33,7 +33,7 @@ import type { EventSubscriber } from '../events';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
-import { FlushMode, LoadStrategy, PopulateHint } from '../enums';
+import { Dataloader, FlushMode, LoadStrategy, PopulateHint } from '../enums';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
 import { EntityComparator } from './EntityComparator';
 import type { Type } from '../types/Type';
@@ -70,6 +70,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     hydrator: ObjectHydrator,
     flushMode: FlushMode.AUTO,
     loadStrategy: LoadStrategy.SELECT_IN,
+    dataloader: Dataloader.OFF,
     populateWhere: PopulateHint.ALL,
     connect: true,
     autoJoinOneToOneOwner: true,
@@ -525,6 +526,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   batchSize: number;
   hydrator: HydratorConstructor;
   loadStrategy: LoadStrategy | 'select-in' | 'joined';
+  dataloader: Dataloader;
   populateWhere: PopulateHint;
   flushMode: FlushMode | 'commit' | 'auto' | 'always';
   entityRepository?: Constructor;
