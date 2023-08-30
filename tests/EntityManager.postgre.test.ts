@@ -2036,15 +2036,19 @@ describe('EntityManagerPostgre', () => {
 
   test('working with global identity map will not throw if disableIdentityMap is used', async () => {
     orm.config.set('allowGlobalContext', false);
+    orm.config.set('disableIdentityMap', true);
 
     await orm.em.nativeInsert(FooBar2, { name: 'bar 1' });
-    const res1 = await orm.em.getRepository(FooBar2).find({}, { disableIdentityMap: true });
+    const res1 = await orm.em.getRepository(FooBar2).find({});
     expect(res1).toHaveLength(1);
 
     const res2 = await orm.em.find(FooBar2, {}, { disableIdentityMap: true });
     expect(res2).toHaveLength(1);
 
+    await expect(orm.em.find(FooBar2, {}, { disableIdentityMap: false })).rejects.toThrowError(/Using global EntityManager instance methods for context specific actions is disallowed/);
+
     orm.config.set('allowGlobalContext', true);
+    orm.config.set('disableIdentityMap', false);
   });
 
   test('Collection.init() returns Loaded type', async () => {

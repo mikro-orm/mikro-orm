@@ -541,6 +541,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   context: (name: string) => EntityManager | undefined;
   contextName: string;
   allowGlobalContext: boolean;
+  disableIdentityMap?: boolean;
   logger: (message: string) => void;
   loggerFactory?: (options: LoggerOptions) => Logger;
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
