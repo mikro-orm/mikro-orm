@@ -573,6 +573,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     expiration?: number;
     adapter?: { new(...params: any[]): CacheAdapter };
     options?: Dictionary;
+    global?: boolean | number | [string, number];
   };
   metadataProvider: { new(config: Configuration): MetadataProvider };
   seeder: SeederOptions;

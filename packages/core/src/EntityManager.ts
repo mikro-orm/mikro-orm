@@ -1669,6 +1669,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * @internal
    */
   async tryCache<T extends object, R>(entityName: string, config: boolean | number | [string, number] | undefined, key: unknown, refresh?: boolean, merge?: boolean): Promise<{ data?: R; key: string } | undefined> {
+    config ??= this.config.get('resultCache').global;
+
     if (!config) {
       return undefined;
     }
@@ -1700,6 +1702,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * @internal
    */
   async storeCache(config: boolean | number | [string, number] | undefined, key: { key: string }, data: unknown | (() => unknown)) {
+    config ??= this.config.get('resultCache').global;
+
     if (config) {
       const em = this.getContext();
       const expiration = Array.isArray(config) ? config[1] : (Utils.isNumber(config) ? config : undefined);

@@ -61,6 +61,34 @@ describe('result cache (postgres)', () => {
     expect(res1.map(e => wrap(e).toObject())).toEqual(res4.map(e => wrap(e).toObject()));
   });
 
+  test('result caching (global, find)', async () => {
+    await createBooksWithTags();
+
+    const mock = mockLogger(orm, ['query']);
+    orm.config.get('resultCache').global = 50;
+
+    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
+    expect(mock.mock.calls).toHaveLength(1);
+    orm.em.clear();
+
+    const res2 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
+    expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
+    expect(res1.map(e => wrap(e).toObject())).toEqual(res2.map(e => wrap(e).toObject()));
+    orm.em.clear();
+
+    const res3 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
+    expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
+    expect(res1.map(e => wrap(e).toObject())).toEqual(res3.map(e => wrap(e).toObject()));
+    orm.em.clear();
+
+    await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
+    const res4 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
+    expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
+    expect(res1.map(e => wrap(e).toObject())).toEqual(res4.map(e => wrap(e).toObject()));
+
+    orm.config.get('resultCache').global = undefined;
+  });
+
   test('result caching (findOne)', async () => {
     await createBooksWithTags();
 

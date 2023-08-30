@@ -33,6 +33,8 @@ const orm = await MikroORM.init({
     adapter: MemoryCacheAdapter,
     expiration: 1000, // 1s
     options: {},
+    // cache can be also enabled globally
+    global: 50, // 50ms
   },
   // ...
 });
