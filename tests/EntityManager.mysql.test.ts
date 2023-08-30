@@ -2405,6 +2405,20 @@ describe('EntityManagerMySql', () => {
     expect(res2).toMatchObject([{ count: 1 }]);
   });
 
+  test('query comments', async () => {
+    const mock = mockLogger(orm, ['query']);
+    await orm.em.find(Author2, {}, {
+      comments: ['foo'],
+      hintComments: 'bar',
+      indexHint: 'force index(custom_email_index_name)',
+    });
+    expect(mock.mock.calls[0][0]).toMatch(
+      '/* foo */ select /*+ bar */ `a0`.*, `a1`.`author_id` as `address_author_id`' +
+      ' from `author2` as `a0` force index(custom_email_index_name)' +
+      ' left join `address2` as `a1` on `a0`.`id` = `a1`.`author_id`',
+    );
+  });
+
   // this should run in ~800ms (when running single test locally)
   test('perf: batch insert and update', async () => {
     const authors = new Set<Author2>();

@@ -106,6 +106,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private _joinedProps = new Map<string, PopulateOptions<any>>();
   private _cache?: boolean | number | [string, number];
   private _indexHint?: string;
+  private _comments: string[] = [];
+  private _hintComments: string[] = [];
   private flushMode?: FlushMode;
   private lockMode?: LockMode;
   private lockTables?: string[];
@@ -486,6 +488,26 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   /**
+   * Prepend comment to the sql query using the syntax `/* ... *&#8205;/`. Some characters are forbidden such as `/*, *&#8205;/` and `?`.
+   */
+  comment(comment: string | string[]): this {
+    this.ensureNotFinalized();
+    this._comments.push(...Utils.asArray(comment));
+    return this;
+  }
+
+  /**
+   * Add hints to the query using comment-like syntax `/*+ ... *&#8205;/`. MySQL and Oracle use this syntax for optimizer hints.
+   * Also various DB proxies and routers use this syntax to pass hints to alter their behavior. In other dialects the hints
+   * are ignored as simple comments.
+   */
+  hintComment(comment: string | string[]): this {
+    this.ensureNotFinalized();
+    this._hintComments.push(...Utils.asArray(comment));
+    return this;
+  }
+
+  /**
    * Specifies FROM which entity's table select/update/delete will be executed, removing all previously set FROM-s.
    * Allows setting a main string alias of the selection data.
    */
@@ -526,6 +548,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }, this._orderBy);
     Utils.runIfNotEmpty(() => qb.limit(this._limit!), this._limit != null);
     Utils.runIfNotEmpty(() => qb.offset(this._offset!), this._offset);
+    Utils.runIfNotEmpty(() => this._comments.forEach(comment => qb.comment(comment)), this._comments);
+    Utils.runIfNotEmpty(() => this._hintComments.forEach(comment => qb.hintComment(comment)), this._hintComments);
     Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(this.type ?? QueryType.SELECT, this._onConflict!, qb), this._onConflict);
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
@@ -764,6 +788,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const properties = [
       'flags', '_populate', '_populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
       '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
+      '_comments', '_hintComments',
     ];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop]));
 

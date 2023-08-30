@@ -2757,6 +2757,36 @@ describe('QueryBuilder', () => {
       expect(qb.getParams()).toEqual(['^c.o.*l-te.*st.c.m$']);
     }
 
+    // query comments
+    {
+      const sql1 = pg.em.createQueryBuilder(Author2)
+        .comment('test 123')
+        .hintComment('test 123')
+        .where({ favouriteBook: { $in: ['1', '2', '3'] } })
+        .getFormattedQuery();
+      expect(sql1).toBe(`/* test 123 */ select /*+ test 123 */ "a0".* from "author2" as "a0" where "a0"."favourite_book_uuid_pk" in ('1', '2', '3')`);
+
+      const sql2 = pg.em.createQueryBuilder(Author2).withSchema('my_schema')
+        .comment('test 123')
+        .comment('test 456')
+        .hintComment('test 123')
+        .hintComment('test 456')
+        .where({ favouriteBook: { $in: ['1', '2', '3'] } })
+        .getFormattedQuery();
+      expect(sql2).toBe(`/* test 123 */ /* test 456 */ select /*+ test 123 test 456 */ "a0".* from "my_schema"."author2" as "a0" where "a0"."favourite_book_uuid_pk" in ('1', '2', '3')`);
+
+      const sql3 = pg.em.createQueryBuilder(Author2).withSchema('my_schema')
+        .update({ name: '...' })
+        .comment('test 123')
+        .comment('test 456')
+        .hintComment('test 123')
+        .hintComment('test 456')
+        .where({ favouriteBook: { $in: ['1', '2', '3'] } })
+        .getFormattedQuery();
+      // works only with select queries
+      expect(sql3).toBe(`update "my_schema"."author2" set "name" = '...' where "favourite_book_uuid_pk" in ('1', '2', '3')`);
+    }
+
     await pg.close(true);
   });
 
@@ -2885,6 +2915,35 @@ describe('QueryBuilder', () => {
       .where({ favouriteBook: { $in: ['1', '2', '3'] } })
       .getFormattedQuery();
     expect(sql3).toBe("update `my_schema`.`author2` force index(custom_email_index_name) set `name` = '...' where `favourite_book_uuid_pk` in ('1', '2', '3')");
+  });
+
+  test('query comments', async () => {
+    const sql1 = orm.em.createQueryBuilder(Author2)
+      .comment('test 123')
+      .hintComment('test 123')
+      .where({ favouriteBook: { $in: ['1', '2', '3'] } })
+      .getFormattedQuery();
+    expect(sql1).toBe("/* test 123 */ select /*+ test 123 */ `e0`.* from `author2` as `e0` where `e0`.`favourite_book_uuid_pk` in ('1', '2', '3')");
+
+    const sql2 = orm.em.createQueryBuilder(Author2).withSchema('my_schema')
+      .comment('test 123')
+      .comment('test 456')
+      .hintComment('test 123')
+      .hintComment('test 456')
+      .where({ favouriteBook: { $in: ['1', '2', '3'] } })
+      .getFormattedQuery();
+    expect(sql2).toBe("/* test 123 */ /* test 456 */ select /*+ test 123 test 456 */ `e0`.* from `my_schema`.`author2` as `e0` where `e0`.`favourite_book_uuid_pk` in ('1', '2', '3')");
+
+    const sql3 = orm.em.createQueryBuilder(Author2).withSchema('my_schema')
+      .update({ name: '...' })
+      .comment('test 123')
+      .comment('test 456')
+      .hintComment('test 123')
+      .hintComment('test 456')
+      .where({ favouriteBook: { $in: ['1', '2', '3'] } })
+      .getFormattedQuery();
+    // works only with select queries
+    expect(sql3).toBe("update `my_schema`.`author2` set `name` = '...' where `favourite_book_uuid_pk` in ('1', '2', '3')");
   });
 
   test('$or operator inside auto-joined relation', async () => {

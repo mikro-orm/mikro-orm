@@ -109,15 +109,25 @@ export interface FindOptions<T, P extends string = never> {
   fields?: readonly EntityField<T, P>[];
   schema?: string;
   flags?: QueryFlag[];
+  /** sql only */
   groupBy?: string | string[];
   having?: QBFilterQuery<T>;
+  /** sql only */
   strategy?: LoadStrategy;
   flushMode?: FlushMode;
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  /** sql only */
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
+  /** sql only */
   lockTableAliases?: string[];
   ctx?: Transaction;
   connectionType?: ConnectionType;
+  /** sql only */
+  indexHint?: string;
+  /** sql only */
+  comments?: string | string[];
+  /** sql only */
+  hintComments?: string | string[];
 }
 
 export interface FindOneOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'lockMode'> {
@@ -151,6 +161,12 @@ export interface CountOptions<T extends object, P extends string = never>  {
   populate?: readonly AutoPath<T, P>[] | boolean;
   ctx?: Transaction;
   connectionType?: ConnectionType;
+  /** sql only */
+  indexHint?: string;
+  /** sql only */
+  comments?: string | string[];
+  /** sql only */
+  hintComments?: string | string[];
 }
 
 export interface UpdateOptions<T>  {

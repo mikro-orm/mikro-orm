@@ -59,6 +59,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       .orderBy([...Utils.asArray(options.orderBy), ...joinedPropsOrderBy])
       .groupBy(options.groupBy!)
       .having(options.having!)
+      .indexHint(options.indexHint!)
+      .comment(options.comments!)
+      .hintComment(options.hintComments!)
       .withSchema(this.getSchemaName(meta, options));
 
     if (options.limit !== undefined) {
@@ -152,7 +155,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<T[]>;
   protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type = QueryType.SELECT): Promise<unknown> {
     const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes)
-      .limit(options?.limit, options?.offset);
+      .limit(options?.limit, options?.offset)
+      .indexHint(options.indexHint!)
+      .comment(options.comments!)
+      .hintComment(options.hintComments!);
 
     if (options.orderBy) {
       qb.orderBy(options.orderBy);
@@ -279,6 +285,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     const qb = this.createQueryBuilder(entityName, options.ctx, options.connectionType, false)
+      .indexHint(options.indexHint!)
+      .comment(options.comments!)
+      .hintComment(options.hintComments!)
       .groupBy(options.groupBy!)
       .having(options.having!)
       .populate(options.populate as unknown as PopulateOptions<T>[] ?? [])
@@ -624,24 +633,30 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       where = { ...(where as Dictionary), ...cond } as FilterQuery<T>;
     }
 
+    /* istanbul ignore if */
+    options = { ...options };
+
     orderBy = this.getPivotOrderBy(prop, orderBy);
-    const qb = this.createQueryBuilder<T>(prop.type, ctx, options?.connectionType)
+    const qb = this.createQueryBuilder<T>(prop.type, ctx, options.connectionType)
+      .indexHint(options.indexHint!)
+      .comment(options.comments!)
+      .hintComment(options.hintComments!)
       .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
       .withSchema(this.getSchemaName(prop.targetMeta, options));
     const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, [{ field: prop.pivotEntity }]);
-    const fields = this.buildFields(prop.targetMeta!, (options?.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options?.fields as Field<T>[]);
-    qb.select(fields).populate(populate).where(where).orderBy(orderBy!).setLockMode(options?.lockMode, options?.lockTableAliases);
+    const fields = this.buildFields(prop.targetMeta!, (options.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options.fields as Field<T>[]);
+    qb.select(fields).populate(populate).where(where).orderBy(orderBy!).setLockMode(options.lockMode, options.lockTableAliases);
 
-    if (owners.length === 1 && (options?.offset != null || options?.limit != null)) {
+    if (owners.length === 1 && (options.offset != null || options.limit != null)) {
       qb.limit(options.limit, options.offset);
     }
 
-    if (prop.targetMeta!.schema !== '*' && pivotMeta.schema === '*' && options?.schema) {
+    if (prop.targetMeta!.schema !== '*' && pivotMeta.schema === '*' && options.schema) {
       // eslint-disable-next-line dot-notation
       qb['finalize']();
       // eslint-disable-next-line dot-notation
       Object.values(qb['_joins']).forEach(join => {
-        join.schema = options.schema;
+        join.schema = options!.schema;
       });
     }
 
