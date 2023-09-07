@@ -142,7 +142,7 @@ export class ConfigurationLoader {
 
     if (Object.entries(options?.paths ?? {}).length > 0) {
       Utils.requireFrom('tsconfig-paths', tsConfigPath).register({
-        baseUrl: options.baseUrl,
+        baseUrl: options.baseUrl ?? '.',
         paths: options.paths,
       });
     }

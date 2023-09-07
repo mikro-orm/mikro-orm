@@ -16,6 +16,9 @@ jest.mock(process.cwd() + '/tsconfig.extended-abs.json', () => tscExtendedAbs, {
 const tscExtended = { extends: './tsconfig.extended-abs.json', compilerOptions: { module: 'commonjs' } } as any;
 jest.mock(process.cwd() + '/tsconfig.extended.json', () => tscExtended, { virtual: true });
 
+const tscWithoutBaseUrl = { compilerOptions: { paths: { '@some-path/some': './libs/paths' } } };
+jest.mock(process.cwd() + '/tsconfig.without-baseurl.json', () => tscWithoutBaseUrl, { virtual: true });
+
 const tsc = { compilerOptions: { } } as any;
 jest.mock(process.cwd() + '/tsconfig.json', () => tsc, { virtual: true });
 
@@ -124,6 +127,50 @@ describe('CLIHelper', () => {
     pathExistsMock.mockRestore();
     pkg['mikro-orm'].useTsNode = false;
     requireFromMock.mockRestore();
+  });
+
+  test('configures yargs instance [ts-node and ts-paths] without baseUrl', async () => {
+    const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
+    pathExistsMock.mockResolvedValue(true);
+    pkg['mikro-orm'].useTsNode = true;
+    pkg['mikro-orm'].tsConfigPath = './tsconfig.without-baseurl.json';
+    delete tsc.compilerOptions.baseUrl;
+    const requireFromMock = jest.spyOn(Utils, 'requireFrom');
+    const registerMock = jest.fn();
+    const registerPathsMock = jest.fn();
+    registerMock.mockImplementation(() => {
+      return {
+        config: {
+          options: {
+            ...tscWithoutBaseUrl.compilerOptions,
+          },
+        },
+      };
+    });
+    requireFromMock.mockImplementation(id => {
+      if (id === 'ts-node') {
+        return { register: registerMock };
+      }
+
+      if (id === 'tsconfig-paths') {
+        return { register: registerPathsMock };
+      }
+
+      return {};
+    });
+    const cli = await CLIConfigurator.configure() as any;
+    expect(cli.$0).toBe('mikro-orm');
+    expect(requireFromMock).toHaveBeenCalledTimes(2);
+    expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.without-baseurl.json');
+    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.without-baseurl.json');
+    expect(registerPathsMock).toHaveBeenCalledWith({
+      baseUrl: '.',
+      paths: { '@some-path/some': './libs/paths' },
+    });
+    pathExistsMock.mockRestore();
+    requireFromMock.mockRestore();
+    delete pkg['mikro-orm'].useTsNode;
+    delete pkg['mikro-orm'].tsConfigPath;
   });
 
   test('gets ORM configuration [no mikro-orm.config]', async () => {
