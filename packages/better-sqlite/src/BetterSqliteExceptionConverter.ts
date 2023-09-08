@@ -1,8 +1,7 @@
-import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
   ConnectionException, ExceptionConverter, InvalidFieldNameException, LockWaitTimeoutException, NonUniqueFieldNameException, CheckConstraintViolationException,
   NotNullConstraintViolationException, ReadOnlyException, SyntaxErrorException, TableExistsException, TableNotFoundException, UniqueConstraintViolationException,
-  ForeignKeyConstraintViolationException,
+  ForeignKeyConstraintViolationException, type Dictionary, type DriverException,
 } from '@mikro-orm/core';
 
 export class BetterSqliteExceptionConverter extends ExceptionConverter {

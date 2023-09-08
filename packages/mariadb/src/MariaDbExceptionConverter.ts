@@ -1,8 +1,7 @@
-import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
   DeadlockException, LockWaitTimeoutException, TableExistsException, TableNotFoundException,
   ForeignKeyConstraintViolationException, UniqueConstraintViolationException, InvalidFieldNameException, NonUniqueFieldNameException,
-  SyntaxErrorException, ConnectionException, NotNullConstraintViolationException, ExceptionConverter, CheckConstraintViolationException,
+  SyntaxErrorException, ConnectionException, NotNullConstraintViolationException, ExceptionConverter, CheckConstraintViolationException, type Dictionary, type DriverException,
 } from '@mikro-orm/core';
 
 export class MariaDbExceptionConverter extends ExceptionConverter {

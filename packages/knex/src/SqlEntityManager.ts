@@ -1,6 +1,5 @@
 import type { Knex } from 'knex';
-import type { AnyEntity, ConnectionType, Dictionary, EntityData, EntityName, EntityRepository, GetRepository, QueryResult } from '@mikro-orm/core';
-import { EntityManager } from '@mikro-orm/core';
+import { EntityManager, type AnyEntity, type ConnectionType, type Dictionary, type EntityData, type EntityName, type EntityRepository, type GetRepository, type QueryResult } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from './AbstractSqlDriver';
 import { QueryBuilder } from './query';
 import type { SqlEntityRepository } from './SqlEntityRepository';

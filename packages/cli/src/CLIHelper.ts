@@ -1,9 +1,6 @@
 import { pathExists } from 'fs-extra';
 import yargs from 'yargs';
-import { platform } from 'os';
-import { fileURLToPath } from 'url';
-import type { Configuration, IDatabaseDriver, Options } from '@mikro-orm/core';
-import { colors, ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
+import { colors, ConfigurationLoader, MikroORM, Utils, type Configuration, type IDatabaseDriver, type Options } from '@mikro-orm/core';
 
 /**
  * @internal

@@ -1,8 +1,6 @@
 import { inspect } from 'util';
-import type { Configuration } from './utils';
-import { QueryHelper, TransactionContext, Utils } from './utils';
-import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
-import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, helper, Reference } from './entity';
+import { QueryHelper, TransactionContext, Utils, type Configuration } from './utils';
+import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, helper, Reference, type AssignOptions, type EntityLoaderOptions, type EntityRepository, type IdentifiedReference } from './entity';
 import { ChangeSet, ChangeSetType, UnitOfWork } from './unit-of-work';
 import type {
   CountOptions,
@@ -39,12 +37,10 @@ import type {
   Primary,
   RequiredEntityData,
 } from './typings';
-import type { TransactionOptions } from './enums';
-import { EventType, FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
+import { EventType, FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES, type TransactionOptions } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
-import type { FlushEventArgs } from './events';
-import { EventManager, TransactionEventBroadcaster } from './events';
+import { EventManager, TransactionEventBroadcaster, type FlushEventArgs } from './events';
 import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
 

@@ -1,8 +1,6 @@
 import { ensureDir, writeFile } from 'fs-extra';
-import type { EntityMetadata, EntityProperty, GenerateOptions, MikroORM } from '@mikro-orm/core';
-import { ReferenceType, Utils } from '@mikro-orm/core';
-import type { EntityManager } from '@mikro-orm/knex';
-import { DatabaseSchema } from '@mikro-orm/knex';
+import { ReferenceType, Utils, type EntityMetadata, type EntityProperty, type GenerateOptions, type MikroORM } from '@mikro-orm/core';
+import { DatabaseSchema, type EntityManager } from '@mikro-orm/knex';
 import { SourceFile } from './SourceFile';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
 

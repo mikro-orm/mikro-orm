@@ -1,5 +1,4 @@
-import type { Dictionary, DriverException } from '@mikro-orm/core';
-import { UniqueConstraintViolationException, ExceptionConverter, TableExistsException } from '@mikro-orm/core';
+import { UniqueConstraintViolationException, ExceptionConverter, TableExistsException, type Dictionary, type DriverException } from '@mikro-orm/core';
 
 export class MongoExceptionConverter extends ExceptionConverter {
 

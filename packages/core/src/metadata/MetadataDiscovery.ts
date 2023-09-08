@@ -1,8 +1,7 @@
 import { basename, extname } from 'path';
 import globby from 'globby';
 
-import type { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityProperty } from '../typings';
-import { EntityMetadata } from '../typings';
+import { EntityMetadata, type AnyEntity, type Constructor, type Dictionary, type EntityClass, type EntityClassGroup, type EntityProperty } from '../typings';
 import { Utils } from '../utils/Utils';
 import type { Configuration } from '../utils/Configuration';
 import { MetadataValidator } from './MetadataValidator';

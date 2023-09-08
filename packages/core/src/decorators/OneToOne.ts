@@ -1,6 +1,5 @@
 import { ReferenceType } from '../enums';
-import type { OneToManyOptions } from './OneToMany';
-import { createOneToDecorator } from './OneToMany';
+import { createOneToDecorator, type OneToManyOptions } from './OneToMany';
 import type { AnyString, EntityName } from '../typings';
 
 export function OneToOne<T, O>(

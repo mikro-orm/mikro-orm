@@ -1,5 +1,4 @@
-import type { Dictionary, EntityMetadata, MetadataStorage } from '@mikro-orm/core';
-import { ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
+import { ReferenceType, Utils, ValidationError, type Dictionary, type EntityMetadata, type MetadataStorage } from '@mikro-orm/core';
 import { ObjectCriteriaNode } from './ObjectCriteriaNode';
 import { ArrayCriteriaNode } from './ArrayCriteriaNode';
 import { ScalarCriteriaNode } from './ScalarCriteriaNode';

@@ -1,10 +1,8 @@
 import { createRequire } from 'module';
-import type { GlobbyOptions } from 'globby';
-import globby from 'globby';
+import globby, { type GlobbyOptions } from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
 import { platform } from 'os';
-import type { URL } from 'url';
-import { fileURLToPath, pathToFileURL } from 'url';
+import { type URL, fileURLToPath, pathToFileURL } from 'url';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 // @ts-ignore

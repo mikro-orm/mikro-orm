@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import type { Dictionary, EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
+import type { EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
 import { helper, wrap } from './wrap';
 import { ReferenceType } from '../enums';
@@ -276,23 +276,23 @@ export class ArrayCollection<T extends object, O extends object> {
    * Maps the collection items to a dictionary, indexed by the key you specify.
    * If there are more items with the same key, only the first one will be present.
    */
-  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1): Record<T[K1], T>;
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1): Record<T[K1] & PropertyKey, T>;
 
   /**
    * Maps the collection items to a dictionary, indexed by the key you specify.
    * If there are more items with the same key, only the first one will be present.
    */
-  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey: K2): Record<T[K1], T[K2]>;
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey: K2): Record<T[K1] & PropertyKey, T[K2]>;
 
   /**
    * Maps the collection items to a dictionary, indexed by the key you specify.
    * If there are more items with the same key, only the first one will be present.
    */
-  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey?: K2): Record<T[K1], T> | Record<T[K1], T[K2]> {
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey?: K2): Record<T[K1] & PropertyKey, T> | Record<T[K1] & PropertyKey, T[K2]> {
     return this.reduce((obj, item) => {
       obj[item[key] as string] ??= valueKey ? item[valueKey] : item;
       return obj;
-    }, {} as Dictionary);
+    }, {} as any);
   }
 
   count(): number {

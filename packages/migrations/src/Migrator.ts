@@ -1,11 +1,8 @@
-import type { InputMigrations, MigrateDownOptions, MigrateUpOptions, MigrationParams, RunnableMigration } from 'umzug';
-import { Umzug } from 'umzug';
+import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
 import { basename, join } from 'path';
 import { ensureDir, pathExists, writeJSON } from 'fs-extra';
-import type { Constructor, Dictionary, IMigrationGenerator, IMigrator, MikroORM, Transaction } from '@mikro-orm/core';
-import { t, Type, UnknownType, Utils } from '@mikro-orm/core';
-import type { EntityManager } from '@mikro-orm/knex';
-import { DatabaseSchema, DatabaseTable, SchemaGenerator } from '@mikro-orm/knex';
+import { t, Type, UnknownType, Utils, type Constructor, type Dictionary, type IMigrationGenerator, type IMigrator, type MikroORM, type Transaction } from '@mikro-orm/core';
+import { DatabaseSchema, DatabaseTable, SchemaGenerator, type EntityManager } from '@mikro-orm/knex';
 import type { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
 import { MigrationStorage } from './MigrationStorage';

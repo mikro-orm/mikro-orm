@@ -1,10 +1,8 @@
-import type { Configuration } from '../utils';
-import { Utils } from '../utils';
+import { Utils, type Configuration } from '../utils';
 import type { MetadataStorage } from '../metadata';
 import type { AnyEntity, EntityData, EntityProperty } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import type { Collection, EntityValidator } from '../entity';
-import { helper } from '../entity';
+import { helper, type Collection, type EntityValidator } from '../entity';
 import type { Platform } from '../platforms';
 import { ReferenceType } from '../enums';
 

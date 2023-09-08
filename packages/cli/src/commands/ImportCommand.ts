@@ -1,5 +1,4 @@
-import type { MikroORM } from '@mikro-orm/core';
-import { colors } from '@mikro-orm/core';
+import { colors, type MikroORM } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import type { ArgumentsCamelCase, CommandModule } from 'yargs';
 import { CLIHelper } from '../CLIHelper';

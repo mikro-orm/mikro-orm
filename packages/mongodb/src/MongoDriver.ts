@@ -1,11 +1,10 @@
 import type { ClientSession } from 'mongodb';
 import { ObjectId } from 'bson';
-import type {
-  EntityData, FilterQuery, Configuration, FindOneOptions, FindOptions,
-  QueryResult, Transaction, IDatabaseDriver, EntityManager, Dictionary, PopulateOptions,
-  CountOptions, EntityDictionary, EntityField, NativeInsertUpdateOptions, NativeInsertUpdateManyOptions,
-} from '@mikro-orm/core';
-import { DatabaseDriver, EntityManagerType, ReferenceType, Utils } from '@mikro-orm/core';
+import {
+ DatabaseDriver, EntityManagerType, ReferenceType, Utils, type
+  EntityData, type FilterQuery, type Configuration, type FindOneOptions, type FindOptions, type
+  QueryResult, type Transaction, type IDatabaseDriver, type EntityManager, type Dictionary, type PopulateOptions, type
+  CountOptions, type EntityDictionary, type EntityField, type NativeInsertUpdateOptions, type NativeInsertUpdateManyOptions } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
 import { MongoEntityManager } from './MongoEntityManager';

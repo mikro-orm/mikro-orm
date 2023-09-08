@@ -1,5 +1,4 @@
-import type { Dictionary, EntityMetadata, EntityOptions, EntityProperty, NamingStrategy, Platform } from '@mikro-orm/core';
-import { DateType, DecimalType, ReferenceType, UnknownType, Utils } from '@mikro-orm/core';
+import { DateType, DecimalType, ReferenceType, UnknownType, Utils, type Dictionary, type EntityMetadata, type EntityOptions, type EntityProperty, type NamingStrategy, type Platform } from '@mikro-orm/core';
 
 export class SourceFile {
 

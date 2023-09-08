@@ -1,5 +1,4 @@
-import type { Dictionary, EntityMetadata, EntityProperty, MikroORM } from '@mikro-orm/core';
-import { AbstractSchemaGenerator, Utils } from '@mikro-orm/core';
+import { AbstractSchemaGenerator, Utils, type Dictionary, type EntityMetadata, type EntityProperty, type MikroORM } from '@mikro-orm/core';
 import type { MongoDriver } from './MongoDriver';
 
 export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {

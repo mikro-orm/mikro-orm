@@ -1,7 +1,5 @@
-import type { AbstractSqlConnection, Check, Column, Index, Knex, TableDifference, DatabaseTable, DatabaseSchema, Table, ForeignKey } from '@mikro-orm/knex';
-import { SchemaHelper } from '@mikro-orm/knex';
-import type { Dictionary, Type } from '@mikro-orm/core';
-import { MediumIntType } from '@mikro-orm/core';
+import { SchemaHelper, type AbstractSqlConnection, type Check, type Column, type Index, type Knex, type TableDifference, type DatabaseTable, type DatabaseSchema, type Table, type ForeignKey } from '@mikro-orm/knex';
+import { MediumIntType, type Dictionary, type Type } from '@mikro-orm/core';
 
 /* istanbul ignore next */
 export class MariaDbSchemaHelper extends SchemaHelper {

@@ -1,12 +1,9 @@
-import type { CountOptions, LockOptions, DeleteOptions, FindOneOptions, FindOptions, IDatabaseDriver, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions, DriverMethodOptions } from './IDatabaseDriver';
-import { EntityManagerType } from './IDatabaseDriver';
+import { EntityManagerType, type CountOptions, type LockOptions, type DeleteOptions, type FindOneOptions, type FindOptions, type IDatabaseDriver, type NativeInsertUpdateManyOptions, type NativeInsertUpdateOptions, type DriverMethodOptions } from './IDatabaseDriver';
 import type { ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
 import type { MetadataStorage } from '../metadata';
 import type { Connection, QueryResult, Transaction } from '../connections';
-import type { Configuration, ConnectionOptions } from '../utils';
-import { EntityComparator, Utils } from '../utils';
-import type { QueryOrderMap } from '../enums';
-import { QueryOrder, ReferenceType } from '../enums';
+import { EntityComparator, Utils, type Configuration, type ConnectionOptions } from '../utils';
+import { QueryOrder, ReferenceType, type QueryOrderMap } from '../enums';
 import type { Platform } from '../platforms';
 import type { Collection } from '../entity/Collection';
 import { EntityManager } from '../EntityManager';

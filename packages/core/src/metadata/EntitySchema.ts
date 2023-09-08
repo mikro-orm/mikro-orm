@@ -1,5 +1,4 @@
-import type { AnyEntity, Constructor, DeepPartial, Dictionary, EntityName, EntityProperty, ExcludeFunctions, ExpandProperty } from '../typings';
-import { EntityMetadata } from '../typings';
+import { EntityMetadata, type AnyEntity, type Constructor, type DeepPartial, type Dictionary, type EntityName, type EntityProperty, type ExcludeFunctions, type ExpandProperty } from '../typings';
 import type {
   EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
   SerializedPrimaryKeyOptions, UniqueOptions,

@@ -1,7 +1,6 @@
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import type { Cascade, LoadStrategy } from '../enums';
-import { ReferenceType } from '../enums';
+import { ReferenceType, type Cascade, type LoadStrategy } from '../enums';
 import type { EntityName, EntityProperty, Constructor, CheckCallback, Dictionary, AnyString, AnyEntity } from '../typings';
 import type { Type, types } from '../types';
 

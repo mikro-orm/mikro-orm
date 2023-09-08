@@ -1,5 +1,4 @@
-import type { EntityName } from '@mikro-orm/core';
-import { EntityRepository } from '@mikro-orm/core';
+import { EntityRepository, type EntityName } from '@mikro-orm/core';
 import type { Collection } from 'mongodb';
 import type { MongoEntityManager } from './MongoEntityManager';
 

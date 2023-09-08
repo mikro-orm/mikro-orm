@@ -4,11 +4,9 @@ import type {
   AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, IHydrator,
   IWrappedEntityInternal, Populate, PopulateOptions, Primary, AutoPath, Loaded,
 } from '../typings';
-import type { IdentifiedReference } from './Reference';
-import { Reference } from './Reference';
+import { Reference, type IdentifiedReference } from './Reference';
 import { EntityTransformer } from '../serialization/EntityTransformer';
-import type { AssignOptions } from './EntityAssigner';
-import { EntityAssigner } from './EntityAssigner';
+import { EntityAssigner, type AssignOptions } from './EntityAssigner';
 import type { EntityLoaderOptions } from './EntityLoader';
 import { Utils } from '../utils/Utils';
 import type { LockMode } from '../enums';

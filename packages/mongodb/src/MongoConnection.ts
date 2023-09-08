@@ -1,38 +1,36 @@
-import type {
-  BulkWriteResult,
-  ClientSession,
-  Collection,
-  Db,
-  DeleteResult,
-  Filter,
-  InsertManyResult,
-  InsertOneResult,
-  MongoClientOptions,
-  OptionalUnlessRequiredId,
-  TransactionOptions,
-  UpdateFilter,
-  UpdateResult,
-} from 'mongodb';
-import { MongoClient } from 'mongodb';
+import {
+ MongoClient, type
+  BulkWriteResult, type
+  ClientSession, type
+  Collection, type
+  Db, type
+  DeleteResult, type
+  Filter, type
+  InsertManyResult, type
+  InsertOneResult, type
+  MongoClientOptions, type
+  OptionalUnlessRequiredId, type
+  TransactionOptions, type
+  UpdateFilter, type
+  UpdateResult } from 'mongodb';
 import { ObjectId } from 'bson';
 import { inspect } from 'util';
-import type {
-  AnyEntity,
-  Configuration,
-  ConnectionConfig,
-  ConnectionOptions,
-  ConnectionType,
-  Dictionary,
-  EntityData,
-  EntityName,
-  FilterQuery,
-  IsolationLevel,
-  QueryOrderMap,
-  QueryResult,
-  Transaction,
-  TransactionEventBroadcaster,
-} from '@mikro-orm/core';
-import { Connection, EventType, QueryOrder, Utils, ValidationError } from '@mikro-orm/core';
+import {
+ Connection, EventType, QueryOrder, Utils, ValidationError, type
+  AnyEntity, type
+  Configuration, type
+  ConnectionConfig, type
+  ConnectionOptions, type
+  ConnectionType, type
+  Dictionary, type
+  EntityData, type
+  EntityName, type
+  FilterQuery, type
+  IsolationLevel, type
+  QueryOrderMap, type
+  QueryResult, type
+  Transaction, type
+  TransactionEventBroadcaster } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
 

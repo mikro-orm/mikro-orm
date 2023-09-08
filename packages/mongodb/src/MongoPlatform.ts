@@ -1,9 +1,8 @@
 import { ObjectId } from 'bson';
-import type {
-  IPrimaryKey, Primary, NamingStrategy, Constructor, EntityRepository, EntityProperty,
-  PopulateOptions, EntityMetadata, IDatabaseDriver, EntityManager, Configuration, MikroORM,
-} from '@mikro-orm/core';
-import { Platform, MongoNamingStrategy, Utils, ReferenceType, MetadataError } from '@mikro-orm/core';
+import {
+ Platform, MongoNamingStrategy, Utils, ReferenceType, MetadataError, type
+  IPrimaryKey, type Primary, type NamingStrategy, type Constructor, type EntityRepository, type EntityProperty, type
+  PopulateOptions, type EntityMetadata, type IDatabaseDriver, type EntityManager, type Configuration, type MikroORM } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
 import { MongoEntityRepository } from './MongoEntityRepository';
 import { MongoSchemaGenerator } from './MongoSchemaGenerator';

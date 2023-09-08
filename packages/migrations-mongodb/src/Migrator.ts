@@ -1,9 +1,7 @@
-import type { InputMigrations, MigrateDownOptions, MigrateUpOptions, MigrationParams, RunnableMigration } from 'umzug';
-import { Umzug } from 'umzug';
+import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
 import { join } from 'path';
 import { ensureDir } from 'fs-extra';
-import type { Constructor, IMigrationGenerator, IMigrator, MikroORM, Transaction } from '@mikro-orm/core';
-import { Utils } from '@mikro-orm/core';
+import { Utils, type Constructor, type IMigrationGenerator, type IMigrator, type MikroORM, type Transaction } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/mongodb';
 import type { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';

@@ -1,7 +1,6 @@
 import { clone } from '../utils/clone';
 import { EntityRepository } from '../entity';
-import type { NamingStrategy } from '../naming-strategy';
-import { UnderscoreNamingStrategy } from '../naming-strategy';
+import { UnderscoreNamingStrategy, type NamingStrategy } from '../naming-strategy';
 import type { Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import type { EntityManager } from '../EntityManager';

@@ -1,16 +1,16 @@
 import type { Transaction } from './connections';
-import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrderMap } from './enums';
-import { ReferenceType } from './enums';
-import type {
-  AssignOptions,
-  Collection,
-  EntityFactory,
-  EntityIdentifier,
-  EntityLoaderOptions,
-  EntityRepository,
-  IdentifiedReference,
+import { ReferenceType, type Cascade, type EventType, type LoadStrategy, type LockMode, type QueryOrderMap } from './enums';
+import {
+  EntityHelper,
+  Reference,
+  type AssignOptions,
+  type Collection,
+  type EntityFactory,
+  type EntityIdentifier,
+  type EntityLoaderOptions,
+  type EntityRepository,
+  type IdentifiedReference,
 } from './entity';
-import { EntityHelper, Reference } from './entity';
 import type { SerializationContext } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
 import type { Type, types } from './types';

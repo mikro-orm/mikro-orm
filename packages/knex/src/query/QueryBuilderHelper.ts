@@ -1,22 +1,20 @@
 import type { Knex } from 'knex';
 import { inspect } from 'util';
-import type {
-  Dictionary,
-  EntityData,
-  EntityMetadata,
-  EntityProperty,
-  FlatQueryOrderMap,
-  QBFilterQuery,
-} from '@mikro-orm/core';
 import {
+
   GroupOperator,
   LockMode,
   OptimisticLockError,
   QueryOperator,
   QueryOrderNumeric,
   ReferenceType,
-  Utils,
-} from '@mikro-orm/core';
+  Utils, type
+  Dictionary, type
+  EntityData, type
+  EntityMetadata, type
+  EntityProperty, type
+  FlatQueryOrderMap, type
+  QBFilterQuery } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';

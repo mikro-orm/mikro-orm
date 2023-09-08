@@ -1,6 +1,5 @@
 import type { Knex } from 'knex';
-import type { Connection, Dictionary } from '@mikro-orm/core';
-import { BigIntType, EnumType, Utils } from '@mikro-orm/core';
+import { BigIntType, EnumType, Utils, type Connection, type Dictionary } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 import type { Check, Column, Index, Table, TableDifference } from '../typings';

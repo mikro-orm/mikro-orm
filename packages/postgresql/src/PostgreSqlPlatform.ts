@@ -1,6 +1,5 @@
 import { Client } from 'pg';
-import type { EntityProperty, Type, SimpleColumnMeta } from '@mikro-orm/core';
-import { expr, JsonProperty, Utils } from '@mikro-orm/core';
+import { expr, JsonProperty, Utils, type EntityProperty, type Type, type SimpleColumnMeta } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';

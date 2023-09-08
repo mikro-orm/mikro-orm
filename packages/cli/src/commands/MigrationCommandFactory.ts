@@ -1,6 +1,5 @@
 import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
-import type { Configuration, MikroORM, MikroORMOptions, IMigrator } from '@mikro-orm/core';
-import { Utils, colors } from '@mikro-orm/core';
+import { Utils, colors, type Configuration, type MikroORM, type MikroORMOptions, type IMigrator } from '@mikro-orm/core';
 import type { MigrateOptions } from '@mikro-orm/migrations';
 import { CLIHelper } from '../CLIHelper';
 

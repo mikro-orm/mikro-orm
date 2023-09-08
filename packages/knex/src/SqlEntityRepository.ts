@@ -1,6 +1,5 @@
 import type { Knex } from 'knex';
-import type { ConnectionType, EntityName } from '@mikro-orm/core';
-import { EntityRepository } from '@mikro-orm/core';
+import { EntityRepository, type ConnectionType, type EntityName } from '@mikro-orm/core';
 import type { SqlEntityManager } from './SqlEntityManager';
 import type { QueryBuilder } from './query';
 

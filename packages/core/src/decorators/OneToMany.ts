@@ -1,8 +1,7 @@
 import type { ReferenceOptions } from './Property';
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import type { QueryOrderMap } from '../enums';
-import { ReferenceType } from '../enums';
+import { ReferenceType, type QueryOrderMap } from '../enums';
 import type { EntityName, EntityProperty, AnyEntity } from '../typings';
 
 export function createOneToDecorator<T, O>(

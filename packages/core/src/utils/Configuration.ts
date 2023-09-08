@@ -2,8 +2,7 @@ import { inspect } from 'util';
 import { pathExistsSync } from 'fs-extra';
 
 import type { NamingStrategy } from '../naming-strategy';
-import type { CacheAdapter } from '../cache';
-import { FileCacheAdapter, NullCacheAdapter } from '../cache';
+import { FileCacheAdapter, NullCacheAdapter, type CacheAdapter } from '../cache';
 import type { EntityRepository } from '../entity/EntityRepository';
 import type {
   AnyEntity,
@@ -22,8 +21,7 @@ import type {
 } from '../typings';
 import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
-import type { Logger, LoggerNamespace, LoggerOptions } from '../logging';
-import { DefaultLogger, colors } from '../logging';
+import { DefaultLogger, colors, type Logger, type LoggerNamespace, type LoggerOptions } from '../logging';
 import { Utils } from '../utils/Utils';
 import type { EntityManager } from '../EntityManager';
 import type { Platform } from '../platforms';

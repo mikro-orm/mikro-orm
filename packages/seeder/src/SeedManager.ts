@@ -1,6 +1,5 @@
 import globby from 'globby';
-import type { Constructor, EntityManager, ISeedManager, MikroORM } from '@mikro-orm/core';
-import { Utils } from '@mikro-orm/core';
+import { Utils, type Constructor, type EntityManager, type ISeedManager, type MikroORM } from '@mikro-orm/core';
 import type { Seeder } from './Seeder';
 import { ensureDir, writeFile } from 'fs-extra';
 

@@ -1,7 +1,6 @@
 import TypeOverrides from 'pg/lib/type-overrides';
 import type { Dictionary } from '@mikro-orm/core';
-import type { Knex } from '@mikro-orm/knex';
-import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
+import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
 

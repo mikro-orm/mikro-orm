@@ -1,5 +1,4 @@
-import type { Argv } from 'yargs';
-import yargs from 'yargs';
+import yargs, { type Argv } from 'yargs';
 
 import { ConfigurationLoader, Utils } from '@mikro-orm/core';
 import { ClearCacheCommand } from './commands/ClearCacheCommand';

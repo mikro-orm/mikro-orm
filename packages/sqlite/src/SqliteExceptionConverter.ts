@@ -1,7 +1,6 @@
-import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
   ConnectionException, ExceptionConverter, InvalidFieldNameException, LockWaitTimeoutException, NonUniqueFieldNameException, CheckConstraintViolationException,
-  NotNullConstraintViolationException, ReadOnlyException, SyntaxErrorException, TableExistsException, TableNotFoundException, UniqueConstraintViolationException, ForeignKeyConstraintViolationException,
+  NotNullConstraintViolationException, ReadOnlyException, SyntaxErrorException, TableExistsException, TableNotFoundException, UniqueConstraintViolationException, ForeignKeyConstraintViolationException, type Dictionary, type DriverException,
 } from '@mikro-orm/core';
 
 export class SqliteExceptionConverter extends ExceptionConverter {

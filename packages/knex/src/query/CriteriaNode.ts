@@ -1,6 +1,5 @@
 import { inspect } from 'util';
-import type { Dictionary, EntityProperty, MetadataStorage } from '@mikro-orm/core';
-import { ReferenceType, Utils } from '@mikro-orm/core';
+import { ReferenceType, Utils, type Dictionary, type EntityProperty, type MetadataStorage } from '@mikro-orm/core';
 import type { ICriteriaNode, IQueryBuilder } from '../typings';
 
 /**

@@ -1,12 +1,10 @@
 import type { EntityManagerType, IDatabaseDriver } from './drivers';
 import { MetadataDiscovery, MetadataStorage, MetadataValidator, ReflectMetadataProvider } from './metadata';
-import type { Options } from './utils';
-import type { Logger } from './logging';
-import { Configuration, ConfigurationLoader, Utils } from './utils';
+import { Configuration, ConfigurationLoader, Utils, type Options } from './utils';
+import { colors, type Logger } from './logging';
 import { NullCacheAdapter } from './cache';
 import type { EntityManager } from './EntityManager';
 import type { Constructor, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings';
-import { colors } from './logging';
 
 /**
  * Helper class for bootstrapping the MikroORM.

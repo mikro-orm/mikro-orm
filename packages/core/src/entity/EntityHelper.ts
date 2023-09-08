@@ -1,14 +1,13 @@
 import { inspect } from 'util';
 
 import type { EntityManager } from '../EntityManager';
-import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty, IHydrator } from '../typings';
+import { EntityRepositoryType, OptionalProps, PrimaryKeyProp, PrimaryKeyType, type AnyEntity, type Dictionary, type EntityMetadata, type EntityProperty, type IHydrator } from '../typings';
 import { EntityTransformer } from '../serialization/EntityTransformer';
 import { Reference } from './Reference';
 import { Utils } from '../utils/Utils';
 import { WrappedEntity } from './WrappedEntity';
 import { ReferenceType } from '../enums';
 import { helper } from './wrap';
-import { EntityRepositoryType, OptionalProps, PrimaryKeyProp, PrimaryKeyType } from '../typings';
 
 export class EntityHelper {
 

@@ -1,8 +1,7 @@
-import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
   DeadlockException, ExceptionConverter, ForeignKeyConstraintViolationException, InvalidFieldNameException,
   NonUniqueFieldNameException, NotNullConstraintViolationException, SyntaxErrorException, TableExistsException,
-  TableNotFoundException, UniqueConstraintViolationException, CheckConstraintViolationException,
+  TableNotFoundException, UniqueConstraintViolationException, CheckConstraintViolationException, type Dictionary, type DriverException,
 } from '@mikro-orm/core';
 
 export class PostgreSqlExceptionConverter extends ExceptionConverter {

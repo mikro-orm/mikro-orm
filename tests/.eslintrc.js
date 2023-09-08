@@ -13,5 +13,6 @@ module.exports = {
     'no-console': ['error', { allow: ['time', 'timeEnd'] }],
     'no-control-regex': 'off',
     'no-empty': 'off',
+    'import/no-duplicates': 'off',
   },
 };

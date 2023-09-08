@@ -1,27 +1,7 @@
 import { inspect } from 'util';
 import type { Knex } from 'knex';
-import type {
-  AnyEntity,
-  ConnectionType,
-  Dictionary,
-  EntityData,
-  EntityMetadata,
-  EntityName,
-  EntityProperty,
-  FilterQuery,
-  FlatQueryOrderMap,
-  FlushMode,
-  GroupOperator,
-  MetadataStorage,
-  ObjectQuery,
-  PopulateOptions,
-  QBFilterQuery,
-  QBQueryOrderMap,
-  QueryOrderMap,
-  QueryResult,
-  RequiredEntityData,
-} from '@mikro-orm/core';
 import {
+
   helper,
   LoadStrategy,
   LockMode,
@@ -31,12 +11,29 @@ import {
   ReferenceType,
   serialize,
   Utils,
-  ValidationError,
-} from '@mikro-orm/core';
+  ValidationError, type
+  AnyEntity, type
+  ConnectionType, type
+  Dictionary, type
+  EntityData, type
+  EntityMetadata, type
+  EntityName, type
+  EntityProperty, type
+  FilterQuery, type
+  FlatQueryOrderMap, type
+  FlushMode, type
+  GroupOperator, type
+  MetadataStorage, type
+  ObjectQuery, type
+  PopulateOptions, type
+  QBFilterQuery, type
+  QBQueryOrderMap, type
+  QueryOrderMap, type
+  QueryResult, type
+  RequiredEntityData } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
-import type { Alias } from './QueryBuilderHelper';
-import { QueryBuilderHelper } from './QueryBuilderHelper';
+import { QueryBuilderHelper, type Alias } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
 import type { Field, JoinOptions } from '../typings';

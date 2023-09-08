@@ -1,6 +1,5 @@
 import type { Connection, Dictionary } from '@mikro-orm/core';
-import type { AbstractSqlConnection, Index, Check } from '@mikro-orm/knex';
-import { SchemaHelper } from '@mikro-orm/knex';
+import { SchemaHelper, type AbstractSqlConnection, type Index, type Check } from '@mikro-orm/knex';
 
 export class SqliteSchemaHelper extends SchemaHelper {
 

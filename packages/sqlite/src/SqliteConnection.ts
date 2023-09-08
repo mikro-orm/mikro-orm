@@ -1,9 +1,7 @@
 import { ensureDir, readFile } from 'fs-extra';
 import { dirname } from 'path';
-import type { Knex } from '@mikro-orm/knex';
-import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
-import type { Dictionary } from '@mikro-orm/core';
-import { Utils } from '@mikro-orm/core';
+import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
+import { Utils, type Dictionary } from '@mikro-orm/core';
 
 export class SqliteConnection extends AbstractSqlConnection {
 

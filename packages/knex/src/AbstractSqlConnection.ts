@@ -1,10 +1,8 @@
-import type { Knex } from 'knex';
-import { knex } from 'knex';
+import { knex, type Knex } from 'knex';
 import { readFile } from 'fs-extra';
-import type {
-  AnyEntity, Configuration, ConnectionOptions, EntityData, IsolationLevel, QueryResult,
-  Transaction, TransactionEventBroadcaster } from '@mikro-orm/core';
-import { Connection, EventType, Utils,
+import { Connection, EventType, Utils, type
+  AnyEntity, type Configuration, type ConnectionOptions, type EntityData, type IsolationLevel, type QueryResult, type
+  Transaction, type TransactionEventBroadcaster,
 } from '@mikro-orm/core';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { MonkeyPatchable } from './MonkeyPatchable';

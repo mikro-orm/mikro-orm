@@ -1,5 +1,4 @@
-import type { Dictionary, EntityData } from '../typings';
-import { EntityMetadata } from '../typings';
+import { EntityMetadata, type Dictionary, type EntityData } from '../typings';
 import { Utils } from '../utils/Utils';
 import { MetadataError } from '../errors';
 import type { EntityManager } from '../EntityManager';

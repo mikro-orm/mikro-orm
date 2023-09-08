@@ -2,8 +2,7 @@ import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, FilterQuery, Loa
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
-import type { LockMode, QueryOrderMap } from '../enums';
-import { QueryOrder, ReferenceType } from '../enums';
+import { QueryOrder, ReferenceType, type LockMode, type QueryOrderMap } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
 import type { FindOptions } from '../drivers/IDatabaseDriver';
@@ -248,17 +247,17 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1): Record<T[K1], T>;
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1): Record<T[K1] & PropertyKey, T>;
 
   /**
    * @inheritDoc
    */
-  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey: K2): Record<T[K1], T[K2]>;
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey: K2): Record<T[K1] & PropertyKey, T[K2]>;
 
   /**
    * @inheritDoc
    */
-  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey?: K2): Record<T[K1], T> | Record<T[K1], T[K2]> {
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey?: K2): Record<T[K1] & PropertyKey, T> | Record<T[K1] & PropertyKey, T[K2]> {
     this.checkInitialized();
     return super.indexBy(key, valueKey as never);
   }

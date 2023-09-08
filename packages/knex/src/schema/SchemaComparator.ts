@@ -1,6 +1,5 @@
 import { inspect } from 'util';
-import type { Dictionary, EntityProperty } from '@mikro-orm/core';
-import { BooleanType, DateTimeType, JsonType, parseJsonSafe, Utils } from '@mikro-orm/core';
+import { BooleanType, DateTimeType, JsonType, parseJsonSafe, Utils, type Dictionary, type EntityProperty } from '@mikro-orm/core';
 import type { Check, Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';

@@ -1,5 +1,4 @@
-import type { TransformContext } from './Type';
-import { Type } from './Type';
+import { Type, type TransformContext } from './Type';
 import { Utils } from '../utils';
 import type { EntityProperty } from '../typings';
 import type { Platform } from '../platforms';

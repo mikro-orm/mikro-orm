@@ -1,12 +1,9 @@
 import type { MetadataStorage } from '../metadata';
 import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
-import type { EntityFactory, EntityValidator, Collection } from '../entity';
-import { EntityIdentifier, helper } from '../entity';
-import type { ChangeSet } from './ChangeSet';
-import { ChangeSetType } from './ChangeSet';
+import { EntityIdentifier, helper, type EntityFactory, type EntityValidator, type Collection } from '../entity';
+import { ChangeSetType, type ChangeSet } from './ChangeSet';
 import type { QueryResult } from '../connections';
-import type { Configuration } from '../utils';
-import { Utils } from '../utils';
+import { Utils, type Configuration } from '../utils';
 import type { DriverMethodOptions, IDatabaseDriver } from '../drivers';
 import { OptimisticLockError } from '../errors';
 import { ReferenceType } from '../enums';

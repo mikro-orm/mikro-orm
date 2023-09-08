@@ -1,5 +1,4 @@
-import type { Dictionary, EntityMetadata, EntityProperty, NamingStrategy } from '@mikro-orm/core';
-import { Cascade, DateTimeType, DecimalType, EntitySchema, ReferenceType, t, Utils } from '@mikro-orm/core';
+import { Cascade, DateTimeType, DecimalType, EntitySchema, ReferenceType, t, Utils, type Dictionary, type EntityMetadata, type EntityProperty, type NamingStrategy } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
 import type { Check, Column, ForeignKey, Index } from '../typings';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';

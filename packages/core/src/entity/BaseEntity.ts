@@ -1,8 +1,6 @@
-import type { IdentifiedReference } from './Reference';
-import { Reference } from './Reference';
+import { Reference, type IdentifiedReference } from './Reference';
 import type { AutoPath, EntityData, EntityDTO, Loaded } from '../typings';
-import type { AssignOptions } from './EntityAssigner';
-import { EntityAssigner } from './EntityAssigner';
+import { EntityAssigner, type AssignOptions } from './EntityAssigner';
 import type { EntityLoaderOptions } from './EntityLoader';
 import { helper } from './wrap';
 

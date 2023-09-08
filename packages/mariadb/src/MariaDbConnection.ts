@@ -1,6 +1,5 @@
 import type { Connection } from 'mariadb';
-import type { Knex } from '@mikro-orm/knex';
-import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
+import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
 
 export class MariaDbConnection extends AbstractSqlConnection {
 

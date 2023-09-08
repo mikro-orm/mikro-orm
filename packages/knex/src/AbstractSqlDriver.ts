@@ -1,11 +1,10 @@
 import type { Knex } from 'knex';
-import type {
-  AnyEntity, Collection, ConnectionType, Configuration, Constructor, CountOptions, DeleteOptions, Dictionary,
-  DriverMethodOptions, EntityData, EntityDictionary, EntityField, EntityManager, EntityMetadata, EntityName, EntityProperty, FilterQuery,
-  FindOneOptions, FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions,
-  PopulateOptions, Primary, QueryOrderMap, QueryResult, RequiredEntityData, Transaction,
-} from '@mikro-orm/core';
-import { DatabaseDriver, EntityManagerType, helper, LoadStrategy, QueryFlag, QueryHelper, ReferenceType, Utils } from '@mikro-orm/core';
+import {
+ DatabaseDriver, EntityManagerType, helper, LoadStrategy, QueryFlag, QueryHelper, ReferenceType, Utils, type
+  AnyEntity, type Collection, type ConnectionType, type Configuration, type Constructor, type CountOptions, type DeleteOptions, type Dictionary, type
+  DriverMethodOptions, type EntityData, type EntityDictionary, type EntityField, type EntityManager, type EntityMetadata, type EntityName, type EntityProperty, type FilterQuery, type
+  FindOneOptions, type FindOptions, type IDatabaseDriver, type LockOptions, type NativeInsertUpdateManyOptions, type NativeInsertUpdateOptions, type
+  PopulateOptions, type Primary, type QueryOrderMap, type QueryResult, type RequiredEntityData, type Transaction } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { QueryBuilder, QueryType } from './query';
