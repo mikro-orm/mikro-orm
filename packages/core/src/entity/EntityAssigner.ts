@@ -185,7 +185,7 @@ export class EntityAssigner {
       }
 
       /* istanbul ignore next */
-      if (options.updateNestedEntities && !options.updateByPrimaryKey && helper(collection[idx])?.isInitialized()) {
+      if (options.updateNestedEntities && !options.updateByPrimaryKey && collection[idx] && helper(collection[idx])?.isInitialized()) {
         return EntityAssigner.assign(collection[idx], item, options);
       }
 
