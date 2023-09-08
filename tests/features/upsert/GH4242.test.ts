@@ -87,7 +87,7 @@ test('4242 1/4', async () => {
   }]);
   expect(mock.mock.calls).toEqual([
     ['[query] insert into "d" ("tenant_workflow_id") values (1) on conflict ("tenant_workflow_id") do nothing returning "id", "updated_at", "optional"'],
-    ['[query] select "d0"."id", "d0"."tenant_workflow_id", "d0"."updated_at", "d0"."optional" from "d" as "d0" where "d0"."tenant_workflow_id" = 1'],
+    ['[query] select "d0"."id", "d0"."updated_at", "d0"."optional", "d0"."tenant_workflow_id" from "d" as "d0" where "d0"."tenant_workflow_id" = 1'],
   ]);
   mock.mockReset();
 

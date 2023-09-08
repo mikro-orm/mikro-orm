@@ -1,36 +1,43 @@
 import {
- MongoClient, type
-  BulkWriteResult, type
-  ClientSession, type
-  Collection, type
-  Db, type
-  DeleteResult, type
-  Filter, type
-  InsertManyResult, type
-  InsertOneResult, type
-  MongoClientOptions, type
-  OptionalUnlessRequiredId, type
-  TransactionOptions, type
-  UpdateFilter, type
-  UpdateResult } from 'mongodb';
+  MongoClient,
+  type BulkWriteResult,
+  type ClientSession,
+  type Collection,
+  type Db,
+  type DeleteResult,
+  type Filter,
+  type InsertManyResult,
+  type InsertOneResult,
+  type MongoClientOptions,
+  type OptionalUnlessRequiredId,
+  type TransactionOptions,
+  type UpdateFilter,
+  type UpdateResult,
+} from 'mongodb';
 import { ObjectId } from 'bson';
 import { inspect } from 'util';
 import {
- Connection, EventType, QueryOrder, Utils, ValidationError, type
-  AnyEntity, type
-  Configuration, type
-  ConnectionConfig, type
-  ConnectionOptions, type
-  ConnectionType, type
-  Dictionary, type
-  EntityData, type
-  EntityName, type
-  FilterQuery, type
-  IsolationLevel, type
-  QueryOrderMap, type
-  QueryResult, type
-  Transaction, type
-  TransactionEventBroadcaster } from '@mikro-orm/core';
+  Connection,
+  EventType,
+  QueryOrder,
+  Utils,
+  ValidationError,
+  type AnyEntity,
+  type Configuration,
+  type ConnectionConfig,
+  type ConnectionOptions,
+  type ConnectionType,
+  type Dictionary,
+  type EntityData,
+  type EntityName,
+  type FilterQuery,
+  type IsolationLevel,
+  type QueryOrderMap,
+  type QueryResult,
+  type Transaction,
+  type TransactionEventBroadcaster,
+  type UpsertOptions,
+} from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
 
@@ -192,12 +199,12 @@ export class MongoConnection extends Connection {
     return this.runQuery<T>('insertMany', collection, data, undefined, ctx);
   }
 
-  async updateMany<T extends object>(collection: string, where: FilterQuery<T>, data: Partial<T>, ctx?: Transaction<ClientSession>, upsert?: boolean): Promise<QueryResult<T>> {
-    return this.runQuery<T>('updateMany', collection, data, where, ctx, upsert);
+  async updateMany<T extends object>(collection: string, where: FilterQuery<T>, data: Partial<T>, ctx?: Transaction<ClientSession>, upsert?: boolean, upsertOptions?: UpsertOptions<T>): Promise<QueryResult<T>> {
+    return this.runQuery<T>('updateMany', collection, data, where, ctx, upsert, upsertOptions);
   }
 
-  async bulkUpdateMany<T extends object>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean): Promise<QueryResult<T>> {
-    return this.runQuery<T>('bulkUpdateMany', collection, data, where, ctx, upsert);
+  async bulkUpdateMany<T extends object>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean, upsertOptions?: UpsertOptions<T>): Promise<QueryResult<T>> {
+    return this.runQuery<T>('bulkUpdateMany', collection, data, where, ctx, upsert, upsertOptions);
   }
 
   async deleteMany<T extends object>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
@@ -264,7 +271,7 @@ export class MongoConnection extends Connection {
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
 
-  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean): Promise<U> {
+  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean, upsertOptions?: UpsertOptions<T>): Promise<U> {
     collection = this.getCollectionName(collection);
     const logger = this.config.getLogger();
     const options: Dictionary = ctx ? { session: ctx, upsert } : { upsert };
@@ -290,7 +297,7 @@ export class MongoConnection extends Connection {
         res = await this.rethrow(this.getCollection<T>(collection).insertMany(data as OptionalUnlessRequiredId<T>[], options), query);
         break;
       case 'updateMany': {
-        const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : this.createUpdatePayload(data as object);
+        const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : this.createUpdatePayload(data as T, upsertOptions);
         query = log(() => `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)}, ${this.logObject(options)});`);
         res = await this.rethrow(this.getCollection<T>(collection).updateMany(where as Filter<T>, payload as UpdateFilter<T>, options), query) as UpdateResult;
         break;
@@ -302,10 +309,9 @@ export class MongoConnection extends Connection {
         (data as T[]).forEach((row, idx) => {
           const id = (where as Dictionary[])[idx];
           const cond = Utils.isPlainObject(id) ? id : { _id: id };
-          const doc = this.createUpdatePayload(row) as Dictionary;
+          const doc = this.createUpdatePayload(row, upsertOptions) as Dictionary;
 
           if (upsert) {
-            delete doc.$set._id;
             query += log(() => `bulk.find(${this.logObject(cond)}).upsert().update(${this.logObject(doc)});\n`);
             bulk.find(cond).upsert().update(doc);
             return;
@@ -343,7 +349,7 @@ export class MongoConnection extends Connection {
     });
   }
 
-  private createUpdatePayload<T extends object>(row: T): { $set?: unknown[]; $unset?: unknown[] } {
+  private createUpdatePayload<T extends object>(row: T, upsertOptions?: UpsertOptions<T>): { $set?: unknown[]; $unset?: unknown[]; $setOnInsert?: unknown[] } {
     const doc: Dictionary = { $set: row };
     const keys = Object.keys(row);
     const $unset: { $set?: unknown[]; $unset?: unknown[] } = {};
@@ -352,6 +358,34 @@ export class MongoConnection extends Connection {
       $unset[k] = '';
       delete row[k];
     });
+
+    if (upsertOptions) {
+      if (upsertOptions.onConflictAction === 'ignore') {
+        doc.$setOnInsert = doc.$set;
+        delete doc.$set;
+      }
+
+      if (upsertOptions.onConflictMergeFields) {
+        doc.$setOnInsert = {};
+
+        upsertOptions.onConflictMergeFields.forEach(f => {
+          doc.$setOnInsert[f] = doc.$set[f];
+          delete doc.$set[f];
+        });
+
+        const { $set, $setOnInsert } = doc;
+        doc.$set = $setOnInsert;
+        doc.$setOnInsert = $set;
+      } else if (upsertOptions.onConflictExcludeFields) {
+        doc.$setOnInsert = {};
+
+        upsertOptions.onConflictExcludeFields.forEach(f => {
+          doc.$setOnInsert[f] = doc.$set[f];
+          delete doc.$set[f];
+        });
+      }
+    }
+
 
     if (Utils.hasObjectKeys($unset)) {
       doc.$unset = $unset;

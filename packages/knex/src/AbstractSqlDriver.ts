@@ -1,10 +1,47 @@
 import type { Knex } from 'knex';
 import {
- DatabaseDriver, EntityManagerType, helper, LoadStrategy, QueryFlag, QueryHelper, ReferenceType, Utils, type
-  AnyEntity, type Collection, type ConnectionType, type Configuration, type Constructor, type CountOptions, type DeleteOptions, type Dictionary, type
-  DriverMethodOptions, type EntityData, type EntityDictionary, type EntityField, type EntityManager, type EntityMetadata, type EntityName, type EntityProperty, type FilterQuery, type
-  FindOneOptions, type FindOptions, type IDatabaseDriver, type LockOptions, type NativeInsertUpdateManyOptions, type NativeInsertUpdateOptions, type
-  PopulateOptions, type Primary, type QueryOrderMap, type QueryResult, type RequiredEntityData, type Transaction } from '@mikro-orm/core';
+  DatabaseDriver,
+  EntityManagerType,
+  helper,
+  LoadStrategy,
+  QueryFlag,
+  QueryHelper,
+  ReferenceType,
+  Utils,
+  getOnConflictFields,
+  getOnConflictReturningFields,
+  type AnyEntity,
+  type Collection,
+  type ConnectionType,
+  type Configuration,
+  type Constructor,
+  type CountOptions,
+  type DeleteOptions,
+  type Dictionary,
+  type DriverMethodOptions,
+  type EntityData,
+  type EntityDictionary,
+  type EntityField,
+  type EntityManager,
+  type EntityMetadata,
+  type EntityName,
+  type EntityProperty,
+  type FilterQuery,
+  type FindOneOptions,
+  type FindOptions,
+  type IDatabaseDriver,
+  type LockOptions,
+  type NativeInsertUpdateManyOptions,
+  type NativeInsertUpdateOptions,
+  type PopulateOptions,
+  type Primary,
+  type QueryOrderMap,
+  type QueryResult,
+  type RequiredEntityData,
+  type Transaction,
+  type UpsertOptions,
+  type UpsertManyOptions,
+} from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { QueryBuilder, QueryType } from './query';
@@ -411,7 +448,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
-  async nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> & UpsertOptions<T> = {}): Promise<QueryResult<T>> {
     options.convertCustomTypes ??= true;
     const meta = this.metadata.find<T>(entityName);
     const pks = this.getPrimaryKeyFields(entityName);
@@ -429,12 +466,20 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (options.upsert) {
         /* istanbul ignore next */
-        const uniqueFields = Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys;
-        /* istanbul ignore next */
+        const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys) as (keyof T)[];
+        const returning = getOnConflictReturningFields(meta, data, uniqueFields, options);
         qb.insert(data as T)
           .onConflict(uniqueFields)
-          .merge(Object.keys(data).filter(f => !uniqueFields.includes(f)))
-          .returning(meta?.comparableProps.filter(p => !p.lazy && !p.embeddable && !(p.name in data)).map(p => p.name) ?? '*');
+          .returning(returning);
+
+        if (!options.onConflictAction || options.onConflictAction === 'merge') {
+          const fields = getOnConflictFields(data, uniqueFields, options);
+          qb.merge(fields);
+        }
+
+        if (options.onConflictAction === 'ignore') {
+          qb.ignore();
+        }
       } else {
         qb.update(data).where(where);
       }
@@ -449,18 +494,28 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
-  async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get<T>(entityName);
 
     if (options.upsert) {
-      const uniqueFields = Utils.isPlainObject(where[0]) ? Object.keys(where[0]) : meta.primaryKeys;
-      const qb = this.createQueryBuilder(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
-      qb.insert(data)
+      const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where[0]) ? Object.keys(where[0]) : meta!.primaryKeys) as (keyof T)[];
+      const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
+      const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options);
+      qb.insert(data as T[])
         .onConflict(uniqueFields)
-        .merge(Object.keys(data[0]).filter(f => !uniqueFields.includes(f)))
-        .returning(meta.comparableProps.filter(p => !p.lazy && !p.embeddable && !(p.name in data[0])).map(p => p.name) ?? '*');
+        .returning(returning);
+
+      if (!options.onConflictAction || options.onConflictAction === 'merge') {
+        const fields = getOnConflictFields(data[0], uniqueFields, options);
+        qb.merge(fields);
+      }
+
+      if (options.onConflictAction === 'ignore') {
+        qb.ignore();
+      }
+
       return qb.execute('run', false);
     }
 

@@ -1,11 +1,13 @@
 import {
   MikroORM, Entity, PrimaryKey, ManyToOne, Property, SimpleLogger,
-  Unique, Ref, ref, EventSubscriber, EventArgs, OneToMany, Collection, Embeddable, Embedded,
+  Unique, Ref, ref, EventSubscriber, EventArgs, OneToMany, Collection, Embeddable, Embedded, OptionalProps,
 } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 
 @Entity()
 export class Author {
+
+  [OptionalProps]?: 'foo';
 
   static id = 1;
 
@@ -17,6 +19,12 @@ export class Author {
 
   @Property({ name: 'current_age' })
   age: number;
+
+  @Property()
+  foo: boolean = false;
+
+  @Property({ nullable: true })
+  bar?: number = 123;
 
   @OneToMany(() => Book, b => b.author)
   books = new Collection<Book>(this);
@@ -161,6 +169,8 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     expect(fooBars.map(fb => fb.id)).toEqual([1, 2, 3]);
     expect(fooBars.map(fb => fb.author.id)).toEqual([1, 2, 3]);
 
+    orm.em.clear();
+
     return books;
   }
 
@@ -226,8 +236,6 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await createEntities();
 
     await orm.em.nativeDelete(Book, [2, 3]);
-    orm.em.clear();
-
     const mock = mockLogger(orm);
     const author1 = await orm.em.upsert(Author, { id: 1, email: 'a1', age: 41 }); // exists
     const author2 = await orm.em.upsert(Author, { id: 2, email: 'a2', age: 42 }); // inserts
@@ -252,8 +260,6 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await createEntities();
 
     await orm.em.nativeDelete(Book, [2, 3]);
-    orm.em.clear();
-
     const mock = mockLogger(orm);
     const author1 = await orm.em.upsert(Author, { email: 'a1', age: 41 }); // exists
     const author2 = await orm.em.upsert(Author, { email: 'a2', age: 42 }); // inserts
@@ -278,8 +284,6 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await createEntities();
 
     await orm.em.nativeDelete(Book, [2, 3]);
-    orm.em.clear();
-
     const mock = mockLogger(orm);
     const [author1, author2, author3] = await orm.em.upsertMany(Author, [
       { id: 1, email: 'a1', age: 41 }, // exists
@@ -306,8 +310,6 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await createEntities();
 
     await orm.em.nativeDelete(Book, [2, 3]);
-    orm.em.clear();
-
     const mock = mockLogger(orm);
     const data = [];
 
@@ -316,7 +318,7 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     }
 
     const entities = await orm.em.upsertMany(Author, data, { batchSize: 100 });
-    expect(mock).toBeCalledTimes(10);
+    expect(mock).toBeCalledTimes(orm.em.getPlatform().usesReturningStatement() ? 10 : 20);
     expect(entities).toHaveLength(1000);
   });
 
@@ -324,8 +326,6 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await createEntities();
 
     await orm.em.nativeDelete(Book, [2, 3]);
-    orm.em.clear();
-
     const mock = mockLogger(orm);
     const [author1, author2, author3] = await orm.em.upsertMany(Author, [
       { email: 'a1', age: 41 }, // exists
@@ -355,8 +355,6 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await createEntities();
 
     await orm.em.nativeDelete(FooBar, [2, 3]);
-    orm.em.clear();
-
     const mock = mockLogger(orm);
     const fooBar1 = await orm.em.upsert(FooBar, { name: 'fb1', author: 1 }); // exists
     const fooBar2 = await orm.em.upsert(FooBar, { name: 'fb2', author: 2 }); // inserts
@@ -384,8 +382,6 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await createEntities();
 
     await orm.em.nativeDelete(FooBar, [2, 3]);
-    orm.em.clear();
-
     const mock = mockLogger(orm);
     const fooBar1 = await orm.em.upsert(FooBar, { name: 'fb1', author: 1, propName: 'val 1' }); // exists
     const fooBar2 = await orm.em.upsert(FooBar, { name: 'fb2', author: 2, propName: 'val 2' }); // inserts
@@ -398,8 +394,6 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await createEntities();
 
     await orm.em.nativeDelete(Book, [2, 3]);
-    orm.em.clear();
-
     const mock = mockLogger(orm);
     const a1 = orm.em.create(Author, { id: 1, email: 'a1', age: 41 });
     const a2 = orm.em.create(Author, { id: 2, email: 'a2', age: 42 });
@@ -430,8 +424,6 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await createEntities();
 
     await orm.em.nativeDelete(Book, [2, 3]);
-    orm.em.clear();
-
     const mock = mockLogger(orm);
     const a1 = orm.em.create(Author, { id: 1, email: 'a1', age: 41 }); // exists
     const a2 = orm.em.create(Author, { id: 2, email: 'a2', age: 42 }); // inserts
@@ -448,8 +440,6 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await createEntities();
 
     await orm.em.nativeDelete(Book, [2, 3]);
-    orm.em.clear();
-
     const mock = mockLogger(orm);
     const a1 = orm.em.create(Author, { email: 'a1', age: 41 }); // exists
     delete (a1 as any).id; // simulate unknown pk
@@ -472,8 +462,6 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await createEntities();
 
     await orm.em.nativeDelete(FooBar, [2, 3]);
-    orm.em.clear();
-
     const mock = mockLogger(orm);
     const fb1 = orm.em.create(FooBar, { id: 1, name: 'fb1', author: 1, propName: 'val 1' });
     const fb2 = orm.em.create(FooBar, { id: 2, name: 'fb2', author: 2, propName: 'val 2' });
@@ -499,6 +487,259 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     const [insertedEntity2] = await orm.em.upsertMany(FooBarWithEmbeddable, [{ id: testEntity.id, fooBarEmbeddable: {} }]);
 
     expect(insertedEntity2).toBe(testEntity);
+  });
+
+  test('em.upsert(Type, entity, options) with advanced options', async () => {
+    await createEntities();
+
+    const mock = mockLogger(orm);
+    const a1 = orm.em.create(Author, { id: 1, email: 'a1', age: 41, foo: true });
+    const a2 = orm.em.create(Author, { id: 2, email: 'a2', age: 42, foo: true });
+    const a3 = orm.em.create(Author, { id: 5, email: 'a3', age: 43, foo: true }); // different PK
+    const author1 = await orm.em.upsert(Author, a1, {
+      onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+      onConflictAction: 'ignore',
+    }); // exists, dont update anything
+    const author2 = await orm.em.upsert(Author, a2, {
+      onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+      onConflictAction: 'merge',
+      onConflictMergeFields: ['age'],
+    }); // exists, update age only
+
+    // match by email, PK differs and is omitted from the merge fields
+    const author3 = await orm.em.upsert(Author, a3, {
+      onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+      onConflictAction: 'merge',
+      onConflictExcludeFields: ['id'],
+    }); // exists, update age only, override the value from the entity
+
+    expect(a1).toBe(author1);
+    expect(a2).toBe(author2);
+    expect(a3).toBe(author3);
+    expect(author1).toMatchObject({ id: 1, age: 31, foo: false }); // ignore
+    expect(author2).toMatchObject({ id: 2, age: 42, foo: false }); // merge only `age`
+    expect(author3).toMatchObject({ id: 3, age: 43, foo: true }); // merge without `id`, different PK should be ignored
+
+    expect(Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['beforeUpsert', 'Object'],
+      ['afterUpsert', 'Author'],
+      ['beforeUpsert', 'Object'],
+      ['afterUpsert', 'Author'],
+      ['beforeUpsert', 'Object'],
+      ['afterUpsert', 'Author'],
+    ]);
+
+    await assert(author2, mock);
+  });
+
+  test('em.upsert(Type, data, options) with advanced options', async () => {
+    await createEntities();
+
+    const mock = mockLogger(orm);
+    const a1 = { id: 1, email: 'a1', age: 41, foo: true };
+    const a2 = { id: 2, email: 'a2', age: 42, foo: true };
+    const a3 = { id: 5, email: 'a3', age: 43, foo: true }; // different PK
+    const author1 = await orm.em.upsert(Author, a1, {
+      onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+      onConflictAction: 'ignore',
+    }); // exists, dont update anything
+    const author2 = await orm.em.upsert<Author>(Author, a2, {
+      onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+      onConflictAction: 'merge',
+      onConflictMergeFields: ['age'],
+    }); // exists, update age only
+
+    // match by email, PK differs and is omitted from the merge fields
+    const author3 = await orm.em.upsert(Author, a3, {
+      onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+      onConflictAction: 'merge',
+      onConflictExcludeFields: ['id'],
+    }); // exists, update age only, override the value from the entity
+
+    expect(author1).toMatchObject({ id: 1, age: 31, foo: false }); // ignore
+    expect(author2).toMatchObject({ id: 2, age: 42, foo: false }); // merge only `age`
+    expect(author3).toMatchObject({ id: 3, age: 43, foo: true }); // merge without `id`, different PK should be ignored
+
+    expect(Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['beforeUpsert', 'Object'],
+      ['onInit', 'Author'],
+      ['afterUpsert', 'Author'],
+    ]);
+
+    await assert(author2, mock);
+  });
+
+  test('em.upsertMany(Type, [entity], options) with advanced options (ignore)', async () => {
+    await createEntities();
+
+    const mock = mockLogger(orm);
+    const a1 = orm.em.create(Author, { id: 1, email: 'a1', age: 41, foo: true });
+    const a2 = orm.em.create(Author, { id: 2, email: 'a2', age: 42, foo: true });
+    const a3 = orm.em.create(Author, { id: 5, email: 'a3', age: 43, foo: true }); // different PK
+    const [author1, author2, author3] = await orm.em.upsertMany(Author, [a1, a2, a3], {
+      onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+      onConflictAction: 'ignore',
+    }); // exists, dont update anything
+    expect(a1).toBe(author1);
+    expect(a2).toBe(author2);
+    expect(a3).toBe(author3);
+    expect(author1).toMatchObject({ id: 1, age: 31, foo: false });
+    expect(author2).toMatchObject({ id: 2, age: 32, foo: false });
+    expect(author3).toMatchObject({ id: 3, age: 33, foo: false });
+
+    expect(Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['beforeUpsert', 'Author'],
+      ['beforeUpsert', 'Author'],
+      ['beforeUpsert', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['afterUpsert', 'Author'],
+    ]);
+
+    await assert(author2, mock);
+  });
+
+  test('em.upsertMany(Type, [entity], options) with advanced options (onConflictMergeFields)', async () => {
+    await createEntities();
+
+    const mock = mockLogger(orm);
+    const a1 = orm.em.create(Author, { id: 1, email: 'a1', age: 41, foo: true });
+    const a2 = orm.em.create(Author, { id: 2, email: 'a2', age: 42, foo: true });
+    const a3 = orm.em.create(Author, { id: 5, email: 'a3', age: 43, foo: true }); // different PK
+    const [author1, author2, author3] = await orm.em.upsertMany(Author, [a1, a2, a3], {
+      onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+      onConflictAction: 'merge',
+      onConflictMergeFields: ['age'],
+    }); // exists, update age only
+
+    expect(a1).toBe(author1);
+    expect(a2).toBe(author2);
+    expect(a3).toBe(author3);
+    expect(author1).toMatchObject({ id: 1, age: 41, foo: false });
+    expect(author2).toMatchObject({ id: 2, age: 42, foo: false });
+    expect(author3).toMatchObject({ id: 3, age: 43, foo: false });
+
+    expect(Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['beforeUpsert', 'Author'],
+      ['beforeUpsert', 'Author'],
+      ['beforeUpsert', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['afterUpsert', 'Author'],
+    ]);
+
+    await assert(author2, mock);
+  });
+
+  test('em.upsertMany(Type, [entity], options) with advanced options (onConflictExcludeFields)', async () => {
+    await createEntities();
+
+    const mock = mockLogger(orm);
+    const a1 = orm.em.create(Author, { id: 1, email: 'a1', age: 41, foo: true });
+    const a2 = orm.em.create(Author, { id: 2, email: 'a2', age: 42, foo: true });
+    const a3 = orm.em.create(Author, { id: 5, email: 'a3', age: 43, foo: true }); // different PK
+    // // match by email, PK differs and is omitted from the merge fields
+    const [author1, author2, author3] = await orm.em.upsertMany(Author, [a1, a2, a3], {
+      onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+      onConflictAction: 'merge',
+      onConflictExcludeFields: ['id'],
+    }); // exists, update age only, override the value from the entity
+
+    expect(a1).toBe(author1);
+    expect(a2).toBe(author2);
+    expect(a3).toBe(author3);
+    expect(author1).toMatchObject({ id: 1, age: 41, foo: true });
+    expect(author2).toMatchObject({ id: 2, age: 42, foo: true });
+    expect(author3).toMatchObject({ id: 3, age: 43, foo: true });
+
+    expect(Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['onInit', 'Author'],
+      ['beforeUpsert', 'Author'],
+      ['beforeUpsert', 'Author'],
+      ['beforeUpsert', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['afterUpsert', 'Author'],
+      ['afterUpsert', 'Author'],
+    ]);
+
+    await assert(author2, mock);
+  });
+
+  test('em.upsertMany(Type, [data], options) with advanced options (ignore)', async () => {
+    await createEntities();
+
+    const mock = mockLogger(orm);
+    const a1 = { id: 1, email: 'a1', age: 41, foo: true };
+    const a2 = { id: 2, email: 'a2', age: 42, foo: true };
+    const a3 = { id: 5, email: 'a3', age: 43, foo: true }; // different PK
+    const [author1, author2, author3] = await orm.em.upsertMany(Author, [a1, a2, a3], {
+      onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+      onConflictAction: 'ignore',
+    }); // exists, dont update anything
+
+    expect(author1).toMatchObject({ id: 1, age: 31, foo: false }); // ignore
+    expect(author2).toMatchObject({ id: 2, age: 32, foo: false }); // merge only `age`
+    expect(author3).toMatchObject({ id: 3, age: 33, foo: false }); // merge without `id`, different PK should be ignored
+
+    await assert(author2 as Author, mock);
+  });
+
+  test('em.upsertMany(Type, [data], options) with advanced options (onConflictMergeFields)', async () => {
+    await createEntities();
+
+    const mock = mockLogger(orm);
+    const a1 = { id: 1, email: 'a1', age: 41, foo: true };
+    const a2 = { id: 2, email: 'a2', age: 42, foo: true };
+    const a3 = { id: 5, email: 'a3', age: 43, foo: true }; // different PK
+    const [author1, author2, author3] = await orm.em.upsertMany(Author, [a1, a2, a3], {
+      onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+      onConflictAction: 'merge',
+      onConflictMergeFields: ['age'],
+    }); // exists, update age only
+
+    expect(author1).toMatchObject({ id: 1, age: 41, foo: false });
+    expect(author2).toMatchObject({ id: 2, age: 42, foo: false });
+    expect(author3).toMatchObject({ id: 3, age: 43, foo: false });
+
+    await assert(author2 as Author, mock);
+  });
+
+  test('em.upsertMany(Type, [data], options) with advanced options (onConflictExcludeFields)', async () => {
+    await createEntities();
+
+    const mock = mockLogger(orm);
+    const a1 = { id: 1, email: 'a1', age: 41, foo: true };
+    const a2 = { id: 2, email: 'a2', age: 42, foo: true };
+    const a3 = { id: 5, email: 'a3', age: 43, foo: true }; // different PK
+    // match by email, PK differs and is omitted from the merge fields
+    const [author1, author2, author3] = await orm.em.upsertMany(Author, [a1, a2, a3], {
+      onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+      onConflictAction: 'merge',
+      onConflictExcludeFields: ['id'],
+    }); // exists, update age only, override the value from the entity
+
+    expect(author1).toMatchObject({ id: 1, age: 41, foo: true });
+    expect(author2).toMatchObject({ id: 2, age: 42, foo: true });
+    expect(author3).toMatchObject({ id: 3, age: 43, foo: true });
+
+    await assert(author2 as Author, mock);
   });
 
 });
