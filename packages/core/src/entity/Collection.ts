@@ -15,9 +15,9 @@ import type {
   Primary,
 } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
-import { Utils } from '../utils/Utils';
+import { DataloaderUtils, Utils } from '../utils';
 import { ValidationError } from '../errors';
-import { type LockMode, type QueryOrderMap, ReferenceKind } from '../enums';
+import { type LockMode, type QueryOrderMap, ReferenceKind, Dataloader } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
 import type { FindOptions } from '../drivers/IDatabaseDriver';
@@ -323,6 +323,27 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     const em = this.getEntityManager();
 
+    if (options.dataloader ?? (DataloaderUtils.getDataloaderType(em.config.get('dataloader')) > Dataloader.COLLECTION)) {
+      const order = [...this.items]; // copy order of references
+      const customOrder = !!options.orderBy;
+      const items: TT[] = await this.getEntityManager().colLoader.load(this);
+      if (!customOrder) {
+        this.reorderItems(items, order);
+      }
+
+      this.items.clear();
+      let i = 0;
+      items.forEach(item => {
+        this.items.add(item);
+        this[i++] = item;
+      });
+
+      this.initialized = true;
+      this.dirty = false;
+
+      return this as unknown as LoadedCollection<Loaded<TT, P>>;
+    }
+
     const populate = Array.isArray(options.populate)
       ? options.populate.map(f => `${this.property.name}.${f}`)
       : [`${this.property.name}${options.ref ? ':ref' : ''}`];
@@ -450,6 +471,15 @@ export class Collection<T extends object, O extends object = object> extends Arr
     }
   }
 
+  /**
+   * re-orders items after searching with `$in` operator
+   */
+  private reorderItems(items: T[], order: T[]): void {
+    if (this.property.kind === ReferenceKind.MANY_TO_MANY && this.property.owner) {
+      items.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    }
+  }
+
   private cancelOrphanRemoval(items: T[]): void {
     const em = this.getEntityManager(items, false);
 
@@ -500,6 +530,7 @@ Object.defineProperties(Collection.prototype, {
 });
 
 export interface InitOptions<T, P extends string = never> {
+  dataloader?: boolean;
   populate?: Populate<T, P>;
   ref?: boolean; // populate only references, works only with M:N collections that use pivot table
   orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
