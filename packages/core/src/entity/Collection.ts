@@ -258,7 +258,9 @@ export class Collection<T extends object, O extends object = object> extends Arr
       return this as unknown as LoadedCollection<Loaded<TT, P>>;
     }
 
-    if (options.dataloader ?? (DataloaderUtils.getDataloaderType(this.getEntityManager().config.get('dataloader')) > Dataloader.COLLECTION)) {
+    const em = this.getEntityManager();
+
+    if (options.dataloader ?? (DataloaderUtils.getDataloaderType(em.config.get('dataloader')) > Dataloader.COLLECTION)) {
       const order = [...this.items]; // copy order of references
       const customOrder = !!options.orderBy;
       const items: TT[] = await this.getEntityManager().colLoader.load(this);
@@ -278,8 +280,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
       return this as unknown as LoadedCollection<Loaded<TT, P>>;
     }
-
-    const em = this.getEntityManager();
 
     const populate = Array.isArray(options.populate)
       ? options.populate.map(f => `${this.property.name}.${f}`)
