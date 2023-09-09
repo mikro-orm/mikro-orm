@@ -49,6 +49,7 @@ module.exports = {
         'query-conditions',
         'propagation',
         'loading-strategies',
+        'dataloaders',
         'serializing',
         'entity-helper',
         'events',
