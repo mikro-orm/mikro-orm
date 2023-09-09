@@ -17,7 +17,7 @@ MikroORM.init({
 });
 ```
 
-`Dataloader.REF` enables the dataloader for References, `Dataloader.COL` enables it for Collections while `Dataloader.ALL` enables it for both.
+`Dataloader.REFERENCE` enables the dataloader for References, `Dataloader.COLLECTION` enables it for Collections while `Dataloader.ALL` enables it for both. A boolean value is also supported to enable/disable all of them.
 
 The dataloader can also be enabled per-query. The following will issue two SQL statements. One to load the authors and another one to load all the books belonging to these authors:
 
