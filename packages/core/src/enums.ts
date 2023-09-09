@@ -126,8 +126,8 @@ export enum LoadStrategy {
 
 export enum Dataloader {
   OFF = 0,
-  REF = 1,
-  COL = 2,
+  REFERENCE = 1,
+  COLLECTION = 2,
   ALL = 3,
 }
 

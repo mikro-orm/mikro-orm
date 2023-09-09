@@ -526,7 +526,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   batchSize: number;
   hydrator: HydratorConstructor;
   loadStrategy: LoadStrategy | 'select-in' | 'joined';
-  dataloader: Dataloader;
+  dataloader: Dataloader | boolean;
   populateWhere: PopulateHint;
   flushMode: FlushMode | 'commit' | 'auto' | 'always';
   entityRepository?: Constructor;

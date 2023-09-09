@@ -7,6 +7,7 @@ import { Collection } from '../entity/Collection';
 import { helper } from '../entity/wrap';
 import { type EntityManager } from '../EntityManager';
 import type DataLoader from 'dataloader';
+import { Dataloader } from '..';
 
 export class DataloaderUtils {
 
@@ -166,6 +167,17 @@ export class DataloaderUtils {
         results.filter(DataloaderUtils.getColFilter(collection)),
       );
     };
+  }
+
+  static getDataloaderType(dataloaderCfg: Dataloader | boolean): Dataloader {
+    switch (dataloaderCfg) {
+      case true:
+        return Dataloader.ALL;
+      case false:
+        return Dataloader.OFF;
+      default:
+        return dataloaderCfg;
+    }
   }
 
 }
