@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import type { Configuration } from './utils';
-import { Cursor, QueryHelper, TransactionContext, Utils } from './utils';
+import { Cursor, DataloaderUtils, QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, helper, Reference } from './entity';
 import { ChangeSet, ChangeSetType, UnitOfWork } from './unit-of-work';
@@ -64,8 +64,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   readonly _id = EntityManager.counter++;
   readonly global = false;
   readonly name = this.config.get('contextName');
-  readonly refLoader = new DataLoader(Utils.getRefBatchLoadFn(this));
-  readonly colLoader = new DataLoader(Utils.getColBatchLoadFn(this));
+  readonly refLoader = new DataLoader(DataloaderUtils.getRefBatchLoadFn(this));
+  readonly colLoader = new DataLoader(DataloaderUtils.getColBatchLoadFn(this));
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Dictionary<EntityRepository<any>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);

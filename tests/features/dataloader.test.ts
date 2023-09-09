@@ -1,4 +1,4 @@
-import { MikroORM, Collection, Utils, Ref, Entity, PrimaryKey, Property, OneToMany, ManyToMany, ManyToOne, Enum, ref, QueryOrder, PrimaryKeyProp, helper, Primary, SimpleLogger, Dataloader } from '@mikro-orm/sqlite';
+import { MikroORM, Collection, DataloaderUtils, Ref, Entity, PrimaryKey, Property, OneToMany, ManyToMany, ManyToOne, Enum, ref, QueryOrder, PrimaryKeyProp, helper, Primary, SimpleLogger, Dataloader } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 enum PublisherType {
@@ -251,7 +251,7 @@ describe('Dataloader', () => {
   afterAll(async () => orm.close(true));
 
   test('groupPrimaryKeysByEntity', () => {
-    const map = Utils.groupPrimaryKeysByEntity([
+    const map = DataloaderUtils.groupPrimaryKeysByEntity([
       orm.em.getReference(Author, 1, { wrapped: true }),
       orm.em.getReference(Author, 2, { wrapped: true }),
       orm.em.getReference(Book, 3, { wrapped: true }),
@@ -269,7 +269,7 @@ describe('Dataloader', () => {
   });
 
   test('getRefBatchLoadFn', async () => {
-    const refBatchLoadFn = Utils.getRefBatchLoadFn(orm.em);
+    const refBatchLoadFn = DataloaderUtils.getRefBatchLoadFn(orm.em);
     const mock = mockLogger(orm);
     const res = await refBatchLoadFn(getReferences(orm.em));
     await orm.em.flush();
@@ -340,7 +340,7 @@ describe('Dataloader', () => {
     const collections = await getCollections(orm.em);
     expect(collections).toBeDefined();
 
-    const map = Utils.groupInversedOrMappedKeysByEntity(collections);
+    const map = DataloaderUtils.groupInversedOrMappedKeysByEntity(collections);
     expect(Array.from(map.keys()).map(({ className }) => className)).toEqual(['Book', 'Author', 'Chat', 'Message']);
     const mapObj = Array.from(map.entries()).reduce<Record<string, Record<string, number[]>>>((acc, [{ className }, filterMap]) => {
       acc[className] = Array.from(filterMap.entries()).reduce<Record<string, number[]>>((acc, [prop, set]) => {
@@ -373,7 +373,7 @@ describe('Dataloader', () => {
         ['chat', new Set<Primary<any>>([{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }])],
       ])],
     ]);
-    const queries = Utils.entitiesMapToQueries(map, orm.em);
+    const queries = DataloaderUtils.entitiesMapToQueries(map, orm.em);
     expect(queries).toHaveLength(4);
     for (const query of queries) {
       expect(query instanceof Promise).toBeTruthy();
@@ -381,7 +381,7 @@ describe('Dataloader', () => {
   });
 
   test('getColFilter', async () => {
-    const promises = Utils.entitiesMapToQueries(new Map([
+    const promises = DataloaderUtils.entitiesMapToQueries(new Map([
       [orm.em.getMetadata().get('Book'), new Map([
         ['author', new Set<Primary<any>>([1, 2, 3])],
         ['publisher', new Set<Primary<any>>([1, 2])],
@@ -400,14 +400,14 @@ describe('Dataloader', () => {
 
     const collections = await getCollections(orm.em);
     for (const collection of collections) {
-      const filtered = results.filter(Utils.getColFilter(collection));
+      const filtered = results.filter(DataloaderUtils.getColFilter(collection));
       expect(filtered.map((el: any) => el.id)).toEqual((await collection.loadItems()).map((el: any) => el.id));
     }
     expect(true).toBeTruthy();
   });
 
   test('getColBatchLoadFn', async () => {
-    const refBatchLoadFn = Utils.getColBatchLoadFn(orm.em);
+    const refBatchLoadFn = DataloaderUtils.getColBatchLoadFn(orm.em);
     const collections = await getCollections(orm.em);
     const mock = mockLogger(orm);
     const res = await refBatchLoadFn(collections);
