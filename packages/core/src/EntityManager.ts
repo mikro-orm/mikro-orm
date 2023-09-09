@@ -1,7 +1,9 @@
 import { inspect } from 'util';
+import DataLoader from 'dataloader';
 import {
   type Configuration,
   Cursor,
+  DataloaderUtils,
   getOnConflictReturningFields,
   QueryHelper,
   TransactionContext,
@@ -92,6 +94,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   readonly _id = EntityManager.counter++;
   readonly global = false;
   readonly name: string;
+  readonly refLoader = new DataLoader(DataloaderUtils.getRefBatchLoadFn(this));
+  readonly colLoader = new DataLoader(DataloaderUtils.getColBatchLoadFn(this));
   private readonly validator: EntityValidator;
   private readonly repositoryMap: Dictionary<EntityRepository<any>> = {};
   private readonly entityLoader: EntityLoader;

@@ -124,6 +124,13 @@ export enum LoadStrategy {
   JOINED = 'joined'
 }
 
+export enum Dataloader {
+  OFF = 0,
+  REFERENCE = 1,
+  COLLECTION = 2,
+  ALL = 3,
+}
+
 export enum LockMode {
   NONE = 0,
   OPTIMISTIC = 1,

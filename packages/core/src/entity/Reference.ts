@@ -13,9 +13,9 @@ import type {
   Ref,
 } from '../typings';
 import type { EntityFactory } from './EntityFactory';
-import type { LockMode } from '../enums';
+import { Dataloader, type  LockMode  } from '../enums';
 import { helper, wrap } from './wrap';
-import { Utils } from '../utils/Utils';
+import { DataloaderUtils, Utils } from '../utils';
 
 export class Reference<T> {
 
@@ -114,6 +114,10 @@ export class Reference<T> {
    */
   async load<TT extends T, K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P> | K): Promise<Loaded<TT, P> | T[K]> {
     const opts: Dictionary = typeof options === 'object' ? options : { prop: options } as LoadReferenceOptions<T, P>;
+
+    if (opts.dataloader ?? (DataloaderUtils.getDataloaderType(helper(this.entity).__em.config.get('dataloader')) > Dataloader.REFERENCE)) {
+      return helper(this.entity).__em.refLoader.load(this);
+    }
 
     if (!this.isInitialized() || opts.refresh) {
       await helper(this.entity).init(undefined, opts?.populate, opts?.lockMode, opts?.connectionType);
@@ -246,6 +250,7 @@ export interface LoadReferenceOptions<T, P extends string = never> {
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   connectionType?: ConnectionType;
   refresh?: boolean;
+  dataloader?: boolean;
 }
 
 /**

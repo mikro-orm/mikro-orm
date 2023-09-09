@@ -1,6 +1,7 @@
 export * from './Configuration';
 export * from './ConfigurationLoader';
 export * from './Cursor';
+export * from './DataloaderUtils';
 export * from './Utils';
 export * from './RequestContext';
 export * from './TransactionContext';
