@@ -31,6 +31,9 @@ export interface JoinOptions {
   path?: string;
   prop: EntityProperty;
   cond: Dictionary;
+  // used as cache when overriding the on condition via `populateWhere` as we need
+  // to revert the change when wrapping queries when pagination is triggered.
+  cond_?: Dictionary;
 }
 
 export interface Column {
