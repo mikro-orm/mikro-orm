@@ -169,7 +169,7 @@ describe('filters [postgres]', () => {
     const e1 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits.details'] });
     expect(mock.mock.calls[0][0]).toMatch(`select "e0".* from "employee" as "e0" where "e0"."id" = $1 limit $2`);
     expect(mock.mock.calls[1][0]).toMatch(`select "b0".*, "e1"."benefit_id" as "fk__benefit_id", "e1"."employee_id" as "fk__employee_id" from "benefit" as "b0" left join "employee_benefits" as "e1" on "b0"."id" = "e1"."benefit_id" where "b0"."benefit_status" = $1 and "e1"."employee_id" in ($2)`);
-    expect(mock.mock.calls[2][0]).toMatch(`select "b0".* from "benefit_detail" as "b0" where "b0"."active" = $1 and "b0"."benefit_id" in ($2) order by "b0"."benefit_id" asc`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "b0".* from "benefit_detail" as "b0" where "b0"."active" = $1 and "b0"."benefit_id" in ($2)`);
     expect(e1.benefits).toHaveLength(1);
     expect(e1.benefits[0].details).toHaveLength(1);
 
