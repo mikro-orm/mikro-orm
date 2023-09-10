@@ -669,7 +669,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     let res = await this.execute<EntityData<T>[]>('all', true);
 
     if (this._joinedProps.size > 0) {
-      res = this.driver.mergeJoinedResult(res, this.mainAlias.metadata!);
+      res = this.driver.mergeJoinedResult(res, this.mainAlias.metadata!, [...this._joinedProps.values()]);
     }
 
     const entities: T[] = [];
