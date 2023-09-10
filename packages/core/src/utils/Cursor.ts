@@ -1,9 +1,9 @@
 import { inspect } from 'util';
-import type { Dictionary, EntityKey, EntityMetadata, FilterObject, Loaded } from '../typings';
 import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseDriver';
-import { Utils } from './Utils';
-import { ReferenceKind, type QueryOrder, type QueryOrderKeys } from '../enums';
 import { Reference } from '../entity/Reference';
+import { type QueryOrder, type QueryOrderKeys, ReferenceKind } from '../enums';
+import type { Dictionary, EntityKey, EntityMetadata, FilterObject, Loaded } from '../typings';
+import { Utils } from './Utils';
 
 /**
  * As an alternative to the offset based pagination with `limit` and `offset`, we can paginate based on a cursor.
@@ -53,7 +53,6 @@ import { Reference } from '../entity/Reference';
  * ```
  */
 export class Cursor<Entity extends object, Hint extends string = never, Fields extends string = '*'> {
-
   readonly hasPrevPage: boolean;
   readonly hasNextPage: boolean;
 
@@ -103,10 +102,23 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
    * Computes the cursor value for given entity.
    */
   from(entity: Entity | Loaded<Entity, Hint, Fields>) {
-    const processEntity = <T extends object> (entity: T, prop: EntityKey<T>, direction: QueryOrderKeys<T>, object = false) => {
+    const processEntity = <T extends object>(
+      entity: T,
+      prop: EntityKey<T>,
+      direction: QueryOrderKeys<T>,
+      object = false,
+    ) => {
       if (Utils.isPlainObject(direction)) {
         const value = Utils.keys(direction).reduce((o, key) => {
-          Object.assign(o, processEntity(Reference.unwrapReference(entity[prop] as T), key as EntityKey<T>, direction[key] as QueryOrderKeys<T>, true));
+          Object.assign(
+            o,
+            processEntity(
+              Reference.unwrapReference(entity[prop] as T),
+              key as EntityKey<T>,
+              direction[key] as QueryOrderKeys<T>,
+              true,
+            ),
+          );
           return o;
         }, {} as Dictionary);
         return ({ [prop]: value });
@@ -122,7 +134,7 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
     return Cursor.encode(value);
   }
 
-  * [Symbol.iterator](): IterableIterator<Loaded<Entity, Hint, Fields>> {
+  *[Symbol.iterator](): IterableIterator<Loaded<Entity, Hint, Fields>> {
     for (const item of this.items) {
       yield item;
     }
@@ -135,7 +147,11 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
   /**
    * Computes the cursor value for given entity and order definition.
    */
-  static for<Entity extends object>(meta: EntityMetadata<Entity>, entity: FilterObject<Entity>, orderBy: OrderDefinition<Entity>) {
+  static for<Entity extends object>(
+    meta: EntityMetadata<Entity>,
+    entity: FilterObject<Entity>,
+    orderBy: OrderDefinition<Entity>,
+  ) {
     const definition = this.getDefinition(meta, orderBy);
     return Cursor.encode(definition.map(([key]) => entity[key]));
   }
@@ -152,7 +168,10 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
     return Utils.asArray(orderBy).flatMap(order => {
       return Utils.keys(order)
         .map(key => meta.properties[key as EntityKey<Entity>])
-        .filter(prop => [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))
+        .filter(prop =>
+          [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind)
+          || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner)
+        )
         .map(prop => [prop.name, order[prop.name] as QueryOrder] as const);
     });
   }
@@ -161,8 +180,9 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
   [inspect.custom]() {
     const type = this.items[0]?.constructor.name;
     const { items, startCursor, endCursor, hasPrevPage, hasNextPage, totalCount, length } = this;
-    const options = inspect({ startCursor, endCursor, totalCount, hasPrevPage, hasNextPage, items, length }, { depth: 0 });
+    const options = inspect({ startCursor, endCursor, totalCount, hasPrevPage, hasNextPage, items, length }, {
+      depth: 0,
+    });
     return `Cursor${type ? `<${type}>` : ''} ${options.replace('items: [Array]', 'items: [...]')}`;
   }
-
 }

@@ -1,16 +1,12 @@
-import {
-  EntityManagerType,
-  type CountOptions,
-  type LockOptions,
-  type DeleteOptions,
-  type FindOneOptions,
-  type FindOptions,
-  type IDatabaseDriver,
-  type NativeInsertUpdateManyOptions,
-  type NativeInsertUpdateOptions,
-  type DriverMethodOptions,
-  type OrderDefinition,
-} from './IDatabaseDriver';
+import type { Connection, QueryResult, Transaction } from '../connections';
+import type { Collection } from '../entity/Collection';
+import { helper } from '../entity/wrap';
+import { EntityManager } from '../EntityManager';
+import { type QueryOrder, type QueryOrderKeys, QueryOrderNumeric, ReferenceKind } from '../enums';
+import { ValidationError } from '../errors';
+import { DriverException } from '../exceptions';
+import type { MetadataStorage } from '../metadata';
+import type { Platform } from '../platforms';
 import type {
   ConnectionType,
   Dictionary,
@@ -24,19 +20,22 @@ import type {
   PopulateOptions,
   Primary,
 } from '../typings';
-import type { MetadataStorage } from '../metadata';
-import type { Connection, QueryResult, Transaction } from '../connections';
-import { EntityComparator, Utils, type Configuration, type ConnectionOptions, Cursor } from '../utils';
-import { type QueryOrder, ReferenceKind, type QueryOrderKeys, QueryOrderNumeric } from '../enums';
-import type { Platform } from '../platforms';
-import type { Collection } from '../entity/Collection';
-import { EntityManager } from '../EntityManager';
-import { ValidationError } from '../errors';
-import { DriverException } from '../exceptions';
-import { helper } from '../entity/wrap';
+import { type Configuration, type ConnectionOptions, Cursor, EntityComparator, Utils } from '../utils';
+import {
+  type CountOptions,
+  type DeleteOptions,
+  type DriverMethodOptions,
+  EntityManagerType,
+  type FindOneOptions,
+  type FindOptions,
+  type IDatabaseDriver,
+  type LockOptions,
+  type NativeInsertUpdateManyOptions,
+  type NativeInsertUpdateOptions,
+  type OrderDefinition,
+} from './IDatabaseDriver';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
-
   [EntityManagerType]!: EntityManager<this>;
 
   protected readonly connection!: C;
@@ -46,42 +45,85 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected comparator!: EntityComparator;
   protected metadata!: MetadataStorage;
 
-  protected constructor(readonly config: Configuration,
-                        protected readonly dependencies: string[]) { }
+  protected constructor(readonly config: Configuration, protected readonly dependencies: string[]) {}
 
   async init(): Promise<void> {
     // do nothing on this level
   }
 
-  abstract find<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F>): Promise<EntityData<T>[]>;
+  abstract find<T extends object, P extends string = never, F extends string = '*'>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options?: FindOptions<T, P, F>,
+  ): Promise<EntityData<T>[]>;
 
-  abstract findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F>): Promise<EntityData<T> | null>;
+  abstract findOne<T extends object, P extends string = never, F extends string = '*'>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options?: FindOneOptions<T, P, F>,
+  ): Promise<EntityData<T> | null>;
 
-  abstract nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
+  abstract nativeInsert<T extends object>(
+    entityName: string,
+    data: EntityDictionary<T>,
+    options?: NativeInsertUpdateOptions<T>,
+  ): Promise<QueryResult<T>>;
 
-  abstract nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
+  abstract nativeInsertMany<T extends object>(
+    entityName: string,
+    data: EntityDictionary<T>[],
+    options?: NativeInsertUpdateManyOptions<T>,
+  ): Promise<QueryResult<T>>;
 
-  abstract nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
+  abstract nativeUpdate<T extends object>(
+    entityName: string,
+    where: FilterQuery<T>,
+    data: EntityDictionary<T>,
+    options?: NativeInsertUpdateOptions<T>,
+  ): Promise<QueryResult<T>>;
 
-  async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>> {
+  async nativeUpdateMany<T extends object>(
+    entityName: string,
+    where: FilterQuery<T>[],
+    data: EntityDictionary<T>[],
+    options?: NativeInsertUpdateManyOptions<T>,
+  ): Promise<QueryResult<T>> {
     throw new Error(`Batch updates are not supported by ${this.constructor.name} driver`);
   }
 
-  abstract nativeDelete<T extends object>(entityName: string, where: FilterQuery<T>, options?: DeleteOptions<T>): Promise<QueryResult<T>>;
+  abstract nativeDelete<T extends object>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options?: DeleteOptions<T>,
+  ): Promise<QueryResult<T>>;
 
-  abstract count<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
+  abstract count<T extends object, P extends string = never>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options?: CountOptions<T, P>,
+  ): Promise<number>;
 
-  createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
+  createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(
+    useContext?: boolean,
+  ): D[typeof EntityManagerType] {
     return new EntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
   /* istanbul ignore next */
-  async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<EntityData<T>[]> {
+  async findVirtual<T extends object>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options: FindOptions<T, any, any>,
+  ): Promise<EntityData<T>[]> {
     throw new Error(`Virtual entities are not supported by ${this.constructor.name} driver.`);
   }
 
   /* istanbul ignore next */
-  async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T>): Promise<number> {
+  async countVirtual<T extends object>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options: CountOptions<T>,
+  ): Promise<number> {
     throw new Error(`Counting virtual entities is not supported by ${this.constructor.name} driver.`);
   }
 
@@ -89,17 +131,36 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T extends object, O extends object>(
+    prop: EntityProperty,
+    owners: Primary<O>[][],
+    where?: FilterQuery<any>,
+    orderBy?: OrderDefinition<T>,
+    ctx?: Transaction,
+    options?: FindOptions<T, any, any>,
+  ): Promise<Dictionary<T[]>> {
     throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
-  async syncCollection<T extends object, O extends object>(coll: Collection<T, O>, options?: DriverMethodOptions): Promise<void> {
+  async syncCollection<T extends object, O extends object>(
+    coll: Collection<T, O>,
+    options?: DriverMethodOptions,
+  ): Promise<void> {
     const pk = coll.property.targetMeta!.primaryKeys[0];
     const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
-    await this.nativeUpdate<T>(coll.owner.constructor.name, helper(coll.owner).getPrimaryKey() as FilterQuery<T>, data, options);
+    await this.nativeUpdate<T>(
+      coll.owner.constructor.name,
+      helper(coll.owner).getPrimaryKey() as FilterQuery<T>,
+      data,
+      options,
+    );
   }
 
-  mapResult<T extends object>(result: EntityDictionary<T>, meta?: EntityMetadata<T>, populate: PopulateOptions<T>[] = []): EntityData<T> | null {
+  mapResult<T extends object>(
+    result: EntityDictionary<T>,
+    meta?: EntityMetadata<T>,
+    populate: PopulateOptions<T>[] = [],
+  ): EntityData<T> | null {
     if (!result || !meta) {
       return result ?? null;
     }
@@ -160,7 +221,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.dependencies;
   }
 
-  protected processCursorOptions<T extends object, P extends string>(meta: EntityMetadata<T>, options: FindOptions<T, P, any>, orderBy: OrderDefinition<T>): { orderBy: OrderDefinition<T>[]; where: FilterQuery<T> } {
+  protected processCursorOptions<T extends object, P extends string>(
+    meta: EntityMetadata<T>,
+    options: FindOptions<T, P, any>,
+    orderBy: OrderDefinition<T>,
+  ): { orderBy: OrderDefinition<T>[]; where: FilterQuery<T> } {
     const { first, last, before, after, overfetch } = options;
     const limit = first || last;
     const isLast = !first && !!last;
@@ -219,11 +284,18 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     };
   }
 
-  protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse = false): FilterQuery<T> {
+  protected createCursorCondition<T extends object>(
+    definition: (readonly [keyof T & string, QueryOrder])[],
+    offsets: Dictionary[],
+    inverse = false,
+  ): FilterQuery<T> {
     const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
       if (Utils.isPlainObject(direction)) {
         const value = Utils.keys(direction).reduce((o, key) => {
-          Object.assign(o, createCondition(key as string, direction[key] as QueryOrderKeys<T>, offset[prop][key], eq));
+          Object.assign(
+            o,
+            createCondition(key as string, direction[key] as QueryOrderKeys<T>, offset[prop][key], eq),
+          );
           return o;
         }, {});
         return ({ [prop]: value });
@@ -270,14 +342,20 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
         Object.keys(data[prop.name] as Dictionary).forEach(kk => {
           // explicitly allow `$exists`, `$eq` and `$ne` operators here as they can't be misused this way
-          const operator = Object.keys(data[prop.name] as Dictionary).some(f => Utils.isOperator(f) && !['$exists', '$ne', '$eq'].includes(f));
+          const operator = Object.keys(data[prop.name] as Dictionary).some(f =>
+            Utils.isOperator(f) && !['$exists', '$ne', '$eq'].includes(f)
+          );
 
           if (operator) {
             throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.name!, prop.name, data);
           }
 
           if (prop.object && where) {
-            const inline: (payload: any, sub: EntityProperty, path: string[]) => void = (payload: any, sub: EntityProperty, path: string[]) => {
+            const inline: (payload: any, sub: EntityProperty, path: string[]) => void = (
+              payload: any,
+              sub: EntityProperty,
+              path: string[],
+            ) => {
               if (sub.kind === ReferenceKind.EMBEDDED && Utils.isObject(payload[sub.embedded![1]])) {
                 return Object.keys(payload[sub.embedded![1]]).forEach(kkk => {
                   if (!sub.embeddedProps[kkk]) {
@@ -298,7 +376,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
               unknownProp = true;
             }
           } else if (props[kk]) {
-            data[props[kk].name as EntityKey<T>] = data[prop.name][props[kk].embedded![1] as EntityKey<T>] as T[EntityKey<T>];
+            data[props[kk].name as EntityKey<T>] =
+              data[prop.name][props[kk].embedded![1] as EntityKey<T>] as T[EntityKey<T>];
           } else {
             throw ValidationError.invalidEmbeddableQuery(meta.className, kk, prop.type);
           }
@@ -313,7 +392,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   protected getPrimaryKeyFields(entityName: string): string[] {
     const meta = this.metadata.find(entityName);
-    return meta ? Utils.flatten(meta.getPrimaryProps().map(pk => pk.fieldNames)) : [this.config.getNamingStrategy().referenceColumnName()];
+    return meta
+      ? Utils.flatten(meta.getPrimaryProps().map(pk => pk.fieldNames))
+      : [this.config.getNamingStrategy().referenceColumnName()];
   }
 
   protected getPivotInverseProperty(prop: EntityProperty): EntityProperty {
@@ -329,7 +410,17 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected createReplicas(cb: (c: ConnectionOptions) => C): C[] {
     const replicas = this.config.get('replicas', [])!;
     const ret: C[] = [];
-    const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool', 'name'] as const;
+    const props = [
+      'dbName',
+      'clientUrl',
+      'host',
+      'port',
+      'user',
+      'password',
+      'multipleStatements',
+      'pool',
+      'name',
+    ] as const;
 
     replicas.forEach((conf: Partial<ConnectionOptions>) => {
       props.forEach(prop => (conf[prop] as any) = prop in conf ? conf[prop] : this.config.get(prop));
@@ -390,5 +481,4 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
     return options?.schema ?? schemaName ?? this.config.get('schema');
   }
-
 }

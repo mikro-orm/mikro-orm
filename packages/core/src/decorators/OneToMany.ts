@@ -1,8 +1,8 @@
-import type { ReferenceOptions } from './Property';
+import { type QueryOrderMap, ReferenceKind } from '../enums';
 import { MetadataStorage, MetadataValidator } from '../metadata';
+import type { AnyEntity, EntityKey, EntityName, EntityProperty } from '../typings';
 import { Utils } from '../utils';
-import { ReferenceKind, type QueryOrderMap } from '../enums';
-import type { EntityName, EntityProperty, AnyEntity, EntityKey } from '../typings';
+import type { ReferenceOptions } from './Property';
 
 export function createOneToDecorator<Target, Owner>(
   entity: OneToManyOptions<Owner, Target> | string | ((e?: any) => EntityName<Target>),
@@ -15,7 +15,11 @@ export function createOneToDecorator<Target, Owner>(
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as any);
     MetadataValidator.validateSingleDecorator(meta, propertyName, kind);
     const property = { name: propertyName, kind } as EntityProperty<Target>;
-    meta.properties[propertyName as EntityKey<Target>] = Object.assign(meta.properties[propertyName as EntityKey<Target>] ?? {}, property, options);
+    meta.properties[propertyName as EntityKey<Target>] = Object.assign(
+      meta.properties[propertyName as EntityKey<Target>] ?? {},
+      property,
+      options,
+    );
 
     return Utils.propertyDecoratorReturnValue();
   };

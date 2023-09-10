@@ -1,5 +1,14 @@
+import type {
+  CheckCallback,
+  Dictionary,
+  EntityProperty,
+  GroupOperator,
+  QBFilterQuery,
+  QueryOrderMap,
+  RawQueryFragment,
+  Type,
+} from '@mikro-orm/core';
 import type { Knex } from 'knex';
-import type { CheckCallback, Dictionary, EntityProperty, GroupOperator, RawQueryFragment, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
 import type { QueryType } from './query/enums';
 import type { DatabaseSchema, DatabaseTable } from './schema';
 
@@ -73,7 +82,9 @@ export interface IndexDef {
   primary: boolean;
   composite?: boolean;
   expression?: string; // allows using custom sql expressions
-  type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
+  type?:
+    | string
+    | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
 }
 
 export interface CheckDef<T = unknown> {
@@ -132,7 +143,13 @@ export interface IQueryBuilder<T> {
   delete(cond?: QBFilterQuery): this;
   truncate(): this;
   count(field?: string | string[], distinct?: boolean): this;
-  join(field: string, alias: string, cond?: QBFilterQuery, type?: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): this;
+  join(
+    field: string,
+    alias: string,
+    cond?: QBFilterQuery,
+    type?: 'leftJoin' | 'innerJoin' | 'pivotJoin',
+    path?: string,
+  ): this;
   leftJoin(field: string, alias: string, cond?: QBFilterQuery): this;
   joinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
   leftJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;

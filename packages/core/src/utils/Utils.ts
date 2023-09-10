@@ -1,14 +1,18 @@
-import { createRequire } from 'module';
-import globby, { type GlobbyOptions } from 'globby';
-import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
-import { platform } from 'os';
-import { type URL, fileURLToPath, pathToFileURL } from 'url';
-import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
+import { pathExists } from 'fs-extra';
+import globby, { type GlobbyOptions } from 'globby';
+import { createRequire } from 'module';
+import { platform } from 'os';
+import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
+import { fileURLToPath, pathToFileURL, type URL } from 'url';
 // @ts-ignore
 import { parse } from 'acorn-loose';
 import { simple as walk } from 'acorn-walk';
-import { clone } from './clone';
+import type { Collection } from '../entity/Collection';
+import type { ScalarReference } from '../entity/Reference';
+import { helper } from '../entity/wrap';
+import { GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
+import type { Platform } from '../platforms';
 import type {
   Dictionary,
   EntityData,
@@ -20,11 +24,7 @@ import type {
   IMetadataStorage,
   Primary,
 } from '../typings';
-import { GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
-import type { Collection } from '../entity/Collection';
-import type { Platform } from '../platforms';
-import { helper } from '../entity/wrap';
-import type { ScalarReference } from '../entity/Reference';
+import { clone } from './clone';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
@@ -58,7 +58,9 @@ export function compareObjects(a: any, b: any) {
     return a.valueOf() === b.valueOf();
   }
 
-  if (a.toString !== Object.prototype.toString && typeof a.toString === 'function' && typeof b.toString === 'function') {
+  if (
+    a.toString !== Object.prototype.toString && typeof a.toString === 'function' && typeof b.toString === 'function'
+  ) {
     return a.toString() === b.toString();
   }
 
@@ -166,7 +168,6 @@ export function parseJsonSafe<T = unknown>(value: unknown): T {
 }
 
 export class Utils {
-
   static readonly PK_SEPARATOR = '~~~';
 
   /* istanbul ignore next */
@@ -210,8 +211,10 @@ export class Utils {
     // validate only first parameter is used if its an option object
     const empty = (v: unknown) => v == null || (Utils.isPlainObject(v) && !Utils.hasObjectKeys(v));
     if (values.slice(1).some(v => !empty(v))) {
-      throw new Error('Mixing first decorator parameter as options object with other parameters is forbidden. ' +
-        'If you want to use the options parameter at first position, provide all options inside it.');
+      throw new Error(
+        'Mixing first decorator parameter as options object with other parameters is forbidden. '
+          + 'If you want to use the options parameter at first position, provide all options inside it.',
+      );
     }
 
     return values[0] as T;
@@ -487,13 +490,18 @@ export class Utils {
       return true;
     }
 
-    return ['string', 'number', 'bigint'].includes(typeof key) || Utils.isObjectID(key) || key instanceof Date || key instanceof Buffer;
+    return ['string', 'number', 'bigint'].includes(typeof key) || Utils.isObjectID(key) || key instanceof Date
+      || key instanceof Buffer;
   }
 
   /**
    * Extracts primary key from `data`. Accepts objects or primary keys directly.
    */
-  static extractPK<T extends object>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | string | null {
+  static extractPK<T extends object>(
+    data: any,
+    meta?: EntityMetadata<T>,
+    strict = false,
+  ): Primary<T> | string | null {
     if (Utils.isPrimaryKey(data)) {
       return data as Primary<T>;
     }
@@ -540,7 +548,13 @@ export class Utils {
     }) as Primary<T>;
   }
 
-  static getCompositeKeyHash<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform, flat = false): string {
+  static getCompositeKeyHash<T>(
+    data: EntityData<T>,
+    meta: EntityMetadata<T>,
+    convertCustomTypes = false,
+    platform?: Platform,
+    flat = false,
+  ): string {
     let pks = this.getCompositeKeyValue(data, meta, convertCustomTypes, platform);
 
     if (flat) {
@@ -573,7 +587,10 @@ export class Utils {
 
     const pk = Utils.isEntity(entity, true)
       ? helper(entity).getPrimaryKey(convertCustomTypes)
-      : primaryKeys.reduce((o, pk) => { o[pk] = entity[pk]; return o; }, {} as Dictionary);
+      : primaryKeys.reduce((o, pk) => {
+        o[pk] = entity[pk];
+        return o;
+      }, {} as Dictionary);
 
     if (primaryKeys.length > 1) {
       return toArray(pk!);
@@ -603,7 +620,10 @@ export class Utils {
     return cond;
   }
 
-  static getPrimaryKeyCondFromArray<T extends object>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
+  static getPrimaryKeyCondFromArray<T extends object>(
+    pks: Primary<T>[],
+    meta: EntityMetadata<T>,
+  ): Record<string, Primary<T>> {
     return meta.getPrimaryProps().reduce((o, pk, idx) => {
       if (Array.isArray(pks[idx]) && pk.targetMeta) {
         o[pk.name] = pks[idx];
@@ -615,7 +635,10 @@ export class Utils {
     }, {} as any);
   }
 
-  static getOrderedPrimaryKeys<T>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>): Primary<T>[] {
+  static getOrderedPrimaryKeys<T>(
+    id: Primary<T> | Record<string, Primary<T>>,
+    meta: EntityMetadata<T>,
+  ): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
     const pks = meta.primaryKeys.map((pk, idx) => {
       const prop = meta.properties[pk];
@@ -764,7 +787,8 @@ export class Utils {
       && typeof value === 'object'
       && typeof value.constructor === 'function'
       // eslint-disable-next-line no-prototype-builtins
-      && (value.constructor.prototype.hasOwnProperty('isPrototypeOf') || Object.getPrototypeOf(value.constructor.prototype) === null)
+      && (value.constructor.prototype.hasOwnProperty('isPrototypeOf')
+        || Object.getPrototypeOf(value.constructor.prototype) === null)
     )
       || (value && Object.getPrototypeOf(value) === null)
       || value instanceof PlainObject;
@@ -905,7 +929,10 @@ export class Utils {
     const constEnum = values.length % 2 === 0 // const enum will have even number of items
       && values.slice(0, values.length / 2).every(v => typeof v === 'string') // first half are strings
       && values.slice(values.length / 2).every(v => typeof v === 'number') // second half are numbers
-      && this.equals(keys, values.slice(values.length / 2).concat(values.slice(0, values.length / 2)).map(v => '' + v)); // and when swapped, it will match the keys
+      && this.equals(
+        keys,
+        values.slice(values.length / 2).concat(values.slice(0, values.length / 2)).map(v => '' + v),
+      ); // and when swapped, it will match the keys
 
     if (numeric || constEnum) {
       return values.filter(val => !keys.includes(val as string));
@@ -1056,12 +1083,19 @@ export class Utils {
     }
   }
 
-  static unwrapProperty<T>(entity: T, meta: EntityMetadata<T>, prop: EntityProperty<T>, payload = false): [unknown, number[]][] {
+  static unwrapProperty<T>(
+    entity: T,
+    meta: EntityMetadata<T>,
+    prop: EntityProperty<T>,
+    payload = false,
+  ): [unknown, number[]][] {
     let p = prop;
     const path: string[] = [];
 
     function isObjectProperty(prop: EntityProperty): boolean {
-      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop.object || !!prop.array;
+      return prop.embedded
+        ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>])
+        : prop.object || !!prop.array;
     }
 
     if (!isObjectProperty(prop) && !prop.embedded) {
@@ -1105,9 +1139,17 @@ export class Utils {
     return ret;
   }
 
-  static setPayloadProperty<T>(entity: EntityDictionary<T>, meta: EntityMetadata<T>, prop: EntityProperty<T>, value: unknown, idx: number[] = []): void {
+  static setPayloadProperty<T>(
+    entity: EntityDictionary<T>,
+    meta: EntityMetadata<T>,
+    prop: EntityProperty<T>,
+    value: unknown,
+    idx: number[] = [],
+  ): void {
     function isObjectProperty(prop: EntityProperty): boolean {
-      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop.object || !!prop.array;
+      return prop.embedded
+        ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>])
+        : prop.object || !!prop.array;
     }
 
     if (!isObjectProperty(prop)) {
@@ -1150,7 +1192,9 @@ export class Utils {
     });
   }
 
-  static tryRequire<T extends Dictionary = any>({ module, from, allowError, warning }: { module: string; warning: string; from?: string; allowError?: string }): T | undefined {
+  static tryRequire<T extends Dictionary = any>(
+    { module, from, allowError, warning }: { module: string; warning: string; from?: string; allowError?: string },
+  ): T | undefined {
     allowError ??= `Cannot find module '${module}'`;
     from ??= process.cwd();
 
@@ -1165,7 +1209,6 @@ export class Utils {
 
       throw err;
     }
-
   }
 
   /**
@@ -1208,5 +1251,4 @@ export class Utils {
   static isRawSql(value: unknown): value is { sql: string; params: unknown[]; use: () => void } {
     return typeof value === 'object' && !!value && '__raw' in value;
   }
-
 }

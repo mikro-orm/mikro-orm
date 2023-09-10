@@ -1,12 +1,20 @@
-import { Client } from 'pg';
-import { raw, ALIAS_REPLACEMENT, JsonProperty, Utils, type EntityProperty, Type, type SimpleColumnMeta, type Dictionary } from '@mikro-orm/core';
+import {
+  ALIAS_REPLACEMENT,
+  type Dictionary,
+  type EntityProperty,
+  JsonProperty,
+  raw,
+  type SimpleColumnMeta,
+  Type,
+  Utils,
+} from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
-import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
+import { Client } from 'pg';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
+import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { FullTextType } from './types/FullTextType';
 
 export class PostgreSqlPlatform extends AbstractSqlPlatform {
-
   protected override readonly schemaHelper: PostgreSqlSchemaHelper = new PostgreSqlSchemaHelper(this);
   protected override readonly exceptionConverter = new PostgreSqlExceptionConverter();
 
@@ -69,7 +77,9 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'bigint';
   }
 
-  override getTinyIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+  override getTinyIntTypeDeclarationSQL(
+    column: { length?: number; unsigned?: boolean; autoincrement?: boolean },
+  ): string {
     return 'smallint';
   }
 
@@ -93,7 +103,12 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
-  override getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+  override getFullTextIndexExpression(
+    indexName: string,
+    schemaName: string | undefined,
+    tableName: string,
+    columns: SimpleColumnMeta[],
+  ): string {
     /* istanbul ignore next */
     const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
     const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
@@ -103,13 +118,17 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return `create index ${quotedIndexName} on ${quotedTableName} using gin(${quotedColumnNames[0]})`;
     }
 
-    return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
+    return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${
+      quotedColumnNames.join(` || ' ' || `)
+    }))`;
   }
 
   override getMappedType(type: string): Type<unknown> {
     switch (this.extractSimpleType(type)) {
-      case 'tsvector': return Type.getType(FullTextType);
-      default: return super.getMappedType(type);
+      case 'tsvector':
+        return Type.getType(FullTextType);
+      default:
+        return super.getMappedType(type);
     }
   }
 
@@ -147,7 +166,9 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'double precision';
   }
 
-  override getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[]; nativeEnumName?: string }): string {
+  override getEnumTypeDeclarationSQL(
+    column: { fieldNames: string[]; items?: unknown[]; nativeEnumName?: string },
+  ): string {
     if (column.nativeEnumName) {
       return column.nativeEnumName;
     }
@@ -270,7 +291,11 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
    * Returns the default name of index for the given columns
    * cannot go past 64 character length for identifiers in MySQL
    */
-  override getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+  override getIndexName(
+    tableName: string,
+    columns: string[],
+    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence',
+  ): string {
     const indexName = super.getIndexName(tableName, columns, type);
     if (indexName.length > 64) {
       return `${indexName.substring(0, 56 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
@@ -293,9 +318,12 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
    */
   override castColumn(prop?: { columnTypes?: string[] }): string {
     switch (prop?.columnTypes?.[0]) {
-      case this.getUuidTypeDeclarationSQL({}): return '::text';
-      case this.getBooleanTypeDeclarationSQL(): return '::int';
-      default: return '';
+      case this.getUuidTypeDeclarationSQL({}):
+        return '::text';
+      case this.getBooleanTypeDeclarationSQL():
+        return '::int';
+      default:
+        return '';
     }
   }
 
@@ -309,5 +337,4 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
     return '';
   }
-
 }

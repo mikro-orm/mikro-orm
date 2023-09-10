@@ -1,10 +1,9 @@
+import { colors, FileCacheAdapter, MetadataDiscovery, MetadataStorage } from '@mikro-orm/core';
 import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
-import { MetadataDiscovery, MetadataStorage, colors, FileCacheAdapter } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
 
 type CacheArgs = { ts?: boolean; combined?: string };
 export class GenerateCacheCommand<T> implements CommandModule<T, CacheArgs> {
-
   command = 'cache:generate';
   describe = 'Generate metadata cache';
   builder = (args: Argv<T>) => {
@@ -36,7 +35,12 @@ export class GenerateCacheCommand<T> implements CommandModule<T, CacheArgs> {
     await discovery.discover(args.ts ?? false);
 
     const combined = args.combined && config.get('metadataCache').combined;
-    CLIHelper.dump(colors.green(`${combined ? 'Combined ' : ''}${args.ts ? 'TS' : 'JS'} metadata cache was successfully generated${combined ? ' to ' + combined : ''}`));
+    CLIHelper.dump(
+      colors.green(
+        `${combined ? 'Combined ' : ''}${args.ts ? 'TS' : 'JS'} metadata cache was successfully generated${
+          combined ? ' to ' + combined : ''
+        }`,
+      ),
+    );
   }
-
 }

@@ -1,27 +1,28 @@
 import {
   DateType,
   DecimalType,
-  ReferenceKind,
-  UnknownType,
-  Utils,
   type Dictionary,
   type EntityMetadata,
   type EntityOptions,
   type EntityProperty,
   type NamingStrategy,
-  type Platform,
   type OneToOneOptions,
+  type Platform,
+  ReferenceKind,
+  UnknownType,
+  Utils,
 } from '@mikro-orm/core';
 
 export class SourceFile {
-
   protected readonly coreImports = new Set<string>();
   protected readonly entityImports = new Set<string>();
 
-  constructor(protected readonly meta: EntityMetadata,
-              protected readonly namingStrategy: NamingStrategy,
-              protected readonly platform: Platform,
-              protected readonly esmImport: boolean) { }
+  constructor(
+    protected readonly meta: EntityMetadata,
+    protected readonly namingStrategy: NamingStrategy,
+    protected readonly platform: Platform,
+    protected readonly esmImport: boolean,
+  ) {}
 
   generate(): string {
     this.coreImports.add('Entity');
@@ -61,14 +62,14 @@ export class SourceFile {
       }
 
       if (!prop.nullable && typeof prop.default !== 'undefined') {
-          optionalProperties.push(prop);
+        optionalProperties.push(prop);
       }
     });
 
     if (optionalProperties.length > 0) {
-        this.coreImports.add('OptionalProps');
-        const optionalPropertyNames = optionalProperties.map(prop => `'${prop.name}'`).sort();
-        ret += `\n\n${' '.repeat(2)}[OptionalProps]?: ${optionalPropertyNames.join(' | ')};`;
+      this.coreImports.add('OptionalProps');
+      const optionalPropertyNames = optionalProperties.map(prop => `'${prop.name}'`).sort();
+      ret += `\n\n${' '.repeat(2)}[OptionalProps]?: ${optionalPropertyNames.join(' | ')};`;
     }
     ret += `${classBody}}\n`;
     const imports = [`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`];
@@ -388,5 +389,4 @@ export class SourceFile {
 
     return '@Property';
   }
-
 }

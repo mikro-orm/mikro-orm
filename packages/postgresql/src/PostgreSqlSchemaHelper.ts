@@ -1,8 +1,19 @@
-import { BigIntType, EnumType, Type, Utils, type Dictionary } from '@mikro-orm/core';
-import { SchemaHelper, type AbstractSqlConnection, type CheckDef, type Column, type DatabaseSchema, type DatabaseTable, type ForeignKey, type IndexDef, type Table, type TableDifference, type Knex } from '@mikro-orm/knex';
+import { BigIntType, type Dictionary, EnumType, Type, Utils } from '@mikro-orm/core';
+import {
+  type AbstractSqlConnection,
+  type CheckDef,
+  type Column,
+  type DatabaseSchema,
+  type DatabaseTable,
+  type ForeignKey,
+  type IndexDef,
+  type Knex,
+  SchemaHelper,
+  type Table,
+  type TableDifference,
+} from '@mikro-orm/knex';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
-
   static readonly DEFAULT_VALUES = {
     'now()': ['now()', 'current_timestamp'],
     'current_timestamp(?)': ['current_timestamp(?)'],
@@ -54,7 +65,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `${ignoredPrefixes} and "${column}" not in (${ignored})`;
   }
 
-  override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void> {
+  override async loadInformationSchema(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    tables: Table[],
+    schemas?: string[],
+  ): Promise<void> {
     schemas ??= tables.length === 0 ? [schema.name] : tables.map(t => t.schema_name ?? schema.name);
     const nativeEnums = await this.getNativeEnumDefinitions(connection, schemas);
     schema.setNativeEnums(nativeEnums);
@@ -98,7 +114,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllColumns(connection: AbstractSqlConnection, tables: Table[], nativeEnums?: Dictionary<string[]>): Promise<Dictionary<Column[]>> {
+  async getAllColumns(
+    connection: AbstractSqlConnection,
+    tables: Table[],
+    nativeEnums?: Dictionary<string[]>,
+  ): Promise<Dictionary<Column[]>> {
     const sql = `select table_schema as schema_name, table_name, column_name,
       column_default,
       is_nullable,
@@ -120,7 +140,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     for (const col of allColumns) {
       const mappedType = connection.getPlatform().getMappedType(col.data_type);
-      const increments = col.column_default?.includes('nextval') && connection.getPlatform().isNumericColumn(mappedType);
+      const increments = col.column_default?.includes('nextval')
+        && connection.getPlatform().isNumericColumn(mappedType);
       const key = this.getTableKey(col);
       ret[key] ??= [];
       const column: Column = {
@@ -151,7 +172,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   async getAllChecks(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<CheckDef[]>> {
     const sql = this.getChecksSQL(tables);
-    const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
+    const allChecks = await connection.execute<
+      { name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]
+    >(sql);
     const ret = {} as Dictionary;
 
     for (const check of allChecks) {
@@ -170,8 +193,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
-    const sql = `select tco.table_schema as schema_name, kcu.table_name as table_name, rel_kcu.table_name as referenced_table_name,
+  async getAllForeignKeys(
+    connection: AbstractSqlConnection,
+    tables: Table[],
+  ): Promise<Dictionary<Dictionary<ForeignKey>>> {
+    const sql =
+      `select tco.table_schema as schema_name, kcu.table_name as table_name, rel_kcu.table_name as referenced_table_name,
       rel_kcu.constraint_schema as referenced_schema_name,
       kcu.column_name as column_name,
       rel_kcu.column_name as referenced_column_name, kcu.constraint_name, rco.update_rule, rco.delete_rule
@@ -186,7 +213,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         on rco.unique_constraint_schema = rel_kcu.constraint_schema
         and rco.unique_constraint_name = rel_kcu.constraint_name
         and kcu.ordinal_position = rel_kcu.ordinal_position
-      where (${tables.map(t => `tco.table_name = '${t.table_name}' and tco.table_schema = '${t.schema_name}' and tco.constraint_schema = '${t.schema_name}'`).join(' or ')})
+      where (${
+        tables.map(t =>
+          `tco.table_name = '${t.table_name}' and tco.table_schema = '${t.schema_name}' and tco.constraint_schema = '${t.schema_name}'`
+        ).join(
+          ' or ',
+        )
+      })
       and tco.constraint_type = 'FOREIGN KEY'
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
     const allFks = await connection.execute<any[]>(sql);
@@ -207,12 +240,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   async getNativeEnumDefinitions(connection: AbstractSqlConnection, schemas: string[]): Promise<Dictionary<string[]>> {
-    const res = await connection.execute('select t.typname as enum_name, array_agg(e.enumlabel order by e.enumsortorder) as enum_value ' +
-      'from pg_type t ' +
-      'join pg_enum e on t.oid = e.enumtypid ' +
-      'join pg_catalog.pg_namespace n on n.oid = t.typnamespace ' +
-      'where n.nspname in (?) ' +
-      'group by t.typname', Utils.unique(schemas));
+    const res = await connection.execute(
+      'select t.typname as enum_name, array_agg(e.enumlabel order by e.enumsortorder) as enum_value '
+        + 'from pg_type t '
+        + 'join pg_enum e on t.oid = e.enumtypid '
+        + 'join pg_catalog.pg_namespace n on n.oid = t.typnamespace '
+        + 'where n.nspname in (?) '
+        + 'group by t.typname',
+      Utils.unique(schemas),
+    );
 
     return res.reduce((o, row) => {
       o[row.enum_name] = this.platform.unmarshallArray(row.enum_value);
@@ -236,7 +272,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `alter type ${this.platform.quoteIdentifier(name)} add value ${this.platform.quoteValue(value)}`;
   }
 
-  override async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName?: string, schemaName?: string): Promise<Dictionary<string[]>> {
+  override async getEnumDefinitions(
+    connection: AbstractSqlConnection,
+    checks: CheckDef[],
+    tableName?: string,
+    schemaName?: string,
+  ): Promise<Dictionary<string[]>> {
     const found: number[] = [];
     const enums = checks.reduce((o, item, index) => {
       // check constraints are defined as one of:
@@ -245,7 +286,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       // `CHECK (((enum_test)::text = ANY ((ARRAY['a'::character varying, 'b'::character varying, 'c'::character varying])::text[])))`
       // `CHECK ((("enumTest")::text = ANY ((ARRAY['a'::character varying, 'b'::character varying, 'c'::character varying])::text[])))`
       // `CHECK ((type = 'a'::text))`
-      const m1 = item.definition?.match(/check \(\(\("?(\w+)"?\)::/i) || item.definition?.match(/check \(\("?(\w+)"? = /i);
+      const m1 = item.definition?.match(/check \(\(\("?(\w+)"?\)::/i)
+        || item.definition?.match(/check \(\("?(\w+)"? = /i);
       const m2 = item.definition?.match(/\(array\[(.*)]\)/i) || item.definition?.match(/ = (.*)\)/i);
 
       if (item.columnName && m1 && m2) {
@@ -275,7 +317,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return enums;
   }
 
-  override createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
+  override createTableColumn(
+    table: Knex.TableBuilder,
+    column: Column,
+    fromTable: DatabaseTable,
+    changedProperties?: Set<string>,
+  ) {
     const pk = fromTable.getPrimaryKey();
     const primaryKey = column.primary && !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
 
@@ -291,7 +338,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return table.enum(column.name, column.enumItems, {
         useNative: true,
         enumName: column.nativeEnumName,
-        schemaName: fromTable.schema && fromTable.schema !== this.platform.getDefaultSchemaName() ? fromTable.schema : undefined,
+        schemaName: fromTable.schema && fromTable.schema !== this.platform.getDefaultSchemaName()
+          ? fromTable.schema
+          : undefined,
         existingType: changedProperties ? column.nativeEnumName in fromTable.nativeEnums : false,
       });
     }
@@ -328,11 +377,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const tableName = parts.pop()!;
     const schemaName = parts.pop();
     /* istanbul ignore next */
-    const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
+    const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '')
+      + tableName;
     const quotedName = this.platform.quoteIdentifier(name);
 
     // detect that the column was an enum before and remove the check constraint in such case here
-    const changedEnums = Object.values(tableDiff.changedColumns).filter(col => col.fromColumn.mappedType instanceof EnumType);
+    const changedEnums = Object.values(tableDiff.changedColumns).filter(col =>
+      col.fromColumn.mappedType instanceof EnumType
+    );
 
     for (const col of changedEnums) {
       const constraintName = `${tableName}_${col.column.name}_check`;
@@ -340,10 +392,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
 
     // changing uuid column type requires to cast it to text first
-    const uuids = Object.values(tableDiff.changedColumns).filter(col => col.changedProperties.has('type') && col.fromColumn.type === 'uuid');
+    const uuids = Object.values(tableDiff.changedColumns).filter(col =>
+      col.changedProperties.has('type') && col.fromColumn.type === 'uuid'
+    );
 
     for (const col of uuids) {
-      ret.push(`alter table ${quotedName} alter column "${col.column.name}" type text using ("${col.column.name}"::text)`);
+      ret.push(
+        `alter table ${quotedName} alter column "${col.column.name}" type text using ("${col.column.name}"::text)`,
+      );
     }
 
     return ret.join(';\n');
@@ -353,7 +409,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const ret: string[] = [];
     const quoted = (val: string) => this.platform.quoteIdentifier(val);
     /* istanbul ignore next */
-    const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
+    const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '')
+      + tableName;
 
     /* istanbul ignore else */
     if (column.autoincrement) {
@@ -369,7 +426,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
-    const name = this.platform.quoteIdentifier((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
+    const name = this.platform.quoteIdentifier(
+      (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName,
+    );
     const value = to.comment ? this.platform.quoteValue(to.comment) : 'null';
     return `comment on column ${name}."${to.name}" is ${value}`;
   }
@@ -439,26 +498,40 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_namespace nsp on nsp.oid = pgc.connamespace
       join pg_class cls on pgc.conrelid = cls.oid
       join information_schema.constraint_column_usage ccu on pgc.conname = ccu.constraint_name and nsp.nspname = ccu.constraint_schema
-      where contype = 'c' and (${tables.map(t => `ccu.table_name = '${t.table_name}' and ccu.table_schema = '${t.schema_name}'`).join(' or ')})
+      where contype = 'c' and (${
+      tables.map(t => `ccu.table_name = '${t.table_name}' and ccu.table_schema = '${t.schema_name}'`).join(' or ')
+    })
       order by pgc.conname`;
   }
 
   /* istanbul ignore next */
-  override async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<CheckDef[]> {
+  override async getChecks(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName: string,
+    columns?: Column[],
+  ): Promise<CheckDef[]> {
     const res = await this.getAllChecks(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
 
   /* istanbul ignore next */
-  override async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
+  override async getColumns(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+  ): Promise<Column[]> {
     const res = await this.getAllColumns(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
 
   /* istanbul ignore next */
-  override async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
+  override async getIndexes(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+  ): Promise<IndexDef[]> {
     const res = await this.getAllIndexes(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
-
 }

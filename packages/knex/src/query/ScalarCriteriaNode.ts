@@ -1,12 +1,11 @@
 import { ReferenceKind } from '@mikro-orm/core';
-import { CriteriaNode } from './CriteriaNode';
 import type { IQueryBuilder } from '../typings';
+import { CriteriaNode } from './CriteriaNode';
 
 /**
  * @internal
  */
 export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
-
   override process(qb: IQueryBuilder<T>, alias?: string): any {
     if (this.shouldJoin()) {
       const path = this.getPath();
@@ -35,11 +34,14 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
     }
 
     switch (this.prop.kind) {
-      case ReferenceKind.ONE_TO_MANY: return true;
-      case ReferenceKind.MANY_TO_MANY: return true;
-      case ReferenceKind.ONE_TO_ONE: return !this.prop.owner;
-      default: return false; // SCALAR, MANY_TO_ONE
+      case ReferenceKind.ONE_TO_MANY:
+        return true;
+      case ReferenceKind.MANY_TO_MANY:
+        return true;
+      case ReferenceKind.ONE_TO_ONE:
+        return !this.prop.owner;
+      default:
+        return false; // SCALAR, MANY_TO_ONE
     }
   }
-
 }

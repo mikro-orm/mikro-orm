@@ -1,16 +1,14 @@
 import type { Configuration, Transaction } from '@mikro-orm/core';
-import type { AbstractSqlDriver, Knex, EntityManager } from '@mikro-orm/knex';
+import type { AbstractSqlDriver, EntityManager, Knex } from '@mikro-orm/knex';
 
 export type Query = string | Knex.QueryBuilder | Knex.Raw;
 
 export abstract class Migration {
-
   private readonly queries: Query[] = [];
   protected ctx?: Transaction<Knex.Transaction>;
   private em?: EntityManager;
 
-  constructor(protected readonly driver: AbstractSqlDriver,
-              protected readonly config: Configuration) { }
+  constructor(protected readonly driver: AbstractSqlDriver, protected readonly config: Configuration) {}
 
   abstract up(): Promise<void>;
 
@@ -63,5 +61,4 @@ export abstract class Migration {
   getQueries(): Query[] {
     return this.queries;
   }
-
 }

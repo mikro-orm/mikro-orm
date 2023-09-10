@@ -1,21 +1,32 @@
-import type {
-  ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary, QBFilterQuery,
-  IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath, ObjectQuery, FilterObject,
-} from '../typings';
 import type { Connection, QueryResult, Transaction } from '../connections';
-import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint } from '../enums';
-import type { Platform } from '../platforms';
-import type { MetadataStorage } from '../metadata';
 import type { Collection } from '../entity/Collection';
 import type { EntityManager } from '../EntityManager';
+import type { FlushMode, LoadStrategy, LockMode, PopulateHint, QueryFlag, QueryOrderMap } from '../enums';
 import type { DriverException } from '../exceptions';
+import type { LogContext, LoggingOptions } from '../logging';
+import type { MetadataStorage } from '../metadata';
+import type { Platform } from '../platforms';
+import type {
+  AutoPath,
+  ConnectionType,
+  Dictionary,
+  EntityData,
+  EntityDictionary,
+  EntityMetadata,
+  EntityProperty,
+  FilterObject,
+  FilterQuery,
+  IPrimaryKey,
+  ObjectQuery,
+  PopulateOptions,
+  Primary,
+  QBFilterQuery,
+} from '../typings';
 import type { Configuration } from '../utils/Configuration';
-import type { LoggingOptions, LogContext } from '../logging';
 
 export const EntityManagerType = Symbol('EntityManagerType');
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
-
   [EntityManagerType]: EntityManager<this>;
   readonly config: Configuration;
 
@@ -34,37 +45,89 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F>): Promise<EntityData<T>[]>;
+  find<T extends object, P extends string = never, F extends string = '*'>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options?: FindOptions<T, P, F>,
+  ): Promise<EntityData<T>[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F>): Promise<EntityData<T> | null>;
+  findOne<T extends object, P extends string = never, F extends string = '*'>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options?: FindOneOptions<T, P, F>,
+  ): Promise<EntityData<T> | null>;
 
-  findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<EntityData<T>[]>;
+  findVirtual<T extends object>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options: FindOptions<T, any, any>,
+  ): Promise<EntityData<T>[]>;
 
-  nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
+  nativeInsert<T extends object>(
+    entityName: string,
+    data: EntityDictionary<T>,
+    options?: NativeInsertUpdateOptions<T>,
+  ): Promise<QueryResult<T>>;
 
-  nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
+  nativeInsertMany<T extends object>(
+    entityName: string,
+    data: EntityDictionary<T>[],
+    options?: NativeInsertUpdateManyOptions<T>,
+  ): Promise<QueryResult<T>>;
 
-  nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
+  nativeUpdate<T extends object>(
+    entityName: string,
+    where: FilterQuery<T>,
+    data: EntityDictionary<T>,
+    options?: NativeInsertUpdateOptions<T>,
+  ): Promise<QueryResult<T>>;
 
-  nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
+  nativeUpdateMany<T extends object>(
+    entityName: string,
+    where: FilterQuery<T>[],
+    data: EntityDictionary<T>[],
+    options?: NativeInsertUpdateManyOptions<T>,
+  ): Promise<QueryResult<T>>;
 
-  nativeDelete<T extends object>(entityName: string, where: FilterQuery<T>, options?: NativeDeleteOptions<T>): Promise<QueryResult<T>>;
+  nativeDelete<T extends object>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options?: NativeDeleteOptions<T>,
+  ): Promise<QueryResult<T>>;
 
-  syncCollection<T extends object, O extends object>(collection: Collection<T, O>, options?: DriverMethodOptions): Promise<void>;
+  syncCollection<T extends object, O extends object>(
+    collection: Collection<T, O>,
+    options?: DriverMethodOptions,
+  ): Promise<void>;
 
-  count<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
+  count<T extends object, P extends string = never>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options?: CountOptions<T, P>,
+  ): Promise<number>;
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 
-  mapResult<T extends object>(result: EntityDictionary<T>, meta: EntityMetadata<T>, populate?: PopulateOptions<T>[]): EntityData<T> | null;
+  mapResult<T extends object>(
+    result: EntityDictionary<T>,
+    meta: EntityMetadata<T>,
+    populate?: PopulateOptions<T>[],
+  ): EntityData<T> | null;
 
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
    */
-  loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>): Promise<Dictionary<T[]>>;
+  loadFromPivotTable<T extends object, O extends object>(
+    prop: EntityProperty,
+    owners: Primary<O>[][],
+    where?: FilterQuery<T>,
+    orderBy?: OrderDefinition<T>,
+    ctx?: Transaction,
+    options?: FindOptions<T, any, any>,
+  ): Promise<Dictionary<T[]>>;
 
   getPlatform(): Platform;
 
@@ -89,7 +152,6 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    * @internal
    */
   getSchemaName(meta?: EntityMetadata, options?: { schema?: string }): string | undefined;
-
 }
 
 export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<T, P, '*'>;
@@ -143,15 +205,18 @@ export interface FindOptions<T, P extends string = never, F extends string = nev
   logging?: LoggingOptions;
 }
 
-export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = never> extends Omit<FindOptions<T, P, F>, 'limit' | 'offset'> {
+export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = never>
+  extends Omit<FindOptions<T, P, F>, 'limit' | 'offset'> {
 }
 
-export interface FindOneOptions<T extends object, P extends string = never, F extends string = never> extends Omit<FindOptions<T, P, F>, 'limit' | 'lockMode'> {
+export interface FindOneOptions<T extends object, P extends string = never, F extends string = never>
+  extends Omit<FindOptions<T, P, F>, 'limit' | 'lockMode'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
 }
 
-export interface FindOneOrFailOptions<T extends object, P extends string = never, F extends string = never> extends FindOneOptions<T, P, F> {
+export interface FindOneOrFailOptions<T extends object, P extends string = never, F extends string = never>
+  extends FindOneOptions<T, P, F> {
   failHandler?: (entityName: string, where: Dictionary | IPrimaryKey | any) => Error;
   strict?: boolean;
 }
@@ -179,7 +244,7 @@ export interface UpsertManyOptions<Entity> extends UpsertOptions<Entity> {
   batchSize?: number;
 }
 
-export interface CountOptions<T extends object, P extends string = never>  {
+export interface CountOptions<T extends object, P extends string = never> {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   schema?: string;
   groupBy?: string | readonly string[];
@@ -196,7 +261,7 @@ export interface CountOptions<T extends object, P extends string = never>  {
   hintComments?: string | string[];
 }
 
-export interface UpdateOptions<T>  {
+export interface UpdateOptions<T> {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   schema?: string;
   ctx?: Transaction;

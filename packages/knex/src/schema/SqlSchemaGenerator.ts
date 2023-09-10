@@ -1,13 +1,19 @@
-﻿import type { Knex } from 'knex';
-import { AbstractSchemaGenerator, Utils, type Dictionary, type EntityMetadata, type MikroORM, type ISchemaGenerator } from '@mikro-orm/core';
+﻿import {
+  AbstractSchemaGenerator,
+  type Dictionary,
+  type EntityMetadata,
+  type ISchemaGenerator,
+  type MikroORM,
+  Utils,
+} from '@mikro-orm/core';
+import type { Knex } from 'knex';
+import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import type { CheckDef, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
-import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { SchemaComparator } from './SchemaComparator';
 
 export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> implements ISchemaGenerator {
-
   private readonly helper = this.platform.getSchemaHelper()!;
   private readonly options = this.config.get('schemaGenerator');
   protected lastEnsuredDatabase?: string;
@@ -72,13 +78,20 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     for (const tableDef of toSchema.getTables()) {
-      ret += await this.dump(this.createSchemaBuilder(tableDef.schema).alterTable(tableDef.name, table => this.createForeignKeys(table, tableDef, options.schema)));
+      ret += await this.dump(
+        this.createSchemaBuilder(tableDef.schema).alterTable(
+          tableDef.name,
+          table => this.createForeignKeys(table, tableDef, options.schema),
+        ),
+      );
     }
 
     return this.wrapSchema(ret, { wrap });
   }
 
-  override async dropSchema(options: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean; schema?: string } = {}): Promise<void> {
+  override async dropSchema(
+    options: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean; schema?: string } = {},
+  ): Promise<void> {
     if (options.dropDb) {
       const name = this.config.get('dbName')!;
       return this.dropDatabase(name);
@@ -113,7 +126,9 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
   }
 
-  override async getDropSchemaSQL(options: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string } = {}): Promise<string> {
+  override async getDropSchemaSQL(
+    options: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string } = {},
+  ): Promise<string> {
     await this.ensureDatabase();
     const wrap = options.wrap ?? this.options.disableForeignKeys;
     const metadata = this.getOrderedMetadata(options.schema).reverse();
@@ -147,7 +162,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     if (options.dropMigrationsTable) {
-      ret += await this.dump(this.dropTable(this.config.get('migrations').tableName!, this.config.get('schema')), '\n');
+      ret += await this.dump(
+        this.dropTable(this.config.get('migrations').tableName!, this.config.get('schema')),
+        '\n',
+      );
     }
 
     return this.wrapSchema(ret + '\n', { wrap });
@@ -159,12 +177,18 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return meta.schema && meta.schema === '*' ? schemaName : (meta.schema ?? schemaName);
   }
 
-  override async updateSchema(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<void> {
+  override async updateSchema(
+    options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } =
+      {},
+  ): Promise<void> {
     const sql = await this.getUpdateSchemaSQL(options);
     await this.execute(sql);
   }
 
-  override async getUpdateSchemaSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<string> {
+  override async getUpdateSchemaSQL(
+    options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } =
+      {},
+  ): Promise<string> {
     await this.ensureDatabase();
     const { fromSchema, toSchema } = await this.prepareSchemaForComparison(options);
     const comparator = new SchemaComparator(this.platform);
@@ -173,7 +197,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return this.diffToSQL(diffUp, options);
   }
 
-  override async getUpdateSchemaMigrationSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<{ up: string; down: string }> {
+  override async getUpdateSchemaMigrationSQL(
+    options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } =
+      {},
+  ): Promise<{ up: string; down: string }> {
     if (!options.fromSchema) {
       await this.ensureDatabase();
     }
@@ -188,14 +215,19 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     };
   }
 
-  private async prepareSchemaForComparison(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string }) {
+  private async prepareSchemaForComparison(
+    options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string },
+  ) {
     options.wrap ??= this.options.disableForeignKeys;
     options.safe ??= false;
     options.dropTables ??= true;
     const toSchema = this.getTargetSchema(options.schema);
     const schemas = toSchema.getNamespaces();
-    const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas);
-    const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta => meta.tableName);
+    const fromSchema = options.fromSchema
+      ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas);
+    const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta =>
+      meta.tableName
+    );
     fromSchema.prune(options.schema, wildcardSchemaTables);
     toSchema.prune(options.schema, wildcardSchemaTables);
     toSchema.setNativeEnums(fromSchema.getNativeEnums());
@@ -203,7 +235,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return { fromSchema, toSchema };
   }
 
-  async diffToSQL(schemaDiff: SchemaDifference, options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; schema?: string }): Promise<string> {
+  async diffToSQL(
+    schemaDiff: SchemaDifference,
+    options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; schema?: string },
+  ): Promise<string> {
     let ret = '';
 
     if (this.platform.supportsSchemas()) {
@@ -216,9 +251,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     if (!options.safe) {
       for (const orphanedForeignKey of schemaDiff.orphanedForeignKeys) {
         const [schemaName, tableName] = this.splitTableName(orphanedForeignKey.localTableName);
-        ret += await this.dump(this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
-          return table.dropForeign(orphanedForeignKey.columnNames, orphanedForeignKey.constraintName);
-        }));
+        ret += await this.dump(
+          this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
+            return table.dropForeign(orphanedForeignKey.columnNames, orphanedForeignKey.constraintName);
+          }),
+        );
       }
     }
 
@@ -227,9 +264,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     for (const newTable of Object.values(schemaDiff.newTables)) {
-      ret += await this.dump(this.createSchemaBuilder(newTable.schema).alterTable(newTable.name, table => {
-        this.createForeignKeys(table, newTable, options.schema);
-      }));
+      ret += await this.dump(
+        this.createSchemaBuilder(newTable.schema).alterTable(newTable.name, table => {
+          this.createForeignKeys(table, newTable, options.schema);
+        }),
+      );
     }
 
     if (options.dropTables && !options.safe) {
@@ -304,15 +343,17 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     push(this.helper.getPreAlterTable(diff, safe));
     const [schemaName, tableName] = this.splitTableName(diff.name);
 
-    ret.push(this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
-      for (const foreignKey of Object.values(diff.removedForeignKeys)) {
-        table.dropForeign(foreignKey.columnNames, foreignKey.constraintName);
-      }
+    ret.push(
+      this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
+        for (const foreignKey of Object.values(diff.removedForeignKeys)) {
+          table.dropForeign(foreignKey.columnNames, foreignKey.constraintName);
+        }
 
-      for (const foreignKey of Object.values(diff.changedForeignKeys)) {
-        table.dropForeign(foreignKey.columnNames, foreignKey.constraintName);
-      }
-    }));
+        for (const foreignKey of Object.values(diff.changedForeignKeys)) {
+          table.dropForeign(foreignKey.columnNames, foreignKey.constraintName);
+        }
+      }),
+    );
 
     return ret;
   }
@@ -331,123 +372,153 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const changedNativeEnums: [string, string[], string[]][] = [];
 
     for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
-      if (column.nativeEnumName && changedProperties.has('enumItems') && column.nativeEnumName in diff.fromTable.nativeEnums) {
-        changedNativeEnums.push([column.nativeEnumName, column.enumItems!, diff.fromTable.getColumn(column.name)!.enumItems!]);
+      if (
+        column.nativeEnumName && changedProperties.has('enumItems')
+        && column.nativeEnumName in diff.fromTable.nativeEnums
+      ) {
+        changedNativeEnums.push([
+          column.nativeEnumName,
+          column.enumItems!,
+          diff.fromTable.getColumn(column.name)!.enumItems!,
+        ]);
       }
     }
 
-    ret.push(this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
-      for (const index of Object.values(diff.removedIndexes)) {
-        this.dropIndex(table, index);
-      }
-
-      for (const index of Object.values(diff.changedIndexes)) {
-        this.dropIndex(table, index);
-      }
-
-      for (const check of Object.values(diff.removedChecks)) {
-        this.dropCheck(table, check);
-      }
-
-      for (const check of Object.values(diff.changedChecks)) {
-        this.dropCheck(table, check);
-      }
-
-      for (const column of Object.values(diff.addedColumns)) {
-        const col = this.helper.createTableColumn(table, column, diff.fromTable);
-        this.helper.configureColumn(column, col, this.knex);
-        const foreignKey = Object.values(diff.addedForeignKeys).find(fk => fk.columnNames.length === 1 && fk.columnNames[0] === column.name);
-
-        if (foreignKey && this.options.createForeignKeyConstraints) {
-          delete diff.addedForeignKeys[foreignKey.constraintName];
-          col.references(foreignKey.referencedColumnNames[0])
-            .inTable(this.getReferencedTableName(foreignKey.referencedTableName))
-            .withKeyName(foreignKey.constraintName)
-            .onUpdate(foreignKey.updateRule!)
-            .onDelete(foreignKey.deleteRule!);
-        }
-      }
-
-      /* istanbul ignore else */
-      if (!safe) {
-        for (const column of Object.values(diff.removedColumns)) {
-          table.dropColumn(column.name);
-        }
-      }
-
-      for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
-        if (changedProperties.size === 1 && changedProperties.has('comment')) {
-          continue;
+    ret.push(
+      this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
+        for (const index of Object.values(diff.removedIndexes)) {
+          this.dropIndex(table, index);
         }
 
-        if (changedProperties.size === 1 && changedProperties.has('enumItems') && column.nativeEnumName) {
-          continue;
+        for (const index of Object.values(diff.changedIndexes)) {
+          this.dropIndex(table, index);
         }
 
-        const col = this.helper.createTableColumn(table, column, diff.fromTable, changedProperties).alter();
-        this.helper.configureColumn(column, col, this.knex, changedProperties);
-      }
-
-      for (const { column } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('autoincrement'))) {
-        this.helper.pushTableQuery(table, this.helper.getAlterColumnAutoincrement(tableName, column, schemaName));
-      }
-
-      for (const { column, changedProperties } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('comment'))) {
-        if (['type', 'nullable', 'autoincrement', 'unsigned', 'default', 'enumItems'].some(t => changedProperties.has(t))) {
-          continue; // will be handled via knex
+        for (const check of Object.values(diff.removedChecks)) {
+          this.dropCheck(table, check);
         }
 
-        this.helper.pushTableQuery(table, this.helper.getChangeColumnCommentSQL(tableName, column, schemaName));
-      }
+        for (const check of Object.values(diff.changedChecks)) {
+          this.dropCheck(table, check);
+        }
 
-      for (const [oldColumnName, column] of Object.entries(diff.renamedColumns)) {
-        this.helper.pushTableQuery(table, this.helper.getRenameColumnSQL(tableName, oldColumnName, column, schemaName));
-      }
+        for (const column of Object.values(diff.addedColumns)) {
+          const col = this.helper.createTableColumn(table, column, diff.fromTable);
+          this.helper.configureColumn(column, col, this.knex);
+          const foreignKey = Object.values(diff.addedForeignKeys).find(fk =>
+            fk.columnNames.length === 1 && fk.columnNames[0] === column.name
+          );
 
-      for (const foreignKey of Object.values(diff.addedForeignKeys)) {
-        this.createForeignKey(table, foreignKey);
-      }
+          if (foreignKey && this.options.createForeignKeyConstraints) {
+            delete diff.addedForeignKeys[foreignKey.constraintName];
+            col.references(foreignKey.referencedColumnNames[0])
+              .inTable(this.getReferencedTableName(foreignKey.referencedTableName))
+              .withKeyName(foreignKey.constraintName)
+              .onUpdate(foreignKey.updateRule!)
+              .onDelete(foreignKey.deleteRule!);
+          }
+        }
 
-      for (const foreignKey of Object.values(diff.changedForeignKeys)) {
-        this.createForeignKey(table, foreignKey);
-      }
+        /* istanbul ignore else */
+        if (!safe) {
+          for (const column of Object.values(diff.removedColumns)) {
+            table.dropColumn(column.name);
+          }
+        }
 
-      for (const index of Object.values(diff.addedIndexes)) {
-        this.createIndex(table, index, diff.toTable);
-      }
+        for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
+          if (changedProperties.size === 1 && changedProperties.has('comment')) {
+            continue;
+          }
 
-      for (const index of Object.values(diff.changedIndexes)) {
-        this.createIndex(table, index, diff.toTable, true);
-      }
+          if (changedProperties.size === 1 && changedProperties.has('enumItems') && column.nativeEnumName) {
+            continue;
+          }
 
-      for (const [oldIndexName, index] of Object.entries(diff.renamedIndexes)) {
-        if (index.unique) {
-          this.dropIndex(table, index, oldIndexName);
+          const col = this.helper.createTableColumn(table, column, diff.fromTable, changedProperties).alter();
+          this.helper.configureColumn(column, col, this.knex, changedProperties);
+        }
+
+        for (
+          const { column } of Object.values(diff.changedColumns).filter(diff =>
+            diff.changedProperties.has('autoincrement')
+          )
+        ) {
+          this.helper.pushTableQuery(table, this.helper.getAlterColumnAutoincrement(tableName, column, schemaName));
+        }
+
+        for (
+          const { column, changedProperties } of Object.values(diff.changedColumns).filter(diff =>
+            diff.changedProperties.has('comment')
+          )
+        ) {
+          if (
+            ['type', 'nullable', 'autoincrement', 'unsigned', 'default', 'enumItems'].some(t =>
+              changedProperties.has(t)
+            )
+          ) {
+            continue; // will be handled via knex
+          }
+
+          this.helper.pushTableQuery(table, this.helper.getChangeColumnCommentSQL(tableName, column, schemaName));
+        }
+
+        for (const [oldColumnName, column] of Object.entries(diff.renamedColumns)) {
+          this.helper.pushTableQuery(
+            table,
+            this.helper.getRenameColumnSQL(tableName, oldColumnName, column, schemaName),
+          );
+        }
+
+        for (const foreignKey of Object.values(diff.addedForeignKeys)) {
+          this.createForeignKey(table, foreignKey);
+        }
+
+        for (const foreignKey of Object.values(diff.changedForeignKeys)) {
+          this.createForeignKey(table, foreignKey);
+        }
+
+        for (const index of Object.values(diff.addedIndexes)) {
           this.createIndex(table, index, diff.toTable);
-        } else {
-          this.helper.pushTableQuery(table, this.helper.getRenameIndexSQL(diff.name, index, oldIndexName));
         }
-      }
 
-      for (const check of Object.values(diff.addedChecks)) {
-        this.createCheck(table, check);
-      }
+        for (const index of Object.values(diff.changedIndexes)) {
+          this.createIndex(table, index, diff.toTable, true);
+        }
 
-      for (const check of Object.values(diff.changedChecks)) {
-        this.createCheck(table, check);
-      }
+        for (const [oldIndexName, index] of Object.entries(diff.renamedIndexes)) {
+          if (index.unique) {
+            this.dropIndex(table, index, oldIndexName);
+            this.createIndex(table, index, diff.toTable);
+          } else {
+            this.helper.pushTableQuery(table, this.helper.getRenameIndexSQL(diff.name, index, oldIndexName));
+          }
+        }
 
-      if ('changedComment' in diff) {
-        const comment = diff.changedComment ? this.platform.quoteValue(diff.changedComment).replace(/^'|'$/g, '') : '';
-        table.comment(comment);
-      }
-    }));
+        for (const check of Object.values(diff.addedChecks)) {
+          this.createCheck(table, check);
+        }
+
+        for (const check of Object.values(diff.changedChecks)) {
+          this.createCheck(table, check);
+        }
+
+        if ('changedComment' in diff) {
+          const comment = diff.changedComment
+            ? this.platform.quoteValue(diff.changedComment).replace(/^'|'$/g, '')
+            : '';
+          table.comment(comment);
+        }
+      }),
+    );
 
     if (this.platform.supportsNativeEnums()) {
       changedNativeEnums.forEach(([enumName, itemsNew, itemsOld]) => {
         // postgres allows only adding new items
         const newItems = itemsNew.filter(val => !itemsOld.includes(val));
-        ret.push(...newItems.map(val => this.knex.schema.raw(this.helper.getAlterNativeEnumSQL(enumName, schemaName, val))));
+        ret.push(
+          ...newItems.map(val => this.knex.schema.raw(this.helper.getAlterNativeEnumSQL(enumName, schemaName, val))),
+        );
       });
     }
 
@@ -519,7 +590,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       });
 
       for (const index of tableDef.getIndexes()) {
-        const createPrimary = !tableDef.getColumns().some(c => c.autoincrement && c.primary) || this.helper.hasNonDefaultPrimaryKeyName(tableDef);
+        const createPrimary = !tableDef.getColumns().some(c => c.autoincrement && c.primary)
+          || this.helper.hasNonDefaultPrimaryKeyName(tableDef);
         this.createIndex(table, index, tableDef, createPrimary);
       }
 
@@ -542,7 +614,12 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     });
   }
 
-  private createIndex(table: Knex.CreateTableBuilder, index: IndexDef, tableDef: DatabaseTable, createPrimary = false) {
+  private createIndex(
+    table: Knex.CreateTableBuilder,
+    index: IndexDef,
+    tableDef: DatabaseTable,
+    createPrimary = false,
+  ) {
     if (index.primary && !createPrimary) {
       return;
     }
@@ -558,7 +635,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       const columns = index.columnNames.map(name => ({ name, type: tableDef.getColumn(name)!.type }));
 
       if (this.platform.supportsCreatingFullTextIndex()) {
-        this.helper.pushTableQuery(table, this.platform.getFullTextIndexExpression(index.keyName, tableDef.schema, tableDef.name, columns));
+        this.helper.pushTableQuery(
+          table,
+          this.platform.getFullTextIndexExpression(index.keyName, tableDef.schema, tableDef.name, columns),
+        );
       }
     } else {
       table.index(index.columnNames, index.keyName, index.type as Dictionary);
@@ -620,7 +700,6 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   private get knex() {
     return this.connection.getKnex();
   }
-
 }
 
 // for back compatibility

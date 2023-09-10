@@ -1,19 +1,26 @@
+import {
+  BooleanType,
+  DateTimeType,
+  type Dictionary,
+  type EntityProperty,
+  JsonType,
+  parseJsonSafe,
+  Utils,
+} from '@mikro-orm/core';
 import { inspect } from 'util';
-import { BooleanType, DateTimeType, JsonType, parseJsonSafe, Utils, type Dictionary, type EntityProperty } from '@mikro-orm/core';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 import type { CheckDef, Column, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
-import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 /**
  * Compares two Schemas and return an instance of SchemaDifference.
  */
 export class SchemaComparator {
-
   private readonly helper = this.platform.getSchemaHelper()!;
   private readonly logger = this.platform.getConfig().getLogger();
 
-  constructor(private readonly platform: AbstractSqlPlatform) { }
+  constructor(private readonly platform: AbstractSqlPlatform) {}
 
   /**
    * Returns a SchemaDifference object containing the differences between the schemas fromSchema and toSchema.
@@ -23,7 +30,15 @@ export class SchemaComparator {
    * stored in toSchema.
    */
   compare(fromSchema: DatabaseSchema, toSchema: DatabaseSchema): SchemaDifference {
-    const diff: SchemaDifference = { newTables: {}, removedTables: {}, changedTables: {}, orphanedForeignKeys: [], newNamespaces: new Set(), removedNamespaces: new Set(), fromSchema };
+    const diff: SchemaDifference = {
+      newTables: {},
+      removedTables: {},
+      changedTables: {},
+      orphanedForeignKeys: [],
+      newNamespaces: new Set(),
+      removedNamespaces: new Set(),
+      fromSchema,
+    };
     const foreignKeysToTable: Dictionary<ForeignKey[]> = {};
 
     for (const namespace of toSchema.getNamespaces()) {
@@ -134,7 +149,10 @@ export class SchemaComparator {
 
     if (this.diffComment(fromTable.comment, toTable.comment)) {
       tableDifferences.changedComment = toTable.comment;
-      this.log(`table comment changed for ${tableDifferences.name}`, { fromTableComment: fromTable.comment, toTableComment: toTable.comment });
+      this.log(`table comment changed for ${tableDifferences.name}`, {
+        fromTableComment: fromTable.comment,
+        toTableComment: toTable.comment,
+      });
     }
 
     const fromTableColumns = fromTable.getColumns();
@@ -212,7 +230,10 @@ export class SchemaComparator {
       }
 
       tableDifferences.changedIndexes[index.keyName] = toTableIndex!;
-      this.log(`index ${index.keyName} changed in table ${tableDifferences.name}`, { fromTableIndex: index, toTableIndex });
+      this.log(`index ${index.keyName} changed in table ${tableDifferences.name}`, {
+        fromTableIndex: index,
+        toTableIndex,
+      });
       changes++;
     }
 
@@ -248,7 +269,10 @@ export class SchemaComparator {
         continue;
       }
 
-      this.log(`check constraint ${check.name} changed in table ${tableDifferences.name}`, { fromTableCheck: check, toTableCheck });
+      this.log(`check constraint ${check.name} changed in table ${tableDifferences.name}`, {
+        fromTableCheck: check,
+        toTableCheck,
+      });
       tableDifferences.changedChecks[check.name] = toTableCheck;
       changes++;
     }
@@ -262,7 +286,10 @@ export class SchemaComparator {
           delete fromForeignKeys[fromConstraint.constraintName];
           delete toForeignKeys[toConstraint.constraintName];
         } else if (fromConstraint.constraintName.toLowerCase() === toConstraint.constraintName.toLowerCase()) {
-          this.log(`FK constraint ${fromConstraint.constraintName} changed in table ${tableDifferences.name}`, { fromConstraint, toConstraint });
+          this.log(`FK constraint ${fromConstraint.constraintName} changed in table ${tableDifferences.name}`, {
+            fromConstraint,
+            toConstraint,
+          });
           tableDifferences.changedForeignKeys[toConstraint.constraintName] = toConstraint;
           changes++;
           delete fromForeignKeys[fromConstraint.constraintName];
@@ -279,7 +306,9 @@ export class SchemaComparator {
 
     for (const toConstraint of Object.values(toForeignKeys)) {
       tableDifferences.addedForeignKeys[toConstraint.constraintName] = toConstraint;
-      this.log(`FK constraint ${toConstraint.constraintName} added from table ${tableDifferences.name}`, { constraint: toConstraint });
+      this.log(`FK constraint ${toConstraint.constraintName} added from table ${tableDifferences.name}`, {
+        constraint: toConstraint,
+      });
       changes++;
     }
 
@@ -322,7 +351,10 @@ export class SchemaComparator {
       tableDifferences.renamedColumns[removedColumnName] = addedColumn;
       delete tableDifferences.addedColumns[addedColumnName];
       delete tableDifferences.removedColumns[removedColumnName];
-      this.log(`renamed column detected in table ${tableDifferences.name}`, { old: removedColumnName, new: addedColumnName });
+      this.log(`renamed column detected in table ${tableDifferences.name}`, {
+        old: removedColumnName,
+        new: addedColumnName,
+      });
     }
   }
 
@@ -363,7 +395,10 @@ export class SchemaComparator {
       tableDifferences.renamedIndexes[removedIndexName] = addedIndex;
       delete tableDifferences.addedIndexes[addedIndexName];
       delete tableDifferences.removedIndexes[removedIndexName];
-      this.log(`renamed index detected in table ${tableDifferences.name}`, { old: removedIndexName, new: addedIndexName });
+      this.log(`renamed index detected in table ${tableDifferences.name}`, {
+        old: removedIndexName,
+        new: addedIndexName,
+      });
     }
   }
 
@@ -408,10 +443,10 @@ export class SchemaComparator {
     };
 
     if (
-      columnType1 !== columnType2 &&
-      !(
-        column1.ignoreSchemaChanges?.includes('type') ||
-        column2.ignoreSchemaChanges?.includes('type')
+      columnType1 !== columnType2
+      && !(
+        column1.ignoreSchemaChanges?.includes('type')
+        || column2.ignoreSchemaChanges?.includes('type')
       )
     ) {
       log(`'type' changed for column ${tableName}.${column1.name}`, { columnType1, columnType2 });
@@ -449,10 +484,10 @@ export class SchemaComparator {
     }
 
     if (
-      (column1.extra || '').toLowerCase() !== (column2.extra || '').toLowerCase() &&
-      !(
-        column1.ignoreSchemaChanges?.includes('extra') ||
-        column2.ignoreSchemaChanges?.includes('extra')
+      (column1.extra || '').toLowerCase() !== (column2.extra || '').toLowerCase()
+      && !(
+        column1.ignoreSchemaChanges?.includes('extra')
+        || column2.ignoreSchemaChanges?.includes('extra')
       )
     ) {
       log(`'extra' changed for column ${tableName}.${column1.name}`, { column1, column2 });
@@ -530,7 +565,10 @@ export class SchemaComparator {
   }
 
   hasSameDefaultValue(from: Column, to: Column): boolean {
-    if (from.default == null || from.default.toString().toLowerCase() === 'null' || from.default.toString().startsWith('nextval(')) {
+    if (
+      from.default == null || from.default.toString().toLowerCase() === 'null'
+      || from.default.toString().startsWith('nextval(')
+    ) {
       return to.default == null || to.default!.toLowerCase() === 'null';
     }
 
@@ -590,5 +628,4 @@ export class SchemaComparator {
 
     this.logger.log('schema', message);
   }
-
 }

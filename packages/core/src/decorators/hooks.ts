@@ -1,5 +1,5 @@
-import { MetadataStorage } from '../metadata';
 import { EventType } from '../enums';
+import { MetadataStorage } from '../metadata';
 
 function hook(type: EventType) {
   return function (target: any, method: string) {

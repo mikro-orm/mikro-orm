@@ -1,5 +1,4 @@
 export interface CacheAdapter {
-
   /**
    * Gets the items under `name` key from the cache.
    */
@@ -24,11 +23,9 @@ export interface CacheAdapter {
    * Called inside `MikroORM.close()` Allows graceful shutdowns (e.g. for redis).
    */
   close?(): void | Promise<void>;
-
 }
 
 export interface SyncCacheAdapter extends CacheAdapter {
-
   /**
    * Gets the items under `name` key from the cache.
    */
@@ -48,5 +45,4 @@ export interface SyncCacheAdapter extends CacheAdapter {
    * Generates a combined cache from all existing entries.
    */
   combine?(): string | void;
-
 }

@@ -1,7 +1,6 @@
-import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
+import { AbstractSqlConnection, type Knex, MonkeyPatchable } from '@mikro-orm/knex';
 
 export class MySqlConnection extends AbstractSqlConnection {
-
   override createKnex() {
     this.patchKnex();
     this.client = this.createKnexClient('mysql2');
@@ -13,12 +12,14 @@ export class MySqlConnection extends AbstractSqlConnection {
 
     // we need the old behaviour to be able to add auto_increment to a column that is already PK
     MySqlColumnCompiler.prototype.increments = function (options = { primaryKey: true }) {
-      return 'int unsigned not null auto_increment' + (this.tableCompiler._canBeAddPrimaryKey(options) ? ' primary key' : '');
+      return 'int unsigned not null auto_increment'
+        + (this.tableCompiler._canBeAddPrimaryKey(options) ? ' primary key' : '');
     };
 
     /* istanbul ignore next */
     MySqlColumnCompiler.prototype.bigincrements = function (options = { primaryKey: true }) {
-      return 'bigint unsigned not null auto_increment' + (this.tableCompiler._canBeAddPrimaryKey(options) ? ' primary key' : '');
+      return 'bigint unsigned not null auto_increment'
+        + (this.tableCompiler._canBeAddPrimaryKey(options) ? ' primary key' : '');
     };
 
     // mysql dialect disallows query non scalar params, but we dont use it to execute the query, it always goes through the `platform.formatQuery()`
@@ -66,5 +67,4 @@ export class MySqlConnection extends AbstractSqlConnection {
 
     return res[0];
   }
-
 }

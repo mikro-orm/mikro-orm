@@ -1,17 +1,18 @@
-import { defineConfig, MikroORM, type Options, type IDatabaseDriver } from '@mikro-orm/core';
+import { defineConfig, type IDatabaseDriver, MikroORM, type Options } from '@mikro-orm/core';
 import { PostgreSqlDriver } from './PostgreSqlDriver';
 
 /**
  * @inheritDoc
  */
 export class PostgreSqlMikroORM extends MikroORM<PostgreSqlDriver> {
-
   private static DRIVER = PostgreSqlDriver;
 
   /**
    * @inheritDoc
    */
-  static override async init<D extends IDatabaseDriver = PostgreSqlDriver>(options?: Options<D>): Promise<MikroORM<D>> {
+  static override async init<D extends IDatabaseDriver = PostgreSqlDriver>(
+    options?: Options<D>,
+  ): Promise<MikroORM<D>> {
     return super.init(options);
   }
 
@@ -21,7 +22,6 @@ export class PostgreSqlMikroORM extends MikroORM<PostgreSqlDriver> {
   static override initSync<D extends IDatabaseDriver = PostgreSqlDriver>(options: Options<D>): MikroORM<D> {
     return super.initSync(options);
   }
-
 }
 
 export type PostgreSqlOptions = Options<PostgreSqlDriver>;

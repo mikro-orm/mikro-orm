@@ -1,10 +1,13 @@
-import { MetadataStorage } from '../metadata';
 import { ReferenceKind } from '../enums';
-import type { EntityKey, EntityProperty, AnyEntity } from '../typings';
+import { MetadataStorage } from '../metadata';
+import type { AnyEntity, EntityKey, EntityProperty } from '../typings';
 import { Utils } from '../utils/Utils';
 import type { PropertyOptions } from './Property';
 
-export function Formula<T extends object>(formula: string | ((alias: string) => string), options: FormulaOptions<T> = {}) {
+export function Formula<T extends object>(
+  formula: string | ((alias: string) => string),
+  options: FormulaOptions<T> = {},
+) {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
     meta.properties[propertyName as EntityKey<T>] = {
@@ -18,4 +21,4 @@ export function Formula<T extends object>(formula: string | ((alias: string) => 
   };
 }
 
-export interface FormulaOptions<T> extends PropertyOptions<T> { }
+export interface FormulaOptions<T> extends PropertyOptions<T> {}

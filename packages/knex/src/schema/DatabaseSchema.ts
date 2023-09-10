@@ -1,20 +1,24 @@
-import { ReferenceKind, type Configuration, type Dictionary, type EntityMetadata, type EntityProperty } from '@mikro-orm/core';
-import { DatabaseTable } from './DatabaseTable';
+import {
+  type Configuration,
+  type Dictionary,
+  type EntityMetadata,
+  type EntityProperty,
+  ReferenceKind,
+} from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
-import type { Table } from '../typings';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import type { Table } from '../typings';
+import { DatabaseTable } from './DatabaseTable';
 
 /**
  * @internal
  */
 export class DatabaseSchema {
-
   private tables: DatabaseTable[] = [];
   private namespaces = new Set<string>();
   private nativeEnums: Dictionary<unknown[]> = {}; // for postgres
 
-  constructor(private readonly platform: AbstractSqlPlatform,
-              readonly name: string) { }
+  constructor(private readonly platform: AbstractSqlPlatform, readonly name: string) {}
 
   addTable(name: string, schema: string | undefined | null, comment?: string): DatabaseTable {
     const namespaceName = schema ?? this.name;
@@ -59,19 +63,40 @@ export class DatabaseSchema {
     return [...this.namespaces];
   }
 
-  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string, schemas?: string[]): Promise<DatabaseSchema> {
-    const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema') ?? platform.getDefaultSchemaName());
+  static async create(
+    connection: AbstractSqlConnection,
+    platform: AbstractSqlPlatform,
+    config: Configuration,
+    schemaName?: string,
+    schemas?: string[],
+  ): Promise<DatabaseSchema> {
+    const schema = new DatabaseSchema(
+      platform,
+      schemaName ?? config.get('schema') ?? platform.getDefaultSchemaName(),
+    );
     const allTables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL());
     const parts = config.get('migrations').tableName!.split('.');
     const migrationsTableName = parts[1] ?? parts[0];
     const migrationsSchemaName = parts.length > 1 ? parts[0] : config.get('schema', platform.getDefaultSchemaName());
-    const tables = allTables.filter(t => t.table_name !== migrationsTableName || (t.schema_name && t.schema_name !== migrationsSchemaName));
-    await platform.getSchemaHelper()!.loadInformationSchema(schema, connection, tables, schemas && schemas.length > 0 ? schemas : undefined);
+    const tables = allTables.filter(t =>
+      t.table_name !== migrationsTableName || (t.schema_name && t.schema_name !== migrationsSchemaName)
+    );
+    await platform.getSchemaHelper()!.loadInformationSchema(
+      schema,
+      connection,
+      tables,
+      schemas && schemas.length > 0 ? schemas : undefined,
+    );
 
     return schema;
   }
 
-  static fromMetadata(metadata: EntityMetadata[], platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): DatabaseSchema {
+  static fromMetadata(
+    metadata: EntityMetadata[],
+    platform: AbstractSqlPlatform,
+    config: Configuration,
+    schemaName?: string,
+  ): DatabaseSchema {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
     const nativeEnums: Dictionary<unknown[]> = {};
 
@@ -119,14 +144,16 @@ export class DatabaseSchema {
       return true;
     }
 
-    const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
+    const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) =>
+      prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
     const rootProp = getRootProperty(prop);
 
     if (rootProp.kind === ReferenceKind.EMBEDDED) {
       return prop === rootProp || !rootProp.object;
     }
 
-    return [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
+    return [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind)
+      || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
   }
 
   toJSON(): Dictionary {
@@ -137,12 +164,11 @@ export class DatabaseSchema {
   prune(schema: string | undefined, wildcardSchemaTables: string[]): void {
     const hasWildcardSchema = wildcardSchemaTables.length > 0;
     this.tables = this.tables.filter(table => {
-      return (!schema && !hasWildcardSchema)                        // no schema specified and we don't have any multi-schema entity
-        || table.schema === schema                                  // specified schema matches the table's one
+      return (!schema && !hasWildcardSchema) // no schema specified and we don't have any multi-schema entity
+        || table.schema === schema // specified schema matches the table's one
         || (!schema && !wildcardSchemaTables.includes(table.name)); // no schema specified and the table has fixed one provided
     });
     // remove namespaces of ignored tables
     this.namespaces.forEach(ns => !this.tables.find(t => t.schema === ns) && this.namespaces.delete(ns));
   }
-
 }

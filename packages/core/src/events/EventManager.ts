@@ -1,10 +1,9 @@
-import type { AnyEntity, AsyncFunction, EntityMetadata } from '../typings';
-import type { EventArgs, EventSubscriber, FlushEventArgs, TransactionEventArgs } from './EventSubscriber';
-import { Utils } from '../utils';
 import { EventType, EventTypeMap, type TransactionEventType } from '../enums';
+import type { AnyEntity, AsyncFunction, EntityMetadata } from '../typings';
+import { Utils } from '../utils';
+import type { EventArgs, EventSubscriber, FlushEventArgs, TransactionEventArgs } from './EventSubscriber';
 
 export class EventManager {
-
   private readonly listeners: { [K in EventType]?: EventSubscriber[] } = {};
   private readonly entities: Map<EventSubscriber, string[]> = new Map();
   private readonly cache: Map<number, boolean> = new Map();
@@ -26,10 +25,26 @@ export class EventManager {
       });
   }
 
-  dispatchEvent<T extends object>(event: TransactionEventType, args: TransactionEventArgs, meta?: EntityMetadata<T>): unknown;
-  dispatchEvent<T extends object>(event: EventType.onInit, args: Partial<EventArgs<T>>, meta?: EntityMetadata<T>): unknown;
-  dispatchEvent<T extends object>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs>, meta?: EntityMetadata<T>): Promise<unknown>;
-  dispatchEvent<T extends object>(event: EventType, args: Partial<AnyEventArgs<T>>, meta?: EntityMetadata<T>): Promise<unknown> | unknown {
+  dispatchEvent<T extends object>(
+    event: TransactionEventType,
+    args: TransactionEventArgs,
+    meta?: EntityMetadata<T>,
+  ): unknown;
+  dispatchEvent<T extends object>(
+    event: EventType.onInit,
+    args: Partial<EventArgs<T>>,
+    meta?: EntityMetadata<T>,
+  ): unknown;
+  dispatchEvent<T extends object>(
+    event: EventType,
+    args: Partial<EventArgs<T> | FlushEventArgs>,
+    meta?: EntityMetadata<T>,
+  ): Promise<unknown>;
+  dispatchEvent<T extends object>(
+    event: EventType,
+    args: Partial<AnyEventArgs<T>>,
+    meta?: EntityMetadata<T>,
+  ): Promise<unknown> | unknown {
     const listeners: AsyncFunction[] = [];
     const entity = (args as EventArgs<T>).entity;
 
@@ -94,7 +109,6 @@ export class EventManager {
 
     return listener.getSubscribedEntities().map(name => Utils.className(name));
   }
-
 }
 
 type AnyEventArgs<T extends object> = EventArgs<T> | FlushEventArgs | TransactionEventArgs;

@@ -1,7 +1,7 @@
-import type { EntityName, EntityMetadata } from '../typings';
-import type { EntityManager } from '../EntityManager';
-import type { ChangeSet, UnitOfWork } from '../unit-of-work';
 import type { Transaction } from '../connections';
+import type { EntityManager } from '../EntityManager';
+import type { EntityMetadata, EntityName } from '../typings';
+import type { ChangeSet, UnitOfWork } from '../unit-of-work';
 
 export interface EventArgs<T> {
   entity: T;

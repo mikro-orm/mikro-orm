@@ -1,17 +1,18 @@
 import { inspect } from 'util';
-import type { EntityData, EntityMetadata, EntityDictionary, Primary, Dictionary } from '../typings';
 import { helper } from '../entity/wrap';
+import type { Dictionary, EntityData, EntityDictionary, EntityMetadata, Primary } from '../typings';
 import { Utils } from '../utils/Utils';
 
 export class ChangeSet<T extends object> {
-
   private primaryKey?: Primary<T> | null;
   private serializedPrimaryKey?: string;
 
-  constructor(public entity: T,
-              public type: ChangeSetType,
-              public payload: EntityDictionary<T>,
-              public meta: EntityMetadata<T>) {
+  constructor(
+    public entity: T,
+    public type: ChangeSetType,
+    public payload: EntityDictionary<T>,
+    public meta: EntityMetadata<T>,
+  ) {
     this.name = meta.className;
     this.rootName = meta.root.className;
     this.collection = meta.root.collection;
@@ -28,7 +29,9 @@ export class ChangeSet<T extends object> {
     }
 
     if (object && this.primaryKey != null) {
-      const pks = this.meta.compositePK && Utils.isPlainObject(this.primaryKey) ? Object.values(this.primaryKey) : Utils.asArray(this.primaryKey);
+      const pks = this.meta.compositePK && Utils.isPlainObject(this.primaryKey)
+        ? Object.values(this.primaryKey)
+        : Utils.asArray(this.primaryKey);
       const ret = this.meta.primaryKeys.reduce((o, pk, idx) => {
         o[pk] = pks[idx] as any;
         return o;
@@ -54,7 +57,6 @@ export class ChangeSet<T extends object> {
     /* istanbul ignore next */
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
-
 }
 
 export interface ChangeSet<T> {

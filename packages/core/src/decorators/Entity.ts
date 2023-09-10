@@ -1,10 +1,10 @@
-import { MetadataStorage } from '../metadata';
-import { Utils } from '../utils';
-import type { Constructor, Dictionary, FilterQuery } from '../typings';
 import type { FindOptions } from '../drivers/IDatabaseDriver';
+import { MetadataStorage } from '../metadata';
+import type { Constructor, Dictionary, FilterQuery } from '../typings';
+import { Utils } from '../utils';
 
 export function Entity(options: EntityOptions<any> = {}) {
-  return function <T>(target: T & Dictionary) {
+  return function<T> (target: T & Dictionary) {
     const meta = MetadataStorage.getMetadataFromDecorator(target);
     Utils.mergeConfig(meta, options);
     meta.class = target as unknown as Constructor<T>;

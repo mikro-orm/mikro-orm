@@ -1,5 +1,4 @@
 export interface NamingStrategy {
-
   /**
    * Return a name of the class based on its file name
    */
@@ -48,12 +47,15 @@ export interface NamingStrategy {
   /**
    * Returns key/constraint name for given type. Some drivers might not support all the types (e.g. mysql and sqlite enforce the PK name).
    */
-  indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string;
+  indexName(
+    tableName: string,
+    columns: string[],
+    type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check',
+  ): string;
 
   /**
    * Returns alias name for given entity. The alias needs to be unique across the query, which is by default
    * ensured via appended index parameter. It is optional to use it as long as you ensure it will be unique.
    */
   aliasName(entityName: string, index: number): string;
-
 }

@@ -1486,6 +1486,48 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dprint/darwin-arm64@npm:0.41.0":
+  version: 0.41.0
+  resolution: "@dprint/darwin-arm64@npm:0.41.0"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@dprint/darwin-x64@npm:0.41.0":
+  version: 0.41.0
+  resolution: "@dprint/darwin-x64@npm:0.41.0"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@dprint/linux-arm64-glibc@npm:0.41.0":
+  version: 0.41.0
+  resolution: "@dprint/linux-arm64-glibc@npm:0.41.0"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@dprint/linux-x64-glibc@npm:0.41.0":
+  version: 0.41.0
+  resolution: "@dprint/linux-x64-glibc@npm:0.41.0"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@dprint/linux-x64-musl@npm:0.41.0":
+  version: 0.41.0
+  resolution: "@dprint/linux-x64-musl@npm:0.41.0"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@dprint/win32-x64@npm:0.41.0":
+  version: 0.41.0
+  resolution: "@dprint/win32-x64@npm:0.41.0"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@eslint-community/eslint-utils@npm:^4.2.0, @eslint-community/eslint-utils@npm:^4.4.0":
   version: 4.4.0
   resolution: "@eslint-community/eslint-utils@npm:4.4.0"
@@ -2250,6 +2292,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:6.6.0"
     bson: "npm:^5.4.0"
     conditional-type-checks: "npm:1.0.6"
+    dprint: "npm:^0.41.0"
     eslint: "npm:8.49.0"
     eslint-plugin-import: "npm:^2.28.1"
     fs-extra: "npm:11.1.1"
@@ -5161,6 +5204,35 @@ __metadata:
   version: 10.0.0
   resolution: "dotenv@npm:10.0.0"
   checksum: b05c5dcae77bd3be9f08af019a4225c4a6b884bce1a6a2571a6883ed51c2f0d6a79ff92491013c63b01642aa703eeb6583c57ee88159c4d600708b9d251c0b78
+  languageName: node
+  linkType: hard
+
+"dprint@npm:^0.41.0":
+  version: 0.41.0
+  resolution: "dprint@npm:0.41.0"
+  dependencies:
+    "@dprint/darwin-arm64": "npm:0.41.0"
+    "@dprint/darwin-x64": "npm:0.41.0"
+    "@dprint/linux-arm64-glibc": "npm:0.41.0"
+    "@dprint/linux-x64-glibc": "npm:0.41.0"
+    "@dprint/linux-x64-musl": "npm:0.41.0"
+    "@dprint/win32-x64": "npm:0.41.0"
+  dependenciesMeta:
+    "@dprint/darwin-arm64":
+      optional: true
+    "@dprint/darwin-x64":
+      optional: true
+    "@dprint/linux-arm64-glibc":
+      optional: true
+    "@dprint/linux-x64-glibc":
+      optional: true
+    "@dprint/linux-x64-musl":
+      optional: true
+    "@dprint/win32-x64":
+      optional: true
+  bin:
+    dprint: bin.js
+  checksum: e62b4bf42909c087e658394f9f5777e22039a955081cfa1f63001b02d56753642c3cda48cda767e05df9e27d5936b756122ee35f460a6c4f3953415915e71f4f
   languageName: node
   linkType: hard
 

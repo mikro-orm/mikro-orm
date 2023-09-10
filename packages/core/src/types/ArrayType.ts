@@ -1,11 +1,10 @@
-import { Type, type TransformContext } from './Type';
-import { Utils } from '../utils';
-import type { EntityProperty } from '../typings';
-import type { Platform } from '../platforms';
 import { ValidationError } from '../errors';
+import type { Platform } from '../platforms';
+import type { EntityProperty } from '../typings';
+import { Utils } from '../utils';
+import { type TransformContext, Type } from './Type';
 
 export class ArrayType<T extends string | number = string> extends Type<T[] | null, string | null> {
-
   constructor(private readonly hydrate: (i: string) => T = i => i as T) {
     super();
   }
@@ -50,5 +49,4 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
   override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getArrayDeclarationSQL();
   }
-
 }

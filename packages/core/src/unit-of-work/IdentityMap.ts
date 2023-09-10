@@ -2,7 +2,6 @@ import type { AnyEntity, Constructor, EntityMetadata } from '../typings';
 import { Utils } from '../utils/Utils';
 
 export class IdentityMap {
-
   private readonly registry = new Map<Constructor<AnyEntity>, Map<string, AnyEntity>>();
 
   store<T>(item: T) {
@@ -45,7 +44,7 @@ export class IdentityMap {
     return ret;
   }
 
-  * [Symbol.iterator](): IterableIterator<AnyEntity> {
+  *[Symbol.iterator](): IterableIterator<AnyEntity> {
     for (const store of this.registry.values()) {
       for (const item of store.values()) {
         yield item;
@@ -104,5 +103,4 @@ export class IdentityMap {
 
     return hash;
   }
-
 }

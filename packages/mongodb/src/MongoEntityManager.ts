@@ -1,4 +1,12 @@
-import { EntityManager, Utils, type EntityName, type EntityRepository, type GetRepository, type TransactionOptions, type EntityManagerType } from '@mikro-orm/core';
+import {
+  EntityManager,
+  type EntityManagerType,
+  type EntityName,
+  type EntityRepository,
+  type GetRepository,
+  type TransactionOptions,
+  Utils,
+} from '@mikro-orm/core';
 import type { Collection, Document, TransactionOptions as MongoTransactionOptions } from 'mongodb';
 import type { MongoDriver } from './MongoDriver';
 import type { MongoEntityRepository } from './MongoEntityRepository';
@@ -7,7 +15,6 @@ import type { MongoEntityRepository } from './MongoEntityRepository';
  * @inheritDoc
  */
 export class MongoEntityManager<D extends MongoDriver = MongoDriver> extends EntityManager<D> {
-
   /**
    * Shortcut to driver's aggregate method. Available in MongoDriver only.
    */
@@ -23,22 +30,28 @@ export class MongoEntityManager<D extends MongoDriver = MongoDriver> extends Ent
   /**
    * @inheritDoc
    */
-  override getRepository<T extends object, U extends EntityRepository<T> = MongoEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
+  override getRepository<T extends object, U extends EntityRepository<T> = MongoEntityRepository<T>>(
+    entityName: EntityName<T>,
+  ): GetRepository<T, U> {
     return super.getRepository<T, U>(entityName);
   }
 
   /**
    * @inheritDoc
    */
-  override async begin(options: Omit<TransactionOptions, 'ignoreNestedTransactions'> & MongoTransactionOptions = {}): Promise<void> {
+  override async begin(
+    options: Omit<TransactionOptions, 'ignoreNestedTransactions'> & MongoTransactionOptions = {},
+  ): Promise<void> {
     return super.begin(options);
   }
 
   /**
    * @inheritDoc
    */
-  override async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions & MongoTransactionOptions = {}): Promise<T> {
+  override async transactional<T>(
+    cb: (em: D[typeof EntityManagerType]) => Promise<T>,
+    options: TransactionOptions & MongoTransactionOptions = {},
+  ): Promise<T> {
     return super.transactional(cb, options);
   }
-
 }

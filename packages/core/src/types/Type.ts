@@ -9,7 +9,6 @@ export interface TransformContext {
 }
 
 export abstract class Type<JSType = string, DBType = JSType> {
-
   private static readonly types = new Map();
 
   platform?: Platform;
@@ -115,7 +114,6 @@ export abstract class Type<JSType = string, DBType = JSType> {
     /* istanbul ignore next */
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
-
 }
 
 Object.defineProperties(Type.prototype, {

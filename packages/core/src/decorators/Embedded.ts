@@ -1,9 +1,12 @@
-import type { AnyEntity, EntityKey, EntityProperty } from '../typings';
-import { MetadataStorage, MetadataValidator } from '../metadata';
-import { Utils } from '../utils';
 import { ReferenceKind } from '../enums';
+import { MetadataStorage, MetadataValidator } from '../metadata';
+import type { AnyEntity, EntityKey, EntityProperty } from '../typings';
+import { Utils } from '../utils';
 
-export function Embedded<T extends object>(type: EmbeddedOptions | (() => AnyEntity) = {}, options: EmbeddedOptions = {}) {
+export function Embedded<T extends object>(
+  type: EmbeddedOptions | (() => AnyEntity) = {},
+  options: EmbeddedOptions = {},
+) {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
     MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceKind.EMBEDDED);

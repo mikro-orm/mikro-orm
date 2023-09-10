@@ -1,12 +1,11 @@
-import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery } from '../typings';
 import { ReferenceKind } from '../enums';
-import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
+import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery } from '../typings';
+import { Utils } from '../utils/Utils';
 import { helper } from './wrap';
 
 export class EntityValidator {
-
-  constructor(private strict: boolean) { }
+  constructor(private strict: boolean) {}
 
   validate<T extends object>(entity: T, payload: any, meta: EntityMetadata<T>): void {
     meta.props.forEach(prop => {
@@ -44,17 +43,17 @@ export class EntityValidator {
 
     for (const prop of wrapped.__meta.props) {
       if (
-        !prop.nullable &&
-        !prop.autoincrement &&
-        !prop.default &&
-        !prop.defaultRaw &&
-        !prop.onCreate &&
-        !prop.embedded &&
-        ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) &&
-        prop.name !== wrapped.__meta.root.discriminatorColumn &&
-        prop.type.toLowerCase() !== 'objectid' &&
-        prop.persist !== false &&
-        entity[prop.name] == null
+        !prop.nullable
+        && !prop.autoincrement
+        && !prop.default
+        && !prop.defaultRaw
+        && !prop.onCreate
+        && !prop.embedded
+        && ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)
+        && prop.name !== wrapped.__meta.root.discriminatorColumn
+        && prop.type.toLowerCase() !== 'objectid'
+        && prop.persist !== false
+        && entity[prop.name] == null
       ) {
         throw ValidationError.propertyRequired(entity, prop);
       }
@@ -172,5 +171,4 @@ export class EntityValidator {
     const bool = !!givenValue;
     return +bool === givenValue ? bool : givenValue;
   }
-
 }

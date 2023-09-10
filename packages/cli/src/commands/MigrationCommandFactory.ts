@@ -1,9 +1,16 @@
+import {
+  colors,
+  type Configuration,
+  type IMigrator,
+  type MigrateOptions,
+  type MikroORM,
+  type Options,
+  Utils,
+} from '@mikro-orm/core';
 import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
-import { Utils, colors, type Configuration, type MikroORM, type Options, type IMigrator, type MigrateOptions } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
 
 export class MigrationCommandFactory {
-
   static readonly DESCRIPTIONS = {
     create: 'Create new migration with current schema diff',
     up: 'Migrate up to the latest version',
@@ -14,7 +21,12 @@ export class MigrationCommandFactory {
     fresh: 'Clear the database and rerun all migrations',
   };
 
-  static create<U extends Opts = Opts>(command: MigratorMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: ArgumentsCamelCase<U>) => Promise<void> } {
+  static create<U extends Opts = Opts>(
+    command: MigratorMethod,
+  ): CommandModule<unknown, U> & {
+    builder: (args: Argv) => Argv<U>;
+    handler: (args: ArgumentsCamelCase<U>) => Promise<void>;
+  } {
     return {
       command: `migration:${command}`,
       describe: MigrationCommandFactory.DESCRIPTIONS[command],
@@ -125,7 +137,11 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleUpDownCommand(args: ArgumentsCamelCase<Opts>, migrator: IMigrator, method: 'up' | 'down') {
+  private static async handleUpDownCommand(
+    args: ArgumentsCamelCase<Opts>,
+    migrator: IMigrator,
+    method: 'up' | 'down',
+  ) {
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator[method](opts as string[]);
     const message = this.getUpDownSuccessMessage(method as 'up' | 'down', opts);
@@ -151,7 +167,11 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleCreateCommand(migrator: IMigrator, args: ArgumentsCamelCase<Opts>, config: Configuration): Promise<void> {
+  private static async handleCreateCommand(
+    migrator: IMigrator,
+    args: ArgumentsCamelCase<Opts>,
+    config: Configuration,
+  ): Promise<void> {
     const ret = await migrator.createMigration(args.path, args.blank, args.initial, args.name);
 
     if (ret.diff.up.length === 0) {
@@ -168,7 +188,9 @@ export class MigrationCommandFactory {
         CLIHelper.dump(colors.green('down:'));
         CLIHelper.dump(ret.diff.down.map(sql => '  ' + sql).join('\n'), config);
       } else {
-        CLIHelper.dump(colors.yellow(`(${config.getDriver().constructor.name} does not support automatic down migrations)`));
+        CLIHelper.dump(
+          colors.yellow(`(${config.getDriver().constructor.name} does not support automatic down migrations)`),
+        );
       }
     }
 
@@ -239,10 +261,17 @@ export class MigrationCommandFactory {
 
     return msg;
   }
-
 }
 
 type MigratorMethod = 'create' | 'check' | 'up' | 'down' | 'list' | 'pending' | 'fresh';
 type CliUpDownOptions = { to?: string | number; from?: string | number; only?: string };
-type GenerateOptions = { dump?: boolean; blank?: boolean; initial?: boolean; path?: string; disableFkChecks?: boolean; seed: string; name?: string };
+type GenerateOptions = {
+  dump?: boolean;
+  blank?: boolean;
+  initial?: boolean;
+  path?: string;
+  disableFkChecks?: boolean;
+  seed: string;
+  name?: string;
+};
 type Opts = GenerateOptions & CliUpDownOptions & { dropDb?: boolean };

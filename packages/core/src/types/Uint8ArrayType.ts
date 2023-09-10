@@ -1,9 +1,8 @@
-import { Type } from './Type';
 import type { Platform } from '../platforms';
 import type { EntityProperty } from '../typings';
+import { Type } from './Type';
 
 export class Uint8ArrayType extends Type<Uint8Array | null> {
-
   override convertToDatabaseValue(value: Uint8Array): Buffer {
     if (!value) {
       return value;
@@ -42,5 +41,4 @@ export class Uint8ArrayType extends Type<Uint8Array | null> {
   override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getBlobDeclarationSQL();
   }
-
 }

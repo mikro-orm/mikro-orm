@@ -4,7 +4,6 @@ import type { ArgumentsCamelCase, CommandModule } from 'yargs';
 import { CLIHelper } from '../CLIHelper';
 
 export class ImportCommand implements CommandModule {
-
   command = 'database:import <file>';
   describe = 'Imports the SQL file to the database';
 
@@ -17,5 +16,4 @@ export class ImportCommand implements CommandModule {
     CLIHelper.dump(colors.green(`File ${args.file} successfully imported`));
     await orm.close(true);
   }
-
 }

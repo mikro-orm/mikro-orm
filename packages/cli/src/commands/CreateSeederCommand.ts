@@ -1,14 +1,14 @@
-import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
 import { colors } from '@mikro-orm/core';
+import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
 import { CLIHelper } from '../CLIHelper';
 
 export class CreateSeederCommand<T> implements CommandModule<T, { seeder: string }> {
-
   command = 'seeder:create <seeder>';
   describe = 'Create a new seeder class';
   builder = (args: Argv<T>) => {
     args.positional('seeder', {
-      describe: 'Name for the seeder class. (e.g. "test" will generate "TestSeeder" or "TestSeeder" will generate "TestSeeder")',
+      describe:
+        'Name for the seeder class. (e.g. "test" will generate "TestSeeder" or "TestSeeder" will generate "TestSeeder")',
     });
     args.demandOption('seeder');
     return args as Argv<{ seeder: string }>;
@@ -35,5 +35,4 @@ export class CreateSeederCommand<T> implements CommandModule<T, { seeder: string
 
     return parts.map(name => name.charAt(0).toUpperCase() + name.slice(1)).join('') + 'Seeder';
   }
-
 }

@@ -1,8 +1,15 @@
+import {
+  type EntityMetadata,
+  type EntityProperty,
+  MetadataError,
+  MetadataProvider,
+  MetadataStorage,
+  ReferenceKind,
+  Utils,
+} from '@mikro-orm/core';
 import { ModuleKind, Project, type PropertyDeclaration, type SourceFile } from 'ts-morph';
-import { MetadataError, MetadataProvider, MetadataStorage, ReferenceKind, Utils, type EntityMetadata, type EntityProperty } from '@mikro-orm/core';
 
 export class TsMorphMetadataProvider extends MetadataProvider {
-
   private readonly project = new Project({
     compilerOptions: {
       strictNullChecks: true,
@@ -80,7 +87,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     /* istanbul ignore next */
     if (!cls) {
-      throw new MetadataError(`Source class for entity ${meta.className} not found. Verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
+      throw new MetadataError(
+        `Source class for entity ${meta.className} not found. Verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`,
+      );
     }
 
     const properties = cls.getInstanceProperties();
@@ -118,8 +127,8 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     prop.array ??= type.endsWith('[]') || !!type.match(/Array<(.*)>/);
     type = type
       .replace(/Array<(.*)>/, '$1') // unwrap array
-      .replace(/\[]$/, '')          // remove array suffix
-      .replace(/\((.*)\)/, '$1');   // unwrap union types
+      .replace(/\[]$/, '') // remove array suffix
+      .replace(/\((.*)\)/, '$1'); // unwrap union types
 
     // keep the array suffix in the type, it is needed in few places in discovery and comparator (`prop.array` is used only for enum arrays)
     if (prop.array && !type.includes(' | ') && prop.kind === ReferenceKind.SCALAR) {
@@ -137,7 +146,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const source = this.sources.find(s => s.getFilePath().endsWith(tsPath.replace(/^\.+/, '')));
 
     if (!source && validate) {
-      throw new MetadataError(`Source file '${tsPath}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
+      throw new MetadataError(
+        `Source file '${tsPath}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`,
+      );
     }
 
     return source;
@@ -171,5 +182,4 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const paths = Object.values(MetadataStorage.getMetadata()).map(m => m.path.replace(/\.js$/, '.d.ts'));
     this.sources = this.project.addSourceFilesAtPaths(paths);
   }
-
 }

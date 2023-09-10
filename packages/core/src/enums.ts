@@ -1,5 +1,5 @@
-import type { Dictionary, EntityKey, ExpandProperty } from './typings';
 import type { Transaction } from './connections';
+import type { Dictionary, EntityKey, ExpandProperty } from './typings';
 
 export enum FlushMode {
   /** The `EntityManager` delays the flush until the current Transaction is committed. */
@@ -121,7 +121,7 @@ export enum Cascade {
 
 export enum LoadStrategy {
   SELECT_IN = 'select-in',
-  JOINED = 'joined'
+  JOINED = 'joined',
 }
 
 export enum LockMode {
@@ -170,7 +170,13 @@ export const EventTypeMap = Object.keys(EventType).reduce((a, b, i) => {
   return a;
 }, {} as Record<EventType, number>);
 
-export type TransactionEventType = EventType.beforeTransactionStart | EventType.afterTransactionStart | EventType.beforeTransactionCommit | EventType.afterTransactionCommit | EventType.beforeTransactionRollback | EventType.afterTransactionRollback;
+export type TransactionEventType =
+  | EventType.beforeTransactionStart
+  | EventType.afterTransactionStart
+  | EventType.beforeTransactionCommit
+  | EventType.afterTransactionCommit
+  | EventType.beforeTransactionRollback
+  | EventType.afterTransactionRollback;
 
 export interface TransactionOptions {
   ctx?: Transaction;

@@ -1,9 +1,8 @@
-import { Type, type TransformContext } from './Type';
 import type { Platform } from '../platforms';
 import type { EntityMetadata, EntityProperty } from '../typings';
+import { type TransformContext, Type } from './Type';
 
 export class JsonType extends Type<unknown, string | null> {
-
   override convertToDatabaseValue(value: unknown, platform: Platform, context?: TransformContext): string | null {
     if (value == null) {
       return value as null;
@@ -39,5 +38,4 @@ export class JsonType extends Type<unknown, string | null> {
   override get runtimeType(): string {
     return 'object';
   }
-
 }

@@ -1,10 +1,9 @@
+import { type Dictionary, Utils } from '@mikro-orm/core';
+import { AbstractSqlConnection, type Knex, MonkeyPatchable } from '@mikro-orm/knex';
 import { ensureDir, readFile } from 'fs-extra';
 import { dirname } from 'path';
-import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
-import { Utils, type Dictionary } from '@mikro-orm/core';
 
 export class SqliteConnection extends AbstractSqlConnection {
-
   override createKnex() {
     this.client = this.createKnexClient(this.getPatchedDialect());
     this.connected = true;
@@ -108,12 +107,15 @@ export class SqliteConnection extends AbstractSqlConnection {
     };
 
     /* istanbul ignore next */
-    Sqlite3DialectTableCompiler.prototype.foreign = function (this: typeof Sqlite3DialectTableCompiler, foreignInfo: Dictionary) {
+    Sqlite3DialectTableCompiler.prototype.foreign = function (
+      this: typeof Sqlite3DialectTableCompiler,
+      foreignInfo: Dictionary,
+    ) {
       foreignInfo.column = Array.isArray(foreignInfo.column)
         ? foreignInfo.column
         : [foreignInfo.column];
       foreignInfo.column = foreignInfo.column.map((column: unknown) =>
-        this.client.customWrapIdentifier(column, (a: unknown) => a),
+        this.client.customWrapIdentifier(column, (a: unknown) => a)
       );
       foreignInfo.inTable = this.client.customWrapIdentifier(
         foreignInfo.inTable,
@@ -123,7 +125,7 @@ export class SqliteConnection extends AbstractSqlConnection {
         ? foreignInfo.references
         : [foreignInfo.references];
       foreignInfo.references = foreignInfo.references.map((column: unknown) =>
-        this.client.customWrapIdentifier(column, (a: unknown) => a),
+        this.client.customWrapIdentifier(column, (a: unknown) => a)
       );
       // quoted versions
       const column = this.formatter.columnize(foreignInfo.column);
@@ -131,7 +133,9 @@ export class SqliteConnection extends AbstractSqlConnection {
       const references = this.formatter.columnize(foreignInfo.references);
       const keyName = this.formatter.columnize(foreignInfo.keyName);
 
-      const addColumnQuery = this.sequence.find((query: { sql: string }) => query.sql.includes(`add column ${column[0]}`));
+      const addColumnQuery = this.sequence.find((query: { sql: string }) =>
+        query.sql.includes(`add column ${column[0]}`)
+      );
 
       // no need for temp tables if we just add a column
       if (addColumnQuery) {
@@ -166,10 +170,10 @@ export class SqliteConnection extends AbstractSqlConnection {
       return false;
     }
 
-    return query.startsWith('insert into') ||
-      query.startsWith('update') ||
-      query.startsWith('delete') ||
-      query.startsWith('truncate');
+    return query.startsWith('insert into')
+      || query.startsWith('update')
+      || query.startsWith('delete')
+      || query.startsWith('truncate');
   }
 
   private getCallMethod(obj: any): string {
@@ -197,5 +201,4 @@ export class SqliteConnection extends AbstractSqlConnection {
         return 'all';
     }
   }
-
 }

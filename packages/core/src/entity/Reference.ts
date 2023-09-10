@@ -1,4 +1,5 @@
 import { inspect } from 'util';
+import type { LockMode } from '../enums';
 import type {
   AddEager,
   ConnectionType,
@@ -12,13 +13,11 @@ import type {
   Primary,
   Ref,
 } from '../typings';
-import type { EntityFactory } from './EntityFactory';
-import type { LockMode } from '../enums';
-import { helper, wrap } from './wrap';
 import { Utils } from '../utils/Utils';
+import type { EntityFactory } from './EntityFactory';
+import { helper, wrap } from './wrap';
 
 export class Reference<T> {
-
   constructor(private entity: T) {
     this.set(entity);
     const meta = helper(this.entity as object).__meta;
@@ -81,7 +80,10 @@ export class Reference<T> {
   /**
    * Wraps the entity in a `Reference` wrapper if the property is defined as `ref`.
    */
-  static wrapReference<T extends object, O extends object>(entity: T | Reference<T>, prop: EntityProperty<O, T>): Reference<T> | T {
+  static wrapReference<T extends object, O extends object>(
+    entity: T | Reference<T>,
+    prop: EntityProperty<O, T>,
+  ): Reference<T> | T {
     if (entity && prop.ref && !Reference.isReference(entity)) {
       return Reference.create(entity as T) as Reference<T>;
     }
@@ -112,7 +114,9 @@ export class Reference<T> {
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
    * Returns either the whole entity, or the requested property.
    */
-  async load<TT extends T, K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P> | K): Promise<Loaded<TT, P> | T[K]> {
+  async load<TT extends T, K extends keyof T = never, P extends string = never>(
+    options?: LoadReferenceOptions<T, P> | K,
+  ): Promise<Loaded<TT, P> | T[K]> {
     const opts: Dictionary = typeof options === 'object' ? options : { prop: options } as LoadReferenceOptions<T, P>;
 
     if (!this.isInitialized() || opts.refresh) {
@@ -137,7 +141,9 @@ export class Reference<T> {
 
   getEntity(): T {
     if (!this.isInitialized()) {
-      throw new Error(`Reference<${helper(this.entity).__meta.name}> ${helper(this.entity).getPrimaryKey()} not initialized`);
+      throw new Error(
+        `Reference<${helper(this.entity).__meta.name}> ${helper(this.entity).getPrimaryKey()} not initialized`,
+      );
     }
 
     return this.entity;
@@ -172,11 +178,9 @@ export class Reference<T> {
 
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
-
 }
 
 export class ScalarReference<Value> {
-
   private entity?: object;
   private property?: string;
 
@@ -187,7 +191,9 @@ export class ScalarReference<Value> {
    * Returns either the whole entity, or the requested property.
    */
   async load(options?: Omit<LoadReferenceOptions<any, any>, 'populate'>): Promise<Value | undefined> {
-    const opts: Dictionary = typeof options === 'object' ? options : { prop: options } as LoadReferenceOptions<any, any>;
+    const opts: Dictionary = typeof options === 'object'
+      ? options
+      : { prop: options } as LoadReferenceOptions<any, any>;
 
     if (!this.initialized || opts.refresh) {
       if (this.entity == null || this.property == null) {
@@ -223,22 +229,49 @@ export class ScalarReference<Value> {
   [inspect.custom]() {
     return this.initialized ? `Ref<${inspect(this.value)}>` : `Ref<?>`;
   }
-
 }
 
 Object.defineProperties(Reference.prototype, {
   __reference: { value: true, enumerable: false },
-  __meta: { get() { return this.entity.__meta!; } },
-  __platform: { get() { return this.entity.__platform!; } },
-  __helper: { get() { return this.entity.__helper!; } },
-  $: { get() { return this.entity; } },
-  get: { get() { return () => this.entity; } },
+  __meta: {
+    get() {
+      return this.entity.__meta!;
+    },
+  },
+  __platform: {
+    get() {
+      return this.entity.__platform!;
+    },
+  },
+  __helper: {
+    get() {
+      return this.entity.__helper!;
+    },
+  },
+  $: {
+    get() {
+      return this.entity;
+    },
+  },
+  get: {
+    get() {
+      return () => this.entity;
+    },
+  },
 });
 
 Object.defineProperties(ScalarReference.prototype, {
   __scalarReference: { value: true, enumerable: false },
-  $: { get() { return this.value; } },
-  get: { get() { return () => this.value; } },
+  $: {
+    get() {
+      return this.value;
+    },
+  },
+  get: {
+    get() {
+      return () => this.value;
+    },
+  },
 });
 
 export interface LoadReferenceOptions<T, P extends string = never> {
@@ -256,7 +289,10 @@ export function ref<T extends object>(entity: T | Ref<T>): Ref<T> & LoadedRefere
 /**
  * shortcut for `Reference.createFromPK(entityType, pk)`
  */
-export function ref<T extends object, PKV extends Primary<T> = Primary<T>>(entityType: EntityClass<T>, pk?: T | PKV): Ref<T>;
+export function ref<T extends object, PKV extends Primary<T> = Primary<T>>(
+  entityType: EntityClass<T>,
+  pk?: T | PKV,
+): Ref<T>;
 
 /**
  * shortcut for `wrap(entity).toReference()`
@@ -266,7 +302,10 @@ export function ref<T>(value: T | Ref<T>): Ref<T> & LoadedReference<Loaded<T, Ad
 /**
  * shortcut for `wrap(entity).toReference()`
  */
-export function ref<T, PKV extends Primary<T> = Primary<T>>(entityOrType?: T | Ref<T> | EntityClass<T>, pk?: T | PKV): Ref<T> | undefined | null {
+export function ref<T, PKV extends Primary<T> = Primary<T>>(
+  entityOrType?: T | Ref<T> | EntityClass<T>,
+  pk?: T | PKV,
+): Ref<T> | undefined | null {
   if (entityOrType == null) {
     return entityOrType as unknown as null;
   }

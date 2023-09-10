@@ -1,8 +1,8 @@
-import type { Constructor, Dictionary } from '../typings';
 import { MetadataStorage } from '../metadata';
+import type { Constructor, Dictionary } from '../typings';
 
 export function Embeddable(options: EmbeddableOptions = {}) {
-  return function <T>(target: T & Dictionary) {
+  return function<T> (target: T & Dictionary) {
     const meta = MetadataStorage.getMetadataFromDecorator(target);
     meta.class = target as unknown as Constructor<T>;
     meta.name = target.name;

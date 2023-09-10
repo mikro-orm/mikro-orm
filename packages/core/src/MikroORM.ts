@@ -1,16 +1,15 @@
-import type { EntityManagerType, IDatabaseDriver } from './drivers';
-import { MetadataDiscovery, MetadataStorage, MetadataValidator, ReflectMetadataProvider } from './metadata';
-import { Configuration, ConfigurationLoader, Utils, type Options } from './utils';
-import { colors, type Logger } from './logging';
 import { NullCacheAdapter } from './cache';
+import type { EntityManagerType, IDatabaseDriver } from './drivers';
 import type { EntityManager } from './EntityManager';
+import { colors, type Logger } from './logging';
+import { MetadataDiscovery, MetadataStorage, MetadataValidator, ReflectMetadataProvider } from './metadata';
 import type { Constructor, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings';
+import { Configuration, ConfigurationLoader, type Options, Utils } from './utils';
 
 /**
  * Helper class for bootstrapping the MikroORM.
  */
 export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
-
   /** The global EntityManager instance. If you are using `RequestContext` helper, it will automatically pick the request specific context under the hood */
   em!: D[typeof EntityManagerType] & EntityManager;
   readonly config: Configuration<D>;
@@ -174,7 +173,6 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     if (this.config.getResultCacheAdapter()?.close) {
       await this.config.getResultCacheAdapter().close!();
     }
-
   }
 
   /**
@@ -224,7 +222,11 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     entities = Utils.asArray(entities);
     const tmp = this.discovery.discoverReferences(entities);
     const options = this.config.get('discovery');
-    new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], options.warnWhenNoEntities, options.checkDuplicateTableNames);
+    new MetadataValidator().validateDiscovered(
+      [...Object.values(this.metadata.getAll()), ...tmp],
+      options.warnWhenNoEntities,
+      options.checkDuplicateTableNames,
+    );
     const metadata = this.discovery.processDiscoveredEntities(tmp);
     metadata.forEach(meta => this.metadata.set(meta.className, meta));
     this.metadata.decorate(this.em);
@@ -234,7 +236,9 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the SchemaGenerator.
    */
   getSchemaGenerator(): ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']> {
-    const extension = this.config.getExtension<ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']>>('@mikro-orm/schema-generator');
+    const extension = this.config.getExtension<ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']>>(
+      '@mikro-orm/schema-generator',
+    );
 
     if (extension) {
       return extension;
@@ -312,5 +316,4 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   get entityGenerator() {
     return this.getEntityGenerator();
   }
-
 }

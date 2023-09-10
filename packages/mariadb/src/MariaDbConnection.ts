@@ -1,8 +1,7 @@
+import { AbstractSqlConnection, type Knex, MonkeyPatchable } from '@mikro-orm/knex';
 import type { Connection } from 'mariadb';
-import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
 
 export class MariaDbConnection extends AbstractSqlConnection {
-
   override createKnex(): void {
     this.client = this.createKnexClient(this.getPatchedDialect());
     this.connected = true;
@@ -60,5 +59,4 @@ export class MariaDbConnection extends AbstractSqlConnection {
 
     return res[0];
   }
-
 }

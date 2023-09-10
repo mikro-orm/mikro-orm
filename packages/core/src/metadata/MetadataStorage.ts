@@ -1,11 +1,10 @@
-import { EntityMetadata, type Dictionary, type EntityData } from '../typings';
-import { Utils } from '../utils/Utils';
-import { MetadataError } from '../errors';
-import type { EntityManager } from '../EntityManager';
 import { EntityHelper } from '../entity/EntityHelper';
+import type { EntityManager } from '../EntityManager';
+import { MetadataError } from '../errors';
+import { type Dictionary, type EntityData, EntityMetadata } from '../typings';
+import { Utils } from '../utils/Utils';
 
 export class MetadataStorage {
-
   private static readonly metadata: Dictionary<EntityMetadata> = Utils.getGlobalStorage('metadata');
   private readonly metadata: Dictionary<EntityMetadata>;
 
@@ -98,5 +97,4 @@ export class MetadataStorage {
       .filter(meta => meta.prototype && !meta.prototype.__meta)
       .forEach(meta => EntityHelper.decorate(meta, em));
   }
-
 }

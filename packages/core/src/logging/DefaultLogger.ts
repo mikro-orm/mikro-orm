@@ -1,8 +1,7 @@
-import type { Logger, LoggerNamespace, LogContext, LoggerOptions } from './Logger';
 import { colors } from './colors';
+import type { LogContext, Logger, LoggerNamespace, LoggerOptions } from './Logger';
 
 export class DefaultLogger implements Logger {
-
   public debugMode = this.options.debugMode ?? false;
   readonly writer = this.options.writer;
   private readonly usesReplicas = this.options.usesReplicas;
@@ -60,7 +59,9 @@ export class DefaultLogger implements Logger {
   }
 
   isEnabled(namespace: LoggerNamespace, context?: LogContext) {
-    if (context?.enabled !== undefined) { return context.enabled; }
+    if (context?.enabled !== undefined) {
+      return context.enabled;
+    }
     const debugMode = context?.debugMode ?? this.debugMode;
 
     return !!debugMode && (!Array.isArray(debugMode) || debugMode.includes(namespace));
@@ -79,7 +80,11 @@ export class DefaultLogger implements Logger {
 
     if (context.took != null) {
       if (context.results != null) {
-        msg += colors.grey(` [took ${context.took} ms, ${context.results} result${context.results === 0 || context.results > 1 ? 's' : ''}]`);
+        msg += colors.grey(
+          ` [took ${context.took} ms, ${context.results} result${
+            context.results === 0 || context.results > 1 ? 's' : ''
+          }]`,
+        );
       } else {
         msg += colors.grey(` [took ${context.took} ms]`);
       }
@@ -91,5 +96,4 @@ export class DefaultLogger implements Logger {
 
     return this.log('query', msg, context);
   }
-
 }

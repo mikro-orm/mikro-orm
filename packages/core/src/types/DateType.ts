@@ -1,10 +1,9 @@
-import { Type } from './Type';
+import { ValidationError } from '../errors';
 import type { Platform } from '../platforms';
 import type { EntityProperty } from '../typings';
-import { ValidationError } from '../errors';
+import { Type } from './Type';
 
 export class DateType extends Type<Date, string> {
-
   override convertToDatabaseValue(value: Date | string | undefined | null, platform: Platform): string {
     if (value instanceof Date) {
       return value.toISOString().substr(0, 10);
@@ -46,5 +45,4 @@ export class DateType extends Type<Date, string> {
   override toJSON(value: Date, platform: Platform): Date | string {
     return this.convertToDatabaseValue(value, platform);
   }
-
 }

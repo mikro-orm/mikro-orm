@@ -1,10 +1,9 @@
+import { type Dictionary, type SimpleColumnMeta, type TransformContext, type Type, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
-import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
-import { Utils, type SimpleColumnMeta, type Dictionary, type Type, type TransformContext } from '@mikro-orm/core';
+import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
-
   protected override readonly schemaHelper: MySqlSchemaHelper = new MySqlSchemaHelper(this);
   protected override readonly exceptionConverter = new MySqlExceptionConverter();
 
@@ -46,7 +45,11 @@ export class MySqlPlatform extends AbstractSqlPlatform {
    * Returns the default name of index for the given columns
    * cannot go past 64 character length for identifiers in MySQL
    */
-  override getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+  override getIndexName(
+    tableName: string,
+    columns: string[],
+    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence',
+  ): string {
     if (type === 'primary') {
       return this.getDefaultPrimaryName(tableName, columns);
     }
@@ -71,7 +74,12 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return `match(:column:) against (:query in boolean mode)`;
   }
 
-  override getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+  override getFullTextIndexExpression(
+    indexName: string,
+    schemaName: string | undefined,
+    tableName: string,
+    columns: SimpleColumnMeta[],
+  ): string {
     /* istanbul ignore next */
     const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
     const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
@@ -79,5 +87,4 @@ export class MySqlPlatform extends AbstractSqlPlatform {
 
     return `alter table ${quotedTableName} add fulltext index ${quotedIndexName}(${quotedColumnNames.join(',')})`;
   }
-
 }

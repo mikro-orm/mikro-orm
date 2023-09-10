@@ -1,8 +1,12 @@
-import type { EntityData, EntityMetadata } from '../typings';
 import type { UpsertOptions } from '../drivers/IDatabaseDriver';
+import type { EntityData, EntityMetadata } from '../typings';
 
 /** @internal */
-export function getOnConflictFields<T>(data: EntityData<T>, uniqueFields: (keyof T)[], options: UpsertOptions<T>): (keyof T)[] {
+export function getOnConflictFields<T>(
+  data: EntityData<T>,
+  uniqueFields: (keyof T)[],
+  options: UpsertOptions<T>,
+): (keyof T)[] {
   if (options.onConflictMergeFields) {
     return options.onConflictMergeFields;
   }
@@ -17,12 +21,19 @@ export function getOnConflictFields<T>(data: EntityData<T>, uniqueFields: (keyof
 }
 
 /** @internal */
-export function getOnConflictReturningFields<T>(meta: EntityMetadata<T> | undefined, data: EntityData<T>, uniqueFields: (keyof T)[], options: UpsertOptions<T>): (keyof T)[] | '*' {
+export function getOnConflictReturningFields<T>(
+  meta: EntityMetadata<T> | undefined,
+  data: EntityData<T>,
+  uniqueFields: (keyof T)[],
+  options: UpsertOptions<T>,
+): (keyof T)[] | '*' {
   if (!meta) {
     return '*';
   }
 
-  const keys = meta.comparableProps.filter(p => !p.lazy && !p.embeddable && !uniqueFields.includes(p.name)).map(p => p.name) as (keyof T)[];
+  const keys = meta.comparableProps.filter(p => !p.lazy && !p.embeddable && !uniqueFields.includes(p.name)).map(p =>
+    p.name
+  ) as (keyof T)[];
 
   if (options.onConflictAction === 'ignore') {
     return keys;

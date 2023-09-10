@@ -1,10 +1,9 @@
+import { colors, ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
 import type { CommandModule } from 'yargs';
-import { ConfigurationLoader, Utils, colors, MikroORM } from '@mikro-orm/core';
 
 import { CLIHelper } from '../CLIHelper';
 
 export class DebugCommand implements CommandModule {
-
   command = 'debug';
   describe = 'Debug CLI configuration';
 
@@ -38,7 +37,9 @@ export class DebugCommand implements CommandModule {
       const tsNode = config.get('tsNode');
       if ([true, false].includes(tsNode as boolean)) {
         const warning = tsNode ? ' (this value should be set to `false` when running compiled code!)' : '';
-        CLIHelper.dump(` - \`tsNode\` flag explicitly set to ${tsNode}, will use \`entities${tsNode ? 'Ts' : ''}\` array${warning}`);
+        CLIHelper.dump(
+          ` - \`tsNode\` flag explicitly set to ${tsNode}, will use \`entities${tsNode ? 'Ts' : ''}\` array${warning}`,
+        );
       }
 
       const entities = config.get('entities', []);
@@ -47,7 +48,9 @@ export class DebugCommand implements CommandModule {
         const refs = entities.filter(p => !Utils.isString(p));
         const paths = entities.filter(p => Utils.isString(p));
         const will = !config.get('tsNode') ? 'will' : 'could';
-        CLIHelper.dump(` - ${will} use \`entities\` array (contains ${refs.length} references and ${paths.length} paths)`);
+        CLIHelper.dump(
+          ` - ${will} use \`entities\` array (contains ${refs.length} references and ${paths.length} paths)`,
+        );
 
         if (paths.length > 0) {
           await DebugCommand.checkPaths(paths, 'red', config.get('baseDir'));
@@ -61,7 +64,9 @@ export class DebugCommand implements CommandModule {
         const paths = entitiesTs.filter(p => Utils.isString(p));
         /* istanbul ignore next */
         const will = config.get('tsNode') ? 'will' : 'could';
-        CLIHelper.dump(` - ${will} use \`entitiesTs\` array (contains ${refs.length} references and ${paths.length} paths)`);
+        CLIHelper.dump(
+          ` - ${will} use \`entitiesTs\` array (contains ${refs.length} references and ${paths.length} paths)`,
+        );
 
         /* istanbul ignore else */
         if (paths.length > 0) {
@@ -86,5 +91,4 @@ export class DebugCommand implements CommandModule {
       }
     }
   }
-
 }

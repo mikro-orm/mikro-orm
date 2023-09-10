@@ -1,11 +1,17 @@
-import { ensureDir, writeFile } from 'fs-extra';
-import { ReferenceKind, Utils, type EntityMetadata, type EntityProperty, type GenerateOptions, type MikroORM } from '@mikro-orm/core';
+import {
+  type EntityMetadata,
+  type EntityProperty,
+  type GenerateOptions,
+  type MikroORM,
+  ReferenceKind,
+  Utils,
+} from '@mikro-orm/core';
 import { DatabaseSchema, type EntityManager } from '@mikro-orm/knex';
-import { SourceFile } from './SourceFile';
+import { ensureDir, writeFile } from 'fs-extra';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
+import { SourceFile } from './SourceFile';
 
 export class EntityGenerator {
-
   private readonly config = this.em.config;
   private readonly driver = this.em.getDriver();
   private readonly platform = this.driver.getPlatform();
@@ -14,7 +20,7 @@ export class EntityGenerator {
   private readonly namingStrategy = this.config.getNamingStrategy();
   private readonly sources: SourceFile[] = [];
 
-  constructor(private readonly em: EntityManager) { }
+  constructor(private readonly em: EntityManager) {}
 
   static register(orm: MikroORM): void {
     orm.config.registerExtension('@mikro-orm/entity-generator', () => new EntityGenerator(orm.em as EntityManager));
@@ -84,11 +90,11 @@ export class EntityGenerator {
   private detectManyToManyRelations(metadata: EntityMetadata[]): void {
     for (const meta of metadata) {
       if (
-        meta.compositePK &&                                                         // needs to have composite PK
-        meta.primaryKeys.length === meta.relations.length &&                        // all relations are PKs
-        meta.relations.length === 2 &&                                              // there are exactly two relation properties
-        meta.relations.length === meta.props.length &&                              // all properties are relations
-        meta.relations.every(prop => prop.kind === ReferenceKind.MANY_TO_ONE)       // all relations are m:1
+        meta.compositePK // needs to have composite PK
+        && meta.primaryKeys.length === meta.relations.length // all relations are PKs
+        && meta.relations.length === 2 // there are exactly two relation properties
+        && meta.relations.length === meta.props.length // all properties are relations
+        && meta.relations.every(prop => prop.kind === ReferenceKind.MANY_TO_ONE) // all relations are m:1
       ) {
         meta.pivotTable = true;
         const owner = metadata.find(m => m.className === meta.relations[0].type);
@@ -97,7 +103,9 @@ export class EntityGenerator {
           continue;
         }
 
-        const name = this.namingStrategy.columnNameToProperty(meta.tableName.replace(new RegExp('^' + owner.tableName + '_'), ''));
+        const name = this.namingStrategy.columnNameToProperty(
+          meta.tableName.replace(new RegExp('^' + owner.tableName + '_'), ''),
+        );
         owner.addProperty({
           name,
           kind: ReferenceKind.MANY_TO_MANY,
@@ -148,5 +156,4 @@ export class EntityGenerator {
       }
     }
   }
-
 }

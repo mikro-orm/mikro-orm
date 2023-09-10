@@ -1,10 +1,19 @@
+import {
+  type Constructor,
+  type EntityManager,
+  type EntityRepository,
+  type IDatabaseDriver,
+  JsonProperty,
+  type MikroORM,
+  Platform,
+  raw,
+  Utils,
+} from '@mikro-orm/core';
 import { escape } from 'sqlstring';
-import { raw, JsonProperty, Platform, Utils, type Constructor, type EntityManager, type EntityRepository, type IDatabaseDriver, type MikroORM } from '@mikro-orm/core';
+import { type SchemaHelper, SqlSchemaGenerator } from './schema';
 import { SqlEntityRepository } from './SqlEntityRepository';
-import { SqlSchemaGenerator, type SchemaHelper } from './schema';
 
 export abstract class AbstractSqlPlatform extends Platform {
-
   protected readonly schemaHelper?: SchemaHelper;
 
   override usesPivotTable(): boolean {
@@ -110,7 +119,9 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   override isRaw(value: any): boolean {
-    return super.isRaw(value) || (typeof value === 'object' && value !== null && value.client && ['Ref', 'Raw'].includes(value.constructor.name));
+    return super.isRaw(value)
+      || (typeof value === 'object' && value !== null && value.client
+        && ['Ref', 'Raw'].includes(value.constructor.name));
   }
 
   supportsSchemas(): boolean {
@@ -125,5 +136,4 @@ export abstract class AbstractSqlPlatform extends Platform {
     });
     return ret + 'else null end)';
   }
-
 }

@@ -1,11 +1,22 @@
 import {
-  DeadlockException, LockWaitTimeoutException, TableExistsException, TableNotFoundException,
-  ForeignKeyConstraintViolationException, UniqueConstraintViolationException, InvalidFieldNameException, NonUniqueFieldNameException,
-  SyntaxErrorException, ConnectionException, NotNullConstraintViolationException, ExceptionConverter, CheckConstraintViolationException, type Dictionary, type DriverException,
+  CheckConstraintViolationException,
+  ConnectionException,
+  DeadlockException,
+  type Dictionary,
+  type DriverException,
+  ExceptionConverter,
+  ForeignKeyConstraintViolationException,
+  InvalidFieldNameException,
+  LockWaitTimeoutException,
+  NonUniqueFieldNameException,
+  NotNullConstraintViolationException,
+  SyntaxErrorException,
+  TableExistsException,
+  TableNotFoundException,
+  UniqueConstraintViolationException,
 } from '@mikro-orm/core';
 
 export class MariaDbExceptionConverter extends ExceptionConverter {
-
   /* istanbul ignore next */
   /**
    * @link http://dev.mysql.com/doc/refman/5.7/en/error-messages-client.html
@@ -83,5 +94,4 @@ export class MariaDbExceptionConverter extends ExceptionConverter {
 
     return super.convertException(exception);
   }
-
 }

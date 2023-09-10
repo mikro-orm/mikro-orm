@@ -1,11 +1,10 @@
 import 'reflect-metadata';
-import type { EntityMetadata, EntityProperty } from '../typings';
-import { MetadataProvider } from './MetadataProvider';
 import { ReferenceKind } from '../enums';
+import type { EntityMetadata, EntityProperty } from '../typings';
 import { Utils } from '../utils/Utils';
+import { MetadataProvider } from './MetadataProvider';
 
 export class ReflectMetadataProvider extends MetadataProvider {
-
   loadEntityMetadata(meta: EntityMetadata, name: string): void {
     this.initProperties(meta);
   }
@@ -28,7 +27,9 @@ export class ReflectMetadataProvider extends MetadataProvider {
     const type = Reflect.getMetadata('design:type', meta.prototype, prop.name);
 
     if (!type || (type === Object && prop.kind !== ReferenceKind.SCALAR)) {
-      throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`);
+      throw new Error(
+        `Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`,
+      );
     }
 
     // Force mapping to UnknownType which is a string when we see just `Object`, as that often means failed inference.
@@ -46,5 +47,4 @@ export class ReflectMetadataProvider extends MetadataProvider {
 
     prop.runtimeType = prop.type as 'string';
   }
-
 }

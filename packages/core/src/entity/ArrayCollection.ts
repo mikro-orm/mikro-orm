@@ -1,13 +1,12 @@
 import { inspect } from 'util';
+import { ReferenceKind } from '../enums';
+import { MetadataError, ValidationError } from '../errors';
 import type { Dictionary, EntityDTO, EntityKey, EntityProperty, EntityValue, IPrimaryKey, Primary } from '../typings';
+import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
 import { helper, wrap } from './wrap';
-import { MetadataError, ValidationError } from '../errors';
-import { ReferenceKind } from '../enums';
-import { Utils } from '../utils/Utils';
 
 export class ArrayCollection<T extends object, O extends object> {
-
   protected readonly items = new Set<T>();
   protected initialized = true;
   protected dirty = false;
@@ -288,7 +287,10 @@ export class ArrayCollection<T extends object, O extends object> {
    * Maps the collection items to a dictionary, indexed by the key you specify.
    * If there are more items with the same key, only the first one will be present.
    */
-  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey?: K2): Record<T[K1] & PropertyKey, T> | Record<T[K1] & PropertyKey, T[K2]> {
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(
+    key: K1,
+    valueKey?: K2,
+  ): Record<T[K1] & PropertyKey, T> | Record<T[K1] & PropertyKey, T[K2]> {
     return this.reduce((obj, item) => {
       obj[item[key] as string] ??= valueKey ? item[valueKey] : item;
       return obj;
@@ -329,7 +331,7 @@ export class ArrayCollection<T extends object, O extends object> {
     return this.count();
   }
 
-  * [Symbol.iterator](): IterableIterator<T> {
+  *[Symbol.iterator](): IterableIterator<T> {
     for (const item of this.items) {
       yield item;
     }
@@ -344,7 +346,10 @@ export class ArrayCollection<T extends object, O extends object> {
 
       /* istanbul ignore if */
       if (!meta) {
-        throw MetadataError.fromUnknownEntity(this.owner.constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
+        throw MetadataError.fromUnknownEntity(
+          this.owner.constructor.name,
+          'Collection.property getter, maybe you just forgot to initialize the ORM?',
+        );
       }
 
       this._property = meta.relations.find(prop => this.owner[prop.name] === this)!;
@@ -409,7 +414,10 @@ export class ArrayCollection<T extends object, O extends object> {
     }
   }
 
-  protected shouldPropagateToCollection(collection: ArrayCollection<O, T>, method: 'add' | 'remove' | 'takeSnapshot'): boolean {
+  protected shouldPropagateToCollection(
+    collection: ArrayCollection<O, T>,
+    method: 'add' | 'remove' | 'takeSnapshot',
+  ): boolean {
     if (!collection) {
       return false;
     }
@@ -439,7 +447,6 @@ export class ArrayCollection<T extends object, O extends object> {
 
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
-
 }
 
 Object.defineProperties(ArrayCollection.prototype, {

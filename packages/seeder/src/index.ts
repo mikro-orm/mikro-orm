@@ -4,6 +4,6 @@
  */
 /* istanbul ignore file */
 
-export * from './Seeder';
 export * from './Factory';
+export * from './Seeder';
 export * from './SeedManager';

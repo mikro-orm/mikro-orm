@@ -1,16 +1,12 @@
 /* istanbul ignore file */
+export * from '@mikro-orm/core';
+export { ObjectId } from 'bson';
 export * from './MongoConnection';
 export * from './MongoDriver';
-export * from './MongoPlatform';
 export * from './MongoEntityManager';
-export * from './MongoEntityRepository';
-export * from './MongoSchemaGenerator';
 export { MongoEntityManager as EntityManager } from './MongoEntityManager';
+export * from './MongoEntityRepository';
 export { MongoEntityRepository as EntityRepository } from './MongoEntityRepository';
-export {
-  MongoMikroORM as MikroORM,
-  MongoOptions as Options,
-  defineMongoConfig as defineConfig,
-} from './MongoMikroORM';
-export { ObjectId } from 'bson';
-export * from '@mikro-orm/core';
+export { defineMongoConfig as defineConfig, MongoMikroORM as MikroORM, MongoOptions as Options } from './MongoMikroORM';
+export * from './MongoPlatform';
+export * from './MongoSchemaGenerator';

@@ -1,20 +1,21 @@
-import { Utils, type Configuration } from '../utils';
-import type { MetadataStorage } from '../metadata';
-import type { AnyEntity, EntityData, EntityKey, EntityProperty, EntityValue } from '../typings';
-import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { helper, type Collection, type EntityValidator } from '../entity';
-import type { Platform } from '../platforms';
+import { type Collection, type EntityValidator, helper } from '../entity';
 import { ReferenceKind } from '../enums';
+import type { MetadataStorage } from '../metadata';
+import type { Platform } from '../platforms';
+import type { AnyEntity, EntityData, EntityKey, EntityProperty, EntityValue } from '../typings';
+import { type Configuration, Utils } from '../utils';
+import { ChangeSet, ChangeSetType } from './ChangeSet';
 
 export class ChangeSetComputer {
-
   private readonly comparator = this.config.getComparator(this.metadata);
 
-  constructor(private readonly validator: EntityValidator,
-              private readonly collectionUpdates: Set<Collection<AnyEntity>>,
-              private readonly metadata: MetadataStorage,
-              private readonly platform: Platform,
-              private readonly config: Configuration) { }
+  constructor(
+    private readonly validator: EntityValidator,
+    private readonly collectionUpdates: Set<Collection<AnyEntity>>,
+    private readonly metadata: MetadataStorage,
+    private readonly platform: Platform,
+    private readonly config: Configuration,
+  ) {}
 
   computeChangeSet<T extends object>(entity: T): ChangeSet<T> | null {
     const meta = this.metadata.get((entity as AnyEntity).constructor.name);
@@ -80,7 +81,13 @@ export class ChangeSetComputer {
   /**
    * Traverses entity graph and executes `onCreate` and `onUpdate` methods, assigning the values to given properties.
    */
-  private processPropertyInitializers<T>(entity: T, prop: EntityProperty<T>, type: ChangeSetType, map: Map<T, [string, unknown][]>, nested?: boolean): void {
+  private processPropertyInitializers<T>(
+    entity: T,
+    prop: EntityProperty<T>,
+    type: ChangeSetType,
+    map: Map<T, [string, unknown][]>,
+    nested?: boolean,
+  ): void {
     if (prop.onCreate && type === ChangeSetType.CREATE && entity[prop.name] == null) {
       entity[prop.name] = prop.onCreate(entity);
     }
@@ -119,7 +126,11 @@ export class ChangeSetComputer {
     return data;
   }
 
-  private processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
+  private processProperty<T extends object>(
+    changeSet: ChangeSet<T>,
+    prop: EntityProperty<T>,
+    target?: unknown,
+  ): void {
     if (!target) {
       const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop);
       targets.forEach(([t]) => this.processProperty(changeSet, prop, t));
@@ -137,7 +148,8 @@ export class ChangeSetComputer {
   }
 
   private processToOne<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
-    const isToOneOwner = prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
+    const isToOneOwner = prop.kind === ReferenceKind.MANY_TO_ONE
+      || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
 
     if (!isToOneOwner || prop.mapToPk) {
       return;
@@ -147,7 +159,13 @@ export class ChangeSetComputer {
 
     targets.forEach(([target, idx]) => {
       if (!target.__helper!.hasPrimaryKey()) {
-        Utils.setPayloadProperty<T>(changeSet.payload, this.metadata.find(changeSet.name)!, prop, target.__helper!.__identifier, idx);
+        Utils.setPayloadProperty<T>(
+          changeSet.payload,
+          this.metadata.find(changeSet.name)!,
+          prop,
+          target.__helper!.__identifier,
+          idx,
+        );
       }
     });
   }
@@ -163,7 +181,9 @@ export class ChangeSetComputer {
       if (this.platform.usesPivotTable()) {
         this.collectionUpdates.add(target);
       } else {
-        changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) => item.__helper!.__identifier ?? item.__helper!.getPrimaryKey());
+        changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) =>
+          item.__helper!.__identifier ?? item.__helper!.getPrimaryKey()
+        );
       }
     } else if (prop.kind === ReferenceKind.ONE_TO_MANY && target.getSnapshot() === undefined) {
       this.collectionUpdates.add(target);
@@ -171,5 +191,4 @@ export class ChangeSetComputer {
       target.setDirty(false); // inverse side with only populated items, nothing to persist
     }
   }
-
 }

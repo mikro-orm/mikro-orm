@@ -1,16 +1,17 @@
-import { Utils, type Configuration, type MigrationsOptions, type Transaction } from '@mikro-orm/core';
+import { type Configuration, type MigrationsOptions, type Transaction, Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import type { Migration } from './Migration';
 
 export class MigrationRunner {
-
   private readonly connection = this.driver.getConnection();
   private readonly helper = this.driver.getPlatform().getSchemaHelper()!;
   private masterTransaction?: Transaction;
 
-  constructor(protected readonly driver: AbstractSqlDriver,
-              protected readonly options: MigrationsOptions,
-              protected readonly config: Configuration) { }
+  constructor(
+    protected readonly driver: AbstractSqlDriver,
+    protected readonly options: MigrationsOptions,
+    protected readonly config: Configuration,
+  ) {}
 
   async run(migration: Migration, method: 'up' | 'down'): Promise<void> {
     migration.reset();
@@ -48,5 +49,4 @@ export class MigrationRunner {
     queries = queries.filter(sql => !Utils.isString(sql) || sql.trim().length > 0);
     return queries;
   }
-
 }

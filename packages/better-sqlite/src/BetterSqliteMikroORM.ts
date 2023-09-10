@@ -1,17 +1,18 @@
-import { defineConfig, MikroORM, type Options, type IDatabaseDriver } from '@mikro-orm/core';
+import { defineConfig, type IDatabaseDriver, MikroORM, type Options } from '@mikro-orm/core';
 import { BetterSqliteDriver } from './BetterSqliteDriver';
 
 /**
  * @inheritDoc
  */
 export class BetterSqliteMikroORM extends MikroORM<BetterSqliteDriver> {
-
   private static DRIVER = BetterSqliteDriver;
 
   /**
    * @inheritDoc
    */
-  static override async init<D extends IDatabaseDriver = BetterSqliteDriver>(options?: Options<D>): Promise<MikroORM<D>> {
+  static override async init<D extends IDatabaseDriver = BetterSqliteDriver>(
+    options?: Options<D>,
+  ): Promise<MikroORM<D>> {
     return super.init(options);
   }
 
@@ -21,7 +22,6 @@ export class BetterSqliteMikroORM extends MikroORM<BetterSqliteDriver> {
   static override initSync<D extends IDatabaseDriver = BetterSqliteDriver>(options: Options<D>): MikroORM<D> {
     return super.initSync(options);
   }
-
 }
 
 export type BetterSqliteOptions = Options<BetterSqliteDriver>;

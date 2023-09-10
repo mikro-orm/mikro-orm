@@ -1,11 +1,10 @@
-import { defineConfig, MikroORM, type Options, type IDatabaseDriver } from '@mikro-orm/core';
+import { defineConfig, type IDatabaseDriver, MikroORM, type Options } from '@mikro-orm/core';
 import { MongoDriver } from './MongoDriver';
 
 /**
  * @inheritDoc
  */
 export class MongoMikroORM extends MikroORM<MongoDriver> {
-
   private static DRIVER = MongoDriver;
 
   /**
@@ -21,7 +20,6 @@ export class MongoMikroORM extends MikroORM<MongoDriver> {
   static override initSync<D extends IDatabaseDriver = MongoDriver>(options: Options<D>): MikroORM<D> {
     return super.initSync(options);
   }
-
 }
 
 export type MongoOptions = Options<MongoDriver>;

@@ -1,6 +1,6 @@
 import { inspect } from 'util';
-import type { Collection } from './Collection';
 import type { EntityManager } from '../EntityManager';
+import { ReferenceKind, SCALAR_TYPES } from '../enums';
 import type { Platform } from '../platforms/Platform';
 import type {
   AnyEntity,
@@ -14,16 +14,19 @@ import type {
   RequiredEntityData,
 } from '../typings';
 import { Utils } from '../utils/Utils';
-import { Reference } from './Reference';
-import { ReferenceKind, SCALAR_TYPES } from '../enums';
+import type { Collection } from './Collection';
 import { EntityValidator } from './EntityValidator';
+import { Reference } from './Reference';
 import { helper, wrap } from './wrap';
 
 const validator = new EntityValidator(false);
 
 export class EntityAssigner {
-
-  static assign<T extends object>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options: AssignOptions = {}): T {
+  static assign<T extends object>(
+    entity: T,
+    data: EntityData<T> | Partial<EntityDTO<T>>,
+    options: AssignOptions = {},
+  ): T {
     let opts = options as unknown as InternalAssignOptions;
 
     if (opts.visited?.has(entity)) {
@@ -54,7 +57,13 @@ export class EntityAssigner {
     return entity;
   }
 
-  private static assignProperty<T extends object>(entity: T, propName: string, props: Dictionary<EntityProperty<T>>, data: Dictionary, options: InternalAssignOptions) {
+  private static assignProperty<T extends object>(
+    entity: T,
+    propName: string,
+    props: Dictionary<EntityProperty<T>>,
+    data: Dictionary,
+    options: InternalAssignOptions,
+  ) {
     if (options.onlyProperties && !(propName in props)) {
       return;
     }
@@ -63,11 +72,22 @@ export class EntityAssigner {
     const prop = { ...props[propName], name: propName } as EntityProperty<T>;
 
     if (propName in props && !prop.nullable && value == null) {
-      throw new Error(`You must pass a non-${value} value to the property ${propName} of entity ${(entity as Dictionary).constructor.name}.`);
+      throw new Error(
+        `You must pass a non-${value} value to the property ${propName} of entity ${
+          (entity as Dictionary).constructor.name
+        }.`,
+      );
     }
 
     if (prop && Utils.isCollection(entity[propName as keyof T])) {
-      return EntityAssigner.assignCollection<T>(entity, entity[propName as keyof T] as unknown as Collection<AnyEntity>, value, prop, options.em, options);
+      return EntityAssigner.assignCollection<T>(
+        entity,
+        entity[propName as keyof T] as unknown as Collection<AnyEntity>,
+        value,
+        prop,
+        options.em,
+        options,
+      );
     }
 
     const customType = prop?.customType;
@@ -77,8 +97,12 @@ export class EntityAssigner {
     }
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop?.kind) && value != null) {
-      // eslint-disable-next-line no-prototype-builtins
-      if (options.updateNestedEntities && (entity as object).hasOwnProperty(propName) && Utils.isEntity(entity[propName as EntityKey<T>], true) && Utils.isPlainObject(value)) {
+      if (
+        // eslint-disable-next-line no-prototype-builtins
+        options.updateNestedEntities && (entity as object).hasOwnProperty(propName)
+        && Utils.isEntity(entity[propName as EntityKey<T>], true)
+        && Utils.isPlainObject(value)
+      ) {
         const unwrappedEntity = Reference.unwrapReference(entity[propName as EntityKey<T>] as object);
 
         if (options.updateByPrimaryKey) {
@@ -87,7 +111,8 @@ export class EntityAssigner {
           if (pk) {
             const ref = options.em!.getReference(prop.type, pk as Primary<T>, options);
             // if the PK differs, we want to change the target entity, not update it
-            const sameTarget = helper(ref).getSerializedPrimaryKey() === helper(unwrappedEntity).getSerializedPrimaryKey();
+            const sameTarget =
+              helper(ref).getSerializedPrimaryKey() === helper(unwrappedEntity).getSerializedPrimaryKey();
 
             if (helper(ref).isInitialized() && sameTarget) {
               return EntityAssigner.assign(ref, value, options);
@@ -105,7 +130,9 @@ export class EntityAssigner {
       return EntityAssigner.assignReference<T>(entity, value, prop, options.em, options);
     }
 
-    if (prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType) && (prop.setter || !prop.getter)) {
+    if (
+      prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType) && (prop.setter || !prop.getter)
+    ) {
       return entity[propName as keyof T] = validator.validateProperty(prop, value, entity);
     }
 
@@ -113,7 +140,10 @@ export class EntityAssigner {
       return EntityAssigner.assignEmbeddable(entity, value, prop, options.em, options);
     }
 
-    if (options.mergeObjectProperties && Utils.isPlainObject(entity[propName as EntityKey]) && Utils.isPlainObject(value)) {
+    if (
+      options.mergeObjectProperties && Utils.isPlainObject(entity[propName as EntityKey])
+      && Utils.isPlainObject(value)
+    ) {
       entity[propName as EntityKey<T>] ??= {} as EntityValue<T>;
       Utils.merge(entity[propName as EntityKey<T>], value);
     } else if (!prop || prop.setter || !prop.getter) {
@@ -148,30 +178,58 @@ export class EntityAssigner {
 
   private static validateEM(em?: EntityManager): em is EntityManager {
     if (!em) {
-      throw new Error(`To use assign() on not managed entities, explicitly provide EM instance: wrap(entity).assign(data, { em: orm.em })`);
+      throw new Error(
+        `To use assign() on not managed entities, explicitly provide EM instance: wrap(entity).assign(data, { em: orm.em })`,
+      );
     }
 
     return true;
   }
 
-  private static assignReference<T extends object>(entity: T, value: any, prop: EntityProperty<T>, em: EntityManager | undefined, options: AssignOptions): void {
+  private static assignReference<T extends object>(
+    entity: T,
+    value: any,
+    prop: EntityProperty<T>,
+    em: EntityManager | undefined,
+    options: AssignOptions,
+  ): void {
     if (Utils.isEntity(value, true)) {
       entity[prop.name] = Reference.wrapReference(value as T, prop) as EntityValue<T>;
     } else if (Utils.isPrimaryKey(value, true) && EntityAssigner.validateEM(em)) {
-      entity[prop.name] = prop.mapToPk ? value as EntityValue<T> : Reference.wrapReference(em.getReference<T>(prop.type, value as Primary<T>, options), prop) as EntityValue<T>;
+      entity[prop.name] = prop.mapToPk
+        ? value as EntityValue<T>
+        : Reference.wrapReference(em.getReference<T>(prop.type, value as Primary<T>, options), prop) as EntityValue<
+          T
+        >;
     } else if (Utils.isPlainObject(value) && options.merge && EntityAssigner.validateEM(em)) {
-      entity[prop.name] = Reference.wrapReference(em.merge(prop.type, value as T, options) as T, prop) as EntityValue<T>;
+      entity[prop.name] = Reference.wrapReference(em.merge(prop.type, value as T, options) as T, prop) as EntityValue<
+        T
+      >;
     } else if (Utils.isPlainObject(value) && EntityAssigner.validateEM(em)) {
-      entity[prop.name] = Reference.wrapReference(em.create(prop.type, value as T, options) as T, prop) as EntityValue<T>;
+      entity[prop.name] = Reference.wrapReference(
+        em.create(prop.type, value as T, options) as T,
+        prop,
+      ) as EntityValue<
+        T
+      >;
     } else {
       const name = (entity as object).constructor.name;
-      throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
+      throw new Error(
+        `Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`,
+      );
     }
 
     EntityAssigner.autoWireOneToOne(prop, entity);
   }
 
-  private static assignCollection<T extends object, U extends object = AnyEntity>(entity: T, collection: Collection<U>, value: unknown, prop: EntityProperty, em: EntityManager | undefined, options: AssignOptions): void {
+  private static assignCollection<T extends object, U extends object = AnyEntity>(
+    entity: T,
+    collection: Collection<U>,
+    value: unknown,
+    prop: EntityProperty,
+    em: EntityManager | undefined,
+    options: AssignOptions,
+  ): void {
     const invalid: any[] = [];
     const items = Utils.asArray(value).map((item: any, idx) => {
       // try to propagate missing owning side reference to the payload first
@@ -197,7 +255,10 @@ export class EntityAssigner {
       }
 
       /* istanbul ignore next */
-      if (options.updateNestedEntities && !options.updateByPrimaryKey && collection[idx] && helper(collection[idx])?.isInitialized()) {
+      if (
+        options.updateNestedEntities && !options.updateByPrimaryKey && collection[idx]
+        && helper(collection[idx])?.isInitialized()
+      ) {
         return EntityAssigner.assign(collection[idx], item, options);
       }
 
@@ -206,7 +267,9 @@ export class EntityAssigner {
 
     if (invalid.length > 0) {
       const name = (entity as object).constructor.name;
-      throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${inspect(invalid)}`);
+      throw new Error(
+        `Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${inspect(invalid)}`,
+      );
     }
 
     if (Array.isArray(value)) {
@@ -216,7 +279,13 @@ export class EntityAssigner {
     }
   }
 
-  private static assignEmbeddable<T extends object>(entity: T, value: any, prop: EntityProperty<T>, em: EntityManager | undefined, options: InternalAssignOptions): void {
+  private static assignEmbeddable<T extends object>(
+    entity: T,
+    value: any,
+    prop: EntityProperty<T>,
+    em: EntityManager | undefined,
+    options: InternalAssignOptions,
+  ): void {
     const propName = prop.embedded ? prop.embedded[1] : prop.name;
 
     if (value == null) {
@@ -237,10 +306,11 @@ export class EntityAssigner {
       });
     }
 
-    const create = () => EntityAssigner.validateEM(em) && em!.getEntityFactory().createEmbeddable<T>(prop.type, value, {
-      convertCustomTypes: options.convertCustomTypes,
-      newEntity: options.mergeObjectProperties ? !('propName' in entity) : true,
-    });
+    const create = () =>
+      EntityAssigner.validateEM(em) && em!.getEntityFactory().createEmbeddable<T>(prop.type, value, {
+        convertCustomTypes: options.convertCustomTypes,
+        newEntity: options.mergeObjectProperties ? !('propName' in entity) : true,
+      });
     entity[propName] = (options.mergeObjectProperties ? (entity[propName] || create()) : create()) as EntityValue<T>;
 
     Object.keys(value).forEach(key => {
@@ -248,7 +318,13 @@ export class EntityAssigner {
     });
   }
 
-  private static createCollectionItem<T extends object>(item: any, em: EntityManager | undefined, prop: EntityProperty, invalid: any[], options: AssignOptions): T {
+  private static createCollectionItem<T extends object>(
+    item: any,
+    em: EntityManager | undefined,
+    prop: EntityProperty,
+    invalid: any[],
+    options: AssignOptions,
+  ): T {
     if (Utils.isEntity<T>(item)) {
       return item;
     }
@@ -269,7 +345,6 @@ export class EntityAssigner {
 
     return item as T;
   }
-
 }
 
 export const assign = EntityAssigner.assign;

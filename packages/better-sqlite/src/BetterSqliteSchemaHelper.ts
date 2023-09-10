@@ -1,8 +1,7 @@
 import type { Connection, Dictionary } from '@mikro-orm/core';
-import { SchemaHelper, type AbstractSqlConnection, type IndexDef, type CheckDef } from '@mikro-orm/knex';
+import { type AbstractSqlConnection, type CheckDef, type IndexDef, SchemaHelper } from '@mikro-orm/knex';
 
 export class BetterSqliteSchemaHelper extends SchemaHelper {
-
   override disableForeignKeysSQL(): string {
     return 'pragma foreign_keys = off;';
   }
@@ -20,7 +19,11 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
       + `union all select name as table_name from sqlite_temp_master where type = 'table' order by name`;
   }
 
-  override async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
+  override async getColumns(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+  ): Promise<any[]> {
     const columns = await connection.execute<any[]>(`pragma table_info('${tableName}')`);
     const sql = `select sql from sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
@@ -43,7 +46,12 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
     });
   }
 
-  override async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName: string): Promise<Dictionary<string[]>> {
+  override async getEnumDefinitions(
+    connection: AbstractSqlConnection,
+    checks: CheckDef[],
+    tableName: string,
+    schemaName: string,
+  ): Promise<Dictionary<string[]>> {
     const sql = `select sql from sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
 
@@ -62,14 +70,23 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
     }, {} as Dictionary<string[]>);
   }
 
-  override async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[] = [], tableName: string, schemaName?: string): Promise<string[]> {
+  override async getPrimaryKeys(
+    connection: AbstractSqlConnection,
+    indexes: IndexDef[] = [],
+    tableName: string,
+    schemaName?: string,
+  ): Promise<string[]> {
     const sql = `pragma table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
 
     return cols.filter(col => !!col.pk).map(col => col.name);
   }
 
-  override async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
+  override async getIndexes(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+  ): Promise<IndexDef[]> {
     const sql = `pragma table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
     const indexes = await connection.execute<any[]>(`pragma index_list(\`${tableName}\`)`);
@@ -97,7 +114,11 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
     return this.mapIndexes(ret);
   }
 
-  override async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<CheckDef[]> {
+  override async getChecks(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+  ): Promise<CheckDef[]> {
     // Not supported at the moment.
     return [];
   }
@@ -135,5 +156,4 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
     // Ignore indexes with reserved names, e.g. autoindexes
     return name.startsWith('sqlite_');
   }
-
 }

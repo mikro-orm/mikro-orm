@@ -1,17 +1,15 @@
 import type { MigrationsOptions, Transaction } from '@mikro-orm/core';
 import type { AbstractSqlDriver, Table } from '@mikro-orm/knex';
-import type { MigrationParams, UmzugStorage } from 'umzug';
 import * as path from 'path';
+import type { MigrationParams, UmzugStorage } from 'umzug';
 import type { MigrationRow } from './typings';
 
 export class MigrationStorage implements UmzugStorage {
-
   private readonly connection = this.driver.getConnection();
   private readonly helper = this.driver.getPlatform().getSchemaHelper()!;
   private masterTransaction?: Transaction;
 
-  constructor(protected readonly driver: AbstractSqlDriver,
-              protected readonly options: MigrationsOptions) { }
+  constructor(protected readonly driver: AbstractSqlDriver, protected readonly options: MigrationsOptions) {}
 
   async executed(): Promise<string[]> {
     const migrations = await this.getExecutedMigrations();
@@ -28,7 +26,10 @@ export class MigrationStorage implements UmzugStorage {
     const { tableName, schemaName } = this.getTableName();
     const withoutExt = this.getMigrationName(params.name);
     const names = [withoutExt, withoutExt + '.js', withoutExt + '.ts'];
-    const qb = this.knex.delete().from(tableName).withSchema(schemaName).where('name', 'in', [params.name, ...names]);
+    const qb = this.knex.delete().from(tableName).withSchema(schemaName).where('name', 'in', [
+      params.name,
+      ...names,
+    ]);
 
     if (this.masterTransaction) {
       qb.transacting(this.masterTransaction);
@@ -57,7 +58,12 @@ export class MigrationStorage implements UmzugStorage {
   }
 
   async ensureTable(): Promise<void> {
-    const tables = await this.connection.execute<Table[]>(this.helper.getListTablesSQL(), [], 'all', this.masterTransaction);
+    const tables = await this.connection.execute<Table[]>(
+      this.helper.getListTablesSQL(),
+      [],
+      'all',
+      this.masterTransaction,
+    );
     const { tableName, schemaName } = this.getTableName();
 
     if (tables.find(t => t.table_name === tableName && (!t.schema_name || t.schema_name === schemaName))) {
@@ -105,7 +111,9 @@ export class MigrationStorage implements UmzugStorage {
   getTableName(): { tableName: string; schemaName: string } {
     const parts = this.options.tableName!.split('.');
     const tableName = parts.length > 1 ? parts[1] : parts[0];
-    const schemaName = parts.length > 1 ? parts[0] : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName());
+    const schemaName = parts.length > 1
+      ? parts[0]
+      : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName());
 
     return { tableName, schemaName };
   }
@@ -113,5 +121,4 @@ export class MigrationStorage implements UmzugStorage {
   private get knex() {
     return this.connection.getKnex();
   }
-
 }

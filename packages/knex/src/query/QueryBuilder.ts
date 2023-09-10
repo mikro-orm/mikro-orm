@@ -1,23 +1,9 @@
-import { inspect } from 'util';
-import type { Knex } from 'knex';
 import {
-  helper,
-  LoadStrategy,
-  LockMode,
-  PopulateHint,
-  QueryFlag,
-  QueryHelper,
-  raw,
-  RawQueryFragment,
-  ReferenceKind,
-  serialize,
-  Utils,
-  ValidationError,
   type AnyEntity,
-  type EntityKey,
   type ConnectionType,
   type Dictionary,
   type EntityData,
+  type EntityKey,
   type EntityMetadata,
   type EntityName,
   type EntityProperty,
@@ -25,22 +11,36 @@ import {
   type FlatQueryOrderMap,
   type FlushMode,
   type GroupOperator,
+  helper,
+  LoadStrategy,
+  LockMode,
+  type LoggingOptions,
   type MetadataStorage,
   type ObjectQuery,
+  PopulateHint,
   type PopulateOptions,
   type QBFilterQuery,
   type QBQueryOrderMap,
+  QueryFlag,
+  QueryHelper,
   type QueryOrderMap,
   type QueryResult,
+  raw,
+  RawQueryFragment,
+  ReferenceKind,
   type RequiredEntityData,
-  type LoggingOptions,
+  serialize,
+  Utils,
+  ValidationError,
 } from '@mikro-orm/core';
-import { QueryType } from './enums';
+import type { Knex } from 'knex';
+import { inspect } from 'util';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
-import { QueryBuilderHelper, type Alias } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
-import { CriteriaNodeFactory } from './CriteriaNodeFactory';
 import type { Field, JoinOptions } from '../typings';
+import { CriteriaNodeFactory } from './CriteriaNodeFactory';
+import { QueryType } from './enums';
+import { type Alias, QueryBuilderHelper } from './QueryBuilderHelper';
 
 /**
  * SQL query builder with fluent interface.
@@ -62,7 +62,6 @@ import type { Field, JoinOptions } from '../typings';
  * ```
  */
 export class QueryBuilder<T extends object = AnyEntity> {
-
   get mainAlias(): Alias<T> {
     this.ensureFromClause();
     return this._mainAlias!;
@@ -100,7 +99,12 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private _groupBy: Field<T>[] = [];
   private _having: Dictionary = {};
   private _returning?: Field<T>[];
-  private _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[];
+  private _onConflict?: {
+    fields: string[];
+    ignore?: boolean;
+    merge?: EntityData<T> | Field<T>[];
+    where?: QBFilterQuery<T>;
+  }[];
   private _limit?: number;
   private _offset?: number;
   private _distinctOn?: string[];
@@ -122,14 +126,16 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /**
    * @internal
    */
-  constructor(entityName: EntityName<T> | QueryBuilder<T>,
-              private readonly metadata: MetadataStorage,
-              private readonly driver: AbstractSqlDriver,
-              private readonly context?: Knex.Transaction,
-              alias?: string,
-              private connectionType?: ConnectionType,
-              private readonly em?: SqlEntityManager,
-              private readonly logging?: LoggingOptions) {
+  constructor(
+    entityName: EntityName<T> | QueryBuilder<T>,
+    private readonly metadata: MetadataStorage,
+    private readonly driver: AbstractSqlDriver,
+    private readonly context?: Knex.Transaction,
+    alias?: string,
+    private connectionType?: ConnectionType,
+    private readonly em?: SqlEntityManager,
+    private readonly logging?: LoggingOptions,
+  ) {
     if (alias) {
       this.aliasCounter++;
       this._explicitAlias = true;
@@ -204,7 +210,14 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this.init(QueryType.COUNT) as CountQueryBuilder<T>;
   }
 
-  join(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string, schema?: string): this {
+  join(
+    field: string,
+    alias: string,
+    cond: QBFilterQuery = {},
+    type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin',
+    path?: string,
+    schema?: string,
+  ): this {
     this.joinReference(field, alias, cond, type, path, schema);
     return this;
   }
@@ -213,7 +226,15 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this.join(field, alias, cond, 'leftJoin', undefined, schema);
   }
 
-  joinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  joinAndSelect(
+    field: string,
+    alias: string,
+    cond: QBFilterQuery = {},
+    type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin',
+    path?: string,
+    fields?: string[],
+    schema?: string,
+  ): SelectQueryBuilder<T> {
     if (!this.type) {
       this.select('*');
     }
@@ -235,18 +256,34 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this as SelectQueryBuilder<T>;
   }
 
-  leftJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  leftJoinAndSelect(
+    field: string,
+    alias: string,
+    cond: QBFilterQuery = {},
+    fields?: string[],
+    schema?: string,
+  ): SelectQueryBuilder<T> {
     return this.joinAndSelect(field, alias, cond, 'leftJoin', undefined, fields, schema);
   }
 
-  innerJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  innerJoinAndSelect(
+    field: string,
+    alias: string,
+    cond: QBFilterQuery = {},
+    fields?: string[],
+    schema?: string,
+  ): SelectQueryBuilder<T> {
     return this.joinAndSelect(field, alias, cond, 'innerJoin', undefined, fields, schema);
   }
 
   protected getFieldsForJoinedLoad(prop: EntityProperty<T>, alias: string, explicitFields?: string[]): Field<T>[] {
     const fields: Field<T>[] = [];
     prop.targetMeta!.props
-      .filter(prop => explicitFields ? explicitFields.includes(prop.name) || prop.primary : this.platform.shouldHaveColumn(prop, this._populate))
+      .filter(prop =>
+        explicitFields
+          ? explicitFields.includes(prop.name) || prop.primary
+          : this.platform.shouldHaveColumn(prop, this._populate)
+      )
       .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<T>(this, prop, alias)));
 
     return fields;
@@ -260,7 +297,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
   where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
   where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
-  where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this {
+  where(
+    cond: QBFilterQuery<T> | string,
+    params?: keyof typeof GroupOperator | any[],
+    operator?: keyof typeof GroupOperator,
+  ): this {
     this.ensureNotFinalized();
     const rawField = RawQueryFragment.getKnownFragment(cond as string);
 
@@ -335,7 +376,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
         aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
         convertCustomTypes: false,
       })!;
-      this._orderBy.push(CriteriaNodeFactory.createNode<T>(this.metadata, this.mainAlias.entityName, processed).process(this));
+      this._orderBy.push(
+        CriteriaNodeFactory.createNode<T>(this.metadata, this.mainAlias.entityName, processed).process(this),
+      );
     });
 
     return this;
@@ -507,16 +550,21 @@ export class QueryBuilder<T extends object = AnyEntity> {
    */
   from<T extends AnyEntity<T> = AnyEntity>(target: QueryBuilder<T>, aliasName?: string): QueryBuilder<T>;
   from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T>): QueryBuilder<T>;
-  from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T> | QueryBuilder<T>, aliasName?: string): QueryBuilder<T> {
+  from<T extends AnyEntity<T> = AnyEntity>(
+    target: EntityName<T> | QueryBuilder<T>,
+    aliasName?: string,
+  ): QueryBuilder<T> {
     this.ensureNotFinalized();
 
     if (target instanceof QueryBuilder) {
       this.fromSubQuery(target, aliasName);
-    } else  {
+    } else {
       const entityName = Utils.className(target);
 
       if (aliasName && this._mainAlias && entityName !== this._mainAlias.aliasName) {
-        throw new Error(`Cannot override the alias to '${aliasName}' since a query already contains references to '${this._mainAlias.aliasName}'`);
+        throw new Error(
+          `Cannot override the alias to '${aliasName}' since a query already contains references to '${this._mainAlias.aliasName}'`,
+        );
       }
 
       this.fromEntityName(entityName, aliasName);
@@ -530,11 +578,21 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const qb = this.getQueryBase();
     (qb as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
 
-    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type ?? QueryType.SELECT, this._cond, qb), this._cond && !this._onConflict);
+    Utils.runIfNotEmpty(
+      () => this.helper.appendQueryCondition(this.type ?? QueryType.SELECT, this._cond, qb),
+      this._cond && !this._onConflict,
+    );
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), this._groupBy);
-    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type ?? QueryType.SELECT, this._having, qb, undefined, 'having'), this._having);
+    Utils.runIfNotEmpty(
+      () => this.helper.appendQueryCondition(this.type ?? QueryType.SELECT, this._having, qb, undefined, 'having'),
+      this._having,
+    );
     Utils.runIfNotEmpty(() => {
-      const queryOrder = this.helper.getQueryOrder(this.type ?? QueryType.SELECT, this._orderBy as FlatQueryOrderMap[], this._populateMap);
+      const queryOrder = this.helper.getQueryOrder(
+        this.type ?? QueryType.SELECT,
+        this._orderBy as FlatQueryOrderMap[],
+        this._populateMap,
+      );
 
       if (queryOrder) {
         qb.orderByRaw(queryOrder);
@@ -545,7 +603,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
     Utils.runIfNotEmpty(() => qb.offset(this._offset!), this._offset);
     Utils.runIfNotEmpty(() => this._comments.forEach(comment => qb.comment(comment)), this._comments);
     Utils.runIfNotEmpty(() => this._hintComments.forEach(comment => qb.hintComment(comment)), this._hintComments);
-    Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(this.type ?? QueryType.SELECT, this._onConflict!, qb), this._onConflict);
+    Utils.runIfNotEmpty(
+      () => this.helper.appendOnConflictClause(this.type ?? QueryType.SELECT, this._onConflict!, qb),
+      this._onConflict,
+    );
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
       return this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
@@ -622,7 +683,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * @internal
    */
   getAliasMap(): Dictionary<string> {
-    return Object.fromEntries(Object.entries(this._aliases).map(([key, value]: [string, Alias<any>]) => [key, value.entityName]));
+    return Object.fromEntries(
+      Object.entries(this._aliases).map(([key, value]: [string, Alias<any>]) => [key, value.entityName]),
+    );
   }
 
   /**
@@ -630,19 +693,35 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Use `method` to specify what kind of result you want to get (array/single/meta).
    */
   async execute<U = any>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<U> {
-    if (!this.connectionType && method !== 'run' && [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type ?? QueryType.SELECT)) {
+    if (
+      !this.connectionType && method !== 'run'
+      && [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(
+        this.type ?? QueryType.SELECT,
+      )
+    ) {
       this.connectionType = 'write';
     }
 
     const query = this.getKnexQuery().toSQL();
-    const cached = await this.em?.tryCache<T, U>(this.mainAlias.entityName, this._cache, ['qb.execute', query.sql, query.bindings, method]);
+    const cached = await this.em?.tryCache<T, U>(this.mainAlias.entityName, this._cache, [
+      'qb.execute',
+      query.sql,
+      query.bindings,
+      method,
+    ]);
 
     if (cached?.data) {
       return cached.data;
     }
 
     const type = this.connectionType || (method === 'run' ? 'write' : 'read');
-    const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context, this.logging);
+    const res = await this.driver.getConnection(type).execute(
+      query.sql,
+      query.bindings as any[],
+      method,
+      this.context,
+      this.logging,
+    );
     const meta = this.mainAlias.metadata;
 
     if (!mapResults || !meta) {
@@ -746,7 +825,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /**
    * Provides promise-like interface so we can await the QB instance.
    */
-  then<TResult1 = any, TResult2 = never>(onfulfilled?: ((value: any) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<T[] | number | QueryResult<T>> {
+  then<TResult1 = any, TResult2 = never>(
+    onfulfilled?: ((value: any) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
+  ): Promise<T[] | number | QueryResult<T>> {
     let type = this.type ?? QueryType.SELECT;
 
     if (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY)) {
@@ -761,7 +843,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
         return this.execute('run').then(onfulfilled, onrejected) as any;
       case QueryType.COUNT:
         return this.getCount().then(onfulfilled, onrejected) as any;
-      case QueryType.SELECT: return this.getResultList().then(onfulfilled, onrejected) as any;
+      case QueryType.SELECT:
+        return this.getResultList().then(onfulfilled, onrejected) as any;
     }
   }
 
@@ -788,14 +871,39 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   clone(): QueryBuilder<T> {
-    const qb = new QueryBuilder<T>(this.mainAlias.entityName, this.metadata, this.driver, this.context, this.mainAlias.aliasName, this.connectionType, this.em);
+    const qb = new QueryBuilder<T>(
+      this.mainAlias.entityName,
+      this.metadata,
+      this.driver,
+      this.context,
+      this.mainAlias.aliasName,
+      this.connectionType,
+      this.em,
+    );
     Object.assign(qb, this);
 
     // clone array/object properties
     const properties = [
-      'flags', '_populate', '_populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
-      '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
-      '_comments', '_hintComments',
+      'flags',
+      '_populate',
+      '_populateWhere',
+      '_populateMap',
+      '_joins',
+      '_joinedProps',
+      '_cond',
+      '_data',
+      '_orderBy',
+      '_schema',
+      '_indexHint',
+      '_cache',
+      'subQueries',
+      'lockMode',
+      'lockTables',
+      '_groupBy',
+      '_having',
+      '_returning',
+      '_comments',
+      '_hintComments',
     ] as const;
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop]));
 
@@ -834,13 +942,24 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return qb;
   }
 
-  private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string, schema?: string): EntityProperty<T> {
+  private joinReference(
+    field: string,
+    alias: string,
+    cond: Dictionary,
+    type: 'leftJoin' | 'innerJoin' | 'pivotJoin',
+    path?: string,
+    schema?: string,
+  ): EntityProperty<T> {
     this.ensureNotFinalized();
     const [fromAlias, fromField] = this.helper.splitField(field as EntityKey<T>);
     const q = (str: string) => `'${str}'`;
 
     if (!this._aliases[fromAlias]) {
-      throw new Error(`Trying to join ${q(fromField)} with alias ${q(fromAlias)}, but ${q(fromAlias)} is not a known alias. Available aliases are: ${Object.keys(this._aliases).map(q).join(', ')}.`);
+      throw new Error(
+        `Trying to join ${q(fromField)} with alias ${q(fromAlias)}, but ${
+          q(fromAlias)
+        } is not a known alias. Available aliases are: ${Object.keys(this._aliases).map(q).join(', ')}.`,
+      );
     }
 
     const entityName = this._aliases[fromAlias].entityName;
@@ -848,7 +967,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const prop = meta.properties[fromField];
 
     if (!prop) {
-      throw new Error(`Trying to join ${q(field)}, but ${q(fromField)} is not a defined relation on ${meta.className}.`);
+      throw new Error(
+        `Trying to join ${q(field)}, but ${q(fromField)} is not a defined relation on ${meta.className}.`,
+      );
     }
 
     this.createAlias(prop.type, alias);
@@ -891,7 +1012,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return prop;
   }
 
-  private prepareFields<T, U extends string | Knex.Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
+  private prepareFields<T, U extends string | Knex.Raw>(
+    fields: Field<T>[],
+    type: 'where' | 'groupBy' | 'sub-query' = 'where',
+  ): U[] {
     const ret: Field<T>[] = [];
 
     fields.forEach(field => {
@@ -960,7 +1084,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
     /* istanbul ignore next */
     const requiresSQLConversion = meta?.props.filter(p => p.hasConvertToJSValueSQL) ?? [];
 
-    if (this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES) && (fields.includes('*') || fields.includes(`${this.mainAlias.aliasName}.*`)) && requiresSQLConversion.length > 0) {
+    if (
+      this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES)
+      && (fields.includes('*') || fields.includes(`${this.mainAlias.aliasName}.*`))
+      && requiresSQLConversion.length > 0
+    ) {
       requiresSQLConversion.forEach(p => ret.push(this.helper.mapper(p.name, this.type)));
     }
 
@@ -985,7 +1113,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this.type = type;
 
     if ([QueryType.UPDATE, QueryType.DELETE].includes(type) && Utils.hasObjectKeys(this._cond)) {
-      throw new Error(`You are trying to call \`qb.where().${type.toLowerCase()}()\`. Calling \`qb.${type.toLowerCase()}()\` before \`qb.where()\` is required.`);
+      throw new Error(
+        `You are trying to call \`qb.where().${type.toLowerCase()}()\`. Calling \`qb.${type.toLowerCase()}()\` before \`qb.where()\` is required.`,
+      );
     }
 
     if (!this.helper.isTableNameAliasRequired(type)) {
@@ -1016,9 +1146,12 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     if (this._indexHint) {
-      const alias = this.helper.isTableNameAliasRequired(this.type) ? ` as ${this.platform.quoteIdentifier(this.mainAlias.aliasName)}` : '';
+      const alias = this.helper.isTableNameAliasRequired(this.type)
+        ? ` as ${this.platform.quoteIdentifier(this.mainAlias.aliasName)}`
+        : '';
       const schemaQuoted = schema ? this.platform.quoteIdentifier(schema) + '.' : '';
-      const tableName = schemaQuoted + this.platform.quoteIdentifier(this.helper.getTableName(this.mainAlias.entityName)) + alias;
+      const tableName = schemaQuoted
+        + this.platform.quoteIdentifier(this.helper.getTableName(this.mainAlias.entityName)) + alias;
       qb.from(this.knex.raw(`${tableName} ${this._indexHint}`));
     }
 
@@ -1076,7 +1209,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
     };
     lookUpChildren(children, meta.className);
     this.andWhere({
-      [meta.root.discriminatorColumn!]: children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue,
+      [meta.root.discriminatorColumn!]: children.length > 0
+        ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] }
+        : meta.discriminatorValue,
     });
   }
 
@@ -1095,7 +1230,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
     if (meta && this.flags.has(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)) {
       const relationsToPopulate = this._populate.map(({ field }) => field);
       meta.relations
-        .filter(prop => prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
+        .filter(prop =>
+          prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name)
+        )
         .map(prop => ({ field: prop.name }))
         .forEach(item => this._populate.push(item));
     }
@@ -1127,13 +1264,15 @@ export class QueryBuilder<T extends object = AnyEntity> {
           const aliased = this.knex.ref(prop.fieldNames[0]).toString();
           return `${prop.formula!(alias)} as ${aliased}`;
         })
-        .filter(field => !this._fields!.some(f => {
-          if (f instanceof RawQueryFragment) {
-            return f.sql === field && f.params.length === 0;
-          }
+        .filter(field =>
+          !this._fields!.some(f => {
+            if (f instanceof RawQueryFragment) {
+              return f.sql === field && f.params.length === 0;
+            }
 
-          return f === field;
-        }))
+            return f === field;
+          })
+        )
         .forEach(field => this._fields!.push(raw(field)));
     }
 
@@ -1193,8 +1332,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
       replaceOnConditions(this._cond);
     } else if (typeof this._populateWhere === 'object') {
       const cond = CriteriaNodeFactory
-          .createNode<T>(this.metadata, this.mainAlias.entityName, this._populateWhere)
-          .process(this);
+        .createNode<T>(this.metadata, this.mainAlias.entityName, this._populateWhere)
+        .process(this);
       replaceOnConditions(cond);
     }
   }
@@ -1273,7 +1412,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     // wrap one more time to get around MySQL limitations
     // https://stackoverflow.com/questions/45494/mysql-error-1093-cant-specify-target-table-for-update-in-from-clause
-    const subSubQuery = this.getKnex().select(this.prepareFields(meta.primaryKeys)).from(subQuery.as(this.mainAlias.aliasName));
+    const subSubQuery = this.getKnex().select(this.prepareFields(meta.primaryKeys)).from(
+      subQuery.as(this.mainAlias.aliasName),
+    );
     const method = this.flags.has(QueryFlag.UPDATE_SUB_QUERY) ? 'update' : 'delete';
     this._cond = {}; // otherwise we would trigger validation error
 
@@ -1316,7 +1457,14 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   private createQueryBuilderHelper(): QueryBuilderHelper {
-    return new QueryBuilderHelper(this.mainAlias.entityName, this.mainAlias.aliasName, this._aliases, this.subQueries, this.knex, this.driver);
+    return new QueryBuilderHelper(
+      this.mainAlias.entityName,
+      this.mainAlias.aliasName,
+      this._aliases,
+      this.subQueries,
+      this.knex,
+      this.driver,
+    );
   }
 
   private ensureFromClause(): void {
@@ -1363,13 +1511,20 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
-
 }
 
-export interface RunQueryBuilder<T extends object> extends Omit<QueryBuilder<T>, 'getResult' | 'getSingleResult' | 'getResultList' | 'where'> {
-  where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this;
+export interface RunQueryBuilder<T extends object>
+  extends Omit<QueryBuilder<T>, 'getResult' | 'getSingleResult' | 'getResultList' | 'where'> {
+  where(
+    cond: QBFilterQuery<T> | string,
+    params?: keyof typeof GroupOperator | any[],
+    operator?: keyof typeof GroupOperator,
+  ): this;
   execute<U = QueryResult<T>>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
-  then<TResult1 = QueryResult<T>, TResult2 = never>(onfulfilled?: ((value: QueryResult<T>) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<QueryResult<T>>;
+  then<TResult1 = QueryResult<T>, TResult2 = never>(
+    onfulfilled?: ((value: QueryResult<T>) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
+  ): Promise<QueryResult<T>>;
 }
 
 export interface SelectQueryBuilder<T extends object> extends QueryBuilder<T> {
@@ -1377,7 +1532,10 @@ export interface SelectQueryBuilder<T extends object> extends QueryBuilder<T> {
   execute<U = T[]>(method: 'all', mapResults?: boolean): Promise<U>;
   execute<U = T>(method: 'get', mapResults?: boolean): Promise<U>;
   execute<U = QueryResult<T>>(method: 'run', mapResults?: boolean): Promise<U>;
-  then<TResult1 = T[], TResult2 = never>(onfulfilled?: ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<T[]>;
+  then<TResult1 = T[], TResult2 = never>(
+    onfulfilled?: ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
+  ): Promise<T[]>;
 }
 
 export interface CountQueryBuilder<T extends object> extends QueryBuilder<T> {
@@ -1385,7 +1543,10 @@ export interface CountQueryBuilder<T extends object> extends QueryBuilder<T> {
   execute<U = { count: number }[]>(method: 'all', mapResults?: boolean): Promise<U>;
   execute<U = { count: number }>(method: 'get', mapResults?: boolean): Promise<U>;
   execute<U = QueryResult<{ count: number }>>(method: 'run', mapResults?: boolean): Promise<U>;
-  then<TResult1 = number, TResult2 = never>(onfulfilled?: ((value: number) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<number>;
+  then<TResult1 = number, TResult2 = never>(
+    onfulfilled?: ((value: number) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
+  ): Promise<number>;
 }
 
 export interface InsertQueryBuilder<T extends object> extends RunQueryBuilder<T> {}

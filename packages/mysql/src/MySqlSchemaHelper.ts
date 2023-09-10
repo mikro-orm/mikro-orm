@@ -1,8 +1,19 @@
-import { SchemaHelper, type AbstractSqlConnection, type CheckDef, type Column, type IndexDef, type Knex, type TableDifference, type DatabaseTable, type DatabaseSchema, type Table, type ForeignKey } from '@mikro-orm/knex';
-import { EnumType, StringType, TextType, MediumIntType, type Dictionary, type Type } from '@mikro-orm/core';
+import { type Dictionary, EnumType, MediumIntType, StringType, TextType, type Type } from '@mikro-orm/core';
+import {
+  type AbstractSqlConnection,
+  type CheckDef,
+  type Column,
+  type DatabaseSchema,
+  type DatabaseTable,
+  type ForeignKey,
+  type IndexDef,
+  type Knex,
+  SchemaHelper,
+  type Table,
+  type TableDifference,
+} from '@mikro-orm/knex';
 
 export class MySqlSchemaHelper extends SchemaHelper {
-
   private readonly _cache: Dictionary = {};
 
   static readonly DEFAULT_VALUES = {
@@ -36,7 +47,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()`;
   }
 
-  override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
+  override async loadInformationSchema(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    tables: Table[],
+  ): Promise<void> {
     if (tables.length === 0) {
       return;
     }
@@ -56,7 +71,8 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<IndexDef[]>> {
-    const sql = `select table_name as table_name, nullif(table_schema, schema()) as schema_name, index_name as index_name, non_unique as non_unique, column_name as column_name
+    const sql =
+      `select table_name as table_name, nullif(table_schema, schema()) as schema_name, index_name as index_name, non_unique as non_unique, column_name as column_name
         from information_schema.statistics where table_schema = database()
         and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})`;
     const allIndexes = await connection.execute<any[]>(sql);
@@ -94,7 +110,9 @@ export class MySqlSchemaHelper extends SchemaHelper {
       numeric_precision as numeric_precision,
       numeric_scale as numeric_scale,
       ifnull(datetime_precision, character_maximum_length) length
-      from information_schema.columns where table_schema = database() and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))})
+      from information_schema.columns where table_schema = database() and table_name in (${
+      tables.map(t => this.platform.quoteValue(t.table_name))
+    })
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql);
     const str = (val?: string | number) => val != null ? '' + val : val;
@@ -108,7 +126,9 @@ export class MySqlSchemaHelper extends SchemaHelper {
       ret[key] ??= [];
       ret[key].push({
         name: col.column_name,
-        type: this.platform.isNumericColumn(mappedType) ? col.column_type.replace(/ unsigned$/, '').replace(/\(\d+\)$/, '') : col.column_type,
+        type: this.platform.isNumericColumn(mappedType)
+          ? col.column_type.replace(/ unsigned$/, '').replace(/\(\d+\)$/, '')
+          : col.column_type,
         mappedType,
         unsigned: col.column_type.endsWith(' unsigned'),
         length: col.length,
@@ -134,7 +154,9 @@ export class MySqlSchemaHelper extends SchemaHelper {
     }
 
     const sql = this.getChecksSQL(tables);
-    const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
+    const allChecks = await connection.execute<
+      { name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]
+    >(sql);
     const ret = {} as Dictionary;
 
     for (const check of allChecks) {
@@ -151,12 +173,16 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
-    const sql = `select distinct k.constraint_name as constraint_name, nullif(k.table_schema, schema()) as schema_name, k.table_name as table_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule `
-    + `from information_schema.key_column_usage k `
-    + `inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = k.table_name `
-    + `where (${tables.map(t => `k.table_name = '${t.table_name}'`).join(' or ')}) `
-    + `and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null`;
+  async getAllForeignKeys(
+    connection: AbstractSqlConnection,
+    tables: Table[],
+  ): Promise<Dictionary<Dictionary<ForeignKey>>> {
+    const sql =
+      `select distinct k.constraint_name as constraint_name, nullif(k.table_schema, schema()) as schema_name, k.table_name as table_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule `
+      + `from information_schema.key_column_usage k `
+      + `inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = k.table_name `
+      + `where (${tables.map(t => `k.table_name = '${t.table_name}'`).join(' or ')}) `
+      + `and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null`;
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
 
@@ -188,11 +214,20 @@ export class MySqlSchemaHelper extends SchemaHelper {
       .filter(col => tableDiff.fromTable.hasColumn(col))
       .map(col => tableDiff.fromTable.getColumn(col)!)
       .filter(col => col.autoincrement)
-      .map(col => `alter table \`${tableDiff.name}\` modify \`${col.name}\` ${this.getColumnDeclarationSQL({ ...col, autoincrement: false })}`)
+      .map(col =>
+        `alter table \`${tableDiff.name}\` modify \`${col.name}\` ${
+          this.getColumnDeclarationSQL({ ...col, autoincrement: false })
+        }`
+      )
       .join(';\n');
   }
 
-  override configureColumnDefault(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
+  override configureColumnDefault(
+    column: Column,
+    col: Knex.ColumnBuilder,
+    knex: Knex,
+    changedProperties?: Set<string>,
+  ) {
     if (changedProperties || column.default !== undefined) {
       if (column.default == null) {
         col.defaultTo(null);
@@ -227,7 +262,12 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `alter table ${tableName} modify ${columnName} ${this.getColumnDeclarationSQL(to)}`;
   }
 
-  override createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
+  override createTableColumn(
+    table: Knex.TableBuilder,
+    column: Column,
+    fromTable: DatabaseTable,
+    changedProperties?: Set<string>,
+  ) {
     if (column.mappedType instanceof MediumIntType) {
       return table.specificType(column.name, this.getColumnDeclarationSQL(column, true));
     }
@@ -268,15 +308,22 @@ export class MySqlSchemaHelper extends SchemaHelper {
       + `where k.table_name = '${tableName}' and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null`;
   }
 
-  async getAllEnumDefinitions(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<string[]>>> {
+  async getAllEnumDefinitions(
+    connection: AbstractSqlConnection,
+    tables: Table[],
+  ): Promise<Dictionary<Dictionary<string[]>>> {
     const sql = `select column_name as column_name, column_type as column_type, table_name as table_name
       from information_schema.columns
-      where data_type = 'enum' and table_name in (${tables.map(t => `'${t.table_name}'`).join(', ')}) and table_schema = database()`;
+      where data_type = 'enum' and table_name in (${
+      tables.map(t => `'${t.table_name}'`).join(', ')
+    }) and table_schema = database()`;
     const enums = await connection.execute<any[]>(sql);
 
     return enums.reduce((o, item) => {
       o[item.table_name] ??= {};
-      o[item.table_name][item.column_name] = item.column_type.match(/enum\((.*)\)/)[1].split(',').map((item: string) => item.match(/'(.*)'/)![1]);
+      o[item.table_name][item.column_name] = item.column_type.match(/enum\((.*)\)/)[1].split(',').map((
+        item: string,
+      ) => item.match(/'(.*)'/)![1]);
       return o;
     }, {} as Dictionary<string[]>);
   }
@@ -286,7 +333,8 @@ export class MySqlSchemaHelper extends SchemaHelper {
       return this._cache.supportsCheckConstraints;
     }
 
-    const sql = `select 1 from information_schema.tables where table_name = 'CHECK_CONSTRAINTS' and table_schema = 'information_schema'`;
+    const sql =
+      `select 1 from information_schema.tables where table_name = 'CHECK_CONSTRAINTS' and table_schema = 'information_schema'`;
     const res = await connection.execute(sql);
 
     return this._cache.supportsCheckConstraints = res.length > 0;
@@ -299,30 +347,50 @@ export class MySqlSchemaHelper extends SchemaHelper {
         on tc.constraint_schema = cc.constraint_schema
         and tc.constraint_name = cc.constraint_name
         and constraint_type = 'CHECK'
-      where tc.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))}) and tc.constraint_schema = database()
+      where tc.table_name in (${
+      tables.map(t => this.platform.quoteValue(t.table_name))
+    }) and tc.constraint_schema = database()
       order by tc.constraint_name`;
   }
 
   /* istanbul ignore next */
-  override async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<CheckDef[]> {
+  override async getChecks(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName: string,
+    columns?: Column[],
+  ): Promise<CheckDef[]> {
     const res = await this.getAllChecks(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
 
   /* istanbul ignore next */
-  override async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
+  override async getEnumDefinitions(
+    connection: AbstractSqlConnection,
+    checks: CheckDef[],
+    tableName: string,
+    schemaName?: string,
+  ): Promise<Dictionary<string[]>> {
     const res = await this.getAllEnumDefinitions(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
 
   /* istanbul ignore next */
-  override async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
+  override async getColumns(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+  ): Promise<Column[]> {
     const res = await this.getAllColumns(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
 
   /* istanbul ignore next */
-  override async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
+  override async getIndexes(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+  ): Promise<IndexDef[]> {
     const res = await this.getAllIndexes(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
@@ -335,5 +403,4 @@ export class MySqlSchemaHelper extends SchemaHelper {
     const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
   }
-
 }

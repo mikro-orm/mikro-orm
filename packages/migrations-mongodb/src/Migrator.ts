@@ -1,17 +1,30 @@
-import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
-import { join } from 'path';
-import { ensureDir } from 'fs-extra';
-import { Utils, type Constructor, type IMigrationGenerator, type IMigrator, type MikroORM, type Transaction } from '@mikro-orm/core';
+import {
+  type Constructor,
+  type IMigrationGenerator,
+  type IMigrator,
+  type MikroORM,
+  type Transaction,
+  Utils,
+} from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/mongodb';
+import { ensureDir } from 'fs-extra';
+import { join } from 'path';
+import {
+  type InputMigrations,
+  type MigrateDownOptions,
+  type MigrateUpOptions,
+  type MigrationParams,
+  type RunnableMigration,
+  Umzug,
+} from 'umzug';
+import { JSMigrationGenerator } from './JSMigrationGenerator';
 import type { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
 import { MigrationStorage } from './MigrationStorage';
-import type { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings';
 import { TSMigrationGenerator } from './TSMigrationGenerator';
-import { JSMigrationGenerator } from './JSMigrationGenerator';
+import type { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings';
 
 export class Migrator implements IMigrator {
-
   private umzug!: Umzug;
   private runner!: MigrationRunner;
   private storage!: MigrationStorage;
@@ -72,7 +85,9 @@ export class Migrator implements IMigrator {
 
     /* istanbul ignore next */
     if (this.options.migrationsList) {
-      migrations = this.options.migrationsList.map(migration => this.initialize(migration.class as Constructor<Migration>, migration.name));
+      migrations = this.options.migrationsList.map(migration =>
+        this.initialize(migration.class as Constructor<Migration>, migration.name)
+      );
     }
 
     this.umzug = new Umzug({
@@ -165,7 +180,16 @@ export class Migrator implements IMigrator {
     return name.match(/^\d{14}$/) ? this.options.fileName!(name) : name;
   }
 
-  private prefix<T extends string | string[] | { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction }>(options?: T): MigrateUpOptions & MigrateDownOptions {
+  private prefix<
+    T extends string | string[] | {
+      from?: string | number;
+      to?: string | number;
+      migrations?: string[];
+      transaction?: Transaction;
+    },
+  >(
+    options?: T,
+  ): MigrateUpOptions & MigrateDownOptions {
     if (Utils.isString(options) || Array.isArray(options)) {
       return { migrations: Utils.asArray(options).map(name => this.getMigrationFilename(name)) };
     }
@@ -182,7 +206,9 @@ export class Migrator implements IMigrator {
       delete options.transaction;
     }
 
-    (['from', 'to'] as const).filter(k => options[k]).forEach(k => options[k] = this.getMigrationFilename(options[k] as string));
+    (['from', 'to'] as const).filter(k => options[k]).forEach(k =>
+      options[k] = this.getMigrationFilename(options[k] as string)
+    );
 
     return options as MigrateUpOptions;
   }
@@ -201,7 +227,11 @@ export class Migrator implements IMigrator {
     return this.driver.getConnection().transactional(trx => this.runInTransaction(trx, method, options));
   }
 
-  private async runInTransaction(trx: Transaction, method: 'up' | 'down', options: string | string[] | undefined | MigrateOptions) {
+  private async runInTransaction(
+    trx: Transaction,
+    method: 'up' | 'down',
+    options: string | string[] | undefined | MigrateOptions,
+  ) {
     this.runner.setMasterMigration(trx);
     this.storage.setMasterMigration(trx);
     const ret = await this.umzug[method](this.prefix(options));
@@ -216,5 +246,4 @@ export class Migrator implements IMigrator {
       await ensureDir(this.absolutePath);
     }
   }
-
 }

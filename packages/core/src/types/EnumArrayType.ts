@@ -1,7 +1,7 @@
 import { inspect } from 'util';
-import { ArrayType } from './ArrayType';
-import type { Platform } from '../platforms';
 import { ValidationError } from '../errors';
+import type { Platform } from '../platforms';
+import { ArrayType } from './ArrayType';
 import type { TransformContext } from './Type';
 
 function mapHydrator<T>(items: T[] | undefined, hydrate: (i: string) => T): (i: string) => T {
@@ -13,10 +13,7 @@ function mapHydrator<T>(items: T[] | undefined, hydrate: (i: string) => T): (i: 
 }
 
 export class EnumArrayType<T extends string | number = string> extends ArrayType<T> {
-
-  constructor(private readonly owner: string,
-              private readonly items?: T[],
-              hydrate: (i: string) => T = i => i as T) {
+  constructor(private readonly owner: string, private readonly items?: T[], hydrate: (i: string) => T = i => i as T) {
     super(mapHydrator(items, hydrate));
   }
 
@@ -32,5 +29,4 @@ export class EnumArrayType<T extends string | number = string> extends ArrayType
 
     return super.convertToDatabaseValue(value, platform, context);
   }
-
 }

@@ -1,13 +1,24 @@
-import { Cascade, DateTimeType, DecimalType, EntitySchema, ReferenceKind, t, Utils, type Dictionary, type EntityMetadata, type EntityProperty, type NamingStrategy } from '@mikro-orm/core';
-import type { SchemaHelper } from './SchemaHelper';
-import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings';
+import {
+  Cascade,
+  DateTimeType,
+  DecimalType,
+  type Dictionary,
+  type EntityMetadata,
+  type EntityProperty,
+  EntitySchema,
+  type NamingStrategy,
+  ReferenceKind,
+  t,
+  Utils,
+} from '@mikro-orm/core';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings';
+import type { SchemaHelper } from './SchemaHelper';
 
 /**
  * @internal
  */
 export class DatabaseTable {
-
   private columns: Dictionary<Column> = {};
   private indexes: IndexDef[] = [];
   private checks: CheckDef[] = [];
@@ -15,9 +26,7 @@ export class DatabaseTable {
   public nativeEnums: Dictionary<unknown[]> = {}; // for postgres
   public comment?: string;
 
-  constructor(private readonly platform: AbstractSqlPlatform,
-              readonly name: string,
-              readonly schema?: string) {
+  constructor(private readonly platform: AbstractSqlPlatform, readonly name: string, readonly schema?: string) {
     Object.defineProperties(this, {
       platform: { enumerable: false, writable: true },
     });
@@ -43,7 +52,14 @@ export class DatabaseTable {
     return this.checks;
   }
 
-  init(cols: Column[], indexes: IndexDef[] = [], checks: CheckDef[] = [], pks: string[], fks: Dictionary<ForeignKey> = {}, enums: Dictionary<string[]> = {}): void {
+  init(
+    cols: Column[],
+    indexes: IndexDef[] = [],
+    checks: CheckDef[] = [],
+    pks: string[],
+    fks: Dictionary<ForeignKey> = {},
+    enums: Dictionary<string[]> = {},
+  ): void {
     this.indexes = indexes;
     this.checks = checks;
     this.foreignKeys = fks;
@@ -86,7 +102,8 @@ export class DatabaseTable {
         prop.length ??= this.platform.getDefaultDateTimeLength();
       }
 
-      const primary = !meta.compositePK && !!prop.primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType);
+      const primary = !meta.compositePK && !!prop.primary && prop.kind === ReferenceKind.SCALAR
+        && this.platform.isNumericColumn(mappedType);
       this.columns[field] = {
         name: prop.fieldNames[idx],
         type: prop.columnTypes[idx],
@@ -158,7 +175,11 @@ export class DatabaseTable {
     }
   }
 
-  private getIndexName(value: boolean | string, columnNames: string[], type: 'unique' | 'index' | 'primary' | 'foreign'): string {
+  private getIndexName(
+    value: boolean | string,
+    columnNames: string[],
+    type: 'unique' | 'index' | 'primary' | 'foreign',
+  ): string {
     if (Utils.isString(value)) {
       return value;
     }
@@ -193,7 +214,13 @@ export class DatabaseTable {
     }
 
     for (const column of this.getColumns()) {
-      const prop = this.getPropertyDeclaration(column, namingStrategy, schemaHelper, compositeFkIndexes, compositeFkUniques);
+      const prop = this.getPropertyDeclaration(
+        column,
+        namingStrategy,
+        schemaHelper,
+        compositeFkIndexes,
+        compositeFkUniques,
+      );
       schema.addProperty(prop.name, prop.type, prop);
     }
 
@@ -257,8 +284,10 @@ export class DatabaseTable {
   ) {
     const fk = Object.values(this.foreignKeys).find(fk => fk.columnNames.includes(column.name));
     const prop = this.getPropertyName(namingStrategy, column);
-    const index = compositeFkIndexes[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
-    const unique = compositeFkUniques[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary);
+    const index = compositeFkIndexes[prop]
+      || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
+    const unique = compositeFkUniques[prop]
+      || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary);
     const kind = this.getReferenceKind(fk, unique);
     const type = this.getPropertyType(namingStrategy, column, fk);
     const fkOptions: Partial<EntityProperty> = {};
@@ -362,8 +391,14 @@ export class DatabaseTable {
     return '' + val;
   }
 
-  addIndex(meta: EntityMetadata, index: { properties: string | string[]; name?: string; type?: string; expression?: string; options?: Dictionary }, type: 'index' | 'unique' | 'primary') {
-    const properties = Utils.unique(Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames)));
+  addIndex(
+    meta: EntityMetadata,
+    index: { properties: string | string[]; name?: string; type?: string; expression?: string; options?: Dictionary },
+    type: 'index' | 'unique' | 'primary',
+  ) {
+    const properties = Utils.unique(
+      Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames)),
+    );
 
     if (properties.length === 0 && !index.expression) {
       return;
@@ -397,5 +432,4 @@ export class DatabaseTable {
 
     return { columns: columnsMapped, ...rest };
   }
-
 }

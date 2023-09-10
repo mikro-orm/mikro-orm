@@ -7,8 +7,7 @@ export interface IConfiguration {
 }
 
 export abstract class MetadataProvider {
-
-  constructor(protected readonly config: IConfiguration) { }
+  constructor(protected readonly config: IConfiguration) {}
 
   abstract loadEntityMetadata(meta: EntityMetadata, name: string): void;
 
@@ -34,5 +33,4 @@ export abstract class MetadataProvider {
   useCache(): boolean {
     return this.config.get('metadataCache').enabled ?? false;
   }
-
 }

@@ -1,17 +1,34 @@
-import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
-import { basename, join } from 'path';
+import {
+  type Constructor,
+  type Dictionary,
+  type IMigrationGenerator,
+  type IMigrator,
+  type MikroORM,
+  t,
+  type Transaction,
+  Type,
+  UnknownType,
+  Utils,
+} from '@mikro-orm/core';
+import { DatabaseSchema, DatabaseTable, type EntityManager, SqlSchemaGenerator } from '@mikro-orm/knex';
 import { ensureDir, pathExists, writeJSON } from 'fs-extra';
-import { t, Type, UnknownType, Utils, type Constructor, type Dictionary, type IMigrationGenerator, type IMigrator, type MikroORM, type Transaction } from '@mikro-orm/core';
-import { DatabaseSchema, DatabaseTable, SqlSchemaGenerator, type EntityManager } from '@mikro-orm/knex';
+import { basename, join } from 'path';
+import {
+  type InputMigrations,
+  type MigrateDownOptions,
+  type MigrateUpOptions,
+  type MigrationParams,
+  type RunnableMigration,
+  Umzug,
+} from 'umzug';
+import { JSMigrationGenerator } from './JSMigrationGenerator';
 import type { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
 import { MigrationStorage } from './MigrationStorage';
-import type { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings';
 import { TSMigrationGenerator } from './TSMigrationGenerator';
-import { JSMigrationGenerator } from './JSMigrationGenerator';
+import type { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings';
 
 export class Migrator implements IMigrator {
-
   private umzug!: Umzug;
   private runner!: MigrationRunner;
   private storage!: MigrationStorage;
@@ -102,7 +119,9 @@ export class Migrator implements IMigrator {
     };
 
     if (this.options.migrationsList) {
-      migrations = this.options.migrationsList.map(migration => this.initialize(migration.class as Constructor<Migration>, migration.name));
+      migrations = this.options.migrationsList.map(migration =>
+        this.initialize(migration.class as Constructor<Migration>, migration.name)
+      );
     }
 
     this.umzug = new Umzug({
@@ -169,7 +188,11 @@ export class Migrator implements IMigrator {
     }
 
     if (exists.size > 0 && expected.size !== exists.size) {
-      throw new Error(`Some tables already exist in your schema, remove them first to create the initial migration: ${[...exists].join(', ')}`);
+      throw new Error(
+        `Some tables already exist in your schema, remove them first to create the initial migration: ${
+          [...exists].join(', ')
+        }`,
+      );
     }
 
     return expected.size === exists.size;
@@ -322,7 +345,16 @@ export class Migrator implements IMigrator {
     return name.match(/^\d{14}$/) ? this.options.fileName!(name) : name;
   }
 
-  private prefix<T extends string | string[] | { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction }>(options?: T): MigrateUpOptions & MigrateDownOptions {
+  private prefix<
+    T extends string | string[] | {
+      from?: string | number;
+      to?: string | number;
+      migrations?: string[];
+      transaction?: Transaction;
+    },
+  >(
+    options?: T,
+  ): MigrateUpOptions & MigrateDownOptions {
     if (Utils.isString(options) || Array.isArray(options)) {
       return { migrations: Utils.asArray(options).map(name => this.getMigrationFilename(name)) };
     }
@@ -339,7 +371,9 @@ export class Migrator implements IMigrator {
       delete options.transaction;
     }
 
-    (['from', 'to'] as const).filter(k => options[k]).forEach(k => options[k] = this.getMigrationFilename(options[k] as string));
+    (['from', 'to'] as const).filter(k => options[k]).forEach(k =>
+      options[k] = this.getMigrationFilename(options[k] as string)
+    );
 
     return options as MigrateUpOptions;
   }
@@ -358,7 +392,11 @@ export class Migrator implements IMigrator {
     return this.driver.getConnection().transactional(trx => this.runInTransaction(trx, method, options));
   }
 
-  private async runInTransaction(trx: Transaction, method: 'up' | 'down', options: string | string[] | undefined | MigrateOptions) {
+  private async runInTransaction(
+    trx: Transaction,
+    method: 'up' | 'down',
+    options: string | string[] | undefined | MigrateOptions,
+  ) {
     this.runner.setMasterMigration(trx);
     this.storage.setMasterMigration(trx);
     const ret = await this.umzug[method](this.prefix(options));
@@ -373,5 +411,4 @@ export class Migrator implements IMigrator {
       await ensureDir(this.absolutePath);
     }
   }
-
 }

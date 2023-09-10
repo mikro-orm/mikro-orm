@@ -1,11 +1,10 @@
-import type { RequiredEntityData, EntityData, EntityManager, Constructor } from '@mikro-orm/core';
+import type { Constructor, EntityData, EntityManager, RequiredEntityData } from '@mikro-orm/core';
 
 export abstract class Factory<T extends object> {
-
   abstract readonly model: Constructor<T>;
   private eachFunction?: (entity: T) => void;
 
-  constructor(private readonly em: EntityManager) { }
+  constructor(private readonly em: EntityManager) {}
 
   protected abstract definition(): EntityData<T>;
 
@@ -79,5 +78,4 @@ export abstract class Factory<T extends object> {
     this.eachFunction = eachFunction;
     return this;
   }
-
 }

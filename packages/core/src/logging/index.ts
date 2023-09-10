@@ -1,4 +1,4 @@
 export * from './colors';
-export * from './Logger';
 export * from './DefaultLogger';
+export * from './Logger';
 export * from './SimpleLogger';

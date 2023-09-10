@@ -1,5 +1,12 @@
+import {
+  type Dictionary,
+  type EntityKey,
+  type EntityProperty,
+  type MetadataStorage,
+  ReferenceKind,
+  Utils,
+} from '@mikro-orm/core';
 import { inspect } from 'util';
-import { ReferenceKind, Utils, type Dictionary, type EntityProperty, type MetadataStorage, type EntityKey } from '@mikro-orm/core';
 import type { ICriteriaNode, IQueryBuilder } from '../typings';
 
 /**
@@ -8,16 +15,17 @@ import type { ICriteriaNode, IQueryBuilder } from '../typings';
  * @internal
  */
 export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
-
   payload: any;
   prop?: EntityProperty<T>;
   index?: number;
 
-  constructor(protected readonly metadata: MetadataStorage,
-              readonly entityName: string,
-              readonly parent?: ICriteriaNode<T>,
-              readonly key?: EntityKey<T>,
-              validate = true) {
+  constructor(
+    protected readonly metadata: MetadataStorage,
+    readonly entityName: string,
+    readonly parent?: ICriteriaNode<T>,
+    readonly key?: EntityKey<T>,
+    validate = true,
+  ) {
     const meta = parent && metadata.find<T>(parent.entityName);
 
     if (meta && key) {
@@ -28,11 +36,16 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
       }
 
       pks.forEach(k => {
-        this.prop = meta.props.find(prop => prop.name === k || (prop.fieldNames?.length === 1 && prop.fieldNames[0] === k));
+        this.prop = meta.props.find(prop =>
+          prop.name === k || (prop.fieldNames?.length === 1 && prop.fieldNames[0] === k)
+        );
         const isProp = this.prop || meta.props.find(prop => (prop.fieldNames || []).includes(k));
 
         // do not validate if the key is prefixed or type casted (e.g. `k::text`)
-        if (validate && !isProp && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k) && !CriteriaNode.isCustomExpression(k)) {
+        if (
+          validate && !isProp && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k)
+          && !CriteriaNode.isCustomExpression(k)
+        ) {
           throw new Error(`Trying to query by not existing property ${entityName}.${k}`);
         }
       });
@@ -55,7 +68,9 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     const type = this.prop ? this.prop.kind : null;
     const composite = this.prop?.joinColumns ? this.prop.joinColumns.length > 1 : false;
     const customExpression = CriteriaNode.isCustomExpression(this.key!);
-    const scalar = payload === null || Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
+    const scalar = payload === null || Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp
+      || payload as unknown instanceof Date
+      || customExpression;
     const operator = Utils.isPlainObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
 
     if (composite) {
@@ -63,11 +78,16 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     }
 
     switch (type) {
-      case ReferenceKind.MANY_TO_ONE: return false;
-      case ReferenceKind.ONE_TO_ONE: return !this.prop!.owner;
-      case ReferenceKind.ONE_TO_MANY: return scalar || operator;
-      case ReferenceKind.MANY_TO_MANY: return scalar || operator;
-      default: return false;
+      case ReferenceKind.MANY_TO_ONE:
+        return false;
+      case ReferenceKind.ONE_TO_ONE:
+        return !this.prop!.owner;
+      case ReferenceKind.ONE_TO_MANY:
+        return scalar || operator;
+      case ReferenceKind.MANY_TO_MANY:
+        return scalar || operator;
+      default:
+        return false;
     }
   }
 
@@ -89,7 +109,8 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
 
   getPath(addIndex = false): string {
     // use index on parent only if we are processing to-many relation
-    const addParentIndex = this.prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(this.prop.kind);
+    const addParentIndex = this.prop
+      && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(this.prop.kind);
     const parentPath = this.parent?.getPath(addParentIndex) ?? this.entityName;
     const index = addIndex && this.index != null ? `[${this.index}]` : '';
     // ignore group operators to allow easier mapping (e.g. for orderBy)
@@ -110,8 +131,11 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     }
 
     const customExpression = CriteriaNode.isCustomExpression(this.key);
-    const scalar = this.payload === null || Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || customExpression;
-    const operator = Utils.isObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
+    const scalar = this.payload === null || Utils.isPrimaryKey(this.payload)
+      || this.payload as unknown instanceof RegExp
+      || this.payload as unknown instanceof Date || customExpression;
+    const operator = Utils.isObject(this.payload)
+      && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
 
     return this.prop.kind === ReferenceKind.MANY_TO_MANY && (scalar || operator);
   }
@@ -132,5 +156,4 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
   static isCustomExpression(field: string): boolean {
     return !!field.match(/[ ?<>=()]|^\d/);
   }
-
 }

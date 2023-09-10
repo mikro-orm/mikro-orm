@@ -1,10 +1,9 @@
-import globby from 'globby';
-import { Utils, type Constructor, type EntityManager, type ISeedManager, type MikroORM } from '@mikro-orm/core';
-import type { Seeder } from './Seeder';
+import { type Constructor, type EntityManager, type ISeedManager, type MikroORM, Utils } from '@mikro-orm/core';
 import { ensureDir, writeFile } from 'fs-extra';
+import globby from 'globby';
+import type { Seeder } from './Seeder';
 
 export class SeedManager implements ISeedManager {
-
   private readonly config = this.em.config;
   private readonly options = this.config.get('seeder');
   private readonly absolutePath: string;
@@ -91,5 +90,4 @@ export class SeedManager implements ISeedManager {
 
     return filePath;
   }
-
 }

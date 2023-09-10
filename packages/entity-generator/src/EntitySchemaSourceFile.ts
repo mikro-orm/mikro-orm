@@ -1,8 +1,7 @@
-import { ReferenceKind, Utils, type Dictionary, type EntityProperty } from '@mikro-orm/core';
+import { type Dictionary, type EntityProperty, ReferenceKind, Utils } from '@mikro-orm/core';
 import { SourceFile } from './SourceFile';
 
 export class EntitySchemaSourceFile extends SourceFile {
-
   override generate(): string {
     this.coreImports.add('EntitySchema');
     let ret = `export class ${this.meta.className} {`;
@@ -162,5 +161,4 @@ export class EntitySchemaSourceFile extends SourceFile {
 
     super.getScalarPropertyDecoratorOptions(options, prop);
   }
-
 }

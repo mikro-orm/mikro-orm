@@ -5,12 +5,11 @@ import type { EntityManager } from '../EntityManager';
  * Uses `AsyncLocalStorage` to create async context that holds current EM fork.
  */
 export class RequestContext {
-
   private static storage = new AsyncLocalStorage<RequestContext>();
   private static counter = 1;
   readonly id = RequestContext.counter++;
 
-  constructor(readonly map: Map<string, EntityManager>) { }
+  constructor(readonly map: Map<string, EntityManager>) {}
 
   /**
    * Returns default EntityManager.
@@ -54,5 +53,4 @@ export class RequestContext {
 
     return new RequestContext(forks);
   }
-
 }

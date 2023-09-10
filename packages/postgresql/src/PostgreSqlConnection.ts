@@ -1,9 +1,8 @@
-import TypeOverrides from 'pg/lib/type-overrides';
 import type { Dictionary } from '@mikro-orm/core';
-import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
+import { AbstractSqlConnection, type Knex, MonkeyPatchable } from '@mikro-orm/knex';
+import TypeOverrides from 'pg/lib/type-overrides';
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
-
   override createKnex() {
     this.patchKnex();
     this.client = this.createKnexClient('pg');
@@ -47,7 +46,12 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     const { PostgresDialectTableCompiler, TableCompiler } = MonkeyPatchable;
-    PostgresDialectTableCompiler.prototype.addColumns = function (this: any, columns: Dictionary[], prefix: string, colCompilers: Dictionary[]) {
+    PostgresDialectTableCompiler.prototype.addColumns = function (
+      this: any,
+      columns: Dictionary[],
+      prefix: string,
+      colCompilers: Dictionary[],
+    ) {
       if (prefix !== this.alterColumnsPrefix) {
         // base class implementation for normal add
         return TableCompiler.prototype.addColumns.call(this, columns, prefix);
@@ -77,19 +81,31 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
 
     if (col.type === 'enu' && !useNative) {
       if (alterType) {
-        this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type text using (${colName}::text)`, bindings: [] });
+        this.pushQuery({
+          sql: `alter table ${quotedTableName} alter column ${colName} type text using (${colName}::text)`,
+          bindings: [],
+        });
       }
 
       /* istanbul ignore else */
       if (options.createForeignKeyConstraints && alterNullable) {
-        this.pushQuery({ sql: `alter table ${quotedTableName} add constraint "${constraintName}" ${type.replace(/^text /, '')}`, bindings: [] });
+        this.pushQuery({
+          sql: `alter table ${quotedTableName} add constraint "${constraintName}" ${type.replace(/^text /, '')}`,
+          bindings: [],
+        });
       }
     } else if (type === 'uuid') {
       // we need to drop the default as it would be invalid
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} drop default`, bindings: [] });
-      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type ${type} using (${colName}::text::uuid)`, bindings: [] });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column ${colName} type ${type} using (${colName}::text::uuid)`,
+        bindings: [],
+      });
     } else if (alterType) {
-      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type ${type} using (${colName}::${type})`, bindings: [] });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column ${colName} type ${type} using (${colName}::${type})`,
+        bindings: [],
+      });
     }
 
     that.addColumnDefault.call(this, col, colName);
@@ -133,5 +149,4 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} drop default`, bindings: [] });
     }
   }
-
 }

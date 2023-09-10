@@ -1,7 +1,6 @@
 import type { NamingStrategy } from './NamingStrategy';
 
 export abstract class AbstractNamingStrategy implements NamingStrategy {
-
   getClassName(file: string, separator = '-'): string {
     const name = file.split('.')[0];
     const ret = name.replace(new RegExp(`${separator}+(\\w)`, 'g'), m => m[1].toUpperCase());
@@ -19,7 +18,11 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return migrationName;
   }
 
-  indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
+  indexName(
+    tableName: string,
+    columns: string[],
+    type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check',
+  ): string {
     /* istanbul ignore next */
     if (tableName.includes('.')) {
       tableName = tableName.substring(tableName.indexOf('.') + 1);
@@ -60,5 +63,4 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
   abstract propertyToColumnName(propertyName: string): string;
 
   abstract referenceColumnName(): string;
-
 }

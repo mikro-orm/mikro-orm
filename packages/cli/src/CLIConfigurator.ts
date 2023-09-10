@@ -2,6 +2,8 @@ import yargs, { type Argv } from 'yargs';
 
 import { ConfigurationLoader, Utils } from '@mikro-orm/core';
 import { ClearCacheCommand } from './commands/ClearCacheCommand';
+import { CreateDatabaseCommand } from './commands/CreateDatabaseCommand';
+import { CreateSeederCommand } from './commands/CreateSeederCommand';
 import { DatabaseSeedCommand } from './commands/DatabaseSeedCommand';
 import { DebugCommand } from './commands/DebugCommand';
 import { GenerateCacheCommand } from './commands/GenerateCacheCommand';
@@ -9,14 +11,11 @@ import { GenerateEntitiesCommand } from './commands/GenerateEntitiesCommand';
 import { ImportCommand } from './commands/ImportCommand';
 import { MigrationCommandFactory } from './commands/MigrationCommandFactory';
 import { SchemaCommandFactory } from './commands/SchemaCommandFactory';
-import { CreateSeederCommand } from './commands/CreateSeederCommand';
-import { CreateDatabaseCommand } from './commands/CreateDatabaseCommand';
 
 /**
  * @internal
  */
 export class CLIConfigurator {
-
   static async configure(): Promise<Argv> {
     await ConfigurationLoader.checkPackageVersion();
     const settings = await ConfigurationLoader.getSettings();
@@ -64,5 +63,4 @@ export class CLIConfigurator {
       .recommendCommands()
       .strict();
   }
-
 }

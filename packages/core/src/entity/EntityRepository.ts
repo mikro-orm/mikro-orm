@@ -1,6 +1,3 @@
-import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager';
-import type { AssignOptions } from './EntityAssigner';
-import type { EntityData, EntityName, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData, Ref } from '../typings';
 import type {
   CountOptions,
   DeleteOptions,
@@ -12,16 +9,27 @@ import type {
   NativeInsertUpdateOptions,
   UpdateOptions,
 } from '../drivers/IDatabaseDriver';
-import type { Reference } from './Reference';
-import type { EntityLoaderOptions } from './EntityLoader';
+import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager';
 import { ValidationError } from '../errors';
-import { Utils } from '../utils/Utils';
+import type {
+  AutoPath,
+  EntityData,
+  EntityDictionary,
+  EntityName,
+  FilterQuery,
+  Loaded,
+  Primary,
+  Ref,
+  RequiredEntityData,
+} from '../typings';
 import type { Cursor } from '../utils/Cursor';
+import { Utils } from '../utils/Utils';
+import type { AssignOptions } from './EntityAssigner';
+import type { EntityLoaderOptions } from './EntityLoader';
+import type { Reference } from './Reference';
 
 export class EntityRepository<Entity extends object> {
-
-  constructor(protected readonly em: EntityManager,
-              protected readonly entityName: EntityName<Entity>) { }
+  constructor(protected readonly em: EntityManager, protected readonly entityName: EntityName<Entity>) {}
 
   /**
    * Finds first entity matching your `where` query.
@@ -29,7 +37,10 @@ export class EntityRepository<Entity extends object> {
   async findOne<
     Hint extends string = never,
     Fields extends string = never,
-  >(where: FilterQuery<Entity>, options?: FindOneOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields> | null> {
+  >(
+    where: FilterQuery<Entity>,
+    options?: FindOneOptions<Entity, Hint, Fields>,
+  ): Promise<Loaded<Entity, Hint, Fields> | null> {
     return this.getEntityManager().findOne<Entity, Hint, Fields>(this.entityName, where, options);
   }
 
@@ -41,7 +52,10 @@ export class EntityRepository<Entity extends object> {
   async findOneOrFail<
     Hint extends string = never,
     Fields extends string = never,
-  >(where: FilterQuery<Entity>, options?: FindOneOrFailOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>> {
+  >(
+    where: FilterQuery<Entity>,
+    options?: FindOneOrFailOptions<Entity, Hint, Fields>,
+  ): Promise<Loaded<Entity, Hint, Fields>> {
     return this.getEntityManager().findOneOrFail<Entity, Hint, Fields>(this.entityName, where, options);
   }
 
@@ -67,7 +81,10 @@ export class EntityRepository<Entity extends object> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsert(entityOrData?: EntityData<Entity> | Entity, options?: NativeInsertUpdateOptions<Entity>): Promise<Entity> {
+  async upsert(
+    entityOrData?: EntityData<Entity> | Entity,
+    options?: NativeInsertUpdateOptions<Entity>,
+  ): Promise<Entity> {
     return this.getEntityManager().upsert<Entity>(this.entityName, entityOrData, options);
   }
 
@@ -96,7 +113,10 @@ export class EntityRepository<Entity extends object> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsertMany(entitiesOrData?: EntityData<Entity>[] | Entity[], options?: NativeInsertUpdateOptions<Entity>): Promise<Entity[]> {
+  async upsertMany(
+    entitiesOrData?: EntityData<Entity>[] | Entity[],
+    options?: NativeInsertUpdateOptions<Entity>,
+  ): Promise<Entity[]> {
     return this.getEntityManager().upsertMany<Entity>(this.entityName, entitiesOrData, options);
   }
 
@@ -117,7 +137,10 @@ export class EntityRepository<Entity extends object> {
   async findAndCount<
     Hint extends string = never,
     Fields extends string = never,
-  >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields>): Promise<[Loaded<Entity, Hint, Fields>[], number]> {
+  >(
+    where: FilterQuery<Entity>,
+    options?: FindOptions<Entity, Hint, Fields>,
+  ): Promise<[Loaded<Entity, Hint, Fields>[], number]> {
     return this.getEntityManager().findAndCount<Entity, Hint, Fields>(this.entityName, where, options);
   }
 
@@ -127,7 +150,10 @@ export class EntityRepository<Entity extends object> {
   async findByCursor<
     Hint extends string = never,
     Fields extends string = never,
-  >(where: FilterQuery<Entity>, options?: FindByCursorOptions<Entity, Hint, Fields>): Promise<Cursor<Entity, Hint, Fields>> {
+  >(
+    where: FilterQuery<Entity>,
+    options?: FindByCursorOptions<Entity, Hint, Fields>,
+  ): Promise<Cursor<Entity, Hint, Fields>> {
     return this.getEntityManager().findByCursor<Entity, Hint, Fields>(this.entityName, where, options);
   }
 
@@ -144,21 +170,31 @@ export class EntityRepository<Entity extends object> {
   /**
    * @inheritDoc EntityManager.insert
    */
-  async insert(data: Entity | EntityData<Entity>, options?: NativeInsertUpdateOptions<Entity>): Promise<Primary<Entity>> {
+  async insert(
+    data: Entity | EntityData<Entity>,
+    options?: NativeInsertUpdateOptions<Entity>,
+  ): Promise<Primary<Entity>> {
     return this.getEntityManager().insert<Entity>(this.entityName, data, options);
   }
 
   /**
    * @inheritDoc EntityManager.insert
    */
-  async insertMany(data: Entity[] | EntityData<Entity>[], options?: NativeInsertUpdateOptions<Entity>): Promise<Primary<Entity>[]> {
+  async insertMany(
+    data: Entity[] | EntityData<Entity>[],
+    options?: NativeInsertUpdateOptions<Entity>,
+  ): Promise<Primary<Entity>[]> {
     return this.getEntityManager().insertMany<Entity>(this.entityName, data, options);
   }
 
   /**
    * Fires native update query. Calling this has no side effects on the context (identity map).
    */
-  async nativeUpdate(where: FilterQuery<Entity>, data: EntityData<Entity>, options?: UpdateOptions<Entity>): Promise<number> {
+  async nativeUpdate(
+    where: FilterQuery<Entity>,
+    data: EntityData<Entity>,
+    options?: UpdateOptions<Entity>,
+  ): Promise<number> {
     return this.getEntityManager().nativeUpdate(this.entityName, where, data, options);
   }
 
@@ -211,7 +247,11 @@ export class EntityRepository<Entity extends object> {
   async populate<
     Hint extends string = never,
     Fields extends string = never,
-  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint>[] | boolean, options?: EntityLoaderOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
+  >(
+    entities: Entity | Entity[],
+    populate: AutoPath<Entity, Hint>[] | boolean,
+    options?: EntityLoaderOptions<Entity, Hint, Fields>,
+  ): Promise<Loaded<Entity, Hint, Fields>[]> {
     this.validateRepositoryType(entities, 'populate');
     return this.getEntityManager().populate(entities as Entity, populate, options);
   }
@@ -247,7 +287,10 @@ export class EntityRepository<Entity extends object> {
   /**
    * Returns total number of entities matching your `where` query.
    */
-  async count<Hint extends string = never>(where: FilterQuery<Entity> = {} as FilterQuery<Entity>, options: CountOptions<Entity, Hint> = {}): Promise<number> {
+  async count<Hint extends string = never>(
+    where: FilterQuery<Entity> = {} as FilterQuery<Entity>,
+    options: CountOptions<Entity, Hint> = {},
+  ): Promise<number> {
     return this.getEntityManager().count<Entity, Hint>(this.entityName, where, options);
   }
 
@@ -272,5 +315,4 @@ export class EntityRepository<Entity extends object> {
       throw ValidationError.fromWrongRepositoryType(entityName, repoType, method);
     }
   }
-
 }

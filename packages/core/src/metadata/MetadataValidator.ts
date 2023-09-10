@@ -1,14 +1,13 @@
+import { ReferenceKind } from '../enums';
+import { MetadataError } from '../errors';
 import type { EntityMetadata, EntityName, EntityProperty } from '../typings';
 import { Utils } from '../utils';
-import { MetadataError } from '../errors';
-import { ReferenceKind } from '../enums';
 import type { MetadataStorage } from './MetadataStorage';
 
 /**
  * @internal
  */
 export class MetadataValidator {
-
   /**
    * Validate there is only one property decorator. This disallows using `@Property()` together with e.g. `@ManyToOne()`
    * on the same property. One should use only `@ManyToOne()` in such case.
@@ -26,11 +25,15 @@ export class MetadataValidator {
     if (meta.virtual || meta.expression) {
       for (const prop of Utils.values(meta.properties)) {
         if (![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind)) {
-          throw new MetadataError(`Only scalar and embedded properties are allowed inside virtual entity. Found '${prop.kind}' in ${meta.className}.${prop.name}`);
+          throw new MetadataError(
+            `Only scalar and embedded properties are allowed inside virtual entity. Found '${prop.kind}' in ${meta.className}.${prop.name}`,
+          );
         }
 
         if (prop.primary) {
-          throw new MetadataError(`Virtual entity ${meta.className} cannot have primary key ${meta.className}.${prop.name}`);
+          throw new MetadataError(
+            `Virtual entity ${meta.className} cannot have primary key ${meta.className}.${prop.name}`,
+          );
         }
       }
 
@@ -56,7 +59,12 @@ export class MetadataValidator {
     }
   }
 
-  validateDiscovered(discovered: EntityMetadata[], warnWhenNoEntities?: boolean, checkDuplicateTableNames?: boolean, checkDuplicateEntities = true): void {
+  validateDiscovered(
+    discovered: EntityMetadata[],
+    warnWhenNoEntities?: boolean,
+    checkDuplicateTableNames?: boolean,
+    checkDuplicateEntities = true,
+  ): void {
     if (discovered.length === 0 && warnWhenNoEntities) {
       throw MetadataError.noEntityDiscovered();
     }
@@ -67,7 +75,9 @@ export class MetadataValidator {
       throw MetadataError.duplicateEntityDiscovered(duplicates);
     }
 
-    const tableNames = discovered.filter(meta => !meta.abstract && meta === meta.root && (meta.tableName || meta.collection) && meta.schema !== '*');
+    const tableNames = discovered.filter(meta =>
+      !meta.abstract && meta === meta.root && (meta.tableName || meta.collection) && meta.schema !== '*'
+    );
     const duplicateTableNames = Utils.findDuplicates(tableNames.map(meta => {
       const tableName = meta.tableName || meta.collection;
       return (meta.schema ? '.' + meta.schema : '') + tableName;
@@ -82,12 +92,13 @@ export class MetadataValidator {
       throw MetadataError.onlyAbstractEntitiesDiscovered();
     }
 
-    const unwrap = (type: string) => type
-      .replace(/Array<(.*)>/, '$1') // unwrap array
-      .replace(/\[]$/, '')          // remove array suffix
-      .replace(/\((.*)\)/, '$1');   // unwrap union types
+    const unwrap = (type: string) =>
+      type
+        .replace(/Array<(.*)>/, '$1') // unwrap array
+        .replace(/\[]$/, '') // remove array suffix
+        .replace(/\((.*)\)/, '$1'); // unwrap union types
 
-    const name = <T> (p: EntityName<T> | (() => EntityName<T>)): string => {
+    const name = <T>(p: EntityName<T> | (() => EntityName<T>)): string => {
       if (typeof p === 'function') {
         return Utils.className((p as () => EntityName<T>)());
       }
@@ -98,22 +109,32 @@ export class MetadataValidator {
     const pivotProps = new Map<string, { prop: EntityProperty; meta: EntityMetadata }[]>();
 
     // check for not discovered entities
-    discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
-      if (prop.kind !== ReferenceKind.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => discovered.find(m => m.className === type))) {
-        throw MetadataError.fromUnknownEntity(prop.type, `${meta.className}.${prop.name}`);
-      }
+    discovered.forEach(meta =>
+      Object.values(meta.properties).forEach(prop => {
+        if (
+          prop.kind !== ReferenceKind.SCALAR
+          && !unwrap(prop.type).split(/ ?\| ?/).every(type => discovered.find(m => m.className === type))
+        ) {
+          throw MetadataError.fromUnknownEntity(prop.type, `${meta.className}.${prop.name}`);
+        }
 
-      if (prop.pivotEntity) {
-        const props = pivotProps.get(name(prop.pivotEntity)) ?? [];
-        props.push({ meta, prop });
-        pivotProps.set(name(prop.pivotEntity), props);
-      }
-    }));
+        if (prop.pivotEntity) {
+          const props = pivotProps.get(name(prop.pivotEntity)) ?? [];
+          props.push({ meta, prop });
+          pivotProps.set(name(prop.pivotEntity), props);
+        }
+      })
+    );
 
     pivotProps.forEach(props => {
       // if the pivot entity is used in more than one property, check if they are linked
       if (props.length > 1 && props.every(p => !p.prop.mappedBy && !p.prop.inversedBy)) {
-        throw MetadataError.invalidManyToManyWithPivotEntity(props[0].meta, props[0].prop, props[1].meta, props[1].prop);
+        throw MetadataError.invalidManyToManyWithPivotEntity(
+          props[0].meta,
+          props[0].prop,
+          props[1].meta,
+          props[1].prop,
+        );
       }
     });
   }
@@ -149,7 +170,12 @@ export class MetadataValidator {
     }
   }
 
-  private validateOwningSide(meta: EntityMetadata, prop: EntityProperty, inverse: EntityProperty, metadata: MetadataStorage): void {
+  private validateOwningSide(
+    meta: EntityMetadata,
+    prop: EntityProperty,
+    inverse: EntityProperty,
+    metadata: MetadataStorage,
+  ): void {
     // has correct `inversedBy` on owning side
     if (!inverse) {
       throw MetadataError.fromWrongReference(meta, prop, 'inversedBy');
@@ -168,7 +194,12 @@ export class MetadataValidator {
     }
   }
 
-  private validateInverseSide(meta: EntityMetadata, prop: EntityProperty, owner: EntityProperty, metadata: MetadataStorage): void {
+  private validateInverseSide(
+    meta: EntityMetadata,
+    prop: EntityProperty,
+    owner: EntityProperty,
+    metadata: MetadataStorage,
+  ): void {
     // has correct `mappedBy` on inverse side
     if (prop.mappedBy && !owner) {
       throw MetadataError.fromWrongReference(meta, prop, 'mappedBy');
@@ -200,7 +231,11 @@ export class MetadataValidator {
     }
   }
 
-  private validateIndexes(meta: EntityMetadata, indexes: { properties: string | string[] }[], type: 'index' | 'unique'): void {
+  private validateIndexes(
+    meta: EntityMetadata,
+    indexes: { properties: string | string[] }[],
+    type: 'index' | 'unique',
+  ): void {
     for (const index of indexes) {
       for (const prop of Utils.asArray(index.properties)) {
         if (!(prop in meta.properties)) {
@@ -228,5 +263,4 @@ export class MetadataValidator {
       throw MetadataError.invalidVersionFieldType(meta);
     }
   }
-
 }

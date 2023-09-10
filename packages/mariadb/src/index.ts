@@ -1,11 +1,11 @@
 export * from '@mikro-orm/knex';
 export * from './MariaDbConnection';
-export * from './MariaDbSchemaHelper';
-export * from './MariaDbPlatform';
 export * from './MariaDbDriver';
 export * from './MariaDbExceptionConverter';
 export {
+  defineMariaDbConfig as defineConfig,
   MariaDbMikroORM as MikroORM,
   MariaDbOptions as Options,
-  defineMariaDbConfig as defineConfig,
 } from './MariaDbMikroORM';
+export * from './MariaDbPlatform';
+export * from './MariaDbSchemaHelper';

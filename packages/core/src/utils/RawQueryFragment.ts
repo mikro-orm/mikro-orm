@@ -1,9 +1,8 @@
 import { inspect } from 'util';
+import type { AnyString, Dictionary, EntityKey } from '../typings';
 import { Utils } from './Utils';
-import type { Dictionary, EntityKey, AnyString } from '../typings';
 
 export class RawQueryFragment {
-
   static #rawQueryCache = new Map<string, RawQueryFragment>();
   static #index = 0;
 
@@ -73,7 +72,6 @@ export class RawQueryFragment {
 
     return { sql: this.sql };
   }
-
 }
 
 Object.defineProperties(RawQueryFragment.prototype, {
@@ -123,7 +121,10 @@ export const ALIAS_REPLACEMENT_RE = '\\[::alias::\\]';
  * @Filter({ name: 'long', cond: () => ({ [raw('length(perex)')]: { $gt: 10000 } }) })
  * ```
  */
-export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: unknown[] | Dictionary<unknown>): R {
+export function raw<T extends object = any, R = any>(
+  sql: EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment,
+  params?: unknown[] | Dictionary<unknown>,
+): R {
   if (sql instanceof RawQueryFragment) {
     return sql as R;
   }
@@ -169,12 +170,15 @@ export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityK
  * ```
  */
 export function sql(sql: readonly string[], ...values: unknown[]) {
-  return raw(sql.reduce((query, queryPart, i) => {
-    const valueExists = i < values.length;
-    const text = query + queryPart;
+  return raw(
+    sql.reduce((query, queryPart, i) => {
+      const valueExists = i < values.length;
+      const text = query + queryPart;
 
-    return valueExists ? text + '?' : text;
-  }, ''), values);
+      return valueExists ? text + '?' : text;
+    }, ''),
+    values,
+  );
 }
 
 sql.ref = <T extends object>(...keys: string[]) => raw<T, RawQueryFragment>('??', [keys.join('.')]);

@@ -1,40 +1,39 @@
 import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
+import type { LockMode } from '../enums';
+import { ValidationError } from '../errors';
+import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer';
+import { EntityTransformer } from '../serialization/EntityTransformer';
+import type { SerializationContext } from '../serialization/SerializationContext';
 import type {
+  AddEager,
   AnyEntity,
+  AutoPath,
   ConnectionType,
   Dictionary,
   EntityData,
   EntityDictionary,
-  EntityMetadata,
-  IHydrator,
-  EntityValue,
+  EntityDTO,
   EntityKey,
+  EntityMetadata,
+  EntityValue,
+  IHydrator,
   IWrappedEntityInternal,
+  Loaded,
+  LoadedReference,
   Populate,
   PopulateOptions,
   Primary,
-  AutoPath,
   Ref,
-  AddEager,
-  LoadedReference,
-  EntityDTO,
-  Loaded,
 } from '../typings';
-import { Reference } from './Reference';
-import { EntityTransformer } from '../serialization/EntityTransformer';
-import { EntityAssigner, type AssignOptions } from './EntityAssigner';
-import type { EntityLoaderOptions } from './EntityLoader';
 import { Utils } from '../utils/Utils';
-import type { LockMode } from '../enums';
-import { ValidationError } from '../errors';
+import { type AssignOptions, EntityAssigner } from './EntityAssigner';
 import type { EntityIdentifier } from './EntityIdentifier';
+import type { EntityLoaderOptions } from './EntityLoader';
+import { Reference } from './Reference';
 import { helper } from './wrap';
-import type { SerializationContext } from '../serialization/SerializationContext';
-import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer';
 
 export class WrappedEntity<Entity extends object> {
-
   __initialized = true;
   __touched = false;
   __populated?: boolean;
@@ -42,7 +41,11 @@ export class WrappedEntity<Entity extends object> {
   __onLoadFired?: boolean;
   __schema?: string;
   __em?: EntityManager;
-  __serializationContext: { root?: SerializationContext<Entity>; populate?: PopulateOptions<Entity>[]; fields?: string[] } = {};
+  __serializationContext: {
+    root?: SerializationContext<Entity>;
+    populate?: PopulateOptions<Entity>[];
+    fields?: string[];
+  } = {};
   __loadedProperties = new Set<string>();
   __data: Dictionary = {};
   __processing = false;
@@ -59,11 +62,13 @@ export class WrappedEntity<Entity extends object> {
   /** holds wrapped primary key, so we can compute change set without eager commit */
   __identifier?: EntityIdentifier;
 
-  constructor(private readonly entity: Entity,
-              private readonly hydrator: IHydrator,
-              private readonly pkGetter?: (e: Entity) => Primary<Entity>,
-              private readonly pkSerializer?: (e: Entity) => string,
-              private readonly pkGetterConverted?: (e: Entity) => Primary<Entity>) { }
+  constructor(
+    private readonly entity: Entity,
+    private readonly hydrator: IHydrator,
+    private readonly pkGetter?: (e: Entity) => Primary<Entity>,
+    private readonly pkSerializer?: (e: Entity) => string,
+    private readonly pkGetterConverted?: (e: Entity) => Primary<Entity>,
+  ) {}
 
   isInitialized(): boolean {
     return this.__initialized;
@@ -86,7 +91,9 @@ export class WrappedEntity<Entity extends object> {
     return EntityTransformer.toObject(this.entity, ignoreFields);
   }
 
-  serialize<Hint extends string = never, Exclude extends string = never>(options?: SerializeOptions<Entity, Hint, Exclude>): EntityDTO<Loaded<Entity, Hint>> {
+  serialize<Hint extends string = never, Exclude extends string = never>(
+    options?: SerializeOptions<Entity, Hint, Exclude>,
+  ): EntityDTO<Loaded<Entity, Hint>> {
     return EntitySerializer.serialize(this.entity, options);
   }
 
@@ -107,12 +114,23 @@ export class WrappedEntity<Entity extends object> {
     return EntityAssigner.assign(this.entity, data, options);
   }
 
-  async init<P extends Populate<Entity> = Populate<Entity>>(populated = true, populate?: P, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Entity> {
+  async init<P extends Populate<Entity> = Populate<Entity>>(
+    populated = true,
+    populate?: P,
+    lockMode?: LockMode,
+    connectionType?: ConnectionType,
+  ): Promise<Entity> {
     if (!this.__em) {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
-    await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate, connectionType, schema: this.__schema });
+    await this.__em.findOne(this.entity.constructor.name, this.entity, {
+      refresh: true,
+      lockMode,
+      populate,
+      connectionType,
+      schema: this.__schema,
+    });
 
     return this.entity;
   }
@@ -139,7 +157,12 @@ export class WrappedEntity<Entity extends object> {
     const prop = this.__meta.getPrimaryProps()[0];
 
     if (this.__pk != null && this.__meta.compositePK) {
-      return Utils.getCompositeKeyValue(this.__pk, this.__meta, convertCustomTypes ? 'convertToDatabaseValue' : false, this.__platform);
+      return Utils.getCompositeKeyValue(
+        this.__pk,
+        this.__meta,
+        convertCustomTypes ? 'convertToDatabaseValue' : false,
+        this.__platform,
+      );
     }
 
     if (convertCustomTypes && this.__pk != null && prop.customType) {
@@ -215,5 +238,4 @@ export class WrappedEntity<Entity extends object> {
   [inspect.custom]() {
     return `[WrappedEntity<${this.__meta!.className}>]`;
   }
-
 }

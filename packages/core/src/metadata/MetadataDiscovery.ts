@@ -1,21 +1,28 @@
-import { basename, extname } from 'path';
 import globby from 'globby';
+import { basename, extname } from 'path';
 
-import { EntityMetadata, type AnyEntity, type Constructor, type Dictionary, type EntityClass, type EntityClassGroup, type EntityProperty } from '../typings';
-import { Utils } from '../utils/Utils';
-import type { Configuration } from '../utils/Configuration';
-import { MetadataValidator } from './MetadataValidator';
-import { MetadataStorage } from './MetadataStorage';
-import { EntitySchema } from './EntitySchema';
-import { Cascade, ReferenceKind, type EventType } from '../enums';
+import { Cascade, type EventType, ReferenceKind } from '../enums';
 import { MetadataError } from '../errors';
+import { colors } from '../logging/colors';
 import type { Platform } from '../platforms';
 import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, t, Type, Uint8ArrayType } from '../types';
-import { colors } from '../logging/colors';
+import {
+  type AnyEntity,
+  type Constructor,
+  type Dictionary,
+  type EntityClass,
+  type EntityClassGroup,
+  EntityMetadata,
+  type EntityProperty,
+} from '../typings';
+import type { Configuration } from '../utils/Configuration';
 import { raw } from '../utils/RawQueryFragment';
+import { Utils } from '../utils/Utils';
+import { EntitySchema } from './EntitySchema';
+import { MetadataStorage } from './MetadataStorage';
+import { MetadataValidator } from './MetadataValidator';
 
 export class MetadataDiscovery {
-
   private readonly namingStrategy = this.config.getNamingStrategy();
   private readonly metadataProvider = this.config.getMetadataProvider();
   private readonly cache = this.config.getMetadataCacheAdapter();
@@ -24,30 +31,48 @@ export class MetadataDiscovery {
   private readonly validator = new MetadataValidator();
   private readonly discovered: EntityMetadata[] = [];
 
-  constructor(private readonly metadata: MetadataStorage,
-              private readonly platform: Platform,
-              private readonly config: Configuration) { }
+  constructor(
+    private readonly metadata: MetadataStorage,
+    private readonly platform: Platform,
+    private readonly config: Configuration,
+  ) {}
 
   async discover(preferTsNode = true): Promise<MetadataStorage> {
     const startTime = Date.now();
-    this.logger.log('discovery', `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)}`);
+    this.logger.log(
+      'discovery',
+      `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)}`,
+    );
     await this.findEntities(preferTsNode);
     this.processDiscoveredEntities(this.discovered);
 
     const diff = Date.now() - startTime;
-    this.logger.log('discovery', `- entity discovery finished, found ${colors.green('' + this.discovered.length)} entities, took ${colors.green(`${diff} ms`)}`);
+    this.logger.log(
+      'discovery',
+      `- entity discovery finished, found ${colors.green('' + this.discovered.length)} entities, took ${
+        colors.green(`${diff} ms`)
+      }`,
+    );
 
     return this.mapDiscoveredEntities();
   }
 
   discoverSync(preferTsNode = true): MetadataStorage {
     const startTime = Date.now();
-    this.logger.log('discovery', `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)} in sync mode`);
+    this.logger.log(
+      'discovery',
+      `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)} in sync mode`,
+    );
     this.findEntities(preferTsNode, true);
     this.processDiscoveredEntities(this.discovered);
 
     const diff = Date.now() - startTime;
-    this.logger.log('discovery', `- entity discovery finished, found ${colors.green('' + this.discovered.length)} entities, took ${colors.green(`${diff} ms`)}`);
+    this.logger.log(
+      'discovery',
+      `- entity discovery finished, found ${colors.green('' + this.discovered.length)} entities, took ${
+        colors.green(`${diff} ms`)
+      }`,
+    );
 
     return this.mapDiscoveredEntities();
   }
@@ -119,19 +144,29 @@ export class MetadataDiscovery {
     this.discovered.length = 0;
 
     const options = this.config.get('discovery');
-    const key = (preferTsNode && this.config.get('tsNode', Utils.detectTsNode()) && this.config.get('entitiesTs').length > 0) ? 'entitiesTs' : 'entities';
+    const key =
+      (preferTsNode && this.config.get('tsNode', Utils.detectTsNode()) && this.config.get('entitiesTs').length > 0)
+        ? 'entitiesTs'
+        : 'entities';
     const paths = this.config.get(key).filter(item => Utils.isString(item)) as string[];
     const refs = this.config.get(key).filter(item => !Utils.isString(item)) as Constructor<AnyEntity>[];
 
     if (paths.length > 0) {
       if (sync || options.requireEntitiesArray) {
-        throw new Error(`[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`);
+        throw new Error(
+          `[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`,
+        );
       }
 
       return this.discoverDirectories(paths).then(() => {
         this.discoverReferences(refs);
         this.discoverMissingTargets();
-        this.validator.validateDiscovered(this.discovered, options.warnWhenNoEntities, options.checkDuplicateTableNames, options.checkDuplicateEntities);
+        this.validator.validateDiscovered(
+          this.discovered,
+          options.warnWhenNoEntities,
+          options.checkDuplicateTableNames,
+          options.checkDuplicateEntities,
+        );
 
         return this.discovered;
       });
@@ -145,28 +180,37 @@ export class MetadataDiscovery {
   }
 
   private discoverMissingTargets(): void {
-    const unwrap = (type: string) => type
-      .replace(/Array<(.*)>/, '$1') // unwrap array
-      .replace(/\[]$/, '')          // remove array suffix
-      .replace(/\((.*)\)/, '$1');   // unwrap union types
+    const unwrap = (type: string) =>
+      type
+        .replace(/Array<(.*)>/, '$1') // unwrap array
+        .replace(/\[]$/, '') // remove array suffix
+        .replace(/\((.*)\)/, '$1'); // unwrap union types
 
     const missing: Constructor[] = [];
 
-    this.discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
-      if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.pivotEntity && !this.discovered.find(m => m.className === Utils.className(prop.pivotEntity))) {
-        const target = typeof prop.pivotEntity === 'function'
-          ? (prop.pivotEntity as () => Constructor)()
-          : prop.pivotEntity;
-        missing.push(target as Constructor);
-      }
+    this.discovered.forEach(meta =>
+      Object.values(meta.properties).forEach(prop => {
+        if (
+          prop.kind === ReferenceKind.MANY_TO_MANY && prop.pivotEntity
+          && !this.discovered.find(m => m.className === Utils.className(prop.pivotEntity))
+        ) {
+          const target = typeof prop.pivotEntity === 'function'
+            ? (prop.pivotEntity as () => Constructor)()
+            : prop.pivotEntity;
+          missing.push(target as Constructor);
+        }
 
-      if (prop.kind !== ReferenceKind.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => this.discovered.find(m => m.className === type))) {
-        const target = typeof prop.entity === 'function'
-          ? prop.entity()
-          : prop.type;
-        missing.push(...Utils.asArray(target as Constructor));
-      }
-    }));
+        if (
+          prop.kind !== ReferenceKind.SCALAR
+          && !unwrap(prop.type).split(/ ?\| ?/).every(type => this.discovered.find(m => m.className === type))
+        ) {
+          const target = typeof prop.entity === 'function'
+            ? prop.entity()
+            : prop.type;
+          missing.push(...Utils.asArray(target as Constructor));
+        }
+      })
+    );
 
     if (missing.length > 0) {
       this.tryDiscoverTargets(missing);
@@ -196,11 +240,11 @@ export class MetadataDiscovery {
       const filename = basename(filepath);
 
       if (
-        !filename.match(/\.[jt]s$/) ||
-        filename.endsWith('.js.map') ||
-        filename.endsWith('.d.ts') ||
-        filename.startsWith('.') ||
-        filename.match(/index\.[jt]s$/)
+        !filename.match(/\.[jt]s$/)
+        || filename.endsWith('.js.map')
+        || filename.endsWith('.d.ts')
+        || filename.startsWith('.')
+        || filename.match(/index\.[jt]s$/)
       ) {
         this.logger.log('discovery', `- ignoring file ${filename}`);
         continue;
@@ -261,7 +305,9 @@ export class MetadataDiscovery {
     return this.discovered.filter(meta => found.find(m => m.name === meta.className));
   }
 
-  private prepare<T>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>): EntityClass<T> | EntitySchema<T> {
+  private prepare<T>(
+    entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>,
+  ): EntityClass<T> | EntitySchema<T> {
     if ('schema' in entity && entity.schema instanceof EntitySchema) {
       return entity.schema;
     }
@@ -306,7 +352,10 @@ export class MetadataDiscovery {
 
   private discoverEntity<T>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>, path?: string): void {
     entity = this.prepare(entity);
-    this.logger.log('discovery', `- processing entity ${colors.cyan((entity as EntityClass<T>).name)}${colors.grey(path ? ` (${path})` : '')}`);
+    this.logger.log(
+      'discovery',
+      `- processing entity ${colors.cyan((entity as EntityClass<T>).name)}${colors.grey(path ? ` (${path})` : '')}`,
+    );
     const schema = this.getSchema(entity as Constructor<T>);
     const meta = schema.init().meta;
     const root = Utils.getRootEntity(this.metadata, meta);
@@ -366,11 +415,19 @@ export class MetadataDiscovery {
 
   private initNullability(prop: EntityProperty): void {
     if (prop.kind === ReferenceKind.MANY_TO_ONE) {
-      return Utils.defaultValue(prop, 'nullable', prop.optional || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
+      return Utils.defaultValue(
+        prop,
+        'nullable',
+        prop.optional || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL),
+      );
     }
 
     if (prop.kind === ReferenceKind.ONE_TO_ONE) {
-      return Utils.defaultValue(prop, 'nullable', prop.optional || !prop.owner || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
+      return Utils.defaultValue(
+        prop,
+        'nullable',
+        prop.optional || !prop.owner || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL),
+      );
     }
 
     return Utils.defaultValue(prop, 'nullable', prop.optional);
@@ -467,11 +524,15 @@ export class MetadataDiscovery {
     }
 
     if (!prop.referencedColumnNames) {
-      prop.referencedColumnNames = Utils.flatten(meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames));
+      prop.referencedColumnNames = Utils.flatten(
+        meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames),
+      );
     }
 
     if (!prop.joinColumns) {
-      prop.joinColumns = prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.className, referencedColumnName, meta.compositePK));
+      prop.joinColumns = prop.referencedColumnNames.map(referencedColumnName =>
+        this.namingStrategy.joinKeyColumnName(meta.className, referencedColumnName, meta.compositePK)
+      );
     }
 
     if (!prop.inverseJoinColumns) {
@@ -486,7 +547,9 @@ export class MetadataDiscovery {
     Utils.defaultValue(prop, 'referencedTableName', meta2.collection);
 
     if (!prop.joinColumns) {
-      prop.joinColumns = fieldNames.map(fieldName => this.namingStrategy.joinKeyColumnName(prop.name, fieldName, fieldNames.length > 1));
+      prop.joinColumns = fieldNames.map(fieldName =>
+        this.namingStrategy.joinKeyColumnName(prop.name, fieldName, fieldNames.length > 1)
+      );
     }
 
     if (!prop.referencedColumnNames) {
@@ -562,7 +625,10 @@ export class MetadataDiscovery {
     });
   }
 
-  private ensureCorrectFKOrderInPivotEntity(meta: EntityMetadata, owner: EntityProperty): [EntityProperty, EntityProperty] {
+  private ensureCorrectFKOrderInPivotEntity(
+    meta: EntityMetadata,
+    owner: EntityProperty,
+  ): [EntityProperty, EntityProperty] {
     let [first, second] = Object.values(meta.properties).filter(p => p.primary);
 
     // wrong FK order, first FK needs to point to the owning side
@@ -631,9 +697,16 @@ export class MetadataDiscovery {
     }
 
     // handle self-referenced m:n with same default field names
-    if (meta.name === targetType && prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])) {
-      prop.joinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.className + '_1', name, meta.compositePK));
-      prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.className + '_2', name, meta.compositePK));
+    if (
+      meta.name === targetType
+      && prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])
+    ) {
+      prop.joinColumns = prop.referencedColumnNames.map(name =>
+        this.namingStrategy.joinKeyColumnName(meta.className + '_1', name, meta.compositePK)
+      );
+      prop.inverseJoinColumns = prop.referencedColumnNames.map(name =>
+        this.namingStrategy.joinKeyColumnName(meta.className + '_2', name, meta.compositePK)
+      );
 
       if (prop.inversedBy) {
         const prop2 = this.metadata.get(targetType).properties[prop.inversedBy];
@@ -642,8 +715,20 @@ export class MetadataDiscovery {
       }
     }
 
-    data.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.name!, targetType + '_inverse', true);
-    data.properties[targetType + '_inverse'] = this.definePivotProperty(prop, targetType + '_inverse', targetType, meta.name + '_owner', false);
+    data.properties[meta.name + '_owner'] = this.definePivotProperty(
+      prop,
+      meta.name + '_owner',
+      meta.name!,
+      targetType + '_inverse',
+      true,
+    );
+    data.properties[targetType + '_inverse'] = this.definePivotProperty(
+      prop,
+      targetType + '_inverse',
+      targetType,
+      meta.name + '_owner',
+      false,
+    );
 
     return this.metadata.set(data.className, data);
   }
@@ -671,7 +756,13 @@ export class MetadataDiscovery {
     return primaryProp;
   }
 
-  private definePivotProperty(prop: EntityProperty, name: string, type: string, inverse: string, owner: boolean): EntityProperty {
+  private definePivotProperty(
+    prop: EntityProperty,
+    name: string,
+    type: string,
+    inverse: string,
+    owner: boolean,
+  ): EntityProperty {
     const ret = {
       name,
       type,
@@ -752,7 +843,7 @@ export class MetadataDiscovery {
     if (!meta.discriminatorValue) {
       Object.values(base.properties).filter(prop => !old.includes(prop.name)).forEach(prop => {
         meta.properties[prop.name] = { ...prop };
-        meta.propertyOrder.set(prop.name, (order += 0.01));
+        meta.propertyOrder.set(prop.name, order += 0.01);
       });
     }
 
@@ -779,7 +870,11 @@ export class MetadataDiscovery {
     return order;
   }
 
-  private initPolyEmbeddables(embeddedProp: EntityProperty, discovered: EntityMetadata[], visited = new Set<EntityProperty>()): void {
+  private initPolyEmbeddables(
+    embeddedProp: EntityProperty,
+    discovered: EntityMetadata[],
+    visited = new Set<EntityProperty>(),
+  ): void {
     if (embeddedProp.kind !== ReferenceKind.EMBEDDED || visited.has(embeddedProp)) {
       return;
     }
@@ -826,7 +921,11 @@ export class MetadataDiscovery {
     }
   }
 
-  private initEmbeddables(meta: EntityMetadata, embeddedProp: EntityProperty, visited = new Set<EntityProperty>()): void {
+  private initEmbeddables(
+    meta: EntityMetadata,
+    embeddedProp: EntityProperty,
+    visited = new Set<EntityProperty>(),
+  ): void {
     if (embeddedProp.kind !== ReferenceKind.EMBEDDED || visited.has(embeddedProp)) {
       return;
     }
@@ -841,20 +940,27 @@ export class MetadataDiscovery {
     embeddedProp.embeddable = embeddable.class;
     embeddedProp.embeddedProps = {};
     let order = meta.propertyOrder.get(embeddedProp.name)!;
-    const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
+    const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) =>
+      prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
 
     for (const prop of Object.values(embeddable.properties).filter(p => p.persist !== false)) {
-      const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.name + '_' : embeddedProp.prefix;
+      const prefix = embeddedProp.prefix === false
+        ? ''
+        : embeddedProp.prefix === true
+        ? embeddedProp.name + '_'
+        : embeddedProp.prefix;
       const name = prefix + prop.name;
 
-      if (meta.properties[name] !== undefined && getRootProperty(meta.properties[name]).kind !== ReferenceKind.EMBEDDED) {
+      if (
+        meta.properties[name] !== undefined && getRootProperty(meta.properties[name]).kind !== ReferenceKind.EMBEDDED
+      ) {
         throw MetadataError.conflictingPropertyName(meta.className, name, embeddedProp.name);
       }
 
       meta.properties[name] = Utils.copy(prop, false);
       meta.properties[name].name = name;
       meta.properties[name].embedded = [embeddedProp.name, prop.name];
-      meta.propertyOrder.set(name, (order += 0.01));
+      meta.propertyOrder.set(name, order += 0.01);
       embeddedProp.embeddedProps[prop.name] = meta.properties[name];
 
       if (embeddedProp.nullable) {
@@ -920,13 +1026,19 @@ export class MetadataDiscovery {
       });
     }
 
-    meta.discriminatorValue = Object.entries(meta.root.discriminatorMap!).find(([, className]) => className === meta.className)?.[0];
+    meta.discriminatorValue = Object.entries(meta.root.discriminatorMap!).find(([, className]) =>
+      className === meta.className
+    )?.[0];
 
     if (!meta.root.properties[meta.root.discriminatorColumn]) {
       this.createDiscriminatorProperty(meta.root);
     }
 
-    Utils.defaultValue(meta.root.properties[meta.root.discriminatorColumn], 'items', Object.keys(meta.root.discriminatorMap));
+    Utils.defaultValue(
+      meta.root.properties[meta.root.discriminatorColumn],
+      'items',
+      Object.keys(meta.root.discriminatorMap),
+    );
     Utils.defaultValue(meta.root.properties[meta.root.discriminatorColumn], 'index', true);
 
     if (meta.root === meta) {
@@ -1018,7 +1130,11 @@ export class MetadataDiscovery {
       const entity2 = new meta.class();
 
       // we compare the two values by reference, this will discard things like `new Date()` or `Date.now()`
-      if (this.config.get('discovery').inferDefaultValues && prop.default === undefined && entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name] && entity1[prop.name] !== now) {
+      if (
+        this.config.get('discovery').inferDefaultValues && prop.default === undefined && entity1[prop.name] != null
+        && entity1[prop.name] === entity2[prop.name]
+        && entity1[prop.name] !== now
+      ) {
         prop.default ??= entity1[prop.name];
       }
 
@@ -1070,7 +1186,9 @@ export class MetadataDiscovery {
     }
 
     // `prop.type` might also be custom type class (not instance), so `typeof MyType` will give us `function`, not `object`
-    if (typeof prop.type === 'function' && Type.isMappedType((prop.type as Constructor).prototype) && !prop.customType) {
+    if (
+      typeof prop.type === 'function' && Type.isMappedType((prop.type as Constructor).prototype) && !prop.customType
+    ) {
       prop.customType = new (prop.type as Constructor<Type>)();
       prop.type = prop.customType.constructor.name;
     }
@@ -1079,7 +1197,10 @@ export class MetadataDiscovery {
       prop.customType = new JsonType();
     }
 
-    if (prop.kind === ReferenceKind.SCALAR && !prop.customType && prop.columnTypes && ['json', 'jsonb'].includes(prop.columnTypes[0])) {
+    if (
+      prop.kind === ReferenceKind.SCALAR && !prop.customType && prop.columnTypes
+      && ['json', 'jsonb'].includes(prop.columnTypes[0])
+    ) {
       prop.customType = new JsonType();
     }
 
@@ -1109,7 +1230,10 @@ export class MetadataDiscovery {
       prop.customType = new JsonType();
     }
 
-    if (prop.kind === ReferenceKind.SCALAR && !prop.customType && prop.columnTypes && ['json', 'jsonb'].includes(prop.columnTypes[0])) {
+    if (
+      prop.kind === ReferenceKind.SCALAR && !prop.customType && prop.columnTypes
+      && ['json', 'jsonb'].includes(prop.columnTypes[0])
+    ) {
       prop.customType = new JsonType();
     }
 
@@ -1120,7 +1244,9 @@ export class MetadataDiscovery {
     }
 
     if (prop.customType && !prop.columnTypes) {
-      const mappedType = this.getMappedType({ columnTypes: [prop.customType.getColumnType(prop, this.platform)] } as EntityProperty);
+      const mappedType = this.getMappedType(
+        { columnTypes: [prop.customType.getColumnType(prop, this.platform)] } as EntityProperty,
+      );
       prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
     } else {
       prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
@@ -1131,11 +1257,16 @@ export class MetadataDiscovery {
       prop.customType.meta = meta;
       prop.customType.prop = prop;
       prop.columnTypes ??= [prop.customType.getColumnType(prop, this.platform)];
-      prop.hasConvertToJSValueSQL = !!prop.customType.convertToJSValueSQL && prop.customType.convertToJSValueSQL('', this.platform) !== '';
-      prop.hasConvertToDatabaseValueSQL = !!prop.customType.convertToDatabaseValueSQL && prop.customType.convertToDatabaseValueSQL('', this.platform) !== '';
+      prop.hasConvertToJSValueSQL = !!prop.customType.convertToJSValueSQL
+        && prop.customType.convertToJSValueSQL('', this.platform) !== '';
+      prop.hasConvertToDatabaseValueSQL = !!prop.customType.convertToDatabaseValueSQL
+        && prop.customType.convertToDatabaseValueSQL('', this.platform) !== '';
     }
 
-    if (Type.isMappedType(prop.customType) && prop.kind === ReferenceKind.SCALAR && !prop.type?.toString().endsWith('[]')) {
+    if (
+      Type.isMappedType(prop.customType) && prop.kind === ReferenceKind.SCALAR
+      && !prop.type?.toString().endsWith('[]')
+    ) {
       prop.type = prop.customType.name;
     }
 
@@ -1238,7 +1369,8 @@ export class MetadataDiscovery {
       return;
     }
 
-    prop.unsigned ??= (prop.primary || prop.unsigned) && this.isNumericProperty(prop) && this.platform.supportsUnsigned();
+    prop.unsigned ??= (prop.primary || prop.unsigned) && this.isNumericProperty(prop)
+      && this.platform.supportsUnsigned();
   }
 
   private initIndexes(prop: EntityProperty): void {
@@ -1252,14 +1384,17 @@ export class MetadataDiscovery {
       return this.platform.isNumericColumn(prop.customType);
     }
 
-    const numericMappedType = prop.columnTypes?.[0] && this.platform.isNumericColumn(this.platform.getMappedType(prop.columnTypes[0]));
+    const numericMappedType = prop.columnTypes?.[0]
+      && this.platform.isNumericColumn(this.platform.getMappedType(prop.columnTypes[0]));
     return numericMappedType || prop.type === 'number' || this.platform.isBigIntProperty(prop);
   }
 
   private async getEntityClassOrSchema(path: string, name: string) {
     const exports = await Utils.dynamicImport(path);
     const targets = Object.values<Dictionary>(exports)
-      .filter(item => item instanceof EntitySchema || (item instanceof Function && MetadataStorage.isKnownEntity(item.name)));
+      .filter(item =>
+        item instanceof EntitySchema || (item instanceof Function && MetadataStorage.isKnownEntity(item.name))
+      );
 
     // ignore class implementations that are linked from an EntitySchema
     for (const item of targets) {
@@ -1295,5 +1430,4 @@ export class MetadataDiscovery {
 
     return meta.forceConstructor = forceConstructor;
   }
-
 }

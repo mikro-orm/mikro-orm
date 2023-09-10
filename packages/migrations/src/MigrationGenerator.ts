@@ -1,12 +1,13 @@
-import { ensureDir, writeFile } from 'fs-extra';
-import { Utils, type IMigrationGenerator, type MigrationsOptions, type NamingStrategy } from '@mikro-orm/core';
+import { type IMigrationGenerator, type MigrationsOptions, type NamingStrategy, Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { ensureDir, writeFile } from 'fs-extra';
 
 export abstract class MigrationGenerator implements IMigrationGenerator {
-
-  constructor(protected readonly driver: AbstractSqlDriver,
-              protected readonly namingStrategy: NamingStrategy,
-              protected readonly options: MigrationsOptions) { }
+  constructor(
+    protected readonly driver: AbstractSqlDriver,
+    protected readonly namingStrategy: NamingStrategy,
+    protected readonly options: MigrationsOptions,
+  ) {}
 
   /**
    * @inheritDoc
@@ -31,7 +32,7 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
   createStatement(sql: string, padLeft: number): string {
     if (sql) {
       const padding = ' '.repeat(padLeft);
-      return `${padding}this.addSql('${sql.replace(/['\\]/g, '\\\'')}');\n`;
+      return `${padding}this.addSql('${sql.replace(/['\\]/g, "\\'")}');\n`;
     }
 
     return '\n';
@@ -41,5 +42,4 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
    * @inheritDoc
    */
   abstract generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string;
-
 }

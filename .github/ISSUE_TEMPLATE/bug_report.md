@@ -6,15 +6,17 @@ title: ''
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is. 
+A clear and concise description of what the bug is.
 
 **Stack trace**
+
 ```
 ...
 ```
 
 **To Reproduce**
 Steps to reproduce the behavior:
+
 1. ...
 2. ...
 3. ...
@@ -27,9 +29,9 @@ Add any other context about the problem here.
 
 **Versions**
 
-| Dependency | Version |
-| - | - |
-| node | ? |
-| typescript | ? |
-| mikro-orm | ? |
-| your-driver | ? |
+| Dependency  | Version |
+| ----------- | ------- |
+| node        | ?       |
+| typescript  | ?       |
+| mikro-orm   | ?       |
+| your-driver | ?       |

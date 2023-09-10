@@ -2,11 +2,10 @@ import { AsyncLocalStorage } from 'async_hooks';
 import type { EntityManager } from '../EntityManager';
 
 export class TransactionContext {
-
   private static storage = new AsyncLocalStorage<TransactionContext>();
   readonly id = this.em._id;
 
-  constructor(readonly em: EntityManager) { }
+  constructor(readonly em: EntityManager) {}
 
   /**
    * Creates new TransactionContext instance and runs the code inside its domain.
@@ -30,5 +29,4 @@ export class TransactionContext {
     const context = TransactionContext.currentTransactionContext();
     return context?.em.name === name ? context.em : undefined;
   }
-
 }

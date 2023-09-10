@@ -14,7 +14,9 @@ export function EnsureRequestContext<T>(getContext?: MikroORM | ((type?: T) => M
       const orm = getContext instanceof MikroORM ? getContext : (getContext?.(this) ?? (this as any).orm);
 
       if (!(orm as unknown instanceof MikroORM)) {
-        throw new Error('@EnsureRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@EnsureRequestContext(() => orm)`');
+        throw new Error(
+          '@EnsureRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@EnsureRequestContext(() => orm)`',
+        );
       }
 
       return await RequestContext.create(orm.em, () => {

@@ -1,7 +1,22 @@
 import { pathExistsSync } from 'fs-extra';
-import type { NamingStrategy } from '../naming-strategy';
-import { FileCacheAdapter, NullCacheAdapter, type SyncCacheAdapter, type CacheAdapter } from '../cache';
+import { type CacheAdapter, FileCacheAdapter, NullCacheAdapter, type SyncCacheAdapter } from '../cache';
+import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
+import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import type { EntityRepository } from '../entity/EntityRepository';
+import type { EntityManager } from '../EntityManager';
+import { FlushMode, LoadStrategy, PopulateHint } from '../enums';
+import { NotFoundError } from '../errors';
+import type { EventSubscriber } from '../events';
+import { ObjectHydrator } from '../hydration';
+import { colors, DefaultLogger, type Logger, type LoggerNamespace, type LoggerOptions } from '../logging';
+import type { EntitySchema } from '../metadata/EntitySchema';
+import type { MetadataProvider } from '../metadata/MetadataProvider';
+import type { MetadataStorage } from '../metadata/MetadataStorage';
+import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider';
+import type { MikroORM } from '../MikroORM';
+import type { NamingStrategy } from '../naming-strategy';
+import type { Platform } from '../platforms';
+import type { Type } from '../types/Type';
 import type {
   AnyEntity,
   Constructor,
@@ -17,29 +32,12 @@ import type {
   MaybePromise,
   MigrationObject,
 } from '../typings';
-import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
-import { DefaultLogger, colors, type Logger, type LoggerNamespace, type LoggerOptions } from '../logging';
 import { Utils } from '../utils/Utils';
-import type { EntityManager } from '../EntityManager';
-import type { Platform } from '../platforms';
-import type { EntitySchema } from '../metadata/EntitySchema';
-import type { MetadataProvider } from '../metadata/MetadataProvider';
-import type { MetadataStorage } from '../metadata/MetadataStorage';
-import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider';
-import type { EventSubscriber } from '../events';
-import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
-import { NotFoundError } from '../errors';
-import { RequestContext } from './RequestContext';
-import { FlushMode, LoadStrategy, PopulateHint } from '../enums';
-import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
 import { EntityComparator } from './EntityComparator';
-import type { Type } from '../types/Type';
-import type { MikroORM } from '../MikroORM';
-
+import { RequestContext } from './RequestContext';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
-
   static readonly DEFAULTS: MikroORMOptions = {
     pool: {},
     entities: [],
@@ -64,8 +62,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     allowGlobalContext: false,
     // eslint-disable-next-line no-console
     logger: console.log.bind(console),
-    findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
-    findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findExactlyOneFailed(entityName, where),
+    findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) =>
+      NotFoundError.findOneFailed(entityName, where),
+    findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) =>
+      NotFoundError.findExactlyOneFailed(entityName, where),
     baseDir: process.cwd(),
     hydrator: ObjectHydrator,
     flushMode: FlushMode.AUTO,
@@ -272,20 +272,30 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets instance of metadata CacheAdapter. (cached)
    */
   getMetadataCacheAdapter(): SyncCacheAdapter {
-    return this.getCachedService(this.options.metadataCache.adapter!, this.options.metadataCache.options, this.options.baseDir, this.options.metadataCache.pretty);
+    return this.getCachedService(
+      this.options.metadataCache.adapter!,
+      this.options.metadataCache.options,
+      this.options.baseDir,
+      this.options.metadataCache.pretty,
+    );
   }
 
   /**
    * Gets instance of CacheAdapter for result cache. (cached)
    */
   getResultCacheAdapter(): CacheAdapter {
-    return this.getCachedService(this.options.resultCache.adapter!, { expiration: this.options.resultCache.expiration, ...this.options.resultCache.options });
+    return this.getCachedService(this.options.resultCache.adapter!, {
+      expiration: this.options.resultCache.expiration,
+      ...this.options.resultCache.options,
+    });
   }
 
   /**
    * Gets EntityRepository class to be instantiated.
    */
-  getRepositoryClass(repository: () => Constructor<EntityRepository<AnyEntity>>): MikroORMOptions<D>['entityRepository'] {
+  getRepositoryClass(
+    repository: () => Constructor<EntityRepository<AnyEntity>>,
+  ): MikroORMOptions<D>['entityRepository'] {
     if (repository) {
       return repository();
     }
@@ -300,7 +310,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Creates instance of given service and caches it.
    */
-  getCachedService<T extends { new(...args: any[]): InstanceType<T> }>(cls: T, ...args: ConstructorParameters<T>): InstanceType<T> {
+  getCachedService<T extends { new(...args: any[]): InstanceType<T> }>(
+    cls: T,
+    ...args: ConstructorParameters<T>
+  ): InstanceType<T> {
     if (!this.cache.has(cls.name)) {
       const Class = cls as { new(...args: any[]): T };
       this.cache.set(cls.name, new Class(...args));
@@ -388,11 +401,15 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
   private validateOptions(): void {
     if ('type' in this.options) {
-      throw new Error('The `type` option has been removed in v6, please fill in the `driver` option instead or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from \'@mikro-orm/mysql\'; export default defineConfig({ ... })`).');
+      throw new Error(
+        "The `type` option has been removed in v6, please fill in the `driver` option instead or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from '@mikro-orm/mysql'; export default defineConfig({ ... })`).",
+      );
     }
 
     if (!this.options.driver) {
-      throw new Error('No driver specified, please fill in the `driver` option or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from \'@mikro-orm/mysql\'; export defineConfig({ ... })`).');
+      throw new Error(
+        "No driver specified, please fill in the `driver` option or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from '@mikro-orm/mysql'; export defineConfig({ ... })`).",
+      );
     }
 
     if (!this.options.dbName && !this.options.clientUrl) {
@@ -403,7 +420,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       throw new Error('No entities found, please use `entities` option');
     }
   }
-
 }
 
 /**
@@ -578,5 +594,5 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
 }
 
 export type Options<D extends IDatabaseDriver = IDatabaseDriver> =
-  Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>>
+  & Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>>
   & Partial<MikroORMOptions<D>>;

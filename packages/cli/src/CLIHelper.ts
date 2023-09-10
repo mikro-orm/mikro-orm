@@ -1,13 +1,23 @@
+import {
+  colors,
+  type Configuration,
+  ConfigurationLoader,
+  type IDatabaseDriver,
+  MikroORM,
+  type Options,
+  Utils,
+} from '@mikro-orm/core';
 import { pathExists } from 'fs-extra';
 import yargs from 'yargs';
-import { colors, ConfigurationLoader, MikroORM, Utils, type Configuration, type IDatabaseDriver, type Options } from '@mikro-orm/core';
 
 /**
  * @internal
  */
 export class CLIHelper {
-
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(
+    validate = true,
+    options: Partial<Options> = {},
+  ): Promise<Configuration<D>> {
     const deps = await ConfigurationLoader.getORMPackages();
 
     if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI) {
@@ -117,10 +127,17 @@ export class CLIHelper {
 
     let ret = '';
     ret += colors.grey('┌' + lengths.map(length => '─'.repeat(length)).join('┬') + '┐\n');
-    ret += colors.grey('│') + lengths.map((length, idx) => ' ' + colors.red(options.columns[idx]) + ' '.repeat(length - options.columns[idx].length - 1)).join(colors.grey('│')) + colors.grey('│\n');
+    ret += colors.grey('│')
+      + lengths.map((length, idx) =>
+        ' ' + colors.red(options.columns[idx]) + ' '.repeat(length - options.columns[idx].length - 1)
+      ).join(colors.grey('│'))
+      + colors.grey('│\n');
     ret += colors.grey('├' + lengths.map(length => '─'.repeat(length)).join('┼') + '┤\n');
     options.rows.forEach(row => {
-      ret += colors.grey('│') + lengths.map((length, idx) => ' ' + row[idx] + ' '.repeat(length - row[idx].length - 1)).join(colors.grey('│')) + colors.grey('│\n');
+      ret += colors.grey('│') + lengths.map((length, idx) =>
+        ' ' + row[idx] + ' '.repeat(length - row[idx].length - 1)
+      ).join(colors.grey('│'))
+        + colors.grey('│\n');
     });
     ret += colors.grey('└' + lengths.map(length => '─'.repeat(length)).join('┴') + '┘');
 
@@ -131,5 +148,4 @@ export class CLIHelper {
   static showHelp() {
     yargs.showHelp();
   }
-
 }

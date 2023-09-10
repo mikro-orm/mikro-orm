@@ -1,13 +1,14 @@
-import { ensureDir, writeFile } from 'fs-extra';
-import { Utils, type IMigrationGenerator, type MigrationsOptions, type NamingStrategy } from '@mikro-orm/core';
+import { type IMigrationGenerator, type MigrationsOptions, type NamingStrategy, Utils } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
+import { ensureDir, writeFile } from 'fs-extra';
 
 /* istanbul ignore next */
 export abstract class MigrationGenerator implements IMigrationGenerator {
-
-  constructor(protected readonly driver: MongoDriver,
-              protected readonly namingStrategy: NamingStrategy,
-              protected readonly options: MigrationsOptions) { }
+  constructor(
+    protected readonly driver: MongoDriver,
+    protected readonly namingStrategy: NamingStrategy,
+    protected readonly options: MigrationsOptions,
+  ) {}
 
   /**
    * @inheritDoc
@@ -42,5 +43,4 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
    * @inheritDoc
    */
   abstract generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string;
-
 }

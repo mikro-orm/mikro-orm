@@ -1,16 +1,25 @@
 import { inspect } from 'util';
 
 import type { EntityManager } from '../EntityManager';
-import { EntityRepositoryType, OptionalProps, PrimaryKeyProp, type AnyEntity, type Dictionary, type EntityMetadata, type EntityProperty, type IHydrator, type EntityValue } from '../typings';
-import { EntityTransformer } from '../serialization/EntityTransformer';
-import { Reference } from './Reference';
-import { Utils } from '../utils/Utils';
-import { WrappedEntity } from './WrappedEntity';
 import { ReferenceKind } from '../enums';
+import { EntityTransformer } from '../serialization/EntityTransformer';
+import {
+  type AnyEntity,
+  type Dictionary,
+  type EntityMetadata,
+  type EntityProperty,
+  EntityRepositoryType,
+  type EntityValue,
+  type IHydrator,
+  OptionalProps,
+  PrimaryKeyProp,
+} from '../typings';
+import { Utils } from '../utils/Utils';
+import { Reference } from './Reference';
 import { helper } from './wrap';
+import { WrappedEntity } from './WrappedEntity';
 
 export class EntityHelper {
-
   static decorate<T extends object>(meta: EntityMetadata<T>, em: EntityManager): void {
     const fork = em.fork(); // use fork so we can access `EntityFactory`
     const serializedPrimaryKey = meta.props.find(p => p.serializedPrimaryKey);
@@ -48,7 +57,13 @@ export class EntityHelper {
    * property on the entity instance, so shadowing the prototype setter.
    */
   private static defineBaseProperties<T extends object>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
-    const helperParams = meta.embeddable || meta.virtual ? [] : [em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta)];
+    const helperParams = meta.embeddable || meta.virtual
+      ? []
+      : [
+        em.getComparator().getPkGetter(meta),
+        em.getComparator().getPkSerializer(meta),
+        em.getComparator().getPkGetterConverted(meta),
+      ];
     Object.defineProperties(prototype, {
       __entity: { value: !meta.embeddable },
       __meta: { value: meta },
@@ -82,7 +97,8 @@ export class EntityHelper {
       .values<EntityProperty<T>>(meta.properties)
       .forEach(prop => {
         const isCollection = [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind);
-        const isReference = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
+        const isReference = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind)
+          && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
         if (isReference) {
           Object.defineProperty(meta.prototype, prop.name, {
@@ -94,7 +110,10 @@ export class EntityHelper {
           return;
         }
 
-        if (prop.inherited || prop.primary || prop.persist === false || prop.trackChanges === false || prop.embedded || isCollection) {
+        if (
+          prop.inherited || prop.primary || prop.persist === false || prop.trackChanges === false || prop.embedded
+          || isCollection
+        ) {
           return;
         }
 
@@ -144,7 +163,12 @@ export class EntityHelper {
     };
   }
 
-  static defineReferenceProperty<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T>, ref: T, hydrator: IHydrator): void {
+  static defineReferenceProperty<T extends object>(
+    meta: EntityMetadata<T>,
+    prop: EntityProperty<T>,
+    ref: T,
+    hydrator: IHydrator,
+  ): void {
     const wrapped = helper(ref);
     Object.defineProperty(ref, prop.name, {
       get() {
@@ -169,7 +193,14 @@ export class EntityHelper {
     });
   }
 
-  static propagate<T extends object>(meta: EntityMetadata<T>, entity: T, owner: T, prop: EntityProperty<T>, value?: T[keyof T & string], old?: T): void {
+  static propagate<T extends object>(
+    meta: EntityMetadata<T>,
+    entity: T,
+    owner: T,
+    prop: EntityProperty<T>,
+    value?: T[keyof T & string],
+    old?: T,
+  ): void {
     const inverseProps = prop.targetMeta!.bidirectionalRelations
       .filter(prop2 => (prop2.inversedBy || prop2.mappedBy) === prop.name)
       .filter(prop2 => {
@@ -186,8 +217,8 @@ export class EntityHelper {
 
       if (prop.kind === ReferenceKind.ONE_TO_ONE && entity && helper(entity).__initialized) {
         if (
-          (value != null && Reference.unwrapReference(inverse!) !== owner) ||
-          (value == null && entity[prop2.name] != null)
+          (value != null && Reference.unwrapReference(inverse!) !== owner)
+          || (value == null && entity[prop2.name] != null)
         ) {
           EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old as T);
         }
@@ -195,11 +226,21 @@ export class EntityHelper {
     }
   }
 
-  private static propagateOneToOne<T extends object>(entity: T, owner: T, prop: EntityProperty<T>, prop2: EntityProperty<T>, value?: T[keyof T & string], old?: T): void {
+  private static propagateOneToOne<T extends object>(
+    entity: T,
+    owner: T,
+    prop: EntityProperty<T>,
+    prop2: EntityProperty<T>,
+    value?: T[keyof T & string],
+    old?: T,
+  ): void {
     helper(entity).__pk = helper(entity).getPrimaryKey()!;
 
     // the inverse side will be changed on the `value` too, so we need to clean-up and schedule orphan removal there too
-    if (!prop.primary && !prop2.mapToPk && value?.[prop2.name] != null && Reference.unwrapReference(value[prop2.name]!) !== entity) {
+    if (
+      !prop.primary && !prop2.mapToPk && value?.[prop2.name] != null
+      && Reference.unwrapReference(value[prop2.name]!) !== entity
+    ) {
       const other = Reference.unwrapReference(value![prop2.name]!);
       delete helper(other).__data[prop.name];
 
@@ -224,5 +265,4 @@ export class EntityHelper {
       delete helper(old).__data[prop2.name];
     }
   }
-
 }

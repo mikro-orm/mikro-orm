@@ -1,13 +1,12 @@
+import { BigIntType, type Connection, type Dictionary, EnumType, Utils } from '@mikro-orm/core';
 import type { Knex } from 'knex';
-import { BigIntType, EnumType, Utils, type Connection, type Dictionary } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 import type { CheckDef, Column, IndexDef, Table, TableDifference } from '../typings';
-import type { DatabaseTable } from './DatabaseTable';
 import type { DatabaseSchema } from './DatabaseSchema';
+import type { DatabaseTable } from './DatabaseTable';
 
 export abstract class SchemaHelper {
-
   constructor(protected readonly platform: AbstractSqlPlatform) {}
 
   getSchemaBeginning(charset: string): string {
@@ -34,12 +33,21 @@ export abstract class SchemaHelper {
     return true;
   }
 
-  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[] = [], tableName: string, schemaName?: string): Promise<string[]> {
+  async getPrimaryKeys(
+    connection: AbstractSqlConnection,
+    indexes: IndexDef[] = [],
+    tableName: string,
+    schemaName?: string,
+  ): Promise<string[]> {
     const pks = indexes.filter(i => i.primary).map(pk => pk.columnNames);
     return Utils.flatten(pks);
   }
 
-  async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
+  async getForeignKeys(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+  ): Promise<Dictionary> {
     const fks = await connection.execute<any[]>(this.getForeignKeysSQL(tableName, schemaName));
     return this.mapForeignKeys(fks, tableName, schemaName);
   }
@@ -59,7 +67,12 @@ export abstract class SchemaHelper {
     return unquote(t.table_name);
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
+  async getEnumDefinitions(
+    connection: AbstractSqlConnection,
+    checks: CheckDef[],
+    tableName: string,
+    schemaName?: string,
+  ): Promise<Dictionary<string[]>> {
     return {};
   }
 
@@ -71,7 +84,12 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void> {
+  async loadInformationSchema(
+    schema: DatabaseSchema,
+    connection: AbstractSqlConnection,
+    tables: Table[],
+    schemas?: string[],
+  ): Promise<void> {
     for (const t of tables) {
       const table = schema.addTable(t.table_name, t.schema_name);
       table.comment = t.table_comment;
@@ -109,7 +127,9 @@ export abstract class SchemaHelper {
     tableName = this.platform.quoteIdentifier(tableName);
     const keyName = this.platform.quoteIdentifier(index.keyName);
 
-    return `create index ${keyName} on ${tableName} (${index.columnNames.map(c => this.platform.quoteIdentifier(c)).join(', ')})`;
+    return `create index ${keyName} on ${tableName} (${
+      index.columnNames.map(c => this.platform.quoteIdentifier(c)).join(', ')
+    })`;
   }
 
   getDropIndexSQL(tableName: string, index: IndexDef): string {
@@ -117,7 +137,10 @@ export abstract class SchemaHelper {
   }
 
   getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {
-    return [this.getDropIndexSQL(tableName, { ...index, keyName: oldIndexName }), this.getCreateIndexSQL(tableName, index)].join(';\n');
+    return [
+      this.getDropIndexSQL(tableName, { ...index, keyName: oldIndexName }),
+      this.getCreateIndexSQL(tableName, index),
+    ].join(';\n');
   }
 
   hasNonDefaultPrimaryKeyName(table: DatabaseTable): boolean {
@@ -132,10 +155,18 @@ export abstract class SchemaHelper {
     return pkIndex?.keyName !== defaultName;
   }
 
-  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
+  createTableColumn(
+    table: Knex.TableBuilder,
+    column: Column,
+    fromTable: DatabaseTable,
+    changedProperties?: Set<string>,
+  ) {
     const compositePK = fromTable.getPrimaryKey()?.composite;
 
-    if (column.autoincrement && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
+    if (
+      column.autoincrement && !compositePK
+      && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))
+    ) {
       const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
 
       if (column.mappedType instanceof BigIntType) {
@@ -168,9 +199,15 @@ export abstract class SchemaHelper {
     const guard = (key: string) => !changedProperties || changedProperties.has(key);
 
     if (changedProperties) {
-      Utils.runIfNotEmpty(() => col.defaultTo(column.default == null ? null : knex.raw(column.default)), guard('default'));
+      Utils.runIfNotEmpty(
+        () => col.defaultTo(column.default == null ? null : knex.raw(column.default)),
+        guard('default'),
+      );
     } else {
-      Utils.runIfNotEmpty(() => col.defaultTo(knex.raw(column.default!)), column.default != null && column.default !== 'null');
+      Utils.runIfNotEmpty(
+        () => col.defaultTo(knex.raw(column.default!)),
+        column.default != null && column.default !== 'null',
+      );
     }
 
     return col;
@@ -200,7 +237,12 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string, columns?: Column[]): Promise<CheckDef[]> {
+  async getChecks(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName?: string,
+    columns?: Column[],
+  ): Promise<CheckDef[]> {
     throw new Error('Not supported by given driver');
   }
 
@@ -233,7 +275,9 @@ export abstract class SchemaHelper {
           columnNames: [fk.column_name],
           constraintName: fk.constraint_name,
           localTableName: schemaName ? `${schemaName}.${tableName}` : tableName,
-          referencedTableName: fk.referenced_schema_name ? `${fk.referenced_schema_name}.${fk.referenced_table_name}` : fk.referenced_table_name,
+          referencedTableName: fk.referenced_schema_name
+            ? `${fk.referenced_schema_name}.${fk.referenced_table_name}`
+            : fk.referenced_table_name,
           referencedColumnNames: [fk.referenced_column_name],
           updateRule: fk.update_rule.toLowerCase(),
           deleteRule: fk.delete_rule.toLowerCase(),
@@ -244,7 +288,11 @@ export abstract class SchemaHelper {
     }, {});
   }
 
-  normalizeDefaultValue(defaultValue: string, length?: number, defaultValues: Dictionary<string[]> = {}): string | number {
+  normalizeDefaultValue(
+    defaultValue: string,
+    length?: number,
+    defaultValues: Dictionary<string[]> = {},
+  ): string | number {
     if (defaultValue == null) {
       return defaultValue;
     }
@@ -302,5 +350,4 @@ export abstract class SchemaHelper {
   pushTableQuery(table: Knex.TableBuilder, expression: string, grouping = 'alterTable'): void {
     (table as Dictionary)._statements.push({ grouping, method: 'raw', args: [expression] });
   }
-
 }

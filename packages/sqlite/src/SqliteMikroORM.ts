@@ -1,11 +1,10 @@
-import { defineConfig, MikroORM, type Options, type IDatabaseDriver } from '@mikro-orm/core';
+import { defineConfig, type IDatabaseDriver, MikroORM, type Options } from '@mikro-orm/core';
 import { SqliteDriver } from './SqliteDriver';
 
 /**
  * @inheritDoc
  */
 export class SqliteMikroORM extends MikroORM<SqliteDriver> {
-
   private static DRIVER = SqliteDriver;
 
   /**
@@ -21,7 +20,6 @@ export class SqliteMikroORM extends MikroORM<SqliteDriver> {
   static override initSync<D extends IDatabaseDriver = SqliteDriver>(options: Options<D>): MikroORM<D> {
     return super.initSync(options);
   }
-
 }
 
 export type SqliteOptions = Options<SqliteDriver>;

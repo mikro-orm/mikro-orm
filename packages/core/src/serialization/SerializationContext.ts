@@ -1,8 +1,8 @@
-import type { AnyEntity, EntityMetadata, PopulateOptions } from '../typings';
 import type { Collection } from '../entity/Collection';
-import { Utils } from '../utils/Utils';
 import { helper } from '../entity/wrap';
+import type { AnyEntity, EntityMetadata, PopulateOptions } from '../typings';
 import type { Configuration } from '../utils/Configuration';
+import { Utils } from '../utils/Utils';
 
 /**
  * Helper that allows to keep track of where we are currently at when serializing complex entity graph with cycles.
@@ -10,14 +10,15 @@ import type { Configuration } from '../utils/Configuration';
  * are defined in populate hint). If not, we proceed and call `leave` afterwards.
  */
 export class SerializationContext<T> {
-
   readonly path: [string, string][] = [];
   readonly visited = new Set<AnyEntity>();
   private entities = new Set<AnyEntity>();
 
-  constructor(private readonly config: Configuration,
-              private readonly populate: PopulateOptions<T>[] = [],
-              private readonly fields?: string[]) {}
+  constructor(
+    private readonly config: Configuration,
+    private readonly populate: PopulateOptions<T>[] = [],
+    private readonly fields?: string[],
+  ) {}
 
   /**
    * Returns true when there is a cycle detected.
@@ -55,7 +56,11 @@ export class SerializationContext<T> {
   /**
    * When initializing new context, we need to propagate it to the whole entity graph recursively.
    */
-  static propagate(root: SerializationContext<AnyEntity>, entity: AnyEntity, isVisible: (meta: EntityMetadata, prop: string) => boolean): void {
+  static propagate(
+    root: SerializationContext<AnyEntity>,
+    entity: AnyEntity,
+    isVisible: (meta: EntityMetadata, prop: string) => boolean,
+  ): void {
     root.register(entity);
     const meta = helper(entity).__meta;
 
@@ -122,5 +127,4 @@ export class SerializationContext<T> {
     helper(entity).__serializationContext.root = this;
     this.entities.add(entity);
   }
-
 }

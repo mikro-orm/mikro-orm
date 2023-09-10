@@ -1,14 +1,28 @@
-import { ObjectId } from 'bson';
 import {
- Platform, MongoNamingStrategy, Utils, ReferenceKind, MetadataError, type
-  IPrimaryKey, type Primary, type NamingStrategy, type Constructor, type EntityRepository, type EntityProperty, type
-  PopulateOptions, type EntityMetadata, type IDatabaseDriver, type EntityManager, type Configuration, type MikroORM } from '@mikro-orm/core';
-import { MongoExceptionConverter } from './MongoExceptionConverter';
+  type Configuration,
+  type Constructor,
+  type EntityManager,
+  type EntityMetadata,
+  type EntityProperty,
+  type EntityRepository,
+  type IDatabaseDriver,
+  type IPrimaryKey,
+  MetadataError,
+  type MikroORM,
+  MongoNamingStrategy,
+  type NamingStrategy,
+  Platform,
+  type PopulateOptions,
+  type Primary,
+  ReferenceKind,
+  Utils,
+} from '@mikro-orm/core';
+import { ObjectId } from 'bson';
 import { MongoEntityRepository } from './MongoEntityRepository';
+import { MongoExceptionConverter } from './MongoExceptionConverter';
 import { MongoSchemaGenerator } from './MongoSchemaGenerator';
 
 export class MongoPlatform extends Platform {
-
   protected override readonly exceptionConverter = new MongoExceptionConverter();
 
   override setConfig(config: Configuration) {
@@ -17,7 +31,7 @@ export class MongoPlatform extends Platform {
     super.setConfig(config);
   }
 
-  override getNamingStrategy(): { new(): NamingStrategy} {
+  override getNamingStrategy(): { new(): NamingStrategy } {
     return MongoNamingStrategy;
   }
 
@@ -35,7 +49,9 @@ export class MongoPlatform extends Platform {
     return new MongoSchemaGenerator(em ?? driver as any);
   }
 
-  override normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
+  override normalizePrimaryKey<T extends number | string = number | string>(
+    data: Primary<T> | IPrimaryKey | ObjectId,
+  ): T {
     if (data instanceof ObjectId) {
       return data.toHexString() as T;
     }
@@ -101,5 +117,4 @@ export class MongoPlatform extends Platform {
   override isAllowedTopLevelOperator(operator: string) {
     return ['$not', '$fulltext'].includes(operator);
   }
-
 }

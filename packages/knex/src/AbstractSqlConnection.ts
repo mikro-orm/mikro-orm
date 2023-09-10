@@ -1,20 +1,20 @@
-import { knex, type Knex } from 'knex';
-import { readFile } from 'fs-extra';
 import {
-  Connection,
-  EventType,
-  Utils,
   type AnyEntity,
   type Configuration,
+  Connection,
   type ConnectionOptions,
   type EntityData,
+  EventType,
   type IsolationLevel,
+  type LogContext,
+  type LoggingOptions,
   type QueryResult,
   type Transaction,
   type TransactionEventBroadcaster,
-  type LogContext,
-  type LoggingOptions,
+  Utils,
 } from '@mikro-orm/core';
+import { readFile } from 'fs-extra';
+import { type Knex, knex } from 'knex';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { MonkeyPatchable } from './MonkeyPatchable';
 
@@ -25,7 +25,6 @@ function isRootTransaction<T>(trx: Transaction<T>) {
 }
 
 export abstract class AbstractSqlConnection extends Connection {
-
   private static __patched = false;
   protected override platform!: AbstractSqlPlatform;
   protected client!: Knex;
@@ -64,7 +63,15 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  override async transactional<T>(cb: (trx: Transaction<Knex.Transaction>) => Promise<T>, options: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<T> {
+  override async transactional<T>(
+    cb: (trx: Transaction<Knex.Transaction>) => Promise<T>,
+    options: {
+      isolationLevel?: IsolationLevel;
+      readOnly?: boolean;
+      ctx?: Knex.Transaction;
+      eventBroadcaster?: TransactionEventBroadcaster;
+    } = {},
+  ): Promise<T> {
     const trx = await this.begin(options);
 
     try {
@@ -78,7 +85,14 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  override async begin(options: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
+  override async begin(
+    options: {
+      isolationLevel?: IsolationLevel;
+      readOnly?: boolean;
+      ctx?: Knex.Transaction;
+      eventBroadcaster?: TransactionEventBroadcaster;
+    } = {},
+  ): Promise<Knex.Transaction> {
     if (!options.ctx) {
       await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
     }
@@ -126,11 +140,17 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, logging?: LoggingOptions): Promise<T> {
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
+    queryOrKnex: string | Knex.QueryBuilder | Knex.Raw,
+    params: unknown[] = [],
+    method: 'all' | 'get' | 'run' = 'all',
+    ctx?: Transaction,
+    logging?: LoggingOptions,
+  ): Promise<T> {
     await this.ensureConnection();
 
     if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(queryOrKnex)) {
-      ctx ??= ((queryOrKnex as any).client.transacting ? queryOrKnex : null);
+      ctx ??= (queryOrKnex as any).client.transacting ? queryOrKnex : null;
       const q = queryOrKnex.toSQL();
       queryOrKnex = q.sql;
       params = q.bindings as any[];
@@ -255,5 +275,4 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   protected abstract transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T;
-
 }

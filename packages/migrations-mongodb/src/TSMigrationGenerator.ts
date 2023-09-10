@@ -1,7 +1,6 @@
 import { MigrationGenerator } from './MigrationGenerator';
 
 export class TSMigrationGenerator extends MigrationGenerator {
-
   /**
    * @inheritDoc
    */
@@ -24,5 +23,4 @@ export class TSMigrationGenerator extends MigrationGenerator {
 
     return ret;
   }
-
 }

@@ -1,12 +1,11 @@
-import { Type } from './Type';
 import type { Platform } from '../platforms';
 import type { EntityProperty } from '../typings';
+import { Type } from './Type';
 
 /**
  * This type will automatically convert string values returned from the database to native JS bigints.
  */
 export class BigIntType extends Type<string | bigint | null | undefined, string | null | undefined> {
-
   override convertToDatabaseValue(value: string | bigint | null | undefined): string | null | undefined {
     if (value == null) {
       return value as null | undefined;
@@ -30,5 +29,4 @@ export class BigIntType extends Type<string | bigint | null | undefined, string 
   override compareAsType(): string {
     return 'string';
   }
-
 }

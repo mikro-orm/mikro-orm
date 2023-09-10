@@ -1,11 +1,11 @@
 export * from '@mikro-orm/knex';
 export * from './SqliteConnection';
 export * from './SqliteDriver';
-export * from './SqlitePlatform';
-export * from './SqliteSchemaHelper';
 export * from './SqliteExceptionConverter';
 export {
+  defineSqliteConfig as defineConfig,
   SqliteMikroORM as MikroORM,
   SqliteOptions as Options,
-  defineSqliteConfig as defineConfig,
 } from './SqliteMikroORM';
+export * from './SqlitePlatform';
+export * from './SqliteSchemaHelper';

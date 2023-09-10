@@ -1,13 +1,11 @@
-import type { Configuration, Transaction, EntityName } from '@mikro-orm/core';
+import type { Configuration, EntityName, Transaction } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
-import type { Collection, ClientSession, Document } from 'mongodb';
+import type { ClientSession, Collection, Document } from 'mongodb';
 
 export abstract class Migration {
-
   protected ctx?: Transaction<ClientSession>;
 
-  constructor(protected readonly driver: MongoDriver,
-              protected readonly config: Configuration) { }
+  constructor(protected readonly driver: MongoDriver, protected readonly config: Configuration) {}
 
   abstract up(): Promise<void>;
 
@@ -30,5 +28,4 @@ export abstract class Migration {
   getCollection<T extends Document>(entityName: EntityName<any>): Collection<T> {
     return this.driver.getConnection().getCollection(entityName);
   }
-
 }

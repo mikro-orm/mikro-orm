@@ -1,12 +1,10 @@
+import { type ConnectionType, type EntityName, EntityRepository } from '@mikro-orm/core';
 import type { Knex } from 'knex';
-import { EntityRepository, type ConnectionType, type EntityName } from '@mikro-orm/core';
-import type { SqlEntityManager } from './SqlEntityManager';
 import type { QueryBuilder } from './query';
+import type { SqlEntityManager } from './SqlEntityManager';
 
 export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
-
-  constructor(protected override readonly em: SqlEntityManager,
-              entityName: EntityName<T>) {
+  constructor(protected override readonly em: SqlEntityManager, entityName: EntityName<T>) {
     super(em, entityName);
   }
 
@@ -37,5 +35,4 @@ export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
   override getEntityManager(): SqlEntityManager {
     return this.em;
   }
-
 }

@@ -1,18 +1,33 @@
-import { ReferenceKind, Utils, ValidationError, type Dictionary, type EntityMetadata, type MetadataStorage, type EntityKey } from '@mikro-orm/core';
-import { ObjectCriteriaNode } from './ObjectCriteriaNode';
-import { ArrayCriteriaNode } from './ArrayCriteriaNode';
-import { ScalarCriteriaNode } from './ScalarCriteriaNode';
-import { CriteriaNode } from './CriteriaNode';
+import {
+  type Dictionary,
+  type EntityKey,
+  type EntityMetadata,
+  type MetadataStorage,
+  ReferenceKind,
+  Utils,
+  ValidationError,
+} from '@mikro-orm/core';
 import type { ICriteriaNode } from '../typings';
+import { ArrayCriteriaNode } from './ArrayCriteriaNode';
+import { CriteriaNode } from './CriteriaNode';
+import { ObjectCriteriaNode } from './ObjectCriteriaNode';
+import { ScalarCriteriaNode } from './ScalarCriteriaNode';
 
 /**
  * @internal
  */
 export class CriteriaNodeFactory {
-
-  static createNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
+  static createNode<T extends object>(
+    metadata: MetadataStorage,
+    entityName: string,
+    payload: any,
+    parent?: ICriteriaNode<T>,
+    key?: EntityKey<T>,
+  ): ICriteriaNode<T> {
     const customExpression = CriteriaNode.isCustomExpression(key || '');
-    const scalar = Utils.isPrimaryKey(payload) || Utils.isRawSql(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
+    const scalar = Utils.isPrimaryKey(payload) || Utils.isRawSql(payload) || payload as unknown instanceof RegExp
+      || payload as unknown instanceof Date
+      || customExpression;
 
     if (Array.isArray(payload) && !scalar) {
       return this.createArrayNode(metadata, entityName, payload, parent, key);
@@ -25,14 +40,26 @@ export class CriteriaNodeFactory {
     return this.createScalarNode(metadata, entityName, payload, parent, key);
   }
 
-  static createScalarNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
+  static createScalarNode<T extends object>(
+    metadata: MetadataStorage,
+    entityName: string,
+    payload: any,
+    parent?: ICriteriaNode<T>,
+    key?: EntityKey<T>,
+  ): ICriteriaNode<T> {
     const node = new ScalarCriteriaNode<T>(metadata, entityName, parent, key);
     node.payload = payload;
 
     return node;
   }
 
-  static createArrayNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any[], parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
+  static createArrayNode<T extends object>(
+    metadata: MetadataStorage,
+    entityName: string,
+    payload: any[],
+    parent?: ICriteriaNode<T>,
+    key?: EntityKey<T>,
+  ): ICriteriaNode<T> {
     const node = new ArrayCriteriaNode<T>(metadata, entityName, parent, key);
     node.payload = payload.map((item, index) => {
       const n = this.createNode(metadata, entityName, item, node);
@@ -44,7 +71,13 @@ export class CriteriaNodeFactory {
     return node;
   }
 
-  static createObjectNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: Dictionary, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
+  static createObjectNode<T extends object>(
+    metadata: MetadataStorage,
+    entityName: string,
+    payload: Dictionary,
+    parent?: ICriteriaNode<T>,
+    key?: EntityKey<T>,
+  ): ICriteriaNode<T> {
     const meta = metadata.find(entityName);
 
     const node = new ObjectCriteriaNode(metadata, entityName, parent, key);
@@ -56,7 +89,14 @@ export class CriteriaNodeFactory {
     return node;
   }
 
-  static createObjectItemNode<T extends object>(metadata: MetadataStorage, entityName: string, node: ICriteriaNode<T>, payload: Dictionary, key: EntityKey<T>, meta?: EntityMetadata<T>) {
+  static createObjectItemNode<T extends object>(
+    metadata: MetadataStorage,
+    entityName: string,
+    node: ICriteriaNode<T>,
+    payload: Dictionary,
+    key: EntityKey<T>,
+    meta?: EntityMetadata<T>,
+  ) {
     const prop = meta?.properties[key];
 
     if (prop?.kind !== ReferenceKind.EMBEDDED) {
@@ -81,5 +121,4 @@ export class CriteriaNodeFactory {
 
     return this.createNode(metadata, entityName, map, node, key);
   }
-
 }

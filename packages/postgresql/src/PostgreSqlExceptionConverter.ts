@@ -1,11 +1,20 @@
 import {
-  DeadlockException, ExceptionConverter, ForeignKeyConstraintViolationException, InvalidFieldNameException,
-  NonUniqueFieldNameException, NotNullConstraintViolationException, SyntaxErrorException, TableExistsException,
-  TableNotFoundException, UniqueConstraintViolationException, CheckConstraintViolationException, type Dictionary, type DriverException,
+  CheckConstraintViolationException,
+  DeadlockException,
+  type Dictionary,
+  type DriverException,
+  ExceptionConverter,
+  ForeignKeyConstraintViolationException,
+  InvalidFieldNameException,
+  NonUniqueFieldNameException,
+  NotNullConstraintViolationException,
+  SyntaxErrorException,
+  TableExistsException,
+  TableNotFoundException,
+  UniqueConstraintViolationException,
 } from '@mikro-orm/core';
 
 export class PostgreSqlExceptionConverter extends ExceptionConverter {
-
   /* istanbul ignore next */
   /**
    * @link http://www.postgresql.org/docs/9.4/static/errcodes-appendix.html
@@ -46,5 +55,4 @@ export class PostgreSqlExceptionConverter extends ExceptionConverter {
 
     return super.convertException(exception);
   }
-
 }

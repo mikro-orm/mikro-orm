@@ -7,8 +7,8 @@ require('@jercle/yargonaut')
   .helpStyle('green')
   .errorsStyle('red');
 
-import { CLIHelper } from './CLIHelper';
 import { CLIConfigurator } from './CLIConfigurator';
+import { CLIHelper } from './CLIHelper';
 
 (async () => {
   const argv = await CLIConfigurator.configure();

@@ -1,23 +1,24 @@
 import { URL } from 'url';
-import type { Configuration, ConnectionOptions, DynamicPassword } from '../utils';
+import type { IsolationLevel } from '../enums';
+import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster';
 import type { LogContext } from '../logging';
 import type { MetadataStorage } from '../metadata';
-import type { ConnectionType, Dictionary, MaybePromise, Primary } from '../typings';
 import type { Platform } from '../platforms/Platform';
-import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster';
-import type { IsolationLevel } from '../enums';
+import type { ConnectionType, Dictionary, MaybePromise, Primary } from '../typings';
+import type { Configuration, ConnectionOptions, DynamicPassword } from '../utils';
 
 export abstract class Connection {
-
   protected metadata!: MetadataStorage;
   protected platform!: Platform;
   protected readonly options: ConnectionOptions;
   protected readonly logger = this.config.getLogger();
   protected connected = false;
 
-  constructor(protected readonly config: Configuration,
-              options?: ConnectionOptions,
-              protected readonly type: ConnectionType = 'write') {
+  constructor(
+    protected readonly config: Configuration,
+    options?: ConnectionOptions,
+    protected readonly type: ConnectionType = 'write',
+  ) {
     if (options) {
       this.options = options;
     } else {
@@ -62,11 +63,26 @@ export abstract class Connection {
    */
   abstract getDefaultClientUrl(): string;
 
-  async transactional<T>(cb: (trx: Transaction) => Promise<T>, options?: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<T> {
+  async transactional<T>(
+    cb: (trx: Transaction) => Promise<T>,
+    options?: {
+      isolationLevel?: IsolationLevel;
+      readOnly?: boolean;
+      ctx?: Transaction;
+      eventBroadcaster?: TransactionEventBroadcaster;
+    },
+  ): Promise<T> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async begin(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<Transaction> {
+  async begin(
+    options?: {
+      isolationLevel?: IsolationLevel;
+      readOnly?: boolean;
+      ctx?: Transaction;
+      eventBroadcaster?: TransactionEventBroadcaster;
+    },
+  ): Promise<Transaction> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
@@ -78,7 +94,12 @@ export abstract class Connection {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  abstract execute<T>(query: string, params?: any[], method?: 'all' | 'get' | 'run', ctx?: Transaction): Promise<QueryResult<T> | any | any[]>;
+  abstract execute<T>(
+    query: string,
+    params?: any[],
+    method?: 'all' | 'get' | 'run',
+    ctx?: Transaction,
+  ): Promise<QueryResult<T> | any | any[]>;
 
   getConnectionOptions(): ConnectionConfig {
     const ret: ConnectionConfig = {};
@@ -86,8 +107,10 @@ export abstract class Connection {
     this.options.host = ret.host = this.options.host ?? this.config.get('host', decodeURIComponent(url.hostname));
     this.options.port = ret.port = this.options.port ?? this.config.get('port', +url.port);
     this.options.user = ret.user = this.options.user ?? this.config.get('user', decodeURIComponent(url.username));
-    this.options.password = ret.password = this.options.password ?? this.config.get('password', decodeURIComponent(url.password));
-    this.options.dbName = ret.database = this.options.dbName ?? this.config.get('dbName', decodeURIComponent(url.pathname).replace(/^\//, ''));
+    this.options.password = ret.password = this.options.password
+      ?? this.config.get('password', decodeURIComponent(url.password));
+    this.options.dbName = ret.database = this.options.dbName
+      ?? this.config.get('dbName', decodeURIComponent(url.pathname).replace(/^\//, ''));
 
     return ret;
   }
@@ -116,7 +139,11 @@ export abstract class Connection {
 
     try {
       const res = await cb();
-      this.logQuery(query, { ...context, took: Date.now() - now, results: Array.isArray(res) ? res.length : undefined });
+      this.logQuery(query, {
+        ...context,
+        took: Date.now() - now,
+        results: Array.isArray(res) ? res.length : undefined,
+      });
 
       return res;
     } catch (e) {
@@ -136,7 +163,6 @@ export abstract class Connection {
       query,
     });
   }
-
 }
 
 export interface QueryResult<T = { id: number }> {

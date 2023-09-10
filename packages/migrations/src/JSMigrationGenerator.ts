@@ -1,7 +1,6 @@
 import { MigrationGenerator } from './MigrationGenerator';
 
 export class JSMigrationGenerator extends MigrationGenerator {
-
   /**
    * @inheritDoc
    */
@@ -26,5 +25,4 @@ export class JSMigrationGenerator extends MigrationGenerator {
 
     return ret;
   }
-
 }

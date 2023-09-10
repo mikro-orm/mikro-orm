@@ -1,5 +1,5 @@
-import type { Dictionary, EntityProperty } from '../typings';
 import { ReferenceKind } from '../enums';
+import type { Dictionary, EntityProperty } from '../typings';
 
 export const enum NodeState {
   NOT_VISITED = 0,
@@ -30,7 +30,6 @@ export interface Edge {
  * @internal
  */
 export class CommitOrderCalculator {
-
   /** Matrix of nodes, keys are provided hashes and values are the node definition objects. */
   private nodes: Dictionary<Node> = {};
 
@@ -59,7 +58,8 @@ export class CommitOrderCalculator {
   }
 
   discoverProperty(prop: EntityProperty, entityName: string): void {
-    const toOneOwner = (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner) || prop.kind === ReferenceKind.MANY_TO_ONE;
+    const toOneOwner = (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner)
+      || prop.kind === ReferenceKind.MANY_TO_ONE;
     const toManyOwner = prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && !prop.pivotEntity;
 
     if (!toOneOwner && !toManyOwner) {
@@ -109,9 +109,13 @@ export class CommitOrderCalculator {
       const target = this.nodes[edge.to];
 
       switch (target.state) {
-        case NodeState.VISITED: break; // Do nothing, since node was already visited
-        case NodeState.IN_PROGRESS: this.visitOpenNode(node, target, edge); break;
-        case NodeState.NOT_VISITED: this.visit(target);
+        case NodeState.VISITED:
+          break; // Do nothing, since node was already visited
+        case NodeState.IN_PROGRESS:
+          this.visitOpenNode(node, target, edge);
+          break;
+        case NodeState.NOT_VISITED:
+          this.visit(target);
       }
     }
 
@@ -140,5 +144,4 @@ export class CommitOrderCalculator {
     target.state = NodeState.VISITED;
     this.sortedNodeList.push(target.hash);
   }
-
 }

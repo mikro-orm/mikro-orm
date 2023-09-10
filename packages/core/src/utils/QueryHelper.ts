@@ -1,5 +1,9 @@
 import { Reference } from '../entity/Reference';
-import { Utils } from './Utils';
+import { helper } from '../entity/wrap';
+import { ARRAY_OPERATORS, GroupOperator, ReferenceKind } from '../enums';
+import type { MetadataStorage } from '../metadata/MetadataStorage';
+import type { Platform } from '../platforms';
+import { JsonType } from '../types/JsonType';
 import type {
   Dictionary,
   EntityKey,
@@ -10,14 +14,9 @@ import type {
   FilterKey,
   FilterQuery,
 } from '../typings';
-import { ARRAY_OPERATORS, GroupOperator, ReferenceKind } from '../enums';
-import type { Platform } from '../platforms';
-import type { MetadataStorage } from '../metadata/MetadataStorage';
-import { JsonType } from '../types/JsonType';
-import { helper } from '../entity/wrap';
+import { Utils } from './Utils';
 
 export class QueryHelper {
-
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!='];
 
   static processParams(params: unknown): any {
@@ -56,7 +55,12 @@ export class QueryHelper {
     return params;
   }
 
-  static inlinePrimaryKeyObjects<T extends object>(where: Dictionary, meta: EntityMetadata<T>, metadata: MetadataStorage, key?: string): boolean {
+  static inlinePrimaryKeyObjects<T extends object>(
+    where: Dictionary,
+    meta: EntityMetadata<T>,
+    metadata: MetadataStorage,
+    key?: string,
+  ): boolean {
     if (Array.isArray(where)) {
       where.forEach((item, i) => {
         if (this.inlinePrimaryKeyObjects(item, meta, metadata, key)) {
@@ -70,17 +74,30 @@ export class QueryHelper {
     }
 
     if (meta.primaryKeys.every(pk => pk in where) && Utils.getObjectKeysSize(where) === meta.primaryKeys.length) {
-      return !!key && !GroupOperator[key as keyof typeof GroupOperator] && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => {
-        if (Utils.isOperator(v, false)) {
-          return false;
-        }
+      return !!key && !GroupOperator[key as keyof typeof GroupOperator]
+        && Object.keys(where).every(k =>
+          !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => {
+            if (Utils.isOperator(v, false)) {
+              return false;
+            }
 
-        if (meta.properties[k as EntityKey<T>].primary && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(meta.properties[k as EntityKey<T>].kind)) {
-          return this.inlinePrimaryKeyObjects(where[k], meta.properties[k as EntityKey<T>].targetMeta!, metadata, v);
-        }
+            if (
+              meta.properties[k as EntityKey<T>].primary
+              && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(
+                meta.properties[k as EntityKey<T>].kind,
+              )
+            ) {
+              return this.inlinePrimaryKeyObjects(
+                where[k],
+                meta.properties[k as EntityKey<T>].targetMeta!,
+                metadata,
+                v,
+              );
+            }
 
-        return true;
-      }));
+            return true;
+          })
+        );
     }
 
     Object.keys(where).forEach(k => {
@@ -121,7 +138,13 @@ export class QueryHelper {
 
       // @ts-ignore
       // detect tuple comparison, use `$or` in case the number of constituents don't match
-      if (meta && !where.every(c => Utils.isPrimaryKey(c as unknown) || (Array.isArray(c) && c.length === meta.primaryKeys.length && c.every(i => Utils.isPrimaryKey(i))))) {
+      if (
+        meta
+        && !where.every(c =>
+          Utils.isPrimaryKey(c as unknown)
+          || (Array.isArray(c) && c.length === meta.primaryKeys.length && c.every(i => Utils.isPrimaryKey(i)))
+        )
+      ) {
         cond = { $or: where } as FilterQuery<T>;
       }
 
@@ -154,11 +177,23 @@ export class QueryHelper {
         value = QueryHelper.processCustomType<T>(prop, value, platform, undefined, true);
       }
 
-      if (prop?.customType instanceof JsonType && Utils.isPlainObject(value) && !platform.isRaw(value) && Object.keys(value)[0] !== '$eq') {
-        return this.processJsonCondition<T>(o as FilterQuery<T>, value as EntityValue<T>, [prop.fieldNames[0]] as EntityKey<T>[], platform, aliased);
+      if (
+        prop?.customType instanceof JsonType && Utils.isPlainObject(value) && !platform.isRaw(value)
+        && Object.keys(value)[0] !== '$eq'
+      ) {
+        return this.processJsonCondition<T>(
+          o as FilterQuery<T>,
+          value as EntityValue<T>,
+          [prop.fieldNames[0]] as EntityKey<T>[],
+          platform,
+          aliased,
+        );
       }
 
-      if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key) && !key.includes('?')) {
+      if (
+        Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key)
+        && !key.includes('?')
+      ) {
         if (platform.allowsComparingTuples()) {
           // comparing single composite key - use $eq instead of $in
           const op = !value.every(v => Array.isArray(v)) && composite ? '$eq' : '$in';
@@ -189,7 +224,11 @@ export class QueryHelper {
     }, {} as Dictionary) as FilterQuery<T>;
   }
 
-  static getActiveFilters(entityName: string, options: Dictionary<boolean | Dictionary> | string[] | boolean, filters: Dictionary<FilterDef>): FilterDef[] {
+  static getActiveFilters(
+    entityName: string,
+    options: Dictionary<boolean | Dictionary> | string[] | boolean,
+    filters: Dictionary<FilterDef>,
+  ): FilterDef[] {
     if (options === false) {
       return [];
     }
@@ -210,7 +249,12 @@ export class QueryHelper {
       });
   }
 
-  static isFilterActive(entityName: string, filterName: string, filter: FilterDef, options: Dictionary<boolean | Dictionary>): boolean {
+  static isFilterActive(
+    entityName: string,
+    filterName: string,
+    filter: FilterDef,
+    options: Dictionary<boolean | Dictionary>,
+  ): boolean {
     if (filter.entity && !filter.entity.includes(entityName)) {
       return false;
     }
@@ -222,7 +266,13 @@ export class QueryHelper {
     return filter.default || filterName in options;
   }
 
-  static processCustomType<T extends object>(prop: EntityProperty<T>, cond: FilterQuery<T>, platform: Platform, key?: string, fromQuery?: boolean): FilterQuery<T> {
+  static processCustomType<T extends object>(
+    prop: EntityProperty<T>,
+    cond: FilterQuery<T>,
+    platform: Platform,
+    key?: string,
+    fromQuery?: boolean,
+  ): FilterQuery<T> {
     if (Utils.isPlainObject(cond)) {
       return Utils.keys(cond).reduce((o, k) => {
         if (Utils.isOperator(k, true) || prop.referencedPKs?.includes(k)) {
@@ -236,7 +286,9 @@ export class QueryHelper {
     }
 
     if (Array.isArray(cond) && !(key && ARRAY_OPERATORS.includes(key))) {
-      return (cond as FilterQuery<T>[]).map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as unknown as FilterQuery<T>;
+      return (cond as FilterQuery<T>[]).map(v =>
+        QueryHelper.processCustomType(prop, v, platform, key, fromQuery)
+      ) as unknown as FilterQuery<T>;
     }
 
     if (platform.isRaw(cond)) {
@@ -250,7 +302,13 @@ export class QueryHelper {
     return !!QueryHelper.SUPPORTED_OPERATORS.find(op => key.includes(op));
   }
 
-  private static processJsonCondition<T extends object>(o: FilterQuery<T>, value: EntityValue<T>, path: EntityKey<T>[], platform: Platform, alias: boolean) {
+  private static processJsonCondition<T extends object>(
+    o: FilterQuery<T>,
+    value: EntityValue<T>,
+    path: EntityKey<T>[],
+    platform: Platform,
+    alias: boolean,
+  ) {
     if (Utils.isPlainObject<T>(value) && !Object.keys(value).some(k => Utils.isOperator(k))) {
       Utils.keys(value).forEach(k => {
         this.processJsonCondition<T>(o, value[k] as EntityValue<T>, [...path, k as EntityKey<T>], platform, alias);
@@ -281,7 +339,6 @@ export class QueryHelper {
 
     return meta?.properties[propName];
   }
-
 }
 
 interface ProcessWhereOptions<T> {

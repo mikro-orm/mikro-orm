@@ -1,11 +1,10 @@
-import { defineConfig, MikroORM, type Options, type IDatabaseDriver } from '@mikro-orm/core';
+import { defineConfig, type IDatabaseDriver, MikroORM, type Options } from '@mikro-orm/core';
 import { MySqlDriver } from './MySqlDriver';
 
 /**
  * @inheritDoc
  */
 export class MySqlMikroORM extends MikroORM<MySqlDriver> {
-
   private static DRIVER = MySqlDriver;
 
   /**
@@ -21,7 +20,6 @@ export class MySqlMikroORM extends MikroORM<MySqlDriver> {
   static override initSync<D extends IDatabaseDriver = MySqlDriver>(options: Options<D>): MikroORM<D> {
     return super.initSync(options);
   }
-
 }
 
 export type MySqlOptions = Options<MySqlDriver>;

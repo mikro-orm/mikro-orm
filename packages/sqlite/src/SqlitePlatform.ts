@@ -1,12 +1,11 @@
+import { type EntityProperty, JsonProperty, Utils } from '@mikro-orm/core';
+import { AbstractSqlPlatform } from '@mikro-orm/knex';
 // @ts-ignore
 import { escape } from 'sqlstring-sqlite';
-import { JsonProperty, Utils, type EntityProperty } from '@mikro-orm/core';
-import { AbstractSqlPlatform } from '@mikro-orm/knex';
-import { SqliteSchemaHelper } from './SqliteSchemaHelper';
 import { SqliteExceptionConverter } from './SqliteExceptionConverter';
+import { SqliteSchemaHelper } from './SqliteSchemaHelper';
 
 export class SqlitePlatform extends AbstractSqlPlatform {
-
   protected override readonly schemaHelper: SqliteSchemaHelper = new SqliteSchemaHelper(this);
   protected override readonly exceptionConverter = new SqliteExceptionConverter();
 
@@ -26,7 +25,9 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return 'datetime';
   }
 
-  override getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+  override getEnumTypeDeclarationSQL(
+    column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean },
+  ): string {
     if (column.items?.every(item => Utils.isString(item))) {
       return 'text';
     }
@@ -34,15 +35,21 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return this.getTinyIntTypeDeclarationSQL(column);
   }
 
-  override getTinyIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+  override getTinyIntTypeDeclarationSQL(
+    column: { length?: number; unsigned?: boolean; autoincrement?: boolean },
+  ): string {
     return this.getIntegerTypeDeclarationSQL(column);
   }
 
-  override getSmallIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+  override getSmallIntTypeDeclarationSQL(
+    column: { length?: number; unsigned?: boolean; autoincrement?: boolean },
+  ): string {
     return this.getIntegerTypeDeclarationSQL(column);
   }
 
-  override getIntegerTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+  override getIntegerTypeDeclarationSQL(
+    column: { length?: number; unsigned?: boolean; autoincrement?: boolean },
+  ): string {
     return 'integer';
   }
 
@@ -101,7 +108,11 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return escape(value, true, this.timezone);
   }
 
-  override getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+  override getIndexName(
+    tableName: string,
+    columns: string[],
+    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence',
+  ): string {
     if (type === 'primary') {
       return this.getDefaultPrimaryName(tableName, columns);
     }
@@ -120,5 +131,4 @@ export class SqlitePlatform extends AbstractSqlPlatform {
   override getFullTextWhereClause(): string {
     return `:column: match :query`;
   }
-
 }

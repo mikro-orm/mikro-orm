@@ -1,18 +1,19 @@
-import globby from 'globby';
 import { ensureDirSync, pathExistsSync, readFileSync, readJSONSync, unlinkSync, writeJSONSync } from 'fs-extra';
+import globby from 'globby';
 
-import type { SyncCacheAdapter } from './CacheAdapter';
-import { Utils } from '../utils/Utils';
 import type { Dictionary } from '../typings';
+import { Utils } from '../utils/Utils';
+import type { SyncCacheAdapter } from './CacheAdapter';
 
 export class FileCacheAdapter implements SyncCacheAdapter {
-
   private readonly VERSION = Utils.getORMVersion();
   private cache: Dictionary = {};
 
-  constructor(private readonly options: { cacheDir: string; combined?: boolean | string },
-              private readonly baseDir: string,
-              private readonly pretty = false) { }
+  constructor(
+    private readonly options: { cacheDir: string; combined?: boolean | string },
+    private readonly baseDir: string,
+    private readonly pretty = false,
+  ) {}
 
   /**
    * @inheritDoc
@@ -98,5 +99,4 @@ export class FileCacheAdapter implements SyncCacheAdapter {
 
     return Utils.hash(contents.toString() + this.VERSION);
   }
-
 }

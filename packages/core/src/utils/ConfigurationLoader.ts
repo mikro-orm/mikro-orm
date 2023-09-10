@@ -1,20 +1,22 @@
 import dotenv from 'dotenv';
 import { pathExists, pathExistsSync, realpath } from 'fs-extra';
-import { isAbsolute, join } from 'path';
 import { platform } from 'os';
+import { isAbsolute, join } from 'path';
 import { fileURLToPath } from 'url';
 import type { IDatabaseDriver } from '../drivers';
+import { colors } from '../logging/colors';
+import type { Dictionary } from '../typings';
 import { Configuration, type Options } from './Configuration';
 import { Utils } from './Utils';
-import type { Dictionary } from '../typings';
-import { colors } from '../logging/colors';
 
 /**
  * @internal
  */
 export class ConfigurationLoader {
-
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(
+    validate = true,
+    options: Partial<Options> = {},
+  ): Promise<Configuration<D>> {
     await this.commonJSCompat(options);
     this.registerDotenv(options);
     const paths = await this.getConfigPaths();
@@ -74,7 +76,9 @@ export class ConfigurationLoader {
     const config = await ConfigurationLoader.getPackageConfig();
     const settings = { ...config['mikro-orm'] };
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
-    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
+    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null
+      ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE)
+      : settings.useTsNode;
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
 
     if (process.env.MIKRO_ORM_CLI?.endsWith('.ts')) {
@@ -240,7 +244,12 @@ export class ConfigurationLoader {
 
     ret.schemaGenerator = {};
     read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);
-    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS', 'createForeignKeyConstraints', bool);
+    read(
+      ret.schemaGenerator,
+      'MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS',
+      'createForeignKeyConstraints',
+      bool,
+    );
     cleanup(ret, 'schemaGenerator');
 
     ret.seeder = {};
@@ -304,24 +313,29 @@ export class ConfigurationLoader {
 
     const deps = await this.getORMPackages();
     const exceptions = new Set(['nestjs', 'sql-highlighter', 'mongo-highlighter']);
-    const ormPackages = [...deps].filter(d => d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length)));
+    const ormPackages = [...deps].filter(d =>
+      d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length))
+    );
 
     for (const ormPackage of ormPackages) {
       const version = await this.getORMPackageVersion(ormPackage);
 
       if (version != null && version !== coreVersion) {
         throw new Error(
-          `Bad ${colors.cyan(ormPackage)} version ${colors.yellow('' + version)}.\n` +
-          `All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (${colors.green(coreVersion)}).\n` +
-          `Only exceptions are packages that don't live in the 'mikro-orm' repository: ${[...exceptions].join(', ')}.\n` +
-          `Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`,
+          `Bad ${colors.cyan(ormPackage)} version ${colors.yellow('' + version)}.\n`
+            + `All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (${
+              colors.green(coreVersion)
+            }).\n`
+            + `Only exceptions are packages that don't live in the 'mikro-orm' repository: ${
+              [...exceptions].join(', ')
+            }.\n`
+            + `Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`,
         );
       }
     }
 
     return coreVersion;
   }
-
 }
 
 export interface Settings {

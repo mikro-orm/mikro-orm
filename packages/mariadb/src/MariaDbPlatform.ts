@@ -1,10 +1,9 @@
+import { type Dictionary, type SimpleColumnMeta, type Type, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
-import { MariaDbSchemaHelper } from './MariaDbSchemaHelper';
 import { MariaDbExceptionConverter } from './MariaDbExceptionConverter';
-import { Utils, type SimpleColumnMeta, type Dictionary, type Type } from '@mikro-orm/core';
+import { MariaDbSchemaHelper } from './MariaDbSchemaHelper';
 
 export class MariaDbPlatform extends AbstractSqlPlatform {
-
   protected override readonly schemaHelper: MariaDbSchemaHelper = new MariaDbSchemaHelper(this);
   protected override readonly exceptionConverter = new MariaDbExceptionConverter();
 
@@ -38,7 +37,11 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
    * Returns the default name of index for the given columns
    * cannot go past 64 character length for identifiers in MySQL
    */
-  override getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+  override getIndexName(
+    tableName: string,
+    columns: string[],
+    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence',
+  ): string {
     if (type === 'primary') {
       return this.getDefaultPrimaryName(tableName, columns);
     }
@@ -65,7 +68,12 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
     return `match(:column:) against (:query in boolean mode)`;
   }
 
-  override getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+  override getFullTextIndexExpression(
+    indexName: string,
+    schemaName: string | undefined,
+    tableName: string,
+    columns: SimpleColumnMeta[],
+  ): string {
     /* istanbul ignore next */
     const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
     const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
@@ -73,5 +81,4 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
 
     return `alter table ${quotedTableName} add fulltext index ${quotedIndexName}(${quotedColumnNames.join(',')})`;
   }
-
 }

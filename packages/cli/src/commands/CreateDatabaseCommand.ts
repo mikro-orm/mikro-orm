@@ -1,10 +1,9 @@
-import type { ArgumentsCamelCase, CommandModule } from 'yargs';
 import type { MikroORM } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { ArgumentsCamelCase, CommandModule } from 'yargs';
 import { CLIHelper } from '../CLIHelper';
 
 export class CreateDatabaseCommand implements CommandModule {
-
   command = 'database:create';
   describe = 'Create your database if it does not exist';
 
@@ -19,5 +18,4 @@ export class CreateDatabaseCommand implements CommandModule {
 
     await orm.close(true);
   }
-
 }

@@ -1,8 +1,7 @@
-import type { CacheAdapter } from './CacheAdapter';
 import type { Dictionary } from '../typings';
+import type { CacheAdapter } from './CacheAdapter';
 
 export class GeneratedCacheAdapter implements CacheAdapter {
-
   private readonly data = new Map<string, { data: Dictionary }>();
 
   constructor(private readonly options: { data: Dictionary }) {
@@ -39,5 +38,4 @@ export class GeneratedCacheAdapter implements CacheAdapter {
   clear(): void {
     this.data.clear();
   }
-
 }

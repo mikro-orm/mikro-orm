@@ -1,12 +1,11 @@
-import { Reference, type Ref } from './Reference';
-import type { AutoPath, EntityData, EntityDTO, Loaded, LoadedReference, AddEager, EntityKey } from '../typings';
-import { EntityAssigner, type AssignOptions } from './EntityAssigner';
-import type { EntityLoaderOptions } from './EntityLoader';
 import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer';
+import type { AddEager, AutoPath, EntityData, EntityDTO, EntityKey, Loaded, LoadedReference } from '../typings';
+import { type AssignOptions, EntityAssigner } from './EntityAssigner';
+import type { EntityLoaderOptions } from './EntityLoader';
+import { type Ref, Reference } from './Reference';
 import { helper } from './wrap';
 
 export abstract class BaseEntity {
-
   isInitialized(): boolean {
     return helper(this).__initialized;
   }
@@ -32,8 +31,12 @@ export abstract class BaseEntity {
 
   toObject<Entity extends this = this>(): EntityDTO<Entity>;
   toObject<Entity extends this = this>(ignoreFields: never[]): EntityDTO<Entity>;
-  toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(ignoreFields: Ignored[]): Omit<EntityDTO<Entity>, Ignored>;
-  toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(ignoreFields?: Ignored[]): Omit<EntityDTO<Entity>, Ignored> {
+  toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(
+    ignoreFields: Ignored[],
+  ): Omit<EntityDTO<Entity>, Ignored>;
+  toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(
+    ignoreFields?: Ignored[],
+  ): Omit<EntityDTO<Entity>, Ignored> {
     return helper(this as Entity).toObject(ignoreFields!);
   }
 
@@ -41,7 +44,9 @@ export abstract class BaseEntity {
     return helper(this as Entity).toPOJO();
   }
 
-  serialize<Entity extends this = this, Hint extends string = never, Exclude extends string = never>(options?: SerializeOptions<Entity, Hint, Exclude>): EntityDTO<Loaded<Entity, Hint>> {
+  serialize<Entity extends this = this, Hint extends string = never, Exclude extends string = never>(
+    options?: SerializeOptions<Entity, Hint, Exclude>,
+  ): EntityDTO<Loaded<Entity, Hint>> {
     return EntitySerializer.serialize(this as Entity, options);
   }
 
@@ -49,7 +54,9 @@ export abstract class BaseEntity {
     return EntityAssigner.assign(this as Entity, data, options);
   }
 
-  init<Entity extends this = this, Populate extends string = never>(populated = true): Promise<Loaded<Entity, Populate>> {
+  init<Entity extends this = this, Populate extends string = never>(
+    populated = true,
+  ): Promise<Loaded<Entity, Populate>> {
     return helper(this as Entity).init<Populate>(populated);
   }
 
@@ -60,7 +67,6 @@ export abstract class BaseEntity {
   setSchema(schema?: string): void {
     helper(this).setSchema(schema);
   }
-
 }
 
 Object.defineProperty(BaseEntity.prototype, '__baseEntity', { value: true, writable: false, enumerable: false });

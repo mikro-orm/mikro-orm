@@ -1,8 +1,8 @@
-import { MetadataStorage } from '../metadata';
 import { ReferenceKind } from '../enums';
-import type { PropertyOptions } from './Property';
-import type { EntityProperty, AnyEntity, Dictionary, EntityKey } from '../typings';
+import { MetadataStorage } from '../metadata';
+import type { AnyEntity, Dictionary, EntityKey, EntityProperty } from '../typings';
 import { Utils } from '../utils/Utils';
+import type { PropertyOptions } from './Property';
 
 export function Enum<T extends object>(options: EnumOptions<AnyEntity> | (() => Dictionary) = {}) {
   return function (target: AnyEntity, propertyName: string) {

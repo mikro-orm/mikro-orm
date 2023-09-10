@@ -1,12 +1,11 @@
+import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
+import { EntityManager } from '../EntityManager';
+import type { MetadataStorage } from '../metadata/MetadataStorage';
 import type { EntityMetadata, ISchemaGenerator } from '../typings';
 import { CommitOrderCalculator } from '../unit-of-work/CommitOrderCalculator';
-import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
-import type { MetadataStorage } from '../metadata/MetadataStorage';
 import type { Configuration } from './Configuration';
-import { EntityManager } from '../EntityManager';
 
 export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> implements ISchemaGenerator {
-
   protected readonly em?: ReturnType<D['createEntityManager']>;
   protected readonly driver: D;
   protected readonly config: Configuration;
@@ -121,5 +120,4 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   protected notImplemented(): never {
     throw new Error(`This method is not supported by ${this.driver.constructor.name} driver`);
   }
-
 }

@@ -1,11 +1,10 @@
-import type { LogContext, LoggerNamespace } from './Logger';
 import { DefaultLogger } from './DefaultLogger';
+import type { LogContext, LoggerNamespace } from './Logger';
 
 /**
  * A basic logger that provides fully formatted output without color
  */
 export class SimpleLogger extends DefaultLogger {
-
   /**
    * @inheritDoc
    */
@@ -31,5 +30,4 @@ export class SimpleLogger extends DefaultLogger {
 
     return this.log('query', context.query, context);
   }
-
 }

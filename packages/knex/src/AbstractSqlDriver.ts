@@ -1,4 +1,3 @@
-import type { Knex } from 'knex';
 import {
   type AnyEntity,
   type Collection,
@@ -20,11 +19,11 @@ import {
   type EntityName,
   type EntityProperty,
   type EntityValue,
+  type FilterKey,
   type FilterQuery,
   type FindByCursorOptions,
   type FindOneOptions,
   type FindOptions,
-  type FilterKey,
   getOnConflictFields,
   getOnConflictReturningFields,
   helper,
@@ -34,38 +33,46 @@ import {
   type LoggingOptions,
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
+  type OrderDefinition,
   type PopulateOptions,
   type Primary,
   QueryFlag,
   QueryHelper,
+  QueryOrder,
   type QueryOrderMap,
   type QueryResult,
   raw,
-  sql,
   ReferenceKind,
   type RequiredEntityData,
+  sql,
   type Transaction,
   type UpsertManyOptions,
   type UpsertOptions,
   Utils,
-  type OrderDefinition,
-  QueryOrder,
 } from '@mikro-orm/core';
+import type { Knex } from 'knex';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { QueryBuilder, QueryType } from './query';
 import { SqlEntityManager } from './SqlEntityManager';
 import type { Field } from './typings';
 
-export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection = AbstractSqlConnection, Platform extends AbstractSqlPlatform = AbstractSqlPlatform> extends DatabaseDriver<Connection> {
-
+export abstract class AbstractSqlDriver<
+  Connection extends AbstractSqlConnection = AbstractSqlConnection,
+  Platform extends AbstractSqlPlatform = AbstractSqlPlatform,
+> extends DatabaseDriver<Connection> {
   [EntityManagerType]!: SqlEntityManager<this>;
 
   protected override readonly connection: Connection;
   protected override readonly replicas: Connection[] = [];
   protected override readonly platform: Platform;
 
-  protected constructor(config: Configuration, platform: Platform, connection: Constructor<Connection>, connector: string[]) {
+  protected constructor(
+    config: Configuration,
+    platform: Platform,
+    connection: Constructor<Connection>,
+    connector: string[],
+  ) {
     super(config, connector);
     this.connection = new connection(this.config);
     this.replicas = this.createReplicas(conf => new connection(this.config, conf, 'read'));
@@ -76,11 +83,17 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return this.platform;
   }
 
-  override createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
+  override createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(
+    useContext?: boolean,
+  ): D[typeof EntityManagerType] {
     return new SqlEntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
-  async find<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P, F> = {}): Promise<EntityData<T>[]> {
+  async find<T extends object, P extends string = never, F extends string = '*'>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options: FindOptions<T, P, F> = {},
+  ): Promise<EntityData<T>[]> {
     options = { populate: [], orderBy: [], ...options };
     const meta = this.metadata.find<T>(entityName)!;
 
@@ -88,7 +101,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return this.findVirtual<T>(entityName, where, options);
     }
 
-    const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
+    const populate = this.autoJoinOneToOneOwner(
+      meta,
+      options.populate as unknown as PopulateOptions<T>[],
+      options.fields,
+    );
     const joinedProps = this.joinedProps(meta, populate);
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging);
     const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields as unknown as Field<T>[]);
@@ -141,7 +158,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return result;
   }
 
-  async findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F>): Promise<EntityData<T> | null> {
+  async findOne<T extends object, P extends string = never, F extends string = '*'>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options?: FindOneOptions<T, P, F>,
+  ): Promise<EntityData<T> | null> {
     const opts = { populate: [], ...(options || {}) } as FindOptions<T>;
     const meta = this.metadata.find(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, opts.populate as unknown as PopulateOptions<T>[], opts.fields);
@@ -161,7 +182,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res[0] || null;
   }
 
-  override async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<EntityData<T>[]> {
+  override async findVirtual<T extends object>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options: FindOptions<T, any, any>,
+  ): Promise<EntityData<T>[]> {
     const meta = this.metadata.get<T>(entityName);
 
     /* istanbul ignore next */
@@ -185,7 +210,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res as EntityData<T>[];
   }
 
-  override async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T>): Promise<number> {
+  override async countVirtual<T extends object>(
+    entityName: string,
+    where: FilterQuery<T>,
+    options: CountOptions<T>,
+  ): Promise<number> {
     const meta = this.metadata.get<T>(entityName);
 
     /* istanbul ignore next */
@@ -194,7 +223,13 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     if (typeof meta.expression === 'string') {
-      return this.wrapVirtualExpressionInSubquery(meta, meta.expression, where, options as Dictionary, QueryType.COUNT);
+      return this.wrapVirtualExpressionInSubquery(
+        meta,
+        meta.expression,
+        where,
+        options as Dictionary,
+        QueryType.COUNT,
+      );
     }
 
     const em = this.createEntityManager(false);
@@ -202,18 +237,52 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const res = meta.expression(em, where, options as Dictionary);
 
     if (res instanceof QueryBuilder) {
-      return this.wrapVirtualExpressionInSubquery(meta, res.getFormattedQuery(), where, options as Dictionary, QueryType.COUNT);
+      return this.wrapVirtualExpressionInSubquery(
+        meta,
+        res.getFormattedQuery(),
+        where,
+        options as Dictionary,
+        QueryType.COUNT,
+      );
     }
 
     /* istanbul ignore next */
     return res as any;
   }
 
-  protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any, any>, type: QueryType.COUNT): Promise<number>;
-  protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any, any>, type: QueryType.SELECT): Promise<T[]>;
-  protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<T[]>;
-  protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any, any>, type = QueryType.SELECT): Promise<unknown> {
-    const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes)
+  protected async wrapVirtualExpressionInSubquery<T extends object>(
+    meta: EntityMetadata<T>,
+    expression: string,
+    where: FilterQuery<T>,
+    options: FindOptions<T, any, any>,
+    type: QueryType.COUNT,
+  ): Promise<number>;
+  protected async wrapVirtualExpressionInSubquery<T extends object>(
+    meta: EntityMetadata<T>,
+    expression: string,
+    where: FilterQuery<T>,
+    options: FindOptions<T, any, any>,
+    type: QueryType.SELECT,
+  ): Promise<T[]>;
+  protected async wrapVirtualExpressionInSubquery<T extends object>(
+    meta: EntityMetadata<T>,
+    expression: string,
+    where: FilterQuery<T>,
+    options: FindOptions<T, any, any>,
+  ): Promise<T[]>;
+  protected async wrapVirtualExpressionInSubquery<T extends object>(
+    meta: EntityMetadata<T>,
+    expression: string,
+    where: FilterQuery<T>,
+    options: FindOptions<T, any, any>,
+    type = QueryType.SELECT,
+  ): Promise<unknown> {
+    const qb = this.createQueryBuilder(
+      meta.className,
+      options?.ctx,
+      options.connectionType,
+      options.convertCustomTypes,
+    )
       .limit(options?.limit, options?.offset)
       .indexHint(options.indexHint!)
       .comment(options.comments!)
@@ -243,7 +312,13 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res.map(row => this.mapResult(row, meta)!);
   }
 
-  override mapResult<T extends object>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], qb?: QueryBuilder<T>, map: Dictionary = {}): EntityData<T> | null {
+  override mapResult<T extends object>(
+    result: EntityData<T>,
+    meta: EntityMetadata<T>,
+    populate: PopulateOptions<T>[] = [],
+    qb?: QueryBuilder<T>,
+    map: Dictionary = {},
+  ): EntityData<T> | null {
     const ret = super.mapResult(result, meta);
 
     /* istanbul ignore if */
@@ -258,7 +333,15 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return ret;
   }
 
-  private mapJoinedProps<T extends object>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[], qb: QueryBuilder<T>, root: EntityData<T>, map: Dictionary, parentJoinPath?: string) {
+  private mapJoinedProps<T extends object>(
+    result: EntityData<T>,
+    meta: EntityMetadata<T>,
+    populate: PopulateOptions<T>[],
+    qb: QueryBuilder<T>,
+    root: EntityData<T>,
+    map: Dictionary,
+    parentJoinPath?: string,
+  ) {
     const joinedProps = this.joinedProps(meta, populate);
 
     joinedProps.forEach(p => {
@@ -276,9 +359,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
-      const hasPK = meta2.primaryKeys.every(pk => meta2.properties[pk].fieldNames.every(name => {
-        return root![`${relationAlias}__${name}` as EntityKey] != null;
-      }));
+      const hasPK = meta2.primaryKeys.every(pk =>
+        meta2.properties[pk].fieldNames.every(name => {
+          return root![`${relationAlias}__${name}` as EntityKey] != null;
+        })
+      );
 
       if (!hasPK) {
         // initialize empty collections
@@ -295,11 +380,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         .filter(prop => this.platform.shouldHaveColumn(prop, p.children as any || []))
         .forEach(prop => {
           if (prop.fieldNames.length > 1) { // composite keys
-            relationPojo[prop.name] = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as EntityValue<T>;
+            relationPojo[prop.name] = prop.fieldNames.map(name =>
+              root![`${relationAlias}__${name}` as EntityKey<T>]
+            ) as EntityValue<T>;
             prop.fieldNames.map(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
           } else if (prop.runtimeType === 'Date') {
             const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
-            relationPojo[prop.name] = (typeof root![alias] === 'string' ? new Date(root![alias] as string) : root![alias]) as EntityValue<T>;
+            relationPojo[prop.name] =
+              (typeof root![alias] === 'string' ? new Date(root![alias] as string) : root![alias]) as EntityValue<T>;
             delete root![alias];
           } else {
             const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
@@ -328,7 +416,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     });
   }
 
-  private appendToCollection<T extends object>(meta: EntityMetadata<T>, collection: EntityData<T>[], relationPojo: EntityData<T>): void {
+  private appendToCollection<T extends object>(
+    meta: EntityMetadata<T>,
+    collection: EntityData<T>[],
+    relationPojo: EntityData<T>,
+  ): void {
     if (collection.length === 0) {
       return void collection.push(relationPojo);
     }
@@ -362,12 +454,18 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return this.rethrow(qb.getCount());
   }
 
-  async nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeInsert<T extends object>(
+    entityName: string,
+    data: EntityDictionary<T>,
+    options: NativeInsertUpdateOptions<T> = {},
+  ): Promise<QueryResult<T>> {
     options.convertCustomTypes ??= true;
     const meta = this.metadata.find<T>(entityName)!;
     const collections = this.extractManyToMany(entityName, data);
     const pks = meta?.primaryKeys ?? [this.config.getNamingStrategy().referenceColumnName()];
-    const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
+    const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(
+      this.getSchemaName(meta, options),
+    );
     const res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>).execute('run', false));
     res.row = res.row || {};
     let pk: any;
@@ -385,7 +483,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
-  async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeInsertMany<T extends object>(
+    entityName: string,
+    data: EntityDictionary<T>[],
+    options: NativeInsertUpdateManyOptions<T> = {},
+  ): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.find<T>(entityName);
@@ -393,7 +495,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const pks = this.getPrimaryKeyFields(entityName) as EntityKey<T>[];
     const set = new Set<EntityKey<T>>();
     data.forEach(row => Utils.keys(row).forEach(k => set.add(k)));
-    const props = [...set].map(name => meta?.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
+    const props = [...set].map(name => meta?.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<
+      T
+    >[];
     let fields = Utils.flatten(props.map(prop => prop.fieldNames));
     const duplicates = Utils.findDuplicates(fields);
     const params: unknown[] = [];
@@ -405,7 +509,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     /* istanbul ignore next */
     const tableName = meta ? this.getTableName(meta, options) : this.platform.quoteIdentifier(entityName);
     let sql = `insert into ${tableName} `;
-    sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : `(${this.platform.quoteIdentifier(pks[0])})`;
+    sql += fields.length > 0
+      ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')'
+      : `(${this.platform.quoteIdentifier(pks[0])})`;
 
     if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
       sql += ' values ';
@@ -415,7 +521,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const addParams = (prop: EntityProperty<T>, row: Dictionary) => {
       if (options.convertCustomTypes && prop.customType) {
-        params.push(prop.customType.convertToDatabaseValue(row[prop.name], this.platform, { key: prop.name, mode: 'query-data' }));
+        params.push(
+          prop.customType.convertToDatabaseValue(row[prop.name], this.platform, {
+            key: prop.name,
+            mode: 'query-data',
+          }),
+        );
         return;
       }
 
@@ -437,7 +548,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
             });
             params.push(...param);
             keys.push(...key);
-          } else if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])) {
+          } else if (
+            prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])
+          ) {
             keys.push(prop.customType.convertToDatabaseValueSQL!('?', this.platform));
             addParams(prop, row);
           } else {
@@ -457,7 +570,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       /* istanbul ignore next */
-      sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
+      sql += returningFields.length > 0
+        ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}`
+        : '';
     }
 
     const res = await this.execute<QueryResult<T>>(sql, params, 'run', options.ctx);
@@ -480,7 +595,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
-  async nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> & UpsertOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeUpdate<T extends object>(
+    entityName: string,
+    where: FilterQuery<T>,
+    data: EntityDictionary<T>,
+    options: NativeInsertUpdateOptions<T> & UpsertOptions<T> = {},
+  ): Promise<QueryResult<T>> {
     options.convertCustomTypes ??= true;
     const meta = this.metadata.find<T>(entityName);
     const pks = this.getPrimaryKeyFields(entityName);
@@ -498,7 +618,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (options.upsert) {
         /* istanbul ignore next */
-        const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where) ? Utils.keys(where) as EntityKey<T>[] : meta!.primaryKeys) as (keyof T)[];
+        const uniqueFields = options.onConflictFields
+          ?? (Utils.isPlainObject(where) ? Utils.keys(where) as EntityKey<T>[] : meta!.primaryKeys) as (keyof T)[];
         const returning = getOnConflictReturningFields(meta, data, uniqueFields, options);
         qb.insert(data as T)
           .onConflict(uniqueFields)
@@ -526,14 +647,22 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
-  override async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeUpdateMany<T extends object>(
+    entityName: string,
+    where: FilterQuery<T>[],
+    data: EntityDictionary<T>[],
+    options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {},
+  ): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get<T>(entityName);
 
     if (options.upsert) {
-      const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where[0]) ? Object.keys(where[0]) : meta!.primaryKeys) as (keyof T)[];
-      const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
+      const uniqueFields = options.onConflictFields
+        ?? (Utils.isPlainObject(where[0]) ? Object.keys(where[0]) : meta!.primaryKeys) as (keyof T)[];
+      const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(
+        this.getSchemaName(meta, options),
+      );
       const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options);
       qb.insert(data as T[])
         .onConflict(uniqueFields)
@@ -563,7 +692,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         }
       });
     });
-    const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames)).map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ');
+    const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames)).map(pk =>
+      `${this.platform.quoteIdentifier(pk)} = ?`
+    ).join(
+      ' and ',
+    );
     const params: any[] = [];
     let sql = `update ${this.getTableName(meta, options)} set `;
 
@@ -577,7 +710,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
             const pks = Utils.getOrderedPrimaryKeys(cond as Dictionary, meta);
             sql += ` when (${pkCond}) then `;
 
-            if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(data[idx][key])) {
+            if (
+              prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(data[idx][key])
+            ) {
               sql += prop.customType.convertToDatabaseValueSQL!('?', this.platform);
             } else {
               sql += '?';
@@ -609,7 +744,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     sql = sql.substring(0, sql.length - 2) + ' where ';
     const pkProps = meta.primaryKeys.concat(...meta.concurrencyCheckKeys);
     const pks = Utils.flatten(pkProps.map(pk => meta.properties[pk].fieldNames));
-    sql += pks.length > 1 ? `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)}`).join(', ')})` : this.platform.quoteIdentifier(pks[0]);
+    sql += pks.length > 1
+      ? `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)}`).join(', ')})`
+      : this.platform.quoteIdentifier(pks[0]);
 
     const conds = where.map(cond => {
       if (Utils.isPlainObject(cond) && Utils.getObjectKeysSize(cond) === 1) {
@@ -635,7 +772,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     if (this.platform.usesReturningStatement() && returning.size > 0) {
       const returningFields = Utils.flatten([...returning].map(prop => meta.properties[prop].fieldNames));
       /* istanbul ignore next */
-      sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
+      sql += returningFields.length > 0
+        ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}`
+        : '';
     }
 
     const res = await this.rethrow(this.execute<QueryResult<T>>(sql, params, 'run', options.ctx));
@@ -647,7 +786,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
-  async nativeDelete<T extends object>(entityName: string, where: FilterQuery<T> | string | any, options: DeleteOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeDelete<T extends object>(
+    entityName: string,
+    where: FilterQuery<T> | string | any,
+    options: DeleteOptions<T> = {},
+  ): Promise<QueryResult<T>> {
     const meta = this.metadata.find(entityName);
     const pks = this.getPrimaryKeyFields(entityName);
 
@@ -655,12 +798,17 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       where = { [pks[0]]: where };
     }
 
-    const qb = this.createQueryBuilder(entityName, options.ctx, 'write', false).delete(where).withSchema(this.getSchemaName(meta, options));
+    const qb = this.createQueryBuilder(entityName, options.ctx, 'write', false).delete(where).withSchema(
+      this.getSchemaName(meta, options),
+    );
 
     return this.rethrow(qb.execute('run', false));
   }
 
-  override async syncCollection<T extends object, O extends object>(coll: Collection<T, O>, options?: DriverMethodOptions): Promise<void> {
+  override async syncCollection<T extends object, O extends object>(
+    coll: Collection<T, O>,
+    options?: DriverMethodOptions,
+  ): Promise<void> {
     const wrapped = helper(coll.owner);
     const meta = wrapped.__meta;
     const pks = wrapped.getPrimaryKeys(true)!;
@@ -722,7 +870,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks, deleteDiff, insertDiff, options));
   }
 
-  override async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<any> = {} as FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>): Promise<Dictionary<T[]>> {
+  override async loadFromPivotTable<T extends object, O extends object>(
+    prop: EntityProperty,
+    owners: Primary<O>[][],
+    where: FilterQuery<any> = {} as FilterQuery<any>,
+    orderBy?: OrderDefinition<T>,
+    ctx?: Transaction,
+    options?: FindOptions<T, any, any>,
+  ): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
     const prop2 = prop.targetMeta!.properties[prop.mappedBy ?? prop.inversedBy];
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
@@ -748,7 +903,13 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     orderBy = this.getPivotOrderBy(prop, pivotAlias, orderBy);
     const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, []);
-    const fields = this.buildFields(prop.targetMeta!, (options.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options.fields as unknown as Field<T>[]);
+    const fields = this.buildFields(
+      prop.targetMeta!,
+      (options.populate ?? []) as unknown as PopulateOptions<T>[],
+      [],
+      qb,
+      options.fields as unknown as Field<T>[],
+    );
     const k1 = !prop.owner ? 'joinColumns' : 'inverseJoinColumns';
     const k2 = prop.owner ? 'joinColumns' : 'inverseJoinColumns';
     const cols = [
@@ -793,7 +954,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     items.forEach((item: any) => {
       const key = Utils.getPrimaryKeyHash(prop.joinColumns.map((col, idx) => {
         const pkProp = pkProps[idx];
-        return pkProp.customType ? pkProp.customType.convertToJSValue(item[`fk__${col}`], this.platform) : item[`fk__${col}`];
+        return pkProp.customType
+          ? pkProp.customType.convertToJSValue(item[`fk__${col}`], this.platform)
+          : item[`fk__${col}`];
       }));
       map[key].push(item);
       prop.joinColumns.forEach(col => delete item[`fk__${col}`]);
@@ -803,7 +966,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return map;
   }
 
-  private getPivotOrderBy<T>(prop: EntityProperty<T>, pivotAlias: string, orderBy?: OrderDefinition<T>): QueryOrderMap<T>[] {
+  private getPivotOrderBy<T>(
+    prop: EntityProperty<T>,
+    pivotAlias: string,
+    orderBy?: OrderDefinition<T>,
+  ): QueryOrderMap<T>[] {
     if (!Utils.isEmpty(orderBy)) {
       return orderBy as QueryOrderMap<T>[];
     }
@@ -819,14 +986,23 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return [];
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
+    queryOrKnex: string | Knex.QueryBuilder | Knex.Raw,
+    params: any[] = [],
+    method: 'all' | 'get' | 'run' = 'all',
+    ctx?: Transaction,
+  ): Promise<T> {
     return this.rethrow(this.connection.execute(queryOrKnex, params, method, ctx));
   }
 
   /**
    * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
    */
-  protected autoJoinOneToOneOwner<T extends object, P extends string = never>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], fields: readonly EntityField<T, P>[] = []): PopulateOptions<T>[] {
+  protected autoJoinOneToOneOwner<T extends object, P extends string = never>(
+    meta: EntityMetadata<T>,
+    populate: PopulateOptions<T>[],
+    fields: readonly EntityField<T, P>[] = [],
+  ): PopulateOptions<T>[] {
     if (!this.config.get('autoJoinOneToOneOwner')) {
       return populate;
     }
@@ -843,14 +1019,19 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   protected joinedProps<T>(meta: EntityMetadata, populate: PopulateOptions<T>[]): PopulateOptions<T>[] {
     return populate.filter(p => {
       const prop = meta.properties[p.field] || {};
-      return (p.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.kind !== ReferenceKind.SCALAR;
+      return (p.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED
+        && prop.kind !== ReferenceKind.SCALAR;
     });
   }
 
   /**
    * @internal
    */
-  mergeJoinedResult<T extends object>(rawResults: EntityData<T>[], meta: EntityMetadata<T>, joinedProps: PopulateOptions<T>[]): EntityData<T>[] {
+  mergeJoinedResult<T extends object>(
+    rawResults: EntityData<T>[],
+    meta: EntityMetadata<T>,
+    joinedProps: PopulateOptions<T>[],
+  ): EntityData<T>[] {
     // group by the root entity primary key first
     const map: Dictionary<Dictionary> = {};
     const res: EntityData<T>[] = [];
@@ -872,7 +1053,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
-  protected getFieldsForJoinedLoad<T extends object>(qb: QueryBuilder<T>, meta: EntityMetadata<T>, explicitFields?: Field<T>[], populate: PopulateOptions<T>[] = [], parentTableAlias?: string, parentJoinPath?: string): Field<T>[] {
+  protected getFieldsForJoinedLoad<T extends object>(
+    qb: QueryBuilder<T>,
+    meta: EntityMetadata<T>,
+    explicitFields?: Field<T>[],
+    populate: PopulateOptions<T>[] = [],
+    parentTableAlias?: string,
+    parentJoinPath?: string,
+  ): Field<T>[] {
     const fields: Field<T>[] = [];
     const joinedProps = this.joinedProps(meta, populate);
 
@@ -904,7 +1092,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const field = parentTableAlias ? `${parentTableAlias}.${prop.name}` : prop.name;
       const path = parentJoinPath ? `${parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
       qb.join(field, tableAlias, {}, 'leftJoin', path);
-      const childExplicitFields = explicitFields?.filter(f => Utils.isPlainObject(f)).map(o => (o as Dictionary)[prop.name])[0] || [];
+      const childExplicitFields = explicitFields?.filter(f =>
+        Utils.isPlainObject(f)
+      ).map(o => (o as Dictionary)[prop.name])[0] || [];
 
       explicitFields?.forEach(f => {
         if (typeof f === 'string' && f.startsWith(`${prop.name}.`)) {
@@ -912,7 +1102,16 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         }
       });
 
-      fields.push(...this.getFieldsForJoinedLoad(qb, meta2, childExplicitFields.length === 0 ? undefined : childExplicitFields, relation.children as any, tableAlias, path));
+      fields.push(
+        ...this.getFieldsForJoinedLoad(
+          qb,
+          meta2,
+          childExplicitFields.length === 0 ? undefined : childExplicitFields,
+          relation.children as any,
+          tableAlias,
+          path,
+        ),
+      );
     });
 
     return fields;
@@ -921,7 +1120,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   /**
    * @internal
    */
-  mapPropToFieldNames<T extends object>(qb: QueryBuilder<T>, prop: EntityProperty<T>, tableAlias?: string): Field<T>[] {
+  mapPropToFieldNames<T extends object>(
+    qb: QueryBuilder<T>,
+    prop: EntityProperty<T>,
+    tableAlias?: string,
+  ): Field<T>[] {
     const knex = this.connection.getKnex();
     const aliased = knex.ref(tableAlias ? `${tableAlias}__${prop.fieldNames[0]}` : prop.fieldNames[0]).toString();
 
@@ -936,14 +1139,22 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     if (tableAlias) {
-      return prop.fieldNames.map(fieldName => knex.ref(fieldName).withSchema(tableAlias).as(`${tableAlias}__${fieldName}`));
+      return prop.fieldNames.map(fieldName =>
+        knex.ref(fieldName).withSchema(tableAlias).as(`${tableAlias}__${fieldName}`)
+      );
     }
 
     return prop.fieldNames;
   }
 
   /** @internal */
-  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, logging?: LoggingOptions): QueryBuilder<T> {
+  createQueryBuilder<T extends object>(
+    entityName: EntityName<T> | QueryBuilder<T>,
+    ctx?: Transaction<Knex.Transaction>,
+    preferredConnectionType?: ConnectionType,
+    convertCustomTypes?: boolean,
+    logging?: LoggingOptions,
+  ): QueryBuilder<T> {
     const connectionType = this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
     const qb = new QueryBuilder<T>(
       entityName,
@@ -992,14 +1203,22 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return ret;
   }
 
-  protected async processManyToMany<T extends object>(meta: EntityMetadata<T> | undefined, pks: Primary<T>[], collections: EntityData<T>, clear: boolean, options?: DriverMethodOptions) {
+  protected async processManyToMany<T extends object>(
+    meta: EntityMetadata<T> | undefined,
+    pks: Primary<T>[],
+    collections: EntityData<T>,
+    clear: boolean,
+    options?: DriverMethodOptions,
+  ) {
     if (!meta) {
       return;
     }
 
     for (const prop of meta.relations) {
       if (collections[prop.name]) {
-        await this.rethrow(this.updateCollectionDiff(meta, prop, pks, clear, collections[prop.name] as Primary<T>[][], options));
+        await this.rethrow(
+          this.updateCollectionDiff(meta, prop, pks, clear, collections[prop.name] as Primary<T>[][], options),
+        );
       }
     }
   }
@@ -1019,7 +1238,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const pivotMeta = this.metadata.find(prop.pivotEntity)!;
 
     if (deleteDiff === true || deleteDiff.length > 0) {
-      const qb1 = this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write').withSchema(this.getSchemaName(pivotMeta, options));
+      const qb1 = this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write').withSchema(
+        this.getSchemaName(pivotMeta, options),
+      );
       const knex = qb1.getKnex();
 
       if (Array.isArray(deleteDiff)) {
@@ -1061,13 +1282,21 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
   override async lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
     const meta = helper(entity).__meta;
-    const qb = this.createQueryBuilder((entity as object).constructor.name, options.ctx).withSchema(options.schema ?? meta.schema);
+    const qb = this.createQueryBuilder((entity as object).constructor.name, options.ctx).withSchema(
+      options.schema ?? meta.schema,
+    );
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select(raw('1')).where(cond!).setLockMode(options.lockMode, options.lockTableAliases);
     await this.rethrow(qb.execute());
   }
 
-  protected buildJoinedPropsOrderBy<T extends object>(entityName: string, qb: QueryBuilder<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[], parentPath?: string): QueryOrderMap<T>[] {
+  protected buildJoinedPropsOrderBy<T extends object>(
+    entityName: string,
+    qb: QueryBuilder<T>,
+    meta: EntityMetadata<T>,
+    populate: PopulateOptions<T>[],
+    parentPath?: string,
+  ): QueryOrderMap<T>[] {
     const orderBy: QueryOrderMap<T>[] = [];
     const joinedProps = this.joinedProps(meta, populate);
 
@@ -1111,7 +1340,15 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return ret;
   }
 
-  protected processField<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T> | undefined, field: string, ret: Field<T>[], populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>): void {
+  protected processField<T extends object>(
+    meta: EntityMetadata<T>,
+    prop: EntityProperty<T> | undefined,
+    field: string,
+    ret: Field<T>[],
+    populate: PopulateOptions<T>[],
+    joinedProps: PopulateOptions<T>[],
+    qb: QueryBuilder<T>,
+  ): void {
     if (!prop || (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner)) {
       return;
     }
@@ -1137,7 +1374,13 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     ret.push(prop.name);
   }
 
-  protected buildFields<T extends object>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>, fields?: Field<T>[]): Field<T>[] {
+  protected buildFields<T extends object>(
+    meta: EntityMetadata<T>,
+    populate: PopulateOptions<T>[],
+    joinedProps: PopulateOptions<T>[],
+    qb: QueryBuilder<T>,
+    fields?: Field<T>[],
+  ): Field<T>[] {
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const hasLazyFormulas = meta.props.some(p => p.lazy && p.formula);
     const requiresSQLConversion = meta.props.some(p => p.customType?.convertToJSValueSQL);
@@ -1193,5 +1436,4 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     return ret.length > 0 ? Utils.unique(ret) : ['*'];
   }
-
 }

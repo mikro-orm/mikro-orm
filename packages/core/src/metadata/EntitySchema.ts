@@ -1,16 +1,44 @@
-import { EntityMetadata, type AnyEntity, type EntityKey, type Constructor, type DeepPartial, type Dictionary, type EntityName, type EntityProperty, type ExcludeFunctions, type ExpandProperty } from '../typings';
 import type {
-  EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
-  SerializedPrimaryKeyOptions, UniqueOptions,
+  EmbeddedOptions,
+  EnumOptions,
+  IndexOptions,
+  ManyToManyOptions,
+  ManyToOneOptions,
+  OneToManyOptions,
+  OneToOneOptions,
+  PrimaryKeyOptions,
+  PropertyOptions,
+  SerializedPrimaryKeyOptions,
+  UniqueOptions,
 } from '../decorators';
-import type { EntityRepository } from '../entity/EntityRepository';
 import { BaseEntity } from '../entity/BaseEntity';
+import type { EntityRepository } from '../entity/EntityRepository';
 import { Cascade, ReferenceKind } from '../enums';
 import { Type } from '../types';
-import { Utils } from '../utils';
 import { EnumArrayType } from '../types/EnumArrayType';
+import {
+  type AnyEntity,
+  type Constructor,
+  type DeepPartial,
+  type Dictionary,
+  type EntityKey,
+  EntityMetadata,
+  type EntityName,
+  type EntityProperty,
+  type ExcludeFunctions,
+  type ExpandProperty,
+} from '../typings';
+import { Utils } from '../utils';
 
-type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
+type TypeType =
+  | string
+  | NumberConstructor
+  | StringConstructor
+  | BooleanConstructor
+  | DateConstructor
+  | ArrayConstructor
+  | Constructor<Type<any>>
+  | Type<any>;
 type TypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target>) };
 type Property<Target, Owner> =
   | ({ kind: ReferenceKind.MANY_TO_ONE | 'm:1' } & TypeDef<Target> & ManyToOneOptions<Owner, Target>)
@@ -23,10 +51,16 @@ type Property<Target, Owner> =
 type Metadata<Entity, Base> =
   & Omit<Partial<EntityMetadata<Entity>>, 'name' | 'properties'>
   & ({ name: string } | { class: Constructor<Entity>; name?: string })
-  & { properties?: { [Key in keyof Omit<Entity, keyof Base> as ExcludeFunctions<Omit<Entity, keyof Base>, Key>]-?: Property<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
+  & {
+    properties?: {
+      [Key in keyof Omit<Entity, keyof Base> as ExcludeFunctions<Omit<Entity, keyof Base>, Key>]-?: Property<
+        ExpandProperty<NonNullable<Entity[Key]>>,
+        Entity
+      >;
+    };
+  };
 
 export class EntitySchema<Entity = any, Base = never> {
-
   /**
    * When schema links the entity class via `class` option, this registry allows the lookup from opposite side,
    * so we can use the class in `entities` option just like the EntitySchema instance.
@@ -57,15 +91,21 @@ export class EntitySchema<Entity = any, Base = never> {
     this._meta.root ??= this._meta;
   }
 
-  static fromMetadata<T = AnyEntity, U = never>(meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>): EntitySchema<T, U> {
+  static fromMetadata<T = AnyEntity, U = never>(
+    meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>,
+  ): EntitySchema<T, U> {
     const schema = new EntitySchema<T, U>({ ...meta, internal: true } as unknown as Metadata<T, U>);
     schema.internal = true;
 
     return schema;
   }
 
-  addProperty(name: EntityKey<Entity>, type?: TypeType, options: PropertyOptions<Entity> | EntityProperty<Entity> = {}): void {
-    const rename = <U> (data: U, from: string, to: string): void => {
+  addProperty(
+    name: EntityKey<Entity>,
+    type?: TypeType,
+    options: PropertyOptions<Entity> | EntityProperty<Entity> = {},
+  ): void {
+    const rename = <U>(data: U, from: string, to: string): void => {
       if (from in options && !(to in options)) {
         // @ts-ignore
         options[to] = [options[from]];
@@ -85,7 +125,12 @@ export class EntitySchema<Entity = any, Base = never> {
     rename(options, 'referenceColumnName', 'referencedColumnNames');
     rename(options, 'columnType', 'columnTypes');
 
-    const prop = { name, kind: ReferenceKind.SCALAR, ...options, type: this.normalizeType(options, type) } as EntityProperty<Entity>;
+    const prop = {
+      name,
+      kind: ReferenceKind.SCALAR,
+      ...options,
+      type: this.normalizeType(options, type),
+    } as EntityProperty<Entity>;
 
     if (type && Type.isMappedType((type as Constructor).prototype)) {
       prop.type = type as string;
@@ -136,7 +181,11 @@ export class EntitySchema<Entity = any, Base = never> {
     this.addProperty(name, type, { primary: true, ...options });
   }
 
-  addSerializedPrimaryKey(name: EntityKey<Entity>, type: TypeType, options: SerializedPrimaryKeyOptions<Entity> = {}): void {
+  addSerializedPrimaryKey(
+    name: EntityKey<Entity>,
+    type: TypeType,
+    options: SerializedPrimaryKeyOptions<Entity> = {},
+  ): void {
     this._meta.serializedPrimaryKey = name;
     this.addProperty(name, type, options);
   }
@@ -156,7 +205,11 @@ export class EntitySchema<Entity = any, Base = never> {
     } as EntityProperty<Entity>;
   }
 
-  addManyToOne<Target = AnyEntity>(name: EntityKey<Entity>, type: TypeType, options: ManyToOneOptions<Entity, Target>): void {
+  addManyToOne<Target = AnyEntity>(
+    name: EntityKey<Entity>,
+    type: TypeType,
+    options: ManyToOneOptions<Entity, Target>,
+  ): void {
     const prop = this.createProperty(ReferenceKind.MANY_TO_ONE, options);
     prop.owner = true;
 
@@ -171,7 +224,11 @@ export class EntitySchema<Entity = any, Base = never> {
     this.addProperty(name, type, prop);
   }
 
-  addManyToMany<Target = AnyEntity>(name: EntityKey<Entity>, type: TypeType, options: ManyToManyOptions<Entity, Target>): void {
+  addManyToMany<Target = AnyEntity>(
+    name: EntityKey<Entity>,
+    type: TypeType,
+    options: ManyToManyOptions<Entity, Target>,
+  ): void {
     options.fixedOrder = options.fixedOrder || !!options.fixedOrderColumn;
 
     if (!options.owner && !options.mappedBy) {
@@ -186,12 +243,20 @@ export class EntitySchema<Entity = any, Base = never> {
     this.addProperty(name, type, prop);
   }
 
-  addOneToMany<Target = AnyEntity>(name: EntityKey<Entity>, type: TypeType, options: OneToManyOptions<Entity, Target>): void {
+  addOneToMany<Target = AnyEntity>(
+    name: EntityKey<Entity>,
+    type: TypeType,
+    options: OneToManyOptions<Entity, Target>,
+  ): void {
     const prop = this.createProperty<Entity>(ReferenceKind.ONE_TO_MANY, options);
     this.addProperty(name, type, prop);
   }
 
-  addOneToOne<Target = AnyEntity>(name: EntityKey<Entity>, type: TypeType, options: OneToOneOptions<Entity, Target>): void {
+  addOneToOne<Target = AnyEntity>(
+    name: EntityKey<Entity>,
+    type: TypeType,
+    options: OneToOneOptions<Entity, Target>,
+  ): void {
     const prop = this.createProperty(ReferenceKind.ONE_TO_ONE, options) as EntityProperty;
     Utils.defaultValue(prop, 'owner', !!prop.inversedBy || !prop.mappedBy);
     Utils.defaultValue(prop, 'unique', prop.owner);
@@ -211,11 +276,22 @@ export class EntitySchema<Entity = any, Base = never> {
     this.addProperty(name, type, prop);
   }
 
-  addIndex<T>(options: Required<Omit<IndexOptions<T>, 'name' | 'type' | 'options' | 'expression'>> & { name?: string; expression?: string; options?: Dictionary }): void {
+  addIndex<T>(
+    options: Required<Omit<IndexOptions<T>, 'name' | 'type' | 'options' | 'expression'>> & {
+      name?: string;
+      expression?: string;
+      options?: Dictionary;
+    },
+  ): void {
     this._meta.indexes.push(options as any);
   }
 
-  addUnique<T>(options: Required<Omit<UniqueOptions<T>, 'name' | 'options' | 'expression'>> & { name?: string; options?: Dictionary }): void {
+  addUnique<T>(
+    options: Required<Omit<UniqueOptions<T>, 'name' | 'options' | 'expression'>> & {
+      name?: string;
+      options?: Dictionary;
+    },
+  ): void {
     this._meta.uniques.push(options as any);
   }
 
@@ -247,7 +323,7 @@ export class EntitySchema<Entity = any, Base = never> {
     return this._meta;
   }
 
-  get name(): EntityName<Entity>  {
+  get name(): EntityName<Entity> {
     return this._meta.className;
   }
 
@@ -261,7 +337,9 @@ export class EntitySchema<Entity = any, Base = never> {
 
     if (!this._meta.class) {
       const name = this.name as string;
-      this._meta.class = ({ [name]: class {} })[name] as Constructor<Entity>;
+      this._meta.class = ({
+        [name]: class {},
+      })[name] as Constructor<Entity>;
     }
 
     this.setClass(this._meta.class);
@@ -280,7 +358,9 @@ export class EntitySchema<Entity = any, Base = never> {
     this.initProperties();
     this.initPrimaryKeys();
     this._meta.props = Object.values(this._meta.properties);
-    this._meta.relations = this._meta.props.filter(prop => prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED);
+    this._meta.relations = this._meta.props.filter(prop =>
+      prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED
+    );
     this.initialized = true;
 
     return this;
@@ -337,7 +417,9 @@ export class EntitySchema<Entity = any, Base = never> {
       pks[0].autoincrement ??= true;
     }
 
-    const serializedPrimaryKey = Object.values<EntityProperty<Entity>>(this._meta.properties).find(prop => prop.serializedPrimaryKey);
+    const serializedPrimaryKey = Object.values<EntityProperty<Entity>>(this._meta.properties).find(prop =>
+      prop.serializedPrimaryKey
+    );
 
     if (serializedPrimaryKey) {
       this._meta.serializedPrimaryKey = serializedPrimaryKey.name;
@@ -350,7 +432,9 @@ export class EntitySchema<Entity = any, Base = never> {
         type = options.type = options.entity;
       } else if (options.entity) {
         const tmp = options.entity();
-        type = options.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
+        type = options.type = Array.isArray(tmp)
+          ? tmp.map(t => Utils.className(t)).sort().join(' | ')
+          : Utils.className(tmp);
       }
     }
 
@@ -372,5 +456,4 @@ export class EntitySchema<Entity = any, Base = never> {
       ...options,
     } as EntityProperty<T>;
   }
-
 }

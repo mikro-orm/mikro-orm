@@ -1,16 +1,16 @@
+import { type Cascade, type LoadStrategy, ReferenceKind } from '../enums';
 import { MetadataStorage, MetadataValidator } from '../metadata';
-import { Utils } from '../utils';
-import { ReferenceKind, type Cascade, type LoadStrategy } from '../enums';
+import type { Type, types } from '../types';
 import type {
+  AnyEntity,
+  AnyString,
+  CheckCallback,
+  Constructor,
+  EntityKey,
   EntityName,
   EntityProperty,
-  Constructor,
-  CheckCallback,
-  AnyString,
-  AnyEntity,
-  EntityKey,
 } from '../typings';
-import type { Type, types } from '../types';
+import { Utils } from '../utils';
 
 export function Property<T extends object>(options: PropertyOptions<T> = {}) {
   return function (target: any, propertyName: string) {
@@ -75,7 +75,16 @@ export type PropertyOptions<Owner> = {
    * @see https://mikro-orm.io/docs/metadata-providers
    * @see https://mikro-orm.io/docs/custom-types
    */
-  type?: keyof typeof types | 'ObjectId' | Date | Constructor<AnyEntity> | Constructor<Type<any>> | Type<any> | (() => unknown) | ColumnType | AnyString;
+  type?:
+    | keyof typeof types
+    | 'ObjectId'
+    | Date
+    | Constructor<AnyEntity>
+    | Constructor<Type<any>>
+    | Type<any>
+    | (() => unknown)
+    | ColumnType
+    | AnyString;
   /**
    * Set length of database column, used for datetime/timestamp/varchar column types for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
    */
@@ -258,12 +267,59 @@ export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> 
  * @ignore
  */
 export type ColumnType =
-  | 'int' | 'int4' | 'integer' | 'bigint' | 'int8' | 'int2' | 'tinyint' | 'smallint' | 'mediumint'
-  | 'double' | 'double precision' | 'real' | 'float8' | 'decimal' | 'numeric' | 'float' | 'float4'
-  | 'datetime' | 'time' | 'time with time zone' | 'timestamp' | 'timestamp with time zone' | 'timetz' | 'timestamptz' | 'date' | 'interval'
-  | 'character varying' | 'varchar' | 'char' | 'character' | 'uuid' | 'text' | 'tinytext' | 'mediumtext' | 'longtext'
-  | 'boolean' | 'bool' | 'bit' | 'enum'
-  | 'blob' | 'tinyblob' | 'mediumblob' | 'longblob' | 'bytea'
-  | 'point' | 'line' | 'lseg' | 'box' | 'circle' | 'path' | 'polygon' | 'geometry'
-  | 'tsvector' | 'tsquery'
-  | 'json' | 'jsonb';
+  | 'int'
+  | 'int4'
+  | 'integer'
+  | 'bigint'
+  | 'int8'
+  | 'int2'
+  | 'tinyint'
+  | 'smallint'
+  | 'mediumint'
+  | 'double'
+  | 'double precision'
+  | 'real'
+  | 'float8'
+  | 'decimal'
+  | 'numeric'
+  | 'float'
+  | 'float4'
+  | 'datetime'
+  | 'time'
+  | 'time with time zone'
+  | 'timestamp'
+  | 'timestamp with time zone'
+  | 'timetz'
+  | 'timestamptz'
+  | 'date'
+  | 'interval'
+  | 'character varying'
+  | 'varchar'
+  | 'char'
+  | 'character'
+  | 'uuid'
+  | 'text'
+  | 'tinytext'
+  | 'mediumtext'
+  | 'longtext'
+  | 'boolean'
+  | 'bool'
+  | 'bit'
+  | 'enum'
+  | 'blob'
+  | 'tinyblob'
+  | 'mediumblob'
+  | 'longblob'
+  | 'bytea'
+  | 'point'
+  | 'line'
+  | 'lseg'
+  | 'box'
+  | 'circle'
+  | 'path'
+  | 'polygon'
+  | 'geometry'
+  | 'tsvector'
+  | 'tsquery'
+  | 'json'
+  | 'jsonb';
