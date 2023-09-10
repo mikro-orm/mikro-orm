@@ -96,6 +96,7 @@ module.exports = {
         },
       ],
     },
+    image: 'img/mikro-orm-og.svg',
     footer: {
       style: 'dark',
       links: [
