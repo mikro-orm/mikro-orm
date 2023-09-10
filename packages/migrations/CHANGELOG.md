@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.8.0](https://github.com/mikro-orm/mikro-orm/compare/v5.7.14...v5.8.0) (2023-09-10)
+
+
+### Features
+
+* **migrations:** add `Migration.getEntityManager()` helper ([79af75c](https://github.com/mikro-orm/mikro-orm/commit/79af75ceac90f1acb48628d1a2d987261f72a550)), closes [#4605](https://github.com/mikro-orm/mikro-orm/issues/4605)
+
+
+
+
+
 ## [5.7.14](https://github.com/mikro-orm/mikro-orm/compare/v5.7.13...v5.7.14) (2023-07-27)
 
 **Note:** Version bump only for package @mikro-orm/migrations

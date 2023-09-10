@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.8.0](https://github.com/mikro-orm/mikro-orm/compare/v5.7.14...v5.8.0) (2023-09-10)
+
+
+### Features
+
+* **core:** add `Collection.slice()` method ([#4608](https://github.com/mikro-orm/mikro-orm/issues/4608)) ([7c99c37](https://github.com/mikro-orm/mikro-orm/commit/7c99c37faec3f0c77fb897b0853930a75c2cd760))
+
+
+
+
+
 ## [5.7.14](https://github.com/mikro-orm/mikro-orm/compare/v5.7.13...v5.7.14) (2023-07-27)
 
 

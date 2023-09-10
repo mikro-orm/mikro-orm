@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.8.0](https://github.com/mikro-orm/mikro-orm/compare/v5.7.14...v5.8.0) (2023-09-10)
+
+
+### Features
+
+* **core:** allow fine-grained control over `em.upsert()` ([#4669](https://github.com/mikro-orm/mikro-orm/issues/4669)) ([ab0ddee](https://github.com/mikro-orm/mikro-orm/commit/ab0ddee271149dd201e5661fa38f6d7b1b9054ef)), closes [#4325](https://github.com/mikro-orm/mikro-orm/issues/4325) [#4602](https://github.com/mikro-orm/mikro-orm/issues/4602)
+* **mongo:** support indexes on embedded properties ([040896e](https://github.com/mikro-orm/mikro-orm/commit/040896e43664507d010692649d6b331567150e23)), closes [#2129](https://github.com/mikro-orm/mikro-orm/issues/2129)
+
+
+
+
+
 ## [5.7.14](https://github.com/mikro-orm/mikro-orm/compare/v5.7.13...v5.7.14) (2023-07-27)
 
 

@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.8.0](https://github.com/mikro-orm/mikro-orm/compare/v5.7.14...v5.8.0) (2023-09-10)
+
+
+### Bug Fixes
+
+* **core:** ensure partial loading respects advanced mapped type methods ([72554fd](https://github.com/mikro-orm/mikro-orm/commit/72554fddf8fae907c47fed2e22820960bee296fa)), closes [#4622](https://github.com/mikro-orm/mikro-orm/issues/4622)
+* **core:** map property names to column names in `qb.onConflict()` ([e38d126](https://github.com/mikro-orm/mikro-orm/commit/e38d126b219d5b004a3dfeb777a0c9cad59e0502)), closes [#4483](https://github.com/mikro-orm/mikro-orm/issues/4483)
+* **core:** remove old items from 1:m collections via `set()` even if not initialized ([b03e165](https://github.com/mikro-orm/mikro-orm/commit/b03e1656d6bf0a626bdca2f4395ef3a221acfcbf))
+* **core:** respect explicit schema name of pivot tables ([af74491](https://github.com/mikro-orm/mikro-orm/commit/af74491aaa3706d205fa3526d4eff4eb31ecd9ee)), closes [#4516](https://github.com/mikro-orm/mikro-orm/issues/4516)
+* **core:** respect filters with joined loading strategy ([#4683](https://github.com/mikro-orm/mikro-orm/issues/4683)) ([847c35a](https://github.com/mikro-orm/mikro-orm/commit/847c35a5ae263ea876012747308994d458b1a5f0)), closes [#704](https://github.com/mikro-orm/mikro-orm/issues/704) [#2440](https://github.com/mikro-orm/mikro-orm/issues/2440)
+* **core:** use join on conditions for `populateWhere` ([#4682](https://github.com/mikro-orm/mikro-orm/issues/4682)) ([99177cc](https://github.com/mikro-orm/mikro-orm/commit/99177cc94f9b0347c2e0a5e41dcbe347936e74b3)), closes [#3871](https://github.com/mikro-orm/mikro-orm/issues/3871)
+* **entity-generator:** respect `precision` and `scale` in numeric column type ([3a52c39](https://github.com/mikro-orm/mikro-orm/commit/3a52c399ce5188125704c29417f8587a02c05637))
+* **query-builder:** apply join condition to the target entity in M:N relations ([c78d812](https://github.com/mikro-orm/mikro-orm/commit/c78d812e53f4ac6b12ad186e327f1e9fbcaf30b6)), closes [#4644](https://github.com/mikro-orm/mikro-orm/issues/4644)
+
+
+### Features
+
+* **core:** allow fine-grained control over `em.upsert()` ([#4669](https://github.com/mikro-orm/mikro-orm/issues/4669)) ([ab0ddee](https://github.com/mikro-orm/mikro-orm/commit/ab0ddee271149dd201e5661fa38f6d7b1b9054ef)), closes [#4325](https://github.com/mikro-orm/mikro-orm/issues/4325) [#4602](https://github.com/mikro-orm/mikro-orm/issues/4602)
+* **entity-generator:** allow skipping some tables or columns ([e603108](https://github.com/mikro-orm/mikro-orm/commit/e603108445ed97b05cb48dd60830bb04cb095d57)), closes [#4584](https://github.com/mikro-orm/mikro-orm/issues/4584)
+* **sql:** add `readOnly` option to `em.begin()` and `em.transactional()` ([86bb7d4](https://github.com/mikro-orm/mikro-orm/commit/86bb7d4f99f37409180274c4e13c0bac82d4f334))
+* **sql:** allow specifying query comments ([06d4d20](https://github.com/mikro-orm/mikro-orm/commit/06d4d203cc28e33d664b48b907d3e372fc90f516))
+
+
+
+
+
 ## [5.7.14](https://github.com/mikro-orm/mikro-orm/compare/v5.7.13...v5.7.14) (2023-07-27)
 
 **Note:** Version bump only for package @mikro-orm/knex

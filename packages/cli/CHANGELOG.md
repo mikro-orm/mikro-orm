@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.8.0](https://github.com/mikro-orm/mikro-orm/compare/v5.7.14...v5.8.0) (2023-09-10)
+
+
+### Features
+
+* **cli:** add `--drop-db` flag to `migration:fresh` and `schema:fresh` ([cf1db80](https://github.com/mikro-orm/mikro-orm/commit/cf1db80b26a2f4e9f6fd917ee78a0925bebc215d)), closes [#4569](https://github.com/mikro-orm/mikro-orm/issues/4569)
+
+
+
+
+
 ## [5.7.14](https://github.com/mikro-orm/mikro-orm/compare/v5.7.13...v5.7.14) (2023-07-27)
 
 **Note:** Version bump only for package @mikro-orm/cli
