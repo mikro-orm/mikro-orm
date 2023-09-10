@@ -33,7 +33,7 @@ describe('multiple connected schemas in postgres', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Topic, Category],
-      dbName: `mikro_orm_test_multi_schemas`,
+      dbName: `mikro_orm_test_multi_schemas2`,
       driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();

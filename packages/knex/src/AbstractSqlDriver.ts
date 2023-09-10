@@ -741,8 +741,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     orderBy = this.getPivotOrderBy(prop, pivotAlias, orderBy);
-    // FIXME is this fine?
-    const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, [{ field: prop.pivotEntity }]);
+    const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, []);
     const fields = this.buildFields(prop.targetMeta!, (options.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options.fields as unknown as Field<T>[]);
     const k1 = !prop.owner ? 'joinColumns' : 'inverseJoinColumns';
     const k2 = prop.owner ? 'joinColumns' : 'inverseJoinColumns';
