@@ -174,11 +174,11 @@ export class QueryBuilderHelper {
     const joinColumns = prop.owner ? prop.referencedColumnNames : prop2.joinColumns;
     const inverseJoinColumns = prop.referencedColumnNames;
     const primaryKeys = prop.owner ? prop.joinColumns : prop2.referencedColumnNames;
+    schema ??= prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta);
 
     return {
-      prop, type, cond, ownerAlias, alias, table,
+      prop, type, cond, ownerAlias, alias, table, schema,
       joinColumns, inverseJoinColumns, primaryKeys,
-      schema: this.driver.getSchemaName(prop.targetMeta, { schema }),
     };
   }
 
