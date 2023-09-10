@@ -1,21 +1,12 @@
 import type { Knex } from 'knex';
 import {
-  DatabaseDriver,
-  EntityManagerType,
-  helper,
-  LoadStrategy,
-  QueryFlag,
-  QueryHelper,
-  ReferenceType,
-  Utils,
-  getOnConflictFields,
-  getOnConflictReturningFields,
   type AnyEntity,
   type Collection,
-  type ConnectionType,
   type Configuration,
+  type ConnectionType,
   type Constructor,
   type CountOptions,
+  DatabaseDriver,
   type DeleteOptions,
   type Dictionary,
   type DriverMethodOptions,
@@ -23,24 +14,33 @@ import {
   type EntityDictionary,
   type EntityField,
   type EntityManager,
+  EntityManagerType,
   type EntityMetadata,
   type EntityName,
   type EntityProperty,
   type FilterQuery,
   type FindOneOptions,
   type FindOptions,
+  getOnConflictFields,
+  getOnConflictReturningFields,
+  helper,
   type IDatabaseDriver,
+  LoadStrategy,
   type LockOptions,
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
   type PopulateOptions,
   type Primary,
+  QueryFlag,
+  QueryHelper,
   type QueryOrderMap,
   type QueryResult,
+  ReferenceType,
   type RequiredEntityData,
   type Transaction,
-  type UpsertOptions,
   type UpsertManyOptions,
+  type UpsertOptions,
+  Utils,
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
@@ -112,7 +112,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const result = await this.rethrow(qb.execute('all'));
 
     if (joinedProps.length > 0) {
-      return this.mergeJoinedResult(result, meta);
+      return this.mergeJoinedResult(result, meta, joinedProps);
     }
 
     return result;
@@ -770,17 +770,21 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   /**
    * @internal
    */
-  mergeJoinedResult<T extends object>(rawResults: EntityData<T>[], meta: EntityMetadata<T>): EntityData<T>[] {
+  mergeJoinedResult<T extends object>(rawResults: EntityData<T>[], meta: EntityMetadata<T>, joinedProps: PopulateOptions<T>[]): EntityData<T>[] {
     // group by the root entity primary key first
-    const map: Dictionary = {};
+    const map: Dictionary<Dictionary> = {};
     const res: EntityData<T>[] = [];
     rawResults.forEach(item => {
       const pk = Utils.getCompositeKeyHash(item, meta);
 
       if (map[pk]) {
-        map[pk].push(item);
+        joinedProps.forEach(hint => {
+          if (Array.isArray(map[pk][hint.field]) && Array.isArray(item[hint.field])) {
+            map[pk][hint.field].push(...item[hint.field]);
+          }
+        });
       } else {
-        map[pk] = [item];
+        map[pk] = item;
         res.push(item);
       }
     });

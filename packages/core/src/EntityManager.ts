@@ -1,6 +1,16 @@
 import { inspect } from 'util';
-import { QueryHelper, TransactionContext, Utils, type Configuration, getOnConflictReturningFields } from './utils';
-import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, helper, Reference, type AssignOptions, type EntityLoaderOptions, type EntityRepository } from './entity';
+import { type Configuration, getOnConflictReturningFields, QueryHelper, TransactionContext, Utils } from './utils';
+import {
+  type AssignOptions,
+  EntityAssigner,
+  EntityFactory,
+  EntityLoader,
+  type EntityLoaderOptions,
+  type EntityRepository,
+  EntityValidator,
+  helper,
+  Reference,
+} from './entity';
 import { ChangeSet, ChangeSetType, UnitOfWork } from './unit-of-work';
 import type {
   CountOptions,
@@ -15,8 +25,8 @@ import type {
   LockOptions,
   NativeInsertUpdateOptions,
   UpdateOptions,
-  UpsertOptions,
   UpsertManyOptions,
+  UpsertOptions,
 } from './drivers';
 import type {
   AnyEntity,
@@ -34,16 +44,26 @@ import type {
   IHydrator,
   Loaded,
   MaybePromise,
+  ObjectQuery,
   Populate,
   PopulateOptions,
   Primary,
-  RequiredEntityData,
   Ref,
+  RequiredEntityData,
 } from './typings';
-import { EventType, FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES, type TransactionOptions } from './enums';
+import {
+  EventType,
+  FlushMode,
+  LoadStrategy,
+  LockMode,
+  PopulateHint,
+  ReferenceType,
+  SCALAR_TYPES,
+  type TransactionOptions,
+} from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
-import { EventManager, TransactionEventBroadcaster, type FlushEventArgs } from './events';
+import { EventManager, type FlushEventArgs, TransactionEventBroadcaster } from './events';
 import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
 
@@ -166,7 +186,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (cached?.data) {
       await em.entityLoader.populate<Entity, Hint>(entityName, cached.data as Entity[], populate, {
         ...options as Dictionary,
-        ...em.getPopulateWhere(where as FilterQuery<Entity>, options),
+        ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
         convertCustomTypes: false,
         ignoreLazyScalarProperties: true,
         lookup: false,
@@ -175,6 +195,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data;
     }
 
+    const meta = this.metadata.get<Entity>(entityName);
+    options = { ...options };
+    options.populateWhere = await this.applyJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
     const results = await em.driver.find<Entity, Hint>(entityName, where, { ctx: em.transactionContext, ...options });
 
     if (results.length === 0) {
@@ -182,7 +205,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return [];
     }
 
-    const meta = this.metadata.get(entityName);
     const ret: Entity[] = [];
 
     for (const data of results) {
@@ -206,7 +228,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const unique = Utils.unique(ret);
     await em.entityLoader.populate<Entity, Hint>(entityName, unique, populate, {
       ...options as Dictionary,
-      ...em.getPopulateWhere(where as FilterQuery<Entity>, options),
+      ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
       convertCustomTypes: false,
       ignoreLazyScalarProperties: true,
       lookup: false,
@@ -219,14 +241,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   private getPopulateWhere<
     Entity extends object,
-    Hint extends string,
-  >(where: FilterQuery<Entity>, options: Pick<FindOptions<Entity, Hint>, 'populateWhere'>): { where: FilterQuery<Entity>; populateWhere?: PopulateHint } {
+    Hint extends string = never,
+  >(where: ObjectQuery<Entity>, options: Pick<FindOptions<Entity, Hint>, 'populateWhere'>): { where: ObjectQuery<Entity>; populateWhere?: PopulateHint } {
     if (options.populateWhere === undefined) {
       options.populateWhere = this.config.get('populateWhere');
     }
 
     if (options.populateWhere === PopulateHint.ALL) {
-      return { where: {} as FilterQuery<Entity>, populateWhere: options.populateWhere };
+      return { where: {} as ObjectQuery<Entity>, populateWhere: options.populateWhere };
     }
 
     if (options.populateWhere === PopulateHint.INFER) {
@@ -321,6 +343,45 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where![meta.root.discriminatorColumn!] = children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue;
 
     return where;
+  }
+
+  protected async applyJoinedFilters<Entity extends object>(meta: EntityMetadata<Entity>, cond: ObjectQuery<Entity>, options: FindOptions<Entity, any> | FindOneOptions<Entity, any>): Promise<ObjectQuery<Entity>> {
+    const ret = {} as ObjectQuery<Entity>;
+    const populateWhere = options.populateWhere ?? this.config.get('populateWhere');
+
+    if (populateWhere === PopulateHint.INFER) {
+      Utils.merge(ret, cond);
+    } else if (typeof populateWhere === 'object') {
+      Utils.merge(ret, populateWhere);
+    }
+
+    if (options.populate) {
+      for (const hint of (options.populate as unknown as PopulateOptions<Entity>[])) {
+        const prop = meta.properties[hint.field];
+        const joined = (hint.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.reference !== ReferenceType.SCALAR;
+
+        if (!joined) {
+          continue;
+        }
+
+        const where = await this.applyFilters(prop.type, {}, options.filters ?? {}, 'read', { ...options, populate: hint.children });
+        const where2 = await this.applyJoinedFilters<Entity>(prop.targetMeta!, {} as ObjectQuery<Entity>, { ...options, populate: hint.children as any, populateWhere: PopulateHint.ALL });
+
+        if (Utils.hasObjectKeys(where)) {
+          ret[hint.field] = ret[hint.field] ? { $and: [where, ret[hint.field]] } : where;
+        }
+
+        if (Utils.hasObjectKeys(where2)) {
+          if (ret[hint.field]) {
+            Utils.merge(ret[hint.field], where2);
+          } else {
+            ret[hint.field] = where2;
+          }
+        }
+      }
+    }
+
+    return ret;
   }
 
   /**
@@ -457,7 +518,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (cached?.data) {
       await em.entityLoader.populate<Entity, Hint>(entityName, [cached.data as Entity], options.populate as unknown as PopulateOptions<Entity>[], {
         ...options as Dictionary,
-        ...em.getPopulateWhere(where as FilterQuery<Entity>, options),
+        ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
         convertCustomTypes: false,
         ignoreLazyScalarProperties: true,
         lookup: false,
@@ -466,7 +527,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data;
     }
 
-    const data = await em.driver.findOne<Entity, Hint>(entityName, where, { ctx: em.transactionContext, ...options });
+    options = { ...options };
+    options.populateWhere = await this.applyJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
+    const data = await em.driver.findOne<Entity, Hint>(entityName, where, {
+      ctx: em.transactionContext,
+      ...options,
+    });
 
     if (!data) {
       await em.storeCache(options.cache, cached!, null);
@@ -515,6 +581,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       const key = options.strict ? 'findExactlyOneOrFailHandler' : 'findOneOrFailHandler';
       options.failHandler ??= this.config.get(key);
       entityName = Utils.className(entityName);
+      where = Utils.isEntity(where) ? helper(where).getPrimaryKey() as any : where;
       throw options.failHandler!(entityName, where);
     }
 
@@ -1616,7 +1683,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const preparedPopulate = this.preparePopulate<T, P>(entityName, options);
     await this.entityLoader.populate(entityName, [entity], preparedPopulate, {
       ...options as Dictionary,
-      ...this.getPopulateWhere(where, options),
+      ...this.getPopulateWhere<T>(where as ObjectQuery<T>, options),
       convertCustomTypes: false,
       ignoreLazyScalarProperties: true,
       lookup: false,
