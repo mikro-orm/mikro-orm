@@ -12,7 +12,7 @@ export type WeightedFullTextValue = { [K in FullTextWeight]?: string | null };
 
 export class FullTextType extends Type<string | WeightedFullTextValue, string | null | RawQueryFragment> {
 
-  constructor(public regconfig: string = 'simple') {
+  constructor(public regconfig = 'simple') {
     super();
   }
 
