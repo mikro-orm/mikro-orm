@@ -134,7 +134,7 @@ export class EntityFactory {
       const prop = meta.properties[key];
 
       if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && Utils.isPlainObject(data[prop.name])) {
-        diff2[key] = helper(entity[prop.name]).getPrimaryKey(options.convertCustomTypes);
+        diff2[key] = entity[prop.name] ? helper(entity[prop.name]).getPrimaryKey(options.convertCustomTypes) : null;
       }
 
       originalEntityData[key] = diff2[key] === null ? nullVal : diff2[key];
