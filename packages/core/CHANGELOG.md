@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.1](https://github.com/mikro-orm/mikro-orm/compare/v5.8.0...v5.8.1) (2023-09-12)
+
+
+### Bug Fixes
+
+* **core:** ensure entity is not in persist stack after `em.insert/Many()` is called ([94eed5e](https://github.com/mikro-orm/mikro-orm/commit/94eed5e1aa7192d1b0658eb5b0cc3589cfaacff5)), closes [#4692](https://github.com/mikro-orm/mikro-orm/issues/4692)
+* **core:** ensure merging of data to already loaded entities won't fail in some cases ([f6e8204](https://github.com/mikro-orm/mikro-orm/commit/f6e8204f6c4fbafe882c0cb0b475dd45e19a4777)), closes [#4688](https://github.com/mikro-orm/mikro-orm/issues/4688)
+* **core:** try to fix merging of large collections loaded via joined strategy ([faae84e](https://github.com/mikro-orm/mikro-orm/commit/faae84e19b40f0a5fcbf057cce5370602b34ec80)), closes [#4694](https://github.com/mikro-orm/mikro-orm/issues/4694)
+
+
+
+
+
 # [5.8.0](https://github.com/mikro-orm/mikro-orm/compare/v5.7.14...v5.8.0) (2023-09-10)
 
 

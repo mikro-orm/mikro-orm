@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.1](https://github.com/mikro-orm/mikro-orm/compare/v5.8.0...v5.8.1) (2023-09-12)
+
+
+### Bug Fixes
+
+* **core:** fix merging of collections loaded via joined strategy ([b4a0260](https://github.com/mikro-orm/mikro-orm/commit/b4a0260afb3c41da4c15a8f69b09c228303b7a3f)), closes [#4694](https://github.com/mikro-orm/mikro-orm/issues/4694)
+* **core:** try to fix merging of large collections loaded via joined strategy ([faae84e](https://github.com/mikro-orm/mikro-orm/commit/faae84e19b40f0a5fcbf057cce5370602b34ec80)), closes [#4694](https://github.com/mikro-orm/mikro-orm/issues/4694)
+
+
+
+
+
 # [5.8.0](https://github.com/mikro-orm/mikro-orm/compare/v5.7.14...v5.8.0) (2023-09-10)
 
 
