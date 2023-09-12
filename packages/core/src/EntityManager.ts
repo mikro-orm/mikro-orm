@@ -1090,6 +1090,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (Utils.isEntity<Entity>(data)) {
+      // the entity might have been created via `em.create()`, which adds it to the persist stack automatically
+      em.unitOfWork.getPersistStack().delete(data);
+
       const meta = helper(data).__meta;
       const payload = em.comparator.prepareEntity(data);
       const cs = new ChangeSet(data, ChangeSetType.CREATE, payload, meta);
@@ -1127,6 +1130,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (Utils.isEntity<Entity>(data[0])) {
       const meta = helper<Entity>(data[0]).__meta;
       const css = data.map(row => {
+        // the entity might have been created via `em.create()`, which adds it to the persist stack automatically
+        em.unitOfWork.getPersistStack().delete(row);
+
         const payload = em.comparator.prepareEntity(row) as EntityData<Entity>;
         return new ChangeSet<Entity>(row as Entity, ChangeSetType.CREATE, payload, meta);
       });
