@@ -779,7 +779,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (map[pk]) {
         joinedProps.forEach(hint => {
-          if (Array.isArray(map[pk][hint.field]) && Array.isArray(item[hint.field])) {
+          // Sometimes we might join a M:N relation with additional filter on the target entity, and as a result, we get
+          // the first result with `null` for all target values, which is mapped as empty array. When we see that happen,
+          // we need to merge the results of the next item.
+          if (Array.isArray(map[pk][hint.field]) && Array.isArray(item[hint.field]) && map[pk][hint.field].length === 0) {
             item[hint.field].forEach((el: T) => map[pk][hint.field].push(el));
           }
         });
