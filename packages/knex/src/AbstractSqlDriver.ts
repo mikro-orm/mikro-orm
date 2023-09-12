@@ -780,7 +780,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       if (map[pk]) {
         joinedProps.forEach(hint => {
           if (Array.isArray(map[pk][hint.field]) && Array.isArray(item[hint.field])) {
-            map[pk][hint.field].push(...item[hint.field]);
+            item[hint.field].forEach((el: T) => map[pk][hint.field].push(el));
           }
         });
       } else {
