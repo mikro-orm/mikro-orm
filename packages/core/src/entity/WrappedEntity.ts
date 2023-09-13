@@ -138,6 +138,10 @@ export class WrappedEntity<Entity extends object> {
   getPrimaryKey(convertCustomTypes = false): Primary<Entity> | null {
     const prop = this.__meta.getPrimaryProps()[0];
 
+    if (!prop) {
+      return null;
+    }
+
     if (this.__pk != null && this.__meta.compositePK) {
       return Utils.getCompositeKeyValue(this.__pk, this.__meta, convertCustomTypes ? 'convertToDatabaseValue' : false, this.__platform);
     }
