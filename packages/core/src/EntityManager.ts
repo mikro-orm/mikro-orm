@@ -1451,9 +1451,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const count = await em.driver.count<Entity, Hint>(entityName, where, { ctx: em.transactionContext, ...options });
-    await em.storeCache(options.cache, cached!, () => count);
+    await em.storeCache(options.cache, cached!, () => +count);
 
-    return count;
+    return +count;
   }
 
   /**
