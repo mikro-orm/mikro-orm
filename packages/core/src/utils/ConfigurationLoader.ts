@@ -95,7 +95,7 @@ export class ConfigurationLoader {
 
     paths.push(...(settings.configPaths || []));
 
-    if (settings.useTsNode) {
+    if (settings.useTsNode || settings.alwaysAllowTs) {
       paths.push('./src/mikro-orm.config.ts');
       paths.push('./mikro-orm.config.ts');
     }
