@@ -426,12 +426,15 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
     process.env.MIKRO_ORM_CLI_USE_TS_NODE = '1';
     process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH = 'foo/tsconfig.json';
+    process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS = '1';
     await expect(ConfigurationLoader.getSettings()).resolves.toEqual({
       useTsNode: true,
+      alwaysAllowTs: true,
       tsConfigPath: 'foo/tsconfig.json',
     });
     delete process.env.MIKRO_ORM_CLI_USE_TS_NODE;
     delete process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH;
+    delete process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS;
 
     pathExistsMock.mockRestore();
   });
@@ -455,6 +458,14 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./override/orm-config.ts', './src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
     delete (global as any).process.env.MIKRO_ORM_CLI;
     await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./src/mikro-orm.config.js', './mikro-orm.config.js']);
+
+    (global as any).process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS = '1';
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
+    delete (global as any).process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS;
+
+    pkg['mikro-orm'] = { alwaysAllowTs: true };
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
+    pkg['mikro-orm'] = undefined;
 
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockResolvedValue(true);
