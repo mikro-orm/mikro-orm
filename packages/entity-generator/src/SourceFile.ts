@@ -1,4 +1,16 @@
-import { DateType, DecimalType, ReferenceType, UnknownType, Utils, type Dictionary, type EntityMetadata, type EntityOptions, type EntityProperty, type NamingStrategy, type Platform } from '@mikro-orm/core';
+import {
+  DateType,
+  DecimalType,
+  type Dictionary,
+  type EntityMetadata,
+  type EntityOptions,
+  type EntityProperty,
+  type NamingStrategy,
+  type Platform,
+  ReferenceType,
+  UnknownType,
+  Utils,
+} from '@mikro-orm/core';
 
 export class SourceFile {
 
@@ -29,6 +41,7 @@ export class SourceFile {
     ret += `export class ${this.meta.className} {`;
     const enumDefinitions: string[] = [];
     const optionalProperties: EntityProperty<any>[] = [];
+    const primaryProps: EntityProperty<any>[] = [];
     let classBody = '\n';
     Object.values(this.meta.properties).forEach(prop => {
       const decorator = this.getPropertyDecorator(prop, 2);
@@ -50,13 +63,33 @@ export class SourceFile {
       if (!prop.nullable && typeof prop.default !== 'undefined') {
           optionalProperties.push(prop);
       }
+
+      if (prop.primary && (!['id', '_id', 'uuid'].includes(prop.name) || this.meta.compositePK)) {
+        primaryProps.push(prop);
+      }
     });
 
-    if (optionalProperties.length > 0) {
-        this.coreImports.add('OptionalProps');
-        const optionalPropertyNames = optionalProperties.map(prop => `'${prop.name}'`).sort();
-        ret += `\n\n${' '.repeat(2)}[OptionalProps]?: ${optionalPropertyNames.join(' | ')};`;
+    if (primaryProps.length > 0) {
+      this.coreImports.add('PrimaryKeyType');
+      this.coreImports.add('PrimaryKeyProp');
+      const findType = (p: EntityProperty) => p.reference === ReferenceType.SCALAR ? p.type : this.platform.getMappedType(p.columnTypes[0]).compareAsType();
+      const primaryPropNames = primaryProps.map(prop => `'${prop.name}'`);
+      const primaryPropTypes = primaryProps.map(prop => findType(prop));
+      ret += `\n\n${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames.join(' | ')};`;
+
+      if (primaryProps.length > 1) {
+        ret += `\n\n${' '.repeat(2)}[PrimaryKeyType]?: [${primaryPropTypes.join(', ')}];`;
+      } else {
+        ret += `\n\n${' '.repeat(2)}[PrimaryKeyType]?: ${primaryPropTypes[0]};`;
+      }
     }
+
+    if (optionalProperties.length > 0) {
+      this.coreImports.add('OptionalProps');
+      const optionalPropertyNames = optionalProperties.map(prop => `'${prop.name}'`).sort();
+      ret += `\n\n${' '.repeat(2)}[OptionalProps]?: ${optionalPropertyNames.join(' | ')};`;
+    }
+
     ret += `${classBody}}\n`;
     const imports = [`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`];
     const entityImportExtension = this.esmImport ? '.js' : '';

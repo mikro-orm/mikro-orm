@@ -1,7 +1,6 @@
 import { pathExists, remove } from 'fs-extra';
 import { MikroORM } from '@mikro-orm/core';
 import { DatabaseTable } from '@mikro-orm/knex';
-import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { initORMMySql, initORMPostgreSql, initORMSqlite } from '../../bootstrap';
