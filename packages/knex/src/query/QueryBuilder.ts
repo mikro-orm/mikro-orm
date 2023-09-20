@@ -903,7 +903,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
       }
 
       if (prop?.embedded) {
-        const fieldName = this.helper.mapper(prop.fieldNames[0], this.type) as string;
+        const name = this._aliases[a] ? `${a}.${prop.fieldNames[0]}` : prop.fieldNames[0];
+        const fieldName = this.helper.mapper(name, this.type) as string;
         ret.push(fieldName);
         return;
       }

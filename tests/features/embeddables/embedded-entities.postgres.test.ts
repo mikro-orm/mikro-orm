@@ -1,4 +1,15 @@
-import { Embeddable, Embedded, Entity, expr, MikroORM, PrimaryKey, Property, ReferenceType, t } from '@mikro-orm/core';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  expr,
+  ManyToOne,
+  MikroORM,
+  PrimaryKey,
+  Property,
+  ReferenceType, Rel,
+  t,
+} from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
@@ -58,6 +69,17 @@ class Address2 {
 }
 
 @Entity()
+class Foo {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => User)
+  user!: Rel<User>;
+
+}
+
+@Entity()
 class User {
 
   @PrimaryKey()
@@ -92,7 +114,7 @@ describe('embedded entities in postgresql', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [User],
+      entities: [User, Foo],
       dbName: 'mikro_orm_test_embeddables',
       driver: PostgreSqlDriver,
     });
@@ -387,6 +409,28 @@ describe('embedded entities in postgresql', () => {
 
     const userAfterUpdate = await orm.em.findOne(User, user.id);
     expect(userAfterUpdate?.after).toBe(2);
+  });
+
+  test('GH #4711', async () => {
+    const user = new User();
+    user.email = `test-${Math.random()}`;
+    user.address1 = new Address1('Test 1', 10, '12000', 'Prague', 'CZ');
+    user.address3 = new Address1('Test 3', 10, '12000', 'Prague', 'CZ');
+    user.address4 = new Address1('Test 4', 10, '12000', 'Prague', 'CZ');
+    const foo = new Foo();
+    foo.user = user;
+    await orm.em.fork().persistAndFlush(foo);
+
+    const query = orm.em.qb(Foo, 'f')
+      .leftJoin('f.user', 'u')
+      .select(['f.*', 'u.street']);
+    expect(query.getQuery()).toBe('select "f".*, "u"."street" from "foo" as "f" left join "user" as "u" on "f"."user_id" = "u"."id"');
+    await expect(query).resolves.toEqual([
+      {
+        id: 1,
+        user: { id: 1 },
+      },
+    ]);
   });
 
   test('query by complex custom expressions with JSON operator and casting (GH issue 1261)', async () => {
