@@ -379,4 +379,48 @@ describe('multiple connected schemas in postgres', () => {
     expect(entities).toMatchSnapshot();
   });
 
+  test('use different schema via options in em.insert/Many', async () => {
+    const mock = mockLogger(orm);
+
+    // author is always in schema `n1`
+    const author = new Author();
+    author.name = 'a1';
+    await orm.em.insert(author);
+
+    // each book has different schema, such collection can be used for persisting, but it can't be loaded (as we can load only from single schema at a time)
+    const book31 = new Book();
+    const book41 = new Book();
+    const book51 = new Book();
+    const book52 = new Book();
+    author.books.add(book31, book41, book51, book52);
+
+    await orm.em.insertMany(Book, [book51, book52], { schema: 'n5' });
+    await orm.em.insert(Book, book31, { schema: 'n3' });
+    await orm.em.insert(Book, book41, { schema: 'n4' });
+
+    orm.em.merge(author);
+
+    // schema not specified yet, will be used from metadata
+    expect(wrap(author).getSchema()).toBe('n1'); // set by `em.create()`
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
+      'Author-n1:1',
+      'Book-n3:1',
+      'Book-n4:1',
+      'Book-n5:1',
+      'Book-n5:2',
+    ]);
+    expect(mock.mock.calls[0][0]).toMatch(`insert into "n1"."author" ("name") values ('a1') returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "n5"."book" ("author_id") values (1), (1) returning "id"`);
+    expect(mock.mock.calls[2][0]).toMatch(`insert into "n3"."book" ("author_id") values (1) returning "id"`);
+    expect(mock.mock.calls[3][0]).toMatch(`insert into "n4"."book" ("author_id") values (1) returning "id"`);
+    mock.mockReset();
+
+    // schema is saved after flush as if the entity was loaded from db
+    expect(wrap(author).getSchema()).toBe('n1');
+    expect(wrap(author.books[0]).getSchema()).toBe('n3');
+    expect(wrap(author.books[1]).getSchema()).toBe('n4');
+    expect(author.books[2].getSchema()).toBe('n5');
+    expect(author.books[3].getSchema()).toBe('n5');
+  });
+
 });
