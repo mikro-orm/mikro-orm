@@ -1174,6 +1174,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (Utils.isEntity<Entity>(data)) {
+      if (options.schema && helper(data).getSchema() == null) {
+        helper(data).setSchema(options.schema);
+      }
+
       // the entity might have been created via `em.create()`, which adds it to the persist stack automatically
       em.unitOfWork.getPersistStack().delete(data);
 
@@ -1214,6 +1218,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (Utils.isEntity<Entity>(data[0])) {
       const meta = helper<Entity>(data[0]).__meta;
       const css = data.map(row => {
+        if (options.schema && helper(row).getSchema() == null) {
+          helper(row).setSchema(options.schema);
+        }
+
         // the entity might have been created via `em.create()`, which adds it to the persist stack automatically
         em.unitOfWork.getPersistStack().delete(row);
 
