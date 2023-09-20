@@ -147,7 +147,7 @@ export class MigrationCommandFactory {
 
     CLIHelper.dumpTable({
       columns: ['Name', 'Executed at'],
-      rows: executed.map(row => [row.name.replace(/\.[jt]s$/, ''), row.executed_at.toISOString()]),
+      rows: executed.map(row => [row.name.replace(/\.[jt]s$/, ''), row.executed_at?.toISOString()]),
       empty: 'No migrations executed yet',
     });
   }

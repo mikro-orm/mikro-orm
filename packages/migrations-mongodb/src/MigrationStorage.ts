@@ -19,7 +19,7 @@ export class MigrationStorage implements UmzugStorage {
   async logMigration(params: MigrationParams<any>): Promise<void> {
     const tableName = this.options.tableName!;
     const name = this.getMigrationName(params.name);
-    await this.driver.nativeInsert(tableName, { name, created_at: new Date() }, { ctx: this.masterTransaction });
+    await this.driver.nativeInsert(tableName, { name, executed_at: new Date() }, { ctx: this.masterTransaction });
   }
 
   async unlogMigration(params: MigrationParams<any>): Promise<void> {
