@@ -1,11 +1,58 @@
 import {
-  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, Collection, Entity, OneToMany, Property, ManyToOne,
-  QueryOrder, OnInit, ManyToMany, Index, Unique, OneToOne, Cascade, LoadStrategy, EventArgs, t, OnLoad, OptionalProps,
+  AfterCreate,
+  AfterDelete,
+  AfterUpdate,
+  BeforeCreate,
+  BeforeDelete,
+  BeforeUpdate,
+  Collection,
+  Entity,
+  OneToMany,
+  Property,
+  ManyToOne,
+  QueryOrder,
+  OnInit,
+  ManyToMany,
+  Index,
+  Unique,
+  OneToOne,
+  Cascade,
+  LoadStrategy,
+  EventArgs,
+  t,
+  OnLoad,
+  OptionalProps,
+  HiddenProps,
+  Embeddable,
+  Embedded,
 } from '@mikro-orm/core';
 
 import { Book2 } from './Book2';
 import { BaseEntity2 } from './BaseEntity2';
 import { Address2 } from './Address2';
+
+@Embeddable()
+export class Identity {
+
+  [HiddenProps]?: 'foo' | 'bar';
+
+  @Property({ hidden: true })
+  foo: string;
+
+  @Property({ hidden: true })
+  bar: number;
+
+  constructor(foo: string, bar: number) {
+    this.foo = foo;
+    this.bar = bar;
+  }
+
+  @Property({ persist: false })
+  get fooBar() {
+    return this.foo + ' ' + this.bar;
+  }
+
+}
 
 @Entity()
 @Index({ properties: ['name', 'age'] })
@@ -73,6 +120,9 @@ export class Author2 extends BaseEntity2 {
 
   @ManyToOne({ nullable: true })
   favouriteAuthor?: Author2;
+
+  @Embedded(() => Identity, { nullable: true, object: true })
+  identity?: Identity;
 
   @Property({ persist: false })
   version!: number;
