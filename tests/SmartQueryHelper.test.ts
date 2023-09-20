@@ -1,7 +1,7 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { Reference, QueryHelper } from '@mikro-orm/core';
 import { initORMMySql } from './bootstrap';
-import { Author2, Book2, FooBar2, FooBaz2, Test2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Test2 } from './entities-sql';
 import { FooParam2 } from './entities-sql/FooParam2';
 
 describe('QueryHelper', () => {
@@ -83,6 +83,17 @@ describe('QueryHelper', () => {
 
   test('processWhere returns empty object for undefined condition', async () => {
     expect(QueryHelper.processWhere({ where: undefined as any, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual({});
+  });
+
+  test('processWhere returns pk when pk is empty string and condition is entity', async () => {
+    const test = new BookTag2('Test');
+    test.id = '';
+    expect(QueryHelper.processWhere({ where: test, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual('');
+  });
+
+  test('processWhere returns pk when pk is 0 and condition is entity', async () => {
+    const test = new Test2({ id: 0 });
+    expect(QueryHelper.processWhere({ where: test, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual(0);
   });
 
   test('test entity conversion to PK', async () => {

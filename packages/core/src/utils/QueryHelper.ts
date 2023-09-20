@@ -95,7 +95,7 @@ export class QueryHelper {
       QueryHelper.inlinePrimaryKeyObjects(where as Dictionary, meta, metadata);
     }
 
-    where = QueryHelper.processParams(where) || {};
+    where = QueryHelper.processParams(where) ?? {};
 
     /* istanbul ignore next */
     if (!root && Utils.isPrimaryKey<T>(where)) {
