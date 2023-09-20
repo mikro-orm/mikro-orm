@@ -97,7 +97,7 @@ export class QueryHelper {
 
     where = QueryHelper.processParams(where);
 
-    if (!where && typeof where !== 'number') {
+    if (where == null) {
       where = {};
     }
 
