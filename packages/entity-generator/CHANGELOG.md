@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.2](https://github.com/mikro-orm/mikro-orm/compare/v5.8.1...v5.8.2) (2023-09-20)
+
+
+### Features
+
+* **entity-generator:** generate `PrimaryKeyProp` and `PrimaryKeyType` symbols ([605446a](https://github.com/mikro-orm/mikro-orm/commit/605446a5f9f19fc9c67e7dd758132e487c28a29a))
+
+
+
+
+
 ## [5.8.1](https://github.com/mikro-orm/mikro-orm/compare/v5.8.0...v5.8.1) (2023-09-12)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

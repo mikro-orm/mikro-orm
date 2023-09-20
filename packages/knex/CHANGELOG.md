@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.2](https://github.com/mikro-orm/mikro-orm/compare/v5.8.1...v5.8.2) (2023-09-20)
+
+
+### Bug Fixes
+
+* **query-builder:** fix aliasing of joined embedded properties ([24c4ece](https://github.com/mikro-orm/mikro-orm/commit/24c4ece2775c0dbfc4e53ffbc3f33ec5524e5760)), closes [#4711](https://github.com/mikro-orm/mikro-orm/issues/4711)
+
+
+
+
+
 ## [5.8.1](https://github.com/mikro-orm/mikro-orm/compare/v5.8.0...v5.8.1) (2023-09-12)
 
 

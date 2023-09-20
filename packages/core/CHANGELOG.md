@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.2](https://github.com/mikro-orm/mikro-orm/compare/v5.8.1...v5.8.2) (2023-09-20)
+
+
+### Bug Fixes
+
+* **core:** fix query processing when PK is falsy ([#4713](https://github.com/mikro-orm/mikro-orm/issues/4713)) ([3624cb7](https://github.com/mikro-orm/mikro-orm/commit/3624cb7e3362a2625076072a7150f60e625b9100))
+
+
+### Features
+
+* **core:** allow to use `.ts` files as configuration without `ts-node` ([#4702](https://github.com/mikro-orm/mikro-orm/issues/4702)) ([bda7eca](https://github.com/mikro-orm/mikro-orm/commit/bda7eca955124e13f68aaf1fecdb993f0f3eb8b1)), closes [#4701](https://github.com/mikro-orm/mikro-orm/issues/4701)
+
+
+
+
+
 ## [5.8.1](https://github.com/mikro-orm/mikro-orm/compare/v5.8.0...v5.8.1) (2023-09-12)
 
 
