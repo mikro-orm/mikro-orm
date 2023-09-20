@@ -114,6 +114,7 @@ export class Author2 {
   bornTime?: string;
   favouriteBook?: Ref<Book2>;
   favouriteAuthor?: Ref<Author2>;
+  identity?: any;
   authorToFriend = new Collection<Author2>(this);
   following = new Collection<Author2>(this);
   authorInverse = new Collection<Book2>(this);
@@ -167,6 +168,7 @@ export const Author2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
+    identity: { type: 'any', columnType: 'json', nullable: true },
     authorToFriend: {
       kind: 'm:n',
       entity: () => Author2,
@@ -855,6 +857,9 @@ export class Author2 {
   @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteAuthor?: Author2;
 
+  @Property({ columnType: 'json', nullable: true })
+  identity?: any;
+
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   authorToFriend = new Collection<Author2>(this);
 
@@ -1377,6 +1382,9 @@ export class Author2 {
 
   @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteAuthor?: Author2;
+
+  @Property({ columnType: 'jsonb', nullable: true })
+  identity?: any;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   authorToFriend = new Collection<Author2>(this);
@@ -1955,6 +1963,9 @@ export class Author2 {
 
   @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteAuthor?: Author2;
+
+  @Property({ columnType: 'json', nullable: true })
+  identity?: any;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   authorToFriend = new Collection<Author2>(this);
@@ -2565,6 +2576,9 @@ export class Author2 {
   @ManyToOne({ entity: () => Author2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteAuthor?: Ref<Author2>;
 
+  @Property({ columnType: 'json', nullable: true })
+  identity?: any;
+
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   authorToFriend = new Collection<Author2>(this);
 
@@ -3174,6 +3188,9 @@ export class Author2 {
   @ManyToOne({ entity: () => Author2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteAuthor?: Ref<Author2>;
 
+  @Property({ columnType: 'json', nullable: true })
+  identity?: any;
+
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   authorToFriend = new Collection<Author2>(this);
 
@@ -3751,6 +3768,9 @@ export class Author2 {
   @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteAuthor?: Author2;
 
+  @Property({ columnType: 'json', nullable: true })
+  identity?: any;
+
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   authorToFriend = new Collection<Author2>(this);
 
@@ -4235,6 +4255,9 @@ export class Author2 {
 
   @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteAuthor?: Author2;
+
+  @Property({ columnType: 'jsonb', nullable: true })
+  identity?: any;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   authorToFriend = new Collection<Author2>(this);
