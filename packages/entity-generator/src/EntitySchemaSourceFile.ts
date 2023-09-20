@@ -5,25 +5,51 @@ export class EntitySchemaSourceFile extends SourceFile {
 
   override generate(): string {
     this.coreImports.add('EntitySchema');
-    let ret = `export class ${this.meta.className} {`;
+    let ret = `export class ${this.meta.className} {\n`;
     const enumDefinitions: string[] = [];
+    const optionalProperties: EntityProperty<any>[] = [];
+    const primaryProps: EntityProperty<any>[] = [];
+    const props: string[] = [];
 
     for (const prop of Object.values(this.meta.properties)) {
-      const definition = this.getPropertyDefinition(prop, 2);
-
-      if (!ret.endsWith('\n')) {
-        ret += '\n';
-      }
-
-      ret += definition;
+      props.push(this.getPropertyDefinition(prop, 2));
 
       if (prop.enum) {
         const enumClassName = this.namingStrategy.getClassName(this.meta.collection + '_' + prop.fieldNames[0], '_');
         enumDefinitions.push(this.getEnumClassDefinition(enumClassName, prop.items as string[], 2));
       }
+
+      if (!prop.nullable && typeof prop.default !== 'undefined') {
+        optionalProperties.push(prop);
+      }
+
+      if (prop.primary && (!['id', '_id', 'uuid'].includes(prop.name) || this.meta.compositePK)) {
+        primaryProps.push(prop);
+      }
     }
 
-    ret += '}\n';
+    if (primaryProps.length > 0) {
+      this.coreImports.add('PrimaryKeyType');
+      this.coreImports.add('PrimaryKeyProp');
+      const findType = (p: EntityProperty) => p.kind === ReferenceKind.SCALAR ? p.type : this.platform.getMappedType(p.columnTypes[0]).compareAsType();
+      const primaryPropNames = primaryProps.map(prop => `'${prop.name}'`);
+      const primaryPropTypes = primaryProps.map(prop => findType(prop));
+      ret += `${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames.join(' | ')};\n`;
+
+      if (primaryProps.length > 1) {
+        ret += `${' '.repeat(2)}[PrimaryKeyType]?: [${primaryPropTypes.join(', ')}];\n`;
+      } else {
+        ret += `${' '.repeat(2)}[PrimaryKeyType]?: ${primaryPropTypes[0]};\n`;
+      }
+    }
+
+    if (optionalProperties.length > 0) {
+      this.coreImports.add('OptionalProps');
+      const optionalPropertyNames = optionalProperties.map(prop => `'${prop.name}'`).sort();
+      ret += `${' '.repeat(2)}[OptionalProps]?: ${optionalPropertyNames.join(' | ')};\n`;
+    }
+
+    ret += `${props.join('')}}\n`;
 
     const imports = [`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`];
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);

@@ -74,10 +74,12 @@ export enum Publisher2Type2 {
 
 exports[`EntityGenerator generate EntitySchema with bidirectional relations and reference wrappers [mysql]: mysql-entity-schema-bidirectional-dump 1`] = `
 [
-  "import { EntitySchema, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, PrimaryKeyType, Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 export class Address2 {
+  [PrimaryKeyProp]?: 'author';
+  [PrimaryKeyType]?: number;
   author!: Ref<Author2>;
   value!: string;
 }
@@ -97,10 +99,11 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, OptionalProps, Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 export class Author2 {
+  [OptionalProps]?: 'createdAt' | 'termsAccepted' | 'updatedAt';
   id!: number;
   createdAt!: Date;
   updatedAt!: Date;
@@ -268,7 +271,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp, PrimaryKeyType, Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -276,6 +279,9 @@ import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
 export class Book2 {
+  [PrimaryKeyProp]?: 'uuidPk';
+  [PrimaryKeyType]?: string;
+  [OptionalProps]?: 'createdAt';
   uuidPk!: string;
   createdAt!: Date;
   title?: string;
@@ -325,11 +331,13 @@ export const Book2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, PrimaryKeyType, Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
 export class Book2Tags {
+  [PrimaryKeyProp]?: 'order';
+  [PrimaryKeyType]?: number;
   order!: number;
   book2!: Ref<Book2>;
   bookTag2!: Ref<BookTag2>;
@@ -375,11 +383,13 @@ export const CarOwner2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, PrimaryKeyType, Ref } from '@mikro-orm/core';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
 export class Car2 {
+  [PrimaryKeyProp]?: 'name' | 'year';
+  [PrimaryKeyType]?: [string, number];
   name!: string;
   year!: number;
   price!: number;
@@ -400,10 +410,12 @@ export const Car2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, PrimaryKeyType, Ref } from '@mikro-orm/core';
 import { Test2 } from './Test2';
 
 export class Configuration2 {
+  [PrimaryKeyProp]?: 'property' | 'test';
+  [PrimaryKeyType]?: [string, number];
   property!: string;
   test!: Ref<Test2>;
   value!: string;
@@ -437,12 +449,13 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, OptionalProps, Ref } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
+  [OptionalProps]?: 'version';
   id!: number;
   name!: string;
   nameWithSpace?: string;
@@ -491,10 +504,11 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, OptionalProps } from '@mikro-orm/core';
 import { FooParam2 } from './FooParam2';
 
 export class FooBaz2 {
+  [OptionalProps]?: 'version';
   id!: number;
   name!: string;
   version!: Date;
@@ -511,11 +525,14 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, OptionalProps, PrimaryKeyProp, PrimaryKeyType, Ref } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 {
+  [PrimaryKeyProp]?: 'bar' | 'baz';
+  [PrimaryKeyType]?: [number, number];
+  [OptionalProps]?: 'version';
   bar!: Ref<FooBar2>;
   baz!: Ref<FooBaz2>;
   value!: string;
@@ -544,11 +561,12 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, OptionalProps } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
 export class Publisher2 {
+  [OptionalProps]?: 'name' | 'type' | 'type2';
   id!: number;
   name!: string;
   type: Publisher2Type = Publisher2Type.LOCAL;
@@ -651,13 +669,14 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, OptionalProps, Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
 import { Publisher2Tests } from './Publisher2Tests';
 
 export class Test2 {
+  [OptionalProps]?: 'version';
   id!: number;
   name?: string;
   book?: Ref<Book2>;
@@ -714,11 +733,13 @@ export const Test2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, PrimaryKeyType, Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
 export class User2 {
+  [PrimaryKeyProp]?: 'firstName' | 'lastName';
+  [PrimaryKeyType]?: [string, string];
   firstName!: string;
   lastName!: string;
   foo?: number;
