@@ -85,10 +85,10 @@ describe('QueryHelper', () => {
     expect(QueryHelper.processWhere({ where: undefined as any, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual({});
   });
 
-  test('processWhere returns empty object for entity pk as empty string condition', async () => {
+  test('processWhere returns pk when pk is empty string and condition is entity', async () => {
     const test = new BookTag2('Test');
     test.id = '';
-    expect(QueryHelper.processWhere({ where: test, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual({});
+    expect(QueryHelper.processWhere({ where: test, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual('');
   });
 
   test('processWhere returns pk when pk is 0 and condition is entity', async () => {
