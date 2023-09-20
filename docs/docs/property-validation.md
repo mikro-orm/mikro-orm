@@ -51,6 +51,34 @@ class User {
 }
 ```
 
+When you want to define some optional properties in your own base entity class, use generics, so you can add more properties from the extending classes:
+
+```ts
+@Entity()
+class MyBaseEntity<Optional extends keyof T = never> {
+
+  [OptionalProps]?: 'foo' | 'bar' | Optional;
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ default: 1 })
+  foo: number = 1;
+
+  @Property({ default: 2 })
+  bar: number = 2;
+
+}
+
+@Entity()
+class User extends MyBaseEntity<'baz'> {
+
+  @Property({ default: 3 })
+  baz: number = 3;
+
+}
+```
+
 ### Runtime validation
 
 The runtime validation happens on flush operation, right before we fire the insert queries.
