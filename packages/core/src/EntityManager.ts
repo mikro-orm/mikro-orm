@@ -1867,6 +1867,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Sets the default schema of this EntityManager. Respects the context, so global EM will set the contextual schema
+   * if executed inside request context handler.
+   */
+  set schema(schema: string | null | undefined) {
+    this.getContext(false)._schema = schema ?? undefined;
+  }
+
+  /**
    * Returns the ID of this EntityManager. Respects the context, so global EM will give you the contextual ID
    * if executed inside request context handler.
    */

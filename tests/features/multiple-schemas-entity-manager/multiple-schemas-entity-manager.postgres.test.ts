@@ -200,6 +200,212 @@ describe('multiple connected schemas in postgres', () => {
     expect(n5tags).toHaveLength(0);
   });
 
+  test('different schema on orm and fork, set schema with setter', async () => {
+    orm.config.set('schema', 'n4'); // set the schema to a different schema than the fork
+
+    let author = new Author();
+    author.name = 'a1';
+    author.books.add(new Book(), new Book(), new Book());
+    author.books[0].tags.add(new BookTag(), new BookTag(), new BookTag());
+    author.books[1].basedOn = author.books[0];
+    author.books[1].tags.add(new BookTag(), new BookTag(), new BookTag());
+    author.books[2].basedOn = author.books[0];
+    author.books[2].tags.add(new BookTag(), new BookTag(), new BookTag());
+
+    // schema not specified yet, will be used from metadata
+    expect(wrap(author).getSchema()).toBeUndefined();
+    const fork = orm.em.fork({
+      schema: 'n1',
+    });
+    fork.schema = 'n2';
+
+    await fork.persistAndFlush(author);
+    // schema is saved after flush
+    expect(wrap(author).getSchema()).toBe('n1');
+    expect(wrap(author.books[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[0].tags[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[1]).getSchema()).toBe('n2');
+    expect(wrap(author.books[1].tags[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[2]).getSchema()).toBe('n2');
+    expect(wrap(author.books[2].tags[0]).getSchema()).toBe('n2');
+
+    fork.clear();
+    author = await fork.findOneOrFail(Author, author, { populate: true });
+
+    expect(fork.getUnitOfWork().getIdentityMap().keys()).toEqual([
+      'Author-n1:1',
+      'Book-n2:1',
+      'Book-n2:2',
+      'Book-n2:3',
+      'BookTag-n2:1',
+      'BookTag-n2:2',
+      'BookTag-n2:3',
+      'BookTag-n2:4',
+      'BookTag-n2:5',
+      'BookTag-n2:6',
+      'BookTag-n2:7',
+      'BookTag-n2:8',
+      'BookTag-n2:9',
+    ]);
+
+    expect(wrap(author).getSchema()).toBe('n1');
+    expect(wrap(author.books[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[0].tags[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[1]).getSchema()).toBe('n2');
+    expect(wrap(author.books[1].tags[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[2]).getSchema()).toBe('n2');
+    expect(wrap(author.books[2].tags[0]).getSchema()).toBe('n2');
+
+    // update entities and flush
+    author.name = 'new name';
+    author.books[0].name = 'new name 1';
+    author.books[0].tags[0].name = 'new name 1';
+    author.books[1].name = 'new name 2';
+    author.books[1].tags[0].name = 'new name 2';
+    author.books[2].name = 'new name 3';
+    author.books[2].tags[0].name = 'new name 3';
+
+    const mock = mockLogger(orm);
+    await fork.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch(`begin`);
+    expect(mock.mock.calls[1][0]).toMatch(`update "n2"."book_tag" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 4) then 'new name 2' when ("id" = 7) then 'new name 3' else "name" end where "id" in (1, 4, 7)`);
+    expect(mock.mock.calls[2][0]).toMatch(`update "n1"."author" set "name" = 'new name' where "id" = 1`);
+    expect(mock.mock.calls[3][0]).toMatch(`update "n2"."book" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 2) then 'new name 2' when ("id" = 3) then 'new name 3' else "name" end where "id" in (1, 2, 3)`);
+    expect(mock.mock.calls[4][0]).toMatch(`commit`);
+    mock.mockReset();
+
+    // remove entity
+    fork.remove(author);
+    await fork.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch(`begin`);
+    expect(mock.mock.calls[1][0]).toMatch(`delete from "n2"."book" where "id" in (1, 2, 3)`);
+    expect(mock.mock.calls[2][0]).toMatch(`delete from "n1"."author" where "id" in (1)`);
+    expect(mock.mock.calls[3][0]).toMatch(`delete from "n2"."book_tag" where "id" in (1, 2, 3, 4, 5, 6, 7, 8, 9)`);
+    expect(mock.mock.calls[4][0]).toMatch(`commit`);
+
+    fork.clear();
+
+    const n1 = await fork.find(Author, {});
+    const n3 = await fork.find(Book, {});
+    const n4 = await fork.find(Book, {});
+    const n5 = await fork.find(Book, {});
+    const n3tags = await fork.find(BookTag, {});
+    const n4tags = await fork.find(BookTag, {});
+    const n5tags = await fork.find(BookTag, {});
+    expect(n1).toHaveLength(0);
+    expect(n3).toHaveLength(0);
+    expect(n4).toHaveLength(0);
+    expect(n5).toHaveLength(0);
+    expect(n3tags).toHaveLength(0);
+    expect(n4tags).toHaveLength(0);
+    expect(n5tags).toHaveLength(0);
+  });
+
+  test('different schema on orm and fork, clear schema with setter', async () => {
+    orm.config.set('schema', 'n2'); // set the schema to a different schema than the fork
+
+    let author = new Author();
+    author.name = 'a1';
+    author.books.add(new Book(), new Book(), new Book());
+    author.books[0].tags.add(new BookTag(), new BookTag(), new BookTag());
+    author.books[1].basedOn = author.books[0];
+    author.books[1].tags.add(new BookTag(), new BookTag(), new BookTag());
+    author.books[2].basedOn = author.books[0];
+    author.books[2].tags.add(new BookTag(), new BookTag(), new BookTag());
+
+    // schema not specified yet, will be used from metadata
+    expect(wrap(author).getSchema()).toBeUndefined();
+    const fork = orm.em.fork({
+      schema: 'n4',
+    });
+    fork.schema = null;
+
+    await fork.persistAndFlush(author);
+    // schema is saved after flush
+    expect(wrap(author).getSchema()).toBe('n1');
+    expect(wrap(author.books[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[0].tags[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[1]).getSchema()).toBe('n2');
+    expect(wrap(author.books[1].tags[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[2]).getSchema()).toBe('n2');
+    expect(wrap(author.books[2].tags[0]).getSchema()).toBe('n2');
+
+    fork.clear();
+    author = await fork.findOneOrFail(Author, author, { populate: true });
+
+    expect(fork.getUnitOfWork().getIdentityMap().keys()).toEqual([
+      'Author-n1:1',
+      'Book-n2:1',
+      'Book-n2:2',
+      'Book-n2:3',
+      'BookTag-n2:1',
+      'BookTag-n2:2',
+      'BookTag-n2:3',
+      'BookTag-n2:4',
+      'BookTag-n2:5',
+      'BookTag-n2:6',
+      'BookTag-n2:7',
+      'BookTag-n2:8',
+      'BookTag-n2:9',
+    ]);
+
+    expect(wrap(author).getSchema()).toBe('n1');
+    expect(wrap(author.books[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[0].tags[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[1]).getSchema()).toBe('n2');
+    expect(wrap(author.books[1].tags[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[2]).getSchema()).toBe('n2');
+    expect(wrap(author.books[2].tags[0]).getSchema()).toBe('n2');
+
+    // update entities and flush
+    author.name = 'new name';
+    author.books[0].name = 'new name 1';
+    author.books[0].tags[0].name = 'new name 1';
+    author.books[1].name = 'new name 2';
+    author.books[1].tags[0].name = 'new name 2';
+    author.books[2].name = 'new name 3';
+    author.books[2].tags[0].name = 'new name 3';
+
+    const mock = mockLogger(orm);
+    await fork.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch(`begin`);
+    expect(mock.mock.calls[1][0]).toMatch(`update "n2"."book_tag" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 4) then 'new name 2' when ("id" = 7) then 'new name 3' else "name" end where "id" in (1, 4, 7)`);
+    expect(mock.mock.calls[2][0]).toMatch(`update "n1"."author" set "name" = 'new name' where "id" = 1`);
+    expect(mock.mock.calls[3][0]).toMatch(`update "n2"."book" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 2) then 'new name 2' when ("id" = 3) then 'new name 3' else "name" end where "id" in (1, 2, 3)`);
+    expect(mock.mock.calls[4][0]).toMatch(`commit`);
+    mock.mockReset();
+
+    // remove entity
+    fork.remove(author);
+    await fork.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch(`begin`);
+    expect(mock.mock.calls[1][0]).toMatch(`delete from "n2"."book" where "id" in (1, 2, 3)`);
+    expect(mock.mock.calls[2][0]).toMatch(`delete from "n1"."author" where "id" in (1)`);
+    expect(mock.mock.calls[3][0]).toMatch(`delete from "n2"."book_tag" where "id" in (1, 2, 3, 4, 5, 6, 7, 8, 9)`);
+    expect(mock.mock.calls[4][0]).toMatch(`commit`);
+
+    fork.clear();
+
+    const n1 = await fork.find(Author, {});
+    const n3 = await fork.find(Book, {});
+    const n4 = await fork.find(Book, {});
+    const n5 = await fork.find(Book, {});
+    const n3tags = await fork.find(BookTag, {});
+    const n4tags = await fork.find(BookTag, {});
+    const n5tags = await fork.find(BookTag, {});
+    expect(n1).toHaveLength(0);
+    expect(n3).toHaveLength(0);
+    expect(n4).toHaveLength(0);
+    expect(n5).toHaveLength(0);
+    expect(n3tags).toHaveLength(0);
+    expect(n4tags).toHaveLength(0);
+    expect(n5tags).toHaveLength(0);
+  });
+
   test('use different schema via options', async () => {
     // author is always in schema `n1`
     const author = new Author();
@@ -353,5 +559,6 @@ describe('multiple connected schemas in postgres', () => {
     expect(n4tags).toHaveLength(0);
     expect(n5tags).toHaveLength(0);
   });
+
 
 });
