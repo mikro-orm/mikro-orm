@@ -49,11 +49,11 @@ test('bigint in mysql 1/3', async () => {
     name: 'foo',
   });
   await orm.em.flush();
-  expect(typeof a1.id).toBe('string');
+  expect(typeof a1.id).toBe('bigint');
   const a3 = await orm.em.fork().findOneOrFail(Asset1, a1);
-  expect(typeof a3.id).toBe('string');
+  expect(typeof a3.id).toBe('bigint');
   const a4 = await orm.em.fork().findOneOrFail(Asset1, a2);
-  expect(typeof a4.id).toBe('string');
+  expect(typeof a4.id).toBe('bigint');
 
   await orm.close(true);
 });
@@ -70,9 +70,9 @@ test('bigint in mysql 2/3', async () => {
     name: 'foo',
   });
   await orm.em.flush();
-  expect(typeof a1.id).toBe('string');
+  expect(typeof a1.id).toBe('bigint');
   const a2 = await orm.em.fork().findOneOrFail(Asset2, a1);
-  expect(typeof a2.id).toBe('string');
+  expect(typeof a2.id).toBe('bigint');
 
   await orm.close(true);
 });
@@ -89,9 +89,9 @@ test('bigint in mysql 3/3', async () => {
     name: 'foo',
   });
   await orm.em.flush();
-  expect(typeof a1.id).toBe('string');
+  expect(typeof a1.id).toBe('bigint');
   const a2 = await orm.em.fork().findOneOrFail(Asset3, a1);
-  expect(typeof a2.id).toBe('string');
+  expect(typeof a2.id).toBe('bigint');
 
   await orm.close(true);
 });

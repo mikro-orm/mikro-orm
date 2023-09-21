@@ -2,40 +2,24 @@
 title: Using native BigInt PKs (MySQL and PostgreSQL)
 ---
 
-We can use `BigIntType` to support `bigint`s. By default, it will represent the value as a `string`.
+Since v6, `bigint`s are represented by the native `BigInt` type, and as such, they don't require explicit type in the decorator options:
 
 ```ts
-import { Entity, PrimaryKey, t } from '@mikro-orm/core';
-
-@Entity()
-export class Book {
-
-  @PrimaryKey({ type: t.bigint })
-  id: string;
-
-}
+@PrimaryKey()
+id: bigint;
 ```
 
-`bigint` can fit larger numbers than JavaScript number, for this reason it is mapped to a string. If we want to map it to a number anyway, we can implement [custom type](custom-types.md) that will do so. Similarly, we can define one to use the native `bigint` type:
+You can also specify the target type you want your bigints to be mapped to:
 
 ```ts
-export class NativeBigIntType extends BigIntType {
+@PrimaryKey({ type: new BigIntType('bigint') })
+id1: bigint;
 
-  convertToJSValue(value: any): any {
-    if (!value) {
-      return value;
-    }
+@PrimaryKey({ type: new BigIntType('string') })
+id2: string;
 
-    return BigInt(value);
-  }
-
-}
-
-@Entity()
-export class Book {
-
-  @PrimaryKey({ type: NativeBigIntType })
-  id: bigint;
-
-}
+@PrimaryKey({ type: new BigIntType('number') })
+id3: number;
 ```
+
+> JavaScript cannot represent all the possible values of a `bigint` when mapping to the `number` type - only values up to `Number.MAX_SAFE_INTEGER` (2^53 - 1) are safely supported.

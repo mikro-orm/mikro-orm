@@ -1,12 +1,12 @@
-import { BigIntType, Entity, ManyToOne, PrimaryKey, wrap } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, wrap } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers';
 
 @Entity()
 class Author {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
 }
 
