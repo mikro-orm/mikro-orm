@@ -1,5 +1,13 @@
 import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
-import { Utils, colors, type Configuration, type MikroORM, type MikroORMOptions, type IMigrator } from '@mikro-orm/core';
+import {
+  Utils,
+  colors,
+  type Configuration,
+  type MikroORM,
+  type MikroORMOptions,
+  type IMigrator,
+  type Dictionary,
+} from '@mikro-orm/core';
 import type { MigrateOptions } from '@mikro-orm/migrations';
 import { CLIHelper } from '../CLIHelper';
 
@@ -147,7 +155,11 @@ export class MigrationCommandFactory {
 
     CLIHelper.dumpTable({
       columns: ['Name', 'Executed at'],
-      rows: executed.map(row => [row.name.replace(/\.[jt]s$/, ''), row.executed_at?.toISOString()]),
+      rows: executed.map(row => {
+        /* istanbul ignore next */
+        const executedAt = (row.executed_at ?? (row as Dictionary).created_at)?.toISOString() ?? '';
+        return [row.name.replace(/\.[jt]s$/, ''), executedAt];
+      }),
       empty: 'No migrations executed yet',
     });
   }
