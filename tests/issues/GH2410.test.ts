@@ -1,9 +1,10 @@
-import { BigIntType, Cascade, Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
+import { Cascade, Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
+import { BigIntType } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'user' })
 class User {
 
-  @PrimaryKey({ type: BigIntType, fieldName: 'id' })
+  @PrimaryKey({ type: new BigIntType('number') })
   id!: number;
 
   @ManyToOne('Member', { fieldName: 'ownerMemberId', nullable: true, ref: true })
@@ -14,8 +15,8 @@ class User {
 @Entity({ tableName: 'member' })
 class Member {
 
-  @PrimaryKey({ type: BigIntType, fieldName: 'id' })
-  id!: number;
+  @PrimaryKey()
+  id!: bigint;
 
   @OneToMany(() => User, user => user.ownerMember, { cascade: [Cascade.ALL] })
   ownedUsers = new Collection<User>(this);
@@ -28,8 +29,8 @@ class Member {
 @Entity({ tableName: 'member_user' })
 class MemberUser {
 
-  @PrimaryKey({ type: BigIntType, fieldName: 'id' })
-  id!: number;
+  @PrimaryKey({ type: new BigIntType('string') })
+  id!: string;
 
   @ManyToOne(() => Member, { fieldName: 'memberId', ref: true })
   member!: Ref<Member>;
@@ -67,6 +68,11 @@ describe('GH issue 2410', () => {
       user: user.id,
     });
     await orm.em.persistAndFlush(mu);
+
+    // different bigint PKs are mapped to bigint/number/string
+    expect(mu.id).toBe('1');
+    expect(mu.member.id).toBe(1n);
+    expect(mu.user?.id).toBe(1);
 
     await orm.em.transactional(async tx => {
       const member = await tx.findOne(Member, createdMember.id, {

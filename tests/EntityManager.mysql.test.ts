@@ -226,7 +226,7 @@ describe('EntityManagerMySql', () => {
       created_at: '2019-06-09T07:50:25.722Z',
       author_id: 123,
       publisher_id: 321,
-      tags: ['1', '2', '3'],
+      tags: [1n, 2n, 3n],
     })!;
     expect(book.uuid).toBe('123-dsa');
     expect(book.title).toBe('name');
@@ -238,9 +238,9 @@ describe('EntityManagerMySql', () => {
     expect(book.publisher!.id).toBe(321);
     expect(book.tags.length).toBe(3);
     expect(book.tags[0]).toBeInstanceOf(BookTag2);
-    expect(book.tags[0].id).toBe('1'); // bigint as string
-    expect(book.tags[1].id).toBe('2');
-    expect(book.tags[2].id).toBe('3');
+    expect(book.tags[0].id).toBe(1n);
+    expect(book.tags[1].id).toBe(2n);
+    expect(book.tags[2].id).toBe(3n);
     expect(repo.getReference(book.uuid)).toBe(book);
   });
 
@@ -1133,11 +1133,11 @@ describe('EntityManagerMySql', () => {
     orm.em.persist(book2);
     await orm.em.persistAndFlush(book3);
 
-    expect(typeof tag1.id).toBe('string');
-    expect(typeof tag2.id).toBe('string');
-    expect(typeof tag3.id).toBe('string');
-    expect(typeof tag4.id).toBe('string');
-    expect(typeof tag5.id).toBe('string');
+    expect(typeof tag1.id).toBe('bigint');
+    expect(typeof tag2.id).toBe('bigint');
+    expect(typeof tag3.id).toBe('bigint');
+    expect(typeof tag4.id).toBe('bigint');
+    expect(typeof tag5.id).toBe('bigint');
 
     // test inverse side
     const tagRepository = orm.em.getRepository(BookTag2);
@@ -1231,13 +1231,13 @@ describe('EntityManagerMySql', () => {
 
   test('bigint support', async () => {
     const t = new BookTag2('test');
-    t.id = '9223372036854775807';
+    t.id = 9223372036854775807n;
     await orm.em.persistAndFlush(t);
-    expect(t.id).toBe('9223372036854775807');
+    expect(t.id).toBe(9223372036854775807n);
     orm.em.clear();
 
     const t2 = await orm.em.findOneOrFail(BookTag2, t.id);
-    expect(t2.id).toBe('9223372036854775807');
+    expect(t2.id).toBe(9223372036854775807n);
   });
 
   test('many to many working with inverse side', async () => {
