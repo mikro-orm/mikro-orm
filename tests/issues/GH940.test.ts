@@ -1,11 +1,11 @@
-import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
 class User {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @OneToMany('UserOrganization', 'user')
   organizations = new Collection<UserOrganization>(this);
@@ -15,8 +15,8 @@ class User {
 @Entity()
 class UserOrganization {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @ManyToOne(() => User, { nullable: true })
   user?: User;

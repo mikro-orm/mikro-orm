@@ -4,8 +4,8 @@ import { MikroORM } from '@mikro-orm/postgresql';
 @Entity()
 class BidEntity {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @ManyToOne('ItemEntity', {
     serializer: value => value.id,
@@ -18,8 +18,8 @@ class BidEntity {
 @Entity()
 class ItemEntity {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @OneToMany('BidEntity', 'item', {
     orphanRemoval: true,

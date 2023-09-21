@@ -169,7 +169,11 @@ export class EntityTransformer {
       return customType.toJSON(value, wrapped.__platform);
     }
 
-    return wrapped.__platform.normalizePrimaryKey(value as unknown as IPrimaryKey) as unknown as EntityValue<Entity>;
+    if (property?.primary) {
+      return wrapped.__platform.normalizePrimaryKey(value as unknown as IPrimaryKey) as unknown as EntityValue<Entity>;
+    }
+
+    return value;
   }
 
   private static processEntity<Entity extends object>(prop: keyof Entity, entity: Entity, platform: Platform, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
@@ -196,7 +200,7 @@ export class EntityTransformer {
       return wrap(child).toJSON() as EntityValue<Entity>;
     }
 
-    return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as unknown as EntityValue<Entity>;
+    return platform.normalizePrimaryKey(wrapped.getPrimaryKey(true) as IPrimaryKey) as unknown as EntityValue<Entity>;
   }
 
   private static processCollection<Entity>(prop: keyof Entity, entity: Entity, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
