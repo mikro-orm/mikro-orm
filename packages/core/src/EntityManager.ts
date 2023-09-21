@@ -389,7 +389,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  async applyFilters<Entity extends object>(entityName: string, where: FilterQuery<Entity>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete', findOptions: FindOptions<any, any> | FindOneOptions<any, any> = {}): Promise<FilterQuery<Entity>> {
+  async applyFilters<Entity extends object>(entityName: string, where: FilterQuery<Entity>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete', findOptions?: FindOptions<any, any> | FindOneOptions<any, any>): Promise<FilterQuery<Entity>> {
     const meta = this.metadata.find<Entity>(entityName);
     const filters: FilterDef[] = [];
     const ret: Dictionary[] = [];
