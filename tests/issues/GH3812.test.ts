@@ -72,8 +72,8 @@ export class Log extends BaseEntity {
   @ManyToOne()
   step?: Step;
 
-  @Property({ type: DateType, nullable: true })
-  operationDate?: Date;
+  @Property({ type: 'date', nullable: true })
+  operationDate?: string;
 
   @Property({ default: false })
   current: boolean = false;
