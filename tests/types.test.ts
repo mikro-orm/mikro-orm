@@ -30,7 +30,7 @@ describe('check typings', () => {
     assert<IsExact<Primary<Author>, number>>(false);
 
     // bigint support
-    assert<IsExact<Primary<BookTag2>, string>>(true);
+    assert<IsExact<Primary<BookTag2>, bigint>>(true);
     assert<IsExact<Primary<BookTag2>, number>>(false);
   });
 
@@ -248,7 +248,10 @@ describe('check typings', () => {
     assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: string[] } } }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { tags: string[] }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { tags: string }>>(true);
-    assert<IsAssignable<FilterQuery<Author2>, { books: { tags: bigint[] } }>>(false);
+    assert<IsAssignable<FilterQuery<Author2>, { books: { tags: number[] } }>>(true);
+    assert<IsAssignable<FilterQuery<Author2>, { books: { tags: bigint[] } }>>(true);
+    assert<IsAssignable<FilterQuery<Author2>, { books: { tags: string[] } }>>(true);
+    assert<IsAssignable<FilterQuery<Author2>, { books: { tags: boolean[] } }>>(false);
   });
 
   test('assignment to naked relation, generic reference and identified reference', async () => {
@@ -428,6 +431,8 @@ describe('check typings', () => {
     ok01 = { books: { author: { born: '2020-01-01' } }, favouriteBook: {} as Book2 };
     ok01 = { books: { tags: { name: 'asd' } } };
     ok01 = { books: { tags: '1' } };
+    ok01 = { books: { tags: 1 } };
+    ok01 = { books: { tags: 1n } };
     ok01 = { books: { tags: { books: { title: 'asd' } } } };
     ok01 = { name: 'asd' };
     ok01 = { $or: [{ name: 'asd' }, { age: 18 }] };
