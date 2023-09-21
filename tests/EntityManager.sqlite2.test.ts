@@ -183,7 +183,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     await orm.em.flush();
 
     const author = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
-    author.born = new Date('1990-03-23');
+    author.born = '1990-03-23';
     author.favouriteBook = bible;
 
     const publisher = orm.em.create(Publisher4, { name: '7K publisher', type: PublisherType.GLOBAL });
@@ -577,7 +577,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     await orm.em.persist(bible).flush();
 
     const jon = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
-    jon.born = new Date('1990-03-23');
+    jon.born = '1990-03-23';
     jon.favouriteBook = bible;
     await orm.em.persist(jon).flush();
     orm.em.clear();

@@ -411,7 +411,7 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush(bible);
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
-    author.born = new Date('1990-03-23');
+    author.born = '1990-03-23';
     author.favouriteBook = bible;
 
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
@@ -966,7 +966,7 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush(bible);
 
     let jon = new Author2('Jon Snow', 'snow@wall.st');
-    jon.born = new Date('1990-03-23');
+    jon.born = '1990-03-23';
     jon.favouriteBook = bible;
     await orm.em.persistAndFlush(jon);
     orm.em.clear();
@@ -974,7 +974,7 @@ describe('EntityManagerPostgre', () => {
     jon = (await authorRepository.findOne(jon.id))!;
     expect(jon).not.toBeNull();
     expect(jon.name).toBe('Jon Snow');
-    expect(jon.born).toEqual(new Date('1990-03-23'));
+    expect(jon.born).toEqual('1990-03-23');
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
     expect(wrap(jon.favouriteBook!).isInitialized()).toBe(false);
 
@@ -1974,7 +1974,7 @@ describe('EntityManagerPostgre', () => {
     em.getEventManager().registerSubscriber(new Subscriber());
 
     const a = new Author2('1stA', 'e1');
-    a.born = new Date();
+    a.born = '2023-03-23';
     const b = new Book2('1stB', a);
 
     await em.persistAndFlush(b);
@@ -1984,7 +1984,7 @@ describe('EntityManagerPostgre', () => {
     await em.findOneOrFail(Book2, { title: '1stB' }, { populate: ['author'] });
 
     const newA = new Author2('2ndA', 'e2');
-    a.born = new Date();
+    newA.born = '2023-03-23';
     const newB = new Book2('2ndB', newA);
     newB.author = newA;
     await em.persistAndFlush(newB);
