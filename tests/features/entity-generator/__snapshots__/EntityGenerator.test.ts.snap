@@ -255,7 +255,7 @@ import { Book2 } from './Book2';
 import { Book2Tags } from './Book2Tags';
 
 export class BookTag2 {
-  id!: string;
+  id!: bigint;
   name!: string;
   bookToTagUnorderedInverse = new Collection<Book2>(this);
   bookTag2Inverse = new Collection<Book2Tags>(this);
@@ -264,7 +264,7 @@ export class BookTag2 {
 export const BookTag2Schema = new EntitySchema({
   class: BookTag2,
   properties: {
-    id: { primary: true, type: 'string', columnType: 'bigint' },
+    id: { primary: true, type: 'bigint' },
     name: { type: 'string', length: 50 },
     bookToTagUnorderedInverse: { kind: 'm:n', entity: () => Book2, mappedBy: 'bookToTagUnordered' },
     bookTag2Inverse: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'bookTag2' },
@@ -789,8 +789,8 @@ export class Account {
 
   [OptionalProps]?: 'active' | 'receiveEmailNotifications';
 
-  @PrimaryKey({ columnType: 'bigint' })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ default: false })
   active: boolean = false;
@@ -935,8 +935,8 @@ export enum BaseUser2Type {
 @Entity()
 export class BookTag2 {
 
-  @PrimaryKey({ columnType: 'bigint' })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ length: 50 })
   name!: string;
@@ -1420,8 +1420,8 @@ export class Author2 {
 @Entity()
 export class BookTag2 {
 
-  @PrimaryKey({ columnType: 'bigint' })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ length: 50 })
   name!: string;
@@ -2062,8 +2062,8 @@ import { Book2Tags } from './Book2Tags';
 @Entity()
 export class BookTag2 {
 
-  @PrimaryKey({ columnType: 'bigint' })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ length: 50 })
   name!: string;
@@ -2674,8 +2674,8 @@ import { Book2Tags } from './Book2Tags';
 @Entity()
 export class BookTag2 {
 
-  @PrimaryKey({ columnType: 'bigint' })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ length: 50 })
   name!: string;
@@ -3266,8 +3266,8 @@ export enum BaseUser2Type {
 @Entity()
 export class BookTag2 {
 
-  @PrimaryKey({ columnType: 'bigint' })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ length: 50 })
   name!: string;
@@ -3846,8 +3846,8 @@ export enum BaseUser2Type {
 @Entity()
 export class BookTag2 {
 
-  @PrimaryKey({ columnType: 'bigint' })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ length: 50 })
   name!: string;
@@ -4293,8 +4293,8 @@ export class Author2 {
 @Entity()
 export class BookTag2 {
 
-  @PrimaryKey({ columnType: 'bigint' })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ length: 50 })
   name!: string;

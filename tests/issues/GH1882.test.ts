@@ -1,11 +1,11 @@
-import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PopulateHint, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PopulateHint, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
 export class Foo {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @OneToMany(() => Bar, bar => bar.foo)
   barItems = new Collection<Bar>(this);
@@ -18,8 +18,8 @@ export class Foo {
 @Entity()
 export class Bar {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @ManyToOne(() => Foo)
   foo!: Foo;
@@ -45,11 +45,11 @@ describe('GH issue 1882', () => {
 
   test(`GH issue 1882-1`, async () => {
     const fooItem = new Foo();
-    fooItem.id = '1234';
+    fooItem.id = 1234n;
     fooItem.name = 'fooName';
 
     const barItem = new Bar();
-    barItem.id = '5678';
+    barItem.id = 5678n;
     barItem.name = 'barName1';
     barItem.foo = fooItem;
 
@@ -71,11 +71,11 @@ describe('GH issue 1882', () => {
 
   test(`GH issue 1882-2`, async () => {
     const fooItem = new Foo();
-    fooItem.id = '9012';
+    fooItem.id = 9012n;
     fooItem.name = 'fooName';
 
     const barItem = new Bar();
-    barItem.id = '3456';
+    barItem.id = 3456n;
     barItem.name = 'barName';
     barItem.foo = fooItem;
 

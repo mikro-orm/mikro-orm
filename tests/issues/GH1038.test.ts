@@ -1,10 +1,10 @@
-import { BigIntType, Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity({ abstract: true })
 abstract class BaseEntity {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ onUpdate: () => new Date() })
   modifiedAt: Date = new Date();
