@@ -18,7 +18,7 @@ describe('EntityHelperMongo', () => {
 
   test('#toObject() should return DTO', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    author.born = new Date();
+    author.born = '2023-03-23';
     expect(author).toBeInstanceOf(Author);
     expect(wrap(author).toObject()).toBeInstanceOf(Object);
     expect(author.toObject()).toBeInstanceOf(Object);
@@ -33,7 +33,7 @@ describe('EntityHelperMongo', () => {
 
   test('#toJSON() should return DTO', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    author.born = new Date();
+    author.born = '2023-03-23';
     expect(author).toBeInstanceOf(Author);
     expect(author.toJSON()).toBeInstanceOf(Object);
     expect(author.toJSON()).toMatchObject({ fooBar: 123 });

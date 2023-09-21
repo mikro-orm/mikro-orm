@@ -368,6 +368,8 @@ Previously, mapping of datetime columns to JS `Date` objects was dependent on th
 
 Moreover, the `date` type was previously seen as a `datetime`, while now only `Date` (with uppercase `D`) will be considered as `datetime`, while `date` is just a `date`.
 
+Lastly, `DateType` (used for mapping `date` column type, not a `datetime`) no longer maps to a `Date` objects (maps to a `string` instead).
+
 ## Native BigInt support
 
 The default mapping of `bigint` columns is now using the native JavaScript `BigInt`, and is configurable, so it can also map to numbers or strings:
