@@ -367,3 +367,21 @@ const dto = wrap(user).toObject();
 Previously, mapping of datetime columns to JS `Date` objects was dependent on the driver, while SQLite didn't have this out of box support and required manual conversion on various places. All drivers now have disabled `Date` conversion and this is now handled explicitly, in the same way for all of them.
 
 Moreover, the `date` type was previously seen as a `datetime`, while now only `Date` (with uppercase `D`) will be considered as `datetime`, while `date` is just a `date`.
+
+## Native BigInt support
+
+The default mapping of `bigint` columns is now using the native JavaScript `BigInt`, and is configurable, so it can also map to numbers or strings:
+
+```ts
+@PrimaryKey()
+id0: bigint; // type is inferred
+
+@PrimaryKey({ type: new BigIntType('bigint') })
+id1: bigint; // same as `id0`
+
+@PrimaryKey({ type: new BigIntType('string') })
+id2: string;
+
+@PrimaryKey({ type: new BigIntType('number') })
+id3: number;
+```

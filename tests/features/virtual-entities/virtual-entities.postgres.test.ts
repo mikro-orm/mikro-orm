@@ -249,13 +249,14 @@ describe('virtual entities (sqlite)', () => {
       'inner join "book2_tags" as "b1" on "b"."uuid_pk" = "b1"."book2_uuid_pk" ' +
       'inner join "book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" ' +
       'group by "b"."uuid_pk"';
-    expect(mock.mock.calls).toHaveLength(6);
-    expect(mock.mock.calls[0][0]).toMatch(`select count(*) as count from (${sql}) as "b0"`);
-    expect(mock.mock.calls[1][0]).toMatch(`select * from (${sql}) as "b0"`);
-    expect(mock.mock.calls[2][0]).toMatch(`select * from (${sql}) as "b0" order by "b0"."title" asc limit 2 offset 1`);
-    expect(mock.mock.calls[3][0]).toMatch(`select * from (${sql}) as "b0" order by "b0"."title" asc limit 2`);
-    expect(mock.mock.calls[4][0]).toMatch(`select * from (${sql}) as "b0" where "b0"."title" like 'My Life%' and "b0"."author_name" is not null order by "b0"."title" asc limit 2`);
-    expect(mock.mock.calls[5][0]).toMatch(`select * from (${sql}) as "b0" where "b0"."title" in ('My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3')`);
+    const queries = mock.mock.calls.map(call => call[0]).sort();
+    expect(queries).toHaveLength(6);
+    expect(queries[0]).toMatch(`select * from (${sql}) as "b0"`);
+    expect(queries[1]).toMatch(`select * from (${sql}) as "b0" order by "b0"."title" asc limit 2`);
+    expect(queries[2]).toMatch(`select * from (${sql}) as "b0" order by "b0"."title" asc limit 2 offset 1`);
+    expect(queries[3]).toMatch(`select * from (${sql}) as "b0" where "b0"."title" in ('My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3')`);
+    expect(queries[4]).toMatch(`select * from (${sql}) as "b0" where "b0"."title" like 'My Life%' and "b0"."author_name" is not null order by "b0"."title" asc limit 2`);
+    expect(queries[5]).toMatch(`select count(*) as count from (${sql}) as "b0"`);
 
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
     expect(mock.mock.calls[0][0]).toMatch(sql);
