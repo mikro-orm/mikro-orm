@@ -30,7 +30,7 @@ describe('read-replicas', () => {
       const mock = mockLogger(orm, ['query']);
 
       let author = new Author2('Jon Snow', 'snow@wall.st');
-      author.born = new Date('1990-03-23');
+      author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
       await orm.em.persistAndFlush(author);
       expect(mock.mock.calls[0][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
@@ -72,7 +72,7 @@ describe('read-replicas', () => {
     test('can explicitly set connection type for find operations', async () => {
       const mock = mockLogger(orm, ['query']);
       const author = new Author2('Jon Snow', 'snow@wall.st');
-      author.born = new Date('1990-03-23');
+      author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
       await orm.em.persistAndFlush(author);
 
@@ -100,7 +100,7 @@ describe('read-replicas', () => {
     test('can explicitly set connection type for count operations', async () => {
       const mock = mockLogger(orm, ['query']);
       const author = new Author2('Jon Snow', 'snow@wall.st');
-      author.born = new Date('1990-03-23');
+      author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
       await orm.em.persistAndFlush(author);
 
@@ -132,7 +132,7 @@ describe('read-replicas', () => {
       const mock = mockLogger(orm, ['query']);
 
       let author = new Author2('Jon Snow', 'snow@wall.st');
-      author.born = new Date('1990-03-23');
+      author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
       await orm.em.persistAndFlush(author);
       expect(mock.mock.calls[0][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
@@ -176,7 +176,7 @@ describe('read-replicas', () => {
 
       const mock = mockLogger(orm, ['query']);
       const author = new Author2('Jon Snow', 'snow@wall.st');
-      author.born = new Date('1990-03-23');
+      author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
       await orm.em.persistAndFlush(author);
 
@@ -206,7 +206,7 @@ describe('read-replicas', () => {
 
       const mock = mockLogger(orm, ['query']);
       const author = new Author2('Jon Snow', 'snow@wall.st');
-      author.born = new Date('1990-03-23');
+      author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
       await orm.em.persistAndFlush(author);
 

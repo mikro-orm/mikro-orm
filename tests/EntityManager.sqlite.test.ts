@@ -204,7 +204,7 @@ describe('EntityManagerSqlite', () => {
     await orm.em.persist(bible).flush();
 
     const author = new Author3('Jon Snow', 'snow@wall.st');
-    author.born = new Date('1990-03-23');
+    author.born = '1990-03-23';
     author.favouriteBook = bible;
 
     const publisher = new Publisher3('7K publisher', 'global');
@@ -552,7 +552,7 @@ describe('EntityManagerSqlite', () => {
     await orm.em.persist(bible).flush();
 
     let jon = new Author3('Jon Snow', 'snow@wall.st');
-    jon.born = new Date('1990-03-23');
+    jon.born = '1990-03-23';
     jon.favouriteBook = bible;
     await orm.em.persist(jon).flush();
     orm.em.clear();

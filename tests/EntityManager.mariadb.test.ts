@@ -110,7 +110,7 @@ describe('EntityManagerMariaDb', () => {
     await orm.em.persistAndFlush(bible);
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
-    author.born = new Date('1990-03-23');
+    author.born = '1990-03-23';
     author.favouriteBook = bible;
 
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);

@@ -17,7 +17,7 @@ async function createEntities() {
   const bible = new Book2('Bible', god);
   bible.double = 123.45;
   const author = new Author2('Jon Snow', 'snow@wall.st');
-  author.born = new Date('1990-03-23');
+  author.born = '1990-03-23';
   author.favouriteBook = bible;
   const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
   const book1 = new Book2('My Life on The Wall, part 1', author);
