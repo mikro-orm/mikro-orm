@@ -9,7 +9,7 @@ export interface IAuthor4 extends IBaseEntity5 {
   age?: number;
   termsAccepted?: boolean;
   identities?: string[];
-  born?: Date;
+  born?: string;
   bornTime?: string;
   books: Collection<IBook4>;
   favouriteBook?: IBook4;
