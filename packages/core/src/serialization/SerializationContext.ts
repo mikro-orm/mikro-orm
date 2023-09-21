@@ -111,11 +111,11 @@ export class SerializationContext<T> {
       }
 
       fields = fields
-        .filter(field => field.startsWith(`${segment[1]}.`))
-        .map(field => field.substring(segment[1].length + 1));
+        .filter(field => field.startsWith(`${segment[1]}.`) || field === '*')
+        .map(field => field === '*' ? field : field.substring(segment[1].length + 1));
     }
 
-    return fields.some(p => p === prop);
+    return fields.some(p => p === prop || p === '*');
   }
 
   private register(entity: AnyEntity) {
