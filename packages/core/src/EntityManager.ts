@@ -311,7 +311,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Hint extends string = never,
   >(entityName: string, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint> | FindOneOptions<Entity, Hint>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<Entity>> {
-    options.schema ??= this._schema;
     where = QueryHelper.processWhere({
       where: where as FilterQuery<Entity>,
       entityName,
@@ -349,7 +348,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   protected async applyJoinedFilters<Entity extends object>(meta: EntityMetadata<Entity>, cond: ObjectQuery<Entity>, options: FindOptions<Entity, any> | FindOneOptions<Entity, any>): Promise<ObjectQuery<Entity>> {
-    options.schema ??= this._schema;
     const ret = {} as ObjectQuery<Entity>;
     const populateWhere = options.populateWhere ?? this.config.get('populateWhere');
 
@@ -392,7 +390,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * @internal
    */
   async applyFilters<Entity extends object>(entityName: string, where: FilterQuery<Entity>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete', findOptions: FindOptions<any, any> | FindOneOptions<any, any> = {}): Promise<FilterQuery<Entity>> {
-    findOptions.schema ??= this._schema;
     const meta = this.metadata.find<Entity>(entityName);
     const filters: FilterDef[] = [];
     const ret: Dictionary[] = [];
@@ -1234,7 +1231,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   merge<Entity extends object>(entityName: EntityName<Entity> | Entity, data?: EntityData<Entity> | EntityDTO<Entity> | MergeOptions, options: MergeOptions = {}): Entity {
     const em = this.getContext();
 
-
     if (Utils.isEntity(entityName)) {
       return em.merge((entityName as Dictionary).constructor.name, entityName as unknown as EntityData<Entity>, data as MergeOptions);
     }
@@ -1287,7 +1283,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Shortcut for `wrap(entity).assign(data, { em })`
    */
   assign<Entity extends object>(entity: Entity, data: EntityData<Entity> | Partial<EntityDTO<Entity>>, options: AssignOptions = {}): Entity {
-    options.schema ??= this._schema;
     return EntityAssigner.assign(entity, data, { em: this.getContext(), ...options });
   }
 
@@ -1708,7 +1703,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   private async lockAndPopulate<T extends object, P extends string = never>(entityName: string, entity: T, where: FilterQuery<T>, options: FindOneOptions<T, P>): Promise<Loaded<T, P>> {
-    options.schema ??= this._schema;
     if (options.lockMode === LockMode.OPTIMISTIC) {
       await this.lock(entity, options.lockMode, {
         lockVersion: options.lockVersion,
@@ -1779,7 +1773,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * some additional lazy properties, if so, we reload and merge the data from database
    */
   protected shouldRefresh<T extends object, P extends string = never>(meta: EntityMetadata<T>, entity: T, options: FindOneOptions<T, P>) {
-    options.schema ??= this._schema;
     if (!helper(entity).__initialized || options.refresh) {
       return true;
     }
