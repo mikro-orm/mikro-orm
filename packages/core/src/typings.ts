@@ -78,7 +78,9 @@ export type ExpandScalar<T> = null | (T extends string
   ? T | RegExp
   : T extends Date
     ? Date | string
-    : T);
+    : T extends bigint
+      ? bigint | string | number
+      : T);
 
 export type OperatorMap<T> = {
   $and?: Query<T>[];
