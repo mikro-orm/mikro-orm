@@ -66,7 +66,7 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'vers
 
   @Property({ nullable: true, type: DateType })
   @Index()
-  born?: Date;
+  born?: string;
 
   @OneToMany(() => Book, book => book.author, {
     referenceColumnName: '_id',

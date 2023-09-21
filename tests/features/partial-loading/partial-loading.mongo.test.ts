@@ -13,7 +13,7 @@ describe('partial loading (mongo)', () => {
 
   test('partial selects', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    author.born = new Date('1990-03-23');
+    author.born = '1990-03-23';
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 

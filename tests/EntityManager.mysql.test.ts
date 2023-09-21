@@ -454,7 +454,7 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(bible);
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
-    author.born = new Date('1990-03-23');
+    author.born = '1990-03-23';
     author.bornTime = '00:23:59';
     author.favouriteBook = bible;
 
@@ -964,7 +964,7 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(bible);
 
     let jon = new Author2('Jon Snow', 'snow@wall.st');
-    jon.born = new Date();
+    jon.born = '2023-03-23';
     jon.favouriteBook = bible;
     await orm.em.persistAndFlush(jon);
     orm.em.clear();
@@ -1970,7 +1970,7 @@ describe('EntityManagerMySql', () => {
   test('allow undefined value in nullable properties', async () => {
     let god = new Author2('God', 'hello@heaven.god');
     god.age = 21;
-    god.born = new Date('0001-01-01');
+    god.born = '0001-01-01';
     await orm.em.persistAndFlush(god);
 
     god.age = undefined;
