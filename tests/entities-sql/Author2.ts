@@ -91,8 +91,8 @@ export class Author2 extends BaseEntity2 {
   @Property({ nullable: true })
   identities?: string[];
 
-  @Property({ type: t.date, index: true, nullable: true })
-  born?: Date;
+  @Property({ type: 'date', index: true, nullable: true })
+  born?: string;
 
   @Property({ type: t.time, index: 'born_time_idx', nullable: true })
   bornTime?: string;
