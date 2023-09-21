@@ -59,8 +59,15 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     expect(r2).toHaveLength(3);
     mock.mockReset();
 
+    console.log('====================');
+    console.log(mock.mock.calls);
+    await orm.em.flush();
+    console.log(mock.mock.calls);
+    console.log('====================');
+
     // but querying for book will trigger auto-flush
     const r3 = await orm.em.find(Book2, {});
+    console.log(mock.mock.calls);
     expect(mock).toBeCalledTimes(4);
     expect(r3).toHaveLength(4);
   });

@@ -104,8 +104,8 @@ export class ChangeSetComputer {
     const originalEntityData = helper(entity).__originalEntityData;
 
     if (originalEntityData) {
-      const comparator = this.comparator.getEntityComparator(entityName);
-      const diff = comparator(originalEntityData, data);
+      const diff = this.comparator.diffEntities(entityName, originalEntityData, data, false);
+      console.log({ diff, originalEntityData, data });
 
       if (ignoreUndefined) {
         Utils.keys(diff)

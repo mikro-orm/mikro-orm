@@ -98,6 +98,7 @@ export class UnitOfWork {
     wrapped.__managed = true;
 
     if (data && (options?.refresh || !wrapped.__originalEntityData)) {
+      // console.log('registerManaged 1', data);
       Object.keys(data).forEach(key => wrapped.__loadedProperties.add(key));
 
       wrapped.__meta.relations.forEach(prop => {
@@ -126,6 +127,7 @@ export class UnitOfWork {
 
       wrapped.__originalEntityData = data;
       wrapped.__touched = false;
+      console.log('registerManaged 2', data, new Error().stack);
     }
 
     return entity;
@@ -701,7 +703,7 @@ export class UnitOfWork {
     const copy = this.comparator.prepareEntity(changeSet.entity) as T;
     await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, meta, em: this.em, changeSet });
     const current = this.comparator.prepareEntity(changeSet.entity) as T;
-    const diff = this.comparator.diffEntities<T>(changeSet.name, copy, current);
+    const diff = this.comparator.diffEntities<T>(changeSet.name, copy, current, false);
     Object.assign(changeSet.payload, diff);
     const wrapped = helper(changeSet.entity);
 
@@ -983,7 +985,19 @@ export class UnitOfWork {
     await this.changeSetPersister.executeUpdates(changeSets, batched, { ctx });
 
     for (const changeSet of changeSets) {
-      helper(changeSet.entity).__originalEntityData = this.comparator.prepareEntity(changeSet.entity);
+      // TODO we either need to have a `convertCustomTypes` param for the snapshotter,
+      //  or we need to alter the data in some other way, as the values need to be decoded
+      // console.log('update original entity data', {
+      //   from: helper(changeSet.entity).__originalEntityData,
+      //   to: this.comparator.prepareEntity(changeSet.entity),
+      //   payload: changeSet.payload,
+      // });
+
+      const originalEntityData = helper(changeSet.entity).__originalEntityData as Dictionary;
+      Object.keys(changeSet.payload).forEach(prop => {
+        originalEntityData[prop] = changeSet.entity[prop as keyof T];
+      });
+
       helper(changeSet.entity).__touched = false;
       helper(changeSet.entity).__initialized = true;
       await this.runHooks(EventType.afterUpdate, changeSet);

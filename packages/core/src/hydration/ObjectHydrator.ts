@@ -96,42 +96,43 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    entity${entityKey} = ${nullVal};`);
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
 
-      if (prop.customType) {
-        context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
-        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
-
-        ret.push(
-          `    if (convertCustomTypes) {`,
-          `      const value = convertToJSValue_${convertorKey}(data${dataKey});`,
-        );
-
-        if (prop.customType.ensureComparable(meta, prop)) {
-          ret.push(`      data${dataKey} = convertToDatabaseValue_${convertorKey}(value);`);
-        }
-
-        ret.push(
-          `      entity${entityKey} = value;`,
-          `    } else {`,
-          `      entity${entityKey} = data${dataKey};`,
-          `    }`,
-        );
-      } else if (prop.runtimeType === 'boolean') {
+      // if (prop.customType) {
+      //   context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
+      //   context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
+      //
+      //   ret.push(
+      //     `    if (convertCustomTypes) {`,
+      //     `      const value = convertToJSValue_${convertorKey}(data${dataKey});`,
+      //   );
+      //
+      //   if (prop.customType.ensureComparable(meta, prop)) {
+      //     ret.push(`      data${dataKey} = convertToDatabaseValue_${convertorKey}(value);`);
+      //   }
+      //
+      //   ret.push(
+      //     `      entity${entityKey} = value;`,
+      //     `    } else {`,
+      //     `      entity${entityKey} = data${dataKey};`,
+      //     `    }`,
+      //   );
+      // } else
+      if (prop.runtimeType === 'boolean') {
         ret.push(`    entity${entityKey} = !!data${dataKey};`);
-      } else if (prop.runtimeType === 'Date') {
-        ret.push(`    if (data${dataKey} instanceof Date) {`);
-        ret.push(`      entity${entityKey} = data${dataKey};`);
-
-        if (!tz || tz === 'local') {
-          ret.push(`    } else {`);
-          ret.push(`      entity${entityKey} = new Date(data${dataKey});`);
-        } else {
-          ret.push(`    } else if (typeof data${dataKey} === 'number' || data${dataKey}.includes('+')) {`);
-          ret.push(`      entity${entityKey} = new Date(data${dataKey});`);
-          ret.push(`    } else {`);
-          ret.push(`      entity${entityKey} = new Date(data${dataKey} + '${tz}');`);
-        }
-
-        ret.push(`    }`);
+      // } else if (prop.runtimeType === 'Date') {
+      //   ret.push(`    if (data${dataKey} instanceof Date) {`);
+      //   ret.push(`      entity${entityKey} = data${dataKey};`);
+      //
+      //   if (!tz || tz === 'local') {
+      //     ret.push(`    } else {`);
+      //     ret.push(`      entity${entityKey} = new Date(data${dataKey});`);
+      //   } else {
+      //     ret.push(`    } else if (typeof data${dataKey} === 'number' || data${dataKey}.includes('+')) {`);
+      //     ret.push(`      entity${entityKey} = new Date(data${dataKey});`);
+      //     ret.push(`    } else {`);
+      //     ret.push(`      entity${entityKey} = new Date(data${dataKey} + '${tz}');`);
+      //   }
+      //
+      //   ret.push(`    }`);
       } else {
         ret.push(`    entity${entityKey} = data${dataKey};`);
       }
@@ -195,14 +196,14 @@ export class ObjectHydrator extends Hydrator {
         }
       }
 
-      if (prop.customType?.ensureComparable(meta, prop)) {
-        context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
-
-        ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
-        const pk = prop.mapToPk ? '' : '.__helper.getPrimaryKey()';
-        ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}${pk});`);
-        ret.push(`  }`);
-      }
+      // if (prop.customType?.ensureComparable(meta, prop)) {
+      //   context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
+      //
+      //   ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
+      //   const pk = prop.mapToPk ? '' : '.__helper.getPrimaryKey()';
+      //   ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}${pk});`);
+      //   ret.push(`  }`);
+      // }
 
       return ret;
     };

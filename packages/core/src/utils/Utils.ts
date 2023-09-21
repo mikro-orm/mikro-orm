@@ -91,12 +91,14 @@ export function compareArrays(a: any[] | string, b: any[] | string) {
   const length = a.length;
 
   if (length !== b.length) {
+    console.log('compareArrays 1', a.length, b.length, a, b);
     return false;
   }
 
   for (let i = length; i-- !== 0;) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (!equals(a[i], b[i])) {
+      console.log('compareArrays 2', a[i], b[i]);
       return false;
     }
   }

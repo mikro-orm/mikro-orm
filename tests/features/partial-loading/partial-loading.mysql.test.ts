@@ -46,7 +46,7 @@ describe('partial loading (mysql)', () => {
     const a2 = (await orm.em.findOne(Author2, author, { fields: ['*'] }))!;
     expect(a2.name).toBe('Jon Snow');
     expect(a2.email).toBe('snow@wall.st');
-    expect(a2.born).toEqual(new Date('1990-03-23'));
+    expect(a2.born).toBe('1990-03-23');
   });
 
   test('partial nested loading (1:m)', async () => {

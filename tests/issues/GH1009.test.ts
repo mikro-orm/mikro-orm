@@ -1,10 +1,46 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import {
+  Collection,
+  Type,
+  Entity,
+  EntityProperty,
+  ManyToOne,
+  MikroORM,
+  OneToMany,
+  Platform,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/sqlite';
+
+export class PlainDateTimeType extends Type<{ date: string } | null, string | null> {
+
+  override convertToDatabaseValue(value: { date: string } | null): string | null {
+    console.log('convertToDatabaseValue', { value });
+    return value ? value.date : value;
+  }
+
+  override convertToJSValue(value: string | null): { date: string } | null {
+    console.log('convertToJSValue', { value });
+    if (value == null) {
+      return value;
+    }
+
+    return { date: value };
+  }
+
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
+    return platform.getDateTimeTypeDeclarationSQL({ length: prop.length });
+  }
+
+}
 
 @Entity({ tableName: 'brands' })
 export class Brand {
 
   @PrimaryKey()
   id!: number;
+
+  @Property({ type: PlainDateTimeType })
+  created = new Date().toISOString();
 
   @OneToMany({ entity: () => BrandSiteRestriction, mappedBy: 'brand' })
   brandSiteRestrictions = new Collection<BrandSiteRestriction>(this);
@@ -94,6 +130,12 @@ describe('GH issue 1009', () => {
     br.site = site;
     br.brand = brand;
     await expect(orm.em.persistAndFlush(br)).resolves.toBeUndefined();
+    brand.created = '2020-01-02';
+    await orm.em.flush();
+    orm.em.clear();
+
+    const r = await orm.em.findOneOrFail(Brand, brand);
+    console.log(r);
   });
 
 });

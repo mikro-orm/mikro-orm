@@ -175,10 +175,15 @@ export class ChangeSetPersister {
 
   private async persistManagedEntity<T extends object>(changeSet: ChangeSet<T>, options?: DriverMethodOptions): Promise<void> {
     const meta = this.metadata.find(changeSet.name)!;
+    // console.log('persistManagedEntity 1', changeSet.originalEntity);
     const res = await this.updateEntity(meta, changeSet, options);
+    // console.log('persistManagedEntity 2', changeSet.originalEntity);
     this.checkOptimisticLock(meta, changeSet, res);
+    // console.log('persistManagedEntity 3', changeSet.originalEntity);
     this.mapReturnedValues(changeSet.entity, changeSet.payload, res.row, meta);
+    // console.log('persistManagedEntity 4', changeSet.originalEntity);
     await this.reloadVersionValues(meta, [changeSet], options);
+    // console.log('persistManagedEntity 5', changeSet.originalEntity);
     changeSet.persisted = true;
   }
 
@@ -377,10 +382,11 @@ export class ChangeSetPersister {
     });
     const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } } as FilterQuery<T>, options);
     const map = new Map<string, Dictionary>();
-    data.forEach(item => map.set(Utils.getCompositeKeyHash(item, meta, true, this.platform, true), item));
+    data.forEach(item => map.set(Utils.getCompositeKeyHash(item, meta, false, this.platform, true), item));
 
     for (const changeSet of changeSets) {
       const data = map.get(helper(changeSet.entity).getSerializedPrimaryKey());
+      // console.log(data, map, helper(changeSet.entity).getSerializedPrimaryKey());
       this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, this.factory, 'full', false, true);
       Object.assign(changeSet.payload, data); // merge to the changeset payload, so it gets saved to the entity snapshot
     }

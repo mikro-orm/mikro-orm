@@ -7,7 +7,7 @@ import {
   Utils,
   IDatabaseDriver,
   sql,
-  wrap,
+  wrap, helper,
 } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 import { PLATFORMS } from '../../bootstrap';
@@ -101,16 +101,20 @@ describe.each(Utils.keys(options))('JSON properties [%s]',  type => {
 
     const res = await orm.em.findOneOrFail(User, { value: { foo: 'test' } });
     expect(res.value).toEqual({ foo: 'test' });
+    // console.log(111, helper(res).__originalEntityData);
 
     const mock = mockLogger(orm);
     await orm.em.flush();
     expect(mock).not.toBeCalled();
+    // console.log(222, helper(res).__originalEntityData);
 
     res.value = 'bar';
     await orm.em.flush();
     expect(mock).toBeCalled();
     mock.mockReset();
+    // console.log(333, helper(res).__originalEntityData);
     await orm.em.flush();
+    // console.log(444, helper(res).__originalEntityData);
     expect(mock).not.toBeCalled();
 
     res.value = 123;

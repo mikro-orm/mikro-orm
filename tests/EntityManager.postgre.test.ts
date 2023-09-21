@@ -974,7 +974,7 @@ describe('EntityManagerPostgre', () => {
     jon = (await authorRepository.findOne(jon.id))!;
     expect(jon).not.toBeNull();
     expect(jon.name).toBe('Jon Snow');
-    expect(jon.born).toEqual(new Date('1990-03-23'));
+    expect(jon.born).toBe('1990-03-23');
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
     expect(wrap(jon.favouriteBook!).isInitialized()).toBe(false);
 

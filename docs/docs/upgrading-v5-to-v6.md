@@ -362,12 +362,6 @@ const dto = wrap(user).toObject();
 
 **This also works for embeddables, including nesting and object mode.**
 
-## Changes in `Date` property mapping 
-
-Previously, mapping of datetime columns to JS `Date` objects was dependent on the driver, while SQLite didn't have this out of box support and required manual conversion on various places. All drivers now have disabled `Date` conversion and this is now handled explicitly, in the same way for all of them.
-
-Moreover, the `date` type was previously seen as a `datetime`, while now only `Date` (with uppercase `D`) will be considered as `datetime`, while `date` is just a `date`.
-
 ## Native BigInt support
 
 The default mapping of `bigint` columns is now using the native JavaScript `BigInt`, and is configurable, so it can also map to numbers or strings:
@@ -385,3 +379,15 @@ id2: string;
 @PrimaryKey({ type: new BigIntType('number') })
 id3: number;
 ```
+
+## Changes in `Date` property mapping 
+
+Previously, mapping of datetime columns to JS `Date` objects was dependent on the driver, while SQLite didn't have this out of box support and required manual conversion on various places. All drivers now have disabled `Date` conversion and this is now handled explicitly, in the same way for all of them.
+
+Moreover, the `date` type was previously seen as a `datetime`, while now only `Date` (with uppercase `D`) will be considered as `datetime`, while `date` is just a `date`.
+
+## Changes in JSON property mapping
+
+Similarly to the `Date` property mapping change described above, the JSON properties are also no longer mapped automatically on the driver level. The mapping from JSON strings is now implemented in the hydration layer, which means that it will work only for entities. If you query some JSON property via `QueryBuilder` and use `qb.execute()` to get the raw results, you will now see the JSON values still encoded. Same applies to the `ChangeSet` object and its `payload` and `originalEntity` properties. The only exception to this is the MongoDB driver, which handles JSON properties natively.
+
+The motivation behind this change was to support property mapping of numeric values, and finally put an end to the JSON mapping bugs, that were mostly originating from small differences and bugs in how the underlying libraries that were trying to do it on their own.

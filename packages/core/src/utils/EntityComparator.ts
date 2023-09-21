@@ -14,7 +14,7 @@ import type { Platform } from '../platforms';
 import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals, parseJsonSafe, Utils } from './Utils';
 import { JsonType } from '../types/JsonType';
 
-type Comparator<T> = (a: T, b: T) => EntityData<T>;
+type Comparator<T> = (a: T, b: T, convertCustomTypes?: boolean) => EntityData<T>;
 type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
 type SnapshotGenerator<T> = (entity: T) => EntityData<T>;
 type PkGetter<T> = (entity: T) => Primary<T>;
@@ -36,9 +36,9 @@ export class EntityComparator {
   /**
    * Computes difference between two entities.
    */
-  diffEntities<T>(entityName: string, a: EntityData<T>, b: EntityData<T>): EntityData<T> {
+  diffEntities<T>(entityName: string, a: EntityData<T>, b: EntityData<T>, convertCustomTypes = true): EntityData<T> {
     const comparator = this.getEntityComparator(entityName);
-    return Utils.callCompiledFunction(comparator, a, b);
+    return Utils.callCompiledFunction(comparator, a, b, convertCustomTypes);
   }
 
   matching<T>(entityName: string, a: EntityData<T>, b: EntityData<T>): boolean {
@@ -286,18 +286,24 @@ export class EntityComparator {
     };
 
     const tz = this.platform.getTimezone();
-    const parseDate = (key: string, value: string, padding = '') => {
+    const parseDate = (prop: EntityProperty, key: string, value: string, padding = '') => {
+      const convertorKey = this.safeKey(prop.name);
+      context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
+
       lines.push(`${padding}    if (${value} == null || ${value} instanceof Date) {`);
       lines.push(`${padding}      ${key} = ${value};`);
 
       if (!tz || tz === 'local') {
         lines.push(`${padding}    } else {`);
-        lines.push(`${padding}      ${key} = new Date(${value});`);
+        lines.push(`${padding}      ${key} = ${value};`);
+        lines.push(`${padding}      ${key} = convertToJSValue_${convertorKey}(${value});`);
       } else {
         lines.push(`${padding}    } else if (typeof ${value} === 'number' || ${value}.includes('+')) {`);
-        lines.push(`${padding}      ${key} = new Date(${value});`);
+        lines.push(`${padding}      ${key} = ${value};`);
+        lines.push(`${padding}      ${key} = convertToJSValue_${convertorKey}(${value});`);
         lines.push(`${padding}    } else {`);
-        lines.push(`${padding}      ${key} = new Date(${value} + '${tz}');`);
+        lines.push(`${padding}      ${key} = ${value} + '${tz}';`);
+        lines.push(`${padding}      ${key} = convertToJSValue_${convertorKey}(${value});`);
       }
 
       lines.push(`${padding}    }`);
@@ -328,31 +334,41 @@ export class EntityComparator {
         lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])};`);
         lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
-      } else if (prop.runtimeType === 'Date') {
-        if (prop.embedded && meta.properties[prop.embedded[0]].array) {
-          const parentKey = 'ret.' + meta.properties[prop.embedded[0]].fieldNames[0];
-          const idx = this.tmpIndex++;
-          lines.push(`  if (Array.isArray(${parentKey.replace(/\./g, '?.')})) {`);
-          lines.push(`    ${parentKey}.forEach((item_${idx}, idx_${idx}) => {`);
-          const childProp = this.wrap(prop.embedded[1]);
-          lines.push(`      if (typeof item_${idx}${childProp} !== 'undefined') {`);
-          parseDate(`${parentKey}[idx_${idx}]${childProp}`, `${parentKey}[idx_${idx}]${childProp}`, '    ');
-          lines.push(`      }`);
-          lines.push(`    });`);
-          lines.push(`  }`);
-        } else if (prop.embedded && meta.properties[prop.embedded[0]].object) {
-          const entityKey = 'ret.' + prop.fieldNames[0];
-          const entityKeyOptional = 'ret.' + prop.fieldNames[0].replace(/\./g, '?.');
-          lines.push(`  if (typeof ${entityKeyOptional} !== 'undefined') {`);
-          parseDate('ret.' + prop.fieldNames[0], entityKey);
-          lines.push(`  }`);
-        } else {
-          lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
-          parseDate('ret' + this.wrap(prop.name), propName(prop.fieldNames[0]));
-          lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
-          lines.push(`  }`);
-        }
-      } else if (prop.kind === ReferenceKind.EMBEDDED && prop.object && !this.platform.convertsJsonAutomatically()) {
+      // } else if (prop.runtimeType === 'Date') {
+      //   if (prop.embedded && meta.properties[prop.embedded[0]].array) {
+      //     const parentKey = 'ret.' + meta.properties[prop.embedded[0]].fieldNames[0];
+      //     const idx = this.tmpIndex++;
+      //     lines.push(`  if (Array.isArray(${parentKey.replace(/\./g, '?.')})) {`);
+      //     lines.push(`    ${parentKey}.forEach((item_${idx}, idx_${idx}) => {`);
+      //     const childProp = this.wrap(prop.embedded[1]);
+      //     lines.push(`      if (typeof item_${idx}${childProp} !== 'undefined') {`);
+      //     parseDate(prop, `${parentKey}[idx_${idx}]${childProp}`, `${parentKey}[idx_${idx}]${childProp}`, '    ');
+      //     lines.push(`      }`);
+      //     lines.push(`    });`);
+      //     lines.push(`  }`);
+      //   } else if (prop.embedded && meta.properties[prop.embedded[0]].object) {
+      //     const entityKey = 'ret.' + prop.fieldNames[0];
+      //     const entityKeyOptional = 'ret.' + prop.fieldNames[0].replace(/\./g, '?.');
+      //     lines.push(`  if (typeof ${entityKeyOptional} !== 'undefined') {`);
+      //     parseDate(prop, 'ret.' + prop.fieldNames[0], entityKey);
+      //     lines.push(`  }`);
+      //   } else {
+      //     lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
+      //     parseDate(prop, 'ret' + this.wrap(prop.name), propName(prop.fieldNames[0]));
+      //     lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
+      //     lines.push(`  }`);
+      //   }
+      } else if (prop.customType) {
+        const convertorKey = this.safeKey(prop.name);
+        context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
+        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
+        lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : convertToJSValue_${convertorKey}(${propName(prop.fieldNames[0])});`);
+        lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
+        lines.push(`  }`);
+      } else if ((prop.kind === ReferenceKind.EMBEDDED && prop.object) && !this.platform.convertsJsonAutomatically()) {
+        // We need to parse inside a try/catch block, mainly because the mapping is done in hydration layer and that might
+        // be also called from inside `em.create()` which can get the parsed data provided by user, as well as encoded data
+        // from the database.
         context.set('parseJsonSafe', parseJsonSafe);
         lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
         lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : parseJsonSafe(${propName(prop.fieldNames[0])});`);
@@ -581,27 +597,43 @@ export class EntityComparator {
     context.set('equals', equals);
 
     meta.comparableProps.forEach(prop => {
-      lines.push(this.getPropertyComparator(prop));
+      lines.push(this.getPropertyComparator(prop, context));
     });
 
     const code = `// compiled comparator for entity ${meta.className}\n`
-      + `return function(last, current) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;
+      + `return function(last, current, convertCustomTypes) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;
     const comparator = Utils.createFunction(context, code);
     this.comparators.set(entityName, comparator);
 
     return comparator;
   }
 
-  private getGenericComparator(prop: string, cond: string): string {
-    return `  if (current${prop} == null && last${prop} == null) {\n\n` +
-      `  } else if ((current${prop} != null && last${prop} == null) || (current${prop} == null && last${prop} != null)) {\n` +
-      `    diff${prop} = current${prop};\n` +
-      `  } else if (${cond}) {\n` +
-      `    diff${prop} = current${prop};\n` +
-      `  }\n`;
+  private getGenericComparator(prop: EntityProperty, cond: (last: string, current: string) => string, context: Map<string, any>): string {
+    const propKey = this.wrap(prop.name);
+    const convertorKey = this.safeKey(prop.name);
+    const lines: string[] = [];
+
+    if (prop.customType) {
+      context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+      lines.push(`  const lastEncoded_${convertorKey} = convertCustomTypes ? convertToDatabaseValue_${convertorKey}(last${propKey}) : last${propKey};\n`);
+    } else {
+      lines.push(`  const lastEncoded_${convertorKey} = last${propKey};\n`);
+    }
+
+    lines.push(
+      `  if (current${propKey} == null && lastEncoded_${convertorKey} == null) {\n`,
+      `  } else if ((current${propKey} != null && lastEncoded_${convertorKey} == null) || (current${propKey} == null && lastEncoded_${convertorKey} != null)) {`,
+      `    diff${propKey} = current${propKey};`,
+      `  } else if (${cond(`lastEncoded_${convertorKey}`, `current${propKey}`)}) {`,
+      `    console.log('compare ${convertorKey}', {convertCustomTypes}, lastEncoded_${convertorKey}, current${propKey});`,
+      `    diff${propKey} = current${propKey};`,
+      `  }`,
+    );
+
+    return lines.join('\n');
   }
 
-  private getPropertyComparator<T>(prop: EntityProperty<T>): string {
+  private getPropertyComparator<T>(prop: EntityProperty<T>, context: Map<string, any>): string {
     let type = prop.type.toLowerCase();
 
     if (prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED) {
@@ -623,34 +655,33 @@ export class EntityComparator {
     }
 
     if (['string', 'number', 'bigint'].includes(type)) {
-      return this.getGenericComparator(this.wrap(prop.name), `last${this.wrap(prop.name)} !== current${this.wrap(prop.name)}`);
+      return this.getGenericComparator(prop, (last: string, current: string) => `${last} !== ${current}`, context);
     }
 
     if (type === 'boolean') {
-      return this.getGenericComparator(this.wrap(prop.name), `!compareBooleans(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
+      return this.getGenericComparator(prop, (last: string, current: string) => `!compareBooleans(${last}, ${current})`, context);
     }
 
     if (['array'].includes(type) || type.endsWith('[]')) {
-      return this.getGenericComparator(this.wrap(prop.name), `!compareArrays(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
+      return this.getGenericComparator(prop, (last: string, current: string) => `!compareArrays(${last}, ${current})`, context);
     }
 
     if (['buffer', 'uint8array'].includes(type)) {
-      return this.getGenericComparator(this.wrap(prop.name), `!compareBuffers(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
+      return this.getGenericComparator(prop, (last: string, current: string) => `!compareBuffers(${last}, ${current})`, context);
     }
 
     if (['date'].includes(type)) {
-      return this.getGenericComparator(this.wrap(prop.name), `last${this.wrap(prop.name)}.valueOf() !== current${this.wrap(prop.name)}.valueOf()`);
+      return this.getGenericComparator(prop, (last: string, current: string) => `${last}.valueOf() !== ${current}.valueOf()`, context);
     }
 
     if (['objectid'].includes(type)) {
       // We might be comparing PK to object, in case we compare with cached data of populated entity
       // in such case we just ignore the comparison and fallback to `equals()` (which will still mark
       // it as not equal as we compare PK to plain object).
-      const cond = `last${this.wrap(prop.name)}.toHexString?.() !== current${this.wrap(prop.name)}.toHexString?.()`;
-      return this.getGenericComparator(this.wrap(prop.name), cond);
+      return this.getGenericComparator(prop, (last: string, current: string) => `${last}.toHexString?.() !== ${current}.toHexString?.()`, context);
     }
 
-    return `  if (!equals(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})) diff${this.wrap(prop.name)} = current${this.wrap(prop.name)};`;
+    return this.getGenericComparator(prop, (last: string, current: string) => `!equals(${last}, ${current})`, context);
   }
 
   private wrap(key: string): string {

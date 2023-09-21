@@ -58,7 +58,7 @@ test('infer property type from its default value when type is not set', async ()
     `create table "author2" ("id" serial primary key, "age" int not null default 0, "nullable" int null, "created_at" timestamptz not null, "data" bytea not null);\n\n`,
   );
   expect(meta.properties.age.type).toBe('number');
-  expect(meta.properties.createdAt.type).toBe('Date');
+  expect(meta.properties.createdAt.type).toBe('DateTimeType');
   expect(meta.properties.data.type).toBe('BlobType');
   expect(meta.properties.data.runtimeType).toBe('Buffer');
 });

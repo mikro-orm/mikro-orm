@@ -38,12 +38,14 @@ import type {
 } from './drivers';
 import type {
   AnyEntity,
+  AnyString,
   AutoPath,
   ConnectionType,
   Dictionary,
   EntityData,
   EntityDictionary,
   EntityDTO,
+  EntityKey,
   EntityMetadata,
   EntityName,
   FilterDef,
@@ -56,10 +58,8 @@ import type {
   Populate,
   PopulateOptions,
   Primary,
-  RequiredEntityData,
   Ref,
-  EntityKey,
-  AnyString,
+  RequiredEntityData,
 } from './typings';
 import {
   EventType,

@@ -10,7 +10,17 @@ import { EntitySchema } from './EntitySchema';
 import { Cascade, ReferenceKind, type EventType } from '../enums';
 import { MetadataError } from '../errors';
 import type { Platform } from '../platforms';
-import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, t, Type, Uint8ArrayType } from '../types';
+import {
+  ArrayType,
+  BigIntType,
+  BlobType,
+  DateTimeType,
+  EnumArrayType,
+  JsonType,
+  t,
+  Type,
+  Uint8ArrayType,
+} from '../types';
 import { colors } from '../logging/colors';
 import { raw } from '../utils/RawQueryFragment';
 
@@ -1119,6 +1129,10 @@ export class MetadataDiscovery {
       prop.customType = new BigIntType();
     }
 
+    if (!prop.customType && mappedType instanceof DateTimeType) {
+      prop.customType = new DateTimeType();
+    }
+
     if (prop.customType && !prop.columnTypes) {
       const mappedType = this.getMappedType({ columnTypes: [prop.customType.getColumnType(prop, this.platform)] } as EntityProperty);
       prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
@@ -1127,6 +1141,7 @@ export class MetadataDiscovery {
     }
 
     if (prop.customType) {
+      // console.log(prop.name, prop.customType);
       prop.customType.platform = this.platform;
       prop.customType.meta = meta;
       prop.customType.prop = prop;

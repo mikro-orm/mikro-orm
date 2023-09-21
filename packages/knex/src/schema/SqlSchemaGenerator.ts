@@ -576,6 +576,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   }
 
   private createCheck(table: Knex.CreateTableBuilder, check: CheckDef) {
+    console.log(check.expression, check);
     table.check(check.expression as string, {}, check.name);
   }
 
