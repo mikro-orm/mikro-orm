@@ -46,7 +46,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persistAndFlush(bible);
 
     const author = new Author('Jon Snow', 'snow@wall.st');
-    author.born = new Date('2000-01-01');
+    author.born = '2000-01-01';
     author.favouriteBook = bible;
 
     const publisher = new Publisher('7K publisher', PublisherType.GLOBAL);
@@ -729,7 +729,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persistAndFlush(bible);
 
     let jon = new Author('Jon Snow', 'snow@wall.st');
-    jon.born = new Date('1990-03-23');
+    jon.born = '1990-03-23';
     jon.favouriteBook = bible;
     await orm.em.persistAndFlush(jon);
     orm.em.clear();
@@ -737,7 +737,7 @@ describe('EntityManagerMongo', () => {
     jon = (await authorRepository.findOne(jon.id))!;
     expect(jon).not.toBeNull();
     expect(jon.name).toBe('Jon Snow');
-    expect(jon.born).toEqual(new Date('1990-03-23'));
+    expect(jon.born).toEqual('1990-03-23');
     expect(jon.favouriteBook).toBeInstanceOf(Book);
     expect(wrap(jon.favouriteBook!).isInitialized()).toBe(false);
 
@@ -1840,7 +1840,7 @@ describe('EntityManagerMongo', () => {
   test('allow undefined value in nullable properties', async () => {
     let god = new Author('God', 'hello@heaven.god');
     god.age = 21;
-    god.born = new Date('0001-01-01');
+    god.born = '0001-01-01';
     await orm.em.persistAndFlush(god);
 
     god.age = undefined;

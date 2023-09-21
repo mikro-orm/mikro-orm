@@ -146,7 +146,7 @@ describe('check typings', () => {
     assert<Has<FilterValue<Author2>, number>>(true);
 
     // date requires date
-    assert<Has<FilterValue<Author['born']>, Date>>(true);
+    assert<Has<FilterValue<Author['born']>, Date>>(false);
     assert<Has<FilterValue<Author['born']>, number>>(false);
     assert<Has<FilterValue<Author['born']>, string>>(true);
   });
@@ -155,9 +155,9 @@ describe('check typings', () => {
     // assert<Has<FilterQuery<Author['born']>, Date>>(true);
     assert<Has<Query<Author['born']>, number>>(false);
     // assert<Has<Query<Author['born']>, string>>(true);
-    assert<Has<Query<Author>, { born?: Date }>>(true);
+    assert<Has<Query<Author>, { born?: Date }>>(false);
     assert<Has<Query<Author>, { born?: number }>>(false);
-    assert<Has<Query<Author>, { born?: string }>>(false);
+    assert<Has<Query<Author>, { born?: string }>>(true);
     assert<IsAssignable<Query<Author2>, { favouriteBook: string }>>(true);
     assert<IsAssignable<Query<Author2>, { favouriteBook: null }>>(true);
     assert<IsAssignable<Query<Author2>, { favouriteBook: number }>>(false);
@@ -172,10 +172,12 @@ describe('check typings', () => {
     // assert<Has<Query<Book2>, { author: { born?: Date } }>>(true);
     assert<Has<Query<Book2>, { author: { born?: string } }>>(false);
     assert<Has<Query<Book2>, { author: { born?: number } }>>(false);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: { born: Date } } }>>(true);
+    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: { born: Date } } }>>(false);
+    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: { born: string } } }>>(true);
     assert<IsAssignable<Query<Author2>, { favouriteBook: { author: { books: string[] } } }>>(true);
     assert<IsAssignable<Query<Book2>, { author: { books: string[] } }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } } }>>(true);
+    assert<IsAssignable<Query<Author2>, { books: { author: { born: string } } }>>(true);
+    assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } } }>>(false);
     assert<IsAssignable<Query<Author2>, { books: { author: { born: null } } }>>(true);
     assert<IsAssignable<Query<Author2>, { favouriteBook: null }>>(true);
     assert<IsAssignable<Query<Author2>, { favouriteBook: string }>>(true);
@@ -191,10 +193,10 @@ describe('check typings', () => {
     assert<IsAssignable<Query<Author2>, { books: Book2[] }>>(true);
     assert<IsAssignable<Query<Author2>, { books: null }>>(true);
     assert<IsAssignable<Query<Author2>, { books: { author: Author2 }; favouriteBook: Book2 }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } }; favouriteBook: null }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } }; favouriteBook: Book2 }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } }; favouriteBook: null }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } }; favouriteBook: { title: null } }>>(true);
+    assert<IsAssignable<Query<Author2>, { books: { author: { born: string } }; favouriteBook: null }>>(true);
+    assert<IsAssignable<Query<Author2>, { books: { author: { born: string } }; favouriteBook: Book2 }>>(true);
+    assert<IsAssignable<Query<Author2>, { books: { author: { born: string } }; favouriteBook: null }>>(true);
+    assert<IsAssignable<Query<Author2>, { books: { author: { born: string } }; favouriteBook: { title: null } }>>(true);
 
     let t1: Query<Book2>;
     t1 = { author: { books: { publisher: 1 } } }; // ok
@@ -203,7 +205,7 @@ describe('check typings', () => {
     let t2: Query<Author2>;
     t2 = { age: { $gte: 1 } };
     t2 = { born: '1' };
-    t2 = { books: { author: { born: new Date() } }, favouriteBook: null }; // accepts Date
+    t2 = { books: { author: { born: '2020-11-11' } }, favouriteBook: null }; // accepts string date
     // @ts-expect-error
     t2 = { books: { author: { born: 1 } }, favouriteBook: null };
     t2 = { books: { author: { born: '1' } }, favouriteBook: null }; // accepts string date
@@ -224,7 +226,7 @@ describe('check typings', () => {
     // assert<IsAssignable<FilterQueryOrPrimary<Author2>, { books: { title: 123 }; favouriteBook: null }>>(false); // hard to test failures
     // assert<IsAssignable<FilterQueryOrPrimary<Author2>, { books: { title: Date }; favouriteBook: null }>>(false); // hard to test failures
 
-    assert<IsAssignable<FilterQuery<Author2>, { born: Date }>>(true);
+    assert<IsAssignable<FilterQuery<Author2>, { born: string }>>(true);
     // assert<IsAssignable<FilterQueryOrPrimary<Author2>, { born: number }>>(false); // hard to test failures
     // assert<IsAssignable<FilterQueryOrPrimary<Author2>, { born: string }>>(false); // hard to test failures
 
@@ -233,7 +235,7 @@ describe('check typings', () => {
     // assert<IsAssignable<FilterQueryOrPrimary<Author2>, { age: { $gta: ['1'] } }>>(false); // hard to test failures
 
     assert<IsAssignable<FilterQuery<Author2>, { age: { $gte: number } }>>(true);
-    assert<IsAssignable<FilterQuery<Author2>, { age: { $gte: number }; born: { $lt: Date }; $and: [{ name: { $ne: 'John' } }, { name: { $in: ['Ben', 'Paul'] } }] }>>(true);
+    assert<IsAssignable<FilterQuery<Author2>, { age: { $gte: number }; born: { $lt: string }; $and: [{ name: { $ne: 'John' } }, { name: { $in: ['Ben', 'Paul'] } }] }>>(true);
     assert<Has<FilterQuery<Author2>, { favouriteBook?: Book2 }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: Book2 }, { name: string }] }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: { title: string } }, { name: string }] }>>(true);
@@ -418,16 +420,16 @@ describe('check typings', () => {
   test('FilterQuery ok assignments', async () => {
     let ok01: FilterQuery<Author2>;
     ok01 = {};
-    ok01 = { born: new Date() };
-    ok01 = { born: { $gte: new Date() } };
+    ok01 = { born: '2020-01-01' };
+    ok01 = { born: { $gte: '2020-01-01' } };
     ok01 = { age: { $gte: 1 } };
     ok01 = { age: 1 };
     ok01 = { favouriteBook: '1' };
     ok01 = { favouriteBook: ['1', '2'] };
     ok01 = { favouriteBook: null };
-    ok01 = { books: { author: { born: new Date() } }, favouriteBook: null };
-    ok01 = { books: { author: { born: new Date() } } };
-    ok01 = { books: { author: { born: new Date() } }, favouriteBook: {} as Book2 };
+    ok01 = { books: { author: { born: '2020-01-01' } }, favouriteBook: null };
+    ok01 = { books: { author: { born: '2020-01-01' } } };
+    ok01 = { books: { author: { born: '2020-01-01' } }, favouriteBook: {} as Book2 };
     ok01 = { books: { author: { born: '2020-01-01' } }, favouriteBook: {} as Book2 };
     ok01 = { books: { tags: { name: 'asd' } } };
     ok01 = { books: { tags: '1' } };
