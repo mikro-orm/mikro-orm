@@ -14,11 +14,11 @@ export enum NumLevelType {
 @Entity()
 class Job {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ type: BigIntType, nullable: true })
-  optional?: string | null; // GH issue 631
+  optional?: bigint | null; // GH issue 631
 
   @OneToMany('Level', 'job', { orphanRemoval: true })
   levels = new Collection<Level>(this);
@@ -62,7 +62,7 @@ describe('GH issue 482', () => {
 
   test(`orphan removal with composite keys`, async () => {
     const job = new Job();
-    job.id = '1';
+    job.id = 1n;
     job.levels.add(new Level(LevelType.A));
     job.levels.add(new Level(LevelType.B));
     await orm.em.persistAndFlush(job);
@@ -84,13 +84,13 @@ describe('GH issue 482', () => {
     orm.config.set('debug', ['query', 'query-params']);
 
     const job = new Job();
-    job.id = '2';
+    job.id = 2n;
     orm.em.persist(job);
-    job.optional = '1';
+    job.optional = 1n;
     await orm.em.flush();
     job.optional = null;
     await orm.em.flush();
-    job.optional = '1';
+    job.optional = 1n;
     await orm.em.flush();
     job.optional = undefined;
     await orm.em.flush();
@@ -115,7 +115,7 @@ describe('GH issue 482', () => {
   test(`GH issue 476 - enum arrays`, async () => {
     const a = new Level(LevelType.A);
     a.job = new Job();
-    a.job.id = '3';
+    a.job.id = 3n;
     await orm.em.persistAndFlush(a);
     expect(a.types).toEqual([LevelType.A]);
     expect(a.numTypes).toEqual([NumLevelType.A]);

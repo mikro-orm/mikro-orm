@@ -1,4 +1,4 @@
-import { BigIntType, Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { performance } from 'perf_hooks';
 
 @Entity()
@@ -6,8 +6,8 @@ export class VendorBuyerRelationship {
 
   [OptionalProps]?: 'created';
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ onCreate: () => new Date() })
   created!: Date;
@@ -28,8 +28,8 @@ export class Member {
 
   [OptionalProps]?: 'created';
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ onCreate: () => new Date() })
   created!: Date;
@@ -53,8 +53,8 @@ export class Job {
 
   [OptionalProps]?: 'rejected';
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @ManyToOne(() => Member, { ref: true, nullable: true })
   member?: Ref<Member>;
@@ -87,8 +87,8 @@ export class Order {
 
   [OptionalProps]?: 'created';
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ onCreate: () => new Date() })
   created!: Date;

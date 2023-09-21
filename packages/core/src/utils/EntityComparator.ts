@@ -481,7 +481,7 @@ export class EntityComparator {
         const convertorKey = this.safeKey(childProp.name);
         context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
-        if (['number', 'string', 'boolean'].includes(childProp.customType.compareAsType().toLowerCase())) {
+        if (['number', 'string', 'boolean', 'bigint'].includes(childProp.customType.compareAsType().toLowerCase())) {
           return `${padding}  if (${childCond}) ret${childDataKey} = convertToDatabaseValue_${convertorKey}(entity${childEntityKey});`;
         }
 
@@ -546,7 +546,7 @@ export class EntityComparator {
     if (prop.customType) {
       context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
-      if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
+      if (['number', 'string', 'boolean', 'bigint'].includes(prop.customType.compareAsType().toLowerCase())) {
         return ret + `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(entity${entityKey}${unwrap});\n  }\n`;
       }
 
@@ -622,7 +622,7 @@ export class EntityComparator {
       type = 'array';
     }
 
-    if (['string', 'number'].includes(type)) {
+    if (['string', 'number', 'bigint'].includes(type)) {
       return this.getGenericComparator(this.wrap(prop.name), `last${this.wrap(prop.name)} !== current${this.wrap(prop.name)}`);
     }
 

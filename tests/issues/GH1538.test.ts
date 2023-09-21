@@ -1,10 +1,10 @@
-import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Author {
 
-  @PrimaryKey({ type: BigIntType, comment: 'PK' })
-  id!: string;
+  @PrimaryKey({ comment: 'PK' })
+  id!: bigint;
 
   @Property({ nullable: true })
   name!: string;
@@ -22,8 +22,8 @@ export class Author {
 @Entity()
 export class Post {
 
-  @PrimaryKey({ type: BigIntType, comment: 'PK' })
-  id!: string;
+  @PrimaryKey({ comment: 'PK' })
+  id!: bigint;
 
   @Property({ nullable: true })
   title!: string;
