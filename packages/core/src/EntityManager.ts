@@ -1233,12 +1233,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   merge<Entity extends object>(entityName: EntityName<Entity> | Entity, data?: EntityData<Entity> | EntityDTO<Entity> | MergeOptions, _options: MergeOptions = {}): Entity {
     const em = this.getContext();
-    const options = this.mergeOptions<MergeOptions>(_options);
+
 
     if (Utils.isEntity(entityName)) {
       return em.merge((entityName as Dictionary).constructor.name, entityName as unknown as EntityData<Entity>, data as MergeOptions);
     }
 
+    const options = this.mergeOptions<MergeOptions>(_options);
     entityName = Utils.className(entityName as string);
     em.validator.validatePrimaryKey(data as EntityData<Entity>, em.metadata.get(entityName));
     let entity = em.unitOfWork.tryGetById<Entity>(entityName, data as FilterQuery<Entity>, options.schema, false);
