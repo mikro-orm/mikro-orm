@@ -2384,7 +2384,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": ^5.8.2
     globby: 11.1.0
-    ts-morph: 19.0.0
+    ts-morph: 20.0.0
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
   languageName: unknown
@@ -3129,15 +3129,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ts-morph/common@npm:~0.20.0":
-  version: 0.20.0
-  resolution: "@ts-morph/common@npm:0.20.0"
+"@ts-morph/common@npm:~0.21.0":
+  version: 0.21.0
+  resolution: "@ts-morph/common@npm:0.21.0"
   dependencies:
     fast-glob: ^3.2.12
     minimatch: ^7.4.3
     mkdirp: ^2.1.6
     path-browserify: ^1.0.1
-  checksum: eb02480971fbe045b4dd099d1ddb262d47d657197fefb73a4a2c89523975bfb0b23050207d49d19e853ef23bffdcb9d89a778f52f6b3385ae5bcf63322523700
+  checksum: c322e2a58608d7d924646b10ba9ad432b03e7b119788c9f0f270550bd5aca22947fcaa1c63f27e80898a50de3ed99fc8d9c23569c6a2f3f36c9307e35ceba3ed
   languageName: node
   linkType: hard
 
@@ -12290,13 +12290,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-morph@npm:19.0.0":
-  version: 19.0.0
-  resolution: "ts-morph@npm:19.0.0"
+"ts-morph@npm:20.0.0":
+  version: 20.0.0
+  resolution: "ts-morph@npm:20.0.0"
   dependencies:
-    "@ts-morph/common": ~0.20.0
+    "@ts-morph/common": ~0.21.0
     code-block-writer: ^12.0.0
-  checksum: c2546da8dcbdfd5f987ef39f30e52de5cc89391b7357ad45e7a09d05d2fd0cabb92c9d1cf14860ba27e9e3476707b854ba9671a1c8e0a925b6457305ef3e23ea
+  checksum: 8a96d72a26e4e3c4139c581834364a97207f78a5878f70aa6f58787c0f4003a9386a64f43b814bac7bf028e572ef8660939f56844641b05bfaf7ae7437be9011
   languageName: node
   linkType: hard
 
