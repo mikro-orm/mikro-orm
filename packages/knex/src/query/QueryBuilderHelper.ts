@@ -18,25 +18,30 @@ import {
   type EntityProperty,
   type FlatQueryOrderMap,
   type QBFilterQuery,
+  type MetadataStorage,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 /**
  * @internal
  */
 export class QueryBuilderHelper {
 
-  private readonly platform = this.driver.getPlatform();
-  private readonly metadata = this.driver.getMetadata();
+  private readonly platform: AbstractSqlPlatform;
+  private readonly metadata: MetadataStorage;
 
   constructor(private readonly entityName: string,
               private readonly alias: string,
               private readonly aliasMap: Dictionary<Alias<any>>,
               private readonly subQueries: Dictionary<string>,
               private readonly knex: Knex,
-              private readonly driver: AbstractSqlDriver) { }
+              private readonly driver: AbstractSqlDriver) {
+    this.platform = this.driver.getPlatform();
+    this.metadata = this.driver.getMetadata();
+  }
 
   mapper(field: string | Knex.Raw, type?: QueryType): string;
   mapper(field: string | Knex.Raw, type?: QueryType, value?: any, alias?: string | null): string;
@@ -505,7 +510,8 @@ export class QueryBuilderHelper {
     const fields = Utils.splitPrimaryKeys(key);
 
     if (fields.length > 1 && Array.isArray(value[op]) && !value[op].every((v: unknown) => Array.isArray(v))) {
-      value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, value[op]);
+      const tmp = value[op].length === 1 && Utils.isPlainObject(value[op][0]) ? fields.map(f => value[op][0][f]) : value[op];
+      value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, tmp);
     }
 
     if (this.subQueries[key]) {

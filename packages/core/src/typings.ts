@@ -410,14 +410,18 @@ export class EntityMetadata<T = any> {
     this.relations = this.props.filter(prop => prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED);
     this.bidirectionalRelations = this.relations.filter(prop => prop.mappedBy || prop.inversedBy);
     this.uniqueProps = this.props.filter(prop => prop.unique);
-    this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this.root));
+    this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this));
     this.hydrateProps = this.props.filter(prop => {
       // `prop.userDefined` is either `undefined` or `false`
       const discriminator = this.root.discriminatorColumn === prop.name && prop.userDefined === false;
       // even if we don't have a setter, do not ignore value from database!
-      const onlyGetter = prop.getter && !prop.setter && prop.persist === false;
+      const onlyGetter = prop.getter && !prop.setter;
       return !prop.inherited && prop.hydrate !== false && !discriminator && !prop.embedded && !onlyGetter;
     });
+    this.trackingProps = this.hydrateProps
+      .filter(prop => !prop.getter && !prop.setter)
+      .filter(prop => ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind))
+      .filter(prop => !prop.serializedPrimaryKey);
     this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.type));
     this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
     this.virtual = !!this.expression;
@@ -437,7 +441,7 @@ export class EntityMetadata<T = any> {
       this.props.forEach(prop => this.initIndexes(prop));
     }
 
-    this.definedProperties = this.props.reduce((o, prop) => {
+    this.definedProperties = this.trackingProps.reduce((o, prop) => {
       const isCollection = [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind);
       const isReference = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
@@ -565,6 +569,7 @@ export interface EntityMetadata<T = any> {
   relations: EntityProperty<T>[];
   bidirectionalRelations: EntityProperty<T>[];
   comparableProps: EntityProperty<T>[]; // for EntityComparator
+  trackingProps: EntityProperty<T>[]; // for change-tracking and propagation
   hydrateProps: EntityProperty<T>[]; // for Hydrator
   uniqueProps: EntityProperty<T>[];
   indexes: { properties: (EntityKey<T>) | (EntityKey<T>)[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];

@@ -83,8 +83,8 @@ describe('EntityHelperMongo', () => {
   test('BaseEntity methods', async () => {
     const god = new Author('God', 'hello@heaven.god');
     expect(wrap(god, true).__populated).toBeUndefined();
-    expect(wrap(god, true).__touched).toBe(true);
-    expect(god.isTouched()).toBe(true);
+    expect(wrap(god, true).__touched).toBe(false); // propagation is not working on not managed entities when `useDefineForClassFields` is enabled
+    expect(god.isTouched()).toBe(false); // propagation is not working on not managed entities when `useDefineForClassFields` is enabled
     god.populated();
     await expect(god.populate(['favouriteAuthor'])).rejects.toThrowError('Entity Author is not managed.');
     expect(wrap(god, true).__populated).toBe(true);
@@ -135,7 +135,8 @@ describe('EntityHelperMongo', () => {
   });
 
   test('should have string id getter and setter', async () => {
-    const author = new Author('Jon Snow', 'snow@wall.st');
+    // serialized id getter on not managed entities when `useDefineForClassFields` is enabled works only via `em.create`
+    const author = orm.em.create(Author, { name: 'Jon Snow', email: 'snow@wall.st' });
     author._id = new ObjectId('5b0ff0619fbec620008d2414');
     expect(author.id).toBe('5b0ff0619fbec620008d2414');
 
@@ -154,8 +155,9 @@ describe('EntityHelperMongo', () => {
   });
 
   test('setting m:1 reference is propagated to 1:m collection', async () => {
-    const author = new Author('n', 'e');
-    const book = new Book('t');
+    // propagation is on not managed entities when `useDefineForClassFields` is enabled works only via `em.create`
+    const author = orm.em.create(Author, { name: 'n', email:  'e' });
+    const book = orm.em.create(Book, { title: 't' } as any);
     book.author = author;
     expect(author.books.getItems()).toContain(book);
     await orm.em.persistAndFlush(book);
@@ -171,8 +173,9 @@ describe('EntityHelperMongo', () => {
   });
 
   test('setting 1:1 reference is propagated to the inverse side', async () => {
-    const bar = FooBar.create('bar');
-    const baz = FooBaz.create('baz');
+    // propagation is on not managed entities when `useDefineForClassFields` is enabled works only via `em.create`
+    const bar = orm.em.create(FooBar, { name: 'bar' } as any);
+    const baz = orm.em.create(FooBaz, { name: 'baz' } as any);
     bar.baz = baz;
     expect(baz.bar.unwrap()).toBe(bar);
     await orm.em.persistAndFlush(bar);
@@ -189,8 +192,8 @@ describe('EntityHelperMongo', () => {
   });
 
   test('custom inspect shows get/set props', async () => {
-    const bar = FooBar.create('bar');
-    bar.baz = FooBaz.create('baz');
+    const bar = orm.em.create(FooBar, { name: 'bar' } as any);
+    bar.baz = orm.em.create(FooBaz, { name: 'baz' } as any);
     let actual = inspect(bar);
 
     expect(actual).toBe('FooBar {\n' +
@@ -219,8 +222,8 @@ describe('EntityHelperMongo', () => {
       "  baz: (FooBaz [managed by 1]) { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
       '}');
 
-    const god = new Author('God', 'hello@heaven.god');
-    const bible = new Book('Bible', god);
+    const god = orm.em.create(Author, { name: 'God', email: 'hello@heaven.god' });
+    const bible = orm.em.create(Book, { title: 'Bible', author: god });
     bible.createdAt = new Date('2020-07-18T17:31:08.535Z');
     god.favouriteAuthor = god;
     delete god.createdAt;
@@ -229,12 +232,10 @@ describe('EntityHelperMongo', () => {
     actual = inspect(god);
 
     expect(actual).toBe('Author {\n' +
-      '  hookTest: false,\n' +
-      '  termsAccepted: false,\n' +
       '  books: Collection<Book> {\n' +
       "    '0': Book {\n" +
-      '      createdAt: ISODate(\'2020-07-18T17:31:08.535Z\'),\n' +
       '      tags: [Collection<BookTag>],\n' +
+      '      createdAt: ISODate(\'2020-07-18T17:31:08.535Z\'),\n' +
       "      title: 'Bible',\n" +
       '      author: [Author],\n' +
       '      publisher: [Ref<Publisher>]\n' +
@@ -243,28 +244,30 @@ describe('EntityHelperMongo', () => {
       '    dirty: true\n' +
       '  },\n' +
       '  friends: Collection<Author> { initialized: true, dirty: false },\n' +
+      "  foo: 'bar',\n" +
       "  name: 'God',\n" +
       "  email: 'hello@heaven.god',\n" +
-      "  foo: 'bar',\n" +
+      '  termsAccepted: false,\n' +
       '  favouriteAuthor: Author {\n' +
-      '    hookTest: false,\n' +
-      '    termsAccepted: false,\n' +
       "    books: Collection<Book> { '0': [Book], initialized: true, dirty: true },\n" +
       '    friends: Collection<Author> { initialized: true, dirty: false },\n' +
+      "    foo: 'bar',\n" +
       "    name: 'God',\n" +
       "    email: 'hello@heaven.god',\n" +
-      "    foo: 'bar',\n" +
+      '    termsAccepted: false,\n' +
       '    favouriteAuthor: Author {\n' +
-      '      hookTest: false,\n' +
-      '      termsAccepted: false,\n' +
       '      books: [Collection<Book>],\n' +
       '      friends: [Collection<Author>],\n' +
+      "      foo: 'bar',\n" +
       "      name: 'God',\n" +
       "      email: 'hello@heaven.god',\n" +
-      "      foo: 'bar',\n" +
-      '      favouriteAuthor: [Author]\n' +
-      '    }\n' +
-      '  }\n' +
+      '      termsAccepted: false,\n' +
+      '      favouriteAuthor: [Author],\n' +
+      '      hookTest: false\n' +
+      '    },\n' +
+      '    hookTest: false\n' +
+      '  },\n' +
+      '  hookTest: false\n' +
       '}');
   });
 

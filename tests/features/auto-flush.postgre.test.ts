@@ -34,7 +34,7 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     const b3 = new Book2('Bible 3', god);
     b3.perex = ref('b3 perex');
     b3.price = 789;
-    await orm.em.fork().persistAndFlush(god);
+    await orm.em.fork().persistAndFlush([b1, b2, b3]);
 
     return { god };
   }
@@ -66,9 +66,15 @@ describe('automatic flushing when querying for overlapping entities via em.find/
   });
 
   test('em.find() triggers auto-flush for newly flushed entities too', async () => {
-    const god = new Author2('God', 'hello@heaven.god');
-    god.favouriteAuthor = new Author2('God 2', 'hello2@heaven.god');
-    god.favouriteAuthor.age = 21;
+    const god = orm.em.create(Author2, {
+      name: 'God',
+      email: 'hello@heaven.god',
+      favouriteAuthor: {
+        name: 'God 2',
+        email: 'hello2@heaven.god',
+      },
+    });
+    god.favouriteAuthor!.age = 21;
     god.age = 999;
 
     expect(wrap(god, true).__touched).toBe(true);
@@ -215,7 +221,7 @@ describe('automatic flushing when querying for overlapping entities via em.find/
       const b3 = new Book2(`Bible 3-${i}`, god);
       b3.perex = ref(`b3-${i} perex`);
       b3.price = 789;
-      fork.persist(god);
+      fork.persist([b1, b2, b3]);
     }
 
     await fork.flush();

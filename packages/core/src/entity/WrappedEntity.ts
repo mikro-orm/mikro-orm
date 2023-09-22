@@ -35,35 +35,55 @@ import { EntitySerializer, type SerializeOptions } from '../serialization/Entity
 
 export class WrappedEntity<Entity extends object> {
 
-  __initialized = true;
-  __touched = false;
-  __populated?: boolean;
-  __managed?: boolean;
-  __onLoadFired?: boolean;
-  __schema?: string;
-  __em?: EntityManager;
-  __serializationContext: { root?: SerializationContext<Entity>; populate?: PopulateOptions<Entity>[]; fields?: string[] } = {};
-  __loadedProperties = new Set<string>();
-  __data: Dictionary = {};
-  __processing = false;
+  declare __initialized: boolean;
+  declare __touched: boolean;
+  declare __populated?: boolean;
+  declare __managed?: boolean;
+  declare __onLoadFired?: boolean;
+  declare __schema?: string;
+  declare __em?: EntityManager;
+  declare __serializationContext: { root?: SerializationContext<Entity>; populate?: PopulateOptions<Entity>[]; fields?: string[] };
+  declare __loadedProperties: Set<string>;
+  declare __data: Dictionary;
+  declare __processing: boolean;
 
   /** stores last known primary key, as its current state might be broken due to propagation/orphan removal, but we need to know the PK to be able t remove the entity */
-  __pk?: Primary<Entity>;
+  declare __pk?: Primary<Entity>;
 
   /** holds the reference wrapper instance (if created), so we can maintain the identity on reference wrappers too */
-  __reference?: Reference<Entity>;
+  declare __reference?: Reference<Entity>;
 
   /** holds last entity data snapshot, so we can compute changes when persisting managed entities */
-  __originalEntityData?: EntityData<Entity>;
+  declare __originalEntityData?: EntityData<Entity>;
 
   /** holds wrapped primary key, so we can compute change set without eager commit */
-  __identifier?: EntityIdentifier;
+  declare __identifier?: EntityIdentifier;
 
-  constructor(private readonly entity: Entity,
-              private readonly hydrator: IHydrator,
-              private readonly pkGetter?: (e: Entity) => Primary<Entity>,
-              private readonly pkSerializer?: (e: Entity) => string,
-              private readonly pkGetterConverted?: (e: Entity) => Primary<Entity>) { }
+  declare private readonly entity: Entity;
+  declare private readonly hydrator: IHydrator;
+  declare private readonly pkGetter?: (e: Entity) => Primary<Entity>;
+  declare private readonly pkSerializer?: (e: Entity) => string;
+  declare private readonly pkGetterConverted?: (e: Entity) => Primary<Entity>;
+
+  constructor(
+    entity: Entity,
+    hydrator: IHydrator,
+    pkGetter?: (e: Entity) => Primary<Entity>,
+    pkSerializer?: (e: Entity) => string,
+    pkGetterConverted?: (e: Entity) => Primary<Entity>,
+  ) {
+    this.entity = entity;
+    this.hydrator = hydrator;
+    this.pkGetter = pkGetter;
+    this.pkSerializer = pkSerializer;
+    this.pkGetterConverted = pkGetterConverted;
+    this.__initialized = true;
+    this.__touched = false;
+    this.__serializationContext = {};
+    this.__loadedProperties = new Set<string>();
+    this.__data = {};
+    this.__processing = false;
+  }
 
   isInitialized(): boolean {
     return this.__initialized;
