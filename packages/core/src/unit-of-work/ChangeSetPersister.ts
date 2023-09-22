@@ -3,22 +3,26 @@ import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadat
 import { EntityIdentifier, helper, type EntityFactory, type EntityValidator, type Collection } from '../entity';
 import { ChangeSetType, type ChangeSet } from './ChangeSet';
 import type { QueryResult } from '../connections';
-import { Utils, type Configuration } from '../utils';
+import { Utils, type Configuration, type EntityComparator } from '../utils';
 import type { DriverMethodOptions, IDatabaseDriver } from '../drivers';
 import { OptimisticLockError } from '../errors';
 import { ReferenceKind } from '../enums';
+import type { Platform } from '../platforms/Platform';
 
 export class ChangeSetPersister {
 
-  private readonly platform = this.driver.getPlatform();
-  private readonly comparator = this.config.getComparator(this.metadata);
+  private readonly platform: Platform;
+  private readonly comparator: EntityComparator;
 
   constructor(private readonly driver: IDatabaseDriver,
               private readonly metadata: MetadataStorage,
               private readonly hydrator: IHydrator,
               private readonly factory: EntityFactory,
               private readonly validator: EntityValidator,
-              private readonly config: Configuration) { }
+              private readonly config: Configuration) {
+    this.platform = this.driver.getPlatform();
+    this.comparator = this.config.getComparator(this.metadata);
+  }
 
   async executeInserts<T extends object>(changeSets: ChangeSet<T>[], options?: DriverMethodOptions, withSchema?: boolean): Promise<void> {
     if (!withSchema) {

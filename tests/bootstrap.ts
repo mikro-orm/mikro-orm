@@ -194,7 +194,6 @@ export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite'
     baseDir: BASE_DIR,
     driver: type === 'sqlite' ? SqliteDriver : BetterSqliteDriver,
     debug: ['query'],
-    propagateToOneOwner: false,
     forceUndefined: true,
     logger: i => i,
     migrations: { path: BASE_DIR + '/../temp/migrations-2', snapshot: false },

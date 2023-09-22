@@ -83,9 +83,11 @@ describe('GH issue 2777', () => {
     const c = new Customer();
     c.comment = new Comment();
     c.comment.title = 'c';
+    c.comment.customer = c;
     c.product = new Product();
     c.product.title = 't';
     c.product.image = new Image();
+    c.product.customer = c;
     c.product.image.customer = c;
     c.name = 'f';
     await orm.em.fork().persistAndFlush(c);

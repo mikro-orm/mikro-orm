@@ -27,11 +27,11 @@ describe('partial loading (mongo)', () => {
 
   test('partial nested loading (1:m)', async () => {
     const god = new Author(`God `, `hello@heaven.god`);
-    const b1 = new Book(`Bible 1`, god);
+    const b1 = orm.em.create(Book, { title: `Bible 1`, author: god });
     b1.tenant = 123;
-    const b2 = new Book(`Bible 2`, god);
+    const b2 = orm.em.create(Book, { title: `Bible 2`, author: god });
     b2.tenant = 456;
-    const b3 = new Book(`Bible 3`, god);
+    const b3 = orm.em.create(Book, { title: `Bible 3`, author: god });
     b3.tenant = 789;
     await orm.em.persistAndFlush(god);
     orm.em.clear();
@@ -72,11 +72,11 @@ describe('partial loading (mongo)', () => {
 
   test('partial nested loading (m:1)', async () => {
     const god = new Author(`God `, `hello@heaven.god`);
-    const b1 = new Book(`Bible 1`, god);
+    const b1 = orm.em.create(Book, { title: `Bible 1`, author: god });
     b1.tenant = 123;
-    const b2 = new Book(`Bible 2`, god);
+    const b2 = orm.em.create(Book, { title: `Bible 2`, author: god });
     b2.tenant = 456;
-    const b3 = new Book(`Bible 3`, god);
+    const b3 = orm.em.create(Book, { title: `Bible 3`, author: god });
     b3.tenant = 789;
     await orm.em.persistAndFlush(god);
     orm.em.clear();
@@ -124,14 +124,14 @@ describe('partial loading (mongo)', () => {
 
   test('partial nested loading (m:n)', async () => {
     const god = new Author(`God `, `hello@heaven.god`);
-    const b1 = new Book(`Bible 1`, god);
+    const b1 = orm.em.create(Book, { title: `Bible 1`, author: god });
     b1.tenant = 123;
     const t1 = new BookTag('t1');
     b1.tags.add(t1, new BookTag('t2'));
-    const b2 = new Book(`Bible 2`, god);
+    const b2 = orm.em.create(Book, { title: `Bible 2`, author: god });
     b2.tenant = 456;
     b2.tags.add(new BookTag('t3'), new BookTag('t4'), t1);
-    const b3 = new Book(`Bible 3`, god);
+    const b3 = orm.em.create(Book, { title: `Bible 3`, author: god });
     b3.tenant = 789;
     b3.tags.add(new BookTag('t5'), new BookTag('t6'), t1);
     await orm.em.persistAndFlush(god);
@@ -174,13 +174,13 @@ describe('partial loading (mongo)', () => {
 
   test('partial nested loading (mixed)', async () => {
     const god = new Author(`God `, `hello@heaven.god`);
-    const b1 = new Book(`Bible 1`, god);
+    const b1 = orm.em.create(Book, { title: `Bible 1`, author: god });
     b1.tenant = 123;
     b1.tags.add(new BookTag('t1'), new BookTag('t2'));
-    const b2 = new Book(`Bible 2`, god);
+    const b2 = orm.em.create(Book, { title: `Bible 2`, author: god });
     b2.tenant = 456;
     b2.tags.add(new BookTag('t3'), new BookTag('t4'));
-    const b3 = new Book(`Bible 3`, god);
+    const b3 = orm.em.create(Book, { title: `Bible 3`, author: god });
     b3.tenant = 789;
     b3.tags.add(new BookTag('t5'), new BookTag('t6'));
     await orm.em.persistAndFlush(god);

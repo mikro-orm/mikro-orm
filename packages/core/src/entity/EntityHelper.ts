@@ -1,7 +1,20 @@
 import { inspect } from 'util';
 
 import type { EntityManager } from '../EntityManager';
-import { EntityRepositoryType, OptionalProps, PrimaryKeyProp, type AnyEntity, type Dictionary, type EntityMetadata, type EntityProperty, type IHydrator, type EntityValue } from '../typings';
+import {
+  EntityRepositoryType,
+  OptionalProps,
+  PrimaryKeyProp,
+  EagerProps,
+  HiddenProps,
+  type AnyEntity,
+  type Dictionary,
+  type EntityMetadata,
+  type EntityProperty,
+  type IHydrator,
+  type EntityValue,
+  type EntityKey,
+} from '../typings';
 import { EntityTransformer } from '../serialization/EntityTransformer';
 import { Reference } from './Reference';
 import { Utils } from '../utils/Utils';
@@ -9,6 +22,9 @@ import { WrappedEntity } from './WrappedEntity';
 import { ReferenceKind } from '../enums';
 import { helper } from './wrap';
 
+/**
+ * @internal
+ */
 export class EntityHelper {
 
   static decorate<T extends object>(meta: EntityMetadata<T>, em: EntityManager): void {
@@ -27,8 +43,9 @@ export class EntityHelper {
     }
 
     EntityHelper.defineBaseProperties(meta, meta.prototype, fork);
+    EntityHelper.defineCustomInspect(meta);
 
-    if (!meta.embeddable && !meta.virtual) {
+    if (em.config.get('propagationOnPrototype') && !meta.embeddable && !meta.virtual) {
       EntityHelper.defineProperties(meta, fork);
     }
 
@@ -116,12 +133,17 @@ export class EntityHelper {
           },
         });
       });
+  }
 
+  static defineCustomInspect<T extends object>(meta: EntityMetadata<T>): void {
     // @ts-ignore
     meta.prototype[inspect.custom] ??= function (this: T, depth: number) {
       const object = { ...this } as any;
       // ensure we dont have internal symbols in the POJO
-      [OptionalProps, EntityRepositoryType, PrimaryKeyProp].forEach(sym => delete object[sym]);
+      [OptionalProps, EntityRepositoryType, PrimaryKeyProp, EagerProps, HiddenProps].forEach(sym => delete object[sym]);
+      meta.props
+        .filter(prop => object[prop.name] === undefined)
+        .forEach(prop => delete object[prop.name]);
       const ret = inspect(object, { depth });
       let name = (this).constructor.name;
 
@@ -223,6 +245,49 @@ export class EntityHelper {
     if (old?.[prop2.name] != null) {
       delete helper(old).__data[prop2.name];
     }
+  }
+
+  static ensurePropagation<T>(entity: T) {
+    if ((entity as Dictionary).__gettersDefined) {
+      return;
+    }
+
+    const wrapped = helper(entity);
+    const meta = wrapped.__meta;
+    const platform = wrapped.__platform;
+    const serializedPrimaryKey = meta.props.find(p => p.serializedPrimaryKey);
+
+    const values: [string, unknown][] = [];
+
+    if (serializedPrimaryKey) {
+      const pk = meta.getPrimaryProps()[0];
+      const val = entity[serializedPrimaryKey.name];
+      delete entity[serializedPrimaryKey.name];
+      Object.defineProperty(entity, serializedPrimaryKey.name, {
+        get(): string | null {
+          return this[pk.name] ? platform.normalizePrimaryKey<string>(this[pk.name]) : null;
+        },
+        set(id: string): void {
+          this[pk.name] = id ? platform.denormalizePrimaryKey(id) : null;
+        },
+      });
+
+      if (entity[pk.name] == null && val != null) {
+        values.push([serializedPrimaryKey.name, val]);
+      }
+    }
+
+    meta.trackingProps.forEach(prop => {
+      if (entity[prop.name] !== undefined) {
+        values.push([prop.name, entity[prop.name]]);
+      }
+    });
+
+    meta.trackingProps.forEach(prop => {
+      delete entity[prop.name];
+    });
+    Object.defineProperties(entity, meta.definedProperties);
+    values.forEach(val => entity[val[0] as EntityKey<T>] = val[1] as EntityValue<T>);
   }
 
 }
