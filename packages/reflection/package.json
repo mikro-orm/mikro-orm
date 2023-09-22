@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "globby": "11.1.0",
-    "ts-morph": "19.0.0"
+    "ts-morph": "20.0.0"
   },
   "devDependencies": {
     "@mikro-orm/core": "^5.8.2"
