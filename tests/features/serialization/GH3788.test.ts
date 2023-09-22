@@ -30,18 +30,15 @@ class MainItem {
 }
 
 test('serialization of not managed relations (#3788)', async () => {
-  await MikroORM.init({
+  const { em } = await MikroORM.init({
     driver: BetterSqliteDriver,
     dbName: ':memory:',
     entities: [ImageInfo],
     connect: false,
   });
 
-  const image = new ImageInfo();
-  image.url = 'xxxx';
-  const mainItem = new MainItem();
-  mainItem.name = 'yyyy';
-  mainItem.coverImage = image;
+  const image = em.create(ImageInfo, { url: 'xxxx' });
+  const mainItem = em.create(MainItem, { name: 'yyyy', coverImage: image });
   expect(mainItem).toMatchObject({
     name: 'yyyy',
     coverImage: {

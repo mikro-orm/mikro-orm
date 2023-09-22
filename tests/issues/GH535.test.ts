@@ -52,7 +52,6 @@ describe('GH issue 535', () => {
   });
 
   test(`GH issue 535`, async () => {
-
     const a = new A();
     const b = new B();
     a.b = wrap(b).toReference();

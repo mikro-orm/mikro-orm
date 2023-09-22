@@ -1,6 +1,6 @@
 import { URL } from 'url';
 import type { Configuration, ConnectionOptions, DynamicPassword } from '../utils';
-import type { LogContext } from '../logging';
+import type { LogContext, Logger } from '../logging';
 import type { MetadataStorage } from '../metadata';
 import type { ConnectionType, Dictionary, MaybePromise, Primary } from '../typings';
 import type { Platform } from '../platforms/Platform';
@@ -12,12 +12,14 @@ export abstract class Connection {
   protected metadata!: MetadataStorage;
   protected platform!: Platform;
   protected readonly options: ConnectionOptions;
-  protected readonly logger = this.config.getLogger();
+  protected readonly logger: Logger;
   protected connected = false;
 
   constructor(protected readonly config: Configuration,
               options?: ConnectionOptions,
               protected readonly type: ConnectionType = 'write') {
+    this.logger = this.config.getLogger();
+
     if (options) {
       this.options = options;
     } else {
