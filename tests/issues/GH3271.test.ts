@@ -17,7 +17,7 @@ test('test nested find with repository', async () => {
 
   const author = new Author2('Bartleby', 'bartelby@writer.org');
   const book = new Book2('My Life on The Wall, part 1', author);
-  await orm.em.persistAndFlush(author);
+  await orm.em.persistAndFlush(book);
 
   orm.em.clear();
 
@@ -47,7 +47,7 @@ test('test nested find with EM 1', async () => {
 
   const author = new Author2('Bartleby', 'bartelby@writer.org');
   const book = new Book2('My Life on The Wall, part 1', author);
-  await orm.em.persistAndFlush(author);
+  await orm.em.persistAndFlush(book);
 
   orm.em.clear();
 
@@ -77,7 +77,7 @@ test('test nested find with EM 2', async () => {
 
   const author = new Author2('Bartleby', 'bartelby@writer.org');
   const book = new Book2('My Life on The Wall, part 1', author);
-  await orm.em.fork().persistAndFlush(author);
+  await orm.em.fork().persistAndFlush(book);
 
   async function requestCommonService() {
     const [b] = await orm.em.find(Book2, {});
@@ -103,7 +103,7 @@ test('test nested find with EM 3', async () => {
 
   const author = new Author2('Bartleby', 'bartelby@writer.org');
   const book = new Book2('My Life on The Wall, part 1', author);
-  await orm.em.fork().persistAndFlush(author);
+  await orm.em.fork().persistAndFlush(book);
 
   async function requestCommonService() {
     const b = await orm.em.findOne(Book2, book);

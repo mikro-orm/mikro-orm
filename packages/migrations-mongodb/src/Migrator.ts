@@ -1,8 +1,17 @@
 import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
 import { join } from 'path';
 import { ensureDir } from 'fs-extra';
-import { Utils, type Constructor, type IMigrationGenerator, type IMigrator, type MikroORM, type Transaction } from '@mikro-orm/core';
-import type { EntityManager } from '@mikro-orm/mongodb';
+import {
+  Utils,
+  type Constructor,
+  type Configuration,
+  type IMigrationGenerator,
+  type IMigrator,
+  type MikroORM,
+  type Transaction,
+  type MigrationsOptions,
+} from '@mikro-orm/core';
+import type { EntityManager, MongoDriver } from '@mikro-orm/mongodb';
 import type { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
 import { MigrationStorage } from './MigrationStorage';
@@ -16,12 +25,16 @@ export class Migrator implements IMigrator {
   private runner!: MigrationRunner;
   private storage!: MigrationStorage;
   private generator!: IMigrationGenerator;
-  private readonly driver = this.em.getDriver();
-  private readonly config = this.em.config;
-  private readonly options = this.config.get('migrations');
+  private readonly driver: MongoDriver;
+  private readonly config: Configuration;
+  private readonly options: MigrationsOptions;
   private readonly absolutePath: string;
 
   constructor(private readonly em: EntityManager) {
+    this.driver = this.em.getDriver();
+    this.config = this.em.config;
+    this.options = this.config.get('migrations');
+
     /* istanbul ignore next */
     const key = (this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
     this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));

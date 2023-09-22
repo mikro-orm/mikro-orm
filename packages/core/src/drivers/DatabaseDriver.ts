@@ -34,6 +34,7 @@ import { EntityManager } from '../EntityManager';
 import { ValidationError } from '../errors';
 import { DriverException } from '../exceptions';
 import { helper } from '../entity/wrap';
+import type { Logger } from '../logging/Logger';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
@@ -42,12 +43,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected readonly connection!: C;
   protected readonly replicas: C[] = [];
   protected readonly platform!: Platform;
-  protected readonly logger = this.config.getLogger();
+  protected readonly logger: Logger;
   protected comparator!: EntityComparator;
   protected metadata!: MetadataStorage;
 
   protected constructor(readonly config: Configuration,
-                        protected readonly dependencies: string[]) { }
+                        protected readonly dependencies: string[]) {
+    this.logger = this.config.getLogger();
+  }
 
   async init(): Promise<void> {
     // do nothing on this level

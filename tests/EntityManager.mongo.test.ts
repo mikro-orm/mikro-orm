@@ -59,7 +59,7 @@ describe('EntityManagerMongo', () => {
     const book3 = new Book('My Life on The Wall, part 3', author);
     book3.publisher = publisherRef;
 
-    await orm.em.persist(publisher).flush();
+    await orm.em.persist([book1, book2, book3]).flush();
     orm.em.clear();
 
     const publisher7k = (await orm.em.getRepository(Publisher).findOne({ name: '7K publisher' }))!;
@@ -1359,7 +1359,7 @@ describe('EntityManagerMongo', () => {
     Author.afterDestroyCalled = 0;
     const repo = orm.em.getRepository(Author);
     const author = new Author('Jon Snow', 'snow@wall.st');
-    expect(author.id).toBeNull();
+    expect(author.id).toBeUndefined(); // with useDefineForClassFields: true we dont get getter value before flushing
     expect(author.version).toBeUndefined();
     expect(author.versionAsString).toBeUndefined();
     expect(author.hookTest).toBe(false);
@@ -1835,7 +1835,7 @@ describe('EntityManagerMongo', () => {
   test('automatically map raw results to entities when setting collection items', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const bookData = { title: 'Bible', author: god.id };
-    expect(() => god.books.add(bookData as any)).toThrowError(`Entity of type Book expected for property Author.books, { title: 'Bible', author: null } of type object given.`);
+    expect(() => god.books.add(bookData as any)).toThrowError(`Entity of type Book expected for property Author.books, { title: 'Bible', author: undefined } of type object given.`);
   });
 
   test('allow undefined value in nullable properties', async () => {

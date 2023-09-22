@@ -1,20 +1,43 @@
 import { ensureDir, writeFile } from 'fs-extra';
-import { ReferenceKind, Utils, type EntityMetadata, type EntityProperty, type GenerateOptions, type MikroORM } from '@mikro-orm/core';
-import { DatabaseSchema, type EntityManager } from '@mikro-orm/knex';
+import {
+  ReferenceKind,
+  Utils,
+  type EntityMetadata,
+  type EntityProperty,
+  type GenerateOptions,
+  type MikroORM,
+  type NamingStrategy,
+} from '@mikro-orm/core';
+import {
+  type AbstractSqlConnection,
+  type AbstractSqlDriver,
+  type AbstractSqlPlatform,
+  type Configuration,
+  DatabaseSchema,
+  type EntityManager,
+  type SchemaHelper,
+} from '@mikro-orm/knex';
 import { SourceFile } from './SourceFile';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
 
 export class EntityGenerator {
 
-  private readonly config = this.em.config;
-  private readonly driver = this.em.getDriver();
-  private readonly platform = this.driver.getPlatform();
-  private readonly helper = this.platform.getSchemaHelper()!;
-  private readonly connection = this.driver.getConnection();
-  private readonly namingStrategy = this.config.getNamingStrategy();
+  private readonly config: Configuration;
+  private readonly driver: AbstractSqlDriver;
+  private readonly platform: AbstractSqlPlatform;
+  private readonly helper: SchemaHelper;
+  private readonly connection: AbstractSqlConnection;
+  private readonly namingStrategy: NamingStrategy;
   private readonly sources: SourceFile[] = [];
 
-  constructor(private readonly em: EntityManager) { }
+  constructor(private readonly em: EntityManager) {
+    this.config = this.em.config;
+    this.driver = this.em.getDriver();
+    this.platform = this.driver.getPlatform();
+    this.helper = this.platform.getSchemaHelper()!;
+    this.connection = this.driver.getConnection();
+    this.namingStrategy = this.config.getNamingStrategy();
+  }
 
   static register(orm: MikroORM): void {
     orm.config.registerExtension('@mikro-orm/entity-generator', () => new EntityGenerator(orm.em as EntityManager));

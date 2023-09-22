@@ -1,14 +1,20 @@
 import type { Logger, LoggerNamespace, LogContext, LoggerOptions } from './Logger';
 import { colors } from './colors';
+import type { Highlighter } from '../typings';
 
 export class DefaultLogger implements Logger {
 
-  public debugMode = this.options.debugMode ?? false;
-  readonly writer = this.options.writer;
-  private readonly usesReplicas = this.options.usesReplicas;
-  private readonly highlighter = this.options.highlighter;
+  debugMode: boolean | LoggerNamespace[];
+  readonly writer: (message: string) => void;
+  private readonly usesReplicas?: boolean;
+  private readonly highlighter?: Highlighter;
 
-  constructor(private readonly options: LoggerOptions) {}
+  constructor(private readonly options: LoggerOptions) {
+    this.debugMode = this.options.debugMode ?? false;
+    this.writer = this.options.writer;
+    this.usesReplicas = this.options.usesReplicas;
+    this.highlighter = this.options.highlighter;
+  }
 
   /**
    * @inheritDoc
