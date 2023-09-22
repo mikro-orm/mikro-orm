@@ -173,7 +173,8 @@ describe('multiple connected schemas in postgres', () => {
     mock.mockReset();
 
     // remove entity
-    fork.remove(author);
+    const authorRef = fork.getReference(Author, 1);
+    fork.remove(authorRef);
     await fork.flush();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
