@@ -73,7 +73,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     populateWhere: PopulateHint.ALL,
     connect: true,
     autoJoinOneToOneOwner: true,
-    propagateToOneOwner: true,
+    propagationOnPrototype: true,
     populateAfterFlush: true,
     serialization: {
       includePrimaryKeys: true,
@@ -509,7 +509,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   connect: boolean;
   verbose: boolean;
   autoJoinOneToOneOwner: boolean;
-  propagateToOneOwner: boolean;
+  propagationOnPrototype: boolean;
   populateAfterFlush: boolean;
   serialization: {
     includePrimaryKeys: boolean;

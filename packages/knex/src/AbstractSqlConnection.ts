@@ -27,7 +27,7 @@ function isRootTransaction<T>(trx: Transaction<T>) {
 export abstract class AbstractSqlConnection extends Connection {
 
   private static __patched = false;
-  protected override platform!: AbstractSqlPlatform;
+  declare protected platform: AbstractSqlPlatform;
   protected client!: Knex;
 
   constructor(config: Configuration, options?: ConnectionOptions, type?: 'read' | 'write') {

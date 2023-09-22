@@ -76,6 +76,7 @@ import type { Transaction } from './connections';
 import { EventManager, type FlushEventArgs, TransactionEventBroadcaster } from './events';
 import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
+import type { CacheAdapter } from './cache/CacheAdapter';
 
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
@@ -87,18 +88,18 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private static counter = 1;
   readonly _id = EntityManager.counter++;
   readonly global = false;
-  readonly name = this.config.get('contextName');
-  private readonly validator = new EntityValidator(this.config.get('strict'));
+  readonly name: string;
+  private readonly validator: EntityValidator;
   private readonly repositoryMap: Dictionary<EntityRepository<any>> = {};
-  private readonly entityLoader: EntityLoader = new EntityLoader(this);
-  private readonly comparator = this.config.getComparator(this.metadata);
-  private readonly entityFactory: EntityFactory = new EntityFactory(this);
-  private readonly unitOfWork: UnitOfWork = new UnitOfWork(this);
-  private readonly resultCache = this.config.getResultCacheAdapter();
+  private readonly entityLoader: EntityLoader;
+  protected readonly comparator: EntityComparator;
+  private readonly entityFactory: EntityFactory;
+  private readonly unitOfWork: UnitOfWork;
+  private readonly resultCache: CacheAdapter;
   private filters: Dictionary<FilterDef> = {};
   private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;
-  private disableTransactions = this.config.get('disableTransactions');
+  private disableTransactions: boolean;
   private flushMode?: FlushMode;
   private _schema?: string;
 
@@ -109,7 +110,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
               protected readonly driver: D,
               protected readonly metadata: MetadataStorage,
               protected readonly useContext = true,
-              protected readonly eventManager = new EventManager(config.get('subscribers'))) { }
+              protected readonly eventManager = new EventManager(config.get('subscribers'))) {
+    this.entityLoader = new EntityLoader(this);
+    this.name = this.config.get('contextName');
+    this.validator = new EntityValidator(this.config.get('strict'));
+    this.comparator = this.config.getComparator(this.metadata);
+    this.resultCache = this.config.getResultCacheAdapter();
+    this.disableTransactions = this.config.get('disableTransactions');
+    this.entityFactory = new EntityFactory(this);
+    this.unitOfWork = new UnitOfWork(this);
+  }
 
   /**
    * Gets the Driver instance used by this EntityManager.

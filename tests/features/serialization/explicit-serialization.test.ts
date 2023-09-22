@@ -26,7 +26,7 @@ async function createEntities() {
   book2.publisher = wrap(publisher).toReference();
   const book3 = new Book2('My Life on The Wall, part 3', author);
   book3.publisher = wrap(publisher).toReference();
-  await orm.em.persist(author).flush();
+  await orm.em.persist([book1, book2, book3]).flush();
   orm.em.clear();
 
   return { god, author, publisher, book1, book2, book3 };

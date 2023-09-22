@@ -1,17 +1,20 @@
 import type { MigrationsOptions, Transaction } from '@mikro-orm/core';
-import type { AbstractSqlDriver, Table } from '@mikro-orm/knex';
+import type { AbstractSqlDriver, Table, AbstractSqlConnection, SchemaHelper } from '@mikro-orm/knex';
 import type { MigrationParams, UmzugStorage } from 'umzug';
 import * as path from 'path';
 import type { MigrationRow } from './typings';
 
 export class MigrationStorage implements UmzugStorage {
 
-  private readonly connection = this.driver.getConnection();
-  private readonly helper = this.driver.getPlatform().getSchemaHelper()!;
+  private readonly connection: AbstractSqlConnection;
+  private readonly helper: SchemaHelper;
   private masterTransaction?: Transaction;
 
   constructor(protected readonly driver: AbstractSqlDriver,
-              protected readonly options: MigrationsOptions) { }
+              protected readonly options: MigrationsOptions) {
+    this.connection = this.driver.getConnection();
+    this.helper = this.driver.getPlatform().getSchemaHelper()!;
+  }
 
   async executed(): Promise<string[]> {
     const migrations = await this.getExecutedMigrations();

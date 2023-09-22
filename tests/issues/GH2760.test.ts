@@ -9,7 +9,7 @@ export class User {
   @Property()
   name!: string;
 
-  @Property()
+  @Property({ persist: false })
   get lowerName() {
     return this.name.toLowerCase();
   }

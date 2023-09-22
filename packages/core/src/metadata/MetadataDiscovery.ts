@@ -5,6 +5,9 @@ import { EntityMetadata, type AnyEntity, type Constructor, type Dictionary, type
 import { Utils } from '../utils/Utils';
 import type { Configuration } from '../utils/Configuration';
 import { MetadataValidator } from './MetadataValidator';
+import type { MetadataProvider } from './MetadataProvider';
+import type { NamingStrategy } from '../naming-strategy/NamingStrategy';
+import type { SyncCacheAdapter } from '../cache/CacheAdapter';
 import { MetadataStorage } from './MetadataStorage';
 import { EntitySchema } from './EntitySchema';
 import { Cascade, ReferenceKind, type EventType } from '../enums';
@@ -13,20 +16,27 @@ import type { Platform } from '../platforms';
 import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, t, Type, Uint8ArrayType } from '../types';
 import { colors } from '../logging/colors';
 import { raw } from '../utils/RawQueryFragment';
+import type { Logger } from '../logging/Logger';
 
 export class MetadataDiscovery {
 
-  private readonly namingStrategy = this.config.getNamingStrategy();
-  private readonly metadataProvider = this.config.getMetadataProvider();
-  private readonly cache = this.config.getMetadataCacheAdapter();
-  private readonly logger = this.config.getLogger();
-  private readonly schemaHelper = this.platform.getSchemaHelper();
+  private readonly namingStrategy: NamingStrategy;
+  private readonly metadataProvider: MetadataProvider;
+  private readonly cache: SyncCacheAdapter;
+  private readonly logger: Logger;
+  private readonly schemaHelper: unknown;
   private readonly validator = new MetadataValidator();
   private readonly discovered: EntityMetadata[] = [];
 
   constructor(private readonly metadata: MetadataStorage,
               private readonly platform: Platform,
-              private readonly config: Configuration) { }
+              private readonly config: Configuration) {
+    this.namingStrategy = this.config.getNamingStrategy();
+    this.metadataProvider = this.config.getMetadataProvider();
+    this.cache = this.config.getMetadataCacheAdapter();
+    this.logger = this.config.getLogger();
+    this.schemaHelper = this.platform.getSchemaHelper();
+  }
 
   async discover(preferTsNode = true): Promise<MetadataStorage> {
     const startTime = Date.now();
