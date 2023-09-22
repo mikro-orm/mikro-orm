@@ -41,6 +41,7 @@ import { QueryBuilderHelper, type Alias } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
 import type { Field, JoinOptions } from '../typings';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 export interface ExecuteOptions {
   mapResults?: boolean;
@@ -121,8 +122,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private _mainAlias?: Alias<T>;
   private _aliases: Dictionary<Alias<any>> = {};
   private _helper?: QueryBuilderHelper;
-  private readonly platform = this.driver.getPlatform();
-  private readonly knex = this.driver.getConnection(this.connectionType).getKnex();
+  private readonly platform: AbstractSqlPlatform;
+  private readonly knex: Knex;
 
   /**
    * @internal
@@ -135,6 +136,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
               private connectionType?: ConnectionType,
               private readonly em?: SqlEntityManager,
               private readonly logging?: LoggingOptions) {
+    this.platform = this.driver.getPlatform();
+    this.knex = this.driver.getConnection(this.connectionType).getKnex();
+
     if (alias) {
       this.aliasCounter++;
       this._explicitAlias = true;

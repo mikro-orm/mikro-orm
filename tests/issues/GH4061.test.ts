@@ -51,7 +51,7 @@ test('4061', async () => {
   const thirdCategory = new Category();
   thirdCategory.name = 'TEST3';
   thirdCategory.parent = secondCategory;
-  await orm.em.persistAndFlush(firstCategory1);
+  await orm.em.persistAndFlush([firstCategory1, secondCategory, thirdCategory]);
   orm.em.clear();
 
   const firstCategory = await orm.em.findOneOrFail(Category, { parent: null });

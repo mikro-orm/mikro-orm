@@ -1,8 +1,27 @@
 import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
 import { basename, join } from 'path';
 import { ensureDir, pathExists, writeJSON } from 'fs-extra';
-import { t, Type, UnknownType, Utils, type Constructor, type Dictionary, type IMigrationGenerator, type IMigrator, type MikroORM, type Transaction } from '@mikro-orm/core';
-import { DatabaseSchema, DatabaseTable, SqlSchemaGenerator, type EntityManager } from '@mikro-orm/knex';
+import {
+  t,
+  Type,
+  UnknownType,
+  Utils,
+  type Constructor,
+  type Dictionary,
+  type IMigrationGenerator,
+  type IMigrator,
+  type MikroORM,
+  type Transaction,
+  type Configuration,
+  type MigrationsOptions,
+} from '@mikro-orm/core';
+import {
+  DatabaseSchema,
+  DatabaseTable,
+  SqlSchemaGenerator,
+  type EntityManager,
+  type AbstractSqlDriver,
+} from '@mikro-orm/knex';
 import type { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
 import { MigrationStorage } from './MigrationStorage';
@@ -16,14 +35,19 @@ export class Migrator implements IMigrator {
   private runner!: MigrationRunner;
   private storage!: MigrationStorage;
   private generator!: IMigrationGenerator;
-  private readonly driver = this.em.getDriver();
-  private readonly schemaGenerator = new SqlSchemaGenerator(this.em);
-  private readonly config = this.em.config;
-  private readonly options = this.config.get('migrations');
+  private readonly driver: AbstractSqlDriver;
+  private readonly schemaGenerator: SqlSchemaGenerator;
+  private readonly config: Configuration;
+  private readonly options: MigrationsOptions;
   private readonly absolutePath: string;
   private readonly snapshotPath: string;
 
   constructor(private readonly em: EntityManager) {
+    this.driver = this.em.getDriver();
+    this.schemaGenerator = new SqlSchemaGenerator(this.em);
+    this.config = this.em.config;
+    this.options = this.config.get('migrations');
+
     /* istanbul ignore next */
     const key = (this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
     this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));

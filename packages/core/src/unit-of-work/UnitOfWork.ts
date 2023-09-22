@@ -11,7 +11,7 @@ import type {
   IPrimaryKeyValue,
   Primary,
 } from '../typings';
-import { Collection, EntityIdentifier, helper, Reference } from '../entity';
+import { Collection, EntityHelper, EntityIdentifier, helper, Reference } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';
@@ -21,9 +21,10 @@ import type { EntityManager } from '../EntityManager';
 import { Cascade, EventType, LockMode, ReferenceKind } from '../enums';
 import { OptimisticLockError, ValidationError } from '../errors';
 import type { Transaction } from '../connections';
-import { TransactionEventBroadcaster } from '../events';
+import { type EventManager, TransactionEventBroadcaster } from '../events';
 import { IdentityMap } from './IdentityMap';
 import type { LockOptions } from '../drivers/IDatabaseDriver';
+import type { EntityComparator, MetadataStorage, Platform } from '@mikro-orm/core';
 
 // to deal with validation for flush inside flush hooks and `Promise.all`
 const insideFlush = new AsyncLocalStorage<boolean>();
@@ -39,19 +40,25 @@ export class UnitOfWork {
   private readonly changeSets = new Map<AnyEntity, ChangeSet<any>>();
   private readonly collectionUpdates = new Set<Collection<AnyEntity>>();
   private readonly extraUpdates = new Set<[AnyEntity, string | string[], AnyEntity | AnyEntity[] | Reference<any> | Collection<any>, ChangeSet<any> | undefined]>();
-  private readonly metadata = this.em.getMetadata();
-  private readonly platform = this.em.getPlatform();
-  private readonly eventManager = this.em.getEventManager();
-  private readonly comparator = this.em.getComparator();
-  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.metadata, this.platform, this.em.config);
-  private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.getValidator(), this.em.config);
+  private readonly metadata: MetadataStorage;
+  private readonly platform: Platform;
+  private readonly eventManager: EventManager;
+  private readonly comparator: EntityComparator;
+  private readonly changeSetComputer: ChangeSetComputer;
+  private readonly changeSetPersister: ChangeSetPersister;
   private readonly queuedActions = new Set<string>();
   private readonly loadedEntities = new Set<AnyEntity>();
   private readonly flushQueue: (() => Promise<void>)[] = [];
   private working = false;
-  private insideHooks = false;
 
-  constructor(private readonly em: EntityManager) { }
+  constructor(private readonly em: EntityManager) {
+    this.metadata = this.em.getMetadata();
+    this.platform = this.em.getPlatform();
+    this.eventManager = this.em.getEventManager();
+    this.comparator = this.em.getComparator();
+    this.changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.metadata, this.platform, this.em.config);
+    this.changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.getValidator(), this.em.config);
+  }
 
   merge<T extends object>(entity: T, visited?: Set<AnyEntity>): void {
     const wrapped = helper(entity);
@@ -84,6 +91,7 @@ export class UnitOfWork {
    */
   registerManaged<T extends object>(entity: T, data?: EntityData<T>, options?: RegisterManagedOptions): T {
     this.identityMap.store(entity);
+    EntityHelper.ensurePropagation(entity);
 
     if (options?.newEntity) {
       return entity;
@@ -283,6 +291,8 @@ export class UnitOfWork {
   }
 
   persist<T extends object>(entity: T, visited?: Set<AnyEntity>, options: { checkRemoveStack?: boolean; cascade?: boolean } = {}): void {
+    EntityHelper.ensurePropagation(entity);
+
     if (options.checkRemoveStack && this.removeStack.has(entity)) {
       return;
     }
@@ -694,11 +704,8 @@ export class UnitOfWork {
       return;
     }
 
-    this.insideHooks = true;
-
     if (!sync) {
       await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, meta, em: this.em, changeSet });
-      this.insideHooks = false;
       return;
     }
 
@@ -712,8 +719,6 @@ export class UnitOfWork {
     if (wrapped.__identifier && diff[wrapped.__meta.primaryKeys[0]]) {
       wrapped.__identifier.setValue(diff[wrapped.__meta.primaryKeys[0]] as IPrimaryKeyValue);
     }
-
-    this.insideHooks = false;
   }
 
   private postCommitCleanup(): void {
@@ -730,7 +735,6 @@ export class UnitOfWork {
     this.extraUpdates.clear();
     this.queuedActions.clear();
     this.working = false;
-    this.insideHooks = false;
   }
 
   private cascade<T extends object>(entity: T, type: Cascade, visited = new Set<AnyEntity>(), options: { checkRemoveStack?: boolean; cascade?: boolean } = {}): void {

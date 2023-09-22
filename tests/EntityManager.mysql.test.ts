@@ -1057,7 +1057,7 @@ describe('EntityManagerMySql', () => {
     b4.tags.add(tag2, tag4, tag5);
     b5.tags.add(tag5);
 
-    await orm.em.persistAndFlush(author);
+    await orm.em.persistAndFlush([b1, b2, b3, b4, b5]);
     orm.em.clear();
 
     const a1 = await orm.em.find(Author2, author, {
@@ -2185,9 +2185,10 @@ describe('EntityManagerMySql', () => {
     for (let i = 1; i <= 10; i++) {
       const num = `${i}`.padStart(2, '0');
       const god = new Author2(`God ${num}`, `hello${num}@heaven.god`);
-      new Book2(`Bible ${num}.1`, god);
-      new Book2(`Bible ${num}.2`, god);
-      new Book2(`Bible ${num}.3`, god);
+      const b1 = new Book2(`Bible ${num}.1`, god);
+      const b2 = new Book2(`Bible ${num}.2`, god);
+      const b3 = new Book2(`Bible ${num}.3`, god);
+      await orm.em.persistAndFlush([b1, b2, b3]);
       orm.em.persist(god);
     }
 

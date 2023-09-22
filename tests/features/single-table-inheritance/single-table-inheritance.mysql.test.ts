@@ -126,10 +126,10 @@ describe('single table inheritance in mysql', () => {
       favouriteManager: users[2],
       type: Type.Owner,
     });
-    expect(Object.keys(users[0])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
-    expect(Object.keys(users[1])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
-    expect(Object.keys(users[2])).toEqual(['id', 'firstName', 'lastName', 'type', 'managerProp']);
-    expect(Object.keys(users[3])).toEqual(['id', 'firstName', 'lastName', 'type', 'ownerProp', 'favouriteEmployee', 'favouriteManager', 'managerProp']);
+    expect(Object.keys(users[0])).toEqual(['firstName', 'lastName', 'type', 'employeeProp', 'id']);
+    expect(Object.keys(users[1])).toEqual(['firstName', 'lastName', 'type', 'employeeProp', 'id']);
+    expect(Object.keys(users[2])).toEqual(['firstName', 'lastName', 'type', 'managerProp', 'id']);
+    expect(Object.keys(users[3])).toEqual(['firstName', 'lastName', 'type', 'ownerProp', 'favouriteEmployee', 'favouriteManager', 'managerProp', 'id']);
 
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual(['BaseUser2-4', 'BaseUser2-1', 'BaseUser2-2', 'BaseUser2-3']);
 
