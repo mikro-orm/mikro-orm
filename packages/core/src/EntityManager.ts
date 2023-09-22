@@ -167,7 +167,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint> = {}): Promise<Loaded<Entity, Hint>[]> {
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
-      options.schema ??= em._schema;
       const fork = em.fork();
       const ret = await fork.find<Entity, Hint>(entityName, where, { ...options, disableIdentityMap: false });
       fork.clear();
@@ -493,7 +492,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOneOptions<Entity, Hint> = {}): Promise<Loaded<Entity, Hint> | null> {
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
-      options.schema ??= em._schema;
       const fork = em.fork();
       const ret = await fork.findOne<Entity, Hint>(entityName, where, { ...options, disableIdentityMap: false });
       fork.clear();
