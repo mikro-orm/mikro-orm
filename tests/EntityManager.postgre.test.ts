@@ -1782,10 +1782,10 @@ describe('EntityManagerPostgre', () => {
     for (let i = 1; i <= 10; i++) {
       const num = `${i}`.padStart(2, '0');
       const god = new Author2(`God ${num}`, `hello${num}@heaven.god`);
-      new Book2(`Bible ${num}.1`, god);
-      new Book2(`Bible ${num}.2`, god);
-      new Book2(`Bible ${num}.3`, god);
-      orm.em.persist(god);
+      const b1 = new Book2(`Bible ${num}.1`, god);
+      const b2 = new Book2(`Bible ${num}.2`, god);
+      const b3 = new Book2(`Bible ${num}.3`, god);
+      orm.em.persist([b1, b2, b3]);
     }
 
     await orm.em.flush();
@@ -2142,7 +2142,7 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('creating unmanaged entity reference', async () => {
-    await orm.em.getDriver().nativeInsertMany(Publisher2.name, [
+    await orm.em.insertMany(Publisher2, [
       { id: 1, name: 'p 1', type: PublisherType.LOCAL, type2: PublisherType2.LOCAL },
       { id: 2, name: 'p 2', type: PublisherType.GLOBAL, type2: PublisherType2.GLOBAL },
     ]);
@@ -2154,7 +2154,7 @@ describe('EntityManagerPostgre', () => {
 
     // not managed reference
     expect(wrap(b.publisher, true).__em).toBeUndefined();
-    await orm.em.persistAndFlush(a);
+    await orm.em.persistAndFlush(b);
     // after flush it will become managed
     expect(wrap(b.publisher, true).__em).toBe(orm.em);
 

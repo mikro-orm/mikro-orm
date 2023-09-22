@@ -7,6 +7,7 @@ import type {
   EntityName,
   EntityProperty,
   EntityValue,
+  IHydrator,
   New,
   Primary,
 } from '../typings';
@@ -16,6 +17,12 @@ import { EventType, ReferenceKind } from '../enums';
 import { Reference } from './Reference';
 import { helper } from './wrap';
 import type { EntityComparator } from '../utils/EntityComparator';
+import { EntityHelper } from './EntityHelper';
+import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
+import type { Platform } from '../platforms/Platform';
+import type { Configuration } from '../utils/Configuration';
+import type { EventManager } from '../events/EventManager';
+import type { MetadataStorage } from '../metadata/MetadataStorage';
 
 export interface FactoryOptions {
   initialized?: boolean;
@@ -28,15 +35,23 @@ export interface FactoryOptions {
 
 export class EntityFactory {
 
-  private readonly driver = this.em.getDriver();
-  private readonly platform = this.driver.getPlatform();
-  private readonly config = this.em.config;
-  private readonly metadata = this.em.getMetadata();
-  private readonly hydrator = this.config.getHydrator(this.metadata);
-  private readonly eventManager = this.em.getEventManager();
-  private readonly comparator = this.em.getComparator();
+  private readonly driver: IDatabaseDriver;
+  private readonly platform: Platform;
+  private readonly config: Configuration;
+  private readonly metadata: MetadataStorage;
+  private readonly hydrator: IHydrator;
+  private readonly eventManager: EventManager;
+  private readonly comparator: EntityComparator;
 
-  constructor(private readonly em: EntityManager) { }
+  constructor(private readonly em: EntityManager) {
+    this.driver = this.em.getDriver();
+    this.platform = this.driver.getPlatform();
+    this.config = this.em.config;
+    this.metadata = this.em.getMetadata();
+    this.hydrator = this.config.getHydrator(this.metadata);
+    this.eventManager = this.em.getEventManager();
+    this.comparator = this.em.getComparator();
+  }
 
   create<T extends object, P extends string = string>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
     data = Reference.unwrapReference(data);
@@ -249,14 +264,8 @@ export class EntityFactory {
 
       helper(entity).__schema = this.driver.getSchemaName(meta, options);
 
-      if (!options.newEntity) {
-        meta.relations
-          .filter(prop => [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind))
-          .forEach(prop => delete entity[prop.name]);
-
-        if (options.initialized && !(entity as Dictionary).__gettersDefined) {
-          Object.defineProperties(entity, meta.definedProperties);
-        }
+      if (options.initialized) {
+        EntityHelper.ensurePropagation(entity);
       }
 
       return entity;
@@ -273,8 +282,8 @@ export class EntityFactory {
       this.unitOfWork.registerManaged(entity);
     }
 
-    if (options.initialized && !(entity as Dictionary).__gettersDefined) {
-      Object.defineProperties(entity, meta.definedProperties);
+    if (options.initialized) {
+      EntityHelper.ensurePropagation(entity);
     }
 
     return entity;

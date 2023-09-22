@@ -9,6 +9,7 @@ import {
   Collection,
   ManyToMany,
   PrimaryKeyProp,
+  OptionalProps,
 } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
@@ -59,6 +60,8 @@ export class Product {
 
 @Entity()
 export class OrderItem {
+
+  [OptionalProps]?: 'amount' | 'offeredPrice';
 
   @ManyToOne({ primary: true })
   order: Order;
@@ -113,22 +116,14 @@ describe('custom pivot entity for m:n with additional properties (bidirectional)
     const product3 = new Product('p3', 333);
     const product4 = new Product('p4', 444);
     const product5 = new Product('p5', 555);
-    const item11 = new OrderItem(order1, product1);
-    item11.offeredPrice = 123;
-    const item12 = new OrderItem(order1, product2);
-    item12.offeredPrice = 3123;
-    const item21 = new OrderItem(order2, product1);
-    item21.offeredPrice = 4123;
-    const item22 = new OrderItem(order2, product2);
-    item22.offeredPrice = 1123;
-    const item23 = new OrderItem(order2, product5);
-    item23.offeredPrice = 1263;
-    const item31 = new OrderItem(order3, product3);
-    item31.offeredPrice = 7123;
-    const item32 = new OrderItem(order3, product4);
-    item32.offeredPrice = 9123;
-    const item33 = new OrderItem(order3, product5);
-    item33.offeredPrice = 5123;
+    const item11 = orm.em.create(OrderItem, { order: order1, product: product1, offeredPrice: 123 });
+    const item12 = orm.em.create(OrderItem, { order: order1, product: product2, offeredPrice: 3123 });
+    const item21 = orm.em.create(OrderItem, { order: order2, product: product1, offeredPrice: 4123 });
+    const item22 = orm.em.create(OrderItem, { order: order2, product: product2, offeredPrice: 1123 });
+    const item23 = orm.em.create(OrderItem, { order: order2, product: product5, offeredPrice: 1263 });
+    const item31 = orm.em.create(OrderItem, { order: order3, product: product3, offeredPrice: 7123 });
+    const item32 = orm.em.create(OrderItem, { order: order3, product: product4, offeredPrice: 9123 });
+    const item33 = orm.em.create(OrderItem, { order: order3, product: product5, offeredPrice: 5123 });
 
     await orm.em.fork().persistAndFlush([order1, order2, order3]);
     return { order1, order2, product1, product2, product3, product4, product5 };
