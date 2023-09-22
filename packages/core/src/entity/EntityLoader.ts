@@ -15,9 +15,9 @@ import { QueryHelper } from '../utils/QueryHelper';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import type { Collection } from './Collection';
-import { LoadStrategy, QueryOrder, ReferenceKind, type LockMode, type PopulateHint, type QueryOrderMap } from '../enums';
+import { LoadStrategy, ReferenceKind, type LockMode, type PopulateHint, type QueryOrderMap } from '../enums';
 import { Reference, type ScalarReference } from './Reference';
-import type { EntityField, FindOptions } from '../drivers/IDatabaseDriver';
+import type { EntityField, FindOptions, IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import type { Platform } from '../platforms/Platform';
 import { helper } from './wrap';
@@ -43,10 +43,13 @@ export type EntityLoaderOptions<Entity, Hint extends string = never, Fields exte
 
 export class EntityLoader {
 
-  private readonly metadata = this.em.getMetadata();
-  private readonly driver = this.em.getDriver();
+  private readonly metadata: MetadataStorage;
+  private readonly driver: IDatabaseDriver;
 
-  constructor(private readonly em: EntityManager) { }
+  constructor(private readonly em: EntityManager) {
+    this.metadata = this.em.getMetadata();
+    this.driver = this.em.getDriver();
+  }
 
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.

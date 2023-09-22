@@ -2,7 +2,7 @@
 title: Propagation
 ---
 
-By default, MikroORM will propagate all changes made to one side of bi-directional relations to the other side, keeping them in sync. This works for all relations, including M:1 and 1:1. As part of the discovery process, all M:1 and 1:1 properties are re-defined as getter/setter.
+By default, MikroORM will propagate all changes made to one side of bidirectional relations to the other side, keeping them in sync. This works for all relations, including M:1 and 1:1. As part of the discovery process, all M:1 and 1:1 properties are re-defined as getter/setter.
 
 ```ts
 const author = new Author(...);
@@ -11,7 +11,11 @@ book.author = author;
 console.log(author.books.contains(book)); // true
 ```
 
-> You can disable this behaviour via `propagateToOneOwner` option.
+:::caution Warning
+
+Propagation on new entities you create via constructor is supported too, by modifying the entity class prototype, but this technique fails when `useDefineForClassFields` TypeScript compiler flag is enabled (which is true when targeting `ES2022` or higher). You can get around this by using `declare` keyword in your entity definition, or by creating entity instances via `em.create()`, which will ensure the propagation is enabled.
+
+:::
 
 ## Propagation of Collection's add() and remove() operations
 

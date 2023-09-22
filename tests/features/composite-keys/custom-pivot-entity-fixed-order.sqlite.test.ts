@@ -122,7 +122,7 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     const item33 = new OrderItem(order3, product5);
     item33.offeredPrice = 5123;
 
-    await orm.em.fork().persistAndFlush([order1, order2, order3]);
+    await orm.em.fork().persistAndFlush([item11, item12, item21, item22, item23, item31, item32, item33]);
     return { order1, order2, product1, product2, product3, product4, product5 };
   }
 

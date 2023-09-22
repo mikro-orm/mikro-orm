@@ -14,13 +14,13 @@ describe('partial loading (mysql)', () => {
 
   async function createEntities() {
     const god = new Author2(`God `, `hello@heaven.god`);
-    const b1 = new Book2(`Bible 1`, god);
+    const b1 = orm.em.create(Book2, { title: `Bible 1`, author: god });
     b1.price = 123;
     b1.tags.add(new BookTag2('t1'), new BookTag2('t2'));
-    const b2 = new Book2(`Bible 2`, god);
+    const b2 = orm.em.create(Book2, { title: `Bible 2`, author: god });
     b2.price = 456;
     b2.tags.add(new BookTag2('t3'), new BookTag2('t4'));
-    const b3 = new Book2(`Bible 3`, god);
+    const b3 = orm.em.create(Book2, { title: `Bible 3`, author: god });
     b3.price = 789;
     b3.tags.add(new BookTag2('t5'), new BookTag2('t6'));
     await orm.em.persistAndFlush(god);

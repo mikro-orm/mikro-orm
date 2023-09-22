@@ -74,7 +74,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     connect: true,
     ignoreUndefinedInQuery: false,
     autoJoinOneToOneOwner: true,
-    propagateToOneOwner: true,
+    propagationOnPrototype: true,
     populateAfterFlush: true,
     serialization: {
       includePrimaryKeys: true,
@@ -511,7 +511,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   verbose: boolean;
   ignoreUndefinedInQuery?: boolean;
   autoJoinOneToOneOwner: boolean;
-  propagateToOneOwner: boolean;
+  propagationOnPrototype: boolean;
   populateAfterFlush: boolean;
   serialization: {
     includePrimaryKeys: boolean;

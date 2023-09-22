@@ -8,21 +8,26 @@ import {
   Utils,
   type Dictionary,
   type EntityProperty,
+  type Logger,
 } from '@mikro-orm/core';
 import type { CheckDef, Column, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import type { SchemaHelper } from './SchemaHelper';
 
 /**
  * Compares two Schemas and return an instance of SchemaDifference.
  */
 export class SchemaComparator {
 
-  private readonly helper = this.platform.getSchemaHelper()!;
-  private readonly logger = this.platform.getConfig().getLogger();
+  private readonly helper: SchemaHelper;
+  private readonly logger: Logger;
 
-  constructor(private readonly platform: AbstractSqlPlatform) { }
+  constructor(private readonly platform: AbstractSqlPlatform) {
+    this.helper = this.platform.getSchemaHelper()!;
+    this.logger = this.platform.getConfig().getLogger();
+  }
 
   /**
    * Returns a SchemaDifference object containing the differences between the schemas fromSchema and toSchema.

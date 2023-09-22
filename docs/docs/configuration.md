@@ -236,25 +236,6 @@ MikroORM.init({
 });
 ```
 
-## Propagation of 1:1 and m:1 owners
-
-MikroORM defines getter and setter for every owning side of m:1 and 1:1 relation. This is then used for propagation of changes to the inverse side of bi-directional relations.
-
-```ts
-const author = new Author('n', 'e');
-const book = new Book('t');
-book.author = author;
-console.log(author.books.contains(book)); // true
-```
-
-You can disable this behaviour via `propagateToOneOwner` option.
-
-```ts
-MikroORM.init({
-  propagateToOneOwner: false,
-});
-```
-
 ## Forcing UTC Timezone
 
 Use `forceUtcTimezone` option to force the `Date`s to be saved in UTC in datetime columns without timezone. It works for MySQL (`datetime` type) and PostgreSQL (`timestamp` type). SQLite does this by default.
