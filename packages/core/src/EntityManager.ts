@@ -165,9 +165,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Hint extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint> = {}): Promise<Loaded<Entity, Hint>[]> {
-    options.schema ??= this._schema;
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
+      options.schema ??= em._schema;
       const fork = em.fork();
       const ret = await fork.find<Entity, Hint>(entityName, where, { ...options, disableIdentityMap: false });
       fork.clear();
@@ -176,6 +176,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = this.getContext();
+    options.schema ??= em._schema;
     await em.tryFlush(entityName, options);
     entityName = Utils.className(entityName);
     where = await em.processWhere(entityName, where, options, 'read') as FilterQuery<Entity>;
@@ -451,7 +452,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Hint extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint> = {}): Promise<[Loaded<Entity, Hint>[], number]> {
-    options.schema ??= this._schema;
     const [entities, count] = await Promise.all([
       this.find<Entity, Hint>(entityName, where, options),
       this.count(entityName, where, options),
@@ -467,7 +467,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Hint extends string = never,
   >(entity: Entity, options: FindOneOptions<Entity, Hint> = {}): Promise<Loaded<Entity, Hint> | null> {
-    options.schema ??= this._schema;
     const fork = this.fork();
     const entityName = entity.constructor.name;
     const reloaded = await fork.findOne(entityName, entity, {
@@ -492,10 +491,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Hint extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOneOptions<Entity, Hint> = {}): Promise<Loaded<Entity, Hint> | null> {
-    options.schema ??= this._schema;
-
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
+      options.schema ??= em._schema;
       const fork = em.fork();
       const ret = await fork.findOne<Entity, Hint>(entityName, where, { ...options, disableIdentityMap: false });
       fork.clear();
@@ -504,6 +502,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = this.getContext();
+    options.schema ??= em._schema;
     await em.tryFlush(entityName, options);
     entityName = Utils.className(entityName);
     const meta = em.metadata.get<Entity>(entityName);
@@ -572,8 +571,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Hint extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOneOrFailOptions<Entity, Hint> = {}): Promise<Loaded<Entity, Hint>> {
-    options.schema ??= this._schema;
-
     let entity: Loaded<Entity, Hint> | null;
     let isStrictViolation = false;
 
@@ -620,7 +617,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async upsert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | Entity, options: UpsertOptions<Entity> = {}): Promise<Entity> {
     const em = this.getContext(false);
-    options.schema ??= this._schema;
+    options.schema ??= em._schema;
 
     let entityName: EntityName<Entity>;
     let where: FilterQuery<Entity>;
@@ -757,7 +754,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async upsertMany<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity[], data?: (EntityData<Entity> | Entity)[], options: UpsertManyOptions<Entity> = {}): Promise<Entity[]> {
     const em = this.getContext(false);
-    options.schema ??= this._schema;
+    options.schema ??= em._schema;
 
     let entityName: string;
     let propIndex: number;
@@ -1089,7 +1086,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async insert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | Entity, options: NativeInsertUpdateOptions<Entity> = {}): Promise<Primary<Entity>> {
     const em = this.getContext(false);
-    options.schema ??= this._schema;
+    options.schema ??= em._schema;
 
     let entityName;
 
@@ -1124,7 +1121,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async insertMany<Entity extends object>(entityNameOrEntities: EntityName<Entity> | Entity[], data?: EntityData<Entity>[] | Entity[], options: NativeInsertUpdateOptions<Entity> = {}): Promise<Primary<Entity>[]> {
     const em = this.getContext(false);
-    options.schema ??= this._schema;
+    options.schema ??= em._schema;
 
     let entityName;
 
@@ -1165,7 +1162,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async nativeUpdate<Entity extends object>(entityName: EntityName<Entity>, where: FilterQuery<Entity>, data: EntityData<Entity>, options: UpdateOptions<Entity> = {}): Promise<number> {
     const em = this.getContext(false);
-    options.schema ??= this._schema;
+    options.schema ??= em._schema;
 
     entityName = Utils.className(entityName);
     data = QueryHelper.processObjectParams(data);
@@ -1182,7 +1179,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async nativeDelete<Entity extends object>(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: DeleteOptions<Entity> = {}): Promise<number> {
     const em = this.getContext(false);
-    options.schema ??= this._schema;
+    options.schema ??= em._schema;
 
     entityName = Utils.className(entityName);
     where = await em.processWhere(entityName, where, options, 'delete');
@@ -1199,7 +1196,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
     const data = this.driver.mapResult(result, meta) as Dictionary;
-    options.schema ??= this._schema;
 
     Object.keys(data).forEach(k => {
       const prop = meta.properties[k];
@@ -1235,7 +1231,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return em.merge((entityName as Dictionary).constructor.name, entityName as unknown as EntityData<Entity>, data as MergeOptions);
     }
 
-    options.schema ??= this._schema;
+    options.schema ??= em._schema;
     entityName = Utils.className(entityName as string);
     em.validator.validatePrimaryKey(data as EntityData<Entity>, em.metadata.get(entityName));
     let entity = em.unitOfWork.tryGetById<Entity>(entityName, data as FilterQuery<Entity>, options.schema, false);
@@ -1264,7 +1260,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   create<Entity extends object>(entityName: EntityName<Entity>, data: RequiredEntityData<Entity>, options: CreateOptions = {}): Entity {
     const em = this.getContext();
-    options.schema ??= this._schema;
+    options.schema ??= em._schema;
     const entity = em.entityFactory.create(entityName, data, {
       ...options,
       newEntity: !options.managed,
@@ -1310,7 +1306,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
   getReference<Entity extends object>(entityName: EntityName<Entity>, id: Primary<Entity>, options: GetReferenceOptions = {}): Entity | Reference<Entity> {
-    options.schema ??= this._schema;
+    options.schema ??= this.schema;
     options.convertCustomTypes ??= false;
     const meta = this.metadata.get(Utils.className(entityName));
 
@@ -1338,12 +1334,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Hint extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity> = {} as FilterQuery<Entity>, options: CountOptions<Entity, Hint> = {}): Promise<number> {
+    const em = this.getContext(false);
+
     // Shallow copy options since the object will be modified when deleting orderBy
     options = {
-      schema: this._schema,
+      schema: em._schema,
       ...options,
     };
-    const em = this.getContext(false);
     entityName = Utils.className(entityName);
     where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read') as FilterQuery<Entity>;
     options.populate = em.preparePopulate(entityName, options) as unknown as Populate<Entity>;
@@ -1528,7 +1525,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = this.getContext();
-    options.schema ??= this._schema;
+    options.schema ??= em._schema;
     const entityName = (entities[0] as Dictionary).constructor.name;
     const preparedPopulate = em.preparePopulate<Entity>(entityName, { populate: populate as true });
     await em.entityLoader.populate(entityName, entities, preparedPopulate, options);
