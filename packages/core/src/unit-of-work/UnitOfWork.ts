@@ -255,8 +255,6 @@ export class UnitOfWork {
 
   computeChangeSet<T extends object>(entity: T, type?: ChangeSetType): void {
     const wrapped = helper(entity);
-    // Set entityManager default schema
-    wrapped.__schema ??= this.em.schema;
 
     if (type) {
       this.changeSets.set(entity, new ChangeSet(entity, type, {}, wrapped.__meta));
