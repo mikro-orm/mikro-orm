@@ -1562,7 +1562,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     fork.filters = { ...em.filters };
     fork.filterParams = Utils.copy(em.filterParams);
-    fork._schema = options.schema || em.schema;
+    fork._schema = options.schema ?? em.schema;
 
     if (!options.clear) {
       for (const entity of em.unitOfWork.getIdentityMap()) {
