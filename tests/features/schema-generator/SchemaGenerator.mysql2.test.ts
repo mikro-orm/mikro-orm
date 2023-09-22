@@ -21,7 +21,7 @@ describe('SchemaGenerator (no FKs)', () => {
   test('create/drop database [mysql]', async () => {
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
-      dbName: `mikro_orm_test_${Date.now()}`,
+      dbName: `mikro_orm_test_${Utils.randomInt(1, 10000)}`,
       port: 3308,
       baseDir: BASE_DIR,
       driver: MySqlDriver,
@@ -35,7 +35,7 @@ describe('SchemaGenerator (no FKs)', () => {
   });
 
   test('create schema also creates the database if not exists [mysql]', async () => {
-    const dbName = `mikro_orm_test_${Date.now()}`;
+    const dbName = `mikro_orm_test_${Utils.randomInt(1, 10000)}`;
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,

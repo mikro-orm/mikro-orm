@@ -1,4 +1,4 @@
-import { Utils, type Configuration } from '../utils';
+import { Utils, type Configuration, type EntityComparator } from '../utils';
 import type { MetadataStorage } from '../metadata';
 import type { AnyEntity, EntityData, EntityKey, EntityProperty, EntityValue } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
@@ -8,13 +8,15 @@ import { ReferenceKind } from '../enums';
 
 export class ChangeSetComputer {
 
-  private readonly comparator = this.config.getComparator(this.metadata);
+  private readonly comparator: EntityComparator;
 
   constructor(private readonly validator: EntityValidator,
               private readonly collectionUpdates: Set<Collection<AnyEntity>>,
               private readonly metadata: MetadataStorage,
               private readonly platform: Platform,
-              private readonly config: Configuration) { }
+              private readonly config: Configuration) {
+    this.comparator = this.config.getComparator(this.metadata);
+  }
 
   computeChangeSet<T extends object>(entity: T): ChangeSet<T> | null {
     const meta = this.metadata.get((entity as AnyEntity).constructor.name);

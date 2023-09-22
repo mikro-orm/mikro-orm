@@ -4,9 +4,11 @@ import type { EntityManager } from '../EntityManager';
 export class TransactionContext {
 
   private static storage = new AsyncLocalStorage<TransactionContext>();
-  readonly id = this.em._id;
+  readonly id: number;
 
-  constructor(readonly em: EntityManager) { }
+  constructor(readonly em: EntityManager) {
+    this.id = this.em._id;
+  }
 
   /**
    * Creates new TransactionContext instance and runs the code inside its domain.

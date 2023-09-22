@@ -31,7 +31,7 @@ describe('automatic refreshing of already loaded entities', () => {
     const b3 = new Book2('Bible 3', god);
     b3.perex = ref('b3 perex');
     b3.price = 789;
-    await orm.em.fork().persistAndFlush(god);
+    await orm.em.fork().persistAndFlush([b1, b2, b3]);
 
     return { god };
   }

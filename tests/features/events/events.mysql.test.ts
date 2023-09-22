@@ -51,7 +51,7 @@ describe('events (mysql)', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persistAndFlush([book1, book2, book3]);
     expect(wrap(author, true).__onLoadFired).toBeUndefined();
     orm.em.clear();
   }
