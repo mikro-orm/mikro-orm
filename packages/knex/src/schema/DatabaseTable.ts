@@ -142,6 +142,7 @@ export class DatabaseTable {
         columnNames: prop.fieldNames,
         composite: prop.fieldNames.length > 1,
         keyName: this.getIndexName(prop.index, prop.fieldNames, 'index'),
+        constraint: false,
         primary: false,
         unique: false,
       });
@@ -152,6 +153,7 @@ export class DatabaseTable {
         columnNames: prop.fieldNames,
         composite: prop.fieldNames.length > 1,
         keyName: this.getIndexName(prop.unique, prop.fieldNames, 'unique'),
+        constraint: !prop.fieldNames.some((d: string) => d.includes('.')),
         primary: false,
         unique: true,
       });
@@ -363,7 +365,20 @@ export class DatabaseTable {
   }
 
   addIndex(meta: EntityMetadata, index: { properties: string | string[]; name?: string; type?: string; expression?: string; options?: Dictionary }, type: 'index' | 'unique' | 'primary') {
-    const properties = Utils.unique(Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames)));
+    const properties = Utils.unique(Utils.flatten(Utils.asArray(index.properties).map(prop => {
+      const root = prop.replace(/\..+$/, '');
+
+      if (meta.properties[prop]) {
+        return meta.properties[prop].fieldNames;
+      }
+
+      // json index, we need to rename the column only
+      if (meta.properties[root]) {
+        return [prop.replace(root, meta.properties[root].fieldNames[0])];
+      }
+
+      return [prop];
+    })));
 
     if (properties.length === 0 && !index.expression) {
       return;
@@ -374,10 +389,13 @@ export class DatabaseTable {
       keyName: name,
       columnNames: properties,
       composite: properties.length > 1,
+      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
+      constraint: type !== 'index' && !properties.some((d: string) => d.includes('.')),
       primary: type === 'primary',
       unique: type !== 'index',
       type: index.type,
       expression: index.expression,
+      options: index.options,
     });
   }
 
