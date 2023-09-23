@@ -69,6 +69,7 @@ export class MariaDbSchemaHelper extends SchemaHelper {
         keyName: index.index_name,
         unique: !index.non_unique,
         primary: index.index_name === 'PRIMARY',
+        constraint: !index.non_unique,
       });
     }
 
