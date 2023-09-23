@@ -1,4 +1,4 @@
-import { Entity, Ref, Index, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Ref, Index, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity()
@@ -36,11 +36,19 @@ export class Book1 {
   @Property()
   title!: string;
 
+  @Property({ unique: true })
+  isbn!: string;
+
+  @Property({ type: 'json' })
+  metaData: any;
+
 }
 
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3' })
+@Index({ properties: 'metaData.foo.bar.baz', options: { returning: 'char(200)' } })
+@Unique({ properties: 'metaData.fooBar.email' })
 export class Book2 {
 
   @PrimaryKey()
@@ -67,12 +75,20 @@ export class Book2 {
   @Property()
   title!: string;
 
+  @Property({ unique: 'isbn_unique_constr' })
+  isbn!: string;
+
+  @Property({ type: 'json' })
+  metaData: any;
+
 }
 
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3', name: 'lol31' })
 @Index({ properties: 'author3', name: 'lol41' })
+@Index({ properties: ['metaData.foo.bar2', 'metaData.foo.bar3'] })
+@Unique({ properties: ['metaData.fooBar.bazBaz', 'metaData.fooBar.lol123'] })
 export class Book3 {
 
   @PrimaryKey()
@@ -98,6 +114,13 @@ export class Book3 {
   @Index({ name: 'custom_index_expr2', expression: 'alter table `book` add index `custom_index_expr2`(`title`)' })
   @Property()
   title!: string;
+
+  @Property()
+  @Unique()
+  isbn!: string;
+
+  @Property({ type: 'json' })
+  metaData: any;
 
 }
 
@@ -131,6 +154,13 @@ export class Book4 {
   @Property()
   title!: string;
 
+  @Property()
+  @Unique()
+  isbn!: string;
+
+  @Property({ type: 'json' })
+  metaData: any;
+
 }
 
 describe('indexes on FKs in mysql (GH 1518)', () => {
@@ -144,6 +174,7 @@ describe('indexes on FKs in mysql (GH 1518)', () => {
       driver: MySqlDriver,
       port: 3308,
     });
+
     await orm.schema.ensureDatabase();
     await orm.schema.execute('set foreign_key_checks = 0');
     await orm.schema.execute('drop table if exists author');
@@ -176,7 +207,7 @@ describe('indexes on FKs in mysql (GH 1518)', () => {
     orm.getMetadata().reset('Book3');
     await orm.discoverEntity(Book4);
     const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff4.split('\n').filter(i => i).sort().join('\n')).toMatchSnapshot();
+    expect(diff4).toMatchSnapshot();
     await orm.schema.execute(diff4);
   });
 

@@ -70,9 +70,11 @@ export interface IndexDef {
   columnNames: string[];
   keyName: string;
   unique: boolean;
+  constraint: boolean;
   primary: boolean;
   composite?: boolean;
   expression?: string; // allows using custom sql expressions
+  options?: Dictionary; // for driver specific options
   type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
 }
 

@@ -1,4 +1,4 @@
-import { AbstractSqlPlatform } from '@mikro-orm/knex';
+import { AbstractSqlPlatform, type IndexDef } from '@mikro-orm/knex';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
 import { Utils, type SimpleColumnMeta, type Dictionary, type Type, type TransformContext } from '@mikro-orm/core';
@@ -18,6 +18,14 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     }
 
     return JSON.stringify(value);
+  }
+
+  override getJsonIndexDefinition(index: IndexDef): string[] {
+    return index.columnNames
+      .map(column => {
+        const [root, ...path] = column.split('.');
+        return `json_value(${this.quoteIdentifier(root)}, '$.${path.join('.')}' returning ${index.options?.returning ?? 'char(255)'})`;
+      });
   }
 
   override getBooleanTypeDeclarationSQL(): string {
