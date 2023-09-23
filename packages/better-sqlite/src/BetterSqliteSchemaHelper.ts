@@ -80,6 +80,7 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
         columnNames: [col.name],
         keyName: 'primary',
         unique: true,
+        constraint: true,
         primary: true,
       });
     }
@@ -90,6 +91,7 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
         columnNames: [row.name],
         keyName: index.name,
         unique: !!index.unique,
+        constraint: !!index.unique,
         primary: false,
       })));
     }
