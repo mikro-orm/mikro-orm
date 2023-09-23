@@ -89,6 +89,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       ret[key].push({
         columnNames: index.index_def.map((name: string) => unquote(name)),
         composite: index.index_def.length > 1,
+        // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
+        constraint: index.contype === 'u',
         keyName: index.constraint_name,
         unique: index.unique,
         primary: index.primary,
@@ -420,7 +422,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   private getIndexesSQL(tables: Table[]): string {
-    return `select indrelid::regclass as table_name, ns.nspname as schema_name, relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary,
+    return `select indrelid::regclass as table_name, ns.nspname as schema_name, relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary, contype,
       array(
         select pg_get_indexdef(idx.indexrelid, k + 1, true)
         from generate_subscripts(idx.indkey, 1) as k
@@ -429,6 +431,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       from pg_index idx
       join pg_class as i on i.oid = idx.indexrelid
       join pg_namespace as ns on i.relnamespace = ns.oid
+      left join pg_constraint as c on c.conname = i.relname
       where indrelid in (${tables.map(t => `'"${t.schema_name}"."${t.table_name}"'::regclass`).join(', ')})
       order by relname`;
   }
