@@ -314,6 +314,11 @@ export abstract class Platform {
     return path.join('.');
   }
 
+  /* istanbul ignore next */
+  getJsonIndexDefinition(index: { columnNames: string[] }): string[] {
+    return index.columnNames;
+  }
+
   getFullTextWhereClause(prop: EntityProperty): string {
     throw new Error('Full text searching is not supported by this driver.');
   }
