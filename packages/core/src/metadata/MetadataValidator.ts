@@ -203,8 +203,7 @@ export class MetadataValidator {
   private validateIndexes(meta: EntityMetadata, indexes: { properties: string | string[] }[], type: 'index' | 'unique'): void {
     for (const index of indexes) {
       for (const prop of Utils.asArray(index.properties)) {
-        // if (!(prop in meta.properties)) {
-        if (!meta.props.some(p => prop === p.name || prop.startsWith(p.name + '.'))) {
+        if (!meta.properties[prop] && !meta.props.some(p => prop.startsWith(p.name + '.'))) {
           throw MetadataError.unknownIndexProperty(meta, prop, type);
         }
       }

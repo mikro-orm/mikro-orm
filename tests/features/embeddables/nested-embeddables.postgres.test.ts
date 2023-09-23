@@ -1,4 +1,4 @@
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, Index, PrimaryKey, Property, Unique, wrap } from '@mikro-orm/core';
 import { MikroORM, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
@@ -9,6 +9,7 @@ class IdentityMeta {
   foo?: string;
 
   @Property()
+  @Index()
   bar?: string;
 
   constructor(foo?: string, bar?: string) {
@@ -47,6 +48,7 @@ class IdentityLink {
 class Identity {
 
   @Property()
+  @Unique()
   email: string;
 
   @Embedded(() => IdentityMeta, { nullable: true })
@@ -65,6 +67,7 @@ class Identity {
 @Embeddable()
 class Profile {
 
+  @Unique()
   @Property()
   username: string;
 
@@ -106,6 +109,10 @@ describe('embedded entities in postgres', () => {
       dbName: `mikro_orm_test_nested_embedddables`,
     });
     await orm.schema.refreshDatabase();
+  });
+
+  beforeEach(async () => {
+    await orm.schema.clearDatabase();
   });
 
   afterAll(async () => {
@@ -410,6 +417,20 @@ describe('embedded entities in postgres', () => {
 
     await orm.em.fork().findOne(User, { profile2: { identity: { links: { url: 'foo@bar.baz' } } } }, { fields: ['profile2.identity.links'] });
     expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->'links'->>'url' = $1 limit $2`);
+  });
+
+  test('unique constraints', async () => {
+    const user1 = new User();
+    user1.name = 'Uwe';
+    user1.profile1 = new Profile('u1', new Identity('e1', new IdentityMeta('f1', 'b1')));
+    user1.profile2 = new Profile('u2', new Identity('e2', new IdentityMeta('f2', 'b2')));
+
+    const user2 = new User();
+    user2.name = 'Uschi';
+    user2.profile1 = new Profile('u1', new Identity('e3'));
+    user2.profile2 = new Profile('u4', new Identity('e4', new IdentityMeta('f4')));
+
+    await expect(orm.em.persistAndFlush([user1, user2])).rejects.toThrowError(/duplicate key value violates unique constraint "user_profile1_username_unique"/);
   });
 
 });
