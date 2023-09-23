@@ -551,7 +551,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       const keyName = this.helper.hasNonDefaultPrimaryKeyName(tableDef) ? index.keyName : undefined;
       table.primary(index.columnNames, keyName);
     } else if (index.unique) {
-      table.unique(index.columnNames, { indexName: index.keyName });
+      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
+      if (index.columnNames.some(column => column.includes('.'))) {
+        const columns = this.platform.getJsonIndexDefinition(index);
+        table.index(columns.map(column => this.knex.raw(`(${column})`)), index.keyName, { indexType: 'unique' });
+      } else {
+        table.unique(index.columnNames, { indexName: index.keyName });
+      }
     } else if (index.expression) {
       this.helper.pushTableQuery(table, index.expression);
     } else if (index.type === 'fulltext') {
@@ -561,14 +567,20 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         this.helper.pushTableQuery(table, this.platform.getFullTextIndexExpression(index.keyName, tableDef.schema, tableDef.name, columns));
       }
     } else {
-      table.index(index.columnNames, index.keyName, index.type as Dictionary);
+      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
+      if (index.columnNames.some(column => column.includes('.'))) {
+        const columns = this.platform.getJsonIndexDefinition(index);
+        table.index(columns.map(column => this.knex.raw(`(${column})`)), index.keyName, index.type as Dictionary);
+      } else {
+        table.index(index.columnNames, index.keyName, index.type as Dictionary);
+      }
     }
   }
 
   private dropIndex(table: Knex.CreateTableBuilder, index: IndexDef, oldIndexName = index.keyName) {
     if (index.primary) {
       table.dropPrimary(oldIndexName);
-    } else if (index.unique) {
+    } else if (index.unique && index.constraint) {
       table.dropUnique(index.columnNames, oldIndexName);
     } else {
       table.dropIndex(index.columnNames, oldIndexName);

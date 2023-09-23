@@ -52,3 +52,61 @@ limit 1
 ```
 
 > All drivers are currently supported (including sqlite and mongo). In postgres we also try to cast the value if we detect number or boolean on the right-hand side.
+
+## Indexes on JSON properties
+
+To create an index on a JSON property, use an entity-level `@Index()` decorator with a dot path:
+
+```ts
+@Entity()
+@Index({ properties: 'metaData.foo' })
+@Index({ properties: ['metaData.foo', 'metaData.bar'] }) // compound index
+export class Book {
+
+  @Property({ type: 'json', nullable: true })
+  metaData?: { foo: string; bar: number };
+
+}
+```
+
+In PostgreSQL, this will generate a query like the following:
+
+```sql
+create index "book_meta_data_foo_index" on "book" (("meta_data"->>'foo'));
+```
+
+To create a unique index, use the `@Unique()` decorator:
+
+```ts
+@Entity()
+@Unique({ properties: 'metaData.foo' })
+@Unique({ properties: ['metaData.foo', 'metaData.bar'] }) // compound unique index
+export class Book {
+
+  @Property({ type: 'json', nullable: true })
+  metaData?: { foo: string; bar: number };
+
+}
+```
+
+In MySQL, you can also set the type explicitly:
+
+```ts
+@Entity()
+@Index({ properties: 'metaData.foo', options: { returning: 'char(200)' } })
+export class Book {
+
+  @Property({ type: 'json', nullable: true })
+  metaData?: { foo: string; bar: number };
+
+}
+```
+
+This will generate a query like the following:
+
+```sql
+alter table `book`
+  add index `book_meta_data_foo_index`((json_value(`meta_data`, '$.foo' returning char(200))));
+```
+
+> MariaDB driver does not support this feature.

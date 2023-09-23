@@ -79,6 +79,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       ret.push({
         columnNames: [col.name],
         keyName: 'primary',
+        constraint: true,
         unique: true,
         primary: true,
       });
@@ -90,6 +91,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
         columnNames: [row.name],
         keyName: index.name,
         unique: !!index.unique,
+        constraint: !!index.unique,
         primary: false,
       })));
     }
