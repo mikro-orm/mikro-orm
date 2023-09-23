@@ -907,6 +907,24 @@ export class MetadataDiscovery {
 
       this.initEmbeddables(meta, meta.properties[name], visited);
     }
+
+    for (const index of embeddable.indexes) {
+      meta.indexes.push({
+        ...index,
+        properties: Utils.asArray(index.properties).map(p => {
+          return embeddedProp.embeddedProps[p].name;
+        }),
+      });
+    }
+
+    for (const unique of embeddable.uniques) {
+      meta.uniques.push({
+        ...unique,
+        properties: Utils.asArray(unique.properties).map(p => {
+          return embeddedProp.embeddedProps[p].name;
+        }),
+      });
+    }
   }
 
   private initSingleTableInheritance(meta: EntityMetadata, metadata: EntityMetadata[]): void {
