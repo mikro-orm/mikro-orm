@@ -2,6 +2,7 @@ import { escape } from 'sqlstring';
 import { raw, JsonProperty, Platform, Utils, type Constructor, type EntityManager, type EntityRepository, type IDatabaseDriver, type MikroORM } from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
 import { SqlSchemaGenerator, type SchemaHelper } from './schema';
+import type { IndexDef } from './typings';
 
 export abstract class AbstractSqlPlatform extends Platform {
 
@@ -107,6 +108,14 @@ export abstract class AbstractSqlPlatform extends Platform {
     }
 
     return raw(`json_extract(${this.quoteIdentifier(a)}, '$.${b.map(quoteKey).join('.')}')`);
+  }
+
+  override getJsonIndexDefinition(index: IndexDef): string[] {
+    return index.columnNames
+      .map(column => {
+        const [root, ...path] = column.split('.');
+        return `json_extract(${root}, '$.${path.join('.')}')`;
+      });
   }
 
   override isRaw(value: any): boolean {

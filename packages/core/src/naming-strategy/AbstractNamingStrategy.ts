@@ -29,6 +29,8 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
       return `${tableName}_pkey`;
     }
 
+    columns = columns.map(col => col.replace(/\./g, '_'));
+
     if (type === 'sequence') {
       return `${tableName}_${columns.join('_')}_seq`;
     }

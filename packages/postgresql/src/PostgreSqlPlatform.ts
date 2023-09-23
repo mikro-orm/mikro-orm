@@ -1,6 +1,6 @@
 import { Client } from 'pg';
 import { raw, ALIAS_REPLACEMENT, JsonProperty, Utils, type EntityProperty, Type, type SimpleColumnMeta, type Dictionary } from '@mikro-orm/core';
-import { AbstractSqlPlatform } from '@mikro-orm/knex';
+import { AbstractSqlPlatform, type IndexDef } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
 import { FullTextType } from './types/FullTextType';
@@ -200,6 +200,21 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     return cast(`${root}->${path.map(a => this.quoteValue(a)).join('->')}->>'${last}'`);
+  }
+
+  override getJsonIndexDefinition(index: IndexDef): string[] {
+    return index.columnNames
+      .map(column => {
+        const path = column.split('.');
+        const first = path.shift()!;
+        const last = path.pop()!;
+
+        if (path.length === 0) {
+          return `${this.quoteIdentifier(first)}->>${this.quoteValue(last)}`;
+        }
+
+        return `${this.quoteIdentifier(first)}->${path.map(c => this.quoteValue(c)).join('->')}->>${this.quoteValue(last)}`;
+      });
   }
 
   override quoteIdentifier(id: string, quote = '"'): string {
