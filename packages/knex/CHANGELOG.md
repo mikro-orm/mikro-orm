@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.3](https://github.com/mikro-orm/mikro-orm/compare/v5.8.2...v5.8.3) (2023-09-24)
+
+
+### Bug Fixes
+
+* **knex:** allow using knex query builder as virtual entity expression ([#4740](https://github.com/mikro-orm/mikro-orm/issues/4740)) ([427cc88](https://github.com/mikro-orm/mikro-orm/commit/427cc88e4c428709e8643bed6b6914585dd57c85)), closes [#4628](https://github.com/mikro-orm/mikro-orm/issues/4628)
+* **knex:** hydrate nullable relations with joined strategy ([8ddaa93](https://github.com/mikro-orm/mikro-orm/commit/8ddaa93f1401d86e05b8b839b9456ae3623ff250)), closes [#4675](https://github.com/mikro-orm/mikro-orm/issues/4675)
+
+
+
+
+
 ## [5.8.2](https://github.com/mikro-orm/mikro-orm/compare/v5.8.1...v5.8.2) (2023-09-20)
 
 

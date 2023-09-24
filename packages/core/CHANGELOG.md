@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.3](https://github.com/mikro-orm/mikro-orm/compare/v5.8.2...v5.8.3) (2023-09-24)
+
+
+### Bug Fixes
+
+* **core:** do not skip `cjs/mjs/cts/mts` extensions during folder-based discovery ([ce574a4](https://github.com/mikro-orm/mikro-orm/commit/ce574a4f2c861b1953c9ae37f79ad7308101f9d0)), closes [#4727](https://github.com/mikro-orm/mikro-orm/issues/4727)
+* **core:** ensure no duplicates exist in checks/indexes/hooks ([fb523c8](https://github.com/mikro-orm/mikro-orm/commit/fb523c8a4e684dbd6ab32086059d15f765d3aaca)), closes [#4733](https://github.com/mikro-orm/mikro-orm/issues/4733)
+* **core:** fix updating complex composite key entities via UoW ([#4739](https://github.com/mikro-orm/mikro-orm/issues/4739)) ([898dcda](https://github.com/mikro-orm/mikro-orm/commit/898dcda9680e03c882910d3ee2980ff7ee664ff5)), closes [#4720](https://github.com/mikro-orm/mikro-orm/issues/4720)
+* **knex:** allow using knex query builder as virtual entity expression ([#4740](https://github.com/mikro-orm/mikro-orm/issues/4740)) ([427cc88](https://github.com/mikro-orm/mikro-orm/commit/427cc88e4c428709e8643bed6b6914585dd57c85)), closes [#4628](https://github.com/mikro-orm/mikro-orm/issues/4628)
+
+
+
+
+
 ## [5.8.2](https://github.com/mikro-orm/mikro-orm/compare/v5.8.1...v5.8.2) (2023-09-20)
 
 
