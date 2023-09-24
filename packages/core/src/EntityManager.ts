@@ -1176,7 +1176,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Fires native insert query. Calling this has no side effects on the context (identity map).
    */
-  async insert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | Entity, options: NativeInsertUpdateOptions<Entity> = {}): Promise<Primary<Entity>> {
+  async insert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: RequiredEntityData<Entity> | Entity, options: NativeInsertUpdateOptions<Entity> = {}): Promise<Primary<Entity>> {
     const em = this.getContext(false);
     options.schema ??= em._schema;
 
@@ -1205,9 +1205,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return cs.getPrimaryKey()!;
     }
 
-    data = QueryHelper.processObjectParams(data) as EntityData<Entity>;
+    data = QueryHelper.processObjectParams(data);
     em.validator.validateParams(data, 'insert data');
-    const res = await em.driver.nativeInsert(entityName, data, { ctx: em.transactionContext, ...options });
+    const res = await em.driver.nativeInsert<Entity>(entityName, data, { ctx: em.transactionContext, ...options });
 
     return res.insertId!;
   }
@@ -1215,7 +1215,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Fires native multi-insert query. Calling this has no side effects on the context (identity map).
    */
-  async insertMany<Entity extends object>(entityNameOrEntities: EntityName<Entity> | Entity[], data?: EntityData<Entity>[] | Entity[], options: NativeInsertUpdateOptions<Entity> = {}): Promise<Primary<Entity>[]> {
+  async insertMany<Entity extends object>(entityNameOrEntities: EntityName<Entity> | Entity[], data?: RequiredEntityData<Entity>[] | Entity[], options: NativeInsertUpdateOptions<Entity> = {}): Promise<Primary<Entity>[]> {
     const em = this.getContext(false);
     options.schema ??= em._schema;
 
@@ -1252,7 +1252,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     data = data.map(row => QueryHelper.processObjectParams(row));
     data.forEach(row => em.validator.validateParams(row, 'insert data'));
-    const res = await em.driver.nativeInsertMany(entityName, data, { ctx: em.transactionContext, ...options });
+    const res = await em.driver.nativeInsertMany<Entity>(entityName, data, { ctx: em.transactionContext, ...options });
 
     return res.insertedIds!;
   }
