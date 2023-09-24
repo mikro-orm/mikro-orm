@@ -29,7 +29,15 @@ export class ChangeSet<T> {
 
     if (object && this.primaryKey != null) {
       const pks = this.meta.compositePK && Utils.isPlainObject(this.primaryKey) ? Object.values(this.primaryKey) : Utils.asArray(this.primaryKey);
+      const pkProps = this.meta.getPrimaryProps();
       const ret = this.meta.primaryKeys.reduce((o, pk, idx) => {
+        const pkProp = pkProps[idx];
+
+        if (Utils.isPlainObject(pks[idx]) && pkProp.targetMeta) {
+          o[pk] = Utils.getOrderedPrimaryKeys(pks[idx], pkProp.targetMeta) as any;
+          return o;
+        }
+
         o[pk] = pks[idx] as any;
         return o;
       }, {} as T);
