@@ -8,7 +8,7 @@ import {
   OneToOne,
   PrimaryKey,
   Property,
-  SerializedPrimaryKey,
+  SerializedPrimaryKey, OptionalProps,
 } from '@mikro-orm/core';
 import { FooBaz } from './FooBaz';
 
@@ -20,6 +20,7 @@ import { FooBaz } from './FooBaz';
 export default class FooBar {
 
   [EagerProps]?: 'baz';
+  [OptionalProps]?: 'meta';
 
   @PrimaryKey()
   _id!: ObjectId;
