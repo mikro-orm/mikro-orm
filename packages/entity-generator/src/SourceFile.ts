@@ -71,17 +71,13 @@ export class SourceFile {
     });
 
     if (primaryProps.length > 0) {
-      this.coreImports.add('PrimaryKeyType');
       this.coreImports.add('PrimaryKeyProp');
-      const findType = (p: EntityProperty) => p.kind === ReferenceKind.SCALAR ? p.type : this.platform.getMappedType(p.columnTypes[0]).compareAsType();
       const primaryPropNames = primaryProps.map(prop => `'${prop.name}'`);
-      const primaryPropTypes = primaryProps.map(prop => findType(prop));
-      ret += `\n\n${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames.join(' | ')};`;
 
       if (primaryProps.length > 1) {
-        ret += `\n\n${' '.repeat(2)}[PrimaryKeyType]?: [${primaryPropTypes.join(', ')}];`;
+        ret += `\n\n${' '.repeat(2)}[PrimaryKeyProp]?: [${primaryPropNames.join(', ')}];`;
       } else {
-        ret += `\n\n${' '.repeat(2)}[PrimaryKeyType]?: ${primaryPropTypes[0]};`;
+        ret += `\n\n${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames[0]};`;
       }
     }
 
