@@ -139,57 +139,48 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   }
 
   async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]> {
+    return this.findFromVirtual(entityName, where, options, QueryType.SELECT) as Promise<EntityData<T>[]>;
+  }
+
+  async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T, any>): Promise<number> {
+    return this.findFromVirtual(entityName, where, options, QueryType.COUNT) as Promise<number>;
+  }
+
+  private async findFromVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any> | CountOptions<T, any>, type: QueryType): Promise<EntityData<T>[] | number> {
     const meta = this.metadata.get<T>(entityName);
 
     /* istanbul ignore next */
     if (!meta.expression) {
-      return [];
+      return type === QueryType.SELECT ? [] : 0;
     }
 
     if (typeof meta.expression === 'string') {
-      return this.wrapVirtualExpressionInSubquery(meta, meta.expression, where, options);
+      return this.wrapVirtualExpressionInSubquery(meta, meta.expression, where, options as FindOptions<T, any>, type);
     }
 
     const em = this.createEntityManager(false);
     em.setTransactionContext(options.ctx);
-    const res = meta.expression(em, where, options);
+    const res = meta.expression(em, where, options as FindOptions<T, any>);
+
+    if (typeof res === 'string') {
+      return this.wrapVirtualExpressionInSubquery(meta, res, where, options as FindOptions<T, any>, type);
+    }
 
     if (res instanceof QueryBuilder) {
-      return this.wrapVirtualExpressionInSubquery(meta, res.getFormattedQuery(), where, options);
+      return this.wrapVirtualExpressionInSubquery(meta, res.getFormattedQuery(), where, options as FindOptions<T, any>, type);
+    }
+
+    if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(res)) {
+      const { sql, bindings } = res.toSQL();
+      const query = this.platform.formatQuery(sql, bindings);
+      return this.wrapVirtualExpressionInSubquery(meta, query, where, options as FindOptions<T, any>, type);
     }
 
     /* istanbul ignore next */
     return res as EntityData<T>[];
   }
 
-  async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T>): Promise<number> {
-    const meta = this.metadata.get<T>(entityName);
-
-    /* istanbul ignore next */
-    if (!meta.expression) {
-      return 0;
-    }
-
-    if (typeof meta.expression === 'string') {
-      return this.wrapVirtualExpressionInSubquery(meta, meta.expression, where, options as Dictionary, QueryType.COUNT);
-    }
-
-    const em = this.createEntityManager(false);
-    em.setTransactionContext(options.ctx);
-    const res = meta.expression(em, where, options as Dictionary);
-
-    if (res instanceof QueryBuilder) {
-      return this.wrapVirtualExpressionInSubquery(meta, res.getFormattedQuery(), where, options as Dictionary, QueryType.COUNT);
-    }
-
-    /* istanbul ignore next */
-    return res as any;
-  }
-
-  protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType.COUNT): Promise<number>;
-  protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType.SELECT): Promise<T[]>;
-  protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<T[]>;
-  protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type = QueryType.SELECT): Promise<unknown> {
+  protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType): Promise<T[] | number> {
     const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes)
       .limit(options?.limit, options?.offset)
       .indexHint(options.indexHint!)
@@ -217,7 +208,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return (res[0] as Dictionary).count;
     }
 
-    return res.map(row => this.mapResult(row, meta)!);
+    return res.map(row => this.mapResult(row, meta) as T);
   }
 
   mapResult<T extends object>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], qb?: QueryBuilder<T>, map: Dictionary = {}): EntityData<T> | null {
