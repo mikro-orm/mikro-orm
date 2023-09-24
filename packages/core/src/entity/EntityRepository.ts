@@ -1,6 +1,18 @@
 import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager';
 import type { AssignOptions } from './EntityAssigner';
-import type { EntityData, EntityName, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData, Ref } from '../typings';
+import type {
+  EntityData,
+  EntityName,
+  Primary,
+  Loaded,
+  FilterQuery,
+  EntityDictionary,
+  AutoPath,
+  RequiredEntityData,
+  Ref,
+  EntityType,
+  EntityDTO,
+} from '../typings';
 import type {
   CountOptions,
   DeleteOptions,
@@ -231,8 +243,11 @@ export class EntityRepository<Entity extends object> {
   /**
    * Shortcut for `wrap(entity).assign(data, { em })`
    */
-  assign(entity: Entity, data: EntityData<Entity>, options?: AssignOptions): Entity {
-    this.validateRepositoryType(entity, 'assign');
+  assign<
+    Ent extends EntityType<Entity>,
+    Data extends EntityData<Entity> | Partial<EntityDTO<Entity>>,
+  >(entity: Ent, data: Data & (EntityData<Entity> | Partial<EntityDTO<Entity>>), options?: AssignOptions): Ent & Data {
+    this.validateRepositoryType(entity as Entity, 'assign');
     return this.getEntityManager().assign(entity, data, options);
   }
 
