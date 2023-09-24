@@ -410,6 +410,13 @@ export class EntityMetadata<T = any> {
     this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.type));
     this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
     this.virtual = !!this.expression;
+    this.checks = Utils.removeDuplicates(this.checks);
+    this.indexes = Utils.removeDuplicates(this.indexes);
+    this.uniques = Utils.removeDuplicates(this.uniques);
+
+    for (const hook of Object.keys(this.hooks)) {
+      this.hooks[hook] = Utils.removeDuplicates(this.hooks[hook]);
+    }
 
     if (this.virtual) {
       this.readonly = true;

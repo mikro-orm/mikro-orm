@@ -548,6 +548,11 @@ describe('Utils', () => {
     expect(Utils.hasObjectKeys({ a: 'a', __proto__: null })).toEqual(true);
   });
 
+  test('removeDuplicates', () => {
+    expect(Utils.removeDuplicates(['foo', 'bar', 'foo', 'bar2'])).toEqual(['foo', 'bar', 'bar2']);
+    expect(Utils.removeDuplicates([{ v: 'foo' }, { v: 'bar' }, { v: 'foo' }, { v: 'bar2' }])).toEqual([{ v: 'foo' }, { v: 'bar' }, { v: 'bar2' }]);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

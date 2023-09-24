@@ -862,6 +862,19 @@ export class Utils {
     }, [] as T[]);
   }
 
+  static removeDuplicates<T>(items: T[]): T[] {
+    const ret: T[] = [];
+    const contains = (arr: unknown[], val: unknown) => !!arr.find(v => equals(val, v));
+
+    for (const item of items) {
+      if (!contains(ret, item)) {
+        ret.push(item);
+      }
+    }
+
+    return ret;
+  }
+
   static randomInt(min: number, max: number): number {
     return Math.round(Math.random() * (max - min)) + min;
   }
