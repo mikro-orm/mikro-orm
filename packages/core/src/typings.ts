@@ -807,6 +807,8 @@ export type Selected<T, L extends string = never, F extends string = '*'> = {
   [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L>, Suffix<K, F>> | AddOptional<T[K]>;
 };
 
+export type EntityType<T extends object> = T | Selected<T, never, never> | Loaded<T, never, never>;
+
 /**
  * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
  */

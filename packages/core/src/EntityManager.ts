@@ -60,6 +60,7 @@ import type {
   Ref,
   EntityKey,
   AnyString,
+  EntityType,
 } from './typings';
 import {
   EventType,
@@ -1391,7 +1392,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Shortcut for `wrap(entity).assign(data, { em })`
    */
-  assign<Entity extends object>(entity: Entity, data: EntityData<Entity> | Partial<EntityDTO<Entity>>, options: AssignOptions = {}): Entity {
+  assign<
+    Entity extends object,
+    Ent extends EntityType<Entity>,
+    Data extends EntityData<Entity> | Partial<EntityDTO<Entity>>,
+  >(entity: Ent & EntityType<Entity>, data: Data & (EntityData<Entity> | Partial<EntityDTO<Entity>>), options: AssignOptions = {}): Ent & Data {
     return EntityAssigner.assign(entity, data, { em: this.getContext(), ...options });
   }
 
