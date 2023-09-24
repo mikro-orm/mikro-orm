@@ -9,6 +9,7 @@ import type {
   EntityDTO,
   EntityKey,
   EntityProperty,
+  EntityType,
   EntityValue,
   Primary,
   RequiredEntityData,
@@ -23,11 +24,15 @@ const validator = new EntityValidator(false);
 
 export class EntityAssigner {
 
-  static assign<T extends object>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options: AssignOptions = {}): T {
+  static assign<
+    Entity extends object,
+    Ent extends EntityType<Entity>,
+    Data extends EntityData<Entity> | Partial<EntityDTO<Entity>>,
+  >(entity: Ent & EntityType<Entity>, data: Data & (EntityData<Entity> | Partial<EntityDTO<Entity>>), options: AssignOptions = {}): Ent & Data {
     let opts = options as unknown as InternalAssignOptions;
 
     if (opts.visited?.has(entity)) {
-      return entity;
+      return entity as Ent & Data;
     }
 
     opts.visited ??= new Set();
@@ -51,7 +56,7 @@ export class EntityAssigner {
       });
     });
 
-    return entity;
+    return entity as Ent & Data;
   }
 
   private static assignProperty<T extends object>(entity: T, propName: string, props: Dictionary<EntityProperty<T>>, data: Dictionary, options: InternalAssignOptions) {
