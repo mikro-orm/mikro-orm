@@ -1,7 +1,7 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { Reference, QueryHelper } from '@mikro-orm/core';
 import { initORMMySql } from './bootstrap';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Test2 } from './entities-sql';
+import { Author2, Book2, FooBar2, FooBaz2, Test2 } from './entities-sql';
 import { FooParam2 } from './entities-sql/FooParam2';
 
 describe('QueryHelper', () => {
@@ -19,8 +19,8 @@ describe('QueryHelper', () => {
   });
 
   test('processWhere returns pk when pk is empty string and condition is entity', async () => {
-    const test = new BookTag2('Test');
-    test.id = '';
+    const test = new Book2('t', 1);
+    test.uuid = '';
     expect(QueryHelper.processWhere({ where: test, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual('');
   });
 
