@@ -144,14 +144,14 @@ export class EntityRepository<Entity extends object> {
   /**
    * @inheritDoc EntityManager.insert
    */
-  async insert(data: Entity | EntityData<Entity>, options?: NativeInsertUpdateOptions<Entity>): Promise<Primary<Entity>> {
+  async insert(data: Entity | RequiredEntityData<Entity>, options?: NativeInsertUpdateOptions<Entity>): Promise<Primary<Entity>> {
     return this.getEntityManager().insert<Entity>(this.entityName, data, options);
   }
 
   /**
    * @inheritDoc EntityManager.insert
    */
-  async insertMany(data: Entity[] | EntityData<Entity>[], options?: NativeInsertUpdateOptions<Entity>): Promise<Primary<Entity>[]> {
+  async insertMany(data: Entity[] | RequiredEntityData<Entity>[], options?: NativeInsertUpdateOptions<Entity>): Promise<Primary<Entity>[]> {
     return this.getEntityManager().insertMany<Entity>(this.entityName, data, options);
   }
 
