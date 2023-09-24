@@ -57,7 +57,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   /* istanbul ignore next */
-  async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T>): Promise<number> {
+  async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T, any>): Promise<number> {
     throw new Error(`Counting virtual entities is not supported by ${this.constructor.name} driver.`);
   }
 
