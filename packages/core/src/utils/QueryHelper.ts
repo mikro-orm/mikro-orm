@@ -48,8 +48,8 @@ export class QueryHelper {
     return params;
   }
 
-  static processObjectParams(params: Dictionary = {}): any {
-    Object.keys(params).forEach(k => {
+  static processObjectParams<T extends object>(params: T = {} as T): T {
+    Utils.keys(params).forEach(k => {
       params[k] = QueryHelper.processParams(params[k]);
     });
 
