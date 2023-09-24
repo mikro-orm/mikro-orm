@@ -162,11 +162,11 @@ export class MetadataDiscovery {
       const filename = basename(filepath);
 
       if (
-        !filename.match(/\.[jt]s$/) ||
+        !filename.match(/\.[cm]?[jt]s$/) ||
         filename.endsWith('.js.map') ||
-        filename.endsWith('.d.ts') ||
+        filename.match(/\.d\.[cm]?ts/) ||
         filename.startsWith('.') ||
-        filename.match(/index\.[jt]s$/)
+        filename.match(/index\.[cm]?[jt]s$/)
       ) {
         this.logger.log('discovery', `- ignoring file ${filename}`);
         continue;
