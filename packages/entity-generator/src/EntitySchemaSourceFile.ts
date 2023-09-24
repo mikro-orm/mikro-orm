@@ -29,17 +29,13 @@ export class EntitySchemaSourceFile extends SourceFile {
     }
 
     if (primaryProps.length > 0) {
-      this.coreImports.add('PrimaryKeyType');
       this.coreImports.add('PrimaryKeyProp');
-      const findType = (p: EntityProperty) => p.kind === ReferenceKind.SCALAR ? p.type : this.platform.getMappedType(p.columnTypes[0]).compareAsType();
       const primaryPropNames = primaryProps.map(prop => `'${prop.name}'`);
-      const primaryPropTypes = primaryProps.map(prop => findType(prop));
-      ret += `${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames.join(' | ')};\n`;
 
       if (primaryProps.length > 1) {
-        ret += `${' '.repeat(2)}[PrimaryKeyType]?: [${primaryPropTypes.join(', ')}];\n`;
+        ret += `${' '.repeat(2)}[PrimaryKeyProp]?: [${primaryPropNames.join(', ')}];\n`;
       } else {
-        ret += `${' '.repeat(2)}[PrimaryKeyType]?: ${primaryPropTypes[0]};\n`;
+        ret += `${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames[0]};\n`;
       }
     }
 
