@@ -41,12 +41,23 @@ describe('partial loading (mysql)', () => {
     expect(a.email).toBeUndefined();
     // @ts-expect-error
     expect(a.born).toBeUndefined();
+
+    const a1 = orm.em.repo(Author2).assign(a, { email: 'e1' });
+    expect(a1.name).toBe('Jon Snow');
+    expect(a1.email).toBe('e1');
+
+    const a2 = orm.em.assign(a1, { born: '1990-03-24' });
+    expect(a2.name).toBe('Jon Snow');
+    expect(a2.email).toBe('e1');
+    expect(a2.born).toBe('1990-03-24');
+
+    await orm.em.flush();
     orm.em.clear();
 
-    const a2 = (await orm.em.findOne(Author2, author, { fields: ['*'] }))!;
-    expect(a2.name).toBe('Jon Snow');
-    expect(a2.email).toBe('snow@wall.st');
-    expect(a2.born).toEqual('1990-03-23');
+    const a3 = (await orm.em.findOne(Author2, author, { fields: ['*'] }))!;
+    expect(a3.name).toBe('Jon Snow');
+    expect(a3.email).toBe('e1');
+    expect(a3.born).toEqual('1990-03-24');
   });
 
   test('partial nested loading (1:m)', async () => {
