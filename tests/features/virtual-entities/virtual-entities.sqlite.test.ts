@@ -1,4 +1,4 @@
-import { EntitySchema, MikroORM, raw, ReferenceKind } from '@mikro-orm/core';
+import { EntitySchema, MikroORM, raw, ReferenceKind, sql } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/better-sqlite';
 import { mockLogger } from '../../bootstrap';
 import type { IAuthor4 } from '../../entities-schema';
@@ -80,7 +80,7 @@ const BookWithAuthor2 = new EntitySchema<IBookWithAuthor>({
   name: 'BookWithAuthor2',
   expression: (em: EntityManager) => {
     return em.createQueryBuilder(Book4, 'b')
-      .select(['b.title', 'a.name as author_name', 'group_concat(t.name) as tags'])
+      .select(['b.title', 'a.name as author_name', sql`group_concat(t.name) as tags`])
       .join('b.author', 'a')
       .join('b.tags', 't')
       .groupBy('b.id')
