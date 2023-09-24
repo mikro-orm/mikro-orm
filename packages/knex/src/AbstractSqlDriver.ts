@@ -249,9 +249,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       }));
 
       if (!hasPK) {
-        // initialize empty collections
         if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(relation.reference)) {
           result[relation.name] = result[relation.name] || [] as unknown as T[keyof T & string];
+        }
+
+        if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(relation.reference)) {
+          result[relation.name] = null;
         }
 
         return;
