@@ -135,4 +135,8 @@ describe('EntityRepository', () => {
     expect(() => repo.assign(e, {})).toThrowError(`Trying to use EntityRepository.assign() with 'Author' entity while the repository is of type 'Publisher'`);
   });
 
+  test('getEntityName() returns the correct value', async () => {
+    expect(repoMongo.getEntityName()).toEqual(Publisher.name);
+  });
+
 });

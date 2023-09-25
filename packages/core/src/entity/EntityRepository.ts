@@ -286,6 +286,10 @@ export class EntityRepository<T extends object> {
     return this._em;
   }
 
+  getEntityName(): string {
+    return Utils.className(this.entityName);
+  }
+
   /**
    * Returns the underlying EntityManager instance
    */
