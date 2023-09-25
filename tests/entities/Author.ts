@@ -17,7 +17,6 @@ import {
   Property,
   Index,
   Unique,
-  EntityAssigner,
   EntityRepositoryType,
   QueryOrder,
 } from '@mikro-orm/core';
@@ -144,10 +143,6 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'vers
   @AfterDelete()
   afterDelete() {
     Author.afterDestroyCalled += 1;
-  }
-
-  override assign<T extends this>(data: any): T {
-    return EntityAssigner.assign(this as T, data);
   }
 
   toJSON(strict = true, strip: (keyof this)[] = ['id', 'email']): EntityDTO<this> {

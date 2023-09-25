@@ -28,7 +28,7 @@ export type EntityKey<T = unknown> = string & keyof { [K in keyof T as ExcludeFu
 export type EntityValue<T> = T[EntityKey<T>];
 export type FilterKey<T> = keyof FilterQuery<T>;
 export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
-type Compute<T> = { [K in keyof T]: T[K] } & {};
+export type Compute<T> = { [K in keyof T]: T[K] } & {};
 export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol ? never : K);
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
@@ -136,7 +136,10 @@ export interface IWrappedEntity<Entity> {
   toJSON(...args: any[]): EntityDTO<Entity>;
   toPOJO(): EntityDTO<Entity>;
   serialize<Hint extends string = never, Exclude extends string = never>(options?: SerializeOptions<Entity, Hint, Exclude>): EntityDTO<Loaded<Entity, Hint>>;
-  assign(data: EntityData<Entity> | Partial<EntityDTO<Entity>>, options?: AssignOptions | boolean): Entity;
+  assign<
+    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
+    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
+  >(data: Data & IsSubset<EntityData<Naked>, Data>, options?: AssignOptions): MergeSelected<Entity, Naked, keyof Data & string>;
   getSchema(): string | undefined;
   setSchema(schema?: string): void;
 }
@@ -801,6 +804,14 @@ type Suffix<Key, Hint extends string> = Hint extends `${infer Pref}.${infer Suf}
 
 type Defined<T> = T & {};
 
+export type IsSubset<T, U> = keyof U extends keyof T
+  ? {}
+  : Dictionary extends U
+    ? {}
+    : { [K in keyof U as K extends keyof T ? never : K]: never };
+
+export type MergeSelected<T, U, F extends string> = T extends Selected<U, infer P, infer FF> ? Selected<U, P, F | FF> : T;
+
 type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
 type LoadedProp<T, L extends string = never, F extends string = '*'> = LoadedLoadable<T, Loaded<ExtractType<T>, L, F>>;
 export type AddEager<T> = ExtractEagerProps<T> & string;
@@ -809,7 +820,14 @@ export type Selected<T, L extends string = never, F extends string = '*'> = {
   [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L>, Suffix<K, F>> | AddOptional<T[K]>;
 };
 
-export type EntityType<T extends object> = T | Selected<T, never, never> | Loaded<T, never, never>;
+export type EntityType<T> = T | Selected<T, never, never> | Loaded<T, never, never>;
+export type FromEntityType<T> = T extends Selected<infer U, never, never>
+  ? true extends IsUnknown<U>
+    ? T : U
+  : T extends Loaded<infer U, never, never>
+    ? true extends IsUnknown<U>
+      ? T : U
+    : T;
 
 /**
  * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
