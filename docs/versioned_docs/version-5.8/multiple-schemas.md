@@ -32,6 +32,41 @@ const qb = em.createQueryBuilder(User);
 await qb.insert({ email: 'foo@bar.com' }).withSchema('client-123');
 ```
 
+## Default schema on `EntityManager`
+
+Instead of defining schema per entity or operation it's possible to `.fork()` EntityManger and define a default schema that will be used with wildcard schemas.
+
+```ts
+const fork = em.fork({ schema: 'client-123' });
+await fork.findOne(User, { ... });
+
+// Will yield the same result as 
+const user = await em.findOne(User, { ... }, { schema: 'client-123' });
+```
+
+When creating an entity the fork will set default schema
+
+```ts
+const fork = em.fork({ schema: 'client-123' });
+const user = new User();
+user.email = 'foo@bar.com';
+await fork.persistAndFlush(user);
+
+// Will yield the same result as
+const qb = em.createQueryBuilder(User);
+await qb.insert({ email: 'foo@bar.com' }).withSchema('client-123');
+```
+
+You can also set or clear schema
+
+```ts
+em.schema = 'client-123';
+const fork = em.fork({ schema: 'client-1234' });
+fork.schema = null;
+```
+
+`EntityManager.schema` Respects the context, so global EM will give you the contextual schema if executed inside [request context handler](https://mikro-orm.io/docs/identity-map#-requestcontext-helper)
+
 ## Wildcard Schema
 
 Since v5, MikroORM also supports defining entities that can exist in multiple schemas. To do that, we just specify wildcard schema:
@@ -57,7 +92,7 @@ export class Book {
 
 Entities like this will be by default ignored when using `SchemaGenerator`, as we need to specify which schema to use. For that we need to use the `schema` option of the `createSchema/updateSchema/dropSchema` methods or the `--schema` CLI parameter.
 
-On runtime, the wildcard schema will be replaced with either `FindOptions.schema`, or with the `schema` option from the ORM config.
+On runtime, the wildcard schema will be replaced with either `FindOptions.schema`, `EntityManager.schema` or with the `schema` option from the ORM config.
 
 ### Note about migrations
 

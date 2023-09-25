@@ -559,6 +559,8 @@ export class UnitOfWork {
       return;
     }
 
+    // Set entityManager default schema
+    wrapped.__schema ??= this.em.schema;
     this.initIdentifier(entity);
 
     for (const prop of helper(entity).__meta.relations) {
