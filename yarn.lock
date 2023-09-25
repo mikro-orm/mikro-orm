@@ -2314,7 +2314,7 @@ __metadata:
   resolution: "@mikro-orm/mongodb@workspace:packages/mongodb"
   dependencies:
     "@mikro-orm/core": ^5.8.3
-    bson: ^5.4.0
+    bson: ^6.0.0
     mongodb: 5.8.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -2409,7 +2409,7 @@ __metadata:
     "@types/webpack-env": 1.18.1
     "@typescript-eslint/eslint-plugin": 6.7.2
     "@typescript-eslint/parser": 6.7.2
-    bson: ^5.4.0
+    bson: ^6.0.0
     conditional-type-checks: 1.0.6
     eslint: 8.50.0
     eslint-plugin-import: ^2.28.1
@@ -4295,6 +4295,13 @@ __metadata:
   version: 5.4.0
   resolution: "bson@npm:5.4.0"
   checksum: 1c07e3d09f139d414bd226bf7f4e9aaa7a726e0c9718c55b53bb23ffa2805cac8b66e4fa46b424c73a35c6e292ed5f7432df5c76ea5d08052642b2ac9e0399e3
+  languageName: node
+  linkType: hard
+
+"bson@npm:^6.0.0":
+  version: 6.1.0
+  resolution: "bson@npm:6.1.0"
+  checksum: 8250c8158c22d2a0ca0e7677c0cbef9fa6341c176382b835dbf4c7f8aebdfd74d530f7225c6f3b98ca78a68aab4f1ad3d2fad54160a98b3e6ed9823b80db2e48
   languageName: node
   linkType: hard
 
