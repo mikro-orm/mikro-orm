@@ -152,7 +152,7 @@ describe('GH issue 446', () => {
 
   test(`assign with custom types`, async () => {
     const d = new D();
-    orm.em.assign<any>(d, { id: Buffer.from(parse(v4())) as any, a: Buffer.from(parse(v4())) }, { convertCustomTypes: true });
+    orm.em.assign(d, { id: Buffer.from(parse(v4())) as any, a: Buffer.from(parse(v4())) as any }, { convertCustomTypes: true });
     expect(typeof d.id).toBe('string');
     expect(typeof d.a.id).toBe('string');
     orm.em.assign(d, { id: v4(), a: v4() });
