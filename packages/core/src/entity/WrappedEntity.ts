@@ -20,6 +20,9 @@ import type {
   LoadedReference,
   EntityDTO,
   Loaded,
+  FromEntityType,
+  IsSubset,
+  MergeSelected,
 } from '../typings';
 import { Reference } from './Reference';
 import { EntityTransformer } from '../serialization/EntityTransformer';
@@ -119,12 +122,15 @@ export class WrappedEntity<Entity extends object> {
     return (this.entity as Dictionary).toJSON(...args);
   }
 
-  assign(data: EntityData<Entity>, options?: AssignOptions): Entity {
+  assign<
+    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
+    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
+  >(data: Data & IsSubset<EntityData<Naked>, Data>, options?: AssignOptions): MergeSelected<Entity, Naked, keyof Data & string> {
     if ('assign' in this.entity) {
       return (this.entity as Dictionary).assign(data, options);
     }
 
-    return EntityAssigner.assign(this.entity, data, options);
+    return EntityAssigner.assign(this.entity, data as any, options) as any;
   }
 
   async init<P extends Populate<Entity> = Populate<Entity>>(populated = true, populate?: P, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Entity> {
