@@ -287,7 +287,7 @@ export class EntityRepository<T extends object> {
   }
 
   getEntityName(): string {
-    return Utils.className(this.entityName)
+    return Utils.className(this.entityName);
   }
 
   /**
