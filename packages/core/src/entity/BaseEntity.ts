@@ -1,5 +1,5 @@
 import { Reference, type Ref } from './Reference';
-import type { AutoPath, EntityData, EntityDTO, Loaded, LoadedReference, AddEager, EntityKey } from '../typings';
+import type { AutoPath, EntityData, EntityDTO, Loaded, LoadedReference, AddEager, EntityKey, EntityType, FromEntityType, IsSubset, MergeSelected } from '../typings';
 import { EntityAssigner, type AssignOptions } from './EntityAssigner';
 import type { EntityLoaderOptions } from './EntityLoader';
 import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer';
@@ -45,8 +45,12 @@ export abstract class BaseEntity {
     return EntitySerializer.serialize(this as Entity, options);
   }
 
-  assign<Entity extends this = this>(data: EntityData<Entity>, options?: AssignOptions): Entity {
-    return EntityAssigner.assign(this as Entity, data, options);
+  assign<
+    Ent extends EntityType<this>,
+    Naked extends FromEntityType<Ent> = FromEntityType<Ent>,
+    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
+  >(data: Data & IsSubset<EntityData<Naked>, Data>, options: AssignOptions = {}): MergeSelected<Ent, Naked, keyof Data & string> {
+    return EntityAssigner.assign(this as Ent, data as any, options) as any;
   }
 
   init<Entity extends this = this, Populate extends string = never>(populated = true): Promise<Loaded<Entity, Populate>> {

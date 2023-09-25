@@ -12,6 +12,9 @@ import type {
   Ref,
   EntityType,
   EntityDTO,
+  MergeSelected,
+  FromEntityType,
+  IsSubset,
 } from '../typings';
 import type {
   CountOptions,
@@ -245,10 +248,11 @@ export class EntityRepository<Entity extends object> {
    */
   assign<
     Ent extends EntityType<Entity>,
-    Data extends EntityData<Entity> | Partial<EntityDTO<Entity>>,
-  >(entity: Ent, data: Data & (EntityData<Entity> | Partial<EntityDTO<Entity>>), options?: AssignOptions): Ent & Data {
+    Naked extends FromEntityType<Ent> = FromEntityType<Ent>,
+    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
+  >(entity: Ent, data: Data & IsSubset<EntityData<Naked>, Data>, options?: AssignOptions): MergeSelected<Ent, Naked, keyof Data & string> {
     this.validateRepositoryType(entity as Entity, 'assign');
-    return this.getEntityManager().assign(entity, data, options);
+    return this.getEntityManager().assign(entity, data as any, options) as any;
   }
 
   /**

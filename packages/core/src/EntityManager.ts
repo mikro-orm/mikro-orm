@@ -60,7 +60,9 @@ import type {
   Ref,
   EntityKey,
   AnyString,
-  EntityType,
+  FromEntityType,
+  IsSubset,
+  MergeSelected,
 } from './typings';
 import {
   EventType,
@@ -744,7 +746,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         const exists = em.unitOfWork.getById<Entity>(entityName, where as Primary<Entity>, options.schema);
 
         if (exists) {
-          return em.assign(exists, data);
+          return em.assign(exists, data) as any;
         }
       }
     }
@@ -1373,10 +1375,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   assign<
     Entity extends object,
-    Ent extends EntityType<Entity>,
-    Data extends EntityData<Entity> | Partial<EntityDTO<Entity>>,
-  >(entity: Ent & EntityType<Entity>, data: Data & (EntityData<Entity> | Partial<EntityDTO<Entity>>), options: AssignOptions = {}): Ent & Data {
-    return EntityAssigner.assign(entity, data, { em: this.getContext(), ...options });
+    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
+    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
+  >(entity: Entity, data: Data & IsSubset<EntityData<Naked>, Data>, options: AssignOptions = {}): MergeSelected<Entity, Naked, keyof Data & string> {
+    return EntityAssigner.assign(entity, data as any, { em: this.getContext(), ...options }) as any;
   }
 
   /**

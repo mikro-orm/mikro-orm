@@ -88,7 +88,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return res.map(r => this.mapResult<T>(r, this.metadata.find<T>(entityName))!);
   }
 
-  async findOne<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T, P> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
+  async findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T, P, F> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
     if (this.metadata.find(entityName)?.virtual) {
       const [item] = await this.findVirtual(entityName, where, options as FindOptions<T, any, any>);
       /* istanbul ignore next */
