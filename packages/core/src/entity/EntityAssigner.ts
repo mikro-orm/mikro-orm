@@ -9,10 +9,12 @@ import type {
   EntityDTO,
   EntityKey,
   EntityProperty,
-  EntityType,
   EntityValue,
   Primary,
   RequiredEntityData,
+  IsSubset,
+  FromEntityType,
+  MergeSelected,
 } from '../typings';
 import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
@@ -26,13 +28,13 @@ export class EntityAssigner {
 
   static assign<
     Entity extends object,
-    Ent extends EntityType<Entity>,
-    Data extends EntityData<Entity> | Partial<EntityDTO<Entity>>,
-  >(entity: Ent & EntityType<Entity>, data: Data & (EntityData<Entity> | Partial<EntityDTO<Entity>>), options: AssignOptions = {}): Ent & Data {
+    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
+    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
+  >(entity: Entity, data: Data & IsSubset<EntityData<Naked>, Data>, options: AssignOptions = {}): MergeSelected<Entity, Naked, keyof Data & string> {
     let opts = options as unknown as InternalAssignOptions;
 
     if (opts.visited?.has(entity)) {
-      return entity as Ent & Data;
+      return entity as any;
     }
 
     opts.visited ??= new Set();
@@ -56,7 +58,7 @@ export class EntityAssigner {
       });
     });
 
-    return entity as Ent & Data;
+    return entity as any;
   }
 
   private static assignProperty<T extends object>(entity: T, propName: string, props: Dictionary<EntityProperty<T>>, data: Dictionary, options: InternalAssignOptions) {
@@ -95,7 +97,7 @@ export class EntityAssigner {
             const sameTarget = helper(ref).getSerializedPrimaryKey() === helper(unwrappedEntity).getSerializedPrimaryKey();
 
             if (helper(ref).isInitialized() && sameTarget) {
-              return EntityAssigner.assign(ref, value, options);
+              return EntityAssigner.assign(ref, value as any, options);
             }
           }
 
@@ -103,7 +105,7 @@ export class EntityAssigner {
         }
 
         if (wrap(unwrappedEntity).isInitialized()) {
-          return EntityAssigner.assign(unwrappedEntity, value, options);
+          return EntityAssigner.assign(unwrappedEntity, value as any, options);
         }
       }
 
@@ -194,7 +196,7 @@ export class EntityAssigner {
 
           /* istanbul ignore else */
           if (ref) {
-            return EntityAssigner.assign(ref, item as U, options);
+            return EntityAssigner.assign(ref, item as any, options);
           }
         }
 
@@ -215,9 +217,9 @@ export class EntityAssigner {
     }
 
     if (Array.isArray(value)) {
-      collection.set(items);
+      collection.set(items as any);
     } else { // append to the collection in case of assigning a single value instead of array
-      collection.add(items);
+      collection.add(items as any);
     }
   }
 
