@@ -136,7 +136,7 @@ describe('EntityRepository', () => {
   });
 
   test('getEntityName() returns the correct value', async () => {
-    expect(repoMongo.getEntityName()).toEqual(Publisher);
+    expect(repoMongo.getEntityName()).toEqual(Publisher.name);
   });
 
 });
