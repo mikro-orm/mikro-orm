@@ -10,7 +10,7 @@ import {
   Utils,
   Subscriber,
   UseRequestContext,
-  CreateRequestContext
+  CreateRequestContext,
 } from '@mikro-orm/core';
 import type { Dictionary } from '@mikro-orm/core';
 import { Test } from './entities';
