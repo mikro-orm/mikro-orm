@@ -1,23 +1,11 @@
 import { inspect } from 'util';
 import type { Knex } from 'knex';
 import {
-  helper,
-  LoadStrategy,
-  LockMode,
-  PopulateHint,
-  QueryFlag,
-  QueryHelper,
-  raw,
-  RawQueryFragment,
-  ReferenceKind,
-  serialize,
-  Utils,
-  ValidationError,
   type AnyEntity,
-  type EntityKey,
   type ConnectionType,
   type Dictionary,
   type EntityData,
+  type EntityKey,
   type EntityMetadata,
   type EntityName,
   type EntityProperty,
@@ -25,19 +13,31 @@ import {
   type FlatQueryOrderMap,
   type FlushMode,
   type GroupOperator,
+  helper,
+  LoadStrategy,
+  LockMode,
+  type LoggingOptions,
   type MetadataStorage,
   type ObjectQuery,
+  PopulateHint,
   type PopulateOptions,
   type QBFilterQuery,
   type QBQueryOrderMap,
+  QueryFlag,
+  QueryHelper,
   type QueryOrderMap,
   type QueryResult,
+  raw,
+  RawQueryFragment,
+  ReferenceKind,
   type RequiredEntityData,
-  type LoggingOptions,
+  serialize,
+  Utils,
+  ValidationError,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
-import { QueryBuilderHelper, type Alias } from './QueryBuilderHelper';
+import { type Alias, QueryBuilderHelper } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
 import type { Field, JoinOptions } from '../typings';
@@ -213,23 +213,40 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this.init(QueryType.COUNT) as CountQueryBuilder<T>;
   }
 
-  join(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string, schema?: string): this {
+  join(field: string | Knex.QueryBuilder | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string, schema?: string): this {
     this.joinReference(field, alias, cond, type, path, schema);
     return this;
   }
 
-  leftJoin(field: string, alias: string, cond: QBFilterQuery = {}, schema?: string): this {
+  innerJoin(field: string | Knex.QueryBuilder | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, schema?: string): this {
+    this.join(field, alias, cond, 'innerJoin', undefined, schema);
+    return this;
+  }
+
+  leftJoin(field: string | Knex.QueryBuilder | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, schema?: string): this {
     return this.join(field, alias, cond, 'leftJoin', undefined, schema);
   }
 
-  joinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  joinAndSelect(field: string | [field: string, Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string, fields?: string[], schema?: string): SelectQueryBuilder<T> {
     if (!this.type) {
       this.select('*');
     }
 
+    let subquery!: string;
+
+    if (Array.isArray(field)) {
+      subquery = field[1] instanceof QueryBuilder ? field[1].getFormattedQuery() : field[1].toString();
+      field = field[0];
+    }
+
     const prop = this.joinReference(field, alias, cond, type, path, schema);
-    this.addSelect(this.getFieldsForJoinedLoad(prop, alias, fields));
     const [fromAlias] = this.helper.splitField(field as EntityKey<T>);
+
+    if (subquery) {
+      this._joins[`${fromAlias}.${prop.name}#${alias}`].subquery = subquery;
+    }
+
+    this.addSelect(this.getFieldsForJoinedLoad(prop, alias, fields));
     const populate = this._joinedProps.get(fromAlias);
     const item = { field: prop.name, strategy: LoadStrategy.JOINED, children: [] };
 
@@ -244,11 +261,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this as SelectQueryBuilder<T>;
   }
 
-  leftJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  leftJoinAndSelect(field: string | [field: string, Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
     return this.joinAndSelect(field, alias, cond, 'leftJoin', undefined, fields, schema);
   }
 
-  innerJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  innerJoinAndSelect(field: string | [field: string, Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
     return this.joinAndSelect(field, alias, cond, 'innerJoin', undefined, fields, schema);
   }
 
@@ -856,8 +873,34 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return qb;
   }
 
-  private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string, schema?: string): EntityProperty<T> {
+  private joinReference(field: string | Knex.QueryBuilder | QueryBuilder, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string, schema?: string): EntityProperty<T> {
     this.ensureNotFinalized();
+
+    if (typeof field === 'object') {
+      const prop = {
+        name: '__subquery__',
+        kind: ReferenceKind.MANY_TO_ONE,
+      } as EntityProperty;
+
+      if (field instanceof QueryBuilder) {
+        prop.type = field.mainAlias.entityName;
+        prop.targetMeta = field.mainAlias.metadata!;
+        field = field.getKnexQuery();
+      }
+
+      this._joins[`${this.alias}.${prop.name}#${alias}`] = {
+        prop,
+        alias,
+        type,
+        cond,
+        schema,
+        subquery: field.toString(),
+        ownerAlias: this.alias,
+      } as any;
+
+      return prop;
+    }
+
     const [fromAlias, fromField] = this.helper.splitField(field as EntityKey<T>);
     const q = (str: string) => `'${str}'`;
 
