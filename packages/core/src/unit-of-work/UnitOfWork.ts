@@ -284,7 +284,7 @@ export class UnitOfWork {
     const cs = this.changeSetComputer.computeChangeSet(entity);
 
     /* istanbul ignore else */
-    if (cs && !this.checkUniqueProps(changeSet)) {
+    if (cs && !this.checkUniqueProps(cs)) {
       Object.assign(changeSet.payload, cs.payload);
       helper(entity).__originalEntityData = this.comparator.prepareEntity(entity);
       helper(entity).__touched = false;
