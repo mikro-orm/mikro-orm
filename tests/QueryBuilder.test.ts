@@ -2,6 +2,7 @@ import { inspect } from 'util';
 import { LockMode, MikroORM, QueryFlag, QueryOrder, raw, sql, UnderscoreNamingStrategy } from '@mikro-orm/core';
 import { CriteriaNode, QueryBuilder, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { MySqlDriver } from '@mikro-orm/mysql';
+import { v4 } from 'uuid';
 import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
 import { initORMMySql, mockLogger } from './bootstrap';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
@@ -390,7 +391,7 @@ describe('QueryBuilder', () => {
     const qb = orm.em.createQueryBuilder(Author2, 'a');
     qb.select(['a.*', 'b.*'])
       .leftJoin('a.books', 'b', {
-        [raw('json_contains(`b`.`meta`, ?)', [{ 'b.foo': 'bar' }])]: [],
+        [sql`json_contains(b.meta, ${{ 'b.foo': 'bar' }})`]: [],
         [raw('json_contains(`b`.`meta`, ?) = ?', [{ 'b.foo': 'bar' }, false])]: [],
         [raw('lower(??)', ['b.title'])]: '321',
       })
@@ -398,7 +399,7 @@ describe('QueryBuilder', () => {
     expect(qb.getQuery()).toEqual('select `a`.*, `b`.* from `author2` as `a` ' +
       'left join `book2` as `b` ' +
       'on `a`.`id` = `b`.`author_id` ' +
-      'and json_contains(`b`.`meta`, ?) ' +
+      'and json_contains(b.meta, ?) ' +
       'and json_contains(`b`.`meta`, ?) = ? ' +
       'and lower(`b`.`title`) = ? ' +
       'where `b`.`title` = ?');
@@ -406,7 +407,7 @@ describe('QueryBuilder', () => {
     expect(qb.getFormattedQuery()).toEqual('select `a`.*, `b`.* from `author2` as `a` ' +
       'left join `book2` as `b` ' +
       'on `a`.`id` = `b`.`author_id` ' +
-      'and json_contains(`b`.`meta`, \'{\\"b.foo\\":\\"bar\\"}\') ' +
+      'and json_contains(b.meta, \'{\\"b.foo\\":\\"bar\\"}\') ' +
       'and json_contains(`b`.`meta`, \'{\\"b.foo\\":\\"bar\\"}\') = false ' +
       'and lower(`b`.`title`) = \'321\' ' +
       "where `b`.`title` = 'test 123'");
@@ -1989,7 +1990,6 @@ describe('QueryBuilder', () => {
   });
 
   test('select with sub-query', async () => {
-    const knex = orm.em.getKnex();
     const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: sql.ref('a.id') }).as('Author2.booksTotal');
     const qb2 = orm.em.createQueryBuilder(Author2, 'a');
     qb2.select(['*', qb1]).orderBy({ booksTotal: 'desc' });
@@ -2004,7 +2004,6 @@ describe('QueryBuilder', () => {
   });
 
   test('select where sub-query', async () => {
-    const knex = orm.em.getKnex();
     const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: sql.ref('a.id') }).getKnexQuery();
     const qb2 = orm.em.createQueryBuilder(Author2, 'a');
     qb2.select('*').withSubQuery(qb1, 'a.booksTotal').where({ 'a.booksTotal': { $in: [1, 2, 3] } });
@@ -2026,6 +2025,89 @@ describe('QueryBuilder', () => {
     const qb8 = orm.em.createQueryBuilder(Author2, 'a').select('*').where({ id: { $in: qb7.getKnexQuery() } });
     expect(qb8.getQuery()).toEqual('select `a`.* from `author2` as `a` where `a`.`id` in (select `b`.`author_id` from `book2` as `b` where `b`.`price` > ?)');
     expect(qb8.getParams()).toEqual([100]);
+  });
+
+  test('join sub-query', async () => {
+    const author = await orm.em.insert(Author2, { name: 'a', email: 'e' });
+    const t1 = await orm.em.insert(BookTag2, { name: 't1' });
+    const t2 = await orm.em.insert(BookTag2, { name: 't2' });
+    const t3 = await orm.em.insert(BookTag2, { name: 't3' });
+    await orm.em.insert(Book2, { uuid: v4(), title: 'foo 1', author, price: 123, tags: [t1, t2, t3] });
+    await orm.em.insert(Book2, { uuid: v4(), title: 'foo 2', author, price: 123, tags: [t1, t2, t3] });
+
+    // simple join with ORM subquery
+    const qb1 = orm.em.createQueryBuilder(Book2, 'b').limit(1).orderBy({ title: 1 });
+    const qb2 = orm.em.createQueryBuilder(Author2, 'a');
+    qb2.select(['*', 'sub.*'])
+      .leftJoin(qb1, 'sub', { author_id: sql.ref('a.id') })
+      .where({ 'sub.title': /^foo/ });
+    expect(qb2.getFormattedQuery()).toEqual('select `a`.*, `sub`.* from `author2` as `a` left join (select `b`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `sub`.`author_id` = `a`.`id` where `sub`.`title` like \'foo%\'');
+    const res2 = await qb2.execute();
+    expect(res2).toHaveLength(1);
+    expect(res2[0]).toMatchObject({
+      author_id: 1,
+      email: 'e',
+      foo: 'lol',
+      id: 1,
+      name: 'a',
+      price: '123.00',
+      price_taxed: '146.3700',
+      title: 'foo 1',
+    });
+    orm.em.clear();
+
+    // simple join with knex subquery
+    const qb3 = orm.em.createQueryBuilder(Author2, 'a');
+    qb3.select(['*', 'sub.*'])
+      .leftJoin(qb1.getKnexQuery(), 'sub', { author_id: sql.ref('a.id') })
+      .where({ 'sub.title': /^foo/ });
+    expect(qb2.getFormattedQuery()).toEqual('select `a`.*, `sub`.* from `author2` as `a` left join (select `b`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `sub`.`author_id` = `a`.`id` where `sub`.`title` like \'foo%\'');
+    const res3 = await qb3.execute();
+    expect(res3).toHaveLength(1);
+    expect(res3[0]).toMatchObject({
+      author_id: 1,
+      email: 'e',
+      foo: 'lol',
+      id: 1,
+      name: 'a',
+      price: '123.00',
+      price_taxed: '146.3700',
+      title: 'foo 1',
+    });
+    orm.em.clear();
+
+    // using knex subquery to hydrate existing relation
+    const qb4 = orm.em.createQueryBuilder(Author2, 'a');
+    qb4.select(['*'])
+      .leftJoinAndSelect(['a.books', qb1.getKnexQuery()], 'sub', { author: sql.ref('a.id') })
+      .leftJoinAndSelect('sub.tags', 't')
+      .where({ 'sub.title': /^foo/ });
+    expect(qb4.getFormattedQuery()).toEqual('select `a`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.price * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id`, `t`.`id` as `t__id`, `t`.`name` as `t__name` from `author2` as `a` left join (select `b`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `sub`.`author_id` = `a`.`id` left join `book2_tags` as `e1` on `sub`.`uuid_pk` = `e1`.`book2_uuid_pk` left join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id` where `sub`.`title` like \'foo%\'');
+    const res4 = await qb4.getResult();
+    expect(res4).toHaveLength(1);
+    expect(res4[0]).toMatchObject({
+      name: 'a',
+      email: 'e',
+    });
+    expect(res4[0].books).toHaveLength(1);
+    expect(res4[0].books[0]).toMatchObject({
+      title: 'foo 1',
+      price: '123.00',
+      priceTaxed: '146.3700',
+    });
+    expect(res4[0].books[0].tags).toHaveLength(3);
+    orm.em.clear();
+
+    // with a regular join we get two books, as there is no limit
+    const qb5 = orm.em.createQueryBuilder(Author2, 'a');
+    qb5.select(['*', 'sub.*'])
+      .leftJoinAndSelect('a.books', 'sub', { author: sql.ref('a.id') })
+      .where({ 'sub.title': /^foo/ });
+    expect(qb5.getFormattedQuery()).toEqual('select `a`.*, `sub`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.price * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id` from `author2` as `a` left join `book2` as `sub` on `a`.`id` = `sub`.`author_id` and `sub`.`author_id` = `a`.`id` where `sub`.`title` like \'foo%\'');
+    const res5 = await qb5.getResult();
+    expect(res5).toHaveLength(1);
+    expect(res5[0].books).toHaveLength(2);
+    orm.em.clear();
   });
 
   test('CriteriaNode', async () => {
