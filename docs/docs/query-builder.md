@@ -192,6 +192,42 @@ const res = await em.createQueryBuilder(Author, 'a')
   .getResultList();
 ```
 
+## Joining sub-queries
+
+Sometimes you might want to join a relation, but want to have more control over the query. The ORM allows you to override the join target with a sub-query, while keeping the original metadata for hydration:
+
+```ts
+// subquery can be a knex query builder as well
+const subquery = await em.createQueryBuilder(Book, 'b')
+  .where({ ... })
+  .orderBy({ title: 'asc' }).limit(1);
+
+const authors = await em.createQueryBuilder(Author, 'a')
+  .select('*')
+  // pass in both the property path and the subquery into the first argument as a tuple
+  .leftJoinAndSelect(['a.books', subquery], 'b')
+  // you can join more relations on top of the subquery join
+  .leftJoinAndSelect('b.tags', 't')
+  .getResultList();
+```
+
+This will produce query similar to the following:
+
+```sql
+select `a`.*,
+  `b`.`id` as `b__id`, `b`.`title` as `b__title`, `b`.`author_id` as `b__author_id`, `b`.`publisher_id` as `b__publisher_id`,
+  `t`.`id` as `t__id`, `t`.`name` as `t__name`
+  from `author` as `a`
+  left join (
+    select `b`.*, `b`.price * 1.19 as `price_taxed`
+    from `book` as `b`
+    order by `b`.`title` asc
+    limit 1
+  ) as `b` on `b`.`author_id` = `a`.`id` 
+  left join `book_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book_uuid_pk` 
+  left join `book_tag` as `t` on `e1`.`book_tag_id` = `t`.`id`
+```
+
 ## Complex Where Conditions
 
 There are multiple ways to construct complex query conditions. You can either write parts of SQL manually, use `andWhere()`/`orWhere()`, or provide condition object:
