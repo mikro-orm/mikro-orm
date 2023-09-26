@@ -23,7 +23,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    dbName: 'mikro_4153',
+    dbName: 'mikro_4692',
     port: 3308,
     entities: [MyEntity1],
   });

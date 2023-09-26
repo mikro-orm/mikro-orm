@@ -1,11 +1,12 @@
 import {
   Collection,
   Entity,
-  IdentifiedReference,
+  Ref,
   LoadStrategy,
   ManyToOne,
   MikroORM,
-  OneToMany, OptionalProps,
+  OneToMany,
+  OptionalProps,
   PrimaryKey,
   Property,
   QueryOrder,
@@ -24,11 +25,11 @@ export class D {
   order!: number;
 
   @ManyToOne({
-      entity: () => C,
-    wrappedReference: true,
+    entity: () => C,
+    ref: true,
     nullable: true,
   })
-  c?: IdentifiedReference<C>;
+  c?: Ref<C>;
 
 }
 
@@ -42,11 +43,11 @@ export class C {
   order!: number;
 
   @ManyToOne({
-      entity: () => B,
-    wrappedReference: true,
+    entity: () => B,
+    ref: true,
     nullable: true,
   })
-  b?: IdentifiedReference<B>;
+  b?: Ref<B>;
 
   @OneToMany(
     () => D,
@@ -70,11 +71,11 @@ export class B {
   order!: number;
 
   @ManyToOne({
-      entity: () => A,
-    wrappedReference: true,
+    entity: () => A,
+    ref: true,
     nullable: true,
   })
-  a?: IdentifiedReference<A>;
+  a?: Ref<A>;
 
   @OneToMany(
     () => C,
@@ -157,7 +158,7 @@ describe('GH issue 1331', () => {
 
     const loadedA = await orm.em.findOneOrFail(A, a.id);
     expect(loadedA.bs.getItems().map(b => b.order)).toStrictEqual([0, 1, 2]);
-    expect(loadedA.bs[0].cs.getIdentifiers('order')).toEqual([1,  3, 4]);
+    expect(loadedA.bs[0].cs.getIdentifiers('order')).toEqual([1, 3, 4]);
     expect(loadedA.bs[2].cs.getIdentifiers('order')).toEqual([2, 5, 11]);
     expect(loadedA.bs[1].cs.getIdentifiers('order')).toEqual([0, 1, 4]);
     expect(loadedA.bs[0].cs[1].ds.getIdentifiers('order')).toEqual([2, 5, 11]);
