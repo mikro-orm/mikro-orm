@@ -214,34 +214,51 @@ export class QueryBuilderHelper {
 
   processJoins(qb: Knex.QueryBuilder, joins: Dictionary<JoinOptions>, schema?: string): void {
     Object.values(joins).forEach(join => {
-      let table = `${join.table} as ${join.alias}`;
+      let table = join.table;
       const method = join.type === 'innerJoin' ? 'inner join' : 'left join';
+      const conditions: string[] = [];
+      const params: Knex.Value[] = [];
       schema = join.schema && join.schema !== '*' ? join.schema : schema;
 
       if (schema) {
         table = `${schema}.${table}`;
       }
 
-      const conditions: string[] = [];
-      const params: Knex.Value[] = [];
+      if (!join.subquery) {
+        join.primaryKeys!.forEach((primaryKey, idx) => {
+          const left = `${join.ownerAlias}.${primaryKey}`;
+          const right = `${join.alias}.${join.joinColumns![idx]}`;
+          conditions.push(`${this.knex.ref(left)} = ${this.knex.ref(right)}`);
+        });
+      }
 
-      join.primaryKeys!.forEach((primaryKey, idx) => {
-        const left = `${join.ownerAlias}.${primaryKey}`;
-        const right = `${join.alias}.${join.joinColumns![idx]}`;
-        conditions.push(`${this.knex.ref(left)} = ${this.knex.ref(right)}`);
-      });
-
-      if (join.prop.targetMeta!.discriminatorValue && !join.path?.endsWith('[pivot]')) {
+      if (join.prop.targetMeta?.discriminatorValue && !join.path?.endsWith('[pivot]')) {
         const typeProperty = join.prop.targetMeta!.root.discriminatorColumn!;
         const alias = join.inverseAlias ?? join.alias;
         join.cond[`${alias}.${typeProperty}`] = join.prop.targetMeta!.discriminatorValue;
       }
 
       Object.keys(join.cond).forEach(key => {
-        conditions.push(this.processJoinClause(key, join.cond[key], params));
+        const needsPrefix = key.includes('.') || Utils.isOperator(key) || RawQueryFragment.isKnownFragment(key);
+        const newKey = needsPrefix ? key : `${join.alias}.${key}`;
+        conditions.push(this.processJoinClause(newKey, join.cond[key], params));
       });
 
-      return qb.joinRaw(`${method} ${this.knex.ref(table)} on ${conditions.join(' and ')}`, params);
+      let sql = method + ' ';
+
+      if (join.subquery) {
+        sql += `(${join.subquery})`;
+      } else {
+        sql += this.knex.ref(table);
+      }
+
+      sql += ` as ${this.knex.ref(join.alias)}`;
+
+      if (conditions.length > 0) {
+        sql += ` on ${conditions.join(' and ')}`;
+      }
+
+      return qb.joinRaw(sql, params);
     });
   }
 
