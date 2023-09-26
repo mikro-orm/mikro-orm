@@ -231,7 +231,10 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
   test('gets ORM configuration [no package.json]', async () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
-    pathExistsMock.mockImplementation(async path => (path as string).endsWith('mikro-orm/mikro-orm.config.js'));
+    pathExistsMock.mockImplementation(async path => {
+      const str = path as string;
+      return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
+    });
     const conf = await CLIHelper.getConfiguration();
     expect(conf).toBeInstanceOf(Configuration);
     expect(conf.get('dbName')).toBe('foo_bar');
@@ -263,7 +266,10 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
   test('gets ORM configuration [from package.json]', async () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
-    pathExistsMock.mockImplementation(async path => (path as string).endsWith('mikro-orm/mikro-orm.config.js'));
+    pathExistsMock.mockImplementation(async path => {
+      const str = path as string;
+      return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
+    });
     pkg['mikro-orm'].useTsNode = true;
     const conf = await CLIHelper.getConfiguration();
     expect(conf).toBeInstanceOf(Configuration);
@@ -274,7 +280,10 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
   test('gets ORM instance', async () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
-    pathExistsMock.mockImplementation(async path => (path as string).endsWith('mikro-orm/mikro-orm.config.js'));
+    pathExistsMock.mockImplementation(async path => {
+      const str = path as string;
+      return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
+    });
     delete pkg['mikro-orm'].useTsNode;
     const orm = await CLIHelper.getORM(false);
     expect(orm).toBeInstanceOf(MikroORM);
@@ -382,7 +391,10 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   test('getDriverDependencies', async () => {
     await expect(CLIHelper.getDriverDependencies()).resolves.toEqual([]);
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
-    pathExistsMock.mockImplementation(async path => (path as string).endsWith('mikro-orm/mikro-orm.config.js'));
+    pathExistsMock.mockImplementation(async path => {
+      const str = path as string;
+      return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
+    });
     await expect(CLIHelper.getDriverDependencies()).resolves.toEqual(['mongodb']);
     pathExistsMock.mockRestore();
   });
@@ -418,7 +430,10 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
   test('getSettings', async () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
-    pathExistsMock.mockImplementation(async path => (path as string).endsWith('mikro-orm/mikro-orm.config.js'));
+    pathExistsMock.mockImplementation(async path => {
+      const str = path as string;
+      return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
+    });
     pkg['mikro-orm'] = undefined;
 
     await expect(ConfigurationLoader.getSettings()).resolves.toEqual({});
@@ -487,7 +502,10 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     packageSpy.mockResolvedValue({ type: 'module' });
     await expect(ConfigurationLoader.isESM()).resolves.toEqual(true);
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
-    pathExistsMock.mockImplementation(async path => (path as string).endsWith('mikro-orm/mikro-orm.config.js'));
+    pathExistsMock.mockImplementation(async path => {
+      const str = path as string;
+      return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
+    });
     const conf = await CLIHelper.getConfiguration();
     expect(conf).toBeInstanceOf(Configuration);
     expect(conf.get('entityGenerator')?.esmImport).toEqual(true);
@@ -516,7 +534,10 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   test('isDBConnected', async () => {
     await expect(CLIHelper.isDBConnected()).resolves.toEqual(false);
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
-    pathExistsMock.mockImplementation(async path => (path as string).endsWith('mikro-orm/mikro-orm.config.js'));
+    pathExistsMock.mockImplementation(async path => {
+      const str = path as string;
+      return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
+    });
     await expect(CLIHelper.isDBConnected()).resolves.toEqual(true);
     pathExistsMock.mockRestore();
   });
