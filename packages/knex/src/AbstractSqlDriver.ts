@@ -220,7 +220,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     if (qb) {
+      // here we map the aliased results (cartesian product) to an object graph
       this.mapJoinedProps<T>(ret, meta, populate, qb, ret, map);
+      // we need to remove the cycles from the mapped values
+      Utils.removeCycles(ret, meta);
     }
 
     return ret;
@@ -240,7 +243,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const meta2 = this.metadata.find(relation.type)!;
       const path = parentJoinPath ? `${parentJoinPath}.${relation.name}` : `${meta.name}.${relation.name}`;
       const relationAlias = qb.getAliasForJoinPath(path);
-      const relationPojo: EntityData<unknown> = {};
+      let relationPojo: EntityData<unknown> = {};
 
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
@@ -273,7 +276,16 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           }
         });
 
-      const key = `${meta.name}-${(Utils.getCompositeKeyHash(result, meta))}`;
+      const key = `${meta.name}-${Utils.getCompositeKeyHash(result, meta)}`;
+      const key2 = `${meta2.name}-${Utils.getCompositeKeyHash(relationPojo, meta2)}`;
+
+      if (map[key2]) {
+        const old = map[key2];
+        Object.assign(old, relationPojo);
+        relationPojo = old;
+      } else {
+        map[key2] = relationPojo;
+      }
 
       if (map[key]) {
         result[relation.name] = map[key][relation.name];
