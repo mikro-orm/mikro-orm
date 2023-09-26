@@ -387,3 +387,12 @@ id2: string;
 @PrimaryKey({ type: new BigIntType('number') })
 id3: number;
 ```
+
+## Join condition alias
+
+Additional join conditions used to be implicitly aliased to the root entity, now they are aliased to the joined entity instead. If you are using explicit aliases in the join conditions, nothing changes.
+
+```ts
+// the `name` used to resolve to `b.name`, now it will resolve to `a.name` instead
+qb.join('b.author', 'a', { name: 'foo' });
+```
