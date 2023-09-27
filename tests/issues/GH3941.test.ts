@@ -1,4 +1,15 @@
-import { Collection, Entity, helper, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Ref } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity,
+  helper,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  OptionalProps,
+  PrimaryKey,
+  Property,
+  Ref,
+} from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -24,6 +35,8 @@ class Organization {
 @Entity()
 class License {
 
+  [OptionalProps]?: 'organization';
+
   @PrimaryKey()
   id!: number;
 
@@ -37,6 +50,8 @@ class License {
 
 @Entity()
 class Workspace {
+
+  [OptionalProps]?: 'organization';
 
   @PrimaryKey()
   id!: number;
