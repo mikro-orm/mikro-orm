@@ -26,7 +26,7 @@ export enum Enum2 {
 @Entity()
 export class Publisher2 extends BaseEntity2 {
 
-  [OptionalProps]?: 'type' | 'type2' | 'hookTest';
+  [OptionalProps]?: 'type' | 'type2';
 
   @Property({ fieldName: 'name' })
   name: string;
