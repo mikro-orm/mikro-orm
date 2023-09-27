@@ -1,4 +1,4 @@
-import { BeforeCreate, PrimaryKey, Property } from '@mikro-orm/core';
+import { BeforeCreate, Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 export abstract class BaseEntity2 {
 
@@ -6,7 +6,7 @@ export abstract class BaseEntity2 {
   id!: number;
 
   @Property({ persist: false })
-  hookTest = false;
+  hookTest: boolean & Opt = false;
 
   @BeforeCreate()
   baseBeforeCreate() {

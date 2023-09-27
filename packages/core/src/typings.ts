@@ -1,14 +1,21 @@
 import type { Transaction } from './connections';
-import { ReferenceKind, type Cascade, type EventType, type LoadStrategy, type LockMode, type QueryOrderMap } from './enums';
 import {
-  EntityHelper,
-  Reference,
+  type Cascade,
+  type EventType,
+  type LoadStrategy,
+  type LockMode,
+  type QueryOrderMap,
+  ReferenceKind,
+} from './enums';
+import {
   type AssignOptions,
   type Collection,
   type EntityFactory,
+  EntityHelper,
   type EntityIdentifier,
   type EntityLoaderOptions,
   type EntityRepository,
+  Reference,
   type ScalarReference,
 } from './entity';
 import type { SerializationContext, SerializeOptions } from './serialization';
@@ -47,6 +54,8 @@ export const PrimaryKeyProp = Symbol('PrimaryKeyProp');
 export const OptionalProps = Symbol('OptionalProps');
 export const EagerProps = Symbol('EagerProps');
 export const HiddenProps = Symbol('HiddenProps');
+
+export type Opt<T = unknown> = T & { __optional?: 1 };
 
 export type UnwrapPrimary<T> = T extends Scalar
   ? T
@@ -186,9 +195,15 @@ export type EntityDataPropValue<T> = T | Primary<T>;
 type ExpandEntityProp<T> = T extends Record<string, any>
   ? { [K in keyof T as ExcludeFunctions<T, K>]?: EntityDataProp<ExpandProperty<T[K]>> | EntityDataPropValue<ExpandProperty<T[K]>> | null } | EntityDataPropValue<ExpandProperty<T>>
   : T;
-type ExpandRequiredEntityProp<T> = T extends Record<string, any>
-  ? { [K in keyof T as ExcludeFunctions<T, K>]: RequiredEntityDataProp<ExpandProperty<T[K]>, T> | EntityDataPropValue<ExpandProperty<T[K]>> } | EntityDataPropValue<ExpandProperty<T>>
+type ExpandRequiredEntityProp<T, I> = T extends Record<string, any>
+  ? ExpandRequiredEntityPropObject<T, I> | EntityDataPropValue<ExpandProperty<T>>
   : T;
+
+type ExpandRequiredEntityPropObject<T, I = never> = {
+  [K in keyof T as RequiredKeys<T, K, I>]: RequiredEntityDataProp<ExpandProperty<T[K]>, T> | EntityDataPropValue<ExpandProperty<T[K]>>;
+} & {
+  [K in keyof T as OptionalKeys<T, K, I>]?: RequiredEntityDataProp<ExpandProperty<T[K]>, T> | EntityDataPropValue<ExpandProperty<T[K]>> | null | undefined;
+};
 
 export type EntityDataProp<T> = T extends Date
   ? string | Date
@@ -196,11 +211,13 @@ export type EntityDataProp<T> = T extends Date
     ? T
     : T extends Reference<infer U>
       ? EntityDataNested<U>
-      : T extends Collection<infer U, any>
-          ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
-          : T extends readonly (infer U)[]
-              ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
-              : EntityDataNested<T>;
+      : T extends ScalarReference<infer U>
+        ? EntityDataProp<U>
+        : T extends Collection<infer U, any>
+            ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
+            : T extends readonly (infer U)[]
+                ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
+                : EntityDataNested<T>;
 
 export type RequiredEntityDataProp<T, O> = T extends Date
   ? string | Date
@@ -208,11 +225,13 @@ export type RequiredEntityDataProp<T, O> = T extends Date
     ? T
     : T extends Reference<infer U>
       ? RequiredEntityDataNested<U, O>
-      : T extends Collection<infer U, any>
-        ? U | U[] | RequiredEntityDataNested<U, O> | RequiredEntityDataNested<U, O>[]
-        : T extends readonly (infer U)[]
+      : T extends ScalarReference<infer U>
+        ? RequiredEntityDataProp<U, O>
+        : T extends Collection<infer U, any>
           ? U | U[] | RequiredEntityDataNested<U, O> | RequiredEntityDataNested<U, O>[]
-          : RequiredEntityDataNested<T, O>;
+          : T extends readonly (infer U)[]
+            ? U | U[] | RequiredEntityDataNested<U, O> | RequiredEntityDataNested<U, O>[]
+            : RequiredEntityDataNested<T, O>;
 
 export type EntityDataNested<T> = T extends undefined
   ? never
@@ -223,30 +242,26 @@ type EntityDataItem<T> = T | EntityDataProp<T> | null;
 
 export type RequiredEntityDataNested<T, O> = T extends any[]
     ? Readonly<T>
-    : RequiredEntityData<T, O> | ExpandRequiredEntityProp<T>;
+    : RequiredEntityData<T, O> | ExpandRequiredEntityProp<T, O>;
 
-type ExplicitlyOptionalProps<T> = T extends { [OptionalProps]?: infer PK } ? PK : never;
+type ExplicitlyOptionalProps<T> = (T extends { [OptionalProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Opt ? K : never }[keyof T] & {});
 type NullableKeys<T> = { [K in keyof T]: null extends T[K] ? K : never }[keyof T];
 type ProbablyOptionalProps<T> = ExplicitlyOptionalProps<T> | 'id' | '_id' | 'uuid' | Defined<NullableKeys<T>>;
 
 type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
   ? true
-  : T[K] extends Function
+  : ExtractType<T[K]> extends I
     ? true
-    : ExtractType<T[K]> extends I
+    : K extends ProbablyOptionalProps<T>
       ? true
-      : K extends symbol
-        ? never
-        : K extends ProbablyOptionalProps<T>
-          ? true
-          : false;
-type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? K : never;
-type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : K;
+      : false;
+type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? ExcludeFunctions<T, K> : never;
+type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : ExcludeFunctions<T, K>;
 export type EntityData<T> = { [K in EntityKey<T>]?: EntityDataItem<T[K]> };
 export type RequiredEntityData<T, I = never> = {
-  [K in keyof T as RequiredKeys<T, K, I>]: T[K] | RequiredEntityDataProp<T[K], T>
+  [K in keyof T as RequiredKeys<T, K, I>]: T[K] | RequiredEntityDataProp<T[K], T> | Primary<T[K]>
 } & {
-  [K in keyof T as OptionalKeys<T, K, I>]?: T[K] | RequiredEntityDataProp<T[K], T> | null
+  [K in keyof T as OptionalKeys<T, K, I>]?: T[K] | RequiredEntityDataProp<T[K], T> | Primary<T[K]> | null
 };
 export type EntityDictionary<T> = EntityData<T> & Record<any, any>;
 
@@ -272,15 +287,17 @@ export type EntityDTOProp<T> = T extends Scalar
     ? EntityDTONested<U>
     : T extends Reference<infer U>
       ? Primary<U>
-      : T extends { getItems(check?: boolean): infer U }
-        ? (U extends readonly (infer V)[] ? EntityDTONested<V>[] : EntityDTONested<U>)
-        : T extends { $: infer U }
+      : T extends ScalarReference<infer U>
+        ? U
+        : T extends { getItems(check?: boolean): infer U }
           ? (U extends readonly (infer V)[] ? EntityDTONested<V>[] : EntityDTONested<U>)
-          : T extends readonly (infer U)[]
-            ? (T extends readonly [infer U, ...infer V] ? T : U[])
-            : T extends Relation<T>
-              ? EntityDTONested<T>
-              : T;
+          : T extends { $: infer U }
+            ? (U extends readonly (infer V)[] ? EntityDTONested<V>[] : EntityDTONested<U>)
+            : T extends readonly (infer U)[]
+              ? (T extends readonly [infer U, ...infer V] ? T : U[])
+              : T extends Relation<T>
+                ? EntityDTONested<T>
+                : T;
 type ExtractHiddenProps<T> = T extends { [HiddenProps]?: infer Prop } ? Prop : never;
 type ExcludeHidden<T, K extends keyof T> = K extends ExtractHiddenProps<T> ? never : K;
 export type EntityDTO<T> = { [K in EntityKey<T> as ExcludeHidden<T, K>]: EntityDTOProp<T[K]> };
