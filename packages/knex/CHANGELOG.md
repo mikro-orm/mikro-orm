@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.4](https://github.com/mikro-orm/mikro-orm/compare/v5.8.3...v5.8.4) (2023-09-27)
+
+
+### Bug Fixes
+
+* **query-builder:** fix mapping of complex joined results with cycles ([a9846dd](https://github.com/mikro-orm/mikro-orm/commit/a9846dda01c4cdcf584452add15a4dea70c805a3)), closes [#4741](https://github.com/mikro-orm/mikro-orm/issues/4741)
+
+
+
+
+
 ## [5.8.3](https://github.com/mikro-orm/mikro-orm/compare/v5.8.2...v5.8.3) (2023-09-24)
 
 

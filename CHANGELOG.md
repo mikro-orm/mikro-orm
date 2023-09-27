@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.4](https://github.com/mikro-orm/mikro-orm/compare/v5.8.3...v5.8.4) (2023-09-27)
+
+
+### Bug Fixes
+
+* **core:** fix recomputing of changesets when entity has unique properties ([d03afad](https://github.com/mikro-orm/mikro-orm/commit/d03afad05327d66edee48186313589ee4b975ea5)), closes [#4749](https://github.com/mikro-orm/mikro-orm/issues/4749)
+* **query-builder:** fix mapping of complex joined results with cycles ([a9846dd](https://github.com/mikro-orm/mikro-orm/commit/a9846dda01c4cdcf584452add15a4dea70c805a3)), closes [#4741](https://github.com/mikro-orm/mikro-orm/issues/4741)
+
+
+### Features
+
+* **core:** add `EntityRepository.getEntityName()` method ([#4745](https://github.com/mikro-orm/mikro-orm/issues/4745)) ([47bfedd](https://github.com/mikro-orm/mikro-orm/commit/47bfeddc282580dc90d61cffa68c32e50ecf11db))
+* **core:** allow setting default `schema` on `EntityManager` ([#4717](https://github.com/mikro-orm/mikro-orm/issues/4717)) ([f7c1ef2](https://github.com/mikro-orm/mikro-orm/commit/f7c1ef24076ef760cabe3e73356d7f35999ddf6f))
+* **core:** deprecate `UseRequestContext` decorator ([#4744](https://github.com/mikro-orm/mikro-orm/issues/4744)) ([280733f](https://github.com/mikro-orm/mikro-orm/commit/280733f46ae48bf6c2ceb2c847f3e3fb106ca116))
+
+
+
+
+
 ## [5.8.3](https://github.com/mikro-orm/mikro-orm/compare/v5.8.2...v5.8.3) (2023-09-24)
 
 
