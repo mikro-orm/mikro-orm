@@ -1222,7 +1222,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     data = QueryHelper.processObjectParams(data);
     em.validator.validateParams(data, 'insert data');
-    const res = await em.driver.nativeInsert<Entity>(entityName, data, { ctx: em.transactionContext, ...options });
+    const res = await em.driver.nativeInsert<Entity>(entityName, data as EntityData<Entity>, { ctx: em.transactionContext, ...options });
 
     return res.insertId!;
   }
@@ -1267,7 +1267,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     data = data.map(row => QueryHelper.processObjectParams(row));
     data.forEach(row => em.validator.validateParams(row, 'insert data'));
-    const res = await em.driver.nativeInsertMany<Entity>(entityName, data, { ctx: em.transactionContext, ...options });
+    const res = await em.driver.nativeInsertMany<Entity>(entityName, data as EntityData<Entity>[], { ctx: em.transactionContext, ...options });
 
     return res.insertedIds!;
   }
@@ -1379,7 +1379,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   create<Entity extends object>(entityName: EntityName<Entity>, data: RequiredEntityData<Entity>, options: CreateOptions = {}): Entity {
     const em = this.getContext();
     options.schema ??= em._schema;
-    const entity = em.entityFactory.create(entityName, data, {
+    const entity = em.entityFactory.create(entityName, data as EntityData<Entity>, {
       ...options,
       newEntity: !options.managed,
       merge: options.managed,

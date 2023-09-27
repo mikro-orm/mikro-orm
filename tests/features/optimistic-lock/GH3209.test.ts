@@ -70,6 +70,10 @@ export class Author {
 @Entity()
 export class Book {
 
+  [PrimaryKeyProp]?: 'bookId';
+
+  [OptionalProps]?: 'bookId';
+
   @PrimaryKey()
   bookId!: number;
 

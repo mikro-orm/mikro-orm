@@ -184,7 +184,10 @@ export type GetRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = 
 
 export type EntityDataPropValue<T> = T | Primary<T>;
 type ExpandEntityProp<T> = T extends Record<string, any>
-  ? { [K in keyof T]?: EntityDataProp<ExpandProperty<T[K]>> | EntityDataPropValue<ExpandProperty<T[K]>> | null } | EntityDataPropValue<ExpandProperty<T>>
+  ? { [K in keyof T as ExcludeFunctions<T, K>]?: EntityDataProp<ExpandProperty<T[K]>> | EntityDataPropValue<ExpandProperty<T[K]>> | null } | EntityDataPropValue<ExpandProperty<T>>
+  : T;
+type ExpandRequiredEntityProp<T> = T extends Record<string, any>
+  ? { [K in keyof T as ExcludeFunctions<T, K>]: RequiredEntityDataProp<ExpandProperty<T[K]>, T> | EntityDataPropValue<ExpandProperty<T[K]>> } | EntityDataPropValue<ExpandProperty<T>>
   : T;
 
 export type EntityDataProp<T> = T extends Date
@@ -199,6 +202,18 @@ export type EntityDataProp<T> = T extends Date
               ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
               : EntityDataNested<T>;
 
+export type RequiredEntityDataProp<T, O> = T extends Date
+  ? string | Date
+  : T extends Scalar
+    ? T
+    : T extends Reference<infer U>
+      ? RequiredEntityDataNested<U, O>
+      : T extends Collection<infer U, any>
+        ? U | U[] | RequiredEntityDataNested<U, O> | RequiredEntityDataNested<U, O>[]
+        : T extends readonly (infer U)[]
+          ? U | U[] | RequiredEntityDataNested<U, O> | RequiredEntityDataNested<U, O>[]
+          : RequiredEntityDataNested<T, O>;
+
 export type EntityDataNested<T> = T extends undefined
   ? never
   : T extends any[]
@@ -206,22 +221,33 @@ export type EntityDataNested<T> = T extends undefined
     : EntityData<T> | ExpandEntityProp<T>;
 type EntityDataItem<T> = T | EntityDataProp<T> | null;
 
+export type RequiredEntityDataNested<T, O> = T extends any[]
+    ? Readonly<T>
+    : RequiredEntityData<T, O> | ExpandRequiredEntityProp<T>;
+
 type ExplicitlyOptionalProps<T> = T extends { [OptionalProps]?: infer PK } ? PK : never;
 type NullableKeys<T> = { [K in keyof T]: null extends T[K] ? K : never }[keyof T];
 type ProbablyOptionalProps<T> = ExplicitlyOptionalProps<T> | 'id' | '_id' | 'uuid' | Defined<NullableKeys<T>>;
 
-type IsOptional<T, K extends keyof T> = T[K] extends Collection<any, any>
+type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
   ? true
   : T[K] extends Function
     ? true
-    : K extends symbol
+    : ExtractType<T[K]> extends I
       ? true
-      : K extends ProbablyOptionalProps<T>
-        ? true
-        : false;
-type RequiredKeys<T, K extends keyof T> = IsOptional<T, K> extends false ? K : never;
+      : K extends symbol
+        ? never
+        : K extends ProbablyOptionalProps<T>
+          ? true
+          : false;
+type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? K : never;
+type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : K;
 export type EntityData<T> = { [K in EntityKey<T>]?: EntityDataItem<T[K]> };
-export type RequiredEntityData<T> = EntityData<T> & { [K in keyof T as RequiredKeys<T, K>]: T[K] | EntityDataProp<T[K]> };
+export type RequiredEntityData<T, I = never> = {
+  [K in keyof T as RequiredKeys<T, K, I>]: T[K] | RequiredEntityDataProp<T[K], T>
+} & {
+  [K in keyof T as OptionalKeys<T, K, I>]?: T[K] | RequiredEntityDataProp<T[K], T> | null
+};
 export type EntityDictionary<T> = EntityData<T> & Record<any, any>;
 
 type ExtractEagerProps<T> = T extends { [EagerProps]?: infer PK } ? PK : never;
