@@ -7,7 +7,7 @@ import {
   Property,
   BigIntType,
   wrap,
-  OptionalProps,
+  Opt,
   PrimaryKeyProp,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -38,9 +38,7 @@ class Wallet {
 
 }
 
-class AbstractDeposit<Optional> {
-
-  [OptionalProps]?: 'createdAt' | 'updatedAt' | Optional;
+class AbstractDeposit {
 
   @Property({ type: String, nullable: false })
   amount!: string;
@@ -49,10 +47,10 @@ class AbstractDeposit<Optional> {
   gatewayKey!: string;
 
   @Property()
-  createdAt: Date = new Date();
+  createdAt: Opt & Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt: Date = new Date();
+  updatedAt: Opt & Date = new Date();
 
 }
 
@@ -65,7 +63,7 @@ enum DepositStatus {
 
 
 @Entity()
-export class Deposit extends AbstractDeposit<'status'> {
+export class Deposit extends AbstractDeposit {
 
   [PrimaryKeyProp]?: ['txRef', 'wallet'];
 
@@ -79,7 +77,7 @@ export class Deposit extends AbstractDeposit<'status'> {
     nullable: false,
     items: () => DepositStatus,
   })
-  status: DepositStatus = DepositStatus.UNPAID;
+  status: Opt & DepositStatus = DepositStatus.UNPAID;
 
 }
 
