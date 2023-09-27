@@ -239,7 +239,7 @@ export class EntityRepository<Entity extends object> {
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<Entity>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
-  create<Hint = never>(data: RequiredEntityData<Entity>, options?: CreateOptions): Entity {
+  create(data: RequiredEntityData<Entity>, options?: CreateOptions): Entity {
     return this.getEntityManager().create(this.entityName, data, options);
   }
 

@@ -1,9 +1,10 @@
-import { MikroORM, Embeddable, Embedded, Entity, PrimaryKey, Property, HiddenProps, wrap } from '@mikro-orm/sqlite';
+import { MikroORM, Embeddable, Embedded, Entity, PrimaryKey, Property, HiddenProps, OptionalProps, wrap } from '@mikro-orm/sqlite';
 
 @Embeddable()
 class Address {
 
   [HiddenProps]?: 'addressLine1' | 'addressLine2';
+  [OptionalProps]?: 'address';
 
   @Property({ hidden: true })
   addressLine1!: string;

@@ -73,7 +73,7 @@ export class Log extends BaseEntity {
   step?: Step;
 
   @Property({ type: 'date', nullable: true })
-  operationDate?: string;
+  operationDate?: string | null;
 
   @Property({ default: false })
   current: boolean = false;

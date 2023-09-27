@@ -564,9 +564,9 @@ describe('EntityManagerPostgre', () => {
   test('order by json properties', async () => {
     await orm.em.insert(Author2, { name: 'n', email: 'e', id: 1 });
     await orm.em.insertMany(Book2, [
-      { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { nested: { foo: '3', deep: { str: 'c', baz: 3 } } } },
-      { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { nested: { foo: '2', deep: { str: 'b', baz: 1 } } } },
-      { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { nested: { foo: '1', deep: { str: 'a', baz: 2 } } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { nested: { foo: '3', deep: { str: 'c', qux: false, baz: 3 } } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { nested: { foo: '2', deep: { str: 'b', qux: false, baz: 1 } } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { nested: { foo: '1', deep: { str: 'a', qux: false, baz: 2 } } } },
     ]);
 
     const res14 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { nested: { foo: 'asc' } } } });
