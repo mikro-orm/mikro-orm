@@ -1,4 +1,13 @@
-import { Collection, Entity, ManyToOne, OneToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  MikroORM,
+  PrimaryKey,
+  Property,
+  OptionalProps,
+} from '@mikro-orm/core';
 import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 @Entity()
@@ -14,6 +23,8 @@ class TestRunEntity {
 
 @Entity()
 class TestCaseEntity {
+
+  [OptionalProps]?: 'testRun';
 
   @PrimaryKey()
   id!: number;
