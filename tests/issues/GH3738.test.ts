@@ -33,7 +33,7 @@ export class Question {
 @Entity()
 export class Answer {
 
-  [OptionalProps]?: 'createdAt';
+  [OptionalProps]?: 'createdAt' | 'question';
 
   @PrimaryKey({ type: 'uuid' })
   id: string = randomUUID();
