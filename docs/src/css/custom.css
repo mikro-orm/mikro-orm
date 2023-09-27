@@ -20,6 +20,8 @@
   --ifm-color-primary-light: rgb(70, 203, 174);
   --ifm-color-primary-lighter: rgb(102, 212, 189);
   --ifm-color-primary-lightest: rgb(146, 224, 208);
+  --prism-color: #393A34;
+  --prism-background-color: #f6f8fa;
 }
 
 html[data-theme="light"] {
@@ -28,6 +30,7 @@ html[data-theme="light"] {
   --ifm-alert-border-color: #ffeeba;
   --ifm-alert-color: #856404;
   --ra-admonition-icon-color: #856404;
+  --docusaurus-highlighted-code-line-bg: rgb(218, 221, 227);
 }
 
 html[data-theme="light"] .admonition-info {
@@ -240,16 +243,6 @@ html[data-theme="dark"] .navbar .navbar__link[href*=twitter]:before {
   .hero.hero--primary .button.button--outline {
     font-size: 0.8rem;
   }
-}
-
-html code {
-  color: #1c1e21;
-  background-color: #ebedf0;
-}
-
-html[data-theme="dark"] code {
-  color: #f5f6f7;
-  background-color: #444950;
 }
 
 html a code {
