@@ -1,7 +1,9 @@
-import { Entity, MikroORM, PrimaryKey, Property, Ref, LoadStrategy, OneToOne } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, PrimaryKey, Property, Ref, LoadStrategy, OneToOne, OptionalProps } from '@mikro-orm/sqlite';
 
 @Entity()
 export class RadioOption {
+
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey()
   id!: number;
