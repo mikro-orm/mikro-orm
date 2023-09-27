@@ -21,7 +21,7 @@ import {
   EventArgs,
   t,
   OnLoad,
-  OptionalProps,
+  Opt,
   HiddenProps,
   Embeddable,
   Embedded,
@@ -60,16 +60,14 @@ export class Identity {
 @Unique({ properties: ['name', 'email'] })
 export class Author2 extends BaseEntity2 {
 
-  [OptionalProps]?: 'createdAt' | 'updatedAt' | 'termsAccepted' | 'version' | 'versionAsString' | 'code' | 'code2' | 'booksTotal' | 'hookParams' | 'hookTest' | 'onLoadCalled';
-
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
 
   @Property({ length: 3, defaultRaw: 'current_timestamp(3)' })
-  createdAt = new Date();
+  createdAt: Opt<Date> = new Date();
 
   @Property({ onUpdate: () => new Date(), length: 3, defaultRaw: 'current_timestamp(3)' })
-  updatedAt = new Date();
+  updatedAt: Opt<Date> = new Date();
 
   @Property()
   name: string;
@@ -83,7 +81,7 @@ export class Author2 extends BaseEntity2 {
 
   @Index()
   @Property()
-  termsAccepted = false;
+  termsAccepted: Opt<boolean> = false;
 
   @Property({ nullable: true })
   optional?: boolean;
@@ -125,18 +123,18 @@ export class Author2 extends BaseEntity2 {
   identity?: Identity;
 
   @Property({ persist: false })
-  version!: number;
+  version!: number & Opt;
 
   @Property({ persist: false })
-  versionAsString!: string;
+  versionAsString!: string & Opt;
 
   @Property({ persist: false })
-  code!: string;
+  code!: string & Opt;
 
   @Property({ persist: false })
-  booksTotal!: number;
+  booksTotal!: number & Opt;
 
-  hookParams: any[] = [];
+  hookParams: any[] & Opt = [];
   onLoadCalled?: number;
 
   constructor(name: string, email: string) {
@@ -191,12 +189,12 @@ export class Author2 extends BaseEntity2 {
   }
 
   @Property({ name: 'code' })
-  getCode() {
+  getCode(): string & Opt {
     return `${this.email} - ${this.name}`;
   }
 
   @Property({ persist: false })
-  get code2() {
+  get code2(): string & Opt {
     return `${this.email} - ${this.name}`;
   }
 
