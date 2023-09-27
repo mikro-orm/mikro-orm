@@ -19,7 +19,7 @@ class Blog {
 @Entity()
 class User {
 
-  [OptionalProps]!: 'name' | 'balance';
+  [OptionalProps]?: 'name' | 'balance';
 
   @PrimaryKey()
   id!: number;
