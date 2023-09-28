@@ -88,7 +88,7 @@ export class UnitOfWork {
   /**
    * @internal
    */
-  registerManaged<T extends object>(entity: T, data?: EntityData<T>, options?: RegisterManagedOptions): T {
+  register<T extends object>(entity: T, data?: EntityData<T>, options?: RegisterOptions): T {
     this.identityMap.store(entity);
     EntityHelper.ensurePropagation(entity);
 
@@ -922,7 +922,7 @@ export class UnitOfWork {
     await this.changeSetPersister.executeInserts(changeSets, { ctx });
 
     for (const changeSet of changeSets) {
-      this.registerManaged<T>(changeSet.entity, changeSet.payload, { refresh: true });
+      this.register<T>(changeSet.entity, changeSet.payload, { refresh: true });
       await this.runHooks(EventType.afterCreate, changeSet);
     }
   }
@@ -1113,7 +1113,7 @@ export class UnitOfWork {
 
 }
 
-export interface RegisterManagedOptions {
+export interface RegisterOptions {
   refresh?: boolean;
   newEntity?: boolean;
   loaded?: boolean;

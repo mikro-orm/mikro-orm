@@ -417,7 +417,7 @@ export class EntityLoader {
           convertCustomTypes: true,
           schema: options.schema ?? this.em.config.get('schema'),
         });
-        return this.em.getUnitOfWork().registerManaged(entity as AnyEntity, item, { refresh, loaded: true });
+        return this.em.getUnitOfWork().register(entity as AnyEntity, item, { refresh, loaded: true });
       });
       (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items, true);
       children.push(...items);
