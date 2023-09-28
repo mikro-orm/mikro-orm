@@ -111,7 +111,7 @@ export class EntityFactory {
     }
 
     if (options.merge && wrapped.hasPrimaryKey()) {
-      this.unitOfWork.registerManaged(entity, data, {
+      this.unitOfWork.register(entity, data, {
         refresh: options.refresh && options.initialized,
         newEntity: options.newEntity,
         loaded: options.initialized,
@@ -279,7 +279,7 @@ export class EntityFactory {
 
     if (options.merge && !options.newEntity) {
       this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, this.driver.getSchemaName(meta, options));
-      this.unitOfWork.registerManaged(entity);
+      this.unitOfWork.register(entity);
     }
 
     if (options.initialized) {
