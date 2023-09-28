@@ -1,6 +1,6 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Book2 } from '../entities-sql';
+import { MySqlDriver, wrap } from '@mikro-orm/mysql';
+import { Author2, Book2, Publisher2 } from '../entities-sql';
 import { initORMMySql, mockLogger } from '../bootstrap';
 import { Author2Subscriber } from '../subscribers/Author2Subscriber';
 import { EverythingSubscriber } from '../subscribers/EverythingSubscriber';
@@ -229,6 +229,25 @@ describe('read-replicas', () => {
       expect(mock.mock.calls[7][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[8][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);
     });
+  });
+
+  test('find with different schema', async () => {
+    const author = new Author2('n', 'e');
+    const book1 = new Book2('b1', author);
+    book1.publisher = wrap(new Publisher2('p')).toReference();
+    const book2 = new Book2('b2', author);
+    await orm.em.persistAndFlush([book1, book2]);
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+
+    const schema = `${orm.config.get('dbName')}_schema_2`;
+    const res1 = await orm.em.find(Book2, { publisher: { $ne: null } }, { schema, populate: ['perex'] });
+    const res2 = await orm.em.find(Book2, { publisher: { $ne: null } }, { populate: ['perex'] });
+    expect(mock.mock.calls[0][0]).toMatch(`select \`b0\`.*, \`b0\`.price * 1.19 as \`price_taxed\`, \`t1\`.\`id\` as \`test_id\` from \`${schema}\`.\`book2\` as \`b0\` left join \`${schema}\`.\`test2\` as \`t1\` on \`b0\`.\`uuid_pk\` = \`t1\`.\`book_uuid_pk\` where \`b0\`.\`author_id\` is not null and \`b0\`.\`publisher_id\` is not null`);
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` from `book2` as `b0` left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`publisher_id` is not null');
+    expect(res1.length).toBe(0);
+    expect(res2.length).toBe(1);
   });
 
 });
