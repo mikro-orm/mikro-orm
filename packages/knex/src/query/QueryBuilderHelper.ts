@@ -226,8 +226,15 @@ export class QueryBuilderHelper {
       const params: Knex.Value[] = [];
 
       join.primaryKeys!.forEach((primaryKey, idx) => {
-        const left = `${join.ownerAlias}.${primaryKey}`;
         const right = `${join.alias}.${join.joinColumns![idx]}`;
+
+        if (join.prop.formula) {
+          const left = join.prop.formula(join.ownerAlias);
+          conditions.push(`${left} = ${this.knex.ref(right)}`);
+          return;
+        }
+
+        const left = join.prop.persist === false ? primaryKey : `${join.ownerAlias}.${primaryKey}`;
         conditions.push(`${this.knex.ref(left)} = ${this.knex.ref(right)}`);
       });
 
