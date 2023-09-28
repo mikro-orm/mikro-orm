@@ -19,8 +19,6 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   [EntityManagerType]: EntityManager<this>;
   readonly config: Configuration;
 
-  init(): Promise<void>;
-
   createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType];
 
   connect(): Promise<C>;
