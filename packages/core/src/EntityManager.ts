@@ -819,7 +819,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
     const snapshot = this.comparator.prepareEntity(entity);
-    em.unitOfWork.registerManaged(entity, snapshot, { refresh: true });
+    em.unitOfWork.register(entity, snapshot, { refresh: true });
 
     if (em.eventManager.hasListeners(EventType.afterUpsert, meta)) {
       await em.eventManager.dispatchEvent(EventType.afterUpsert, { entity, em, meta }, meta);
@@ -1072,7 +1072,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     for (const [entity] of entities) {
       // recompute the data as there might be some values missing (e.g. those with db column defaults)
       const snapshot = this.comparator.prepareEntity(entity);
-      em.unitOfWork.registerManaged(entity, snapshot, { refresh: true });
+      em.unitOfWork.register(entity, snapshot, { refresh: true });
     }
 
     if (em.eventManager.hasListeners(EventType.afterUpsert, meta)) {
@@ -1117,7 +1117,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
         // ensure all entities from inner context are merged to the upper one
         for (const entity of fork.unitOfWork.getIdentityMap()) {
-          em.unitOfWork.registerManaged(entity);
+          em.unitOfWork.register(entity);
           entity.__helper!.__em = em;
         }
 
@@ -1666,7 +1666,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (!options.clear) {
       for (const entity of em.unitOfWork.getIdentityMap()) {
-        fork.unitOfWork.registerManaged(entity);
+        fork.unitOfWork.register(entity);
       }
 
       for (const entity of em.unitOfWork.getOrphanRemoveStack()) {

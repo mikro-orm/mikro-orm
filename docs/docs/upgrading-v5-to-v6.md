@@ -256,6 +256,7 @@ The method was only forwarding the call to `BaseEntity.toObject`, so use that in
 - `AssignOptions.mergeObjects` -> `AssignOptions.mergeObjectProperties`
 - `EntityOptions.customRepository` -> `EntityOptions.repository`
 - `Options.cache` -> `Options.metadataCache`
+- `UnitOfWork.registerManaged` -> `UnitOfWork.register`
 
 ## Removed dependency on `faker` in seeder package
 
