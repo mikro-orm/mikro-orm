@@ -52,10 +52,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     this.logger = this.config.getLogger();
   }
 
-  async init(): Promise<void> {
-    // do nothing on this level
-  }
-
   abstract find<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F>): Promise<EntityData<T>[]>;
 
   abstract findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F>): Promise<EntityData<T> | null>;
@@ -120,7 +116,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   async reconnect(): Promise<C> {
     await this.close(true);
     await this.connect();
-    await this.init();
 
     return this.connection;
   }

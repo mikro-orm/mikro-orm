@@ -16,7 +16,23 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 import {
-  Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
+  Author2,
+  Book2,
+  BookTag2,
+  FooBar2,
+  FooBaz2,
+  Publisher2,
+  Test2,
+  Label2,
+  Configuration2,
+  Address2,
+  FooParam2,
+  User2,
+  CompanyOwner2,
+  BaseUser2,
+  Manager2,
+  Employee2,
+  CarOwner2,
 } from './entities-sql';
 import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, IdentitySchema } from './entities-schema';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
@@ -25,6 +41,7 @@ import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 import { FlushSubscriber } from './subscribers/FlushSubscriber';
 import { BASE_DIR } from './helpers';
 import { Book5 } from './entities-5';
+import { Dummy2 } from './entities-sql/Dummy2';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js/index');
 
@@ -92,9 +109,8 @@ export async function initORMMongo(replicaSet = false) {
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}, simple?: boolean) {
   const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(7)}`;
-  let orm = await MikroORM.init<AbstractSqlDriver>(Utils.merge({
-    entities: ['entities-sql/**/*.js', '!**/Label2.js'],
-    entitiesTs: ['entities-sql/**/*.ts', '!**/Label2.ts'],
+  let orm = MikroORM.initSync<AbstractSqlDriver>(Utils.merge({
+    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2, User2, CarOwner2, CompanyOwner2, Employee2, Manager2, BaseUser2, Dummy2],
     clientUrl: `mysql://root@127.0.0.1:3306/${dbName}`,
     port: type === 'mysql' ? 3308 : 3309,
     baseDir: BASE_DIR,
@@ -123,7 +139,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     await connection.loadFile(__dirname + '/mysql-schema.sql');
     await orm.close(true);
     orm.config.set('dbName', dbName);
-    orm = await MikroORM.init(orm.config.getAll());
+    orm = MikroORM.initSync(orm.config.getAll());
   }
 
   Author2Subscriber.log.length = 0;
