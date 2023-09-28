@@ -131,8 +131,6 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       if (this.config.get('ensureDatabase')) {
         await this.schema.ensureDatabase();
       }
-
-      await this.driver.init();
     } else {
       this.logger.error('info', `MikroORM failed to connect to database ${db}`);
     }
