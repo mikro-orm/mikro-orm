@@ -93,7 +93,7 @@ export class DatabaseTable {
         unsigned: prop.unsigned && this.platform.isNumericColumn(mappedType),
         autoincrement: prop.autoincrement ?? primary,
         primary,
-        nullable: !!prop.nullable,
+        nullable: this.columns[field]?.nullable ?? !!prop.nullable,
         length: prop.length,
         precision: prop.precision,
         scale: prop.scale,

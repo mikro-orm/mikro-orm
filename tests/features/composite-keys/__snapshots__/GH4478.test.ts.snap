@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GH issue 4478 1`] = `
+"pragma foreign_keys = off;
+
+create table \`school\` (\`school_code\` text not null, primary key (\`school_code\`));
+
+create table \`class\` (\`school_code\` text not null, \`academic_year\` text not null, \`class_code\` text not null, constraint \`class_school_code_foreign\` foreign key(\`school_code\`) references \`school\`(\`school_code\`) on update cascade, primary key (\`school_code\`, \`academic_year\`, \`class_code\`));
+create index \`class_school_code_index\` on \`class\` (\`school_code\`);
+
+create table \`student_allocation\` (\`student_id\` text not null, \`academic_year\` text not null, \`school_code\` text not null, \`class_code\` text null, constraint \`student_allocation_school_code_foreign\` foreign key(\`school_code\`) references \`school\`(\`school_code\`) on update cascade, constraint \`student_allocation_school_code_academic_year_class_code_foreign\` foreign key(\`school_code\`, \`academic_year\`, \`class_code\`) references \`class\`(\`school_code\`, \`academic_year\`, \`class_code\`) on delete set null on update cascade, primary key (\`student_id\`, \`academic_year\`));
+create index \`student_allocation_school_code_index\` on \`student_allocation\` (\`school_code\`);
+create index \`student_allocation_school_code_academic_year_class_code_index\` on \`student_allocation\` (\`school_code\`, \`academic_year\`, \`class_code\`);
+
+pragma foreign_keys = on;
+"
+`;
+
+exports[`GH issue 4478 2`] = `
+[
+  [
+    "[query] begin",
+  ],
+  [
+    "[query] insert into \`school\` (\`school_code\`) values ('abc') returning \`school_code\`",
+  ],
+  [
+    "[query] insert into \`class\` (\`school_code\`, \`academic_year\`, \`class_code\`) values ('abc', '2023', 'cls') returning \`school_code\`, \`academic_year\`, \`class_code\`",
+  ],
+  [
+    "[query] insert into \`student_allocation\` (\`student_id\`, \`academic_year\`, \`school_code\`, \`class_code\`) values ('1', '2023', 'abc', NULL), ('2', '2023', 'abc', 'cls') returning \`student_id\`, \`academic_year\`",
+  ],
+  [
+    "[query] commit",
+  ],
+]
+`;

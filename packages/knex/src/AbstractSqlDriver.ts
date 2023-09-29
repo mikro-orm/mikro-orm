@@ -403,16 +403,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         const keys: string[] = [];
         props.forEach(prop => {
           if (prop.fieldNames.length > 1) {
-            const param = [...row[prop.name] as unknown[] ?? prop.fieldNames.map(() => null)];
-            const key = (row[prop.name] as unknown[] ?? prop.fieldNames).map(() => '?');
+            const param = Utils.flatten([...row[prop.name] ?? prop.fieldNames.map(() => null)]);
+            const key = param.map(() => '?');
             prop.fieldNames.forEach((field, idx) => {
-              if (duplicates.includes(field)) {
-                param.splice(idx, 1);
-                key.splice(idx, 1);
+              if (!duplicates.includes(field)) {
+                params.push(param[idx]);
+                keys.push(key[idx]);
               }
             });
-            params.push(...param);
-            keys.push(...key);
           } else if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])) {
             keys.push(prop.customType.convertToDatabaseValueSQL!('?', this.platform));
             addParams(prop, row);
