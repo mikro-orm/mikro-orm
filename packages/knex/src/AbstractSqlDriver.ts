@@ -382,7 +382,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
-    const meta = this.metadata.find<T>(entityName);
+    const meta = this.metadata.find<T>(entityName)?.root;
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const pks = this.getPrimaryKeyFields(entityName) as EntityKey<T>[];
     const set = new Set<EntityKey<T>>();
@@ -419,22 +419,31 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
       sql += data.map(row => {
         const keys: string[] = [];
+        const usedDups: string[] = [];
         props.forEach(prop => {
           if (prop.fieldNames.length > 1) {
             const param = Utils.flatten([...row[prop.name] ?? prop.fieldNames.map(() => null)]);
             const key = param.map(() => '?');
             prop.fieldNames.forEach((field, idx) => {
-              if (!duplicates.includes(field)) {
+              if (!duplicates.includes(field) || !usedDups.includes(field)) {
                 params.push(param[idx]);
                 keys.push(key[idx]);
+                usedDups.push(field);
               }
             });
-          } else if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])) {
-            keys.push(prop.customType.convertToDatabaseValueSQL!('?', this.platform));
-            addParams(prop, row);
           } else {
-            addParams(prop, row);
-            keys.push('?');
+            const field = prop.fieldNames[0];
+
+            if (!duplicates.includes(field) || !usedDups.includes(field)) {
+              if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])) {
+                keys.push(prop.customType.convertToDatabaseValueSQL!('?', this.platform));
+              } else {
+                keys.push('?');
+              }
+
+              addParams(prop, row);
+              usedDups.push(field);
+            }
           }
         });
 

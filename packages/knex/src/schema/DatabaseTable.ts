@@ -36,7 +36,7 @@ export class DatabaseTable {
   }
 
   getIndexes(): IndexDef[] {
-    return this.indexes;
+    return Utils.removeDuplicates(this.indexes);
   }
 
   getChecks(): CheckDef[] {
