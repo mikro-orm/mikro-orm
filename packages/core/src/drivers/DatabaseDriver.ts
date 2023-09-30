@@ -295,7 +295,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
             if (props[kk]) {
               inline(data[prop.name], props[kk] || props[parentPropName], [prop.name]);
             } else if (props[parentPropName]) {
-              data[`${prop.name}.${kk}` as keyof T] = data[prop.name][kk];
+              data[`${prop.name}.${kk}` as keyof T] = (data[prop.name] as Dictionary)[kk];
             } else {
               unknownProp = true;
             }
