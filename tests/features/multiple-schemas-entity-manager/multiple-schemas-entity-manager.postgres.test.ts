@@ -1,9 +1,9 @@
-import { BaseEntity, Cascade, Collection, Entity, LockMode, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { BaseEntity, Cascade, Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
 @Entity({ schema: 'n1' })
-export class Author {
+class Author {
 
   @PrimaryKey()
   id!: number;
@@ -20,7 +20,7 @@ export class Author {
 }
 
 @Entity({ schema: '*' })
-export class BookTag extends BaseEntity<BookTag, 'id'> {
+class BookTag extends BaseEntity {
 
   @PrimaryKey()
   id!: number;
@@ -31,7 +31,7 @@ export class BookTag extends BaseEntity<BookTag, 'id'> {
 }
 
 @Entity({ schema: '*' })
-export class Book extends BaseEntity<Book, 'id'> {
+class Book extends BaseEntity {
 
   @PrimaryKey()
   id!: number;
@@ -39,7 +39,7 @@ export class Book extends BaseEntity<Book, 'id'> {
   @Property({ nullable: true })
   name?: string;
 
-  @ManyToOne(() => Author, { nullable: true, onDelete: 'cascade' })
+  @ManyToOne(() => Author, { nullable: true, deleteRule: 'cascade' })
   author?: Author;
 
   @ManyToOne(() => Book, { nullable: true })
@@ -468,10 +468,10 @@ describe('multiple connected schemas in postgres', () => {
     expect(mock.mock.calls[7][0]).toMatch(`insert into "n4"."book" ("author_id") values (1) returning "id"`);
     expect(mock.mock.calls[8][0]).toMatch(`update "n5"."book" set "based_on_id" = 1 where "id" = 1`);
     expect(mock.mock.calls[9][0]).toMatch(`update "n4"."book" set "based_on_id" = 1 where "id" = 1`);
-    expect(mock.mock.calls[10][0]).toMatch(`insert into "n3"."book_tags" ("book_id", "book_tag_id") values (1, 1), (1, 2), (1, 3) returning "book_id", "book_tag_id"`);
-    expect(mock.mock.calls[11][0]).toMatch(`insert into "n5"."book_tags" ("book_id", "book_tag_id") values (1, 1), (1, 2), (1, 3) returning "book_id", "book_tag_id"`);
-    expect(mock.mock.calls[12][0]).toMatch(`insert into "n5"."book_tags" ("book_id", "book_tag_id") values (2, 4), (2, 5), (2, 6) returning "book_id", "book_tag_id"`);
-    expect(mock.mock.calls[13][0]).toMatch(`insert into "n4"."book_tags" ("book_id", "book_tag_id") values (1, 1), (1, 2), (1, 3) returning "book_id", "book_tag_id"`);
+    expect(mock.mock.calls[10][0]).toMatch(`insert into "n3"."book_tags" ("book_id", "book_tag_id") values (1, 1), (1, 2), (1, 3)`);
+    expect(mock.mock.calls[11][0]).toMatch(`insert into "n5"."book_tags" ("book_id", "book_tag_id") values (1, 1), (1, 2), (1, 3)`);
+    expect(mock.mock.calls[12][0]).toMatch(`insert into "n5"."book_tags" ("book_id", "book_tag_id") values (2, 4), (2, 5), (2, 6)`);
+    expect(mock.mock.calls[13][0]).toMatch(`insert into "n4"."book_tags" ("book_id", "book_tag_id") values (1, 1), (1, 2), (1, 3)`);
     expect(mock.mock.calls[14][0]).toMatch(`commit`);
     mock.mockReset();
 
@@ -513,7 +513,7 @@ describe('multiple connected schemas in postgres', () => {
     await fork.findOneOrFail(Author, author, { populate: true, schema: 'n5' });
 
     expect(mock.mock.calls[0][0]).toMatch(`select "a0".* from "n1"."author" as "a0" where "a0"."id" = 1 limit 1`);
-    expect(mock.mock.calls[1][0]).toMatch(`select "b0".* from "n5"."book" as "b0" where "b0"."author_id" in (1) order by "b0"."author_id" asc`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "b0".* from "n5"."book" as "b0" where "b0"."author_id" in (1)`);
     expect(mock.mock.calls[2][0]).toMatch(`select "b0".*, "b1"."book_tag_id" as "fk__book_tag_id", "b1"."book_id" as "fk__book_id" from "n5"."book_tag" as "b0" left join "n5"."book_tags" as "b1" on "b0"."id" = "b1"."book_tag_id" where "b1"."book_id" in (2, 1)`);
     mock.mockReset();
 
