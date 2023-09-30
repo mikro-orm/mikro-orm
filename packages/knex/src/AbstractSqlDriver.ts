@@ -264,6 +264,17 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       }
 
       meta2.props
+        .filter(prop => prop.persist === false)
+        .forEach(prop => {
+          if (prop.fieldNames.length > 1) { // composite keys
+            relationPojo[prop.name] = prop.fieldNames.map(name => root![`${relationAlias}__${name}`]);
+          } else {
+            const alias = `${relationAlias}__${prop.fieldNames[0]}`;
+            relationPojo[prop.name] = root![alias];
+          }
+        });
+
+      meta2.props
         .filter(prop => this.platform.shouldHaveColumn(prop, p.children || []))
         .forEach(prop => {
           if (prop.fieldNames.length > 1) { // composite keys
