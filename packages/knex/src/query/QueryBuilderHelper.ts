@@ -2,23 +2,23 @@ import type { Knex } from 'knex';
 import { inspect } from 'util';
 import {
   ALIAS_REPLACEMENT_RE,
-  GroupOperator,
-  LockMode,
-  OptimisticLockError,
-  QueryOperator,
-  QueryOrderNumeric,
-  raw,
-  RawQueryFragment,
-  ReferenceKind,
-  Utils,
   type Dictionary,
   type EntityData,
   type EntityKey,
   type EntityMetadata,
   type EntityProperty,
   type FlatQueryOrderMap,
-  type QBFilterQuery,
+  GroupOperator,
+  LockMode,
   type MetadataStorage,
+  OptimisticLockError,
+  type QBFilterQuery,
+  QueryOperator,
+  QueryOrderNumeric,
+  raw,
+  RawQueryFragment,
+  ReferenceKind,
+  Utils,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
@@ -234,7 +234,7 @@ export class QueryBuilderHelper {
           return;
         }
 
-          const left = join.prop.persist === false ? primaryKey : `${join.ownerAlias}.${primaryKey}`;
+          const left = join.prop.kind === ReferenceKind.SCALAR && join.prop.persist === false ? primaryKey : `${join.ownerAlias}.${primaryKey}`;
           conditions.push(`${this.knex.ref(left)} = ${this.knex.ref(right)}`);
         });
       }

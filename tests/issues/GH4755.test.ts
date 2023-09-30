@@ -49,7 +49,7 @@ beforeAll(async () => {
     entities: [ApiIpApi],
     clientUrl: 'mongodb://localhost:27017/mikro-orm-test-4755',
     metadataProvider: TsMorphMetadataProvider,
-    cache: { enabled: false },
+    metadataCache: { enabled: false },
   });
   await orm.em.insert(ApiIpApi, {
     request: {

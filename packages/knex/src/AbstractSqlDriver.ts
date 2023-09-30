@@ -289,7 +289,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const tz = this.platform.getTimezone();
 
       meta2.props
-        .filter(prop => prop.persist === false)
+        .filter(prop => prop.persist === false && prop.fieldNames)
         .forEach(prop => {
           if (prop.fieldNames.length > 1) { // composite keys
             relationPojo[prop.name as EntityKey<T>] = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as EntityValue<T>;
@@ -321,7 +321,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (map[key2]) {
         const old = map[key2];
-        Object.assign(old, relationPojo);
+        Utils.keys(relationPojo)
+          .filter(k => relationPojo[k] != null)
+          .forEach(k => old[k] = relationPojo[k]);
         relationPojo = old;
       } else {
         map[key2] = relationPojo;
