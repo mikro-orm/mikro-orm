@@ -187,9 +187,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
               data[`${path.join('.')}.${sub.embedded![1]}`] = payload[sub.embedded![1]];
             };
 
+            const parentPropName = kk.substring(0, kk.indexOf('.'));
+
             // we might be using some native JSON operator, e.g. with mongodb's `$geoWithin` or `$exists`
             if (props[kk]) {
-              inline(data[prop.name], props[kk], [prop.name]);
+              inline(data[prop.name], props[kk] || props[parentPropName], [prop.name]);
+            } else if (props[parentPropName]) {
+              data[`${prop.name}.${kk}` as keyof T] = data[prop.name][kk];
             } else {
               unknownProp = true;
             }

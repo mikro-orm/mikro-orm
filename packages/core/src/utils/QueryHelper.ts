@@ -1,6 +1,6 @@
 import { Reference } from '../entity/Reference';
 import { Utils } from './Utils';
-import type { Dictionary, EntityMetadata, EntityProperty, FilterDef, ObjectQuery, FilterQuery } from '../typings';
+import type { Dictionary, EntityMetadata, EntityProperty, FilterDef, FilterQuery, ObjectQuery } from '../typings';
 import { ARRAY_OPERATORS, GroupOperator, ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
@@ -144,7 +144,9 @@ export class QueryHelper {
         value = QueryHelper.processCustomType<T>(prop, value, platform, undefined, true);
       }
 
-      if (prop?.customType instanceof JsonType && Utils.isPlainObject(value) && !platform.isRaw(value) && Object.keys(value)[0] !== '$eq') {
+      const isJsonProperty = prop?.customType instanceof JsonType && Utils.isPlainObject(value) && !platform.isRaw(value) && Object.keys(value)[0] !== '$eq';
+
+      if (isJsonProperty) {
         return this.processJsonCondition(o, value, [prop.fieldNames[0]], platform, aliased);
       }
 
