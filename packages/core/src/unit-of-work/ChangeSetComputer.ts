@@ -102,7 +102,7 @@ export class ChangeSetComputer {
 
   private computePayload<T extends object>(entity: T, ignoreUndefined = false): EntityData<T> {
     const data = this.comparator.prepareEntity(entity);
-    const entityName = helper(entity).__meta!.root.className;
+    const entityName = helper(entity).__meta.className;
     const originalEntityData = helper(entity).__originalEntityData;
 
     if (originalEntityData) {

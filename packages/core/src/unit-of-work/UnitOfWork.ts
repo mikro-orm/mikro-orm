@@ -908,7 +908,7 @@ export class UnitOfWork {
       return;
     }
 
-    const props = changeSets[0].meta.relations.filter(prop => {
+    const props = changeSets[0].meta.root.relations.filter(prop => {
       return (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner)
         || prop.kind === ReferenceKind.MANY_TO_ONE
         || (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && !this.platform.usesPivotTable());
