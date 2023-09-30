@@ -17,7 +17,7 @@ class Division {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: 'Outer', onDelete: 'cascade' })
+  @ManyToOne({ entity: 'Outer', deleteRule: 'cascade' })
   outer!: Rel<Outer>;
 
   @OneToMany({ entity: 'Inner', mappedBy: 'division', orphanRemoval: true })
@@ -42,7 +42,7 @@ class Inner {
   @ManyToOne({ entity: 'Geometry' })
   geometry!: Geometry;
 
-  @ManyToOne({ entity: 'Division', onDelete: 'cascade' })
+  @ManyToOne({ entity: 'Division', deleteRule: 'cascade' })
   division!: Division;
 
 }
