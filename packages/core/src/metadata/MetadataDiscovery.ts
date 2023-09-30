@@ -770,8 +770,16 @@ export class MetadataDiscovery {
     }
 
     let order = this.defineBaseEntityProperties(base);
-    const old = Object.values(meta.properties).map(x => x.name);
-    meta.properties = { ...base.properties, ...meta.properties };
+    const ownProps = Object.values(meta.properties);
+    const old = ownProps.map(x => x.name);
+
+    meta.properties = {};
+    Object.values(base.properties).forEach(prop => {
+      if (!prop.inherited) {
+        meta.properties[prop.name] = prop;
+      }
+    });
+    ownProps.forEach(prop => meta.properties[prop.name] = prop);
     meta.filters = { ...base.filters, ...meta.filters };
 
     if (!meta.discriminatorValue) {
