@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.5](https://github.com/mikro-orm/mikro-orm/compare/v5.8.4...v5.8.5) (2023-09-30)
+
+
+### Bug Fixes
+
+* **core:** allow joining a formula property ([1200e5b](https://github.com/mikro-orm/mikro-orm/commit/1200e5b3e30361ec225bfa56a2f37b23dd58dfbc)), closes [#4759](https://github.com/mikro-orm/mikro-orm/issues/4759)
+* **core:** map virtual properties that shadow a regular property from joined results ([d0b3698](https://github.com/mikro-orm/mikro-orm/commit/d0b3698eebbbd2a74809b70f7aa37c82cee0359e)), closes [#4764](https://github.com/mikro-orm/mikro-orm/issues/4764)
+* **core:** pin all internal dependencies ([f4868ed](https://github.com/mikro-orm/mikro-orm/commit/f4868edec97457e7c4548d887fb3ba23cf266c59)), closes [#4764](https://github.com/mikro-orm/mikro-orm/issues/4764)
+* **core:** support overlapping composite FKs with different nullability ([208fbaa](https://github.com/mikro-orm/mikro-orm/commit/208fbaac0fbead9c0122f410d93289d7fe822013)), closes [#4478](https://github.com/mikro-orm/mikro-orm/issues/4478)
+
+
+
+
+
 ## [5.8.4](https://github.com/mikro-orm/mikro-orm/compare/v5.8.3...v5.8.4) (2023-09-27)
 
 
