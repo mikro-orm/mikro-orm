@@ -71,6 +71,10 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     this.processWrapper(prop, 'Reference');
     this.processWrapper(prop, 'Ref');
     this.processWrapper(prop, 'Collection');
+
+    if (prop.type.replace(/import\(.*\)\./g, '').match(/^(Dictionary|Record)<.*>$/)) {
+      prop.type = 'json';
+    }
   }
 
   private async readTypeFromSource(meta: EntityMetadata, prop: EntityProperty): Promise<{ type: string; optional?: boolean }> {
