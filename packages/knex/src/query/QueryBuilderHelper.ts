@@ -2,23 +2,23 @@ import type { Knex } from 'knex';
 import { inspect } from 'util';
 import {
   ALIAS_REPLACEMENT_RE,
-  GroupOperator,
-  LockMode,
-  OptimisticLockError,
-  QueryOperator,
-  QueryOrderNumeric,
-  raw,
-  RawQueryFragment,
-  ReferenceKind,
-  Utils,
   type Dictionary,
   type EntityData,
   type EntityKey,
   type EntityMetadata,
   type EntityProperty,
   type FlatQueryOrderMap,
-  type QBFilterQuery,
+  GroupOperator,
+  LockMode,
   type MetadataStorage,
+  OptimisticLockError,
+  type QBFilterQuery,
+  QueryOperator,
+  QueryOrderNumeric,
+  raw,
+  RawQueryFragment,
+  ReferenceKind,
+  Utils,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
