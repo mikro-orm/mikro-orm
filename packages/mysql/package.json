@@ -58,11 +58,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "~5.8.4",
+    "@mikro-orm/knex": "5.8.4",
     "mysql2": "3.6.1"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.8.4"
+    "@mikro-orm/core": "5.8.4"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^5.0.0",

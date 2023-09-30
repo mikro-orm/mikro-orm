@@ -62,7 +62,7 @@
     "mongodb": "5.8.1"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.8.4"
+    "@mikro-orm/core": "5.8.4"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^5.0.0",

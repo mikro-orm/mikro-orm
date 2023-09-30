@@ -62,7 +62,7 @@
     "ts-morph": "20.0.0"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.8.4"
+    "@mikro-orm/core": "5.8.4"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^5.0.0"

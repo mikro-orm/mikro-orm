@@ -34,7 +34,7 @@ function rewrite(path, replacer) {
 
 let rootVersion;
 
-async function getRootVersion(increment = true) {
+async function getRootVersion(bump = true) {
   if (rootVersion) {
     return rootVersion;
   }
@@ -42,9 +42,11 @@ async function getRootVersion(increment = true) {
   const pkg = require(resolve(root, './lerna.json'));
   rootVersion = pkg.version.replace(/^(\d+\.\d+\.\d+)-?.*$/, '$1');
 
-  const parts = rootVersion.split('.');
-  parts[2] = `${+parts[2] + (increment ? 1 : 0)}`;
-  rootVersion = parts.join('.');
+  if (bump) {
+    const parts = rootVersion.split('.');
+    parts[2] = `${+parts[2] + 1}`;
+    rootVersion = parts.join('.');
+  }
 
   return rootVersion;
 }
@@ -88,14 +90,14 @@ if (options.canary) {
 
   for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
     if (dep.startsWith('@mikro-orm/') || dep === 'mikro-orm') {
-      const prefix = pkgJson.dependencies[dep].startsWith('^') ? '^' : (pkgJson.dependencies[dep].startsWith('~') ? '~' : '');
+      const prefix = pkgJson.dependencies[dep].startsWith('^') ? '^' : '';
       pkgJson.dependencies[dep] = prefix + nextVersion;
     }
   }
 
   for (const dep of Object.keys(pkgJson.peerDependencies ?? {})) {
     if (dep.startsWith('@mikro-orm/') || dep === 'mikro-orm') {
-      pkgJson.peerDependencies[dep] = '~' + nextVersion;
+      pkgJson.peerDependencies[dep] = nextVersion;
     }
   }
 
@@ -105,18 +107,18 @@ if (options.canary) {
   writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
 }
 
-if (options.tilde) {
+if (options['pin-versions']) {
   const pkgJson = require(pkgPath);
   const version = await getRootVersion(false);
 
   for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
-    if (dep.startsWith('@mikro-orm/') || dep === 'mikro-orm' && pkgJson.dependencies[dep].startsWith('^')) {
-      pkgJson.dependencies[dep] = '~' + version;
+    if (dep.startsWith('@mikro-orm/') || dep === 'mikro-orm') {
+      pkgJson.dependencies[dep] = version;
     }
   }
 
   // eslint-disable-next-line no-console
-  console.info(`tilde: changing ^ to ~ in dependencies for version ${version}`, pkgJson.dependencies);
+  console.info(`pin-versions: version ${version}`, pkgJson.dependencies);
 
   writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
 }
