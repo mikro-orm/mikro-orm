@@ -457,10 +457,10 @@ describe('EntityManagerMongo', () => {
 
     const spy = jest.spyOn(EntityManager.prototype, 'getContext');
     const fork2 = orm.em.fork({ disableContextResolution: true });
-    expect(spy).toBeCalledTimes(3);
+    expect(spy).toBeCalledTimes(2);
 
     const fork3 = orm.em.fork({ disableContextResolution: false });
-    expect(spy).toBeCalledTimes(7);
+    expect(spy).toBeCalledTimes(5);
   });
 
   test('findOne with empty where will throw', async () => {
