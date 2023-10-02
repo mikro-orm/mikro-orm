@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.6](https://github.com/mikro-orm/mikro-orm/compare/v5.8.5...v5.8.6) (2023-10-02)
+
+
+### Bug Fixes
+
+* **core:** respect `disableContextResolution` option when forking ([5964e52](https://github.com/mikro-orm/mikro-orm/commit/5964e5276e30543f9be5c3f0309f057301dc2d70)), closes [#4717](https://github.com/mikro-orm/mikro-orm/issues/4717) [#3338](https://github.com/mikro-orm/mikro-orm/issues/3338)
+
+
+
+
+
 ## [5.8.5](https://github.com/mikro-orm/mikro-orm/compare/v5.8.4...v5.8.5) (2023-09-30)
 
 

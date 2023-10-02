@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.6](https://github.com/mikro-orm/mikro-orm/compare/v5.8.5...v5.8.6) (2023-10-02)
+
+
+### Bug Fixes
+
+* **core:** alias joins on non persistent properties ([d70d323](https://github.com/mikro-orm/mikro-orm/commit/d70d3237fd653b2675fe869c42bdec0a4f06a3cd)), closes [#4773](https://github.com/mikro-orm/mikro-orm/issues/4773)
+* **core:** respect `disableContextResolution` option when forking ([5964e52](https://github.com/mikro-orm/mikro-orm/commit/5964e5276e30543f9be5c3f0309f057301dc2d70)), closes [#4717](https://github.com/mikro-orm/mikro-orm/issues/4717) [#3338](https://github.com/mikro-orm/mikro-orm/issues/3338)
+* **migrations:** allow running migrations outside of main transaction ([e0dfb0c](https://github.com/mikro-orm/mikro-orm/commit/e0dfb0c07f4cad5dc428132cdcf65f6570caad1a)), closes [#4775](https://github.com/mikro-orm/mikro-orm/issues/4775)
+
+
+
+
+
 ## [5.8.5](https://github.com/mikro-orm/mikro-orm/compare/v5.8.4...v5.8.5) (2023-09-30)
 
 
