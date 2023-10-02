@@ -355,6 +355,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
         aliasMap: this.getAliasMap(),
         aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
         convertCustomTypes: false,
+        type: 'orderBy',
       })!;
       this._orderBy.push(CriteriaNodeFactory.createNode<T>(this.metadata, this.mainAlias.entityName, processed).process(this));
     });

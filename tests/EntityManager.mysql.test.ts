@@ -1295,16 +1295,71 @@ describe('EntityManagerMySql', () => {
     const repo = orm.em.getRepository(Publisher2);
 
     orm.em.clear();
-    const publishers = await repo.findAll({ populate: ['tests'] });
+    const publishers = await repo.findAll({ populate: ['tests'], orderBy: { id: 1 } });
     expect(publishers).toBeInstanceOf(Array);
     expect(publishers.length).toBe(2);
     expect(publishers[0]).toBeInstanceOf(Publisher2);
     expect(publishers[0].tests).toBeInstanceOf(Collection);
-    expect(publishers[0].tests.isInitialized()).toBe(true);
+    expect(publishers[0].tests.isInitialized(true)).toBe(true);
     expect(publishers[0].tests.isDirty()).toBe(false);
     expect(publishers[0].tests.count()).toBe(0);
     await publishers[0].tests.init(); // empty many to many on owning side should not make db calls
     expect(wrap(publishers[1].tests.getItems()[0]).isInitialized()).toBe(true);
+
+    orm.em.clear();
+    const publishers2 = await repo.findAll({ populate: ['tests:ref'], orderBy: { id: 1 } });
+    expect(publishers2).toBeInstanceOf(Array);
+    expect(publishers2.length).toBe(2);
+    expect(publishers2[0]).toBeInstanceOf(Publisher2);
+    expect(publishers2[0].tests).toBeInstanceOf(Collection);
+    expect(publishers2[0].tests.isInitialized()).toBe(true);
+    expect(publishers2[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers2[0].tests.isDirty()).toBe(false);
+    expect(publishers2[0].tests.count()).toBe(0);
+    expect(publishers2[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers2[1].tests[0]).isInitialized()).toBe(false);
+
+    orm.em.clear();
+    const publishers3 = await repo.findAll({ populate: ['tests:ref'], strategy: 'joined', orderBy: { id: 1 } });
+    expect(publishers3).toBeInstanceOf(Array);
+    expect(publishers3.length).toBe(2);
+    expect(publishers3[0]).toBeInstanceOf(Publisher2);
+    expect(publishers3[0].tests).toBeInstanceOf(Collection);
+    expect(publishers3[0].tests.isInitialized()).toBe(true);
+    expect(publishers3[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers3[0].tests.isDirty()).toBe(false);
+    expect(publishers3[0].tests.count()).toBe(0);
+    expect(publishers3[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers3[1].tests[0]).isInitialized()).toBe(false);
+
+    orm.em.clear();
+    const publishers4 = await repo.findAll({ orderBy: { id: 1 } });
+    await orm.em.populate(publishers4, ['tests:ref']);
+    expect(publishers4).toBeInstanceOf(Array);
+    expect(publishers4.length).toBe(2);
+    expect(publishers4[0]).toBeInstanceOf(Publisher2);
+    expect(publishers4[0].tests).toBeInstanceOf(Collection);
+    expect(publishers4[0].tests.isInitialized()).toBe(true);
+    expect(publishers4[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers4[0].tests.isDirty()).toBe(false);
+    expect(publishers4[0].tests.count()).toBe(0);
+    expect(publishers4[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers4[1].tests[0]).isInitialized()).toBe(false);
+
+    orm.em.clear();
+    const publishers5 = await repo.findAll({ orderBy: { id: 1 } });
+    await publishers5[0].tests.init({ ref: true });
+    await publishers5[1].tests.init({ ref: true });
+    expect(publishers5).toBeInstanceOf(Array);
+    expect(publishers5.length).toBe(2);
+    expect(publishers5[0]).toBeInstanceOf(Publisher2);
+    expect(publishers5[0].tests).toBeInstanceOf(Collection);
+    expect(publishers5[0].tests.isInitialized()).toBe(true);
+    expect(publishers5[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers5[0].tests.isDirty()).toBe(false);
+    expect(publishers5[0].tests.count()).toBe(0);
+    expect(publishers5[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers5[1].tests[0]).isInitialized()).toBe(false);
   });
 
   test('populating many to many relation on inverse side', async () => {
@@ -1561,10 +1616,10 @@ describe('EntityManagerMySql', () => {
       populateWhere: PopulateHint.INFER,
       orderBy: { name: QueryOrder.ASC },
     });
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `b1`.`book_tag2_id` as `fk__book_tag2_id`, `b1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `t2`.`id` as `test_id` from `book2` as `b0` ' +
-      'left join `book_to_tag_unordered` as `b1` on `b0`.`uuid_pk` = `b1`.`book2_uuid_pk` ' +
-      'left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` ' +
-      'where `b0`.`author_id` is not null and `b0`.`title` != ? and `b1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('select `b1`.price * 1.19 as `price_taxed`, `b1`.*, `b0`.`book_tag2_id` as `fk__book_tag2_id`, `b0`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `b2`.`id` as `test_id` from `book_to_tag_unordered` as `b0` ' +
+      'inner join `book2` as `b1` on `b0`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
+      'left join `test2` as `b2` on `b1`.`uuid_pk` = `b2`.`book_uuid_pk` ' +
+      'where `b1`.`author_id` is not null and `b1`.`title` != ? and `b0`.`book_tag2_id` in (?, ?, ?, ?, ?, ?)');
     await expect(tags.length).toBe(6);
     await expect(tags.map(tag => tag.name)).toEqual(['awkward', 'funny', 'sexy', 'sick', 'silly', 'zupa']);
     await expect(tags.map(tag => tag.booksUnordered.count())).toEqual([1, 1, 1, 1, 2, 2]);
@@ -1595,12 +1650,12 @@ describe('EntityManagerMySql', () => {
       'where `a0`.`id` = ? ' +
       'order by `a1`.`name` asc ' +
       'limit ?');
-    expect(mock.mock.calls[1][0]).toMatch('select `a0`.*, `a1`.`author2_2_id` as `fk__author2_2_id`, `a1`.`author2_1_id` as `fk__author2_1_id`, `a2`.`author_id` as `address_author_id` ' +
-      'from `author2` as `a0` ' +
-      'left join `author_to_friend` as `a1` on `a0`.`id` = `a1`.`author2_2_id` ' +
-      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
-      'where `a1`.`author2_1_id` in (?) ' +
-      'order by `a0`.`name` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `a1`.*, `a0`.`author2_2_id` as `fk__author2_2_id`, `a0`.`author2_1_id` as `fk__author2_1_id`, `a2`.`author_id` as `address_author_id` ' +
+      'from `author_to_friend` as `a0` ' +
+      'inner join `author2` as `a1` on `a0`.`author2_2_id` = `a1`.`id` ' +
+      'left join `address2` as `a2` on `a1`.`id` = `a2`.`author_id` ' +
+      'where `a0`.`author2_1_id` in (?) ' +
+      'order by `a1`.`name` asc');
     orm.em.clear();
 
     const jon2 = await orm.em.findOneOrFail(Author2, { friends: a2.id }, {
@@ -1615,12 +1670,12 @@ describe('EntityManagerMySql', () => {
       'where `a1`.`author2_2_id` = ? ' +
       'order by `a2`.`name` asc ' +
       'limit ?');
-    expect(mock.mock.calls[3][0]).toMatch('select `a0`.*, `a1`.`author2_2_id` as `fk__author2_2_id`, `a1`.`author2_1_id` as `fk__author2_1_id`, `a2`.`author_id` as `address_author_id` ' +
-      'from `author2` as `a0` ' +
-      'left join `author_to_friend` as `a1` on `a0`.`id` = `a1`.`author2_2_id` ' +
-      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
-      'where `a1`.`author2_1_id` in (?) ' +
-      'order by `a0`.`name` asc');
+    expect(mock.mock.calls[3][0]).toMatch('select `a1`.*, `a0`.`author2_2_id` as `fk__author2_2_id`, `a0`.`author2_1_id` as `fk__author2_1_id`, `a2`.`author_id` as `address_author_id` ' +
+      'from `author_to_friend` as `a0` ' +
+      'inner join `author2` as `a1` on `a0`.`author2_2_id` = `a1`.`id` ' +
+      'left join `address2` as `a2` on `a1`.`id` = `a2`.`author_id` ' +
+      'where `a0`.`author2_1_id` in (?) ' +
+      'order by `a1`.`name` asc');
     expect(jon2.id).toBe(author.id);
     expect(jon2.friends.isInitialized(true)).toBe(true);
     expect(jon2.friends.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);

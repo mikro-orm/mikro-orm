@@ -1,23 +1,23 @@
 import type {
   AnyEntity,
+  ConnectionType,
+  Dictionary,
   EntityData,
   EntityDTO,
+  EntityKey,
   EntityMetadata,
+  EntityValue,
+  FilterKey,
   FilterQuery,
   Loaded,
   LoadedCollection,
   Populate,
   Primary,
-  ConnectionType,
-  Dictionary,
-  FilterKey,
-  EntityKey,
-  EntityValue,
 } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
-import { ReferenceKind, type LockMode, type QueryOrderMap } from '../enums';
+import { type LockMode, type QueryOrderMap, ReferenceKind } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
 import type { FindOptions } from '../drivers/IDatabaseDriver';
@@ -325,14 +325,15 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     const populate = Array.isArray(options.populate)
       ? options.populate.map(f => `${this.property.name}.${f}`)
-      : [this.property.name];
+      : [`${this.property.name}${options.ref ? ':ref' : ''}`];
+    const schema = this.property.targetMeta!.schema === '*'
+      ? helper(this.owner).__schema
+      : undefined;
     await em.populate(this.owner, populate, {
       ...options,
       refresh: true,
       connectionType: options.connectionType,
-      schema: this.property.targetMeta!.schema === '*'
-        ? helper(this.owner).__schema
-        : this.property.targetMeta!.schema,
+      schema,
       where: { [this.property.name]: options.where },
       orderBy: { [this.property.name]: options.orderBy },
     });
@@ -500,6 +501,7 @@ Object.defineProperties(Collection.prototype, {
 
 export interface InitOptions<T, P extends string = never> {
   populate?: Populate<T, P>;
+  ref?: boolean; // populate only references, works only with M:N collections that use pivot table
   orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
   where?: FilterQuery<T>;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
