@@ -222,6 +222,22 @@ To preserve fixed order of collections, we can use `fixedOrder: true` attribute,
 
 We can also specify default ordering via `orderBy: { ... }` attribute. This will be used when we fully populate the collection including its items, as it orders by the referenced entity properties instead of pivot table columns (which `fixedOrderColumn` is). On the other hand, `fixedOrder` is used to maintain the insert order of items instead of ordering by some property.
 
+## Populating references
+
+Sometimes we might want to know only what items are part of a collection, and we don't care about the values of those items. For this, we can populate the collection only with references:
+
+```ts
+const book1 = await em.findOne(Book, 1, { populate: ['tags:ref'] });
+console.log(book1.tags.isInitialized()); // true
+console.log(wrap(book1.tags[0]).isInitialized()); // false
+
+// or alternatively use `init({ ref: true })`
+const book2 = await em.findOne(Book, 1);
+await book2.tags.init({ ref: true });
+console.log(book2.tags.isInitialized()); // true
+console.log(wrap(book2.tags[0]).isInitialized()); // false
+```
+
 ## Propagation of Collection's add() and remove() operations
 
 When we use one of `Collection.add()` method, the item is added to given collection, and this action is also propagated to its counterpart.

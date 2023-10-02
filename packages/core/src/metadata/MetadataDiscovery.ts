@@ -730,6 +730,7 @@ export class MetadataDiscovery {
     }
 
     this.initColumnType(ret);
+    this.initRelation(ret);
 
     return ret;
   }
