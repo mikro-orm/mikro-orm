@@ -88,7 +88,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>, pivotJoin?: boolean): Promise<Dictionary<T[]>> {
     throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
@@ -316,16 +316,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected getPrimaryKeyFields(entityName: string): string[] {
     const meta = this.metadata.find(entityName);
     return meta ? Utils.flatten(meta.getPrimaryProps().map(pk => pk.fieldNames)) : [this.config.getNamingStrategy().referenceColumnName()];
-  }
-
-  protected getPivotInverseProperty(prop: EntityProperty): EntityProperty {
-    const pivotMeta = this.metadata.find(prop.pivotEntity)!;
-
-    if (prop.owner) {
-      return pivotMeta.relations[0];
-    }
-
-    return pivotMeta.relations[1];
   }
 
   protected createReplicas(cb: (c: ConnectionOptions) => C): C[] {

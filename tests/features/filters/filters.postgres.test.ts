@@ -168,7 +168,7 @@ describe('filters [postgres]', () => {
 
     const e1 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits.details'] });
     expect(mock.mock.calls[0][0]).toMatch(`select "e0".* from "employee" as "e0" where "e0"."id" = $1 limit $2`);
-    expect(mock.mock.calls[1][0]).toMatch(`select "b0".*, "e1"."benefit_id" as "fk__benefit_id", "e1"."employee_id" as "fk__employee_id" from "benefit" as "b0" left join "employee_benefits" as "e1" on "b0"."id" = "e1"."benefit_id" where "b0"."benefit_status" = $1 and "e1"."employee_id" in ($2)`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "b1".*, "e0"."benefit_id" as "fk__benefit_id", "e0"."employee_id" as "fk__employee_id" from "employee_benefits" as "e0" inner join "public"."benefit" as "b1" on "e0"."benefit_id" = "b1"."id" where "b1"."benefit_status" = $1 and "e0"."employee_id" in ($2)`);
     expect(mock.mock.calls[2][0]).toMatch(`select "b0".* from "benefit_detail" as "b0" where "b0"."active" = $1 and "b0"."benefit_id" in ($2)`);
     expect(e1.benefits).toHaveLength(1);
     expect(e1.benefits[0].details).toHaveLength(1);
@@ -178,11 +178,11 @@ describe('filters [postgres]', () => {
 
     const e2 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits.details'], strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "b1"."id" as "b1__id", "b1"."benefit_status" as "b1__benefit_status", "b1"."name" as "b1__name", "d3"."id" as "d3__id", "d3"."description" as "d3__description", "d3"."benefit_id" as "d3__benefit_id", "d3"."active" as "d3__active" ' +
-        'from "employee" as "e0" ' +
-        'left join "employee_benefits" as "e2" on "e0"."id" = "e2"."employee_id" ' +
-        'left join "benefit" as "b1" on "e2"."benefit_id" = "b1"."id" and "b1"."benefit_status" = $1 ' +
-        'left join "benefit_detail" as "d3" on "b1"."id" = "d3"."benefit_id" and "d3"."active" = $2 ' +
-        'where "e0"."id" = $3');
+      'from "employee" as "e0" ' +
+      'left join "employee_benefits" as "e2" on "e0"."id" = "e2"."employee_id" ' +
+      'left join "public"."benefit" as "b1" on "e2"."benefit_id" = "b1"."id" and "b1"."benefit_status" = $1 ' +
+      'left join "public"."benefit_detail" as "d3" on "b1"."id" = "d3"."benefit_id" and "d3"."active" = $2 ' +
+      'where "e0"."id" = $3');
     expect(e2.benefits).toHaveLength(1);
     expect(e2.benefits[0].details).toHaveLength(1);
   });

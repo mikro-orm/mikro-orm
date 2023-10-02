@@ -361,7 +361,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
     expect(mock.mock.calls[1][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."uuid_pk" = $1 limit $2`);
     expect(mock.mock.calls[2][0]).toMatch(`select "p0".* from "publisher2" as "p0" where "p0"."id" = $1 limit $2 for update`);
-    expect(mock.mock.calls[3][0]).toMatch(`select "t0".*, "p1"."test2_id" as "fk__test2_id", "p1"."publisher2_id" as "fk__publisher2_id" from "test2" as "t0" left join "publisher2_tests" as "p1" on "t0"."id" = "p1"."test2_id" where "p1"."publisher2_id" in ($1) order by "p1"."id" asc for update`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "t1".*, "p0"."test2_id" as "fk__test2_id", "p0"."publisher2_id" as "fk__publisher2_id" from "publisher2_tests" as "p0" inner join "public"."test2" as "t1" on "p0"."test2_id" = "t1"."id" where "p0"."publisher2_id" in ($1) order by "p0"."id" asc for update`);
     expect(mock.mock.calls[4][0]).toMatch(`savepoint trx`);
     expect(mock.mock.calls[5][0]).toMatch(`release savepoint trx`);
     expect(mock.mock.calls[6][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."publisher_id" in ($1) for update`);
@@ -877,7 +877,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null for update skip locked`);
     expect(mock.mock.calls[2][0]).toMatch(`select "a0".* from "author2" as "a0" where "a0"."id" in ($1) and "a0"."id" is not null for update skip locked`);
-    expect(mock.mock.calls[3][0]).toMatch(`select "b0".*, "b1"."book_tag2_id" as "fk__book_tag2_id", "b1"."book2_uuid_pk" as "fk__book2_uuid_pk" from "book_tag2" as "b0" left join "book2_tags" as "b1" on "b0"."id" = "b1"."book_tag2_id" where "b1"."book2_uuid_pk" in ($1, $2, $3) order by "b1"."order" asc for update skip locked`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "b1".*, "b0"."book_tag2_id" as "fk__book_tag2_id", "b0"."book2_uuid_pk" as "fk__book2_uuid_pk" from "book2_tags" as "b0" inner join "public"."book_tag2" as "b1" on "b0"."book_tag2_id" = "b1"."id" where "b0"."book2_uuid_pk" in ($1, $2, $3) order by "b0"."order" asc for update skip locked`);
     expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 
@@ -1232,16 +1232,94 @@ describe('EntityManagerPostgre', () => {
     const repo = orm.em.getRepository(Publisher2);
 
     orm.em.clear();
-    const publishers = await repo.findAll({ populate: ['tests'] });
+    const publishers = await repo.findAll({ populate: ['tests'], orderBy: { id: 1 } });
     expect(publishers).toBeInstanceOf(Array);
     expect(publishers.length).toBe(2);
     expect(publishers[0]).toBeInstanceOf(Publisher2);
     expect(publishers[0].tests).toBeInstanceOf(Collection);
-    expect(publishers[0].tests.isInitialized()).toBe(true);
+    expect(publishers[0].tests.isInitialized(true)).toBe(true);
     expect(publishers[0].tests.isDirty()).toBe(false);
     expect(publishers[0].tests.count()).toBe(0);
     await publishers[0].tests.init(); // empty many to many on owning side should not make db calls
     expect(wrap(publishers[1].tests.getItems()[0]).isInitialized()).toBe(true);
+
+    orm.em.clear();
+    const publishers2 = await repo.findAll({ populate: ['tests:ref'], orderBy: { id: 1 } });
+    expect(publishers2).toBeInstanceOf(Array);
+    expect(publishers2.length).toBe(2);
+    expect(publishers2[0]).toBeInstanceOf(Publisher2);
+    expect(publishers2[0].tests).toBeInstanceOf(Collection);
+    expect(publishers2[0].tests.isInitialized()).toBe(true);
+    expect(publishers2[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers2[0].tests.isDirty()).toBe(false);
+    expect(publishers2[0].tests.count()).toBe(0);
+    expect(publishers2[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers2[1].tests[0]).isInitialized()).toBe(false);
+
+    orm.em.clear();
+    const publishers3 = await repo.findAll({ populate: ['tests:ref'], strategy: 'joined', orderBy: { id: 1 } });
+    expect(publishers3).toBeInstanceOf(Array);
+    expect(publishers3.length).toBe(2);
+    expect(publishers3[0]).toBeInstanceOf(Publisher2);
+    expect(publishers3[0].tests).toBeInstanceOf(Collection);
+    expect(publishers3[0].tests.isInitialized()).toBe(true);
+    expect(publishers3[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers3[0].tests.isDirty()).toBe(false);
+    expect(publishers3[0].tests.count()).toBe(0);
+    expect(publishers3[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers3[1].tests[0]).isInitialized()).toBe(false);
+
+    orm.em.clear();
+    const publishers4 = await repo.findAll({ orderBy: { id: 1 } });
+    await orm.em.populate(publishers4, ['tests:ref']);
+    expect(publishers4).toBeInstanceOf(Array);
+    expect(publishers4.length).toBe(2);
+    expect(publishers4[0]).toBeInstanceOf(Publisher2);
+    expect(publishers4[0].tests).toBeInstanceOf(Collection);
+    expect(publishers4[0].tests.isInitialized()).toBe(true);
+    expect(publishers4[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers4[0].tests.isDirty()).toBe(false);
+    expect(publishers4[0].tests.count()).toBe(0);
+    expect(publishers4[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers4[1].tests[0]).isInitialized()).toBe(false);
+
+    orm.em.clear();
+    const publishers5 = await repo.findAll({ orderBy: { id: 1 } });
+    await publishers5[0].tests.init({ ref: true });
+    await publishers5[1].tests.init({ ref: true });
+    expect(publishers5).toBeInstanceOf(Array);
+    expect(publishers5.length).toBe(2);
+    expect(publishers5[0]).toBeInstanceOf(Publisher2);
+    expect(publishers5[0].tests).toBeInstanceOf(Collection);
+    expect(publishers5[0].tests.isInitialized()).toBe(true);
+    expect(publishers5[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers5[0].tests.isDirty()).toBe(false);
+    expect(publishers5[0].tests.count()).toBe(0);
+    expect(publishers5[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers5[1].tests[0]).isInitialized()).toBe(false);
+  });
+
+  test('many to many relation (ref: true)', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    const tag1 = new BookTag2('silly');
+    const tag2 = new BookTag2('funny');
+    const tag3 = new BookTag2('sick');
+    const tag4 = new BookTag2('strange');
+    const tag5 = new BookTag2('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+
+    await orm.em.persistAndFlush([book1, book2, book3]);
+    orm.em.clear();
+
+    const bt1 = await orm.em.findOneOrFail(BookTag2, tag1.id, { populate: ['books:ref'] });
+    expect(bt1.books.isInitialized()).toBe(true);
+    expect(bt1.books.isInitialized(true)).toBe(false);
+    expect(wrap(bt1.books[0]).isInitialized()).toBe(false);
   });
 
   test('populating many to many relation with explicit schema name', async () => {
