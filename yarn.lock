@@ -2085,7 +2085,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": ^5.8.5
     "@mikro-orm/knex": 5.8.5
-    better-sqlite3: 8.6.0
+    better-sqlite3: 8.7.0
     fs-extra: 11.1.1
     sqlstring-sqlite: 0.1.1
   peerDependencies:
@@ -2402,7 +2402,7 @@ __metadata:
     "@types/fs-extra": 11.0.2
     "@types/jest": 29.5.5
     "@types/mysql2": "https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
-    "@types/node": 20.7.2
+    "@types/node": 20.8.0
     "@types/pg": 8.10.3
     "@types/sqlstring": 2.3.0
     "@types/uuid": 9.0.4
@@ -3371,10 +3371,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.7.2":
-  version: 20.7.2
-  resolution: "@types/node@npm:20.7.2"
-  checksum: 5baa09368c8daa50ad1eaa2499b988b2f4c06cacf8b251d1e63f68ad32df97b21d8104f1ac06889481f1d3e84056842732bb848dd1136164d823c1d4a6baf435
+"@types/node@npm:20.8.0":
+  version: 20.8.0
+  resolution: "@types/node@npm:20.8.0"
+  checksum: ebad6342d54238a24bf980d7750117a5d67749c9b72cbb7a974a1e932c39034aa3a810d669e007e8a5071782a253aa069a187b614407a382403c9826e837c849
   languageName: node
   linkType: hard
 
@@ -4172,14 +4172,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:8.6.0":
-  version: 8.6.0
-  resolution: "better-sqlite3@npm:8.6.0"
+"better-sqlite3@npm:8.7.0":
+  version: 8.7.0
+  resolution: "better-sqlite3@npm:8.7.0"
   dependencies:
     bindings: ^1.5.0
     node-gyp: latest
     prebuild-install: ^7.1.1
-  checksum: 9ebdfd675352347cda1ba30d620a3c512d9db827a1eba66460fd48203a7ad8138b0195893bbf47d40f704bcdd598710041271d4ed69779979b6f784c0d3579a1
+  checksum: f1fa38a9a0e4fcd59ececb67c60371b9638d29c19ce9af034421e8a56c9a77e799bb1411b1c3cb08bb9678e15dfb8985553a9ef4098cf5558e7207a3e019f211
   languageName: node
   linkType: hard
 
