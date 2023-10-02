@@ -208,6 +208,8 @@ export class QueryBuilderHelper {
     const prop2 = prop.owner ? pivotMeta.relations[1] : pivotMeta.relations[0];
     ret[`${pivotAlias}.${prop2.name}#${alias}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type, cond, schema);
     ret[`${pivotAlias}.${prop2.name}#${alias}`].path = path;
+    const tmp = prop2.referencedTableName.split('.');
+    ret[`${pivotAlias}.${prop2.name}#${alias}`].schema ??= tmp.length > 1 ? tmp[0] : undefined;
 
     return ret;
   }
@@ -228,13 +230,13 @@ export class QueryBuilderHelper {
         join.primaryKeys!.forEach((primaryKey, idx) => {
           const right = `${join.alias}.${join.joinColumns![idx]}`;
 
-        if (join.prop.formula) {
-          const left = join.prop.formula(join.ownerAlias);
-          conditions.push(`${left} = ${this.knex.ref(right)}`);
-          return;
-        }
+          if (join.prop.formula) {
+            const left = join.prop.formula(join.ownerAlias);
+            conditions.push(`${left} = ${this.knex.ref(right)}`);
+            return;
+          }
 
-          const left = join.prop.kind === ReferenceKind.SCALAR && join.prop.persist === false ? primaryKey : `${join.ownerAlias}.${primaryKey}`;
+          const left = `${join.ownerAlias}.${primaryKey}`;
           conditions.push(`${this.knex.ref(left)} = ${this.knex.ref(right)}`);
         });
       }
@@ -371,8 +373,8 @@ export class QueryBuilderHelper {
     ];
   }
 
-  isOneToOneInverse(field: string): boolean {
-    const meta = this.metadata.find(this.entityName)!;
+  isOneToOneInverse(field: string, meta?: EntityMetadata): boolean {
+    meta ??= this.metadata.find(this.entityName)!;
     const prop = meta.properties[field];
 
     return prop && prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
@@ -589,7 +591,6 @@ export class QueryBuilderHelper {
     Object.keys(orderBy).forEach(key => {
       const direction = orderBy[key];
       const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
-
       const raw = RawQueryFragment.getKnownFragment(key);
 
       if (raw) {
@@ -617,7 +618,11 @@ export class QueryBuilderHelper {
           colPart = this.platform.formatQuery(colPart.sql, colPart.params);
         }
 
-        ret.push(`${colPart} ${order.toLowerCase()}`);
+        if (Array.isArray(order)) {
+          order.forEach(part => ret.push(this.getQueryOrderFromObject(type, part, populate)));
+        } else {
+          ret.push(`${colPart} ${order.toLowerCase()}`);
+        }
       });
     });
 

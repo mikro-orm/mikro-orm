@@ -384,7 +384,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (options.populate) {
       for (const hint of (options.populate as unknown as PopulateOptions<Entity>[])) {
-        const prop = meta.properties[hint.field];
+        const field = hint.field.split(':')[0] as EntityKey<Entity>;
+        const prop = meta.properties[field];
         const joined = (hint.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.kind !== ReferenceKind.SCALAR;
 
         if (!joined) {
@@ -395,14 +396,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         const where2 = await this.applyJoinedFilters<Entity>(prop.targetMeta!, {} as ObjectQuery<Entity>, { ...options, populate: hint.children as any, populateWhere: PopulateHint.ALL });
 
         if (Utils.hasObjectKeys(where!)) {
-          ret[hint.field] = ret[hint.field] ? { $and: [where, ret[hint.field]] } : where as any;
+          ret[field] = ret[field] ? { $and: [where, ret[field]] } : where as any;
         }
 
         if (Utils.hasObjectKeys(where2)) {
-          if (ret[hint.field]) {
-            Utils.merge(ret[hint.field], where2);
+          if (ret[field]) {
+            Utils.merge(ret[field], where2);
           } else {
-            ret[hint.field] = where2 as any;
+            ret[field] = where2 as any;
           }
         }
       }
@@ -1581,11 +1582,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   canPopulate<Entity extends object>(entityName: EntityName<Entity>, property: string): boolean {
     entityName = Utils.className(entityName);
-    const [p, ...parts] = property.split('.');
+    // eslint-disable-next-line prefer-const
+    let [p, ...parts] = property.split('.');
     const meta = this.metadata.find(entityName);
 
     if (!meta) {
       return true;
+    }
+
+    if (p.includes(':')) {
+      p = p.split(':', 2)[0];
     }
 
     const ret = p in meta.properties;
@@ -1827,6 +1833,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = never,
   >(entityName: string, options: Pick<FindOptions<Entity, Hint, Fields>, 'populate' | 'strategy' | 'fields'>): PopulateOptions<Entity>[] {
+    if (options.populate === false) {
+      return [];
+    }
+
     // infer populate hint if only `fields` are available
     if (!options.populate && options.fields) {
       const meta = this.metadata.find(entityName)!;

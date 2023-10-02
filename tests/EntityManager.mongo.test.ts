@@ -532,7 +532,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('stable results of serialization (collection)', async () => {
-    const pub = new Publisher('Publisher2');
+    const pub = new Publisher('Publisher');
     const publisherRef = Reference.create(pub);
     await orm.em.persistAndFlush(pub);
     const god = new Author('God', 'hello@heaven.god');
@@ -892,16 +892,94 @@ describe('EntityManagerMongo', () => {
     const repo = orm.em.getRepository(Publisher);
 
     orm.em.clear();
-    const publishers = await repo.findAll({ populate: ['tests'] });
+    const publishers = await repo.findAll({ populate: ['tests'], orderBy: { id: 1 } });
     expect(publishers).toBeInstanceOf(Array);
     expect(publishers.length).toBe(2);
     expect(publishers[0]).toBeInstanceOf(Publisher);
     expect(publishers[0].tests).toBeInstanceOf(Collection);
-    expect(publishers[0].tests.isInitialized()).toBe(true);
+    expect(publishers[0].tests.isInitialized(true)).toBe(true);
     expect(publishers[0].tests.isDirty()).toBe(false);
     expect(publishers[0].tests.count()).toBe(0);
     await publishers[0].tests.init(); // empty many to many on owning side should not make db calls
     expect(wrap(publishers[1].tests.getItems()[0]).isInitialized()).toBe(true);
+
+    orm.em.clear();
+    const publishers2 = await repo.findAll({ populate: ['tests:ref'], orderBy: { id: 1 } });
+    expect(publishers2).toBeInstanceOf(Array);
+    expect(publishers2.length).toBe(2);
+    expect(publishers2[0]).toBeInstanceOf(Publisher);
+    expect(publishers2[0].tests).toBeInstanceOf(Collection);
+    expect(publishers2[0].tests.isInitialized()).toBe(true);
+    expect(publishers2[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers2[0].tests.isDirty()).toBe(false);
+    expect(publishers2[0].tests.count()).toBe(0);
+    expect(publishers2[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers2[1].tests[0]).isInitialized()).toBe(false);
+
+    orm.em.clear();
+    const publishers3 = await repo.findAll({ populate: ['tests:ref'], strategy: 'joined', orderBy: { id: 1 } });
+    expect(publishers3).toBeInstanceOf(Array);
+    expect(publishers3.length).toBe(2);
+    expect(publishers3[0]).toBeInstanceOf(Publisher);
+    expect(publishers3[0].tests).toBeInstanceOf(Collection);
+    expect(publishers3[0].tests.isInitialized()).toBe(true);
+    expect(publishers3[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers3[0].tests.isDirty()).toBe(false);
+    expect(publishers3[0].tests.count()).toBe(0);
+    expect(publishers3[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers3[1].tests[0]).isInitialized()).toBe(false);
+
+    orm.em.clear();
+    const publishers4 = await repo.findAll({ orderBy: { id: 1 }, populate: false });
+    await orm.em.populate(publishers4, ['tests:ref']);
+    expect(publishers4).toBeInstanceOf(Array);
+    expect(publishers4.length).toBe(2);
+    expect(publishers4[0]).toBeInstanceOf(Publisher);
+    expect(publishers4[0].tests).toBeInstanceOf(Collection);
+    expect(publishers4[0].tests.isInitialized()).toBe(true);
+    expect(publishers4[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers4[0].tests.isDirty()).toBe(false);
+    expect(publishers4[0].tests.count()).toBe(0);
+    expect(publishers4[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers4[1].tests[0]).isInitialized()).toBe(false);
+
+    orm.em.clear();
+    const publishers5 = await repo.findAll({ orderBy: { id: 1 }, populate: false });
+    await publishers5[0].tests.init({ ref: true });
+    await publishers5[1].tests.init({ ref: true });
+    expect(publishers5).toBeInstanceOf(Array);
+    expect(publishers5.length).toBe(2);
+    expect(publishers5[0]).toBeInstanceOf(Publisher);
+    expect(publishers5[0].tests).toBeInstanceOf(Collection);
+    expect(publishers5[0].tests.isInitialized()).toBe(true);
+    expect(publishers5[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers5[0].tests.isDirty()).toBe(false);
+    expect(publishers5[0].tests.count()).toBe(0);
+    expect(publishers5[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers5[1].tests[0]).isInitialized()).toBe(false);
+  });
+
+  test('many to many relation (ref: true)', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1', author);
+    const book2 = new Book('My Life on The Wall, part 2', author);
+    const book3 = new Book('My Life on The Wall, part 3', author);
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    const tag4 = new BookTag('strange');
+    const tag5 = new BookTag('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+
+    await orm.em.persistAndFlush([book1, book2, book3]);
+    orm.em.clear();
+
+    const bt1 = await orm.em.findOneOrFail(BookTag, tag1.id, { populate: ['books:ref'] });
+    expect(bt1.books.isInitialized()).toBe(true);
+    expect(bt1.books.isInitialized(true)).toBe(false);
+    expect(wrap(bt1.books[0]).isInitialized()).toBe(false);
   });
 
   test('populating many to many relation on inverse side', async () => {

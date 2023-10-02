@@ -39,6 +39,8 @@ export type Compute<T> = { [K in keyof T]: T[K] } & {};
 export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol ? never : K);
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
+export type IsAny<T> = 0 extends (1 & T) ? true : false;
+export type IsNever<T> = [T] extends [never] ? true : false;
 export type NoInfer<T> = [T][T extends any ? 0 : never];
 
 export type DeepPartial<T> = T & {
@@ -797,6 +799,17 @@ type GetStringKey<T, K extends StringKeys<T, string>, E extends string> = K exte
 // limit depth of the recursion to 5 (inspired by https://www.angularfix.com/2022/01/why-am-i-getting-instantiation-is.html)
 type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
+// for pivot joining via populate hint, e.g. `tags:ref`
+type CollectionKeys<T> = T extends object
+  ? {
+    [K in keyof T]: T[K] extends Collection<any>
+      ? IsAny<T[K]> extends true
+        ? never
+        : K & string
+      : never
+  }[keyof T] & {}
+  : never;
+
 export type AutoPath<O, P extends string, E extends string = never, D extends Prev[number] = 5> =
   [D] extends [never] ? any :
   P extends any ?
@@ -808,7 +821,7 @@ export type AutoPath<O, P extends string, E extends string = never, D extends Pr
           : never
         : Q extends StringKeys<O, E>
           ? (Defined<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<Defined<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q}.`)
-          : StringKeys<O, E>
+          : StringKeys<O, E> | `${CollectionKeys<O>}:ref`
       : never
     : never;
 

@@ -160,7 +160,7 @@ export class QueryHelper {
         return this.processJsonCondition<T>(o as FilterQuery<T>, value as EntityValue<T>, [prop.fieldNames[0]] as EntityKey<T>[], platform, aliased);
       }
 
-      if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key) && !key.includes('?')) {
+      if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key) && !key.includes('?') && options.type !== 'orderBy') {
         if (platform.allowsComparingTuples()) {
           // comparing single composite key - use $eq instead of $in
           const op = !value.every(v => Array.isArray(v)) && composite ? '$eq' : '$in';
@@ -295,4 +295,5 @@ interface ProcessWhereOptions<T> {
   aliasMap?: Dictionary<string>;
   convertCustomTypes?: boolean;
   root?: boolean;
+  type?: 'where' | 'orderBy';
 }

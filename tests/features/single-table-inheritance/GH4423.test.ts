@@ -91,7 +91,7 @@ describe('GH issue 4423', () => {
       },
     );
     expect(mock.mock.calls[1][0]).toMatch(
-      "select `m0`.*, `t1`.`manager_id` as `fk__manager_id`, `t1`.`task_id` as `fk__task_id` from `user` as `m0` left join `task_managers` as `t1` on `m0`.`id` = `t1`.`manager_id` where `t1`.`task_id` in (1) and `m0`.`type` = 'manager'",
+      "select `u1`.*, `t0`.`manager_id` as `fk__manager_id`, `t0`.`task_id` as `fk__task_id` from `task_managers` as `t0` inner join `user` as `u1` on `t0`.`manager_id` = `u1`.`id` and `u1`.`type` = 'manager' where `t0`.`task_id` in (1)",
     );
   });
 
@@ -106,7 +106,7 @@ describe('GH issue 4423', () => {
     );
 
     expect(mock.mock.calls[1][0]).toMatch(
-      'select `t0`.*, `t1`.`manager_id` as `fk__manager_id`, `t1`.`task_id` as `fk__task_id` from `task` as `t0` left join `task_managers` as `t1` on `t0`.`id` = `t1`.`task_id` where `t1`.`manager_id` in (1)',
+      'select `t1`.*, `t0`.`manager_id` as `fk__manager_id`, `t0`.`task_id` as `fk__task_id` from `task_managers` as `t0` inner join `task` as `t1` on `t0`.`task_id` = `t1`.`id` where `t0`.`manager_id` in (1)',
     );
   });
 });
