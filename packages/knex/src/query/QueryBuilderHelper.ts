@@ -234,7 +234,7 @@ export class QueryBuilderHelper {
           return;
         }
 
-        const left = join.prop.persist === false ? primaryKey : `${join.ownerAlias}.${primaryKey}`;
+        const left = `${join.ownerAlias}.${primaryKey}`;
         conditions.push(`${this.knex.ref(left)} = ${this.knex.ref(right)}`);
       });
 
