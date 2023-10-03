@@ -59,9 +59,8 @@
     "access": "public"
   },
   "dependencies": {
-    "acorn-loose": "8.3.0",
-    "acorn-walk": "8.2.0",
     "dotenv": "16.3.1",
+    "esprima": "4.0.1",
     "fs-extra": "11.1.1",
     "globby": "11.1.0",
     "mikro-orm": "5.8.10",

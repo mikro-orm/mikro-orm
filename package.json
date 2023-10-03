@@ -99,6 +99,7 @@
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
     "@side/jest-runtime": "^1.1.0",
+    "@types/esprima": "4.0.4",
     "@types/fs-extra": "11.0.3",
     "@types/jest": "29.5.6",
     "@types/node": "20.8.7",
