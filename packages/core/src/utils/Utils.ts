@@ -439,14 +439,18 @@ export class Utils {
   }
 
   /**
-   * Returns array of functions argument names. Uses `escaya` for source code analysis.
+   * Returns array of functions argument names. Uses `esprima` for source code analysis.
    */
   static tokenize(func: { toString(): string } | string | { type: string; value: string }[]): { type: string; value: string }[] {
     if (Array.isArray(func)) {
       return func;
     }
 
-    return tokenize(func.toString(), { tolerant: true });
+    try {
+      return tokenize(func.toString(), { tolerant: true });
+    } catch {
+      return [];
+    }
   }
 
   /**
