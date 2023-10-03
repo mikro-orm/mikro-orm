@@ -28,7 +28,7 @@ export class Migration20191019195930 extends Migration {
 
 To support undoing those changed, we can implement the `down` method, which throws an error by default.
 
-Migrations are by default wrapped in a transaction. You can override this behaviour on per migration basis by implementing the `isTransactional(): boolean` method.
+Migrations are by default wrapped in a transaction. You can override this behaviour on per migration basis by implementing the `isTransactional(): boolean` method - but note that your migration may still be wrapped in a master transaction, in accordance with `allOrNothing` option in your [configuration](#configuration).
 
 `Configuration` object and driver instance are available in the `Migration` class context.
 
