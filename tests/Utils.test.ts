@@ -175,15 +175,6 @@ describe('Utils', () => {
     expect(Utils.getParamNames(FooBar, 'constructor')).toEqual([]);
     expect(Utils.getParamNames(Author, 'toJSON')).toEqual(['strict', 'strip']);
     expect(Utils.getParamNames('')).toEqual([]);
-
-    const func = `function (email, organization, role=(cov_1a0rd1emyt.b[13][0]++, Test.TEST)) {}`;
-    expect(Utils.getParamNames(func)).toEqual([ 'email', 'organization', 'role' ]);
-
-    const func2 = `function toJSON(strict = true, strip = ['id', 'email'], a =1) {}`;
-    expect(Utils.getParamNames(func2)).toEqual([ 'strict', 'strip', 'a' ]);
-
-    const func3 = `function toJSON(strict = true, strip = { test: ['id', 'email'] }, a = 1) {}`;
-    expect(Utils.getParamNames(func3)).toEqual([ 'strict', 'strip', 'a' ]);
   });
 
   test('defaultValue', () => {

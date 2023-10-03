@@ -5,9 +5,7 @@ import { platform } from 'os';
 import { type URL, fileURLToPath, pathToFileURL } from 'url';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
-// @ts-ignore
-import { parse } from 'acorn-loose';
-import { simple as walk } from 'acorn-walk';
+import { tokenize } from 'esprima';
 import { clone } from './clone';
 import type {
   Dictionary,
@@ -443,36 +441,50 @@ export class Utils {
   /**
    * Returns array of functions argument names. Uses `escaya` for source code analysis.
    */
-  static getParamNames(func: { toString(): string } | string, methodName?: string): string[] {
-    const ret: string[] = [];
-    const parsed = parse(func.toString(), { ecmaVersion: 2022 });
+  static tokenize(func: { toString(): string } | string | { type: string; value: string }[]): { type: string; value: string }[] {
+    if (Array.isArray(func)) {
+      return func;
+    }
 
-    const checkNode = (node: any, methodName?: string) => {
-      if (methodName && !(node.key && (node.key as any).name === methodName)) {
-        return;
+    return tokenize(func.toString(), { tolerant: true });
+  }
+
+  /**
+   * Returns array of functions argument names. Uses `esprima` for source code analysis.
+   */
+  static getParamNames(func: { toString(): string } | string | { type: string; value: string }[], methodName?: string): string[] {
+    const ret: string[] = [];
+    const tokens = this.tokenize(func);
+
+    let inside = 0;
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+
+      if (token.type === 'Identifier' && token.value === methodName) {
+        inside = 1;
+        continue;
       }
 
-      const params = node.value ? node.value.params : node.params;
-      ret.push(...params.map((p: any) => {
-        switch (p.type) {
-          case 'AssignmentPattern':
-            if (p.left.type === 'ObjectPattern') {
-              return ObjectBindingPattern;
-            }
+      if (inside === 1 && token.type === 'Punctuator' && token.value === '(') {
+        inside = 2;
+        continue;
+      }
 
-            return p.left.name;
-          case 'RestElement':
-            return '...' + p.argument.name;
-          default:
-            return p.name;
-        }
-      }));
-    };
+      if (inside === 2 && token.type === 'Punctuator' && token.value === ')') {
+        break;
+      }
 
-    walk(parsed, {
-      MethodDefinition: (node: any) => checkNode(node, methodName),
-      FunctionDeclaration: (node: any) => checkNode(node, methodName),
-    });
+      if (inside === 2 && token.type === 'Punctuator' && token.value === '{') {
+        ret.push(ObjectBindingPattern as unknown as string);
+        i += 2;
+        continue;
+      }
+
+      if (inside === 2 && token.type === 'Identifier') {
+        ret.push(token.value);
+      }
+    }
 
     return ret;
   }
