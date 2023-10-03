@@ -231,8 +231,9 @@ export class EntitySchema<Entity = any, Base = never> {
     this._meta.class = proto;
     this._meta.prototype = proto.prototype;
     this._meta.className = proto.name;
-    this._meta.constructorParams = Utils.getParamNames(proto, 'constructor') as EntityKey<Entity>[];
-    this._meta.toJsonParams = Utils.getParamNames(proto, 'toJSON').filter(p => p !== '...args');
+    const tokens = Utils.tokenize(proto);
+    this._meta.constructorParams = Utils.getParamNames(tokens, 'constructor') as EntityKey<Entity>[];
+    this._meta.toJsonParams = Utils.getParamNames(tokens, 'toJSON').filter(p => p !== '...args');
 
     if (!this.internal) {
       EntitySchema.REGISTRY.set(proto, this);
