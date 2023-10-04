@@ -72,7 +72,7 @@ export class CommitOrderCalculator {
       return;
     }
 
-    this.addDependency(propertyType, entityName, prop.nullable ? 0 : 1);
+    this.addDependency(propertyType, entityName, prop.nullable || prop.persist === false ? 0 : 1);
   }
 
   /**
