@@ -92,8 +92,8 @@ export class Reference<T> {
   /**
    * Returns wrapped entity.
    */
-  static unwrapReference<T>(ref: T | Reference<T>): T {
-    return Reference.isReference<T>(ref) ? (ref as Reference<T>).unwrap() : ref;
+  static unwrapReference<T>(ref: T | Reference<T> | ScalarReference<T>): T {
+    return Reference.isReference<T>(ref) ? (ref as Reference<T>).unwrap() : ref as T;
   }
 
   /**
