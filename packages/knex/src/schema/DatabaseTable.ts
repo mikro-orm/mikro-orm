@@ -75,14 +75,20 @@ export class DatabaseTable {
 
         /* istanbul ignore else */
         if (match) {
-          prop.precision = +match[1];
-          prop.scale = +match[2];
+          prop.precision ??= +match[1];
+          prop.scale ??= +match[2];
           prop.length = undefined;
         }
       }
 
       if (mappedType instanceof DateTimeType) {
-        prop.length ??= this.platform.getDefaultDateTimeLength();
+        const match = prop.columnTypes[idx].match(/\w+\((\d+)\)/);
+
+        if (match) {
+          prop.length ??= +match[1];
+        } else {
+          prop.length ??= this.platform.getDefaultDateTimeLength();
+        }
       }
 
       const primary = !meta.compositePK && !!prop.primary && prop.reference === ReferenceType.SCALAR && this.platform.isNumericColumn(mappedType);
