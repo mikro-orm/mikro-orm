@@ -770,4 +770,28 @@ describe('check typings', () => {
     preloaded(event5);
   });
 
+  test('GH #3277 (3)', async () => {
+    interface ChildModel {
+      id: string;
+      grandChild: Ref<GrandChildModel>;
+    }
+
+    interface GrandChildModel {
+      id: string;
+      children: Collection<ChildModel>;
+    }
+
+    interface ParentModel {
+      id: string;
+      child: Ref<ChildModel>;
+    }
+
+    const childModel = {} as Loaded<ChildModel, 'grandChild'>;
+    const parentModel = {} as ParentModel;
+    parentModel.child = ref(childModel);
+
+    const secondParentModel = {} as Loaded<ParentModel, 'child.grandChild'>;
+    secondParentModel.child = ref(childModel);
+  });
+
 });
