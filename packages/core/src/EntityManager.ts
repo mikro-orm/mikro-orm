@@ -840,6 +840,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       row = QueryHelper.processObjectParams(row) as EntityData<Entity>;
+      where = QueryHelper.processWhere({
+        where,
+        entityName,
+        metadata: this.metadata,
+        platform: this.getPlatform(),
+      });
       em.validator.validateParams(row, 'insert data');
       allData.push(row);
       allWhere.push(where);
@@ -900,8 +906,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
       const where = { $or: [] as Dictionary[] };
       data.forEach((item, idx) => {
-        uniqueFields.forEach(prop => where.$or[idx] = { [prop]: item[prop as string] });
+        where.$or[idx] = {};
+        uniqueFields.forEach(prop => {
+          where.$or[idx][prop as string] = item[prop as string];
+        });
       });
+
       const data2 = await this.driver.find(meta.className, where, {
         fields: returning.concat(...add).concat(...uniqueFields as string[]),
         ctx: em.transactionContext,
@@ -909,11 +919,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       });
 
       for (const [entity, cond] of loadPK.entries()) {
-        const row = data2.find(pk => {
+        const row = data2.find(row => {
           const tmp = {};
           add.forEach(k => {
             if (!meta.properties[k]?.primary) {
-              tmp[k] = pk[k];
+              tmp[k] = row[k];
             }
           });
           return this.comparator.matching(entityName, cond, tmp);
