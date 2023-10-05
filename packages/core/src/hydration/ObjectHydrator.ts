@@ -222,18 +222,18 @@ export class ObjectHydrator extends Hydrator {
       }
     };
 
-    const createCond = (prop: EntityProperty, dataKey: string) => {
+    const createCond = (prop: EntityProperty, dataKey: string, cond?: string) => {
       const conds: string[] = [];
 
       if (prop.object) {
-        conds.push(`data${dataKey} != null`);
+        conds.push(`data${dataKey} ${cond ?? '!= null'}`);
       } else {
-        const notNull = prop.nullable ? '!= null' : '!== undefined';
+        const notNull = cond ?? (prop.nullable ? '!= null' : '!== undefined');
         meta.props
           .filter(p => p.embedded?.[0] === prop.name)
           .forEach(p => {
             if (p.reference === ReferenceType.EMBEDDED && !p.object && !p.array) {
-              conds.push(...createCond(p, dataKey + this.wrap(p.embedded![1])));
+              conds.push(...createCond(p, dataKey + this.wrap(p.embedded![1]), cond));
               return;
             }
 
@@ -278,7 +278,13 @@ export class ObjectHydrator extends Hydrator {
 
       /* istanbul ignore next */
       const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
-      ret.push(`  } else if (data${dataKey} === null) {`);
+
+      if (prop.object) {
+        ret.push(`  } else if (data${dataKey} === null) {`);
+      } else {
+        ret.push(`  } else if (${createCond(prop, dataKey, '=== null').join(' && ')}) {`);
+      }
+
       ret.push(`    entity${entityKey} = ${nullVal};`);
       ret.push(`  }`);
 

@@ -194,6 +194,7 @@ describe('embedded entities in postgres', () => {
             { bar: 'b4', foo: 'f4' },
           ] },
         ],
+        meta: null,
       },
     });
     expect(u2.profile2).toBeInstanceOf(Profile);

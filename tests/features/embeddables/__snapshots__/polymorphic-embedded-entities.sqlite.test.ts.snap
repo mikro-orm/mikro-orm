@@ -15,7 +15,7 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     if (typeof data.pet_type !== 'undefined') entity.pet.type = data.pet_type;
     if (typeof data.pet_name !== 'undefined') entity.pet.name = data.pet_name;
     if (typeof data.pet_canMeow !== 'undefined') entity.pet.canMeow = data.pet_canMeow === null ? null : !!data.pet_canMeow;
-  } else if (data.pet === null) {
+  } else if (data.pet_canBark === null && data.pet_type === null && data.pet_name === null && data.pet_canMeow === null) {
     entity.pet = null;
   }
   if (typeof data.pet === 'string') {

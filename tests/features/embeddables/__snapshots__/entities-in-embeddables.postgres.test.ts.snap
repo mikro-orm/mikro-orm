@@ -246,7 +246,7 @@ exports[`embedded entities in postgres diffing 2`] = `
             entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
           }
         }
-      } else if (data.profile1_identity_meta === null) {
+      } else if (data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null) {
         entity.profile1.identity.meta = null;
       }
       if (data.profile1_identity_meta != null) {
@@ -341,7 +341,7 @@ exports[`embedded entities in postgres diffing 2`] = `
           entity.profile1.identity.source = factory.create('Source', data.profile1_identity_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
         }
       }
-    } else if (data.profile1_identity === null) {
+    } else if (data.profile1_identity_email === null && data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null && data.profile1_identity_links === null && data.profile1_identity_source === null) {
       entity.profile1.identity = null;
     }
     if (data.profile1_identity != null) {
@@ -364,7 +364,7 @@ exports[`embedded entities in postgres diffing 2`] = `
             entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
           }
         }
-      } else if (data.profile1_identity.meta === null) {
+      } else if (data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null) {
         entity.profile1.identity.meta = null;
       }
       if (data.profile1_identity.meta != null) {
@@ -471,7 +471,7 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.source = factory.create('Source', data.profile1_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
       }
     }
-  } else if (data.profile1 === null) {
+  } else if (data.profile1_username === null && data.profile1_identity_email === null && data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null && data.profile1_identity_links === null && data.profile1_identity_source === null && data.profile1_source === null) {
     entity.profile1 = null;
   }
   if (data.profile1 != null) {
@@ -499,7 +499,7 @@ exports[`embedded entities in postgres diffing 2`] = `
             entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
           }
         }
-      } else if (data.profile1_identity_meta === null) {
+      } else if (data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null) {
         entity.profile1.identity.meta = null;
       }
       if (data.profile1_identity_meta != null) {
@@ -594,7 +594,7 @@ exports[`embedded entities in postgres diffing 2`] = `
           entity.profile1.identity.source = factory.create('Source', data.profile1_identity_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
         }
       }
-    } else if (data.profile1.identity === null) {
+    } else if (data.profile1_identity_email === null && data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null && data.profile1_identity_links === null && data.profile1_identity_source === null) {
       entity.profile1.identity = null;
     }
     if (data.profile1.identity != null) {
@@ -617,7 +617,7 @@ exports[`embedded entities in postgres diffing 2`] = `
             entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
           }
         }
-      } else if (data.profile1.identity.meta === null) {
+      } else if (data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null) {
         entity.profile1.identity.meta = null;
       }
       if (data.profile1.identity.meta != null) {

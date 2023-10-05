@@ -58,10 +58,19 @@ export class CriteriaNodeFactory {
 
   static createObjectItemNode(metadata: MetadataStorage, entityName: string, node: ICriteriaNode, payload: Dictionary, item: string, meta?: EntityMetadata) {
     const prop = meta?.properties[item];
+    const childEntity = prop && prop.reference !== ReferenceType.SCALAR ? prop.type : entityName;
 
     if (prop?.reference !== ReferenceType.EMBEDDED) {
-      const childEntity = prop && prop.reference !== ReferenceType.SCALAR ? prop.type : entityName;
       return this.createNode(metadata, childEntity, payload[item], node, item);
+    }
+
+    if (payload[item] == null) {
+      const map = Object.keys(prop.embeddedProps).reduce((oo, k) => {
+        oo[prop.embeddedProps[k].name] = null;
+        return oo;
+      }, {});
+
+      return this.createNode(metadata, entityName, map, node, item);
     }
 
     const operator = Object.keys(payload[item]).some(f => Utils.isOperator(f));
