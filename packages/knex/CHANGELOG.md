@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.7](https://github.com/mikro-orm/mikro-orm/compare/v5.8.6...v5.8.7) (2023-10-05)
+
+
+### Bug Fixes
+
+* **core:** improve handling of nullable embedded properties ([eae7e38](https://github.com/mikro-orm/mikro-orm/commit/eae7e3856a3eb2a5cc8889162fd3e090a2ff3b81)), closes [#4787](https://github.com/mikro-orm/mikro-orm/issues/4787)
+* **schema:** respect length of default value of datetime columns ([cbc0c50](https://github.com/mikro-orm/mikro-orm/commit/cbc0c50d8b4ec9b31b29ff825c32b0ee828ec846)), closes [#4782](https://github.com/mikro-orm/mikro-orm/issues/4782)
+
+
+
+
+
 ## [5.8.6](https://github.com/mikro-orm/mikro-orm/compare/v5.8.5...v5.8.6) (2023-10-02)
 
 

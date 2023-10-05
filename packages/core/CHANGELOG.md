@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.7](https://github.com/mikro-orm/mikro-orm/compare/v5.8.6...v5.8.7) (2023-10-05)
+
+
+### Bug Fixes
+
+* **core:** ensure virtual relation properties have no effect on commit order ([606d633](https://github.com/mikro-orm/mikro-orm/commit/606d63315cde1fc1ae409c816f81882713e515cf)), closes [#4781](https://github.com/mikro-orm/mikro-orm/issues/4781)
+* **core:** fix conditions in `em.upsertMany` with composite keys ([2f58556](https://github.com/mikro-orm/mikro-orm/commit/2f58556023c3f4777b4bccb2242ad6286dca22c4)), closes [#4786](https://github.com/mikro-orm/mikro-orm/issues/4786)
+* **core:** fix extra updates when nullable embedded properties contain FK ([77ffa4f](https://github.com/mikro-orm/mikro-orm/commit/77ffa4f46c06425e25761e936679d8f2e455921b)), closes [#4788](https://github.com/mikro-orm/mikro-orm/issues/4788)
+* **core:** improve handling of nullable embedded properties ([eae7e38](https://github.com/mikro-orm/mikro-orm/commit/eae7e3856a3eb2a5cc8889162fd3e090a2ff3b81)), closes [#4787](https://github.com/mikro-orm/mikro-orm/issues/4787)
+
+
+
+
+
 ## [5.8.6](https://github.com/mikro-orm/mikro-orm/compare/v5.8.5...v5.8.6) (2023-10-02)
 
 
