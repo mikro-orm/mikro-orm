@@ -58,7 +58,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^5.8.7",
+    "@mikro-orm/knex": "5.8.7",
     "mariadb": "2.5.6"
   },
   "devDependencies": {
