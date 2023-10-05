@@ -615,7 +615,7 @@ export class EntityComparator {
       return this.getGenericComparator(this.wrap(prop.name), cond);
     }
 
-    return `  if (!equals(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})) diff${this.wrap(prop.name)} = current${this.wrap(prop.name)};`;
+    return this.getGenericComparator(this.wrap(prop.name), `!equals(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
   }
 
   private wrap(key: string): string {
