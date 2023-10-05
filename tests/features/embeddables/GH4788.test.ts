@@ -5,6 +5,7 @@ import {
   EventArgs,
   EventSubscriber,
   ManyToOne,
+  OneToOne,
   PrimaryKey,
   PrimaryKeyProp,
   PrimaryKeyType,
