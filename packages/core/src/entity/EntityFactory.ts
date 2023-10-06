@@ -71,7 +71,7 @@ export class EntityFactory {
     wrapped.__processing = true;
     wrapped.__initialized = options.initialized;
 
-    if (meta.forceConstructor) {
+    if (options.newEntity || meta.forceConstructor || meta.virtual) {
       const tmp = { ...data };
       meta.constructorParams.forEach(prop => delete tmp[prop]);
       this.hydrate(entity, meta2, tmp, options);
