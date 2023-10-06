@@ -2421,7 +2421,7 @@ __metadata:
     lerna: 6.6.2
     lint-staged: 14.0.1
     mongodb: 5.8.1
-    mongodb-memory-server: 8.15.1
+    mongodb-memory-server: 8.16.0
     node-gyp: ^9.3.1
     rimraf: 5.0.5
     ts-jest: 29.1.1
@@ -9287,9 +9287,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb-memory-server-core@npm:8.15.1":
-  version: 8.15.1
-  resolution: "mongodb-memory-server-core@npm:8.15.1"
+"mongodb-memory-server-core@npm:8.16.0":
+  version: 8.16.0
+  resolution: "mongodb-memory-server-core@npm:8.16.0"
   dependencies:
     async-mutex: ^0.3.2
     camelcase: ^6.3.0
@@ -9306,17 +9306,17 @@ __metadata:
     tslib: ^2.6.1
     uuid: ^9.0.0
     yauzl: ^2.10.0
-  checksum: 2e47663a65575f4d067f8acf47a00aa7f2cfd8040854034f72e2ca35ab3d708fbe45feff556eff9d9d8fce5a9618a57c4d01c8a9c267b810470962fd5e126823
+  checksum: 8840323954ecd2974b9c3037e937889ad8315aba02b759fcb04c58457e71714bfcb60c2150b107c60f4e4b9535753f10ebe71c85bbe75a5897ee4e3006b6018c
   languageName: node
   linkType: hard
 
-"mongodb-memory-server@npm:8.15.1":
-  version: 8.15.1
-  resolution: "mongodb-memory-server@npm:8.15.1"
+"mongodb-memory-server@npm:8.16.0":
+  version: 8.16.0
+  resolution: "mongodb-memory-server@npm:8.16.0"
   dependencies:
-    mongodb-memory-server-core: 8.15.1
+    mongodb-memory-server-core: 8.16.0
     tslib: ^2.6.1
-  checksum: ad1f1cba52925556274786414c9267056dac6a7463789a13ebb3722a840fdbe45131a50d964ec5ee215460518dc0966050c8f118b70ea97d8de5d4276da44c6b
+  checksum: 6dbccf05e29939866867cec17bac268620bf743fdf6f363d633ede982d92391e28cf5c5ff09cd16762c48cd2dcb2d12f8fe0744d43c36ee90e7ae8fcc978fe47
   languageName: node
   linkType: hard
 
