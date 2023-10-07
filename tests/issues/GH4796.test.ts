@@ -41,6 +41,9 @@ test('4796', async () => {
   const u1 = orm.em.create(User, { options: ['\\'] });
   await orm.em.flush();
 
+  const ud = await orm.em.findOne(User, { id: u1.id });
+
+  expect(ud).toEqual({ id: 1, options: ['\\'] });
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
     [
