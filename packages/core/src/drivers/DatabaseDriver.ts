@@ -92,10 +92,20 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
-  async syncCollection<T extends object, O extends object>(coll: Collection<T, O>, options?: DriverMethodOptions): Promise<void> {
-    const pk = coll.property.targetMeta!.primaryKeys[0];
-    const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
-    await this.nativeUpdate<T>(coll.owner.constructor.name, helper(coll.owner).getPrimaryKey() as FilterQuery<T>, data, options);
+  async syncCollections<T extends object, O extends object>(collections: Iterable<Collection<T, O>>, options?: DriverMethodOptions): Promise<void> {
+    for (const coll of collections) {
+      if (!coll.property.owner) {
+        if (coll.getSnapshot() === undefined) {
+          throw ValidationError.cannotModifyInverseCollection(coll.owner, coll.property);
+        }
+
+        continue;
+      }
+
+      const pk = coll.property.targetMeta!.primaryKeys[0];
+      const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
+      await this.nativeUpdate<T>(coll.owner.constructor.name, helper(coll.owner).getPrimaryKey() as FilterQuery<T>, data, options);
+    }
   }
 
   mapResult<T extends object>(result: EntityDictionary<T>, meta?: EntityMetadata<T>, populate: PopulateOptions<T>[] = []): EntityData<T> | null {

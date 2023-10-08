@@ -41,22 +41,22 @@ describe('result cache (postgres)', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 50, strategy: LoadStrategy.JOINED });
+    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1);
     orm.em.clear();
 
-    const res2 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 50, strategy: LoadStrategy.JOINED });
+    const res2 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res2.map(e => wrap(e).toObject()));
     orm.em.clear();
 
-    const res3 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 50, strategy: LoadStrategy.JOINED });
+    const res3 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res3.map(e => wrap(e).toObject()));
     orm.em.clear();
 
-    await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
-    const res4 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 50, strategy: LoadStrategy.JOINED });
+    await new Promise(r => setTimeout(r, 200)); // wait for cache to expire
+    const res4 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res4.map(e => wrap(e).toObject()));
   });
@@ -65,7 +65,7 @@ describe('result cache (postgres)', () => {
     await createBooksWithTags();
 
     const mock = mockLogger(orm, ['query']);
-    orm.config.get('resultCache').global = 50;
+    orm.config.get('resultCache').global = 100;
 
     const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1);
@@ -81,7 +81,7 @@ describe('result cache (postgres)', () => {
     expect(res1.map(e => wrap(e).toObject())).toEqual(res3.map(e => wrap(e).toObject()));
     orm.em.clear();
 
-    await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
+    await new Promise(r => setTimeout(r, 200)); // wait for cache to expire
     const res4 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res4.map(e => wrap(e).toObject()));
@@ -97,7 +97,7 @@ describe('result cache (postgres)', () => {
       author: { name: 'Jon Snow' },
     }, {
       populate: ['author', 'tags'],
-      cache: ['abc', 50],
+      cache: ['abc', 100],
       strategy: LoadStrategy.JOINED,
     });
 
@@ -115,7 +115,7 @@ describe('result cache (postgres)', () => {
     expect(wrap(res1).toObject()).toEqual(wrap(res3).toObject());
     orm.em.clear();
 
-    await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
+    await new Promise(r => setTimeout(r, 200)); // wait for cache to expire
     const res4 = await call();
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(wrap(res1).toObject()).toEqual(wrap(res4).toObject());
@@ -137,22 +137,22 @@ describe('result cache (postgres)', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const res1 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 50 });
+    const res1 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 100 });
     expect(mock.mock.calls).toHaveLength(1);
     orm.em.clear();
 
-    const res2 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 50 });
+    const res2 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 100 });
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1).toEqual(res2);
     orm.em.clear();
 
-    const res3 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 50 });
+    const res3 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 100 });
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1).toEqual(res3);
     orm.em.clear();
 
-    await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
-    const res4 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 50 });
+    await new Promise(r => setTimeout(r, 200)); // wait for cache to expire
+    const res4 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 100 });
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(res1).toEqual(res4);
   });
@@ -162,21 +162,21 @@ describe('result cache (postgres)', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const res1 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(50).getResultList();
+    const res1 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(100).getResultList();
     expect(mock.mock.calls).toHaveLength(1);
     orm.em.clear();
 
-    const res2 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(50).getResultList();
+    const res2 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(100).getResultList();
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1).toEqual(res2);
     orm.em.clear();
 
-    const res3 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(50).getResultList();
+    const res3 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(100).getResultList();
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1).toEqual(res3);
     orm.em.clear();
 
-    await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
+    await new Promise(r => setTimeout(r, 200)); // wait for cache to expire
     const res4 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache().getResultList();
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(res1).toEqual(res4);

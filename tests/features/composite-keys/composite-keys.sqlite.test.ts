@@ -493,7 +493,7 @@ describe('composite keys in sqlite', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('delete from `user2_sandwiches` where (`sandwich_id`) in ( values (2), (3)) and `user2_first_name` = \'Henry\' and `user2_last_name` = \'Doe 2\'');
+    expect(mock.mock.calls[1][0]).toMatch('delete from `user2_sandwiches` where (`sandwich_id` = 2 and `user2_first_name` = \'Henry\' and `user2_last_name` = \'Doe 2\') or (`sandwich_id` = 3 and `user2_first_name` = \'Henry\' and `user2_last_name` = \'Doe 2\')');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -573,7 +573,7 @@ describe('composite keys in sqlite', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `car2` (`name`, `year`, `price`) values (?, ?, ?), (?, ?, ?)'); // c1, c2
     expect(mock.mock.calls[2][0]).toMatch('insert into `user2` (`first_name`, `last_name`) values (?, ?)'); // u1
-    expect(mock.mock.calls[3][0]).toMatch('insert into `user2_cars` (`user2_first_name`, `user2_last_name`, `car2_name`, `car2_year`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('insert into `user2_cars` (`car2_name`, `car2_year`, `user2_first_name`, `user2_last_name`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
     expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 

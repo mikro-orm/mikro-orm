@@ -155,7 +155,7 @@ describe('filters [postgres]', () => {
     expect(mock.mock.calls[1][0]).toMatch(`insert into "employee" ("id") values (default) returning "id"`);
     expect(mock.mock.calls[2][0]).toMatch(`insert into "benefit" ("benefit_status", "name") values ($1, $2), ($3, $4) returning "id"`);
     expect(mock.mock.calls[3][0]).toMatch(`insert into "benefit_detail" ("description", "benefit_id", "active") values ($1, $2, $3), ($4, $5, $6), ($7, $8, $9), ($10, $11, $12), ($13, $14, $15), ($16, $17, $18) returning "id"`);
-    expect(mock.mock.calls[4][0]).toMatch(`insert into "employee_benefits" ("employee_id", "benefit_id") values ($1, $2)`);
+    expect(mock.mock.calls[4][0]).toMatch(`insert into "employee_benefits" ("benefit_id", "employee_id") values ($1, $2), ($3, $4)`);
     expect(mock.mock.calls[5][0]).toMatch(`commit`);
     orm.em.clear();
     mock.mockReset();
