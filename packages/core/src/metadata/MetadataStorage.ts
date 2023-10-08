@@ -99,4 +99,10 @@ export class MetadataStorage {
       .forEach(meta => EntityHelper.decorate(meta, em));
   }
 
+  * [Symbol.iterator](): IterableIterator<EntityMetadata> {
+    for (const meta of Object.values(this.metadata)) {
+      yield meta;
+    }
+  }
+
 }

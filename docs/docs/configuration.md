@@ -56,25 +56,7 @@ MikroORM.init({
 
 Read more about this in [Metadata Providers](metadata-providers.md) sections.
 
-## Extensions
-
-Since v5.6, the ORM extensions like `SchemaGenerator`, `Migrator` or `EntityGenerator` can be registered via the `extensions` config option. This will be the only supported way to have the shortcuts like `orm.migrator` available in v6, so we no longer need to dynamically require those dependencies or specify them as optional peer dependencies (both of those things cause issues with various bundling tools like Webpack, or those used in Remix or Next.js).
-
-```ts
-import { defineConfig } from '@mikro-orm/postgresql';
-import { Migrator } from '@mikro-orm/migrations';
-import { EntityGenerator } from '@mikro-orm/entity-generator';
-import { SeedManager } from '@mikro-orm/seeder';
-
-export default defineConfig({
-  dbName: 'test',
-  extensions: [Migrator, EntityGenerator, SeedManager],
-});
-```
-
-> The `SchemaGenerator` (as well as `MongoSchemaGenerator`) is registered automatically as it does not require any 3rd party dependencies to be installed.
-
-## Adjusting default type mapping
+### Adjusting default type mapping
 
 Since v5.2 we can alter how the ORM picks the default mapped type representation based on the inferred type of a property. One example is a mapping of `foo: string` to `varchar(255)`. If we wanted to change this default to a `text` type in postgres, we can use the `discover.getMappedType` callback:
 
@@ -94,6 +76,62 @@ const orm = await MikroORM.init({
   },
 });
 ```
+
+### `onMetadata` hook
+
+Sometimes you might want to alter some behavior of the ORM on metadata level. You can use the `onMetadata` hook to modify the metadata. Let's say you want to use your entities with different drivers, and you want to use some driver specific feature. Using the `onMetadata` hook, you can modify the metadata dynamically to fit the drivers requirements.
+
+The hook will be executed before the internal process of filling defaults, so you can think of it as modifying the property options in your entity definitions, they will be respected e.g. when inferring the column type.
+
+> The hook can be async, but it will be awaited only if you use the async `MikroORM.init()` method, not with the `MikroORM.initSync()`.
+
+```ts
+import { EntityMetadata, MikroORM, Platform } from '@mikro-orm/sqlite';
+
+const orm = await MikroORM.init({
+  // ...
+  discovery: {
+    onMetadata(meta: EntityMetadata, platform: Platform) {
+      // sqlite driver does not support schemas
+      delete meta.schema;
+    },
+  },
+});
+```
+
+Alternatively, you can also use the `afterDiscovered` hook, which is fired after the discovery process ends. You can access all the metadata there, and add or remove them as you wish.
+
+```ts
+import { EntityMetadata, MikroORM, Platform } from '@mikro-orm/sqlite';
+
+const orm = await MikroORM.init({
+  // ...
+  discovery: {
+    afterDiscovered(storage: MetadataStorage) {
+      // ignore FooBar entity in schema generator
+      storage.reset('FooBar');
+    },
+  },
+});
+```
+
+## Extensions
+
+Since v5.6, the ORM extensions like `SchemaGenerator`, `Migrator` or `EntityGenerator` can be registered via the `extensions` config option. This will be the only supported way to have the shortcuts like `orm.migrator` available in v6, so we no longer need to dynamically require those dependencies or specify them as optional peer dependencies (both of those things cause issues with various bundling tools like Webpack, or those used in Remix or Next.js).
+
+```ts
+import { defineConfig } from '@mikro-orm/postgresql';
+import { Migrator } from '@mikro-orm/migrations';
+import { EntityGenerator } from '@mikro-orm/entity-generator';
+import { SeedManager } from '@mikro-orm/seeder';
+
+export default defineConfig({
+  dbName: 'test',
+  extensions: [Migrator, EntityGenerator, SeedManager],
+});
+```
+
+> The `SchemaGenerator` (as well as `MongoSchemaGenerator`) is registered automatically as it does not require any 3rd party dependencies to be installed.
 
 ## Driver
 
