@@ -158,7 +158,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.toJSON() as unknown as EntityDTO<TT>[];
   }
 
-  override add<TT extends T>(entity: TT | Reference<TT> | (TT | Reference<TT>)[], ...entities: (TT | Reference<TT>)[]): void {
+  override add<TT extends T>(entity: TT | Reference<TT> | Iterable<TT | Reference<TT>>, ...entities: (TT | Reference<TT>)[]): void {
     entities = Utils.asArray(entity).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
     unwrapped.forEach(entity => this.validateItemType(entity));
@@ -166,13 +166,14 @@ export class Collection<T extends object, O extends object = object> extends Arr
     this.cancelOrphanRemoval(unwrapped);
   }
 
-  override set<TT extends T>(items: (TT | Reference<TT>)[]): void {
+  override set<TT extends T>(items: Iterable<TT | Reference<TT>>): void {
     if (!this.initialized) {
       this.initialized = true;
       this.snapshot = undefined;
     }
 
     super.set(items as T[]);
+    this.setDirty();
   }
 
   /**
@@ -187,7 +188,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  override remove<TT extends T>(entity: TT | Reference<TT> | (TT | Reference<TT>)[] | ((item: TT) => boolean), ...entities: (TT | Reference<TT>)[]): void {
+  override remove<TT extends T>(entity: TT | Reference<TT> | Iterable<TT | Reference<TT>> | ((item: TT) => boolean), ...entities: (TT | Reference<TT>)[]): void {
     if (entity instanceof Function) {
       for (const item of this.items) {
         if (entity(item as TT)) {
@@ -214,8 +215,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
    * @inheritDoc
    */
   override removeAll(): void {
-    this.checkInitialized();
-    super.removeAll();
+    this.set([]);
   }
 
   override contains<TT extends T>(item: TT | Reference<TT>, check = true): boolean {

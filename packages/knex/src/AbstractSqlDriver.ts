@@ -20,11 +20,11 @@ import {
   type EntityName,
   type EntityProperty,
   type EntityValue,
+  type FilterKey,
   type FilterQuery,
   type FindByCursorOptions,
   type FindOneOptions,
   type FindOptions,
-  type FilterKey,
   getOnConflictFields,
   getOnConflictReturningFields,
   helper,
@@ -34,28 +34,28 @@ import {
   type LoggingOptions,
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
+  type OrderDefinition,
   type PopulateOptions,
   type Primary,
   QueryFlag,
   QueryHelper,
+  QueryOrder,
   type QueryOrderMap,
   type QueryResult,
   raw,
-  sql,
   ReferenceKind,
   type RequiredEntityData,
   type Transaction,
   type UpsertManyOptions,
   type UpsertOptions,
   Utils,
-  type OrderDefinition,
-  QueryOrder,
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { QueryBuilder, QueryType } from './query';
 import { SqlEntityManager } from './SqlEntityManager';
 import type { Field } from './typings';
+import { PivotCollectionPersister } from './PivotCollectionPersister';
 
 export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection = AbstractSqlConnection, Platform extends AbstractSqlPlatform = AbstractSqlPlatform> extends DatabaseDriver<Connection> {
 
@@ -649,66 +649,76 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return this.rethrow(qb.execute('run', false));
   }
 
-  override async syncCollection<T extends object, O extends object>(coll: Collection<T, O>, options?: DriverMethodOptions): Promise<void> {
-    const wrapped = helper(coll.owner);
-    const meta = wrapped.__meta;
-    const pks = wrapped.getPrimaryKeys(true)!;
-    const snap = coll.getSnapshot();
-    const includes = <T>(arr: T[], item: T) => !!arr.find(i => Utils.equals(i, item));
-    const snapshot = snap ? snap.map(item => helper(item).getPrimaryKeys(true)!) : [];
-    const current = coll.getItems(false).map(item => helper(item).getPrimaryKeys(true)!);
-    const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
-    const insertDiff = current.filter(item => !includes(snapshot, item));
-    const target = snapshot.filter(item => includes(current, item)).concat(...insertDiff);
-    const equals = Utils.equals(current, target);
-    const ctx = options?.ctx;
+  override async syncCollections<T extends object, O extends object>(collections: Iterable<Collection<T, O>>, options?: DriverMethodOptions): Promise<void> {
+    const groups = {} as Dictionary<PivotCollectionPersister<any>>;
 
-    // wrong order if we just delete and insert to the end (only owning sides can have fixed order)
-    if (coll.property.owner && coll.property.fixedOrder && !equals && Array.isArray(deleteDiff)) {
-      (deleteDiff as unknown[]).length = insertDiff.length = 0;
-      deleteDiff.push(...snapshot);
-      insertDiff.push(...current);
-    }
+    for (const coll of collections) {
+      const wrapped = helper(coll.owner);
+      const meta = wrapped.__meta;
+      const pks = wrapped.getPrimaryKeys(true)!;
+      const snap = coll.getSnapshot();
+      const includes = <T>(arr: T[], item: T) => !!arr.find(i => Utils.equals(i, item));
+      const snapshot = snap ? snap.map(item => helper(item).getPrimaryKeys(true)!) : [];
+      const current = coll.getItems(false).map(item => helper(item).getPrimaryKeys(true)!);
+      const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
+      const insertDiff = current.filter(item => !includes(snapshot, item));
+      const target = snapshot.filter(item => includes(current, item)).concat(...insertDiff);
+      const equals = Utils.equals(current, target);
 
-    if (coll.property.kind === ReferenceKind.ONE_TO_MANY) {
-      const cols = coll.property.referencedColumnNames;
-      const qb = this.createQueryBuilder(coll.property.type, ctx, 'write')
-        .withSchema(this.getSchemaName(meta, options));
+      // wrong order if we just delete and insert to the end (only owning sides can have fixed order)
+      if (coll.property.owner && coll.property.fixedOrder && !equals && Array.isArray(deleteDiff)) {
+        deleteDiff.length = insertDiff.length = 0;
+        deleteDiff.push(...snapshot);
+        insertDiff.push(...current);
+      }
 
-      if (coll.getSnapshot() === undefined) {
-        if (coll.property.orphanRemoval) {
-          const kqb = qb.delete({ [coll.property.mappedBy]: pks })
+      if (coll.property.kind === ReferenceKind.ONE_TO_MANY) {
+        const cols = coll.property.referencedColumnNames;
+        const qb = this.createQueryBuilder(coll.property.type, options?.ctx, 'write')
+          .withSchema(this.getSchemaName(meta, options));
+
+        if (coll.getSnapshot() === undefined) {
+          if (coll.property.orphanRemoval) {
+            const kqb = qb.delete({ [coll.property.mappedBy]: pks })
+              .getKnexQuery()
+              .whereNotIn(cols, insertDiff as string[][]);
+
+            return this.rethrow(this.execute<any>(kqb));
+          }
+
+          const kqb = qb.update({ [coll.property.mappedBy]: null })
             .getKnexQuery()
             .whereNotIn(cols, insertDiff as string[][]);
 
           return this.rethrow(this.execute<any>(kqb));
         }
 
-        const kqb = qb.update({ [coll.property.mappedBy]: null })
+        const kqb = qb.update({ [coll.property.mappedBy]: pks })
           .getKnexQuery()
-          .whereNotIn(cols, insertDiff as string[][]);
+          .whereIn(cols, insertDiff as string[][]);
 
         return this.rethrow(this.execute<any>(kqb));
       }
 
-      const kqb = qb.update({ [coll.property.mappedBy]: pks })
-        .getKnexQuery()
-        .whereIn(cols, insertDiff as string[][]);
-
-      return this.rethrow(this.execute<any>(kqb));
-    }
-
-    /* istanbul ignore next */
-    const ownerSchema = wrapped.getSchema() === '*' ? this.config.get('schema') : wrapped.getSchema();
-    const pivotMeta = this.metadata.find(coll.property.pivotEntity)!;
-
-    if (pivotMeta.schema === '*') {
       /* istanbul ignore next */
-      options ??= {};
-      options.schema = ownerSchema;
+      const pivotMeta = this.metadata.find(coll.property.pivotEntity)!;
+      let schema = pivotMeta.schema;
+
+      if (schema === '*') {
+        const ownerSchema = wrapped.getSchema() === '*' ? this.config.get('schema') : wrapped.getSchema();
+        schema = coll.property.owner ? ownerSchema : this.config.get('schema');
+      } else if (schema == null) {
+        schema = this.config.get('schema');
+      }
+
+      const tableName = `${schema ?? '_'}.${pivotMeta.tableName}`;
+      const persister = groups[tableName] ??= new PivotCollectionPersister(pivotMeta, this, options?.ctx, schema);
+      persister.enqueueUpdate(coll.property, insertDiff, deleteDiff, pks);
     }
 
-    return this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks, deleteDiff, insertDiff, options));
+    for (const persister of Utils.values(groups)) {
+      await this.rethrow(persister.execute());
+    }
   }
 
   override async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<any> = {} as FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>, pivotJoin?: boolean): Promise<Dictionary<T[]>> {
@@ -1022,63 +1032,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     for (const prop of meta.relations) {
       if (collections[prop.name]) {
-        await this.rethrow(this.updateCollectionDiff(meta, prop, pks, clear, collections[prop.name] as Primary<T>[][], options));
+        const pivotMeta = this.metadata.find(prop.pivotEntity)!;
+        const persister = new PivotCollectionPersister(pivotMeta, this, options?.ctx, options?.schema);
+        persister.enqueueUpdate(prop, collections[prop.name] as Primary<T>[][], clear, pks);
+        await this.rethrow(persister.execute());
       }
-    }
-  }
-
-  protected async updateCollectionDiff<T extends object, O extends object>(
-    meta: EntityMetadata<O>,
-    prop: EntityProperty<O>,
-    pks: Primary<O>[],
-    deleteDiff: Primary<T>[][] | boolean,
-    insertDiff: Primary<T>[][],
-    options?: DriverMethodOptions & { ownerSchema?: string },
-  ): Promise<void> {
-    if (!deleteDiff) {
-      deleteDiff = [];
-    }
-
-    const pivotMeta = this.metadata.find(prop.pivotEntity)!;
-
-    if (deleteDiff === true || deleteDiff.length > 0) {
-      const qb1 = this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write').withSchema(this.getSchemaName(pivotMeta, options));
-      const knex = qb1.getKnex();
-
-      if (Array.isArray(deleteDiff)) {
-        knex.whereIn(prop.inverseJoinColumns, deleteDiff as Knex.Value[][]);
-      }
-
-      prop.joinColumns.forEach((joinColumn, idx) => knex.andWhere(joinColumn, pks[idx] as Knex.Value[][]));
-      await this.execute(knex.delete());
-    }
-
-    if (insertDiff.length === 0) {
-      return;
-    }
-
-    const items = insertDiff.map(item => {
-      const cond = {} as Dictionary<Primary<T | O>>;
-      prop.joinColumns.forEach((joinColumn, idx) => cond[joinColumn] = pks[idx]);
-      prop.inverseJoinColumns.forEach((inverseJoinColumn, idx) => cond[inverseJoinColumn] = item[idx]);
-
-      return cond;
-    });
-
-    /* istanbul ignore else */
-    if (this.platform.allowsMultiInsert()) {
-      await this.nativeInsertMany<T>(prop.pivotEntity, items as EntityData<T>[], {
-        ...options,
-        convertCustomTypes: false,
-        processCollections: false,
-      });
-    } else {
-      await Utils.runSerial(items, item => {
-        return this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')
-          .withSchema(this.getSchemaName(pivotMeta, options))
-          .insert(item)
-          .execute('run', false);
-      });
     }
   }
 
