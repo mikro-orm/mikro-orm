@@ -64,7 +64,7 @@ export class ArrayCollection<T extends object, O extends object> {
     }) as unknown as U[];
   }
 
-  add(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
+  add(entity: T | Reference<T> | Iterable<T | Reference<T>>, ...entities: (T | Reference<T>)[]): void {
     entities = Utils.asArray(entity).concat(entities);
 
     for (const item of entities) {
@@ -79,12 +79,12 @@ export class ArrayCollection<T extends object, O extends object> {
     }
   }
 
-  set(items: (T | Reference<T>)[]): void {
-    if (this.compare(items.map(item => Reference.unwrapReference(item)))) {
+  set(items: Iterable<T | Reference<T>>): void {
+    if (this.compare(Utils.asArray(items).map(item => Reference.unwrapReference(item)))) {
       return;
     }
 
-    this.removeAll();
+    this.remove(this.items);
     this.add(items);
   }
 
@@ -123,7 +123,7 @@ export class ArrayCollection<T extends object, O extends object> {
    * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
-  remove(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
+  remove(entity: T | Reference<T> | Iterable<T | Reference<T>>, ...entities: (T | Reference<T>)[]): void {
     entities = Utils.asArray(entity).concat(entities);
     let modified = false;
 

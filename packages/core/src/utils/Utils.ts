@@ -399,16 +399,27 @@ export class Utils {
   /**
    * Normalize the argument to always be an array.
    */
-  static asArray<T>(data?: T | readonly T[], strict = false): T[] {
+  static asArray<T>(data?: T | readonly T[] | Iterable<T>, strict = false): T[] {
     if (typeof data === 'undefined' && !strict) {
       return [];
     }
 
-    if (data instanceof Set) {
+    if (this.isIterable(data)) {
       return Array.from(data);
     }
 
-    return Array.isArray(data!) ? data : [data as T];
+    return [data as T];
+  }
+
+  /**
+   * Checks if the value is iterable, but considers strings and buffers as not iterable.
+   */
+  static isIterable<T>(value: unknown): value is Iterable<T> {
+    if (value == null || typeof value === 'string' || ArrayBuffer.isView(value)) {
+      return false;
+    }
+
+    return typeof Object(value)[Symbol.iterator] === 'function';
   }
 
   /**
