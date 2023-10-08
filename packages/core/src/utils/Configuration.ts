@@ -16,6 +16,7 @@ import type {
   IPrimaryKey,
   MaybePromise,
   MigrationObject,
+  EntityMetadata,
 } from '../typings';
 import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
@@ -500,6 +501,8 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     inferDefaultValues?: boolean;
     getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
     checkDuplicateEntities?: boolean;
+    onMetadata?: (meta: EntityMetadata, platform: Platform) => MaybePromise<void>;
+    afterDiscovered?: (storage: MetadataStorage, platform: Platform) => MaybePromise<void>;
   };
   driver?: { new(config: Configuration): D };
   driverOptions: Dictionary;

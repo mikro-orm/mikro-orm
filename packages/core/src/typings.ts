@@ -416,13 +416,13 @@ export class EntityMetadata<T = any> {
     Object.assign(this, meta);
   }
 
-  addProperty(prop: EntityProperty<T>, sync = true) {
+  addProperty(prop: Partial<EntityProperty<T>>, sync = true) {
     if (prop.pivotTable && !prop.pivotEntity) {
       prop.pivotEntity = prop.pivotTable;
     }
 
-    this.properties[prop.name] = prop;
-    this.propertyOrder.set(prop.name, this.props.length);
+    this.properties[prop.name!] = prop as EntityProperty<T>;
+    this.propertyOrder.set(prop.name!, this.props.length);
 
     /* istanbul ignore next */
     if (sync) {

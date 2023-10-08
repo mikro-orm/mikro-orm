@@ -42,24 +42,40 @@ export class MetadataDiscovery {
     const startTime = Date.now();
     this.logger.log('discovery', `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)}`);
     await this.findEntities(preferTsNode);
+
+    for (const meta of this.discovered) {
+      await this.config.get('discovery').onMetadata?.(meta, this.platform);
+    }
+
     this.processDiscoveredEntities(this.discovered);
 
     const diff = Date.now() - startTime;
     this.logger.log('discovery', `- entity discovery finished, found ${colors.green('' + this.discovered.length)} entities, took ${colors.green(`${diff} ms`)}`);
 
-    return this.mapDiscoveredEntities();
+    const storage = this.mapDiscoveredEntities();
+    await this.config.get('discovery').afterDiscovered?.(storage, this.platform);
+
+    return storage;
   }
 
   discoverSync(preferTsNode = true): MetadataStorage {
     const startTime = Date.now();
     this.logger.log('discovery', `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)} in sync mode`);
     this.findEntities(preferTsNode, true);
+
+    for (const meta of this.discovered) {
+      this.config.get('discovery').onMetadata?.(meta, this.platform);
+    }
+
     this.processDiscoveredEntities(this.discovered);
 
     const diff = Date.now() - startTime;
     this.logger.log('discovery', `- entity discovery finished, found ${colors.green('' + this.discovered.length)} entities, took ${colors.green(`${diff} ms`)}`);
 
-    return this.mapDiscoveredEntities();
+    const storage = this.mapDiscoveredEntities();
+    this.config.get('discovery').afterDiscovered?.(storage, this.platform);
+
+    return storage;
   }
 
   private mapDiscoveredEntities(): MetadataStorage {
