@@ -155,7 +155,7 @@ export class ChangeSetComputer {
   }
 
   private processToMany<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
-    const target = changeSet.entity[prop.name] as unknown as Collection<any>;
+    const target = changeSet.entity[prop.name] as Collection<any>;
 
     if (!target.isDirty()) {
       return;
@@ -169,8 +169,8 @@ export class ChangeSetComputer {
       }
     } else if (prop.kind === ReferenceKind.ONE_TO_MANY && target.getSnapshot() === undefined) {
       this.collectionUpdates.add(target);
-    } else {
-      target.setDirty(false); // inverse side with only populated items, nothing to persist
+    } else if (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner) {
+      this.collectionUpdates.add(target);
     }
   }
 

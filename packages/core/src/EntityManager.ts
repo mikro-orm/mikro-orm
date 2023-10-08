@@ -1474,7 +1474,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Tells the EntityManager to make an instance managed and persistent.
    * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
    */
-  persist<Entity extends object>(entity: Entity | Reference<Entity> | (Entity | Reference<Entity>)[]): this {
+  persist<Entity extends object>(entity: Entity | Reference<Entity> | Iterable<Entity | Reference<Entity>>): this {
     const em = this.getContext();
 
     if (Utils.isEntity(entity)) {
@@ -1503,7 +1503,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Persists your entity immediately, flushing all not yet persisted changes to the database too.
    * Equivalent to `em.persist(e).flush()`.
    */
-  async persistAndFlush(entity: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[]): Promise<void> {
+  async persistAndFlush(entity: AnyEntity | Reference<AnyEntity> | Iterable<AnyEntity | Reference<AnyEntity>>): Promise<void> {
     await this.persist(entity).flush();
   }
 
@@ -1513,7 +1513,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    *
    * To remove entities by condition, use `em.nativeDelete()`.
    */
-  remove<Entity extends object>(entity: Entity | Reference<Entity> | (Entity | Reference<Entity>)[]): this {
+  remove<Entity extends object>(entity: Entity | Reference<Entity> | Iterable<Entity | Reference<Entity>>): this {
     const em = this.getContext();
 
     if (Utils.isEntity<Entity>(entity)) {
@@ -1540,7 +1540,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Removes an entity instance immediately, flushing all not yet persisted changes to the database too.
    * Equivalent to `em.remove(e).flush()`
    */
-  async removeAndFlush(entity: AnyEntity | Reference<AnyEntity>): Promise<void> {
+  async removeAndFlush(entity: AnyEntity | Reference<AnyEntity> | Iterable<AnyEntity | Reference<AnyEntity>>): Promise<void> {
     await this.remove(entity).flush();
   }
 
