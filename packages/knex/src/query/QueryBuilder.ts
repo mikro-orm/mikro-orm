@@ -351,7 +351,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   orderBy(orderBy: QBQueryOrderMap<T> | QBQueryOrderMap<T>[]): this {
     this.ensureNotFinalized();
     this._orderBy = [];
-    Utils.asArray(orderBy).forEach(o => {
+    Utils.asArray<QBQueryOrderMap<T>>(orderBy).forEach(o => {
       const processed = QueryHelper.processWhere({
         where: o as Dictionary,
         entityName: this.mainAlias.entityName,

@@ -70,7 +70,7 @@ test('GH 4027', async () => {
     ['[query] commit'],
     ['[query] begin'],
     ["[query] insert into `parent` (`id`, `created_at`) values ('9a061473-4a98-477d-ad03-fd7bcba3ec4f', 1676050010441)"],
-    ["[query] insert into `parent_refs` (`parent_id`, `child_id`) values ('9a061473-4a98-477d-ad03-fd7bcba3ec4f', 'e80ccf60-5cb2-4972-9227-7a4b9138c845')"],
+    ["[query] insert into `parent_refs` (`child_id`, `parent_id`) values ('e80ccf60-5cb2-4972-9227-7a4b9138c845', '9a061473-4a98-477d-ad03-fd7bcba3ec4f')"],
     ['[query] commit'],
   ]);
 });
