@@ -885,8 +885,9 @@ export class UnitOfWork {
     await this.commitExtraUpdates(ctx);
 
     // 6. collection updates
+    await this.em.getDriver().syncCollections(this.collectionUpdates, { ctx });
+
     for (const coll of this.collectionUpdates) {
-      await this.em.getDriver().syncCollection(coll, { ctx });
       coll.takeSnapshot();
     }
 

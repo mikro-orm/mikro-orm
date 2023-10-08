@@ -215,7 +215,7 @@ test('shared column as composite PK and FK in M:N', async () => {
     [`[query] insert into "organization" ("id", "name") values ('a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 'Tenant 1')`],
     [`[query] insert into "order" ("id", "organization_id", "number") values ('d09f1159-c5b0-4336-bfed-2543b5422ba7', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 123)`],
     [`[query] insert into "product" ("id", "organization_id") values ('bb9efb3e-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e')`],
-    [`[query] insert into "order_item" ("order_id", "organization_id", "product_id") values ('d09f1159-c5b0-4336-bfed-2543b5422ba7', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 'bb9efb3e-7c23-421c-9ae2-9d989630159a') returning "amount"`],
+    [`[query] insert into "order_item" ("product_id", "organization_id", "order_id") values ('bb9efb3e-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 'd09f1159-c5b0-4336-bfed-2543b5422ba7') returning "amount"`],
     ['[query] commit'],
   ]);
 
@@ -238,7 +238,7 @@ test('shared column as composite PK and FK in M:N', async () => {
     ['[query] begin'],
     [`[query] insert into "product" ("id", "organization_id") values ('ffffffff-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e')`],
     [`[query] update "order" set "number" = 321 where "id" = 'd09f1159-c5b0-4336-bfed-2543b5422ba7' and "organization_id" = 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e'`],
-    [`[query] insert into "order_item" ("order_id", "organization_id", "product_id") values ('d09f1159-c5b0-4336-bfed-2543b5422ba7', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 'ffffffff-7c23-421c-9ae2-9d989630159a') returning "amount"`],
+    [`[query] insert into "order_item" ("product_id", "organization_id", "order_id") values ('ffffffff-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e', 'd09f1159-c5b0-4336-bfed-2543b5422ba7') returning "amount"`],
     ['[query] commit'],
   ]);
 });

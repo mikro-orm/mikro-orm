@@ -1283,6 +1283,34 @@ describe('EntityManagerMySql', () => {
     expect(tag.books.count()).toBe(4);
   });
 
+  test('many to many working with inverse side persistence', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    const book4 = new Book2('Another Book', author);
+    const tag1 = new BookTag2('silly');
+    const tag2 = new BookTag2('funny');
+    const tag3 = new BookTag2('sick');
+    const tag4 = new BookTag2('strange');
+    const tag5 = new BookTag2('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+
+    orm.em.persist([book1, book2, book3, book4]);
+    await orm.em.flush();
+    orm.em.clear();
+
+    let tag = await orm.em.findOneOrFail(BookTag2, tag1.id);
+    tag.books.removeAll();
+    await orm.em.flush();
+    orm.em.clear();
+
+    tag = await orm.em.findOneOrFail(BookTag2, tag1.id, { populate: ['books'] });
+    expect(tag.books.count()).toBe(0);
+  });
+
   test('populating many to many relation', async () => {
     const p1 = new Publisher2('foo');
     expect(p1.tests).toBeInstanceOf(Collection);

@@ -13,6 +13,18 @@ import {
 } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
+function property<T>(target: T, propertyName: keyof T) {
+  // decorator implementation can be even empty, it's enough to extract the metadata
+}
+
+class User {
+
+  @property
+  name?: string;
+
+}
+
+
 @Entity()
 export class Order {
 
@@ -154,7 +166,6 @@ describe('custom pivot entity for m:n with additional properties (bidirectional)
     expect(products[0].orders.isDirty()).toBe(false);
     expect(() => products[0].orders.getItems()).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
     expect(() => products[0].orders.remove(order1, order2)).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
-    expect(() => products[0].orders.removeAll()).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
     expect(() => products[0].orders.contains(order1)).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
 
     // test M:N lazy load
