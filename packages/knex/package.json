@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "fs-extra": "11.1.1",
-    "knex": "2.5.1",
+    "knex": "3.0.1",
     "sqlstring": "2.3.3"
   },
   "devDependencies": {
