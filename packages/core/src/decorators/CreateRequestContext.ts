@@ -1,14 +1,27 @@
 import { MikroORM } from '../MikroORM';
 import { RequestContext } from '../utils/RequestContext';
+import { Utils } from '@mikro-orm/core';
 
-export function CreateRequestContext<T>(getContext?: MikroORM | ((type?: T) => MikroORM)): MethodDecorator {
+export function CreateRequestContext<T>(getContext?: MikroORM | Promise<MikroORM> | ((type?: T) => MikroORM | Promise<MikroORM>)): MethodDecorator {
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     descriptor.value = async function (this: T, ...args: any[]) {
       /* istanbul ignore next */
-      const orm = getContext instanceof MikroORM ? getContext : (getContext?.(this) ?? (this as any).orm);
+      let orm: unknown;
 
-      if (!(orm as unknown instanceof MikroORM)) {
+      if (!getContext) {
+        orm = (this as any).orm;
+      } else if (typeof getContext === 'function') {
+        orm = getContext(this);
+      } else {
+        orm = getContext;
+      }
+
+      if (Utils.isAsync(orm)) {
+        orm = await orm;
+      }
+
+      if (!(orm instanceof MikroORM)) {
         throw new Error('@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@CreateRequestContext(() => orm)`');
       }
 

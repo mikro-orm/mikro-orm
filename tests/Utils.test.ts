@@ -555,4 +555,14 @@ describe('Utils', () => {
 
   afterAll(async () => orm.close(true));
 
+  test('isAsync', () => {
+    class NotPromise {
+
+    }
+    expect(Utils.isAsync(Promise.resolve())).toBeTruthy();
+    expect(Utils.isAsync(async () => undefined)).toBeTruthy();
+    expect(Utils.isAsync(() => undefined)).toBeFalsy();
+    expect(Utils.isAsync(new NotPromise())).toBeFalsy();
+    expect(Utils.isAsync(new Promise(r => r))).toBeTruthy();
+  });
 });

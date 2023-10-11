@@ -185,6 +185,10 @@ export class Utils {
     return !!o && typeof o === 'object' && !Array.isArray(o);
   }
 
+  static isAsync(o: any): o is Promise<any> {
+    return o instanceof Promise || (typeof o === 'function' && o.constructor.name === 'AsyncFunction');
+  }
+
   /**
    * Relation decorators allow using two signatures
    * - using first parameter as options object
