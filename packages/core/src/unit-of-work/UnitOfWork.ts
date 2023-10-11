@@ -473,7 +473,7 @@ export class UnitOfWork {
     visited.clear();
 
     for (const entity of this.persistStack) {
-      this.findNewEntities(entity);
+      this.findNewEntities(entity, visited);
     }
 
     for (const entity of this.orphanRemoveStack) {
@@ -547,12 +547,13 @@ export class UnitOfWork {
     return this.changeSetPersister;
   }
 
-  private findNewEntities<T extends object>(entity: T, visited = new Set<AnyEntity>(), idx = 0): void {
+  private findNewEntities<T extends object>(entity: T, visited: Set<AnyEntity>, idx = 0, processed = new Set<AnyEntity>()): void {
     if (visited.has(entity)) {
       return;
     }
 
     visited.add(entity);
+    processed.add(entity);
     const wrapped = helper(entity);
 
     if (wrapped.__processing || this.removeStack.has(entity) || this.orphanRemoveStack.has(entity)) {
@@ -567,7 +568,7 @@ export class UnitOfWork {
       const targets = Utils.unwrapProperty(entity, helper(entity).__meta, prop);
       targets.forEach(([target]) => {
         const reference = Reference.unwrapReference(target as object);
-        this.processReference(entity, prop, reference, visited, idx);
+        this.processReference(entity, prop, reference, visited, processed, idx);
       });
     }
 
@@ -651,11 +652,11 @@ export class UnitOfWork {
     }
   }
 
-  private processReference<T extends object>(parent: T, prop: EntityProperty<T>, reference: any, visited: Set<AnyEntity>, idx: number): void {
+  private processReference<T extends object>(parent: T, prop: EntityProperty<T>, reference: any, visited: Set<AnyEntity>, processed: Set<AnyEntity>, idx: number): void {
     const isToOne = prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE;
 
     if (isToOne && Utils.isEntity(reference)) {
-      return this.processToOneReference(reference, visited, idx);
+      return this.processToOneReference(reference, visited, processed, idx);
     }
 
     if (Utils.isCollection<any>(reference)) {
@@ -667,19 +668,19 @@ export class UnitOfWork {
         });
 
       if (prop.reference === ReferenceType.MANY_TO_MANY && reference.isDirty()) {
-        this.processToManyReference(reference, visited, parent, prop);
+        this.processToManyReference(reference, visited, processed, parent, prop);
       }
     }
   }
 
-  private processToOneReference<T extends object>(reference: any, visited: Set<AnyEntity>, idx: number): void {
+  private processToOneReference(reference: any, visited: Set<AnyEntity>, processed: Set<AnyEntity>, idx: number): void {
     if (!reference.__helper!.__managed) {
-      this.findNewEntities(reference, visited, idx);
+      this.findNewEntities(reference, visited, idx, processed);
     }
   }
 
-  private processToManyReference<T extends object>(collection: Collection<AnyEntity>, visited: Set<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
-    if (this.isCollectionSelfReferenced(collection, visited)) {
+  private processToManyReference<T extends object>(collection: Collection<AnyEntity>, visited: Set<AnyEntity>, processed: Set<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
+    if (this.isCollectionSelfReferenced(collection, processed)) {
       this.extraUpdates.add([parent, prop.name, collection, undefined]);
       const coll = new Collection<AnyEntity, T>(parent);
       coll.property = prop;
@@ -690,7 +691,7 @@ export class UnitOfWork {
 
     collection.getItems(false)
       .filter(item => !item.__helper!.__originalEntityData)
-      .forEach(item => this.findNewEntities(item, visited));
+      .forEach(item => this.findNewEntities(item, visited, 0, processed));
   }
 
   private async runHooks<T extends object>(type: EventType, changeSet: ChangeSet<T>, sync = false): Promise<unknown> {
@@ -785,9 +786,9 @@ export class UnitOfWork {
     }
   }
 
-  private isCollectionSelfReferenced(collection: Collection<AnyEntity>, visited: Set<AnyEntity>): boolean {
+  private isCollectionSelfReferenced(collection: Collection<AnyEntity>, processed: Set<AnyEntity>): boolean {
     const filtered = collection.getItems(false).filter(item => !helper(item).__originalEntityData);
-    return filtered.some(items => visited.has(items));
+    return filtered.some(items => processed.has(items));
   }
 
   private shouldCascade(prop: EntityProperty, type: Cascade): boolean {
