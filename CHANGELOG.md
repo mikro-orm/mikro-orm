@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.8](https://github.com/mikro-orm/mikro-orm/compare/v5.8.7...v5.8.8) (2023-10-11)
+
+
+### Bug Fixes
+
+* **core:** do not rehydrate values provided to constructor ([8ff3f65](https://github.com/mikro-orm/mikro-orm/commit/8ff3f65907e37f971edd0cc7542d62b7646ec958)), closes [#4790](https://github.com/mikro-orm/mikro-orm/issues/4790)
+* **core:** hydrate relations with `mapToPk` as scalars to support custom types ([4118076](https://github.com/mikro-orm/mikro-orm/commit/4118076d985191f8c57f66042e71e835616e4931)), closes [#4803](https://github.com/mikro-orm/mikro-orm/issues/4803)
+* **postgres:** escape array literal values containing backslash ([#4797](https://github.com/mikro-orm/mikro-orm/issues/4797)) ([20179ec](https://github.com/mikro-orm/mikro-orm/commit/20179ec839def5f8144e56f3a6bc89131f7e72a4)), closes [#4796](https://github.com/mikro-orm/mikro-orm/issues/4796)
+
+
+### Performance Improvements
+
+* **core:** fix duplicate processing of collection items when flushing ([a8a1021](https://github.com/mikro-orm/mikro-orm/commit/a8a1021a423ba0d17a16848f51b54360241eb3d5)), closes [#4807](https://github.com/mikro-orm/mikro-orm/issues/4807)
+
+
+
+
+
 ## [5.8.7](https://github.com/mikro-orm/mikro-orm/compare/v5.8.6...v5.8.7) (2023-10-05)
 
 

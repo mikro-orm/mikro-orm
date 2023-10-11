@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.8](https://github.com/mikro-orm/mikro-orm/compare/v5.8.7...v5.8.8) (2023-10-11)
+
+
+### Bug Fixes
+
+* **postgres:** escape array literal values containing backslash ([#4797](https://github.com/mikro-orm/mikro-orm/issues/4797)) ([20179ec](https://github.com/mikro-orm/mikro-orm/commit/20179ec839def5f8144e56f3a6bc89131f7e72a4)), closes [#4796](https://github.com/mikro-orm/mikro-orm/issues/4796)
+
+
+
+
+
 ## [5.8.7](https://github.com/mikro-orm/mikro-orm/compare/v5.8.6...v5.8.7) (2023-10-05)
 
 **Note:** Version bump only for package @mikro-orm/postgresql
