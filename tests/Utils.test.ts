@@ -554,4 +554,5 @@ describe('Utils', () => {
   });
 
   afterAll(async () => orm.close(true));
+
 });
