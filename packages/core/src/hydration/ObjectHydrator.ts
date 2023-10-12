@@ -129,9 +129,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
       ret.push(`    if (isPrimaryKey(data${dataKey}, true)) {`);
 
-      if (prop.mapToPk) {
-        ret.push(`      entity${entityKey} = data${dataKey};`);
-      } else if (prop.wrappedReference) {
+      if (prop.wrappedReference) {
         ret.push(`      entity${entityKey} = Reference.create(factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema }));`);
       } else {
         ret.push(`      entity${entityKey} = factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema });`);
@@ -139,9 +137,7 @@ export class ObjectHydrator extends Hydrator {
 
       ret.push(`    } else if (data${dataKey} && typeof data${dataKey} === 'object') {`);
 
-      if (prop.mapToPk) {
-        ret.push(`      entity${entityKey} = data${dataKey};`);
-      } else if (prop.wrappedReference) {
+      if (prop.wrappedReference) {
         ret.push(`      entity${entityKey} = Reference.create(factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema }));`);
       } else {
         ret.push(`      entity${entityKey} = factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });`);
@@ -150,7 +146,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    }`);
       ret.push(`  }`);
 
-      if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.mapToPk) {
+      if (prop.reference === ReferenceType.ONE_TO_ONE) {
         const meta2 = this.metadata.get(prop.type);
         const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
@@ -165,8 +161,7 @@ export class ObjectHydrator extends Hydrator {
         context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
         ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
-        const pk = prop.mapToPk ? '' : '.__helper.getPrimaryKey()';
-        ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}${pk});`);
+        ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}.__helper.getPrimaryKey());`);
         ret.push(`  }`);
       }
 
@@ -313,7 +308,7 @@ export class ObjectHydrator extends Hydrator {
       dataKey = dataKey ?? (object ? entityKey : this.wrap(prop.name));
       const ret: string[] = [];
 
-      if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
+      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && !prop.mapToPk) {
         ret.push(...hydrateToOne(prop, dataKey, entityKey));
       } else if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
         ret.push(...hydrateToMany(prop, dataKey, entityKey));
