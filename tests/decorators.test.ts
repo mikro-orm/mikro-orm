@@ -188,15 +188,16 @@ describe('decorators', () => {
     expect(ret3).toBeUndefined();
     const ret4 = await test.methodReturnsNothing();
     expect(ret4).toBeUndefined();
+    const ret5 = await test.methodWithCallback();
+    expect(ret5).toBeUndefined();
 
-    const err = '@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@CreateRequestContext(() => orm)`';
-    // If we pass empty callback, we shouldn't magically fall back to `orm` property.
-    await expect(test.methodWithCallback()).rejects.toThrow(err);
     const notOrm = jest.fn() as unknown as MikroORM;
     const test2 = new TestClass(notOrm);
     DI.orm = orm;
     const ret6 = await test2.methodWithCallback();
     expect(ret6).toBeUndefined();
+
+    const err = '@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@CreateRequestContext(() => orm)`';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
     const ret7 = await test.methodWithAsyncCallback();
     expect(ret7).toEqual(TEST_VALUE);

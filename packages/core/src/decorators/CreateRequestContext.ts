@@ -1,6 +1,5 @@
 import { MikroORM } from '../MikroORM';
 import { RequestContext } from '../utils/RequestContext';
-import { Utils } from '@mikro-orm/core';
 
 export function CreateRequestContext<T>(getContext?: MikroORM | Promise<MikroORM> | ((type?: T) => MikroORM | Promise<MikroORM>)): MethodDecorator {
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
@@ -9,16 +8,12 @@ export function CreateRequestContext<T>(getContext?: MikroORM | Promise<MikroORM
       /* istanbul ignore next */
       let orm: unknown;
 
-      if (!getContext) {
-        orm = (this as any).orm;
-      } else if (typeof getContext === 'function') {
-        orm = getContext(this);
+      if (typeof getContext === 'function') {
+        orm = await (getContext(this) ?? (this as any).orm);
+      } else if (getContext) {
+        orm = await getContext;
       } else {
-        orm = getContext;
-      }
-
-      if (Utils.isAsync(orm)) {
-        orm = await orm;
+        orm = await (this as any).orm;
       }
 
       if (!(orm instanceof MikroORM)) {
