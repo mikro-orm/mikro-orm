@@ -1566,7 +1566,7 @@ __metadata:
     "@types/fs-extra": 11.0.2
     "@types/jest": 29.5.5
     "@types/mysql2": "https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
-    "@types/node": 20.8.4
+    "@types/node": 20.8.5
     "@types/pg": 8.10.5
     "@types/sqlstring": 2.3.0
     "@types/uuid": 9.0.5
@@ -1585,7 +1585,7 @@ __metadata:
     lerna: 6.6.2
     lint-staged: 14.0.1
     mongodb: 5.8.1
-    mongodb-memory-server: 9.0.0
+    mongodb-memory-server: 9.0.1
     node-gyp: ^9.3.1
     rimraf: 5.0.5
     ts-jest: 29.1.1
@@ -2535,12 +2535,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.8.4":
-  version: 20.8.4
-  resolution: "@types/node@npm:20.8.4"
+"@types/node@npm:20.8.5":
+  version: 20.8.5
+  resolution: "@types/node@npm:20.8.5"
   dependencies:
     undici-types: ~5.25.1
-  checksum: 2106b9ef9750297cac68249428d7067c4d22c26908854165b70a164e34e900f4c34bb9bf3887c9391206b500d3e87171d03b1846e25788925236a0354390d278
+  checksum: 4bca4e4f6307a6f5dc78812015eca9c5a998b35fcf3ba4058c9851d3dde2b22c914fa25a85b804eab5af2ab95375d15943dce8e9ba5e01d15f4bf516ca0d2816
   languageName: node
   linkType: hard
 
@@ -8467,9 +8467,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb-memory-server-core@npm:9.0.0":
-  version: 9.0.0
-  resolution: "mongodb-memory-server-core@npm:9.0.0"
+"mongodb-memory-server-core@npm:9.0.1":
+  version: 9.0.1
+  resolution: "mongodb-memory-server-core@npm:9.0.1"
   dependencies:
     async-mutex: ^0.4.0
     camelcase: ^6.3.0
@@ -8483,17 +8483,17 @@ __metadata:
     tar-stream: ^3.0.0
     tslib: ^2.6.2
     yauzl: ^2.10.0
-  checksum: c81a623956dd4d496c9988ab7f505026dfadac4bbbc1ffae4689d52a281c3a1fead6ec8172f849b63a908cb04cebb52aecddaf3b0edf3bb7c10b79f32507fb18
+  checksum: 41ed9b1c6c3d56e637594e250ccd151cdf2b958b77551e9e8616f39f1d4ceb22376def390f3bbedff5417b3b448ec235a108e9022da1ab88458719baaf11d8c6
   languageName: node
   linkType: hard
 
-"mongodb-memory-server@npm:9.0.0":
-  version: 9.0.0
-  resolution: "mongodb-memory-server@npm:9.0.0"
+"mongodb-memory-server@npm:9.0.1":
+  version: 9.0.1
+  resolution: "mongodb-memory-server@npm:9.0.1"
   dependencies:
-    mongodb-memory-server-core: 9.0.0
+    mongodb-memory-server-core: 9.0.1
     tslib: ^2.6.2
-  checksum: 9402cbea247e6a31feda08b468bdb2e059ee77c6952d55ebefbe0f4ef6b5f1a6e2453ea7da6d9bf93352874ef20d30cfc957ab60491a086201411f1c64230949
+  checksum: 0f54d26edde117a6e87423461445be094a6af6e7d87d3bf2c98607683c41bed4f2e5a0175dfa8ffd9b6d0bf6fcea11bf3a18aaf66f5ccc619a0a6a4417ebdfce
   languageName: node
   linkType: hard
 
