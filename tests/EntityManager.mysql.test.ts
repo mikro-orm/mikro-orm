@@ -2436,4 +2436,31 @@ describe('EntityManagerMySql', () => {
     await orm.em.flush();
   });
 
+  test('clientUrl with replicas (GH issue #4813)', async () => {
+    const config = new Configuration({
+      driver: MySqlDriver,
+      clientUrl: 'mysql://usr:pswd@128.0.0.1:5433/foo',
+      preferReadReplicas: true,
+      replicas: [
+        { clientUrl: 'mysql://usr2:pswd2@129.0.0.1:5434/bar' },
+      ],
+      entities: ['src/**/*.entity.ts'],
+    }, false);
+    const driver = new MySqlDriver(config);
+    expect(driver.getConnection('write').getConnectionOptions()).toMatchObject({
+      database: 'foo',
+      host: '128.0.0.1',
+      password: 'pswd',
+      port: 5433,
+      user: 'usr',
+    });
+    expect(driver.getConnection('read').getConnectionOptions()).toMatchObject({
+      database: 'bar',
+      host: '129.0.0.1',
+      password: 'pswd2',
+      port: 5434,
+      user: 'usr2',
+    });
+  });
+
 });
