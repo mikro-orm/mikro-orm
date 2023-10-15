@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.9](https://github.com/mikro-orm/mikro-orm/compare/v5.8.8...v5.8.9) (2023-10-15)
+
+
+### Bug Fixes
+
+* **core:** ignore SQL convertor methods on object embeddables ([92e1d6f](https://github.com/mikro-orm/mikro-orm/commit/92e1d6f663cf44a52db21b105ed0ffbca59cdf59)), closes [#4824](https://github.com/mikro-orm/mikro-orm/issues/4824)
+* **core:** respect database name in `clientUrl` of read replicas ([015d4f4](https://github.com/mikro-orm/mikro-orm/commit/015d4f4b96ca5329f89df4b8666e9781efbba96c)), closes [#4813](https://github.com/mikro-orm/mikro-orm/issues/4813)
+* **query-builder:** merge raw join results in `qb.execute()` ([#4825](https://github.com/mikro-orm/mikro-orm/issues/4825)) ([5a28e9b](https://github.com/mikro-orm/mikro-orm/commit/5a28e9b4d7fd627e1a1689d16e877740ca2a3d2d)), closes [#4816](https://github.com/mikro-orm/mikro-orm/issues/4816) [#4741](https://github.com/mikro-orm/mikro-orm/issues/4741)
+* **schema:** skip changes of enum items on enum arrays ([9accdf6](https://github.com/mikro-orm/mikro-orm/commit/9accdf60fbed330a039d013495b5b4f44c181657)), closes [#476](https://github.com/mikro-orm/mikro-orm/issues/476)
+
+
+
+
+
 ## [5.8.8](https://github.com/mikro-orm/mikro-orm/compare/v5.8.7...v5.8.8) (2023-10-11)
 
 
