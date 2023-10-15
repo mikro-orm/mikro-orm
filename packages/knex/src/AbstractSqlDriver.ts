@@ -109,13 +109,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
-    const result = await this.rethrow(qb.execute('all'));
-
-    if (joinedProps.length > 0) {
-      return this.mergeJoinedResult(result, meta, joinedProps);
-    }
-
-    return result;
+    return this.rethrow(qb.execute('all'));
   }
 
   async findOne<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<EntityData<T> | null> {
@@ -222,8 +216,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     if (qb) {
       // here we map the aliased results (cartesian product) to an object graph
       this.mapJoinedProps<T>(ret, meta, populate, qb, ret, map);
-      // we need to remove the cycles from the mapped values
-      Utils.removeCycles(ret, meta);
     }
 
     return ret;
@@ -243,7 +235,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const meta2 = this.metadata.find(relation.type)!;
       const path = parentJoinPath ? `${parentJoinPath}.${relation.name}` : `${meta.name}.${relation.name}`;
       const relationAlias = qb.getAliasForJoinPath(path);
-      let relationPojo: EntityData<unknown> = {};
+      const relationPojo: EntityData<unknown> = {};
 
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
@@ -286,23 +278,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
             delete root![alias];
           }
         });
-
-      const key = `${meta.name}-${Utils.getCompositeKeyHash(result, meta)}`;
-      const key2 = `${meta2.name}-${Utils.getCompositeKeyHash(relationPojo, meta2)}`;
-
-      if (map[key2]) {
-        const old = map[key2];
-        Object.assign(old, relationPojo);
-        relationPojo = old;
-      } else {
-        map[key2] = relationPojo;
-      }
-
-      if (map[key]) {
-        result[relation.name] = map[key][relation.name];
-      } else {
-        map[key] = result;
-      }
 
       if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(relation.reference)) {
         result[relation.name] = result[relation.name] || [] as unknown as T[keyof T & string];
@@ -775,7 +750,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return [...populate, ...toPopulate];
   }
 
-  protected joinedProps<T>(meta: EntityMetadata, populate: PopulateOptions<T>[]): PopulateOptions<T>[] {
+  /**
+   * @internal
+   */
+  joinedProps<T>(meta: EntityMetadata, populate: PopulateOptions<T>[]): PopulateOptions<T>[] {
     return populate.filter(p => {
       const prop = meta.properties[p.field] || {};
       return (p.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.reference !== ReferenceType.SCALAR;
@@ -786,26 +764,36 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
    * @internal
    */
   mergeJoinedResult<T extends object>(rawResults: EntityData<T>[], meta: EntityMetadata<T>, joinedProps: PopulateOptions<T>[]): EntityData<T>[] {
-    // group by the root entity primary key first
-    const map: Dictionary<Dictionary> = {};
     const res: EntityData<T>[] = [];
-    rawResults.forEach(item => {
+    const map: Dictionary<Dictionary> = {};
+
+    for (const item of rawResults) {
       const pk = Utils.getCompositeKeyHash(item, meta);
 
       if (map[pk]) {
-        joinedProps.forEach(hint => {
-          // Sometimes we might join a M:N relation with additional filter on the target entity, and as a result, we get
-          // the first result with `null` for all target values, which is mapped as empty array. When we see that happen,
-          // we need to merge the results of the next item.
-          if (Array.isArray(map[pk][hint.field]) && Array.isArray(item[hint.field]) && map[pk][hint.field].length === 0) {
-            item[hint.field].forEach((el: T) => map[pk][hint.field].push(el));
+        for (const hint of joinedProps) {
+          const prop = meta.properties[hint.field];
+
+          if (!item[hint.field]) {
+            continue;
           }
-        });
+
+          switch (prop.reference) {
+            case ReferenceType.ONE_TO_MANY:
+            case ReferenceType.MANY_TO_MANY:
+              map[pk][hint.field] = this.mergeJoinedResult<T>([...map[pk][hint.field], ...item[hint.field]], prop.targetMeta!, hint.children ?? []);
+              break;
+            case ReferenceType.MANY_TO_ONE:
+            case ReferenceType.ONE_TO_ONE:
+              map[pk][hint.field] = this.mergeJoinedResult<T>([map[pk][hint.field], item[hint.field]], prop.targetMeta!, hint.children ?? [])[0];
+              break;
+          }
+        }
       } else {
         map[pk] = item;
         res.push(item);
       }
-    });
+    }
 
     return res;
   }

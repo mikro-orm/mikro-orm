@@ -102,7 +102,6 @@ beforeEach(async () => {
 
 // Outer --> active Division --> [Inners] --> Geometry
 test(`GH4741 issue (1/3)`, async () => {
-
   const em = orm.em.fork();
   const qb = em.createQueryBuilder(Outer, 'o');
 
@@ -135,7 +134,6 @@ test(`GH4741 issue (1/3)`, async () => {
     expect(geom).toBeInstanceOf(Geometry);
     expect(wrap(geom).isInitialized()).toBeTruthy();	// Succeeds
   }
-  em.clear();
 });
 
 // Outer --> active Division --> [Inners] --> Geometry
@@ -175,7 +173,6 @@ test(`GH4741 issue (2/3)`, async () => {
     expect(geom).toBeInstanceOf(Geometry);
     expect(wrap(geom).isInitialized()).toBeTruthy();	// Succeeds
   }
-  em.clear();
 });
 
 // Outer --> active Division --> [Inners] --> Geometry
@@ -215,5 +212,4 @@ test(`GH4741 issue (3/3)`, async () => {
     expect(geom).toBeInstanceOf(Geometry);
     expect(wrap(geom).isInitialized()).toBeTruthy();	// Fails
   }
-  em.clear();
 });

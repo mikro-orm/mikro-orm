@@ -1049,48 +1049,6 @@ export class Utils {
     }
   }
 
-  private static processValue(obj: Dictionary, k: keyof typeof obj, v: unknown, meta: EntityMetadata, seen: Set<unknown>, idx?: number) {
-    const targetMeta = meta.properties[k]?.targetMeta;
-
-    if (typeof v !== 'object' || !v || !targetMeta) {
-      return;
-    }
-
-    if (Array.isArray(v)) {
-      let i = 0;
-
-      for (const el of v) {
-        this.processValue(obj, k, el, meta, seen, i++);
-      }
-
-      return;
-    }
-
-    if (!seen.has(v)) {
-      this.removeCycles(v, targetMeta, seen);
-      return;
-    }
-
-    const pk = Utils.getPrimaryKeyValues(v, targetMeta.primaryKeys, true);
-
-    if (idx != null) {
-      obj[k][idx] = pk;
-    } else {
-      obj[k] = pk;
-    }
-  }
-
-  /**
-   * Removes cycles from an entity graph, replacing the entity with its primary key value.
-   */
-  static removeCycles(obj: Dictionary, meta: EntityMetadata, seen = new Set()) {
-    seen.add(obj);
-
-    for (const [k, v] of Object.entries(obj)) {
-      this.processValue(obj, k, v, meta, seen);
-    }
-  }
-
   static unwrapProperty<T>(entity: T, meta: EntityMetadata<T>, prop: EntityProperty<T>, payload = false): [unknown, number[]][] {
     let p = prop;
     const path: string[] = [];
