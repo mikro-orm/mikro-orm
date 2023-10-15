@@ -640,18 +640,31 @@ export class QueryBuilder<T extends object = AnyEntity> {
       return res as unknown as U;
     }
 
-    if (method === 'all' && Array.isArray(res)) {
-      const map: Dictionary = {};
-      const mapped = res.map(r => this.driver.mapResult<T>(r, meta, this._populate, this, map)) as unknown as U;
-      await this.em?.storeCache(this._cache, cached!, mapped);
-
-      return mapped;
+    if (method === 'run') {
+      return res as U;
     }
 
-    const mapped = this.driver.mapResult(res as T, meta, this._populate, this) as unknown as U;
+    const joinedProps = this.driver.joinedProps(meta, this._populate);
+    let mapped: EntityData<T>[];
+
+    if (Array.isArray(res)) {
+      const map: Dictionary = {};
+      mapped = res.map(r => this.driver.mapResult<T>(r, meta, this._populate, this, map)!);
+
+      if (joinedProps.length > 0) {
+        mapped = this.driver.mergeJoinedResult(mapped, this.mainAlias.metadata!, joinedProps);
+      }
+    } else {
+      mapped = [this.driver.mapResult<T>(res, meta, joinedProps, this)!];
+    }
+
     await this.em?.storeCache(this._cache, cached!, mapped);
 
-    return mapped;
+    if (method === 'get') {
+      return mapped[0] as U;
+    }
+
+    return mapped as U;
   }
 
   /**
@@ -666,12 +679,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
    */
   async getResultList(): Promise<T[]> {
     await this.em!.tryFlush(this.mainAlias.entityName, { flushMode: this.flushMode });
-    let res = await this.execute<EntityData<T>[]>('all', true);
-
-    if (this._joinedProps.size > 0) {
-      res = this.driver.mergeJoinedResult(res, this.mainAlias.metadata!, [...this._joinedProps.values()]);
-    }
-
+    const res = await this.execute<EntityData<T>[]>('all', true);
     const entities: T[] = [];
 
     function propagatePopulateHint<U>(entity: U, hint: PopulateOptions<U>[]) {

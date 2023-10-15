@@ -1481,13 +1481,13 @@ describe('EntityManagerMySql', () => {
       populateWhere: PopulateHint.INFER,
       orderBy: { title: QueryOrder.DESC, tags: { name: QueryOrder.ASC } },
     });
-    await expect(books.length).toBe(3);
-    await expect(books[0].title).toBe('My Life on The Wall, part 3');
-    await expect(books[0].tags.getItems().map(t => t.name)).toEqual(['awkward', 'sexy', 'strange']);
-    await expect(books[1].title).toBe('My Life on The Wall, part 2');
-    await expect(books[1].tags.getItems().map(t => t.name)).toEqual(['sexy', 'silly', 'zupa']);
-    await expect(books[2].title).toBe('My Life on The Wall, part 1');
-    await expect(books[2].tags.getItems().map(t => t.name)).toEqual(['awkward', 'sick', 'silly', 'zupa']);
+    expect(books.length).toBe(3);
+    expect(books[0].title).toBe('My Life on The Wall, part 3');
+    expect(books[0].tags.getItems().map(t => t.name)).toEqual(['awkward', 'sexy', 'strange']);
+    expect(books[1].title).toBe('My Life on The Wall, part 2');
+    expect(books[1].tags.getItems().map(t => t.name)).toEqual(['sexy', 'silly', 'zupa']);
+    expect(books[2].title).toBe('My Life on The Wall, part 1');
+    expect(books[2].tags.getItems().map(t => t.name)).toEqual(['awkward', 'sick', 'silly', 'zupa']);
   });
 
   test('many to many with composite pk', async () => {
@@ -1525,13 +1525,13 @@ describe('EntityManagerMySql', () => {
       'left join `test2` as `t3` on `b0`.`uuid_pk` = `t3`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and `b1`.`name` != ? ' +
       'order by `b0`.`title` desc');
-    await expect(books.length).toBe(3);
-    await expect(books[0].title).toBe('My Life on The Wall, part 3');
-    await expect(books[0].tagsUnordered.getItems().map(t => t.name)).toEqual(['awkward', 'sexy', 'strange']);
-    await expect(books[1].title).toBe('My Life on The Wall, part 2');
-    await expect(books[1].tagsUnordered.getItems().map(t => t.name)).toEqual(['sexy', 'silly', 'zupa']);
-    await expect(books[2].title).toBe('My Life on The Wall, part 1');
-    await expect(books[2].tagsUnordered.getItems().map(t => t.name)).toEqual(['awkward', 'sick', 'silly', 'zupa']);
+    expect(books.length).toBe(3);
+    expect(books[0].title).toBe('My Life on The Wall, part 3');
+    expect(books[0].tagsUnordered.getItems().map(t => t.name)).toEqual(['awkward', 'sexy', 'strange']);
+    expect(books[1].title).toBe('My Life on The Wall, part 2');
+    expect(books[1].tagsUnordered.getItems().map(t => t.name)).toEqual(['sexy', 'silly', 'zupa']);
+    expect(books[2].title).toBe('My Life on The Wall, part 1');
+    expect(books[2].tagsUnordered.getItems().map(t => t.name)).toEqual(['awkward', 'sick', 'silly', 'zupa']);
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1544,9 +1544,9 @@ describe('EntityManagerMySql', () => {
       'left join `book_to_tag_unordered` as `b1` on `b0`.`uuid_pk` = `b1`.`book2_uuid_pk` ' +
       'left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and `b0`.`title` != ? and `b1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?)');
-    await expect(tags.length).toBe(6);
-    await expect(tags.map(tag => tag.name)).toEqual(['awkward', 'funny', 'sexy', 'sick', 'silly', 'zupa']);
-    await expect(tags.map(tag => tag.booksUnordered.count())).toEqual([1, 1, 1, 1, 2, 2]);
+    expect(tags.length).toBe(6);
+    expect(tags.map(tag => tag.name)).toEqual(['awkward', 'funny', 'sexy', 'sick', 'silly', 'zupa']);
+    expect(tags.map(tag => tag.booksUnordered.count())).toEqual([1, 1, 1, 1, 2, 2]);
   });
 
   test('self referencing M:N (unidirectional)', async () => {
