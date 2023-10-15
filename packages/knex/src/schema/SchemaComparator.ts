@@ -1,5 +1,14 @@
 import { inspect } from 'util';
-import { BooleanType, DateTimeType, JsonType, parseJsonSafe, Utils, type Dictionary, type EntityProperty } from '@mikro-orm/core';
+import {
+  ArrayType,
+  BooleanType,
+  DateTimeType,
+  JsonType,
+  parseJsonSafe,
+  Utils,
+  type Dictionary,
+  type EntityProperty,
+} from '@mikro-orm/core';
 import type { Check, Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
@@ -443,7 +452,11 @@ export class SchemaComparator {
       changedProperties.add('comment');
     }
 
-    if (this.diffEnumItems(column1.enumItems, column2.enumItems)) {
+    if (
+      !(column1.mappedType instanceof ArrayType) &&
+      !(column2.mappedType instanceof ArrayType) &&
+      this.diffEnumItems(column1.enumItems, column2.enumItems)
+    ) {
       log(`'enumItems' changed for column ${tableName}.${column1.name}`, { column1, column2 });
       changedProperties.add('enumItems');
     }
