@@ -1055,7 +1055,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   protected buildFields<T extends object>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>, fields?: Field<T>[]): Field<T>[] {
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const hasLazyFormulas = meta.props.some(p => p.lazy && p.formula);
-    const requiresSQLConversion = meta.props.some(p => p.customType?.convertToJSValueSQL);
+    const requiresSQLConversion = meta.props.some(p => p.customType?.convertToJSValueSQL && p.persist !== false);
     const hasExplicitFields = !!fields;
     const ret: Field<T>[] = [];
 
