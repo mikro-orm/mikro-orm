@@ -415,13 +415,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/cli@npm:17.7.2":
-  version: 17.7.2
-  resolution: "@commitlint/cli@npm:17.7.2"
+"@commitlint/cli@npm:17.8.0":
+  version: 17.8.0
+  resolution: "@commitlint/cli@npm:17.8.0"
   dependencies:
     "@commitlint/format": ^17.4.4
-    "@commitlint/lint": ^17.7.0
-    "@commitlint/load": ^17.7.2
+    "@commitlint/lint": ^17.8.0
+    "@commitlint/load": ^17.8.0
     "@commitlint/read": ^17.5.1
     "@commitlint/types": ^17.4.4
     execa: ^5.0.0
@@ -431,16 +431,16 @@ __metadata:
     yargs: ^17.0.0
   bin:
     commitlint: cli.js
-  checksum: 7d5d86b27980135713094e44023ee7a6cc2bb1cd015f92111857e069a3127dab63d4575b507bdac2e16255aaab65da908d1f7667e8aa9de7e032d9c464ef3154
+  checksum: 3780a143aa943c832283b762be9d2bc317745ce716f798ff6a07c1f5d1bb2a8fee169fc153e7545b00bea81e255f108e078ee7d79db8c3631d87e5820ea71d50
   languageName: node
   linkType: hard
 
-"@commitlint/config-conventional@npm:17.7.0":
-  version: 17.7.0
-  resolution: "@commitlint/config-conventional@npm:17.7.0"
+"@commitlint/config-conventional@npm:17.8.0":
+  version: 17.8.0
+  resolution: "@commitlint/config-conventional@npm:17.8.0"
   dependencies:
     conventional-changelog-conventionalcommits: ^6.1.0
-  checksum: 932cf35c12855e360c750bc19ffedc0925f8658f316aaacdf5441ce775712934386643a9ac418f18e24e5bb1bf71ed721b8ae452a13d04908b0e55cd3d2d988f
+  checksum: 33a6f7867e0ef6b39a34246a615a75ea4eaab76852d00ffee8c28560fe0786cf56a4f20d747d2f56b28a4bddc3637a5bf7948b465744edcd890b9c2337a2c741
   languageName: node
   linkType: hard
 
@@ -485,31 +485,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/is-ignored@npm:^17.7.0":
-  version: 17.7.0
-  resolution: "@commitlint/is-ignored@npm:17.7.0"
+"@commitlint/is-ignored@npm:^17.8.0":
+  version: 17.8.0
+  resolution: "@commitlint/is-ignored@npm:17.8.0"
   dependencies:
     "@commitlint/types": ^17.4.4
     semver: 7.5.4
-  checksum: aa0b695d6e7bee5e732f96a2ff383347ff476eb48f9d3b4ed75b098cafa27e56da15563833d3cf4e1268fc26819180cd8b5bdc322b087073a63bc94f699944b2
+  checksum: ae18943cae8370476049fcbf08c18256f44e2063c9be553eb282a81231ec50a8aff1b861e93108dc823fe6331e1aedcdd7c74c777b57e564308eeb7f7b9da33c
   languageName: node
   linkType: hard
 
-"@commitlint/lint@npm:^17.7.0":
-  version: 17.7.0
-  resolution: "@commitlint/lint@npm:17.7.0"
+"@commitlint/lint@npm:^17.8.0":
+  version: 17.8.0
+  resolution: "@commitlint/lint@npm:17.8.0"
   dependencies:
-    "@commitlint/is-ignored": ^17.7.0
+    "@commitlint/is-ignored": ^17.8.0
     "@commitlint/parse": ^17.7.0
     "@commitlint/rules": ^17.7.0
     "@commitlint/types": ^17.4.4
-  checksum: 72765e0f2c6b78faa1c7ceb1050ef624d505deb0f95c5ac2ce1959c3ee8c2ce579d4f5aaf9434adf244727a97653be4d7fbc0d75cda2d8915e563ebeb7b886ae
+  checksum: 7a2729575de88b15c296619d78bb7cde4da535adb35b8a5f5834585d3ae293cc01352a2bbb98cb02c6938cedb871c787c5086d47d42750b311094a459b33cbc9
   languageName: node
   linkType: hard
 
-"@commitlint/load@npm:^17.7.2":
-  version: 17.7.2
-  resolution: "@commitlint/load@npm:17.7.2"
+"@commitlint/load@npm:^17.8.0":
+  version: 17.8.0
+  resolution: "@commitlint/load@npm:17.8.0"
   dependencies:
     "@commitlint/config-validator": ^17.6.7
     "@commitlint/execute-rule": ^17.4.0
@@ -525,7 +525,7 @@ __metadata:
     resolve-from: ^5.0.0
     ts-node: ^10.8.1
     typescript: ^4.6.4 || ^5.0.0
-  checksum: dda9f7efd6413309266617a5ee026df65cc8c590b86c312f5905285fcbef5ae3ec983694c145007d89402c9f728882465f016167b156f43f6ed414c3b8ca079a
+  checksum: 24287a9dfbf57f7d824ffc7f6a3df2f4771db501ce05219ed93abd00b68dc629a41a70c4d6c142ca05c4f29d38a1cf823353886c2378f5dd77d6e0cf2c540ffc
   languageName: node
   linkType: hard
 
@@ -1504,7 +1504,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": ^5.8.9
     "@mikro-orm/knex": 5.8.9
-    mysql2: 3.6.1
+    mysql2: 3.6.2
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
     "@mikro-orm/entity-generator": ^5.0.0
@@ -1558,15 +1558,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/root@workspace:."
   dependencies:
-    "@commitlint/cli": 17.7.2
-    "@commitlint/config-conventional": 17.7.0
+    "@commitlint/cli": 17.8.0
+    "@commitlint/config-conventional": 17.8.0
     "@mikro-orm/mongo-highlighter": 1.0.0
     "@mikro-orm/sql-highlighter": 1.0.1
     "@side/jest-runtime": ^1.1.0
     "@types/fs-extra": 11.0.2
     "@types/jest": 29.5.5
     "@types/mysql2": "https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
-    "@types/node": 20.8.5
+    "@types/node": 20.8.6
     "@types/pg": 8.10.5
     "@types/sqlstring": 2.3.0
     "@types/uuid": 9.0.5
@@ -2535,12 +2535,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.8.5":
-  version: 20.8.5
-  resolution: "@types/node@npm:20.8.5"
+"@types/node@npm:20.8.6":
+  version: 20.8.6
+  resolution: "@types/node@npm:20.8.6"
   dependencies:
     undici-types: ~5.25.1
-  checksum: 4bca4e4f6307a6f5dc78812015eca9c5a998b35fcf3ba4058c9851d3dde2b22c914fa25a85b804eab5af2ab95375d15943dce8e9ba5e01d15f4bf516ca0d2816
+  checksum: ccfb7ac482c5a96edeb239893c5c099f5257fcc2ed9ae62fefdfbc782b79e16dbc2af9a85b379665237bf759904b44ca2be68e75d239e0297882aad42f61905c
   languageName: node
   linkType: hard
 
@@ -8595,9 +8595,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.6.1":
-  version: 3.6.1
-  resolution: "mysql2@npm:3.6.1"
+"mysql2@npm:3.6.2":
+  version: 3.6.2
+  resolution: "mysql2@npm:3.6.2"
   dependencies:
     denque: ^2.1.0
     generate-function: ^2.3.1
@@ -8607,7 +8607,7 @@ __metadata:
     named-placeholders: ^1.1.3
     seq-queue: ^0.0.5
     sqlstring: ^2.3.2
-  checksum: 29892b9810557c4cc1ce8291286aff57ffbe2d832a5ce5de8d9f336497d367a8613662ee5fac1b2144ef898550f66b251f5b8801a6d8fdf89b9018263708e63b
+  checksum: 819d7649536db477511236ea9597062ddb5ec2f60127132239b93b1c4bf7a2af182893f0eabc2a4b2c9c4f6eb1770b6e93a7d0a7f9739ae339480b6c8c608a14
   languageName: node
   linkType: hard
 
