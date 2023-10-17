@@ -8,7 +8,6 @@ import {
   OneToOne,
   PrimaryKey,
   PrimaryKeyProp,
-  PrimaryKeyType,
   Property,
   Ref,
 } from '@mikro-orm/core';
@@ -39,9 +38,8 @@ class B {
 @Entity()
 class C {
 
-  [PrimaryKeyType]!: number;
   [PrimaryKeyProp]!: 'node';
-  @OneToOne({ entity: () => D, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
+  @OneToOne({ entity: () => D, primary: true, deleteRule: 'cascade', updateRule: 'cascade' })
   node!: Ref<D>;
 
 }

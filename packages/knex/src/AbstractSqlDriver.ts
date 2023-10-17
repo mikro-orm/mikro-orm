@@ -790,7 +790,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       qb.limit(options.limit, options.offset);
     }
 
-    const res = owners.length ? await this.rethrow(qb.execute('all', { mergeResults: false })) : [];
+    const res = owners.length ? await this.rethrow(qb.execute('all', { mergeResults: false, mapResults: false })) : [];
     const items = res.map((row: Dictionary) => super.mapResult(row, prop.targetMeta));
 
     const map: Dictionary<T[]> = {};

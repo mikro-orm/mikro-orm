@@ -49,7 +49,7 @@ class InternalRolePermission extends ApplicationEntity {
   @Property()
   action!: string;
 
-  @ManyToOne(() => InternalRole, { onDelete: 'cascade' })
+  @ManyToOne(() => InternalRole, { deleteRule: 'cascade' })
   internalRole!: InternalRole;
 
 }
