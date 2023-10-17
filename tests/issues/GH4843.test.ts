@@ -5,7 +5,7 @@ import {
   PrimaryKey,
   OneToMany,
   TextType,
-  PrimaryKeyType,
+  PrimaryKeyProp,
 } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/postgresql';
 
@@ -24,7 +24,7 @@ class CitextType extends TextType {
 @Entity()
 class A {
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['id1', 'id2'];
 
   @PrimaryKey({ type: CitextType })
   id1!: string;
