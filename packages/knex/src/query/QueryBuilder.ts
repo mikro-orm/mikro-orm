@@ -38,6 +38,11 @@ import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
 import type { Field, JoinOptions } from '../typings';
 
+export interface ExecuteOptions {
+  mapResults?: boolean;
+  mergeResults?: boolean;
+}
+
 /**
  * SQL query builder with fluent interface.
  *
@@ -619,7 +624,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Executes this QB and returns the raw results, mapped to the property names (unless disabled via last parameter).
    * Use `method` to specify what kind of result you want to get (array/single/meta).
    */
-  async execute<U = any>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<U> {
+  async execute<U = any>(method: 'all' | 'get' | 'run' = 'all', options?: ExecuteOptions | boolean): Promise<U> {
+    options = typeof options === 'boolean' ? { mapResults: options } : (options ?? {});
+    options.mergeResults ??= true;
+    options.mapResults ??= true;
+
     if (!this.connectionType && method !== 'run' && [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type ?? QueryType.SELECT)) {
       this.connectionType = 'write';
     }
@@ -635,7 +644,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context);
     const meta = this.mainAlias.metadata;
 
-    if (!mapResults || !meta) {
+    if (!options.mapResults || !meta) {
       await this.em?.storeCache(this._cache, cached!, res);
       return res as unknown as U;
     }
@@ -651,7 +660,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       const map: Dictionary = {};
       mapped = res.map(r => this.driver.mapResult<T>(r, meta, this._populate, this, map)!);
 
-      if (joinedProps.length > 0) {
+      if (options.mergeResults && joinedProps.length > 0) {
         mapped = this.driver.mergeJoinedResult(mapped, this.mainAlias.metadata!, joinedProps);
       }
     } else {

@@ -704,7 +704,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       });
     }
 
-    const items = owners.length ? await this.rethrow(qb.execute('all')) : [];
+    const items = owners.length ? await this.rethrow(qb.execute('all', { mergeResults: false })) : [];
 
     const map: Dictionary<T[]> = {};
     const pkProps = ownerMeta.getPrimaryProps();
