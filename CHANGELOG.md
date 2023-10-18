@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.10](https://github.com/mikro-orm/mikro-orm/compare/v5.8.9...v5.8.10) (2023-10-18)
+
+
+### Bug Fixes
+
+* **knex:** fix populating M:N from inverse side with joined strategy ([9f82e95](https://github.com/mikro-orm/mikro-orm/commit/9f82e95b3353be2ef476dc3ce129674e863b44b8))
+* **reflection:** ensure complete stripping of relative paths with multiple leading slashes ([#4844](https://github.com/mikro-orm/mikro-orm/issues/4844)) ([8a635c7](https://github.com/mikro-orm/mikro-orm/commit/8a635c79d8939251545f02f3e569a0589c64f33a))
+
+
+
+
+
 ## [5.8.9](https://github.com/mikro-orm/mikro-orm/compare/v5.8.8...v5.8.9) (2023-10-15)
 
 
