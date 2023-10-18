@@ -1162,7 +1162,7 @@ export class Utils {
   }
 
   static stripRelativePath(str: string): string {
-    return str.replace(/^(?:\.\.\/|\.\/)+/, '');
+    return str.replace(/^(?:\.\.\/|\.\/)+/, '/');
   }
 
 }

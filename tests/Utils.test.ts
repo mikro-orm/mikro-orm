@@ -154,16 +154,16 @@ describe('Utils', () => {
   describe('stripRelativePath', () => {
     test('Remove single leading dot (./)', () => {
       const path = './my/path';
-      expect(Utils.stripRelativePath(path)).toEqual('my/path');
+      expect(Utils.stripRelativePath(path)).toEqual('/my/path');
     });
     test('Remove multiple leading dots (../)', () => {
       const path = '../my/path';
-      expect(Utils.stripRelativePath(path)).toEqual('my/path');
+      expect(Utils.stripRelativePath(path)).toEqual('/my/path');
     });
 
     test('Remove multiple leading dots and slashes (../../)', () => {
       const path = '../../my/path';
-      expect(Utils.stripRelativePath(path)).toEqual('my/path');
+      expect(Utils.stripRelativePath(path)).toEqual('/my/path');
     });
 
   });
