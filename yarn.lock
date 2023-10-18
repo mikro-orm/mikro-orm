@@ -1681,13 +1681,13 @@ __metadata:
     "@mikro-orm/mongo-highlighter": 1.0.0
     "@mikro-orm/sql-highlighter": 1.0.1
     "@side/jest-runtime": ^1.1.0
-    "@types/fs-extra": 11.0.2
-    "@types/jest": 29.5.5
-    "@types/node": 20.8.6
-    "@types/pg": 8.10.5
-    "@types/sqlstring": 2.3.0
-    "@types/uuid": 9.0.5
-    "@types/webpack-env": 1.18.2
+    "@types/fs-extra": 11.0.3
+    "@types/jest": 29.5.6
+    "@types/node": 20.8.7
+    "@types/pg": 8.10.7
+    "@types/sqlstring": 2.3.1
+    "@types/uuid": 9.0.6
+    "@types/webpack-env": 1.18.3
     "@typescript-eslint/eslint-plugin": 6.8.0
     "@typescript-eslint/parser": 6.8.0
     bson: ^5.4.0
@@ -2524,13 +2524,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/fs-extra@npm:11.0.2":
-  version: 11.0.2
-  resolution: "@types/fs-extra@npm:11.0.2"
+"@types/fs-extra@npm:11.0.3":
+  version: 11.0.3
+  resolution: "@types/fs-extra@npm:11.0.3"
   dependencies:
     "@types/jsonfile": "*"
     "@types/node": "*"
-  checksum: 5b3e30343ee62d2e393e1029355f13f64bab6f3416226e22492483f99da840e2e53ca22cbfa4ac3749f2f83f7086d19c009005c8fa175da01df0fae59c2d73e1
+  checksum: f196bc216906e7016a6c9c549dbe204fe7e1e87515c7e961f741309e25f8e2f8c268dba3dbf0ca7f3ddab5911d39888472f8624ac0c11a461f1b2d05377e38fa
   languageName: node
   linkType: hard
 
@@ -2575,13 +2575,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:29.5.5":
-  version: 29.5.5
-  resolution: "@types/jest@npm:29.5.5"
+"@types/jest@npm:29.5.6":
+  version: 29.5.6
+  resolution: "@types/jest@npm:29.5.6"
   dependencies:
     expect: ^29.0.0
     pretty-format: ^29.0.0
-  checksum: 56e55cde9949bcc0ee2fa34ce5b7c32c2bfb20e53424aa4ff3a210859eeaaa3fdf6f42f81a3f655238039cdaaaf108b054b7a8602f394e6c52b903659338d8c6
+  checksum: fa13a27bd1c8efd0381a419478769d0d6d3a8e93e1952d7ac3a16274e8440af6f73ed6f96ac1ff00761198badf2ee226b5ab5583a5d87a78d609ea78da5c5a24
   languageName: node
   linkType: hard
 
@@ -2636,12 +2636,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.8.6":
-  version: 20.8.6
-  resolution: "@types/node@npm:20.8.6"
+"@types/node@npm:20.8.7":
+  version: 20.8.7
+  resolution: "@types/node@npm:20.8.7"
   dependencies:
     undici-types: ~5.25.1
-  checksum: ccfb7ac482c5a96edeb239893c5c099f5257fcc2ed9ae62fefdfbc782b79e16dbc2af9a85b379665237bf759904b44ca2be68e75d239e0297882aad42f61905c
+  checksum: 2173c0c03daefcb60c03a61b1371b28c8fe412e7a40dc6646458b809d14a85fbc7aeb369d957d57f0aaaafd99964e77436f29b3b579232d8f2b20c58abbd1d25
   languageName: node
   linkType: hard
 
@@ -2666,14 +2666,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pg@npm:8.10.5":
-  version: 8.10.5
-  resolution: "@types/pg@npm:8.10.5"
+"@types/pg@npm:8.10.7":
+  version: 8.10.7
+  resolution: "@types/pg@npm:8.10.7"
   dependencies:
     "@types/node": "*"
     pg-protocol: "*"
     pg-types: ^4.0.1
-  checksum: 532a3104ed7898e3c7806e00cbde486dcfc803d2e99e236066f1b675ff0546a1cb232fe6f2ffc60dac81d3df209b69dbe62a597b565bff0965dd622fef957afe
+  checksum: 90a616360844b6f877be21a24839af2115f5eb9c8e3eeaf577fa0f036c6c56ad140113fdd8268e63cf215bd0953d89caa1af05191dd89cb2e6d96eb6db6074d2
   languageName: node
   linkType: hard
 
@@ -2684,10 +2684,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/sqlstring@npm:2.3.0":
-  version: 2.3.0
-  resolution: "@types/sqlstring@npm:2.3.0"
-  checksum: 8f180c7bc0a34f9ce20be44fa8bc962ad402519a29c6e0309db39ed82f5f201c57ca03fbd5f15abb065496e88624adb9740200f77157661f090374fe4c23084d
+"@types/sqlstring@npm:2.3.1":
+  version: 2.3.1
+  resolution: "@types/sqlstring@npm:2.3.1"
+  checksum: db9cab123104fb4c65e81621e62adabadebc32a8ce832b4ca516e07fae715e5e49d991916e8da8a2595213269521dce63bba7832204d3d90870f69283183a593
   languageName: node
   linkType: hard
 
@@ -2698,10 +2698,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/uuid@npm:9.0.5":
-  version: 9.0.5
-  resolution: "@types/uuid@npm:9.0.5"
-  checksum: 7577940949619768303c0bf0a7cc235fac3cfae1c0bb4a2e85bfb87b2eb1024955ab446f775394d259442cd769b663b6ce43c39bdfc955d946bf833804ddb421
+"@types/uuid@npm:9.0.6":
+  version: 9.0.6
+  resolution: "@types/uuid@npm:9.0.6"
+  checksum: 739dcb2e620ff097fa916edeab455eb75640c4883a850784fdb15b32f67b719e05275c6d6419bb6da11350d26bd14ed05ba5e992ff228411cdd98cbc772d71ef
   languageName: node
   linkType: hard
 
@@ -2712,10 +2712,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/webpack-env@npm:1.18.2":
-  version: 1.18.2
-  resolution: "@types/webpack-env@npm:1.18.2"
-  checksum: 883908ade827d35a10efc574fb6f2728a7c520d4296cf1507633ac7457204ccd697bc6c8cadac99bc5d96074a6109c658ebfde59f42ba5ba0fdfffc538892b0f
+"@types/webpack-env@npm:1.18.3":
+  version: 1.18.3
+  resolution: "@types/webpack-env@npm:1.18.3"
+  checksum: f24e82485d8e325b1875608766ba6dad2b2f53a0fb182bc96173b4590110c6b791163402cdf19b50c04e8c05292f227a08aafe9230b2bba52c40c5f7ceccc101
   languageName: node
   linkType: hard
 
