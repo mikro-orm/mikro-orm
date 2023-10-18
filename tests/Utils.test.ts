@@ -151,6 +151,22 @@ describe('Utils', () => {
     expect(c.inner.p).toBeInstanceOf(Promise);
   });
 
+  describe('stripRelativePath', () => {
+    test('Remove single leading dot (./)', () => {
+      const path = './my/path';
+      expect(Utils.stripRelativePath(path)).toEqual('my/path');
+    });
+    test('Remove multiple leading dots (../)', () => {
+      const path = '../my/path';
+      expect(Utils.stripRelativePath(path)).toEqual('my/path');
+    });
+
+    test('Remove multiple leading dots and slashes (../../)', () => {
+      const path = '../../my/path';
+      expect(Utils.stripRelativePath(path)).toEqual('my/path');
+    });
+
+  });
   /**
    * regression test for running code coverage with nyc, mocha and ts-node and entity has default constructor value as enum parameter
    */
