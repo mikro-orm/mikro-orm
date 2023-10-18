@@ -87,9 +87,7 @@
     "schedule": [
       "every weekday"
     ],
-    "ignoreDeps": [
-      "sql-formatter"
-    ]
+    "ignoreDeps": []
   },
   "engines": {
     "node": ">= 14.0.0",
@@ -103,7 +101,6 @@
     "@side/jest-runtime": "^1.1.0",
     "@types/fs-extra": "11.0.2",
     "@types/jest": "29.5.5",
-    "@types/mysql2": "https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384",
     "@types/node": "20.8.6",
     "@types/pg": "8.10.5",
     "@types/sqlstring": "2.3.0",

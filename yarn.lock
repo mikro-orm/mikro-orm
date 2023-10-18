@@ -1683,7 +1683,6 @@ __metadata:
     "@side/jest-runtime": ^1.1.0
     "@types/fs-extra": 11.0.2
     "@types/jest": 29.5.5
-    "@types/mysql2": "https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
     "@types/node": 20.8.6
     "@types/pg": 8.10.5
     "@types/sqlstring": 2.3.0
@@ -2620,22 +2619,6 @@ __metadata:
   version: 1.2.2
   resolution: "@types/minimist@npm:1.2.2"
   checksum: b8da83c66eb4aac0440e64674b19564d9d86c80ae273144db9681e5eeff66f238ade9515f5006ffbfa955ceff8b89ad2bd8ec577d7caee74ba101431fb07045d
-  languageName: node
-  linkType: hard
-
-"@types/mysql2@https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384":
-  version: 1.0.0
-  resolution: "@types/mysql2@https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
-  dependencies:
-    "@types/mysql": types/mysql
-  checksum: 1c895e304b4d718dbb174c81a8f79ab4c370f61ca1b124fdbbb59d342b78416fcb07632602519c1d938e16444a06f3088f9e0ab336fa317c56c954b34e3c2668
-  languageName: node
-  linkType: hard
-
-"@types/mysql@types/mysql":
-  version: 2.0.0
-  resolution: "@types/mysql@https://github.com/types/mysql.git#commit=c26b1bc2bac17010081455e3127a90fb2eafcec9"
-  checksum: f45339ebbf4918c78f350b06f99dd94b9e82f75ab0e88c4d28bbd224d1d9055e0ff144fa4b4189af5ee356faa528b05536fcc4127296365df4166dc560bc93ed
   languageName: node
   linkType: hard
 
