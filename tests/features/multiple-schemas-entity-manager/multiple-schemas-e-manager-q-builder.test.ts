@@ -128,7 +128,7 @@ describe('multiple connected schemas in postgres', () => {
 
     /**
      * All * entities should use schema set in EntityManager
-     * All entities will set schema(domain) should use the set schema
+     * All entities with defined schema(domain) should use the defined schema
      */
     expect(mock.mock.calls[0][0]).toMatch(
       'select "category".*, "topic"."id" as "topic__id", "topic"."name" as "topic__name", "topic"."domain_id" as "topic__domain_id" from "n5"."category" as "category" left join "n5"."topic" as "topic" on "category"."topic_id" = "topic"."id"',
@@ -171,7 +171,7 @@ describe('multiple connected schemas in postgres', () => {
     );
   });
 
-  test('should default schema on not define schema', async () => {
+  test('should default schema on not defined schema', async () => {
     const mock = mockLogger(orm);
     mock.mockReset();
 
