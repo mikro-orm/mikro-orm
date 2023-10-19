@@ -149,6 +149,7 @@ export class QueryBuilderHelper {
   joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
     const prop2 = prop.targetMeta!.properties[prop.mappedBy || prop.inversedBy];
     const table = this.getTableName(prop.type);
+    // Should * be handled the same as undefined?
     const schema = prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta);
     const joinColumns = prop.owner ? prop.referencedColumnNames : prop2.joinColumns;
     const inverseJoinColumns = prop.referencedColumnNames;
@@ -164,7 +165,8 @@ export class QueryBuilderHelper {
     return {
       prop, type, cond, ownerAlias, alias,
       table: this.getTableName(prop.type),
-      schema: this.driver.getSchemaName(prop.targetMeta),
+      // Should * be handled the same as undefined?
+      schema: prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta),
       joinColumns: prop.referencedColumnNames,
       primaryKeys: prop.fieldNames,
     };
@@ -182,7 +184,8 @@ export class QueryBuilderHelper {
         primaryKeys: prop.referencedColumnNames,
         cond: {},
         table: pivotMeta.tableName,
-        schema: this.driver.getSchemaName(pivotMeta),
+        // Should * be handled the same as undefined?
+        schema: prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(pivotMeta),
         path: path.endsWith('[pivot]') ? path : `${path}[pivot]`,
       } as JoinOptions,
     };
