@@ -999,7 +999,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const qb = this.getKnex();
     const schema = this.getSchema(this.mainAlias);
     // Joined tables doesn't need to belong to the same schema as the main table
-    const joinSchema = this._schema ?? this.em?.schema ?? schema;
+    const joinSchema = this._schema ?? this.em?.schema ?? this.em?.config.get('schema');
 
     if (schema) {
       qb.withSchema(schema);
