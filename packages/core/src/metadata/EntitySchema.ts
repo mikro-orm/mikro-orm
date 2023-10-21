@@ -12,7 +12,7 @@ import { EnumArrayType } from '../types/EnumArrayType';
 
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>>;
 type TypeDef<T> = { type: TypeType } | { customType: Type<any> } | { entity: string | (() => string | EntityName<T>) };
-type Property<T, O> =
+export type EntitySchemaProperty<T, O> =
   | ({ reference: ReferenceType.MANY_TO_ONE | 'm:1' } & TypeDef<T> & ManyToOneOptions<T, O>)
   | ({ reference: ReferenceType.ONE_TO_ONE | '1:1' } & TypeDef<T> & OneToOneOptions<T, O>)
   | ({ reference: ReferenceType.ONE_TO_MANY | '1:m' } & TypeDef<T> & OneToManyOptions<T, O>)
@@ -20,10 +20,10 @@ type Property<T, O> =
   | ({ reference: ReferenceType.EMBEDDED | 'embedded' } & TypeDef<T> & EmbeddedOptions & PropertyOptions<O>)
   | ({ enum: true } & EnumOptions<O>)
   | (TypeDef<T> & PropertyOptions<O>);
-type Metadata<T, U> =
+export type EntitySchemaMetadata<T, U> =
   & Omit<Partial<EntityMetadata<T>>, 'name' | 'properties'>
   & ({ name: string } | { class: Constructor<T>; name?: string })
-  & { properties?: { [K in keyof Omit<T, keyof U> as ExcludeFunctions<Omit<T, keyof U>, K>]-?: Property<ExpandProperty<NonNullable<T[K]>>, T> } };
+  & { properties?: { [K in keyof Omit<T, keyof U> as ExcludeFunctions<Omit<T, keyof U>, K>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<T[K]>>, T> } };
 
 export class EntitySchema<T = any, U = never> {
 
@@ -31,7 +31,7 @@ export class EntitySchema<T = any, U = never> {
   private internal = false;
   private initialized = false;
 
-  constructor(meta: Metadata<T, U>) {
+  constructor(meta: EntitySchemaMetadata<T, U>) {
     meta.name = meta.class ? meta.class.name : meta.name;
 
     if (meta.tableName || meta.collection) {
@@ -44,7 +44,7 @@ export class EntitySchema<T = any, U = never> {
   }
 
   static fromMetadata<T = AnyEntity, U = never>(meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>): EntitySchema<T, U> {
-    const schema = new EntitySchema<T, U>(meta as unknown as Metadata<T, U>);
+    const schema = new EntitySchema<T, U>(meta as unknown as EntitySchemaMetadata<T, U>);
     schema.internal = true;
 
     return schema;
@@ -262,7 +262,7 @@ export class EntitySchema<T = any, U = never> {
   }
 
   private initProperties(): void {
-    Object.entries<Property<T, unknown>>(this._meta.properties as Dictionary).forEach(([name, options]) => {
+    Object.entries<EntitySchemaProperty<T, unknown>>(this._meta.properties as Dictionary).forEach(([name, options]) => {
       options.type ??= options.customType != null ? options.customType.constructor.name : options.type;
 
       switch ((options as EntityProperty).reference) {
