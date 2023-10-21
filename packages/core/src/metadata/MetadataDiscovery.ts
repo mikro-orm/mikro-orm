@@ -1079,6 +1079,11 @@ export class MetadataDiscovery {
       prop.scale ??= pk.scale;
     });
 
+    if (prop.reference === ReferenceType.SCALAR && prop.type == null && prop.columnTypes) {
+      const mappedType = this.getMappedType(prop);
+      prop.type = mappedType.compareAsType();
+    }
+
     if (prop.columnTypes || !this.schemaHelper) {
       return;
     }
