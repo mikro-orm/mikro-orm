@@ -640,7 +640,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
       return cached.data;
     }
 
-    const type = this.connectionType || (method === 'run' ? 'write' : 'read');
+    const write = method === 'run' || !this.platform.getConfig().get('preferReadReplicas');
+    const type = this.connectionType || (write ? 'write' : 'read');
     const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context);
     const meta = this.mainAlias.metadata;
 

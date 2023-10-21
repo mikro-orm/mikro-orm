@@ -143,10 +143,10 @@ describe('read-replicas', () => {
       orm.em.clear();
       author = (await orm.em.findOne(Author2, author))!;
       await orm.em.findOne(Author2, author, { refresh: true });
-      await orm.em.findOne(Author2, author, { refresh: true });
+      await orm.em.qb(Author2).where({ id: author.id }).limit(1).execute();
       expect(mock.mock.calls[4][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[5][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
-      expect(mock.mock.calls[6][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[6][0]).toMatch(/select `a0`\.\* from `author2` as `a0` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
 
       author.name = 'Jon Blow';
       await orm.em.flush();
