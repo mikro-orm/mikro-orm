@@ -50,8 +50,11 @@ export class QueryBuilderHelper {
       for (const p of fields) {
         const [a, f] = this.splitField(p);
         const prop = this.getProperty(f, a);
+        const fkIdx2 = prop?.fieldNames.findIndex(name => name === f) ?? -1;
 
-        if (prop) {
+        if (fkIdx2 !== -1) {
+          parts.push(this.mapper(a !== this.alias ? `${a}.${prop!.fieldNames[fkIdx2]}` : prop!.fieldNames[fkIdx2], type, value, alias));
+        } else if (prop) {
           parts.push(...prop.fieldNames.map(f => this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias)));
         } else {
           parts.push(this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias));
@@ -77,10 +80,12 @@ export class QueryBuilderHelper {
     const customExpression = QueryBuilderHelper.isCustomExpression(field, !!alias);
     const [a, f] = this.splitField(field);
     const prop = this.getProperty(f, a);
+    const fkIdx2 = prop?.fieldNames.findIndex(name => name === f) ?? -1;
+    const fkIdx = fkIdx2 === -1 ? 0 : fkIdx2;
 
     // embeddable nested path instead of a regular property with table alias, reset alias
     if (prop?.name === a && prop.embeddedProps[f]) {
-      return this.alias + '.' + prop.fieldNames[0];
+      return this.alias + '.' + prop.fieldNames[fkIdx];
     }
 
     const noPrefix = prop && prop.persist === false;
@@ -98,19 +103,27 @@ export class QueryBuilderHelper {
     }
 
     if (prop?.hasConvertToJSValueSQL) {
-      const prefixed = this.prefix(field, isTableNameAliasRequired, true);
-      const valueSQL = prop.customType.convertToJSValueSQL!(prefixed, this.platform);
+      let valueSQL: string;
+
+      if (prop.fieldNames.length > 1 && fkIdx !== -1) {
+        const fk = prop.targetMeta!.getPrimaryProps()[fkIdx];
+        const prefixed = this.prefix(field, isTableNameAliasRequired, true, fkIdx);
+        valueSQL = fk.customType.convertToJSValueSQL!(prefixed, this.platform);
+      } else  {
+        const prefixed = this.prefix(field, isTableNameAliasRequired, true);
+        valueSQL = prop.customType.convertToJSValueSQL!(prefixed, this.platform);
+      }
 
       if (alias === null) {
         return this.knex.raw(valueSQL);
       }
 
-      return this.knex.raw(`${valueSQL} as ${this.platform.quoteIdentifier(alias ?? prop.fieldNames[0])}`);
+      return this.knex.raw(`${valueSQL} as ${this.platform.quoteIdentifier(alias ?? prop.fieldNames[fkIdx])}`);
     }
 
     // do not wrap custom expressions
     if (!customExpression) {
-      ret = this.prefix(field);
+      ret = this.prefix(field, false, false, fkIdx);
     }
 
     if (alias) {
@@ -688,12 +701,12 @@ export class QueryBuilderHelper {
     return !!field.match(re);
   }
 
-  private prefix(field: string, always = false, quote = false): string {
+  private prefix(field: string, always = false, quote = false, idx?: number): string {
     let ret: string;
 
     if (!this.isPrefixed(field)) {
       const alias = always ? (quote ? this.alias : this.platform.quoteIdentifier(this.alias)) + '.' : '';
-      const fieldName = this.fieldName(field, this.alias, always);
+      const fieldName = this.fieldName(field, this.alias, always, idx);
 
       if (QueryBuilderHelper.isCustomExpression(fieldName)) {
         return fieldName;
@@ -703,7 +716,7 @@ export class QueryBuilderHelper {
     } else {
       const [a, ...rest] = field.split('.');
       const f = rest.join('.');
-      ret = a + '.' + this.fieldName(f, a);
+      ret = a + '.' + this.fieldName(f, a, always, idx);
     }
 
     if (quote) {
@@ -737,7 +750,7 @@ export class QueryBuilderHelper {
     return !!field.match(/[\w`"[\]]+\./);
   }
 
-  private fieldName(field: string, alias?: string, always?: boolean): string {
+  private fieldName(field: string, alias?: string, always?: boolean, idx = 0): string {
     const prop = this.getProperty(field, alias);
 
     if (!prop) {
@@ -760,7 +773,7 @@ export class QueryBuilderHelper {
     }
 
     /* istanbul ignore next */
-    return prop.fieldNames?.[0] ?? field;
+    return prop.fieldNames?.[idx] ?? field;
   }
 
   getProperty(field: string, alias?: string): EntityProperty | undefined {
@@ -783,7 +796,15 @@ export class QueryBuilderHelper {
       }
     }
 
-    return meta?.properties[field];
+    if (meta) {
+      if (meta.properties[field]) {
+        return meta.properties[field];
+      }
+
+      return meta.relations.find(prop => prop.fieldNames?.some(name => field === name));
+    }
+
+    return undefined;
   }
 
   isTableNameAliasRequired(type?: QueryType): boolean {

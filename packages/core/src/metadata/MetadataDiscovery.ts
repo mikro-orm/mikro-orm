@@ -1049,6 +1049,18 @@ export class MetadataDiscovery {
       prop.type = prop.customType.constructor.name;
     }
 
+    if (!prop.customType && [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && this.metadata.get(prop.type).compositePK) {
+      prop.customTypes = [];
+
+      for (const pk of this.metadata.get(prop.type).getPrimaryProps()) {
+        if (pk.customType) {
+          prop.customTypes.push(pk.customType);
+          prop.hasConvertToJSValueSQL ||= !!pk.customType.convertToJSValueSQL && pk.customType.convertToJSValueSQL('', this.platform) !== '';
+          prop.hasConvertToDatabaseValueSQL ||= !!pk.customType.convertToDatabaseValueSQL && pk.customType.convertToDatabaseValueSQL('', this.platform) !== '';
+        }
+      }
+    }
+
     if (prop.reference === ReferenceType.SCALAR) {
       const mappedType = this.getMappedType(prop);
       prop.columnTypes ??= [mappedType.getColumnType(prop, this.platform)];

@@ -237,7 +237,7 @@ export class EntityLoader {
 
         if (pk) {
           const key = helper(this.em.getReference(prop.type, pk)).getSerializedPrimaryKey();
-          map[key].push(child as T);
+          map[key]?.push(child as T);
         }
       });
     } else {
@@ -246,7 +246,7 @@ export class EntityLoader {
 
         if (entity) {
           const key = helper(entity).getSerializedPrimaryKey();
-          map[key].push(child as T);
+          map[key]?.push(child as T);
         }
       });
     }
