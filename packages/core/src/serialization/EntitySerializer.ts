@@ -96,13 +96,13 @@ export class EntitySerializer {
 
     // decorated getters
     meta.props
-      .filter(prop => prop.getter && typeof entity[prop.name] !== 'undefined' && isVisible(meta, prop.name, options))
+      .filter(prop => prop.getter && prop.getterName === undefined && typeof entity[prop.name] !== 'undefined' && isVisible(meta, prop.name, options))
       .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.name, entity, options));
 
     // decorated get methods
     meta.props
       .filter(prop => prop.getterName && entity[prop.getterName] as unknown instanceof Function && isVisible(meta, prop.name, options))
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = (entity[prop.getterName!] as unknown as () => T[keyof T & string])());
+      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.getterName as keyof T & string, entity, options));
 
     return ret;
   }
@@ -129,6 +129,9 @@ export class EntitySerializer {
 
     /* istanbul ignore next */
     if (!options.ignoreSerializers && serializer) {
+      if (entity[prop] as unknown instanceof Function) {
+        return serializer((entity[prop] as unknown as () => T[keyof T & string])());
+      }
       return serializer(entity[prop]);
     }
 
