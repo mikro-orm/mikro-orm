@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, serialize } from '@mikro-orm/core';
+import { Entity, EntityDTO, PrimaryKey, Property, serialize, wrap } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -59,38 +59,48 @@ beforeAll(async () => {
 
 afterAll(() => orm.close(true));
 
-test('custom serializer should be called in accessor getter', async () => {
-  const timeSeries = new TimeSeriesAccessorGetterEntityTest();
-  timeSeries.id = 'weather';
-  timeSeries.data = [45, 56, 75, 34];
+const testScenarios: [string, (entity: any) => EntityDTO<any>][] = [
+  ['serialize', (entity: any) => serialize(entity)],
+  ['toObject', (entity: any) => wrap(entity).toObject()],
+];
 
-  const dto = serialize(timeSeries);
+testScenarios.forEach(([testName, testFn]) => {
+  describe(testName, () => {
 
-  expect(dto).toStrictEqual({
-    id: 'weather',
-    data: [45, 56, 75, 34],
-    stats: {
-      AVG: 52.5,
-      MAX: 75,
-      TOTAL: 4,
-    },
-  });
-});
+    test('custom serializer should be called in accessor getter', async () => {
+      const timeSeries = new TimeSeriesAccessorGetterEntityTest();
+      timeSeries.id = 'weather';
+      timeSeries.data = [45, 56, 75, 34];
 
-test('custom serializer should be called in method getter', async () => {
-  const timeSeries = new TimeSeriesMethodGetterEntityTest();
-  timeSeries.id = 'weather';
-  timeSeries.data = [45, 56, 75, 34];
+      const dto = testFn(timeSeries);
 
-  const dto = serialize(timeSeries);
+      expect(dto).toStrictEqual({
+        id: 'weather',
+        data: [45, 56, 75, 34],
+        stats: {
+          AVG: 52.5,
+          MAX: 75,
+          TOTAL: 4,
+        },
+      });
+    });
 
-  expect(dto).toStrictEqual({
-    id: 'weather',
-    data: [45, 56, 75, 34],
-    stats: {
-      AVG: 52.5,
-      MAX: 75,
-      TOTAL: 4,
-    },
+    test('custom serializer should be called in method getter', async () => {
+      const timeSeries = new TimeSeriesMethodGetterEntityTest();
+      timeSeries.id = 'weather';
+      timeSeries.data = [45, 56, 75, 34];
+
+      const dto = testFn(timeSeries);
+
+      expect(dto).toStrictEqual({
+        id: 'weather',
+        data: [45, 56, 75, 34],
+        stats: {
+          AVG: 52.5,
+          MAX: 75,
+          TOTAL: 4,
+        },
+      });
+    });
   });
 });

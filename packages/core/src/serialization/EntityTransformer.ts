@@ -82,13 +82,13 @@ export class EntityTransformer {
 
     // decorated getters
     meta.props
-      .filter(prop => prop.getter && !prop.hidden && typeof entity[prop.name] !== 'undefined')
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = entity[prop.name]);
+      .filter(prop => prop.getter && prop.getterName === undefined && !prop.hidden && typeof entity[prop.name] !== 'undefined')
+      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.name, entity, raw));
 
     // decorated get methods
     meta.props
       .filter(prop => prop.getterName && !prop.hidden && entity[prop.getterName] as unknown instanceof Function)
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = (entity[prop.getterName!] as unknown as () => T[keyof T & string])());
+      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.getterName as keyof T & string, entity, raw));
 
     if (contextCreated) {
       root.close();
@@ -115,6 +115,9 @@ export class EntityTransformer {
     const serializer = property?.serializer;
 
     if (serializer) {
+      if (entity[prop] as unknown instanceof Function) {
+        return serializer((entity[prop] as unknown as () => T[keyof T & string])());
+      }
       return serializer(entity[prop]);
     }
 
