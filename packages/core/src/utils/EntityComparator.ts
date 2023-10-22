@@ -319,7 +319,7 @@ export class EntityComparator {
         return;
       }
 
-      if (prop.embedded && meta.properties[prop.embedded[0]].object && prop.runtimeType !== 'Date') {
+      if (prop.embedded && (meta.embeddable || meta.properties[prop.embedded[0]].object)) {
         return;
       }
 
@@ -329,33 +329,23 @@ export class EntityComparator {
         lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
       } else if (prop.runtimeType === 'Date') {
-        if (prop.embedded && meta.properties[prop.embedded[0]].array) {
-          const parentKey = 'ret.' + meta.properties[prop.embedded[0]].fieldNames[0];
-          const idx = this.tmpIndex++;
-          lines.push(`  if (Array.isArray(${parentKey.replace(/\./g, '?.')})) {`);
-          lines.push(`    ${parentKey}.forEach((item_${idx}, idx_${idx}) => {`);
-          const childProp = this.wrap(prop.embedded[1]);
-          lines.push(`      if (typeof item_${idx}${childProp} !== 'undefined') {`);
-          parseDate(`${parentKey}[idx_${idx}]${childProp}`, `${parentKey}[idx_${idx}]${childProp}`, '    ');
-          lines.push(`      }`);
-          lines.push(`    });`);
-          lines.push(`  }`);
-        } else if (prop.embedded && meta.properties[prop.embedded[0]].object) {
-          const entityKey = 'ret.' + prop.fieldNames[0];
-          const entityKeyOptional = 'ret.' + prop.fieldNames[0].replace(/\./g, '?.');
-          lines.push(`  if (typeof ${entityKeyOptional} !== 'undefined') {`);
-          parseDate('ret.' + prop.fieldNames[0], entityKey);
-          lines.push(`  }`);
-        } else {
-          lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
-          parseDate('ret' + this.wrap(prop.name), propName(prop.fieldNames[0]));
-          lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
-          lines.push(`  }`);
-        }
-      } else if (prop.kind === ReferenceKind.EMBEDDED && prop.object && !this.platform.convertsJsonAutomatically()) {
-        context.set('parseJsonSafe', parseJsonSafe);
         lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
-        lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : parseJsonSafe(${propName(prop.fieldNames[0])});`);
+        parseDate('ret' + this.wrap(prop.name), propName(prop.fieldNames[0]));
+        lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
+        lines.push(`  }`);
+      } else if (prop.kind === ReferenceKind.EMBEDDED && (prop.object || meta.embeddable)) {
+        const idx = this.tmpIndex++;
+        context.set(`mapEmbeddedResult_${idx}`, (data: Dictionary) => {
+          const item = parseJsonSafe(data);
+
+          if (Array.isArray(item)) {
+            return item.map(row => row == null ? row : this.getResultMapper(prop.type)(row));
+          }
+
+          return item == null ? item : this.getResultMapper(prop.type)(item);
+        });
+        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
+        lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : mapEmbeddedResult_${idx}(${propName(prop.fieldNames[0])});`);
         lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
       } else {
@@ -369,13 +359,13 @@ export class EntityComparator {
 
     const code = `// compiled mapper for entity ${meta.className}\n`
       + `return function(result) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
-    const snapshotGenerator = Utils.createFunction(context, code);
-    this.mappers.set(entityName, snapshotGenerator);
+    const resultMapper = Utils.createFunction(context, code);
+    this.mappers.set(entityName, resultMapper);
 
-    return snapshotGenerator;
+    return resultMapper;
   }
 
-  private getPropertyCondition<T>(prop: EntityProperty<T>, entityKey: string, path: string[]): string {
+  private getPropertyCondition(path: string[]): string {
     const parts = path.slice(); // copy first
 
     if (parts.length > 1) {
@@ -383,7 +373,8 @@ export class EntityComparator {
     }
 
     let tail = '';
-    const ret = parts
+
+    return parts
       .map(k => {
         if (k.match(/^\[idx_\d+]$/)) {
           tail += k;
@@ -397,8 +388,6 @@ export class EntityComparator {
       })
       .filter(k => k)
       .join(' && ');
-
-    return ret;
   }
 
   private getEmbeddedArrayPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[], dataKey: string): string {
@@ -464,7 +453,7 @@ export class EntityComparator {
     }
 
     ret += meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
-      const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
+      const childDataKey = meta.embeddable || prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
       const childEntityKey = [...path, childProp.embedded![1]].map(k => this.wrap(k)).join('');
       const childCond = `typeof entity${childEntityKey} !== 'undefined'`;
 
@@ -501,7 +490,7 @@ export class EntityComparator {
   private getPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, dataKey: string, entityKey: string, path: string[], level = 1, object?: boolean): string {
     const convertorKey = this.safeKey(prop.name);
     const unwrap = prop.ref ? '?.unwrap()' : '';
-    let ret = `  if (${this.getPropertyCondition(prop, entityKey, path)}) {\n`;
+    let ret = `  if (${this.getPropertyCondition(path)}) {\n`;
 
     if (['number', 'string', 'boolean'].includes(prop.type.toLowerCase())) {
       return ret + `    ret${dataKey} = entity${entityKey}${unwrap};\n  }\n`;

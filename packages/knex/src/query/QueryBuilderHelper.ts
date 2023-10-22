@@ -163,7 +163,7 @@ export class QueryBuilderHelper {
 
     const meta = this.metadata.find(this.entityName);
 
-    data = this.mapData(data, meta?.properties, convertCustomTypes);
+    data = this.driver.mapDataToFieldNames(data, true, meta?.properties, convertCustomTypes);
 
     if (!Utils.hasObjectKeys(data) && meta && multi) {
       /* istanbul ignore next */
@@ -836,58 +836,6 @@ export class QueryBuilderHelper {
 
   isTableNameAliasRequired(type?: QueryType): boolean {
     return [QueryType.SELECT, QueryType.COUNT].includes(type ?? QueryType.SELECT);
-  }
-
-  private mapData(data: Dictionary, properties?: Record<string, EntityProperty>, convertCustomTypes?: boolean) {
-    if (!properties) {
-      return data;
-    }
-
-    data = Object.assign({}, data); // copy first
-
-    Object.keys(data).forEach(k => {
-      const prop = properties[k];
-
-      if (!prop) {
-        return;
-      }
-
-      if (prop.embeddedProps && !prop.object) {
-        const copy = data[k];
-        delete data[k];
-        Object.assign(data, this.mapData(copy, prop.embeddedProps, convertCustomTypes));
-
-        return;
-      }
-
-      if (prop.joinColumns && Array.isArray(data[k])) {
-        const copy = Utils.flatten(data[k]);
-        delete data[k];
-        prop.joinColumns.forEach((joinColumn, idx) => data[joinColumn] = copy[idx]);
-
-        return;
-      }
-
-      if (prop.customType && convertCustomTypes && !this.platform.isRaw(data[k])) {
-        data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, { fromQuery: true, key: k, mode: 'query-data' });
-      }
-
-      if (prop.hasConvertToDatabaseValueSQL && !this.platform.isRaw(data[k])) {
-        const quoted = this.platform.quoteValue(data[k]);
-        const sql = prop.customType.convertToDatabaseValueSQL!(quoted, this.platform);
-        data[k] = this.knex.raw(sql.replace(/\?/g, '\\?'));
-      }
-
-      if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
-        data[k] = JSON.stringify(data[k]);
-      }
-
-      if (prop.fieldNames) {
-        Utils.renameKey(data, k, prop.fieldNames[0]);
-      }
-    });
-
-    return data;
   }
 
 }

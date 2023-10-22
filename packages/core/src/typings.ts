@@ -343,6 +343,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   formula?: (alias: string) => string;
   prefix?: string | boolean;
   embedded?: [EntityKey<Owner>, EntityKey<Owner>];
+  embeddedPath?: string[];
   embeddable: Constructor<Owner>;
   embeddedProps: Dictionary<EntityProperty>;
   discriminatorColumn?: string; // only for poly embeddables currently

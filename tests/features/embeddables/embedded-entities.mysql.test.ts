@@ -224,7 +224,7 @@ describe('embedded entities in mysql', () => {
     await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
-    expect(mock.mock.calls[10][0]).toMatch('select `u0`.* from `user` as `u0` where json_extract(`u0`.`address4`, \'$.postalCode\') = ? limit ?');
+    expect(mock.mock.calls[10][0]).toMatch('select `u0`.* from `user` as `u0` where json_extract(`u0`.`address4`, \'$.postal_code\') = ? limit ?');
   });
 
   test('GH issue 3063', async () => {

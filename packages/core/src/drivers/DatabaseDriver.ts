@@ -26,7 +26,7 @@ import type {
 } from '../typings';
 import type { MetadataStorage } from '../metadata';
 import type { Connection, QueryResult, Transaction } from '../connections';
-import { EntityComparator, Utils, type Configuration, type ConnectionOptions, Cursor } from '../utils';
+import { EntityComparator, Utils, type Configuration, type ConnectionOptions, Cursor, raw } from '../utils';
 import { type QueryOrder, ReferenceKind, type QueryOrderKeys, QueryOrderNumeric } from '../enums';
 import type { Platform } from '../platforms';
 import type { Collection } from '../entity/Collection';
@@ -260,7 +260,81 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     } as FilterQuery<T>;
   }
 
+  /** @internal */
+  mapDataToFieldNames(data: Dictionary, stringifyJsonArrays: boolean, properties?: Record<string, EntityProperty>, convertCustomTypes?: boolean, object?: boolean) {
+    if (!properties || data == null) {
+      return data;
+    }
+
+    data = Object.assign({}, data); // copy first
+
+    Object.keys(data).forEach(k => {
+      const prop = properties[k];
+
+      if (!prop) {
+        return;
+      }
+
+      if (prop.embeddedProps && !prop.object && !object) {
+        const copy = data[k];
+        delete data[k];
+        Object.assign(data, this.mapDataToFieldNames(copy, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes));
+
+        return;
+      }
+
+      if (prop.embeddedProps && (prop.object || object)) {
+        const copy = data[k];
+        delete data[k];
+
+        if (prop.array) {
+          data[prop.fieldNames[0]] = copy.map((item: Dictionary) => this.mapDataToFieldNames(item, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes, true));
+        } else {
+          data[prop.fieldNames[0]] = this.mapDataToFieldNames(copy, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes, true);
+        }
+
+        if (stringifyJsonArrays && prop.array) {
+          data[prop.fieldNames[0]] = this.platform.convertJsonToDatabaseValue(data[prop.fieldNames[0]]);
+        }
+
+        return;
+      }
+
+      if (prop.joinColumns && Array.isArray(data[k])) {
+        const copy = Utils.flatten(data[k]);
+        delete data[k];
+        prop.joinColumns.forEach((joinColumn, idx) => data[joinColumn] = copy[idx]);
+
+        return;
+      }
+
+      if (prop.customType && convertCustomTypes && !this.platform.isRaw(data[k])) {
+        data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, { fromQuery: true, key: k, mode: 'query-data' });
+      }
+
+      if (prop.hasConvertToDatabaseValueSQL && !this.platform.isRaw(data[k])) {
+        const quoted = this.platform.quoteValue(data[k]);
+        const sql = prop.customType.convertToDatabaseValueSQL!(quoted, this.platform);
+        data[k] = raw(sql.replace(/\?/g, '\\?'));
+      }
+
+      if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
+        data[k] = JSON.stringify(data[k]);
+      }
+
+      if (prop.fieldNames) {
+        Utils.renameKey(data, k, prop.fieldNames[0]);
+      }
+    });
+
+    return data;
+  }
+
   protected inlineEmbeddables<T extends object>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
+    if (data == null) {
+      return;
+    }
+
     Utils.keys(data).forEach(k => {
       if (Utils.isOperator(k as string)) {
         Utils.asArray(data[k]).forEach(payload => this.inlineEmbeddables(meta, payload as T, where));

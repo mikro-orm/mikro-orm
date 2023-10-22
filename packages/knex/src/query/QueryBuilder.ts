@@ -990,8 +990,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
       }
 
       if (prop?.embedded) {
-        const name = this._aliases[a] ? `${a}.${prop.fieldNames[0]}` : prop.fieldNames[0];
-        const fieldName = this.helper.mapper(name, this.type) as string;
+        const name = prop.embeddedPath?.join('.') ?? prop.fieldNames[0];
+        const aliased = this._aliases[a] ? `${a}.${name}` : name;
+        const fieldName = this.helper.mapper(aliased, this.type) as string;
         ret.push(fieldName);
         return;
       }
@@ -1002,7 +1003,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
         } else {
           const nest = (prop: EntityProperty): void => {
             for (const childProp of Object.values(prop.embeddedProps)) {
-              if (childProp.fieldNames) {
+              if (childProp.fieldNames && (childProp.kind !== ReferenceKind.EMBEDDED || childProp.object) && childProp.persist !== false) {
                 ret.push(this.helper.mapper(childProp.fieldNames[0], this.type) as string);
               } else {
                 nest(childProp);
@@ -1011,7 +1012,6 @@ export class QueryBuilder<T extends object = AnyEntity> {
           };
           nest(prop);
         }
-
         return;
       }
 
@@ -1064,7 +1064,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
         data = this.em?.getComparator().prepareEntity(data as T) ?? serialize(data as T);
       }
 
-      this._data = this.helper.processData(data, this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES));
+      this._data = this.helper.processData(data, this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES), false);
     }
 
     if (cond) {

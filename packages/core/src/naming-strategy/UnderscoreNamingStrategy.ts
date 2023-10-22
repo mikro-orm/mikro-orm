@@ -18,7 +18,7 @@ export class UnderscoreNamingStrategy extends AbstractNamingStrategy {
     return this.classToTableName(sourceEntity) + '_' + this.classToTableName(propertyName);
   }
 
-  propertyToColumnName(propertyName: string): string {
+  propertyToColumnName(propertyName: string, object?: boolean): string {
     return this.underscore(propertyName);
   }
 

@@ -408,12 +408,25 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     const addParams = (prop: EntityProperty<T>, row: Dictionary) => {
+      let value = row[prop.name];
+
+      if (prop.kind === ReferenceKind.EMBEDDED && prop.object) {
+        if (prop.array) {
+          for (let i = 0; i < (value as Dictionary[]).length; i++) {
+            const item = (value as Dictionary[])[i];
+            value[i] = this.mapDataToFieldNames(item, false, prop.embeddedProps, options.convertCustomTypes);
+          }
+        } else {
+          value = this.mapDataToFieldNames(value, false, prop.embeddedProps, options.convertCustomTypes);
+        }
+      }
+
       if (options.convertCustomTypes && prop.customType) {
-        params.push(prop.customType.convertToDatabaseValue(row[prop.name], this.platform, { key: prop.name, mode: 'query-data' }));
+        params.push(prop.customType.convertToDatabaseValue(value, this.platform, { key: prop.name, mode: 'query-data' }));
         return;
       }
 
-      params.push(row[prop.name]);
+      params.push(value);
     };
 
     if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
@@ -564,9 +577,25 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         }
       });
     });
+
     const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames)).map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ');
     const params: any[] = [];
     let sql = `update ${this.getTableName(meta, options)} set `;
+
+    const addParams = (prop: EntityProperty<T>, value: Dictionary) => {
+      if (prop.kind === ReferenceKind.EMBEDDED && prop.object) {
+        if (prop.array) {
+          for (let i = 0; i < (value as Dictionary[]).length; i++) {
+            const item = (value as Dictionary[])[i];
+            value[i] = this.mapDataToFieldNames(item, false, prop.embeddedProps, options.convertCustomTypes);
+          }
+        } else {
+          value = this.mapDataToFieldNames(value, false, prop.embeddedProps, options.convertCustomTypes);
+        }
+      }
+
+      params.push(value);
+    };
 
     keys.forEach(key => {
       const prop = meta.properties[key];
@@ -584,7 +613,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
               sql += '?';
             }
 
-            params.push(...pks, prop.fieldNames.length > 1 ? data[idx][key]?.[fieldNameIdx] : data[idx][key]);
+            params.push(...pks);
+            addParams(prop, prop.fieldNames.length > 1 ? data[idx][key]?.[fieldNameIdx] : data[idx][key]);
           }
         });
         sql += ` else ${this.platform.quoteIdentifier(fieldName)} end, `;
@@ -808,7 +838,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const map: Dictionary<T[]> = {};
     const pkProps = ownerMeta.getPrimaryProps();
     owners.forEach(owner => {
-      const key = Utils.getPrimaryKeyHash(prop.joinColumns.map((col, idx) => {
+      const key = Utils.getPrimaryKeyHash(prop.joinColumns.map((_col, idx) => {
         const pkProp = pkProps[idx];
         return pkProp.customType ? pkProp.customType.convertToJSValue(owner[idx], this.platform) : owner[idx];
       }));

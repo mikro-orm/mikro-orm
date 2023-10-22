@@ -1,30 +1,30 @@
 import type { ClientSession } from 'mongodb';
 import { ObjectId } from 'bson';
 import {
-  DatabaseDriver,
-  EntityManagerType,
-  ReferenceKind,
-  Utils,
-  type EntityData,
-  type FilterQuery,
   type Configuration,
-  type FindOneOptions,
-  type FindOptions,
-  type FindByCursorOptions,
-  type QueryResult,
-  type Transaction,
-  type IDatabaseDriver,
-  type EntityManager,
-  type Dictionary,
-  type PopulateOptions,
   type CountOptions,
+  DatabaseDriver,
+  type Dictionary,
+  type EntityData,
   type EntityDictionary,
   type EntityField,
-  type NativeInsertUpdateOptions,
-  type NativeInsertUpdateManyOptions,
-  type UpsertOptions,
-  type UpsertManyOptions,
   type EntityKey,
+  type EntityManager,
+  EntityManagerType,
+  type FilterQuery,
+  type FindByCursorOptions,
+  type FindOneOptions,
+  type FindOptions,
+  type IDatabaseDriver,
+  type NativeInsertUpdateManyOptions,
+  type NativeInsertUpdateOptions,
+  type PopulateOptions,
+  type QueryResult,
+  ReferenceKind,
+  type Transaction,
+  type UpsertManyOptions,
+  type UpsertOptions,
+  Utils,
 } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
@@ -223,13 +223,13 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.platform;
   }
 
-  private renameFields<T extends object>(entityName: string, data: T, where = false): T {
+  private renameFields<T extends object>(entityName: string, data: T, where = false, object?: boolean): T {
     // copy to new variable to prevent changing the T type or doing as unknown casts
     const copiedData: Dictionary = Object.assign({}, data); // copy first
     Utils.renameKey(copiedData, 'id', '_id');
     const meta = this.metadata.find(entityName);
 
-    if (meta) {
+    if (meta && !meta.embeddable) {
       this.inlineEmbeddables(meta, copiedData, where);
     }
 
@@ -280,7 +280,17 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
         if (prop.kind === ReferenceKind.SCALAR) {
           isObjectId = prop.type.toLowerCase() === 'objectid';
-        } else if (prop.kind !== ReferenceKind.EMBEDDED) {
+        } else if (prop.kind === ReferenceKind.EMBEDDED) {
+          if (copiedData[prop.name] == null) {
+            return;
+          }
+
+          if (prop.array && Array.isArray(copiedData[prop.name])) {
+            copiedData[prop.name] = copiedData[prop.name].map((item: Dictionary) => this.renameFields(prop.type, item, where, true));
+          } else {
+            copiedData[prop.name] = this.renameFields(prop.type, copiedData[prop.name], where, prop.object || object);
+          }
+        } else {
           const meta2 = this.metadata.find(prop.type)!;
           const pk = meta2.properties[meta2.primaryKeys[0]];
           isObjectId = pk.type.toLowerCase() === 'objectid';
