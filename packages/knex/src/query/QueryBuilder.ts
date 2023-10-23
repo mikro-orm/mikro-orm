@@ -900,6 +900,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
   private prepareFields<T, U extends string | Knex.Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
     const ret: Field<T>[] = [];
+    const getFieldName = (name: string) => {
+      if (type === 'groupBy') {
+        return this.helper.mapper(name, this.type, undefined, null);
+      }
+
+      return this.helper.mapper(name, this.type);
+    };
 
     fields.forEach(field => {
       if (!Utils.isString(field)) {
@@ -922,19 +929,18 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
       if (prop?.embedded) {
         const name = this._aliases[a] ? `${a}.${prop.fieldNames[0]}` : prop.fieldNames[0];
-        const fieldName = this.helper.mapper(name, this.type) as string;
-        ret.push(fieldName);
+        ret.push(getFieldName(name));
         return;
       }
 
       if (prop?.reference === ReferenceType.EMBEDDED) {
         if (prop.object) {
-          ret.push(this.helper.mapper(prop.fieldNames[0], this.type) as string);
+          ret.push(getFieldName(prop.fieldNames[0]));
         } else {
           const nest = (prop: EntityProperty): void => {
             for (const childProp of Object.values(prop.embeddedProps)) {
               if (childProp.fieldNames) {
-                ret.push(this.helper.mapper(childProp.fieldNames[0], this.type) as string);
+                ret.push(getFieldName(childProp.fieldNames[0]));
               } else {
                 nest(childProp);
               }
@@ -947,11 +953,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
       }
 
       if (prop && prop.fieldNames.length > 1) {
-        ret.push(...prop.fieldNames.map(f => this.helper.mapper(f, this.type) as string));
+        ret.push(...prop.fieldNames.map(f => getFieldName(f)));
         return;
       }
 
-      ret.push(this.helper.mapper(field, this.type) as string);
+      ret.push(getFieldName(field));
     });
 
     const meta = this.mainAlias.metadata;
