@@ -18,7 +18,7 @@ export interface NamingStrategy {
   /**
    * Return a column name for a property
    */
-  propertyToColumnName(propertyName: string): string;
+  propertyToColumnName(propertyName: string, object?: boolean): string;
 
   /**
    * Return a property for a column name (used in `EntityGenerator`).
