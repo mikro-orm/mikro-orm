@@ -19,15 +19,15 @@ export abstract class Type<JSType = string, DBType = JSType> {
   /**
    * Converts a value from its JS representation to its database representation of this type.
    */
-  convertToDatabaseValue(value: JSType | DBType, platform: Platform, context?: TransformContext): DBType {
-    return value as DBType;
+  convertToDatabaseValue(value: JSType, platform: Platform, context?: TransformContext): DBType {
+    return value as unknown as DBType;
   }
 
   /**
    * Converts a value from its database representation to its JS representation of this type.
    */
-  convertToJSValue(value: JSType | DBType, platform: Platform): JSType {
-    return value as JSType;
+  convertToJSValue(value: DBType, platform: Platform): JSType {
+    return value as unknown as JSType;
   }
 
   /**
@@ -47,6 +47,11 @@ export abstract class Type<JSType = string, DBType = JSType> {
   compareAsType(): string {
     return 'any';
   }
+
+  /**
+   * Allows to override the internal comparison logic.
+   */
+  compareValues?(a: DBType, b: DBType): boolean;
 
   get runtimeType(): string {
     const compareType = this.compareAsType();

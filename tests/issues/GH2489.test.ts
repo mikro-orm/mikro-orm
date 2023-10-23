@@ -1,6 +1,6 @@
 import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/postgresql';
 
-export class IntegerArrayType extends Type<number[], string> {
+class IntegerArrayType extends Type<number[], string> {
 
   constructor(private readonly length?: number) {
     super();
@@ -14,7 +14,7 @@ export class IntegerArrayType extends Type<number[], string> {
     return `{${value.join(',')}}`;
   }
 
-  override convertToJSValue(value: number[]): number[] {
+  override convertToJSValue(value: string): number[] {
     if (!Array.isArray(value)) {
       throw new Error('...');
     }
@@ -37,7 +37,7 @@ export class IntegerArrayType extends Type<number[], string> {
 }
 
 @Entity()
-export class Test {
+class Test {
 
   @PrimaryKey()
   id!: number;
