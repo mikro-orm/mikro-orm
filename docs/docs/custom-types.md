@@ -36,6 +36,10 @@ You can define custom types by extending `Type` abstract class. It has several o
 
   When a value is hydrated, we convert it back to the database value to ensure comparability, as often the raw database response is not the same as the `convertToDatabaseValue` result. This allows to disable the additional conversion in case you know it is not needed.
 
+- `compareValues(a, b): boolean`
+
+  Allows to override the internal comparison logic. Works with the database values (results of `convertToDatabaseValue` method). This can be helpful when the database value is not stable.
+
 ```ts
 import { Type, Platform, EntityProperty, ValidationError } from '@mikro-orm/core';
 
