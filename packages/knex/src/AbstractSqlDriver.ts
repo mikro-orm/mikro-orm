@@ -281,7 +281,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(relation.reference)) {
         result[relation.name] = result[relation.name] || [] as unknown as T[keyof T & string];
-        this.appendToCollection(meta2, result[relation.name] as Dictionary[], relationPojo);
+        (result[relation.name] as Dictionary[]).push(relationPojo);
       } else {
         result[relation.name] = relationPojo as T[keyof T & string];
       }
@@ -289,20 +289,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const populateChildren = p.children || [];
       this.mapJoinedProps(relationPojo, meta2, populateChildren, qb, root, map, path);
     });
-  }
-
-  private appendToCollection<T extends object>(meta: EntityMetadata<T>, collection: EntityData<T>[], relationPojo: EntityData<T>): void {
-    if (collection.length === 0) {
-      return void collection.push(relationPojo);
-    }
-
-    const last = collection[collection.length - 1];
-    const pk1 = Utils.getCompositeKeyHash(last, meta);
-    const pk2 = Utils.getCompositeKeyHash(relationPojo, meta);
-
-    if (pk1 !== pk2) {
-      collection.push(relationPojo);
-    }
   }
 
   async count<T extends object>(entityName: string, where: any, options: CountOptions<T> = {}): Promise<number> {
