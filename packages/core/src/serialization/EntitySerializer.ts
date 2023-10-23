@@ -127,11 +127,17 @@ export class EntitySerializer {
     const property = wrapped.__meta.properties[prop];
     const serializer = property?.serializer;
 
+    // if is getter accessor method
+    if (entity[prop] as unknown instanceof Function) {
+      const returnValue = (entity[prop] as unknown as () => T[keyof T & string])();
+      if (!options.ignoreSerializers && serializer) {
+        return serializer(returnValue);
+      }
+      return returnValue;
+    }
+
     /* istanbul ignore next */
     if (!options.ignoreSerializers && serializer) {
-      if (entity[prop] as unknown instanceof Function) {
-        return serializer((entity[prop] as unknown as () => T[keyof T & string])());
-      }
       return serializer(entity[prop]);
     }
 

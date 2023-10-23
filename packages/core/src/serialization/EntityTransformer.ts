@@ -114,10 +114,16 @@ export class EntityTransformer {
     const property = wrapped.__meta.properties[prop];
     const serializer = property?.serializer;
 
-    if (serializer) {
-      if (entity[prop] as unknown instanceof Function) {
-        return serializer((entity[prop] as unknown as () => T[keyof T & string])());
+    // if is getter accessor method
+    if (entity[prop] as unknown instanceof Function) {
+      const returnValue = (entity[prop] as unknown as () => T[keyof T & string])();
+      if (serializer) {
+        return serializer(returnValue);
       }
+      return returnValue;
+    }
+
+    if (serializer) {
       return serializer(entity[prop]);
     }
 
