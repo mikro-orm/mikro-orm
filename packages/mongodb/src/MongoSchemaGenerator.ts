@@ -201,7 +201,9 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     }
 
     const collection = this.connection.getCollection(meta.className);
-    const fieldOrSpec = prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
+    const fieldOrSpec = prop.embeddedPath
+      ? prop.embeddedPath.join('.')
+      : prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
 
     return [[collection.collectionName, collection.createIndex(fieldOrSpec, {
       name: (Utils.isString(prop[type]) ? prop[type] : undefined) as string,

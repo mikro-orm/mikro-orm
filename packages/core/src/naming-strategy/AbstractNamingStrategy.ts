@@ -59,7 +59,7 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
 
   abstract joinTableName(sourceEntity: string, targetEntity: string, propertyName?: string): string;
 
-  abstract propertyToColumnName(propertyName: string): string;
+  abstract propertyToColumnName(propertyName: string, object?: boolean): string;
 
   abstract referenceColumnName(): string;
 

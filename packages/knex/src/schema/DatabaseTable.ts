@@ -375,6 +375,10 @@ export class DatabaseTable {
       const root = prop.replace(/\..+$/, '');
 
       if (meta.properties[prop]) {
+        if (meta.properties[prop].embeddedPath) {
+          return [meta.properties[prop].embeddedPath!.join('.')];
+        }
+
         return meta.properties[prop].fieldNames;
       }
 

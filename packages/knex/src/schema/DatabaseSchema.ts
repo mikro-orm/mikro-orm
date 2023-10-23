@@ -111,11 +111,11 @@ export class DatabaseSchema {
   }
 
   private static shouldHaveColumn(meta: EntityMetadata, prop: EntityProperty): boolean {
-    if (prop.persist === false || !prop.fieldNames) {
+    if (prop.persist === false || (prop.columnTypes?.length ?? 0) === 0) {
       return false;
     }
 
-    if (meta.pivotTable || (ReferenceKind.EMBEDDED && prop.object)) {
+    if (meta.pivotTable || (prop.kind === ReferenceKind.EMBEDDED && prop.object)) {
       return true;
     }
 
