@@ -123,6 +123,20 @@ describe('read-replicas', () => {
       expect(mock.mock.calls[7][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[8][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);
     });
+
+    test('use write connection for fetching data after upsert/upsertMany', async () => {
+      const mock = mockLogger(orm, ['query']);
+      await orm.em.upsert(Author2, { name: 'Jon Snow', email: 'snow@wall.st', born: new Date('1990-03-23') });
+      expect(mock.mock.calls[0][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[1][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+
+      await orm.em.upsertMany(Author2, [
+        { name: 'Daenerys Stormborn', email: 'dany@dragonstone.ts', born: new Date('1990-03-23') },
+        { name: 'Jaime Lannister', email: 'jaime@casterlyrock.ts', born: new Date('1980-03-23') },
+      ]);
+      expect(mock.mock.calls[2][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[3][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+    });
   });
 
   describe('when preferReadReplicas is false', () => {
@@ -228,6 +242,20 @@ describe('read-replicas', () => {
       });
       expect(mock.mock.calls[7][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[8][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);
+    });
+
+    test('use write connection for fetching data after upsert/upsertMany', async () => {
+      const mock = mockLogger(orm, ['query']);
+      await orm.em.upsert(Author2, { name: 'Jon Snow', email: 'snow@wall.st', born: new Date('1990-03-23') });
+      expect(mock.mock.calls[0][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[1][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+
+      await orm.em.upsertMany(Author2, [
+        { name: 'Daenerys Stormborn', email: 'dany@dragonstone.ts', born: new Date('1990-03-23') },
+        { name: 'Jaime Lannister', email: 'jaime@casterlyrock.ts', born: new Date('1980-03-23') },
+      ]);
+      expect(mock.mock.calls[2][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[3][0]).toMatch(/via write connection '127\.0\.0\.1'/);
     });
   });
 

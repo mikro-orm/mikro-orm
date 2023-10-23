@@ -710,6 +710,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         fields: returning as EntityField<Entity>[],
         ctx: em.transactionContext,
         convertCustomTypes: true,
+        connectionType: 'write',
       });
       em.getHydrator().hydrate(entity, meta, data2!, em.entityFactory, 'full');
     }
@@ -916,6 +917,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         fields: returning.concat(...add).concat(...uniqueFields as string[]),
         ctx: em.transactionContext,
         convertCustomTypes: true,
+        connectionType: 'write',
       });
 
       for (const [entity, cond] of loadPK.entries()) {
