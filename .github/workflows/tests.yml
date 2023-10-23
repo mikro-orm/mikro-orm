@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       - name: Use Node.js 16
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 16
 
@@ -33,7 +33,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: yarn
 
@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       - name: Use Node.js 16
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 16
 
@@ -67,7 +67,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: yarn
 
@@ -89,7 +89,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       - name: Use Node.js 16
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 16
 
@@ -101,7 +101,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: yarn
 
@@ -124,7 +124,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -136,7 +136,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: yarn
 
@@ -195,7 +195,7 @@ jobs:
           ref: master
 
       - name: Use Node.js 16
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 16
 
@@ -207,7 +207,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: yarn
 
