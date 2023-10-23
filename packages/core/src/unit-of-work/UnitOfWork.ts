@@ -306,12 +306,21 @@ export class UnitOfWork {
   }
 
   remove<T extends object>(entity: T, visited?: Set<AnyEntity>, options: { cascade?: boolean } = {}): void {
+    const entityHelper = helper(entity);
     this.removeStack.add(entity);
-    this.queuedActions.add(helper(entity).__meta.className);
+    this.queuedActions.add(entityHelper.__meta.className);
     this.persistStack.delete(entity);
 
+    // remove entities referencing to entity via MANY_TO_ONE with onDelete = cascade
+    this.identityMap.values().filter(v => {
+      const refHelper = helper(v);
+      const relations = refHelper.__meta.relations.filter(r => r.type === entityHelper.__meta.className && r.onDelete === 'cascade' && r.reference === ReferenceType.MANY_TO_ONE);
+      const entityRelations = relations.filter(r => r.referencedColumnNames.filter(cn => entity[cn] === v[r.name][cn]).length > 0);
+      return entityRelations.length > 0;
+    }).forEach(e => this.remove(e, visited, options));
+
     // remove from referencing relations that are nullable
-    for (const prop of helper(entity).__meta.bidirectionalRelations) {
+    for (const prop of entityHelper.__meta.bidirectionalRelations) {
       const inverseProp = prop.mappedBy || prop.inversedBy;
       const relation = Reference.unwrapReference(entity[prop.name] as object);
       const prop2 = prop.targetMeta!.properties[inverseProp];
