@@ -51,8 +51,8 @@ describe('Migrator', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
-    orm = await initORMMySql('mysql', { dbName: 'mikro_orm_test_migrations' }, true);
-    await remove(process.cwd() + '/temp/migrations');
+    orm = await initORMMySql('mysql', { dbName: 'mikro_orm_test_migrations', migrations: { path: process.cwd() + '/temp/migrations-123' } }, true);
+    await remove(process.cwd() + '/temp/migrations-123');
   });
   beforeEach(() => orm.config.resetServiceCache());
   afterAll(async () => {
@@ -68,7 +68,7 @@ describe('Migrator', () => {
     const migration = await orm.migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
   });
 
   test('generate cjs schema migration', async () => {
@@ -80,7 +80,7 @@ describe('Migrator', () => {
     expect(migration).toMatchSnapshot('migration-cjs-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     expect(migration.code).toContain('require');
-    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
   });
 
   test('generate migration with custom name', async () => {
@@ -102,7 +102,7 @@ describe('Migrator', () => {
     await migrator.up();
     await migrator.down(migration.fileName.replace('migration-', '').replace('.ts', ''));
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
     upMock.mockRestore();
     downMock.mockRestore();
   });
@@ -113,7 +113,7 @@ describe('Migrator', () => {
     const migrator = new Migrator(orm.em);
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
-    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
   });
 
   test('initial migration cannot be created if migrations already exist', async () => {
@@ -166,7 +166,7 @@ describe('Migrator', () => {
     const migration1 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).not.toBeCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
-    await remove(process.cwd() + '/temp/migrations/' + migration1.fileName);
+    await remove(process.cwd() + '/temp/migrations-123/' + migration1.fileName);
   });
 
   test('log a migration when the schema already exists', async () => {
@@ -180,7 +180,7 @@ describe('Migrator', () => {
     const migration2 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).toBeCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
-    await remove(process.cwd() + '/temp/migrations/' + migration2.fileName);
+    await remove(process.cwd() + '/temp/migrations-123/' + migration2.fileName);
   });
 
   test('migration storage getter', async () => {
@@ -215,7 +215,7 @@ describe('Migrator', () => {
   });
 
   test('run schema migration without existing migrations folder (GH #907)', async () => {
-    await remove(process.cwd() + '/temp/migrations');
+    await remove(process.cwd() + '/temp/migrations-123');
     const migrator = new Migrator(orm.em);
     await migrator.up();
   });
@@ -318,7 +318,7 @@ describe('Migrator', () => {
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
-    const path = process.cwd() + '/temp/migrations';
+    const path = process.cwd() + '/temp/migrations-123';
 
     const migration = await migrator.createMigration(path, true);
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
@@ -347,7 +347,7 @@ describe('Migrator', () => {
   test('up/down with explicit transaction', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
-    const path = process.cwd() + '/temp/migrations';
+    const path = process.cwd() + '/temp/migrations-123';
 
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
@@ -391,7 +391,7 @@ describe('Migrator', () => {
     migrator.options.disableForeignKeys = false;
     // @ts-ignore
     migrator.options.allOrNothing = false;
-    const path = process.cwd() + '/temp/migrations';
+    const path = process.cwd() + '/temp/migrations-123';
 
     const migration = await migrator.createMigration(path, true);
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
