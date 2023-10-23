@@ -570,7 +570,7 @@ export class EntityComparator {
     context.set('equals', equals);
 
     meta.comparableProps.forEach(prop => {
-      lines.push(this.getPropertyComparator(prop));
+      lines.push(this.getPropertyComparator(prop, context));
     });
 
     const code = `// compiled comparator for entity ${meta.className}\n`
@@ -590,7 +590,7 @@ export class EntityComparator {
       `  }\n`;
   }
 
-  private getPropertyComparator<T>(prop: EntityProperty<T>): string {
+  private getPropertyComparator<T>(prop: EntityProperty<T>, context: Map<string, any>): string {
     let type = prop.type.toLowerCase();
 
     if (prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED) {
@@ -604,6 +604,12 @@ export class EntityComparator {
     }
 
     if (prop.customType) {
+      if (prop.customType.compareValues) {
+        const idx = this.tmpIndex++;
+        context.set(`compareValues_${idx}`, (a: unknown, b: unknown) => prop.customType.compareValues!(a, b));
+        return this.getGenericComparator(this.wrap(prop.name), `!compareValues_${idx}(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
+      }
+
       type = prop.customType.compareAsType().toLowerCase();
     }
 
