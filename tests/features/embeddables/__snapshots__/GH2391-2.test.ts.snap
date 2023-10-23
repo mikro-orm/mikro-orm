@@ -1,0 +1,74 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1`] = `
+"function(result) {
+  const ret = {};
+  const mapped = {};
+  if (typeof result.id !== 'undefined') {
+    ret.id = result.id;
+    mapped.id = true;
+  }
+  if (typeof result.foo_audit1 !== 'undefined') {
+    ret.fooAudit1 = result.foo_audit1;
+    mapped.foo_audit1 = true;
+  }
+  if (typeof result.foo_audit1_archivedAt !== 'undefined') {
+    if (result.foo_audit1_archivedAt == null || result.foo_audit1_archivedAt instanceof Date) {
+      ret.foo_audit1_archived = result.foo_audit1_archivedAt;
+    } else {
+      ret.foo_audit1_archived = new Date(result.foo_audit1_archivedAt);
+    }
+    mapped.foo_audit1_archivedAt = true;
+  }
+  if (typeof result.foo_audit1_updated_at !== 'undefined') {
+    if (result.foo_audit1_updated_at == null || result.foo_audit1_updated_at instanceof Date) {
+      ret.foo_audit1_updatedAt = result.foo_audit1_updated_at;
+    } else {
+      ret.foo_audit1_updatedAt = new Date(result.foo_audit1_updated_at);
+    }
+    mapped.foo_audit1_updated_at = true;
+  }
+  if (typeof result.foo_audit1_created !== 'undefined') {
+    if (result.foo_audit1_created == null || result.foo_audit1_created instanceof Date) {
+      ret.foo_audit1_created = result.foo_audit1_created;
+    } else {
+      ret.foo_audit1_created = new Date(result.foo_audit1_created);
+    }
+    mapped.foo_audit1_created = true;
+  }
+  if (typeof result.foo_audit1_nested_audit1 !== 'undefined') {
+    ret.foo_audit1_nestedAudit1 = result.foo_audit1_nested_audit1;
+    mapped.foo_audit1_nested_audit1 = true;
+  }
+  if (typeof result.foo_audit1_nested_audit1_archivedAt !== 'undefined') {
+    if (result.foo_audit1_nested_audit1_archivedAt == null || result.foo_audit1_nested_audit1_archivedAt instanceof Date) {
+      ret.foo_audit1_nested_audit1_archived = result.foo_audit1_nested_audit1_archivedAt;
+    } else {
+      ret.foo_audit1_nested_audit1_archived = new Date(result.foo_audit1_nested_audit1_archivedAt);
+    }
+    mapped.foo_audit1_nested_audit1_archivedAt = true;
+  }
+  if (typeof result.foo_audit1_nested_audit1_updated_at !== 'undefined') {
+    if (result.foo_audit1_nested_audit1_updated_at == null || result.foo_audit1_nested_audit1_updated_at instanceof Date) {
+      ret.foo_audit1_nested_audit1_updatedAt = result.foo_audit1_nested_audit1_updated_at;
+    } else {
+      ret.foo_audit1_nested_audit1_updatedAt = new Date(result.foo_audit1_nested_audit1_updated_at);
+    }
+    mapped.foo_audit1_nested_audit1_updated_at = true;
+  }
+  if (typeof result.foo_audit1_nested_audit1_created !== 'undefined') {
+    if (result.foo_audit1_nested_audit1_created == null || result.foo_audit1_nested_audit1_created instanceof Date) {
+      ret.foo_audit1_nested_audit1_created = result.foo_audit1_nested_audit1_created;
+    } else {
+      ret.foo_audit1_nested_audit1_created = new Date(result.foo_audit1_nested_audit1_created);
+    }
+    mapped.foo_audit1_nested_audit1_created = true;
+  }
+  if (typeof result.bar_audit2 !== 'undefined') {
+    ret.barAudit2 = result.bar_audit2 == null ? result.bar_audit2 : mapEmbeddedResult_0(result.bar_audit2);
+    mapped.bar_audit2 = true;
+  }
+  for (let k in result) { if (result.hasOwnProperty(k) && !mapped[k]) ret[k] = result[k]; }
+  return ret;
+}"
+`;

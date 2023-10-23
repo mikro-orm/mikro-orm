@@ -397,3 +397,23 @@ Additional join conditions used to be implicitly aliased to the root entity, now
 // the `name` used to resolve to `b.name`, now it will resolve to `a.name` instead
 qb.join('b.author', 'a', { name: 'foo' });
 ```
+
+## Embedded properties respect `NamingStrategy`
+
+This is breaking mainly for SQL drivers, where the default naming strategy is underscoring, and will now applied to the embedded properties too. You can restore to the old behaviour by implementing custom naming strategy, overriding the `propertyToColumnName` method. It now has a second boolean parameter to indicate if the property is defined inside a JSON object context.
+
+```ts
+import { UnderscoreNamingStrategy } from '@mikro-orm/core';
+
+class CustomNamingStrategy extends UnderscoreNamingStrategy {
+
+   propertyToColumnName(propertyName: string, object?: boolean): string {
+      if (object) {
+         return propertyName;
+      }
+
+      return super.propertyToColumnName(propertyName, object);
+   }
+
+}
+```

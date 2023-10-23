@@ -66,6 +66,10 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     await orm.close(true);
   });
 
+  test('result mapper', async () => {
+    expect(orm.em.getComparator().getResultMapper(MyEntity.name).toString()).toMatchSnapshot();
+  });
+
   test(`GH issue 2283, 2391`, async () => {
     let line = orm.em.create(MyEntity, {}, { persist: false });
     await orm.em.fork().persistAndFlush(line);
@@ -94,13 +98,13 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     const tmp2 = line.audit2.archived = new Date();
     await orm.em.flush();
     expect(mock).toBeCalledTimes(3);
-    expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `audit2` = ?, `audit1_updated` = ?, `audit1_nested_audit1_updated` = ? where `id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `audit1_updated` = ?, `audit1_nested_audit1_updated` = ?, `audit2` = ? where `id` = ?');
     mock.mockReset();
 
     const tmp3 = line.audit2.nestedAudit1.archived = new Date();
     await orm.em.flush();
     expect(mock).toBeCalledTimes(3);
-    expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `audit2` = ?, `audit1_updated` = ?, `audit1_nested_audit1_updated` = ? where `id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `audit1_updated` = ?, `audit1_nested_audit1_updated` = ?, `audit2` = ? where `id` = ?');
     mock.mockRestore();
 
     const line2 = await orm.em.fork().findOneOrFail(MyEntity, line.id);

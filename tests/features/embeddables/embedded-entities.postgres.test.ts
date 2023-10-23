@@ -284,7 +284,7 @@ describe('embedded entities in postgresql', () => {
     await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
-    expect(mock.mock.calls[10][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."address4"->>\'postalCode\' = $1 limit $2');
+    expect(mock.mock.calls[10][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."address4"->>\'postal_code\' = $1 limit $2');
 
     const u5 = await orm.em.findOneOrFail(User, { address4: { number: { $gt: 2 } } });
     expect(u5).toBe(u1);
@@ -469,7 +469,7 @@ describe('embedded entities in postgresql', () => {
       [raw('(address4->>\'street\')::text != \'\'')]: [],
       [raw('lower((address4->>\'city\')::text) = ?', ['prague'])]: [],
       [raw('(address4->>?)::text = ?', ['city', 'Prague'])]: [],
-      [raw('(address4->>?)::text', ['postalCode'])]: '12000',
+      [raw('(address4->>?)::text', ['postal_code'])]: '12000',
     });
     expect(r[0]).toBeInstanceOf(User);
     expect(r[0].address4).toBeInstanceOf(Address1);
@@ -480,7 +480,7 @@ describe('embedded entities in postgresql', () => {
       'where (address4->>\'street\')::text != \'\' and ' +
       'lower((address4->>\'city\')::text) = \'prague\' and ' +
       '(address4->>\'city\')::text = \'Prague\' and ' +
-      '(address4->>\'postalCode\')::text = \'12000\'');
+      '(address4->>\'postal_code\')::text = \'12000\'');
   });
 
 });

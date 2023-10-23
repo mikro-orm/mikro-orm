@@ -423,13 +423,13 @@ export class MetadataDiscovery {
     }
   }
 
-  private initFieldName(prop: EntityProperty): void {
+  private initFieldName(prop: EntityProperty, object = false): void {
     if (prop.fieldNames && prop.fieldNames.length > 0) {
       return;
     }
 
-    if (prop.kind === ReferenceKind.SCALAR || (prop.kind === ReferenceKind.EMBEDDED && prop.object)) {
-      prop.fieldNames = [this.namingStrategy.propertyToColumnName(prop.name)];
+    if (prop.kind === ReferenceKind.SCALAR || prop.kind === ReferenceKind.EMBEDDED) {
+      prop.fieldNames = [this.namingStrategy.propertyToColumnName(prop.name, object)];
     } else if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
       prop.fieldNames = this.initManyToOneFieldName(prop, prop.name);
     } else if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner) {
@@ -892,9 +892,19 @@ export class MetadataDiscovery {
     embeddedProp.embeddedProps = {};
     let order = meta.propertyOrder.get(embeddedProp.name)!;
     const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
+    const isParentObject: (prop: EntityProperty) => boolean = (prop: EntityProperty) => {
+      if (prop.object || prop.array) {
+        return true;
+      }
+
+      return prop.embedded ? isParentObject(meta.properties[prop.embedded[0]]) : false;
+    };
+    const rootProperty = getRootProperty(embeddedProp);
+    const object = isParentObject(embeddedProp);
+    this.initFieldName(embeddedProp, rootProperty !== embeddedProp && object);
+    const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_' : embeddedProp.prefix;
 
     for (const prop of Object.values(embeddable.properties).filter(p => p.persist !== false)) {
-      const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.name + '_' : embeddedProp.prefix;
       const name = prefix + prop.name;
 
       if (meta.properties[name] !== undefined && getRootProperty(meta.properties[name]).kind !== ReferenceKind.EMBEDDED) {
@@ -911,18 +921,16 @@ export class MetadataDiscovery {
         meta.properties[name].nullable = true;
       }
 
-      const isParentObject: (prop: EntityProperty) => boolean = (prop: EntityProperty) => {
-        if (prop.object) {
-          return true;
+      if (prefix) {
+        if (meta.properties[name].fieldNames) {
+          meta.properties[name].fieldNames[0] = prefix + meta.properties[name].fieldNames[0];
+        } else {
+          this.initFieldName(meta.properties[name]);
         }
+      }
 
-        return prop.embedded ? isParentObject(meta.properties[prop.embedded[0]]) : false;
-      };
-      const rootProperty = getRootProperty(embeddedProp);
-
-      if (isParentObject(embeddedProp)) {
+      if (object) {
         embeddedProp.object = true;
-        this.initFieldName(embeddedProp);
         let path: string[] = [];
         let tmp = embeddedProp;
 
@@ -932,13 +940,17 @@ export class MetadataDiscovery {
         }
 
         if (tmp === rootProperty) {
-          path.unshift(this.namingStrategy.propertyToColumnName(rootProperty.name));
+          path.unshift(rootProperty.fieldNames[0]);
+        } else if (embeddedProp.embeddedPath) {
+          path = [...embeddedProp.embeddedPath];
         } else {
           path = [embeddedProp.fieldNames[0]];
         }
 
-        path.push(prop.name);
-        meta.properties[name].fieldNames = [path.join('.')]; // store path for ObjectHydrator
+        this.initFieldName(prop, true);
+        path.push(prop.fieldNames[0]);
+        meta.properties[name].fieldNames = prop.fieldNames;
+        meta.properties[name].embeddedPath = path;
         const fieldName = raw(this.platform.getSearchJsonPropertySQL(path.join('->'), prop.type, true));
         meta.properties[name].fieldNameRaw = fieldName.sql; // for querying in SQL drivers
         meta.properties[name].persist = false; // only virtual as we store the whole object
