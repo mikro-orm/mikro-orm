@@ -1,6 +1,7 @@
 import {
   Collection,
   Entity,
+    LoadStrategy,
   ManyToOne,
   MikroORM,
   OneToMany,
@@ -113,6 +114,7 @@ describe('multiple connected schemas in postgres', () => {
 
     const fork = orm.em.fork({ schema: 'n5' });
 
+
     await fork
       .getRepository(Category)
       .createQueryBuilder('category')
@@ -126,8 +128,25 @@ describe('multiple connected schemas in postgres', () => {
       .leftJoinAndSelect('topic.domain', 'domain')
       .execute();
 
+    await fork.findOne(Domain, {
+      id: 1,
+    }, {
+      populate: ['subDomain'],
+      strategy: LoadStrategy.JOINED,
+      disableIdentityMap: true,
+    });
+
+
+    await fork.findOne(Topic, {
+      id: 1,
+    }, {
+      populate: ['domain'],
+      strategy: LoadStrategy.JOINED,
+      disableIdentityMap: true,
+    });
+
     /**
-     * All * entities should use schema set in EntityManager
+     * All * entities should use schema set in EntityManager (n5)
      * All entities with defined schema(domain) should use the defined schema
      */
     expect(mock.mock.calls[0][0]).toMatch(
@@ -135,6 +154,19 @@ describe('multiple connected schemas in postgres', () => {
     );
     expect(mock.mock.calls[1][0]).toMatch(
       'select "topic".*, "category"."id" as "category__id", "category"."topic_id" as "category__topic_id", "domain"."id" as "domain__id", "domain"."scope" as "domain__scope" from "n5"."topic" as "topic" left join "n5"."category" as "category" on "topic"."id" = "category"."topic_id" left join "n2"."domain" as "domain" on "topic"."domain_id" = "domain"."id"',
+    );
+
+    /**
+     * Main table Domain(n2) will make sure that the schema used for * joins will be n2 and ignore fork settings
+     */
+    expect(mock.mock.calls[2][0]).toMatch(
+      'select "d0"."id", "d0"."scope", "s1"."id" as "s1__id", "s1"."name" as "s1__name", "s1"."domain_id" as "s1__domain_id" from "n2"."domain" as "d0" left join "n2"."sub_domain" as "s1" on "d0"."id" = "s1"."domain_id" where "d0"."id" = 1',
+    );
+    /**
+     * Main table topic(*) will join Domain(n2)
+     */
+    expect(mock.mock.calls[3][0]).toMatch(
+      'select "t0"."id", "t0"."name", "t0"."domain_id", "d1"."id" as "d1__id", "d1"."scope" as "d1__scope" from "n5"."topic" as "t0" left join "n2"."domain" as "d1" on "t0"."domain_id" = "d1"."id" where "t0"."id" = 1',
     );
   });
 
@@ -229,10 +261,10 @@ describe('multiple connected schemas in postgres', () => {
 
     /**
      * Domain is set to n2 and should join to n2
-     * SubDomain is set to * and should default to orm schema (n5)
+     * SubDomain is set to * and should default to main table schema (n2)
      */
     expect(mock.mock.calls[1][0]).toMatch(
-      'select "domain".*, "subDomain"."id" as "subDomain__id", "subDomain"."name" as "subDomain__name", "subDomain"."domain_id" as "subDomain__domain_id" from "n2"."domain" as "domain" left join "n5"."sub_domain" as "subDomain" on "domain"."id" = "subDomain"."domain_id"',
+      'select "domain".*, "subDomain"."id" as "subDomain__id", "subDomain"."name" as "subDomain__name", "subDomain"."domain_id" as "subDomain__domain_id" from "n2"."domain" as "domain" left join "n2"."sub_domain" as "subDomain" on "domain"."id" = "subDomain"."domain_id"',
     );
   });
 });
