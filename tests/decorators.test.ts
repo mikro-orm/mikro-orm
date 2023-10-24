@@ -24,6 +24,8 @@ const TEST_VALUE = 'expected value';
 
 const DI = {} as Dictionary;
 
+const ASYNC_ORM: Promise<MikroORM> =  Promise.resolve(Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: jest.fn() } } }));
+
 class TestClass {
 
   constructor(private readonly orm: MikroORM) {}
@@ -51,6 +53,16 @@ class TestClass {
   @CreateRequestContext(() => DI.orm)
   methodWithCallback() {
     //
+  }
+
+  @CreateRequestContext(async () => ASYNC_ORM)
+  async methodWithAsyncCallback() {
+    return TEST_VALUE;
+  }
+
+  @CreateRequestContext(ASYNC_ORM)
+  async methodWithAsyncOrmInstance() {
+    return TEST_VALUE;
   }
 
 }
@@ -81,6 +93,17 @@ class TestClass2 {
 
   @UseRequestContext(() => DI.orm)
   methodWithCallback() {
+    //
+  }
+
+}
+
+class TestClass3 {
+
+  constructor(private readonly orm: Promise<MikroORM>) {}
+
+  @CreateRequestContext()
+  methodWithAsyncOrmPropertyAndReturnsNothing() {
     //
   }
 
@@ -176,6 +199,14 @@ describe('decorators', () => {
 
     const err = '@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@CreateRequestContext(() => orm)`';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
+    const ret7 = await test.methodWithAsyncCallback();
+    expect(ret7).toEqual(TEST_VALUE);
+    const ret8 = await test.methodWithAsyncOrmInstance();
+    expect(ret8).toEqual(TEST_VALUE);
+
+    const test3 = new TestClass3(ASYNC_ORM);
+    const ret9 = await test3.methodWithAsyncOrmPropertyAndReturnsNothing();
+    expect(ret9).toBeUndefined();
   });
 
   test('UseRequestContext', async () => {
