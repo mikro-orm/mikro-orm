@@ -95,6 +95,10 @@ export class QueryHelper {
       QueryHelper.inlinePrimaryKeyObjects(where as Dictionary, meta, metadata);
     }
 
+    if (options.platform.getConfig().get('ignoreUndefinedInQuery') && where && typeof where === 'object') {
+      Utils.dropUndefinedProperties(where);
+    }
+
     where = QueryHelper.processParams(where) ?? {};
 
     /* istanbul ignore next */

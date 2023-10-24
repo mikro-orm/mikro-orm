@@ -206,6 +206,19 @@ describe('EntityManagerSqlite', () => {
     await expect(orm.em.findOne(Author3, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
 
+  test('find query ignores undefined properties (ignoreUndefinedInQuery)', async () => {
+    const mock = mockLogger(orm, ['query']);
+    await orm.em.find(Author3, { email: undefined, name: 'foo' });
+    await orm.em.find(Author3, { email: undefined, name: 'foo', books: { title: undefined } });
+    await orm.em.find(Author3, { email: undefined, name: 'foo', books: { title: undefined, createdAt: 123 } });
+    await orm.em.find(Author3, { email: undefined, name: 'foo', books: { title: { $ne: undefined, $gte: undefined }, createdAt: 123 } });
+
+    expect(mock.mock.calls[0][0]).toBe('[query] select `a0`.* from `author3` as `a0` where `a0`.`name` = ?');
+    expect(mock.mock.calls[1][0]).toBe('[query] select `a0`.* from `author3` as `a0` left join `book3` as `b1` on `a0`.`id` = `b1`.`author_id` where `a0`.`name` = ?');
+    expect(mock.mock.calls[2][0]).toBe('[query] select `a0`.* from `author3` as `a0` left join `book3` as `b1` on `a0`.`id` = `b1`.`author_id` where `a0`.`name` = ? and `b1`.`created_at` = ?');
+    expect(mock.mock.calls[3][0]).toBe('[query] select `a0`.* from `author3` as `a0` left join `book3` as `b1` on `a0`.`id` = `b1`.`author_id` where `a0`.`name` = ? and `b1`.`created_at` = ?');
+  });
+
   test('should load entities', async () => {
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);

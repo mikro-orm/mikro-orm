@@ -1345,12 +1345,6 @@ describe('QueryBuilder', () => {
     expect(() => qb0.select('*').where({ author: { undefinedName: 'Jon Snow' } }).getQuery()).toThrowError(err);
   });
 
-  test('select with invalid query condition throws error', async () => {
-    const qb0 = orm.em.createQueryBuilder(Book2);
-    const err = `Invalid query condition: { 'e0.author': {} }`;
-    expect(() => qb0.select('*').where({ author: {} }).getQuery()).toThrowError(err);
-  });
-
   test('pessimistic locking requires active transaction', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ name: '...' });
