@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.9.0](https://github.com/mikro-orm/mikro-orm/compare/v5.8.10...v5.9.0) (2023-10-24)
+
+
+### Bug Fixes
+
+* **core:** apply `convertToJSValueSQL` on composite FKs too ([41425cb](https://github.com/mikro-orm/mikro-orm/commit/41425cbad836a9e81ffa09c5d9ef881a7e7e8b9d)), closes [#4843](https://github.com/mikro-orm/mikro-orm/issues/4843)
+* **core:** clean up removed entities from relations in identity map ([1e3bb0e](https://github.com/mikro-orm/mikro-orm/commit/1e3bb0e1e7b8e76fa42fa1573d0f5265f83508aa)), closes [#4863](https://github.com/mikro-orm/mikro-orm/issues/4863)
+* **core:** infer property type from `columnType` for non-inferrable types (e.g. unions with `null`) ([6bc116a](https://github.com/mikro-orm/mikro-orm/commit/6bc116aabdc9ca958238faaa7ac4a44cf3c71c08)), closes [#4833](https://github.com/mikro-orm/mikro-orm/issues/4833)
+* **core:** remove some computed properties from metadata cache ([eb138ad](https://github.com/mikro-orm/mikro-orm/commit/eb138adb74237f98cf001b4b84e13e7f2636fb61))
+* **core:** use write connection for fetching changes after upsert/upsertMany ([#4872](https://github.com/mikro-orm/mikro-orm/issues/4872)) ([6b444ed](https://github.com/mikro-orm/mikro-orm/commit/6b444edef5333265ad4f20154a6151f6f0f3a1b5)), closes [#4868](https://github.com/mikro-orm/mikro-orm/issues/4868)
+* **serialization:** run custom serializer on getters ([#4860](https://github.com/mikro-orm/mikro-orm/issues/4860)) ([e76836e](https://github.com/mikro-orm/mikro-orm/commit/e76836e75fbb9b9226078496d59e251baaced074)), closes [#4859](https://github.com/mikro-orm/mikro-orm/issues/4859)
+
+
+### Features
+
+* **core:** allow ignoring `undefined` values in `em.find` queries ([#4875](https://github.com/mikro-orm/mikro-orm/issues/4875)) ([e163bfb](https://github.com/mikro-orm/mikro-orm/commit/e163bfb43c64ff8fa356c30e1523334e06e5e1aa)), closes [#4873](https://github.com/mikro-orm/mikro-orm/issues/4873)
+* **core:** create context from async orm instance ([#4812](https://github.com/mikro-orm/mikro-orm/issues/4812)) ([fbf3a4d](https://github.com/mikro-orm/mikro-orm/commit/fbf3a4dca6767e74579620b6aec020ac1cc07c0d)), closes [#4805](https://github.com/mikro-orm/mikro-orm/issues/4805)
+
+
+
+
+
 ## [5.8.10](https://github.com/mikro-orm/mikro-orm/compare/v5.8.9...v5.8.10) (2023-10-18)
 
 
