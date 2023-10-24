@@ -73,6 +73,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     loadStrategy: LoadStrategy.SELECT_IN,
     populateWhere: PopulateHint.ALL,
     connect: true,
+    ignoreUndefinedInQuery: false,
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
     populateAfterFlush: true,
@@ -514,6 +515,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   disableTransactions?: boolean;
   connect: boolean;
   verbose: boolean;
+  ignoreUndefinedInQuery?: boolean;
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
   populateAfterFlush: boolean;

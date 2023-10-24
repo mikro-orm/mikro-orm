@@ -226,14 +226,16 @@ export class Utils {
   /**
    * Removes `undefined` properties (recursively) so they are not saved as nulls
    */
-  static dropUndefinedProperties<T = Dictionary | unknown[]>(o: any, value?: undefined | null): void {
+  static dropUndefinedProperties<T = Dictionary | unknown[]>(o: any, value?: undefined | null, visited = new Set()): void {
     if (Array.isArray(o)) {
-      return o.forEach((item: unknown) => Utils.dropUndefinedProperties(item, value));
+      return o.forEach((item: unknown) => Utils.dropUndefinedProperties(item, value, visited));
     }
 
-    if (!Utils.isObject(o)) {
+    if (!Utils.isObject(o) || visited.has(o)) {
       return;
     }
+
+    visited.add(o);
 
     Object.keys(o).forEach(key => {
       if (o[key] === value) {
@@ -241,7 +243,7 @@ export class Utils {
         return;
       }
 
-      Utils.dropUndefinedProperties(o[key], value);
+      Utils.dropUndefinedProperties(o[key], value, visited);
     });
   }
 

@@ -275,6 +275,19 @@ MikroORM.init({
 });
 ```
 
+## Ignoring `undefined` values in Find Queries
+
+The ORM will treat explicitly defined `undefined` values in your `em.find()` queries as `null`s. If you want to ignore them instead, use `ignoreUndefinedInQuery` option:
+
+```ts
+MikroORM.init({
+  ignoreUndefinedInQuery: true,
+});
+
+// resolves to `em.find(User, {})`
+await em.find(User, { email: undefined, { profiles: { foo: undefined } } });
+```
+
 ## Serialization of new entities
 
 After flushing a new entity, all relations are marked as populated, just like if the entity was loaded from the db. This aligns the serialized output of `e.toJSON()` of a loaded entity and just-inserted one.

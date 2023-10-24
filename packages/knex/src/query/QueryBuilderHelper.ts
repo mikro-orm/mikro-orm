@@ -507,8 +507,13 @@ export class QueryBuilderHelper {
   private processObjectSubCondition(cond: any, key: string, qb: Knex.QueryBuilder, method: 'where' | 'having', m: 'where' | 'orWhere' | 'having', type: QueryType): void {
     // grouped condition for one field
     let value = cond[key];
+    const size = Utils.getObjectKeysSize(value);
 
-    if (Utils.getObjectKeysSize(value) > 1) {
+    if (Utils.isPlainObject(value) && size === 0) {
+      return;
+    }
+
+    if (size > 1) {
       const subCondition = Object.entries(value).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
       return subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, '$and', method));
     }
@@ -520,6 +525,7 @@ export class QueryBuilderHelper {
     // operators
     const op = Object.keys(QueryOperator).find(op => op in value);
 
+    /* istanbul ignore next */
     if (!op) {
       throw new Error(`Invalid query condition: ${inspect(cond)}`);
     }
