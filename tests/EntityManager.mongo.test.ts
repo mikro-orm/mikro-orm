@@ -364,7 +364,12 @@ describe('EntityManagerMongo', () => {
     expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeDefined();
     await repo.flush();
     expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeUndefined();
-    expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual({ registry: new Map([[Author, new Map<string, Author>()]]) });
+    expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual({
+      registry: new Map([
+        [Author, new Map<string, Author>()],
+        [Book, new Map<string, Book>()],
+      ] as any[]),
+    });
   });
 
   test('removing entity will remove its FK from relations', async () => {

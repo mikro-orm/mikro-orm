@@ -349,6 +349,7 @@ export class EntityMetadata<T = any> {
     this.indexes = [];
     this.uniques = [];
     this.checks = [];
+    this.referencingProperties = [];
     this.concurrencyCheckKeys = new Set();
     Object.assign(this, meta);
   }
@@ -550,6 +551,7 @@ export interface EntityMetadata<T = any> {
   props: EntityProperty<T>[];
   relations: EntityProperty<T>[];
   bidirectionalRelations: EntityProperty<T>[];
+  referencingProperties: { meta: EntityMetadata<T>; prop: EntityProperty<T> }[];
   comparableProps: EntityProperty<T>[]; // for EntityComparator
   hydrateProps: EntityProperty<T>[]; // for Hydrator
   uniqueProps: EntityProperty<T>[];

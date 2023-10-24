@@ -423,23 +423,16 @@ export class UnitOfWork {
     this.identityMap.delete(entity);
     const wrapped = helper(entity);
 
-    for (const prop of wrapped.__meta.bidirectionalRelations) {
-      const inverse = prop.mappedBy || prop.inversedBy;
-      const rel = Reference.unwrapReference(entity[prop.name]);
+    // remove references of this entity in all managed entities, otherwise flushing could reinsert the entity
+    for (const { meta, prop } of wrapped.__meta.referencingProperties) {
+      for (const referrer of this.identityMap.getStore(meta).values()) {
+        const rel = Reference.unwrapReference(referrer[prop.name] as object);
 
-      if (Utils.isCollection(rel) && rel.isInitialized()) {
-        rel.getItems(false).forEach(item => rel.removeWithoutPropagation(item));
-        continue;
-      }
-
-      if (Utils.isCollection(rel?.[inverse]) && rel[inverse].isInitialized()) {
-        rel[inverse].removeWithoutPropagation(entity);
-        continue;
-      }
-
-      // there is a value, and it is still a self-reference (e.g. not replaced by user manually)
-      if (!Utils.isCollection(rel) && rel?.[inverse] && entity === Reference.unwrapReference(rel[inverse])) {
-        delete helper(rel).__data[inverse];
+        if (Utils.isCollection(rel)) {
+          rel.removeWithoutPropagation(entity);
+        } else if (rel === entity) {
+          delete helper(referrer).__data[prop.name];
+        }
       }
     }
 

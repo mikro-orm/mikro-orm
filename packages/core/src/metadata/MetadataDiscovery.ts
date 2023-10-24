@@ -80,6 +80,7 @@ export class MetadataDiscovery {
 
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initIndexes(prop)));
     filtered.forEach(meta => this.autoWireBidirectionalProperties(meta));
+    filtered.forEach(meta => this.findReferencingProperties(meta, filtered));
 
     for (const meta of filtered) {
       discovered.push(...await this.processEntity(meta));
@@ -511,6 +512,18 @@ export class MetadataDiscovery {
     }
 
     return ret;
+  }
+
+  private findReferencingProperties(meta: EntityMetadata, metadata: EntityMetadata[]) {
+    for (const meta2 of metadata) {
+      const prop2 = meta2.relations.find(prop2 => {
+        return prop2.reference !== ReferenceType.SCALAR && prop2.type === meta.className;
+      });
+
+      if (prop2) {
+        meta.referencingProperties.push({ meta: meta2, prop: prop2 });
+      }
+    }
   }
 
   private initFactoryField<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>): void {
