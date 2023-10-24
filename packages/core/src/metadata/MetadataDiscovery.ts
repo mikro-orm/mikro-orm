@@ -305,7 +305,6 @@ export class MetadataDiscovery {
     }
 
     const copy = Utils.copy(meta, false);
-    delete copy.prototype;
 
     copy.props
       .filter(prop => Type.isMappedType(prop.type))
@@ -315,7 +314,10 @@ export class MetadataDiscovery {
           .forEach(k => delete (prop as Dictionary)[k]);
       });
 
-    delete (copy as Dictionary).checks;
+    [
+      'prototype', 'props', 'referencingProperties', 'propertyOrder', 'relations',
+      'concurrencyCheckKeys', 'checks',
+    ].forEach(key => delete copy[key]);
 
     // base entity without properties might not have path, but nothing to cache there
     if (meta.path) {
