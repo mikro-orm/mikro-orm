@@ -193,22 +193,10 @@ jobs:
       - name: Install
         run: yarn
 
-      - name: Check for changes
-        id: changed_packages
-        run: |
-          echo "::set-output name=changed_packages::$(node ./node_modules/.bin/lerna changed -p | wc -l | xargs)"
-
-      - name: Check for changes 2
-        if: steps.changed_packages.outputs.changed_packages == '0'
-        run: |
-          echo "no changes detected by lerna"
-
       - name: Build
-        if: steps.changed_packages.outputs.changed_packages != '0'
         run: yarn build
 
       - name: Release dev version for testing
-        if: steps.changed_packages.outputs.changed_packages != '0'
         run: |
           git config --global user.name 'MikroORM Release Bot'
           git config --global user.email 'noreply@mikro-orm.io'
