@@ -1,7 +1,7 @@
 import {
   Collection,
   Entity,
-    LoadStrategy,
+  LoadStrategy,
   ManyToOne,
   MikroORM,
   OneToMany,
@@ -114,7 +114,6 @@ describe('multiple connected schemas in postgres', () => {
 
     const fork = orm.em.fork({ schema: 'n5' });
 
-
     await fork
       .getRepository(Category)
       .createQueryBuilder('category')
@@ -135,7 +134,6 @@ describe('multiple connected schemas in postgres', () => {
       strategy: LoadStrategy.JOINED,
       disableIdentityMap: true,
     });
-
 
     await fork.findOne(Topic, {
       id: 1,
@@ -162,6 +160,7 @@ describe('multiple connected schemas in postgres', () => {
     expect(mock.mock.calls[2][0]).toMatch(
       'select "d0"."id", "d0"."scope", "s1"."id" as "s1__id", "s1"."name" as "s1__name", "s1"."domain_id" as "s1__domain_id" from "n2"."domain" as "d0" left join "n2"."sub_domain" as "s1" on "d0"."id" = "s1"."domain_id" where "d0"."id" = 1',
     );
+
     /**
      * Main table topic(*) will join Domain(n2)
      */
