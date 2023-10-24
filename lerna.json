@@ -8,12 +8,14 @@
       "conventionalCommits": true,
       "createRelease": "github",
       "message": "chore(release): %s [skip ci]"
+    },
+    "publish": {
+      "assets": []
     }
   },
   "ignoreChanges": [
     "**/tests/**",
     "**/*.md"
   ],
-  "npmClient": "yarn",
-  "useWorkspaces": true
+  "npmClient": "yarn"
 }
