@@ -1014,6 +1014,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private getQueryBase(): Knex.QueryBuilder {
     const qb = this.getKnex();
     const schema = this.getSchema(this.mainAlias);
+    // Joined tables doesn't need to belong to the same schema as the main table
+    const joinSchema = this._schema ?? this.em?.schema ?? schema;
 
     if (schema) {
       qb.withSchema(schema);
@@ -1036,12 +1038,12 @@ export class QueryBuilder<T extends object = AnyEntity> {
           qb.distinct();
         }
 
-        this.helper.processJoins(qb, this._joins, schema);
+        this.helper.processJoins(qb, this._joins, joinSchema);
         break;
       case QueryType.COUNT: {
         const m = this.flags.has(QueryFlag.DISTINCT) ? 'countDistinct' : 'count';
         qb[m]({ count: this._fields!.map(f => this.helper.mapper(f as string, this.type)) });
-        this.helper.processJoins(qb, this._joins, schema);
+        this.helper.processJoins(qb, this._joins, joinSchema);
         break;
       }
       case QueryType.INSERT:
@@ -1274,7 +1276,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private getSchema(alias: Alias<any>): string | undefined {
     const { metadata } = alias;
     const metaSchema = metadata?.schema && metadata.schema !== '*' ? metadata.schema : undefined;
-    return this._schema ?? metaSchema ?? this.em?.config.get('schema');
+    return this._schema ?? metaSchema ?? this.em?.schema ?? this.em?.config.get('schema');
   }
 
   private createAlias<U = unknown>(entityName: string, aliasName: string, subQuery?: Knex.QueryBuilder): Alias<U> {

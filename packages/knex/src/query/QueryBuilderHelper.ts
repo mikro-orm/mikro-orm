@@ -177,7 +177,7 @@ export class QueryBuilderHelper {
     return {
       prop, type, cond, ownerAlias, alias,
       table: this.getTableName(prop.type),
-      schema: this.driver.getSchemaName(prop.targetMeta),
+      schema: prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta),
       joinColumns: prop.referencedColumnNames,
       primaryKeys: prop.fieldNames,
     };
@@ -195,7 +195,7 @@ export class QueryBuilderHelper {
         primaryKeys: prop.referencedColumnNames,
         cond: {},
         table: pivotMeta.tableName,
-        schema: this.driver.getSchemaName(pivotMeta),
+        schema: prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(pivotMeta),
         path: path.endsWith('[pivot]') ? path : `${path}[pivot]`,
       } as JoinOptions,
     };
