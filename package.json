@@ -101,7 +101,7 @@
     "@side/jest-runtime": "^1.1.0",
     "@types/fs-extra": "11.0.3",
     "@types/jest": "29.5.6",
-    "@types/node": "20.8.8",
+    "@types/node": "20.8.9",
     "@types/pg": "8.10.7",
     "@types/sqlstring": "2.3.1",
     "@types/uuid": "9.0.6",
