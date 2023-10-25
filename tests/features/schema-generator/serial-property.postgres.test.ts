@@ -1,6 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, helper, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'something' })
 export class Something0 {
@@ -84,7 +83,6 @@ test('schema generator works with non-pk autoincrement columns (serial)', async 
   const orm = await MikroORM.init({
     entities: [Something0],
     dbName: `mikro_orm_test_serial`,
-    driver: PostgreSqlDriver,
     schemaGenerator: { disableForeignKeys: false },
   });
 
@@ -155,7 +153,6 @@ test('create schema dump with serial property', async () => {
   const orm = await MikroORM.init({
     entities: [Something1],
     dbName: `mikro_orm_test_serial`,
-    driver: PostgreSqlDriver,
     schemaGenerator: { disableForeignKeys: false },
     debug: ['schema'],
   });
@@ -173,8 +170,6 @@ test('hydration of serial property', async () => {
   const orm = await MikroORM.init({
     entities: [Something1],
     dbName: `mikro_orm_test_serial`,
-    driver: PostgreSqlDriver,
-    debug: ['schema'],
   });
 
   await orm.schema.refreshDatabase();
