@@ -1,4 +1,4 @@
-import { Entity,  MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
@@ -90,51 +90,50 @@ test('schema generator works with non-pk autoincrement columns (serial)', async 
 
   const mock = mockLogger(orm, ['schema']);
 
-  const generator = orm.schema;
-  await generator.refreshDatabase();
-  await expect(generator.getUpdateSchemaSQL()).resolves.toBe('');
+  await orm.schema.refreshDatabase();
+  await expect(orm.schema.getUpdateSchemaSQL()).resolves.toBe('');
 
   orm.getMetadata().reset('Something0');
   await orm.discoverEntity(Something1);
-  const diff1 = await generator.getUpdateSchemaSQL();
+  const diff1 = await orm.schema.getUpdateSchemaSQL();
   expect(diff1).toMatchSnapshot();
-  await generator.execute(diff1);
+  await orm.schema.execute(diff1);
 
-  await expect(generator.getUpdateSchemaSQL()).resolves.toBe('');
+  await expect(orm.schema.getUpdateSchemaSQL()).resolves.toBe('');
 
   orm.getMetadata().reset('Something1');
   await orm.discoverEntity(Something2);
-  const diff2 = await generator.getUpdateSchemaSQL();
+  const diff2 = await orm.schema.getUpdateSchemaSQL();
   expect(diff2).toMatchSnapshot();
-  await generator.execute(diff2);
+  await orm.schema.execute(diff2);
 
-  await expect(generator.getUpdateSchemaSQL()).resolves.toBe('');
+  await expect(orm.schema.getUpdateSchemaSQL()).resolves.toBe('');
 
   orm.getMetadata().reset('Something2');
   await orm.discoverEntity(Something3);
-  const diff3 = await generator.getUpdateSchemaSQL();
+  const diff3 = await orm.schema.getUpdateSchemaSQL();
   expect(diff3).toMatchSnapshot();
-  await generator.execute(diff3);
+  await orm.schema.execute(diff3);
 
-  await expect(generator.getUpdateSchemaSQL()).resolves.toBe('');
+  await expect(orm.schema.getUpdateSchemaSQL()).resolves.toBe('');
 
   orm.getMetadata().reset('Something3');
   await orm.discoverEntity(Something4);
-  const diff4 = await generator.getUpdateSchemaSQL();
+  const diff4 = await orm.schema.getUpdateSchemaSQL();
   expect(diff4).toMatchSnapshot();
-  await generator.execute(diff4);
+  await orm.schema.execute(diff4);
 
-  await expect(generator.getUpdateSchemaSQL()).resolves.toBe('');
+  await expect(orm.schema.getUpdateSchemaSQL()).resolves.toBe('');
 
   orm.getMetadata().reset('Something4');
   await orm.discoverEntity(Something5);
-  const diff5 = await generator.getUpdateSchemaSQL();
+  const diff5 = await orm.schema.getUpdateSchemaSQL();
   expect(diff5).toMatchSnapshot();
-  await generator.execute(diff5);
+  await orm.schema.execute(diff5);
 
-  await expect(generator.getUpdateSchemaSQL()).resolves.toBe('');
+  await expect(orm.schema.getUpdateSchemaSQL()).resolves.toBe('');
 
-  const diff52 = await generator.getCreateSchemaSQL();
+  const diff52 = await orm.schema.getCreateSchemaSQL();
   await expect(diff52).toMatchSnapshot();
 
   await orm.close(true);
@@ -166,6 +165,32 @@ test('create schema dump with serial property', async () => {
   expect(create).toMatch('create table "something" ("id" serial primary key, "_id" serial, "foo" varchar(255) not null);');
   const diff = await orm.schema.getUpdateSchemaSQL();
   expect(diff).toBe('');
+
+  await orm.close(true);
+});
+
+test('hydration of serial property', async () => {
+  const orm = await MikroORM.init({
+    entities: [Something1],
+    dbName: `mikro_orm_test_serial`,
+    driver: PostgreSqlDriver,
+    debug: ['schema'],
+  });
+
+  await orm.schema.refreshDatabase();
+
+  const e1 = new Something1();
+  e1.foo = '1';
+  await orm.em.persistAndFlush(e1);
+  expect(e1._id).toBe(1);
+  const e2 = new Something1();
+  e2.foo = '2';
+  const e3 = new Something1();
+  e3.foo = '3';
+
+  await orm.em.persistAndFlush([e2, e3]);
+  expect(e2._id).toBe(2);
+  expect(e3._id).toBe(3);
 
   await orm.close(true);
 });

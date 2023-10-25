@@ -398,7 +398,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     if (this.platform.usesReturningStatement()) {
       /* istanbul ignore next */
-      const returningProps = meta!.hydrateProps.filter(prop => prop.persist !== false && (prop.primary || prop.defaultRaw));
+      const returningProps = meta!.hydrateProps.filter(prop => prop.persist !== false && (prop.primary || prop.defaultRaw || prop.autoincrement));
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       /* istanbul ignore next */
       sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
