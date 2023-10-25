@@ -1,5 +1,5 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { wrap, LoadStrategy } from '@mikro-orm/core';
+import { wrap, LoadStrategy, serialize } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Author2, Book2, BookTag2, Publisher2 } from '../../entities-sql';
 import { initORMPostgreSql, mockLogger } from '../../bootstrap';
@@ -168,18 +168,18 @@ describe('result cache (postgres)', () => {
 
     const res2 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(100).getResultList();
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
-    expect(res1).toEqual(res2);
+    expect(serialize(res1)).toEqual(serialize(res2));
     orm.em.clear();
 
     const res3 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(100).getResultList();
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
-    expect(res1).toEqual(res3);
+    expect(serialize(res1)).toEqual(serialize(res3));
     orm.em.clear();
 
     await new Promise(r => setTimeout(r, 200)); // wait for cache to expire
     const res4 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache().getResultList();
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
-    expect(res1).toEqual(res4);
+    expect(serialize(res1)).toEqual(serialize(res4));
   });
 
 });
