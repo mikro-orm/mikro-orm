@@ -29,10 +29,10 @@ class Employee {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ onDelete: 'cascade' })
+  @ManyToOne({ deleteRule: 'cascade' })
   department!: Department;
 
-  @ManyToOne({ onDelete: 'cascade' })
+  @ManyToOne({ deleteRule: 'cascade' })
   person!: Person;
 
 }

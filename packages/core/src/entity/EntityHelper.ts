@@ -39,6 +39,7 @@ export class EntityHelper {
         set(id: string): void {
           this._id = id ? em.getPlatform().denormalizePrimaryKey(id) : null;
         },
+        configurable: true,
       });
     }
 
@@ -67,16 +68,17 @@ export class EntityHelper {
   private static defineBaseProperties<T extends object>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
     const helperParams = meta.embeddable || meta.virtual ? [] : [em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta)];
     Object.defineProperties(prototype, {
-      __entity: { value: !meta.embeddable },
-      __meta: { value: meta },
-      __config: { value: em.config },
-      __platform: { value: em.getPlatform() },
-      __factory: { value: em.getEntityFactory() },
+      __entity: { value: !meta.embeddable, configurable: true },
+      __meta: { value: meta, configurable: true },
+      __config: { value: em.config, configurable: true },
+      __platform: { value: em.getPlatform(), configurable: true },
+      __factory: { value: em.getEntityFactory(), configurable: true },
       __helper: {
         get(): WrappedEntity<T> {
           Object.defineProperty(this, '__helper', {
             value: new WrappedEntity(this, em.getHydrator(), ...helperParams),
             enumerable: false,
+            configurable: true,
           });
 
           return this.__helper;
@@ -107,6 +109,7 @@ export class EntityHelper {
               EntityHelper.defineReferenceProperty(meta, prop, this, em.getHydrator());
               this[prop.name] = val;
             },
+            configurable: true,
           });
           return;
         }
@@ -131,6 +134,7 @@ export class EntityHelper {
             this.__helper.__data[prop.name] = val;
             this.__helper.__touched = true;
           },
+          configurable: true,
         });
       });
   }
@@ -270,6 +274,7 @@ export class EntityHelper {
         set(id: string): void {
           this[pk.name] = id ? platform.denormalizePrimaryKey(id) : null;
         },
+        configurable: true,
       });
 
       if (entity[pk.name] == null && val != null) {
