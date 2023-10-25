@@ -382,10 +382,10 @@ export class MetadataDiscovery {
           .forEach(k => delete (prop as Dictionary)[k]);
       });
 
-    [
+    ([
       'prototype', 'props', 'referencingProperties', 'propertyOrder', 'relations',
       'concurrencyCheckKeys', 'checks',
-    ].forEach(key => delete copy[key]);
+    ] as const).forEach(key => delete copy[key]);
 
     // base entity without properties might not have path, but nothing to cache there
     if (meta.path) {
@@ -579,7 +579,7 @@ export class MetadataDiscovery {
   private findReferencingProperties(meta: EntityMetadata, metadata: EntityMetadata[]) {
     for (const meta2 of metadata) {
       const prop2 = meta2.relations.find(prop2 => {
-        return prop2.reference !== ReferenceType.SCALAR && prop2.type === meta.className;
+        return prop2.kind !== ReferenceKind.SCALAR && prop2.type === meta.className;
       });
 
       if (prop2) {
