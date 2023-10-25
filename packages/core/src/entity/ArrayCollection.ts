@@ -330,7 +330,7 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   * [Symbol.iterator](): IterableIterator<T> {
-    for (const item of this.items) {
+    for (const item of this.getItems()) {
       yield item;
     }
   }

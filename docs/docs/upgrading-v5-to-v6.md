@@ -417,3 +417,16 @@ class CustomNamingStrategy extends UnderscoreNamingStrategy {
 
 }
 ```
+
+## Iterating not initialized Collection throws
+
+When you try to iterate a collection instance, it will now check if its initialized, and throw otherwise.
+
+```ts
+const author = await em.findOne(User, 1);
+
+// this will throw as the books collection is not initialized
+for (const book of author.books) {
+  // ...
+}
+```

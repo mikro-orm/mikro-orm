@@ -1,4 +1,24 @@
-import { MikroORM, Collection, DataloaderUtils, Ref, Entity, PrimaryKey, Property, OneToMany, ManyToMany, ManyToOne, Enum, ref, QueryOrder, PrimaryKeyProp, helper, Primary, SimpleLogger, Dataloader } from '@mikro-orm/sqlite';
+import {
+  MikroORM,
+  Collection,
+  DataloaderUtils,
+  Ref,
+  Entity,
+  PrimaryKey,
+  Property,
+  OneToMany,
+  ManyToMany,
+  ManyToOne,
+  Enum,
+  ref,
+  QueryOrder,
+  PrimaryKeyProp,
+  helper,
+  Primary,
+  SimpleLogger,
+  Dataloader,
+  serialize,
+} from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 enum PublisherType {
@@ -295,7 +315,7 @@ describe('Dataloader', () => {
     await Promise.all(refsB.map(ref => ref.load({ dataloader: true })));
     await orm.em.flush();
     expect(mock.mock.calls).toMatchSnapshot();
-    expect(refsA).toEqual(refsB);
+    expect(serialize(refsA)).toEqual(serialize(refsB));
   });
 
   test('Dataloader can be globally enabled for References', async () => {
