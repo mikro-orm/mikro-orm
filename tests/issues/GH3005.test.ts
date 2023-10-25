@@ -23,7 +23,7 @@ class Order {
   id!: number;
 
   @Property()
-  value: number = 200;
+  value: number = 300;
 
   @ManyToOne(() => Customer)
   customer!: Customer;
