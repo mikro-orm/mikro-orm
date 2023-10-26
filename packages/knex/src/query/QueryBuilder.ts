@@ -227,7 +227,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this.join(field, alias, cond, 'leftJoin', undefined, schema);
   }
 
-  joinAndSelect(field: string | [field: string, Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  joinAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string, fields?: string[], schema?: string): SelectQueryBuilder<T> {
     if (!this.type) {
       this.select('*');
     }
@@ -261,11 +261,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this as SelectQueryBuilder<T>;
   }
 
-  leftJoinAndSelect(field: string | [field: string, Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  leftJoinAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
     return this.joinAndSelect(field, alias, cond, 'leftJoin', undefined, fields, schema);
   }
 
-  innerJoinAndSelect(field: string | [field: string, Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  innerJoinAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
     return this.joinAndSelect(field, alias, cond, 'innerJoin', undefined, fields, schema);
   }
 
