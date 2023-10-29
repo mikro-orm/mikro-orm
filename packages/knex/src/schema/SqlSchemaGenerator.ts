@@ -353,6 +353,15 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         this.dropCheck(table, check);
       }
 
+      /* istanbul ignore else */
+      if (!safe) {
+        for (const column of Object.values(diff.removedColumns)) {
+          this.helper.pushTableQuery(table, `alter table ${this.platform.quoteIdentifier(tableName)} drop column ${this.platform.quoteIdentifier(column.name)}`);
+        }
+      }
+    }));
+
+    ret.push(this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
       for (const column of Object.values(diff.addedColumns)) {
         const col = this.helper.createTableColumn(table, column, diff.fromTable);
         this.helper.configureColumn(column, col, this.knex);
@@ -365,13 +374,6 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
             .withKeyName(foreignKey.constraintName)
             .onUpdate(foreignKey.updateRule!)
             .onDelete(foreignKey.deleteRule!);
-        }
-      }
-
-      /* istanbul ignore else */
-      if (!safe) {
-        for (const column of Object.values(diff.removedColumns)) {
-          table.dropColumn(column.name);
         }
       }
 

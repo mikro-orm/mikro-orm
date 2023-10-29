@@ -188,11 +188,11 @@ set foreign_key_checks = 0;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
-alter table \`book2\` drop \`foo\`;
+alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop \`foo___bar\`;
-alter table \`test2\` drop \`foo___baz\`;
+alter table \`test2\` drop column \`foo___bar\`;
+alter table \`test2\` drop column \`foo___baz\`;
 
 set foreign_key_checks = 1;
 "
@@ -386,11 +386,11 @@ set foreign_key_checks = 0;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
-alter table \`book2\` drop \`foo\`;
+alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop \`foo___bar\`;
-alter table \`test2\` drop \`foo___baz\`;
+alter table \`test2\` drop column \`foo___bar\`;
+alter table \`test2\` drop column \`foo___baz\`;
 
 set foreign_key_checks = 1;
 "
@@ -403,17 +403,18 @@ alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
 alter table \`author2\` drop index \`author2_favourite_author_id_index\`;
 alter table \`author2\` drop index \`author2_name_age_index\`;
+
 alter table \`author2\` change \`age\` \`age_in_years\` int null default null;
 alter table \`author2\` change \`favourite_author_id\` \`favourite_writer_id\` int unsigned null;
 alter table \`author2\` add constraint \`author2_favourite_writer_id_foreign\` foreign key (\`favourite_writer_id\`) references \`author2\` (\`id\`) on update cascade on delete set null;
 alter table \`author2\` add index \`author2_favourite_writer_id_index\`(\`favourite_writer_id\`);
 alter table \`author2\` add index \`author2_name_age_in_years_index\`(\`name\`, \`age_in_years\`);
 
-alter table \`book2\` drop \`foo\`;
+alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop \`foo___bar\`;
-alter table \`test2\` drop \`foo___baz\`;
+alter table \`test2\` drop column \`foo___bar\`;
+alter table \`test2\` drop column \`foo___baz\`;
 
 "
 `;
@@ -456,11 +457,11 @@ exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-create-table
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
-alter table \`book2\` drop \`foo\`;
+alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop \`foo___bar\`;
-alter table \`test2\` drop \`foo___baz\`;
+alter table \`test2\` drop column \`foo___bar\`;
+alter table \`test2\` drop column \`foo___baz\`;
 
 "
 `;
@@ -469,7 +470,7 @@ exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-1:1 1`]
 "alter table \`foo_bar2\` drop foreign key \`foo_bar2_baz_id_foreign\`;
 
 alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_unique\`;
-alter table \`foo_bar2\` drop \`baz_id\`;
+alter table \`foo_bar2\` drop column \`baz_id\`;
 
 "
 `;
@@ -480,11 +481,11 @@ exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-column 
 alter table \`author2\` drop foreign key \`author2_favourite_book_uuid_pk_foreign\`;
 
 alter table \`new_table\` drop primary key;
-alter table \`new_table\` drop \`id\`;
-alter table \`new_table\` drop \`updated_at\`;
+alter table \`new_table\` drop column \`id\`;
+alter table \`new_table\` drop column \`updated_at\`;
 
 alter table \`author2\` drop index \`author2_favourite_book_uuid_pk_index\`;
-alter table \`author2\` drop \`favourite_book_uuid_pk\`;
+alter table \`author2\` drop column \`favourite_book_uuid_pk\`;
 
 "
 `;
@@ -544,11 +545,11 @@ exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
-alter table \`book2\` drop \`foo\`;
+alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop \`foo___bar\`;
-alter table \`test2\` drop \`foo___baz\`;
+alter table \`test2\` drop column \`foo___bar\`;
+alter table \`test2\` drop column \`foo___baz\`;
 
 "
 `;

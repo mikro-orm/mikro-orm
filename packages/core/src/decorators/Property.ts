@@ -6,6 +6,7 @@ import type {
   EntityProperty,
   Constructor,
   CheckCallback,
+  GeneratedColumnCallback,
   AnyString,
   AnyEntity,
   EntityKey,
@@ -119,9 +120,13 @@ export type PropertyOptions<Owner> = {
   /**
    * Set to map some SQL snippet for the entity.
    *
-   * @see https://mikro-orm.io/docs/defining-entities#formulas Formulas}
+   * @see https://mikro-orm.io/docs/defining-entities#formulas Formulas
    */
   formula?: string | ((alias: string) => string);
+  /**
+   * For generated columns. This will be appended to the column type after the `generated always` clause.
+   */
+  generated?: string | GeneratedColumnCallback<Owner>;
   /**
    * Set column as nullable for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
    */

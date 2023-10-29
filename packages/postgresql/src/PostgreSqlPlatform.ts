@@ -52,8 +52,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'time(0)';
   }
 
-  override getIntegerTypeDeclarationSQL(column: { length?: number; autoincrement?: boolean }): string {
-    if (column.autoincrement) {
+  override getIntegerTypeDeclarationSQL(column: { length?: number; autoincrement?: boolean; generated?: string }): string {
+    if (column.autoincrement && !column.generated) {
       return `serial`;
     }
 

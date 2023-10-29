@@ -13,7 +13,7 @@ exports[`4782: 0. create schema 1`] = `
 
 exports[`4782: 1. add timestamp(3) column 1`] = `
 {
-  "down": "alter table \`user\` drop \`bar\`;
+  "down": "alter table \`user\` drop column \`bar\`;
 
 ",
   "up": "alter table \`user\` add \`bar\` timestamp(3) not null default current_timestamp(3);
@@ -45,7 +45,7 @@ exports[`4782: 4. remove timestamp column 1`] = `
   "down": "alter table \`user\` add \`bar\` timestamp(6) not null default current_timestamp(6);
 
 ",
-  "up": "alter table \`user\` drop \`bar\`;
+  "up": "alter table \`user\` drop column \`bar\`;
 
 ",
 }

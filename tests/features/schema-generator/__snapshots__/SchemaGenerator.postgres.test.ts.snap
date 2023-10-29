@@ -309,10 +309,11 @@ alter table "new_table" drop constraint "new_table_pkey";
 alter table "new_table" drop column "id";
 alter table "new_table" drop column "updated_at";
 
+alter table "author2" drop column "favourite_book_uuid_pk";
+
 alter table "author2" alter column "name" drop default;
 alter table "author2" alter column "name" type int using ("name"::int);
 alter table "author2" alter column "name" set not null;
-alter table "author2" drop column "favourite_book_uuid_pk";
 
 "
 `;
@@ -341,6 +342,7 @@ exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-sc
 "alter table "author2" drop constraint "author2_favourite_author_id_foreign";
 
 drop index "author2_name_age_index";
+
 alter table "author2" rename column "age" to "age_in_years";
 alter table "author2" rename column "favourite_author_id" to "favourite_writer_id";
 alter table "author2" add constraint "author2_favourite_writer_id_foreign" foreign key ("favourite_writer_id") references "foo_bar2" ("id") on update cascade on delete set null;
