@@ -178,7 +178,7 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
     if (obj.method === 'raw') {
       const query = obj.sql.trim().toLowerCase();
 
-      if (query.startsWith('insert into') && query.includes(' returning ')) {
+      if ((query.startsWith('insert into') || query.startsWith('update ')) && query.includes(' returning ')) {
         return 'all';
       }
 

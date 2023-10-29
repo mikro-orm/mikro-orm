@@ -305,6 +305,7 @@ type ExcludeHidden<T, K extends keyof T> = K extends ExtractHiddenProps<T> ? nev
 export type EntityDTO<T> = { [K in EntityKey<T> as ExcludeHidden<T, K>]: EntityDTOProp<T[K]> };
 
 export type CheckCallback<T> = (columns: Record<keyof T, string>) => string;
+export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;
 
 export interface CheckConstraint<T = any> {
   name?: string;
@@ -321,6 +322,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   runtimeType: 'number' | 'string' | 'boolean' | 'bigint' | 'Buffer' | 'Date';
   targetMeta?: EntityMetadata<Target>;
   columnTypes: string[];
+  generated?: string | GeneratedColumnCallback<Owner>;
   customType: Type<any>;
   customTypes: Type<any>[];
   hasConvertToJSValueSQL: boolean;

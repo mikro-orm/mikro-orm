@@ -20,16 +20,53 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
       + `union all select name as table_name from sqlite_temp_master where type = 'table' order by name`;
   }
 
+  private parseTableDefinition(sql: string, cols: any[]) {
+    const columns: Dictionary<{ name: string; definition: string }> = {};
+
+    // extract all columns definitions
+    let columnsDef = sql.replaceAll('\n', '').match(new RegExp(`create table [\`"']?.*?[\`"']? \\((.*)\\)`, 'i'))?.[1];
+
+    /* istanbul ignore else */
+    if (columnsDef) {
+      for (let i = cols.length - 1; i >= 0; i--) {
+        const col = cols[i];
+        const re = ` *, *[\`"']?${col.name}[\`"']? (.*)`;
+        const columnDef = columnsDef.match(new RegExp(re, 'i'));
+
+        /* istanbul ignore else */
+        if (columnDef) {
+          columns[col.name] = { name: col.name, definition: columnDef[1] };
+          columnsDef = columnsDef.substring(0, columnDef.index);
+        }
+      }
+    }
+
+    return columns;
+  }
+
   override async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
-    const columns = await connection.execute<any[]>(`pragma table_info('${tableName}')`);
+    const columns = await connection.execute<any[]>(`pragma table_xinfo('${tableName}')`);
     const sql = `select sql from sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
     const composite = columns.reduce((count, col) => count + (col.pk ? 1 : 0), 0) > 1;
     // there can be only one, so naive check like this should be enough
     const hasAutoincrement = tableDefinition.sql.toLowerCase().includes('autoincrement');
+    const columnDefinitions = this.parseTableDefinition(tableDefinition.sql, columns);
 
     return columns.map(col => {
       const mappedType = connection.getPlatform().getMappedType(col.type);
+      let generated: string | undefined;
+
+      if (col.hidden > 1) {
+        const storage = col.hidden === 2 ? 'virtual' : 'stored';
+        const re = `(generated always)? as \\((.*)\\)( ${storage})?$`;
+        const match = columnDefinitions[col.name].definition.match(re);
+
+        if (match) {
+          generated = `${match[2]} ${storage}`;
+        }
+      }
+
       return {
         name: col.name,
         type: col.type,
@@ -39,6 +76,7 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
         mappedType,
         unsigned: false,
         autoincrement: !composite && col.pk && this.platform.isNumericColumn(mappedType) && hasAutoincrement,
+        generated,
       };
     });
   }
@@ -62,7 +100,7 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
     }, {} as Dictionary<string[]>);
   }
 
-  override async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[] = [], tableName: string, schemaName?: string): Promise<string[]> {
+  override async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[], tableName: string, schemaName?: string): Promise<string[]> {
     const sql = `pragma table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
 
@@ -79,8 +117,8 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
       ret.push({
         columnNames: [col.name],
         keyName: 'primary',
-        unique: true,
         constraint: true,
+        unique: true,
         primary: true,
       });
     }

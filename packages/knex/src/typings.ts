@@ -48,6 +48,7 @@ export interface Column {
   scale?: number;
   default?: string | null;
   comment?: string;
+  generated?: string;
   nativeEnumName?: string;
   enumItems?: string[];
   primary?: boolean;

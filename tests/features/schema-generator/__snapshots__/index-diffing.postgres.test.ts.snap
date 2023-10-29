@@ -33,6 +33,7 @@ exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes o
 "drop index "book_meta_data_fooBar_email_unique";
 drop index "book_meta_data_foo_bar_baz_index";
 drop index "custom_index_expr";
+
 create index "custom_index_expr2" on "book" ("title");
 create index "book_meta_data_foo_meta_data_foo_bar3_index" on "book" (("meta_data"->>'foo'), ("meta_data"->'foo'->>'bar3'));
 create index "lol31" on "book" ("author3_id");
@@ -52,6 +53,7 @@ drop index "custom_index_expr123";
 drop index "custom_index_expr2";
 drop index "lol31";
 drop index "lol41";
+
 create index "lol42" on "book" ("author3_id");
 create index "lol32" on "book" ("author3_id");
 

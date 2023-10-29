@@ -8,6 +8,7 @@ exports[`check constraint [mariadb] check constraint diff [mariadb]: mariadb-che
 
 exports[`check constraint [mariadb] check constraint diff [mariadb]: mariadb-check-constraint-diff-2 1`] = `
 "alter table \`new_table\` drop constraint foo;
+
 alter table \`new_table\` add constraint foo check(priceColumn > 0);
 
 "

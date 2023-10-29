@@ -145,6 +145,7 @@ drop index "user_profile2_identity_links_meta_bar_index";
 drop index "user_profile2_identity_links_metas_bar_index";
 drop index "user_profile2_identity_meta_bar_index";
 drop index "user_profile2_username_unique";
+
 create index "user_profile1_identity_links_meta_bar_index" on "user" (("profile1_identity_links"->'meta'->>'bar'));
 create index "user_profile1_identity_links_metas_bar_index" on "user" (("profile1_identity_links"->'metas'->>'bar'));
 create unique index "user_profile2_identity_email_unique" on "user" (("profile2"->'identity'->>'email'));

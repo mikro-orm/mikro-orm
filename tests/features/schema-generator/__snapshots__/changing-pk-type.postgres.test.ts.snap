@@ -26,11 +26,13 @@ exports[`changing PK column type [postgres] (GH 1480) changing PK type: 2. add n
 {
   "down": "alter table "user" drop constraint "user_pkey";
 alter table "user" drop column "id2";
+
 alter table "user" add constraint "user_pkey" primary key ("id");
 
 ",
-  "up": "alter table "user" add column "id2" int not null;
-alter table "user" drop constraint "user_pkey";
+  "up": "alter table "user" drop constraint "user_pkey";
+
+alter table "user" add column "id2" int not null;
 alter table "user" add constraint "user_pkey" primary key ("id", "id2");
 
 ",
@@ -39,13 +41,15 @@ alter table "user" add constraint "user_pkey" primary key ("id", "id2");
 
 exports[`changing PK column type [postgres] (GH 1480) changing PK type: 3. remove old PK (make it single PK again) 1`] = `
 {
-  "down": "alter table "user" add column "id2" int4 not null;
-alter table "user" drop constraint "user_pkey";
+  "down": "alter table "user" drop constraint "user_pkey";
+
+alter table "user" add column "id2" int4 not null;
 alter table "user" add constraint "user_pkey" primary key ("id", "id2");
 
 ",
   "up": "alter table "user" drop constraint "user_pkey";
 alter table "user" drop column "id2";
+
 alter table "user" add constraint "user_pkey" primary key ("id");
 
 ",

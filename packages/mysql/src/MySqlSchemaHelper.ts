@@ -92,6 +92,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
       column_type as column_type,
       column_key as column_key,
       extra as extra,
+      generation_expression as generation_expression,
       numeric_precision as numeric_precision,
       numeric_scale as numeric_scale,
       ifnull(datetime_precision, character_maximum_length) length
@@ -99,13 +100,14 @@ export class MySqlSchemaHelper extends SchemaHelper {
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql);
     const str = (val?: string | number) => val != null ? '' + val : val;
-    const extra = (val: string) => val.replace(/auto_increment|default_generated/i, '').trim();
+    const extra = (val: string) => val.replace(/auto_increment|default_generated|(stored|virtual) generated/i, '').trim();
     const ret = {} as Dictionary;
 
     for (const col of allColumns) {
       const mappedType = this.platform.getMappedType(col.column_type);
       const defaultValue = str(this.normalizeDefaultValue(col.column_default, col.length));
       const key = this.getTableKey(col);
+      const generated = col.generation_expression ? `${col.generation_expression} ${col.extra.match(/stored generated/i) ? 'stored' : 'virtual'}` : undefined;
       ret[key] ??= [];
       ret[key].push({
         name: col.column_name,
@@ -122,6 +124,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
         scale: col.numeric_scale,
         comment: col.column_comment,
         extra: extra(col.extra),
+        generated,
       });
     }
 

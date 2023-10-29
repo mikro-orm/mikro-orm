@@ -452,7 +452,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     if (meta && this.platform.usesReturningStatement()) {
       const returningProps = meta.props
-        .filter(prop => prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw || prop.autoincrement))
+        .filter(prop => prop.persist !== false && prop.defaultRaw || prop.autoincrement || prop.generated)
         .filter(prop => !(prop.name in data[0]) || Utils.isRawSql(data[0][prop.name]));
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       /* istanbul ignore next */
@@ -513,6 +513,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         }
       } else {
         qb.update(data).where(where);
+
+        // reload generated columns
+        const returning: string[] = [];
+        meta?.props
+          .filter(prop => prop.generated && !prop.primary)
+          .forEach(prop => returning.push(prop.name));
+
+        qb.returning(returning);
       }
 
       res = await this.rethrow(qb.execute('run', false));
@@ -562,6 +570,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         }
       });
     });
+
+    // reload generated columns
+    meta?.props
+      .filter(prop => prop.generated && !prop.primary)
+      .forEach(prop => returning.add(prop.name));
 
     const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames)).map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ');
     const params: any[] = [];

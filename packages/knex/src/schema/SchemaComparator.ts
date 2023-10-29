@@ -10,7 +10,7 @@ import {
   type EntityProperty,
   type Logger,
 } from '@mikro-orm/core';
-import type { CheckDef, Column, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
+import type { Column, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
@@ -183,6 +183,13 @@ export class SchemaComparator {
         continue;
       }
 
+      if (changedProperties.size === 1 && changedProperties.has('generated')) {
+        tableDifferences.addedColumns[column.name] = toTable.getColumn(column.name)!;
+        tableDifferences.removedColumns[column.name] = column;
+        changes++;
+        continue;
+      }
+
       tableDifferences.changedColumns[column.name] = {
         oldColumnName: column.name,
         fromColumn: column,
@@ -258,7 +265,7 @@ export class SchemaComparator {
       // See if index has changed in "to" table
       const toTableCheck = toTable.getCheck(check.name)!;
 
-      if (!this.diffCheck(check, toTableCheck)) {
+      if (!this.diffExpression(check.expression as string, toTableCheck.expression as string)) {
         continue;
       }
 
@@ -407,12 +414,12 @@ export class SchemaComparator {
    * Returns the difference between the columns
    * If there are differences this method returns field2, otherwise the boolean false.
    */
-  diffColumn(column1: Column, column2: Column, tableName?: string): Set<string> {
+  diffColumn(fromColumn: Column, toColumn: Column, tableName?: string): Set<string> {
     const changedProperties = new Set<string>();
-    const prop1 = this.mapColumnToProperty({ ...column1, autoincrement: false });
-    const prop2 = this.mapColumnToProperty({ ...column2, autoincrement: false });
-    const columnType1 = column1.mappedType.getColumnType(prop1, this.platform).toLowerCase();
-    const columnType2 = column2.mappedType.getColumnType(prop2, this.platform).toLowerCase();
+    const fromProp = this.mapColumnToProperty({ ...fromColumn, autoincrement: false });
+    const toProp = this.mapColumnToProperty({ ...toColumn, autoincrement: false });
+    const fromColumnType = fromColumn.mappedType.getColumnType(fromProp, this.platform).toLowerCase();
+    const toColumnType = toColumn.mappedType.getColumnType(toProp, this.platform).toLowerCase();
     const log = (msg: string, params: Dictionary) => {
       if (tableName) {
         const copy = Utils.copy(params);
@@ -422,58 +429,63 @@ export class SchemaComparator {
     };
 
     if (
-      columnType1 !== columnType2 &&
+      fromColumnType !== toColumnType &&
       !(
-        column1.ignoreSchemaChanges?.includes('type') ||
-        column2.ignoreSchemaChanges?.includes('type')
+        fromColumn.ignoreSchemaChanges?.includes('type') ||
+        toColumn.ignoreSchemaChanges?.includes('type')
       )
     ) {
-      log(`'type' changed for column ${tableName}.${column1.name}`, { columnType1, columnType2 });
+      log(`'type' changed for column ${tableName}.${fromColumn.name}`, { fromColumnType, toColumnType });
       changedProperties.add('type');
     }
 
-    if (column1.nullable !== column2.nullable) {
-      log(`'nullable' changed for column ${tableName}.${column1.name}`, { column1, column2 });
+    if (fromColumn.nullable !== toColumn.nullable && !fromColumn.generated && !toColumn.generated) {
+      log(`'nullable' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('nullable');
     }
 
-    if (!!column1.autoincrement !== !!column2.autoincrement) {
-      log(`'autoincrement' changed for column ${tableName}.${column1.name}`, { column1, column2 });
+    if (this.diffExpression(fromColumn.generated as string, toColumn.generated as string)) {
+      log(`'generated' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
+      changedProperties.add('generated');
+    }
+
+    if (!!fromColumn.autoincrement !== !!toColumn.autoincrement) {
+      log(`'autoincrement' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('autoincrement');
     }
 
-    if (column1.unsigned !== column2.unsigned && this.platform.supportsUnsigned()) {
-      log(`'unsigned' changed for column ${tableName}.${column1.name}`, { column1, column2 });
+    if (fromColumn.unsigned !== toColumn.unsigned && this.platform.supportsUnsigned()) {
+      log(`'unsigned' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('unsigned');
     }
 
-    if (!this.hasSameDefaultValue(column1, column2)) {
-      log(`'default' changed for column ${tableName}.${column1.name}`, { column1, column2 });
+    if (!this.hasSameDefaultValue(fromColumn, toColumn)) {
+      log(`'default' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('default');
     }
 
-    if (this.diffComment(column1.comment, column2.comment)) {
-      log(`'comment' changed for column ${tableName}.${column1.name}`, { column1, column2 });
+    if (this.diffComment(fromColumn.comment, toColumn.comment)) {
+      log(`'comment' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('comment');
     }
 
     if (
-      !(column1.mappedType instanceof ArrayType) &&
-      !(column2.mappedType instanceof ArrayType) &&
-      this.diffEnumItems(column1.enumItems, column2.enumItems)
+      !(fromColumn.mappedType instanceof ArrayType) &&
+      !(toColumn.mappedType instanceof ArrayType) &&
+      this.diffEnumItems(fromColumn.enumItems, toColumn.enumItems)
     ) {
-      log(`'enumItems' changed for column ${tableName}.${column1.name}`, { column1, column2 });
+      log(`'enumItems' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('enumItems');
     }
 
     if (
-      (column1.extra || '').toLowerCase() !== (column2.extra || '').toLowerCase() &&
+      (fromColumn.extra || '').toLowerCase() !== (toColumn.extra || '').toLowerCase() &&
       !(
-        column1.ignoreSchemaChanges?.includes('extra') ||
-        column2.ignoreSchemaChanges?.includes('extra')
+        fromColumn.ignoreSchemaChanges?.includes('extra') ||
+        toColumn.ignoreSchemaChanges?.includes('extra')
       )
     ) {
-      log(`'extra' changed for column ${tableName}.${column1.name}`, { column1, column2 });
+      log(`'extra' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('extra');
     }
 
@@ -540,11 +552,11 @@ export class SchemaComparator {
     return index1.primary === index2.primary && index1.unique === index2.unique;
   }
 
-  diffCheck(check1: CheckDef, check2: CheckDef): boolean {
-    // check constraint definition might be normalized by the driver,
+  diffExpression(expr1: string, expr2: string): boolean {
+    // expressions like check constraints might be normalized by the driver,
     // e.g. quotes might be added (https://github.com/mikro-orm/mikro-orm/issues/3827)
-    const simplify = (str?: string) => str?.replace(/['"`()]/g, '').toLowerCase();
-    return simplify(check1.expression as string) !== simplify(check2.expression as string);
+    const simplify = (str?: string) => str?.replace(/_\w+\\'(.*?)\\'/g, '$1').replace(/['"`()]|::\w+| +/g, '').toLowerCase();
+    return simplify(expr1) !== simplify(expr2);
   }
 
   hasSameDefaultValue(from: Column, to: Column): boolean {

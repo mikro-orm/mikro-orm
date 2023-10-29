@@ -344,7 +344,7 @@ export class ChangeSetPersister {
     if (changeSets[0].type === ChangeSetType.CREATE) {
       // do not reload things that already had a runtime value
       meta.props
-        .filter(prop => prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw))
+        .filter(prop => prop.persist !== false && (prop.autoincrement || prop.generated || prop.defaultRaw))
         .filter(prop => (changeSets[0].entity[prop.name] == null && prop.defaultRaw !== 'null') || Utils.isRawSql(changeSets[0].entity[prop.name]))
         .forEach(prop => reloadProps.push(prop));
     }
@@ -358,7 +358,13 @@ export class ChangeSetPersister {
           }
         });
       });
-      reloadProps.push(...returning);
+      // reload generated columns
+      if (!this.platform.usesReturningStatement()) {
+        meta.props
+          .filter(prop => prop.generated && !prop.primary)
+          .forEach(prop => reloadProps.push(prop));
+        reloadProps.push(...returning);
+      }
     }
 
     if (reloadProps.length === 0) {

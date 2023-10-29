@@ -96,6 +96,7 @@ export class DatabaseTable {
       this.columns[field] = {
         name: prop.fieldNames[idx],
         type: prop.columnTypes[idx],
+        generated: prop.generated as string,
         mappedType,
         unsigned: prop.unsigned && this.platform.isNumericColumn(mappedType),
         autoincrement: prop.autoincrement ?? primary,
