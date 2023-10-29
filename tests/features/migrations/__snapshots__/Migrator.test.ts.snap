@@ -339,11 +339,11 @@ class Migration20191013214813 extends Migration {
   async up() {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
-    this.addSql('alter table \`book2\` drop \`foo\`;');
+    this.addSql('alter table \`book2\` drop column \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
-    this.addSql('alter table \`test2\` drop \`foo___bar\`;');
-    this.addSql('alter table \`test2\` drop \`foo___baz\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___bar\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___baz\`;');
   }
 
   async down() {
@@ -368,11 +368,11 @@ exports.Migration20191013214813 = Migration20191013214813;
     "up": [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
       "",
-      "alter table \`book2\` drop \`foo\`;",
+      "alter table \`book2\` drop column \`foo\`;",
       "",
       "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
-      "alter table \`test2\` drop \`foo___bar\`;",
-      "alter table \`test2\` drop \`foo___baz\`;",
+      "alter table \`test2\` drop column \`foo___bar\`;",
+      "alter table \`test2\` drop column \`foo___baz\`;",
     ],
   },
   "fileName": "Migration20191013214813.cjs",
@@ -390,11 +390,11 @@ class Migration20191013214813 extends Migration {
   async up() {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
-    this.addSql('alter table \`book2\` drop \`foo\`;');
+    this.addSql('alter table \`book2\` drop column \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
-    this.addSql('alter table \`test2\` drop \`foo___bar\`;');
-    this.addSql('alter table \`test2\` drop \`foo___baz\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___bar\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___baz\`;');
   }
 
   async down() {
@@ -419,11 +419,11 @@ exports.Migration20191013214813 = Migration20191013214813;
     "up": [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
       "",
-      "alter table \`book2\` drop \`foo\`;",
+      "alter table \`book2\` drop column \`foo\`;",
       "",
       "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
-      "alter table \`test2\` drop \`foo___bar\`;",
-      "alter table \`test2\` drop \`foo___baz\`;",
+      "alter table \`test2\` drop column \`foo___bar\`;",
+      "alter table \`test2\` drop column \`foo___baz\`;",
     ],
   },
   "fileName": "Migration20191013214813.js",
@@ -439,11 +439,11 @@ export class Migration20191013214813 extends Migration {
   async up(): Promise<void> {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
-    this.addSql('alter table \`book2\` drop \`foo\`;');
+    this.addSql('alter table \`book2\` drop column \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
-    this.addSql('alter table \`test2\` drop \`foo___bar\`;');
-    this.addSql('alter table \`test2\` drop \`foo___baz\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___bar\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___baz\`;');
   }
 
   async down(): Promise<void> {
@@ -467,11 +467,11 @@ export class Migration20191013214813 extends Migration {
     "up": [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
       "",
-      "alter table \`book2\` drop \`foo\`;",
+      "alter table \`book2\` drop column \`foo\`;",
       "",
       "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
-      "alter table \`test2\` drop \`foo___bar\`;",
-      "alter table \`test2\` drop \`foo___baz\`;",
+      "alter table \`test2\` drop column \`foo___bar\`;",
+      "alter table \`test2\` drop column \`foo___baz\`;",
     ],
   },
   "fileName": "migration-20191013214813.ts",
@@ -487,11 +487,11 @@ export class Migration20191013214813 extends Migration {
   async up(): Promise<void> {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
-    this.addSql('alter table \`book2\` drop \`foo\`;');
+    this.addSql('alter table \`book2\` drop column \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
-    this.addSql('alter table \`test2\` drop \`foo___bar\`;');
-    this.addSql('alter table \`test2\` drop \`foo___baz\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___bar\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___baz\`;');
   }
 
   async down(): Promise<void> {
@@ -515,11 +515,11 @@ export class Migration20191013214813 extends Migration {
     "up": [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
       "",
-      "alter table \`book2\` drop \`foo\`;",
+      "alter table \`book2\` drop column \`foo\`;",
       "",
       "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
-      "alter table \`test2\` drop \`foo___bar\`;",
-      "alter table \`test2\` drop \`foo___baz\`;",
+      "alter table \`test2\` drop column \`foo___bar\`;",
+      "alter table \`test2\` drop column \`foo___baz\`;",
     ],
   },
   "fileName": "Migration20191013214813.ts",

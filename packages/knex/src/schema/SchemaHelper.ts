@@ -135,7 +135,7 @@ export abstract class SchemaHelper {
   createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
     const compositePK = fromTable.getPrimaryKey()?.composite;
 
-    if (column.autoincrement && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
+    if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
       const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
 
       if (column.mappedType instanceof BigIntType) {
@@ -149,14 +149,20 @@ export abstract class SchemaHelper {
       return table.enum(column.name, column.enumItems);
     }
 
-    return table.specificType(column.name, column.type);
+    let columnType = column.type;
+
+    if (column.generated) {
+      columnType += ` generated always as ${column.generated}`;
+    }
+
+    return table.specificType(column.name, columnType);
   }
 
   configureColumn(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
     const guard = (key: string) => !changedProperties || changedProperties.has(key);
 
     Utils.runIfNotEmpty(() => col.nullable(), column.nullable && guard('nullable'));
-    Utils.runIfNotEmpty(() => col.notNullable(), !column.nullable);
+    Utils.runIfNotEmpty(() => col.notNullable(), !column.nullable && !column.generated);
     Utils.runIfNotEmpty(() => col.unsigned(), column.unsigned);
     Utils.runIfNotEmpty(() => col.comment(column.comment!), column.comment);
     this.configureColumnDefault(column, col, knex, changedProperties);

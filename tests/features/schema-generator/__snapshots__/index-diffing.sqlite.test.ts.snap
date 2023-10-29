@@ -24,6 +24,7 @@ create unique index \`isbn_unique_constr\` on \`book\` (\`isbn\`);
 exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes on FKs on column update 3`] = `
 "drop index \`book_meta_data_fooBar_email_unique\`;
 drop index \`book_meta_data_foo_bar_baz_index\`;
+
 create index \`book_meta_data_foo_bar2_meta_data_foo_bar3_index\` on \`book\` ((json_extract(meta_data, '$.foo.bar2')), (json_extract(meta_data, '$.foo.bar3')));
 create index \`lol41\` on \`book\` (\`author3_id\`);
 create index \`lol31\` on \`book\` (\`author3_id\`);
@@ -41,6 +42,7 @@ exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes o
 drop index \`lol31\`;
 drop index \`lol41\`;
 drop index \`book_meta_data_foo_bar2_meta_data_foo_bar3_index\`;
+
 create index \`lol42\` on \`book\` (\`author3_id\`);
 create index \`lol32\` on \`book\` (\`author3_id\`);
 

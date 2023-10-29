@@ -49,6 +49,7 @@ export class EntityValidator {
         !prop.default &&
         !prop.defaultRaw &&
         !prop.onCreate &&
+        !prop.generated &&
         !prop.embedded &&
         ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) &&
         prop.name !== wrapped.__meta.root.discriminatorColumn &&

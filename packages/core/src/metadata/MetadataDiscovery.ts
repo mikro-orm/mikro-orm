@@ -1,7 +1,15 @@
 import { basename, extname } from 'path';
 import globby from 'globby';
 
-import { EntityMetadata, type AnyEntity, type Constructor, type Dictionary, type EntityClass, type EntityClassGroup, type EntityProperty } from '../typings';
+import {
+  type AnyEntity,
+  type Constructor,
+  type Dictionary,
+  type EntityClass,
+  type EntityClassGroup,
+  EntityMetadata,
+  type EntityProperty,
+} from '../typings';
 import { Utils } from '../utils/Utils';
 import type { Configuration } from '../utils/Configuration';
 import { MetadataValidator } from './MetadataValidator';
@@ -10,7 +18,7 @@ import type { NamingStrategy } from '../naming-strategy/NamingStrategy';
 import type { SyncCacheAdapter } from '../cache/CacheAdapter';
 import { MetadataStorage } from './MetadataStorage';
 import { EntitySchema } from './EntitySchema';
-import { Cascade, ReferenceKind, type EventType } from '../enums';
+import { Cascade, type EventType, ReferenceKind } from '../enums';
 import { MetadataError } from '../errors';
 import type { Platform } from '../platforms';
 import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, t, Type, Uint8ArrayType } from '../types';
@@ -112,6 +120,7 @@ export class MetadataDiscovery {
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFieldName(prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initVersionProperty(meta, prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initCustomType(meta, prop)));
+    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initGeneratedColumn(meta, prop)));
     filtered.forEach(meta => this.initAutoincrement(meta)); // once again after we init custom types
     filtered.forEach(meta => this.initCheckConstraints(meta));
 
@@ -1050,13 +1059,7 @@ export class MetadataDiscovery {
   }
 
   private initCheckConstraints(meta: EntityMetadata): void {
-    const map = Object.values(meta.properties).reduce((o, prop) => {
-      if (prop.fieldNames) {
-        o[prop.name] = prop.fieldNames[0];
-      }
-
-      return o;
-    }, {} as Dictionary);
+    const map = this.createColumnMappingObject(meta);
 
     for (const check of meta.checks) {
       const columns = check.property ? meta.properties[check.property].fieldNames : [];
@@ -1066,6 +1069,35 @@ export class MetadataDiscovery {
         check.expression = check.expression(map);
       }
     }
+  }
+
+  private initGeneratedColumn(meta: EntityMetadata, prop: EntityProperty): void {
+    if (!prop.generated && prop.columnTypes) {
+      const match = prop.columnTypes[0].match(/(.*) generated always as (.*)/);
+
+      if (match) {
+        prop.columnTypes[0] = match[1];
+        prop.generated = match[2];
+      }
+
+      return;
+    }
+
+    const map = this.createColumnMappingObject(meta);
+
+    if (prop.generated instanceof Function) {
+      prop.generated = prop.generated(map);
+    }
+  }
+
+  private createColumnMappingObject(meta: EntityMetadata<any>) {
+    return Object.values(meta.properties).reduce((o, prop) => {
+      if (prop.fieldNames) {
+        o[prop.name] = prop.fieldNames[0];
+      }
+
+      return o;
+    }, {} as Dictionary);
   }
 
   private getDefaultVersionValue(prop: EntityProperty): string {

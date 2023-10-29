@@ -1323,7 +1323,7 @@ export abstract class CustomBaseEntity {
 
 ## SQL Generated columns
 
-Knex currently does not support generated columns, so the schema generator cannot properly diff them. To work around this, we can set `ignoreSchemaChanges` on a property to avoid a perpetual diff from the schema generator
+To use generated columns, you can either use the `generated` option, or specify it as part of the `columnType`:
 
 <Tabs
 groupId="entity-def"
@@ -1336,18 +1336,24 @@ values={[
 }>
 <TabItem value="reflect-metadata">
 
-```ts title="./entities/Book.ts"
-@Entity
-export class Book {
+```ts title="./entities/User.ts"
+@Entity()
+export class User {
 
-  @Property()
-  title!: string;
+  @PrimaryKey()
+  id!: number;
 
-  @Property({
-    columnType: 'VARCHAR GENERATED ALWAYS AS (LOWER(`title`)) VIRTUAL',
-    ignoreSchemaChanges: ['type', 'extra'],
-  })
-  titleLower!: string;
+  @Property({ length: 50 })
+  firstName!: string;
+
+  @Property({ length: 50 })
+  lastName!: string;
+
+  @Property<User>({ length: 100, generated: cols => `(concat(${cols.firstName}, ' ', ${cols.lastName})) stored` })
+  fullName!: string & Opt;
+
+  @Property({ columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual` })
+  fullName2!: string & Opt;
 
 }
 ```
@@ -1356,17 +1362,23 @@ export class Book {
   <TabItem value="ts-morph">
 
 ```ts title="./entities/Book.ts"
-@Entity
-export class Book {
+@Entity()
+export class User {
 
-  @Property()
-  title!: string;
+  @PrimaryKey()
+  id!: number;
 
-  @Property({
-    columnType: 'VARCHAR GENERATED ALWAYS AS (LOWER(`title`)) VIRTUAL',
-    ignoreSchemaChanges: ['type', 'extra'],
-  })
-  titleLower!: string;
+  @Property({ length: 50 })
+  firstName!: string;
+
+  @Property({ length: 50 })
+  lastName!: string;
+
+  @Property<User>({ length: 100, generated: cols => `(concat(${cols.firstName}, ' ', ${cols.lastName})) stored` })
+  fullName!: string & Opt;
+
+  @Property({ columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual` })
+  fullName2!: string & Opt;
 
 }
 ```
@@ -1374,17 +1386,87 @@ export class Book {
   </TabItem>
   <TabItem value="entity-schema">
 
-```ts title="./entities/Book.ts"
-export interface IBook {
-  title: string;
-  titleLower: string;
+```ts title="./entities/User.ts"
+export interface IUser {
+  id: number;
+  firstName: string;
+  lastName: string;
+  fullName: string & Opt;
+  fullName2: string & Opt;
 }
 
-export const Book = new EntitySchema<IBook>({
-  name: 'Book',
+export const User = new EntitySchema<IUser>({
+  name: 'User',
   properties: {
-    title: { type: String },
-    titleLower: { type: String, columnType: 'VARCHAR GENERATED ALWAYS AS (LOWER(`title`)) VIRTUAL', ignoreSchemaChanges: ['type', 'extra'] },
+    id: { type: 'number', primary: true },
+    firstName: { type: 'string', length: 50 },
+    lastName: { type: 'string', length: 50 },
+    fullName: { 
+      type: 'string',
+      length: 100, 
+      generated: cols => `(concat(${cols.firstName}, ' ', ${cols.lastName})) stored`,
+    },
+    fullName2: { 
+      type: 'string', 
+      columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual`,
+    },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+To use a generated identity column in PostgreSQL, set the `generated` option to `identity`:
+
+> To allow providing the value explicitly, use `generated: 'by default as identity'`.
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="reflect-metadata">
+
+```ts title="./entities/User.ts"
+@Entity()
+export class User {
+
+  @PrimaryKey({ generated: 'identity' })
+  id!: number;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/Book.ts"
+@Entity()
+export class User {
+
+  @PrimaryKey({ generated: 'identity' })
+  id!: number;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/User.ts"
+export interface IUser {
+  id: number;
+}
+
+export const User = new EntitySchema<IUser>({
+  name: 'User',
+  properties: {
+    id: { type: 'number', primary: true, generated: 'identity' },
   },
 });
 ```

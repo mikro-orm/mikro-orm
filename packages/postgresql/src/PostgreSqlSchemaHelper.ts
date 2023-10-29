@@ -109,6 +109,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       numeric_precision,
       numeric_scale,
       data_type,
+      is_identity,
+      identity_generation,
+      generation_expression,
       (select pg_catalog.col_description(c.oid, cols.ordinal_position::int)
         from pg_catalog.pg_class c
         where c.oid = (select ('"' || cols.table_schema || '"."' || cols.table_name || '"')::regclass::oid) and c.relname = cols.table_name) as column_comment
@@ -122,7 +125,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     for (const col of allColumns) {
       const mappedType = connection.getPlatform().getMappedType(col.data_type);
-      const increments = col.column_default?.includes('nextval') && connection.getPlatform().isNumericColumn(mappedType);
+      const increments = (col.column_default?.includes('nextval') || col.is_identity === 'YES') && connection.getPlatform().isNumericColumn(mappedType);
       const key = this.getTableKey(col);
       ret[key] ??= [];
       const column: Column = {
@@ -136,6 +139,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         default: str(this.normalizeDefaultValue(col.column_default, col.length)),
         unsigned: increments,
         autoincrement: increments,
+        generated: col.is_identity === 'YES' ? (col.identity_generation === 'BY DEFAULT' ? 'by default as identity' : 'identity') : (col.generation_expression ? col.generation_expression + ' stored' : undefined),
         comment: col.column_comment,
       };
 
@@ -281,7 +285,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const pk = fromTable.getPrimaryKey();
     const primaryKey = column.primary && !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
 
-    if (column.autoincrement && !pk?.composite && !changedProperties) {
+    if (column.autoincrement && !column.generated && !pk?.composite && !changedProperties) {
       if (column.mappedType instanceof BigIntType) {
         return table.bigIncrements(column.name, { primaryKey });
       }
@@ -308,7 +312,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       column.type = column.type.replace('serial', 'int');
     }
 
-    return table.specificType(column.name, column.type);
+    let columnType = column.type;
+
+    if (column.generated === 'by default as identity') {
+      columnType += ` generated ${column.generated}`;
+    } else if (column.generated) {
+      columnType += ` generated always as ${column.generated}`;
+    }
+
+    return table.specificType(column.name, columnType);
   }
 
   override configureColumn(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {

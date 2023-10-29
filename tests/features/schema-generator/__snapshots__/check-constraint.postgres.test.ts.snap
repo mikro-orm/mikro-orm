@@ -8,6 +8,7 @@ exports[`check constraint [postgres] check constraint diff [postgres]: postgres-
 
 exports[`check constraint [postgres] check constraint diff [postgres]: postgres-check-constraint-diff-2 1`] = `
 "alter table "new_table" drop constraint foo;
+
 alter table "new_table" add constraint foo check(price > 0);
 
 "
