@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import type { CheckCallback, Dictionary, EntityProperty, GroupOperator, RawQueryFragment, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
-import type { QueryType } from './query/enums';
+import type { JoinType, QueryType } from './query/enums';
 import type { DatabaseSchema, DatabaseTable } from './schema';
 
 export interface Table {
@@ -20,7 +20,7 @@ export type Field<T> = AnyString | keyof T | RawQueryFragment | KnexStringRef | 
 export interface JoinOptions {
   table: string;
   schema?: string;
-  type: 'leftJoin' | 'innerJoin' | 'pivotJoin';
+  type: JoinType;
   alias: string;
   ownerAlias: string;
   inverseAlias?: string;
@@ -136,7 +136,7 @@ export interface IQueryBuilder<T> {
   delete(cond?: QBFilterQuery): this;
   truncate(): this;
   count(field?: string | string[], distinct?: boolean): this;
-  join(field: string, alias: string, cond?: QBFilterQuery, type?: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): this;
+  join(field: string, alias: string, cond?: QBFilterQuery, type?: JoinType, path?: string): this;
   leftJoin(field: string, alias: string, cond?: QBFilterQuery): this;
   joinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
   leftJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;

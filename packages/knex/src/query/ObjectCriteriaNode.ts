@@ -1,7 +1,15 @@
-import { ReferenceKind, Utils, type Dictionary, type EntityKey, raw, ALIAS_REPLACEMENT, RawQueryFragment } from '@mikro-orm/core';
+import {
+  ALIAS_REPLACEMENT,
+  type Dictionary,
+  type EntityKey,
+  raw,
+  RawQueryFragment,
+  ReferenceKind,
+  Utils,
+} from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode';
 import type { IQueryBuilder } from '../typings';
-import { QueryType } from './enums';
+import { JoinType, QueryType } from './enums';
 
 /**
  * @internal
@@ -140,10 +148,10 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     const field = `${alias}.${this.prop!.name}`;
 
     if (this.prop!.kind === ReferenceKind.MANY_TO_MANY && (scalar || operator)) {
-      qb.join(field, nestedAlias, undefined, 'pivotJoin', this.getPath());
+      qb.join(field, nestedAlias, undefined, JoinType.pivotJoin, this.getPath());
     } else {
       const prev = qb._fields?.slice();
-      qb.join(field, nestedAlias, undefined, 'leftJoin', this.getPath());
+      qb.join(field, nestedAlias, undefined, JoinType.leftJoin, this.getPath());
       qb._fields = prev;
     }
 

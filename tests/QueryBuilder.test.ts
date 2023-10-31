@@ -2515,10 +2515,10 @@ describe('QueryBuilder', () => {
   test('postgres', async () => {
     const pg = await MikroORM.init<PostgreSqlDriver>({
       entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22, Configuration2],
-      dbName: `mikro_orm_test`,
+      dbName: `mikro_orm_test_qb`,
       driver: PostgreSqlDriver,
     });
-    await pg.schema.ensureDatabase();
+    await pg.schema.refreshDatabase();
 
     {
       const qb = pg.em.createQueryBuilder(FooBar2, 'fb1');
@@ -2757,7 +2757,7 @@ describe('QueryBuilder', () => {
       .setFlag(QueryFlag.PAGINATE)
       .offset(1)
       .limit(20);
-    const sql = 'select "b".*, "t"."id" as "t__id", "t"."name" as "t__name", "b".price * 1.19 as "price_taxed" ' +
+    const sql0 = 'select "b".*, "t"."id" as "t__id", "t"."name" as "t__name", "b".price * 1.19 as "price_taxed" ' +
       'from "book2" as "b" ' +
       'left join "book2_tags" as "b1" on "b"."uuid_pk" = "b1"."book2_uuid_pk" ' +
       'left join "public"."book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "b"."uuid_pk" in ' +
@@ -2766,7 +2766,7 @@ describe('QueryBuilder', () => {
       'left join "book2_tags" as "b1" on "b"."uuid_pk" = "b1"."book2_uuid_pk" ' +
       'left join "public"."book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "t"."name" = $1 group by "b"."uuid_pk" limit $2 offset $3' +
       ') as "b")';
-    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getQuery()).toEqual(sql0);
     expect(qb.getParams()).toEqual(['tag name', 20, 1]);
 
     // select by regexp operator
@@ -2830,6 +2830,81 @@ describe('QueryBuilder', () => {
         .getFormattedQuery();
       // works only with select queries
       expect(sql3).toBe(`update "my_schema"."author2" set "name" = '...' where "favourite_book_uuid_pk" in ('1', '2', '3')`);
+    }
+
+    // lateral join
+    {
+      const author = await pg.em.insert(Author2, { name: 'a', email: 'e' });
+      const t1 = await pg.em.insert(BookTag2, { name: 't1' });
+      const t2 = await pg.em.insert(BookTag2, { name: 't2' });
+      const t3 = await pg.em.insert(BookTag2, { name: 't3' });
+      await pg.em.insert(Book2, { uuid: v4(), title: 'foo 1', author, price: 123, tags: [t1, t2, t3] });
+      await pg.em.insert(Book2, { uuid: v4(), title: 'foo 2', author, price: 123, tags: [t1, t2, t3] });
+
+      // simple join with ORM subquery
+      const qb1 = pg.em.createQueryBuilder(Book2, 'b').limit(1).orderBy({ title: 1 });
+      const qb2 = pg.em.createQueryBuilder(Author2, 'a');
+      qb2.select(['*', 'sub.*'])
+        .leftJoinLateral(qb1, 'sub', { author_id: sql.ref('a.id') })
+        .where({ 'sub.title': /^foo/ });
+      expect(qb2.getFormattedQuery()).toEqual('select "a".*, "sub".* from "author2" as "a" left join lateral (select "b".*, "b".price * 1.19 as "price_taxed" from "book2" as "b" order by "b"."title" asc limit 1) as "sub" on "sub"."author_id" = "a"."id" where "sub"."title" like \'foo%\'');
+      const res2 = await qb2.execute();
+      expect(res2).toHaveLength(1);
+      expect(res2[0]).toMatchObject({
+        author_id: 1,
+        email: 'e',
+        id: 1,
+        name: 'a',
+        price: '123.00',
+        price_taxed: '146.3700',
+        title: 'foo 1',
+      });
+      pg.em.clear();
+
+      // simple join with knex subquery
+      const qb3 = pg.em.createQueryBuilder(Author2, 'a');
+      qb3.select(['*', 'sub.*'])
+        .innerJoinLateral(qb1.getKnexQuery(), 'sub', { author_id: sql.ref('a.id') })
+        .where({ 'sub.title': /^foo/ });
+      expect(qb2.getFormattedQuery()).toEqual('select "a".*, "sub".* from "author2" as "a" left join lateral (select "b".*, "b".price * 1.19 as "price_taxed" from "book2" as "b" order by "b"."title" asc limit 1) as "sub" on "sub"."author_id" = "a"."id" where "sub"."title" like \'foo%\'');
+      const res3 = await qb3.execute();
+      expect(res3).toHaveLength(1);
+      expect(res3[0]).toMatchObject({
+        author_id: 1,
+        email: 'e',
+        id: 1,
+        name: 'a',
+        price: '123.00',
+        price_taxed: '146.3700',
+        title: 'foo 1',
+      });
+      pg.em.clear();
+
+      // using knex subquery to hydrate existing relation
+      const qb4 = pg.em.createQueryBuilder(Author2, 'a');
+      qb4.select(['*'])
+        .innerJoinLateralAndSelect(['a.books', qb1.getKnexQuery()], 'sub', { author: sql.ref('a.id') })
+        .leftJoinAndSelect('sub.tags', 't')
+        .where({ 'sub.title': /^foo/ });
+      expect(qb4.getFormattedQuery()).toEqual('select "a".*, "sub"."uuid_pk" as "sub__uuid_pk", "sub"."created_at" as "sub__created_at", "sub"."title" as "sub__title", "sub"."price" as "sub__price", "sub".price * 1.19 as "sub__price_taxed", "sub"."double" as "sub__double", "sub"."meta" as "sub__meta", "sub"."author_id" as "sub__author_id", "sub"."publisher_id" as "sub__publisher_id", "t"."id" as "t__id", "t"."name" as "t__name" from "author2" as "a" inner join lateral (select "b".*, "b".price * 1.19 as "price_taxed" from "book2" as "b" order by "b"."title" asc limit 1) as "sub" on "sub"."author_id" = "a"."id" left join "book2_tags" as "b1" on "sub"."uuid_pk" = "b1"."book2_uuid_pk" left join "public"."book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "sub"."title" like \'foo%\'');
+      const res4 = await qb4.getResult();
+      expect(res4).toHaveLength(1);
+      expect(res4[0]).toMatchObject({
+        name: 'a',
+        email: 'e',
+      });
+      expect(res4[0].books).toHaveLength(1);
+      expect(res4[0].books[0]).toMatchObject({
+        title: 'foo 1',
+        price: '123.00',
+        priceTaxed: '146.3700',
+      });
+      expect(res4[0].books[0].tags).toHaveLength(3);
+      pg.em.clear();
+
+      const qb5 = pg.em.createQueryBuilder(Author2, 'a');
+      expect(() => qb5.leftJoinLateralAndSelect('a.books', 'sub', { author: sql.ref('a.id') })).toThrowError('Lateral join can be used only with a sub-query.');
+      pg.em.clear();
     }
 
     await pg.close(true);
