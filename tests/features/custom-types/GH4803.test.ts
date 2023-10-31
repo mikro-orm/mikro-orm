@@ -27,7 +27,7 @@ const profileSchema = new EntitySchema<Profile>({
     user: {
       entity: () => User,
       kind: 'm:1',
-      inversedBy: 'profiles',
+      inversedBy: 'profiles' as any,
       mapToPk: true,
     },
   },

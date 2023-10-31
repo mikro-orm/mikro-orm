@@ -9,6 +9,7 @@ const schema1 = new EntitySchema<MyEntity>({
   name: 'MyEntity',
   properties: {
     _id: { primary: true, type: 'number' },
+    // @ts-expect-error
     otherCount: { formula: 'COUNT(other)' },
   },
 });
