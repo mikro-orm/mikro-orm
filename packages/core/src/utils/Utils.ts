@@ -2,7 +2,7 @@ import { createRequire } from 'module';
 import globby, { type GlobbyOptions } from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
 import { platform } from 'os';
-import { type URL, fileURLToPath, pathToFileURL } from 'url';
+import { fileURLToPath, pathToFileURL, type URL } from 'url';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { tokenize } from 'esprima';
@@ -1253,6 +1253,23 @@ export class Utils {
 
   static isRawSql(value: unknown): value is { sql: string; params: unknown[]; use: () => void } {
     return typeof value === 'object' && !!value && '__raw' in value;
+  }
+
+  static primaryKeyToObject<T>(meta: EntityMetadata<T>, primaryKey: Primary<T> | T) {
+    const pks = meta.compositePK && Utils.isPlainObject(primaryKey) ? Object.values(primaryKey) : Utils.asArray(primaryKey);
+    const pkProps = meta.getPrimaryProps();
+
+    return meta.primaryKeys.reduce((o, pk, idx) => {
+      const pkProp = pkProps[idx];
+
+      if (Utils.isPlainObject(pks[idx]) && pkProp.targetMeta) {
+        o[pk] = Utils.getOrderedPrimaryKeys(pks[idx], pkProp.targetMeta) as any;
+        return o;
+      }
+
+      o[pk] = pks[idx] as any;
+      return o;
+    }, {} as T);
   }
 
 }

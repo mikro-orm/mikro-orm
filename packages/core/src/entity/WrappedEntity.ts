@@ -235,7 +235,7 @@ export class WrappedEntity<Entity extends object> {
   }
 
   get __config() {
-    return (this.entity as IWrappedEntityInternal<Entity>).__config!;
+    return this.__em?.config ?? (this.entity as IWrappedEntityInternal<Entity>).__config;
   }
 
   get __primaryKeys(): Primary<Entity>[] {

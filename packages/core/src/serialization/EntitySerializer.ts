@@ -206,10 +206,14 @@ export class EntitySerializer {
     const child = Reference.unwrapReference(entity[prop] as T);
     const wrapped = helper(child);
     const populated = isPopulated(child, prop, options) && wrapped.isInitialized();
-    const expand = populated || options.forceObject || !wrapped.__managed;
+    const expand = populated || !wrapped.__managed;
 
     if (expand) {
       return this.serialize(child, this.extractChildOptions(options, prop)) as EntityValue<T>;
+    }
+
+    if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
+      return Utils.primaryKeyToObject(wrapped.__meta, wrapped.getPrimaryKey(true)!) as EntityValue<T>;
     }
 
     return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as EntityValue<T>;
@@ -223,8 +227,15 @@ export class EntitySerializer {
     }
 
     return col.getItems(false).map(item => {
-      if (isPopulated(item, prop, options)) {
+      const populated = isPopulated(item, prop, options);
+      const wrapped = helper(item);
+
+      if (populated || !wrapped.__managed) {
         return this.serialize(item, this.extractChildOptions(options, prop));
+      }
+
+      if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
+        return Utils.primaryKeyToObject(wrapped.__meta, wrapped.getPrimaryKey(true)!) as EntityValue<T>;
       }
 
       return helper(item).getPrimaryKey();
