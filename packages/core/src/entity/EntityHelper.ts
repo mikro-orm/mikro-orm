@@ -183,7 +183,7 @@ export class EntityHelper {
         inverse.add(owner);
       }
 
-      if (prop.reference === ReferenceType.ONE_TO_ONE && entity && helper(entity).__initialized) {
+      if (prop.reference === ReferenceType.ONE_TO_ONE && entity && (!prop.owner || helper(entity).__initialized)) {
         if (
           (value != null && Reference.unwrapReference(inverse) !== owner) ||
           (value == null && entity[prop2.name] != null)
