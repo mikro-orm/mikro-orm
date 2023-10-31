@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.1](https://github.com/mikro-orm/mikro-orm/compare/v5.9.0...v5.9.1) (2023-10-31)
+
+
+### Bug Fixes
+
+* **postgres:** fix hydrating of serial properties via returning statement ([620309c](https://github.com/mikro-orm/mikro-orm/commit/620309cbf3db0a97280c894c24647cfbe242dd5e))
+
+
+
+
+
 # [5.9.0](https://github.com/mikro-orm/mikro-orm/compare/v5.8.10...v5.9.0) (2023-10-24)
 
 
