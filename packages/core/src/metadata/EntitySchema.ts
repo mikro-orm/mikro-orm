@@ -1,4 +1,16 @@
-import { EntityMetadata, type AnyEntity, type EntityKey, type Constructor, type DeepPartial, type Dictionary, type EntityName, type EntityProperty, type ExcludeFunctions, type ExpandProperty } from '../typings';
+import {
+  EntityMetadata,
+  type AnyEntity,
+  type EntityKey,
+  type Constructor,
+  type DeepPartial,
+  type Dictionary,
+  type EntityName,
+  type EntityProperty,
+  type ExcludeFunctions,
+  type ExpandProperty,
+  type IsNever,
+} from '../typings';
 import type {
   EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
   SerializedPrimaryKeyOptions, UniqueOptions,
@@ -20,10 +32,11 @@ export type EntitySchemaProperty<Target, Owner> =
   | ({ kind: ReferenceKind.EMBEDDED | 'embedded' } & TypeDef<Target> & EmbeddedOptions & PropertyOptions<Owner>)
   | ({ enum: true } & EnumOptions<Owner>)
   | (TypeDef<Target> & PropertyOptions<Owner>);
-export type EntitySchemaMetadata<Entity, Base> =
+type OmitBaseProps<Entity, Base> = IsNever<Base> extends true ? Entity : Omit<Entity, keyof Base>;
+export type EntitySchemaMetadata<Entity, Base = never> =
   & Omit<Partial<EntityMetadata<Entity>>, 'name' | 'properties'>
   & ({ name: string } | { class: Constructor<Entity>; name?: string })
-  & { properties?: { [Key in keyof Omit<Entity, keyof Base> as ExcludeFunctions<Omit<Entity, keyof Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
+  & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as ExcludeFunctions<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
 
 export class EntitySchema<Entity = any, Base = never> {
 
