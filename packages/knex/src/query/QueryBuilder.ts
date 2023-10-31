@@ -35,7 +35,7 @@ import {
   Utils,
   ValidationError,
 } from '@mikro-orm/core';
-import { QueryType } from './enums';
+import { QueryType, JoinType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { type Alias, QueryBuilderHelper } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
@@ -213,33 +213,42 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this.init(QueryType.COUNT) as CountQueryBuilder<T>;
   }
 
-  join(field: string | Knex.QueryBuilder | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string, schema?: string): this {
+  join(field: string | Knex.QueryBuilder | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, type = JoinType.innerJoin, path?: string, schema?: string): this {
     this.joinReference(field, alias, cond, type, path, schema);
     return this;
   }
 
   innerJoin(field: string | Knex.QueryBuilder | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, schema?: string): this {
-    this.join(field, alias, cond, 'innerJoin', undefined, schema);
+    this.join(field, alias, cond, JoinType.innerJoin, undefined, schema);
+    return this;
+  }
+
+  innerJoinLateral(field: string | Knex.QueryBuilder | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, schema?: string): this {
+    this.join(field, alias, cond, JoinType.innerJoinLateral, undefined, schema);
     return this;
   }
 
   leftJoin(field: string | Knex.QueryBuilder | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, schema?: string): this {
-    return this.join(field, alias, cond, 'leftJoin', undefined, schema);
+    return this.join(field, alias, cond, JoinType.leftJoin, undefined, schema);
   }
 
-  joinAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  leftJoinLateral(field: string | Knex.QueryBuilder | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, schema?: string): this {
+    return this.join(field, alias, cond, JoinType.leftJoinLateral, undefined, schema);
+  }
+
+  joinAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, type = JoinType.innerJoin, path?: string, fields?: string[], schema?: string): SelectQueryBuilder<T> {
     if (!this.type) {
       this.select('*');
     }
 
-    let subquery!: string;
+    let subquery: string | undefined;
 
     if (Array.isArray(field)) {
       subquery = field[1] instanceof QueryBuilder ? field[1].getFormattedQuery() : field[1].toString();
       field = field[0];
     }
 
-    const prop = this.joinReference(field, alias, cond, type, path, schema);
+    const prop = this.joinReference(field, alias, cond, type, path, schema, subquery);
     const [fromAlias] = this.helper.splitField(field as EntityKey<T>);
 
     if (subquery) {
@@ -262,11 +271,19 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   leftJoinAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
-    return this.joinAndSelect(field, alias, cond, 'leftJoin', undefined, fields, schema);
+    return this.joinAndSelect(field, alias, cond, JoinType.leftJoin, undefined, fields, schema);
+  }
+
+  leftJoinLateralAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+    return this.joinAndSelect(field, alias, cond, JoinType.leftJoinLateral, undefined, fields, schema);
   }
 
   innerJoinAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
-    return this.joinAndSelect(field, alias, cond, 'innerJoin', undefined, fields, schema);
+    return this.joinAndSelect(field, alias, cond, JoinType.innerJoin, undefined, fields, schema);
+  }
+
+  innerJoinLateralAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+    return this.joinAndSelect(field, alias, cond, JoinType.innerJoinLateral, undefined, fields, schema);
   }
 
   protected getFieldsForJoinedLoad(prop: EntityProperty<T>, alias: string, explicitFields?: string[]): Field<T>[] {
@@ -874,7 +891,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return qb;
   }
 
-  private joinReference(field: string | Knex.QueryBuilder | QueryBuilder, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string, schema?: string): EntityProperty<T> {
+  private joinReference(field: string | Knex.QueryBuilder | QueryBuilder, alias: string, cond: Dictionary, type: JoinType, path?: string, schema?: string, subquery?: string): EntityProperty<T> {
     this.ensureNotFinalized();
 
     if (typeof field === 'object') {
@@ -900,6 +917,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
       } as any;
 
       return prop;
+    }
+
+    if (!subquery && type.includes('lateral')) {
+      throw new Error(`Lateral join can be used only with a sub-query.`);
     }
 
     const [fromAlias, fromField] = this.helper.splitField(field as EntityKey<T>);
@@ -934,7 +955,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     } else if (prop.kind === ReferenceKind.MANY_TO_MANY) {
       let pivotAlias = alias;
 
-      if (type !== 'pivotJoin') {
+      if (type !== JoinType.pivotJoin) {
         const oldPivotAlias = this.getAliasForJoinPath(path + '[pivot]');
         pivotAlias = oldPivotAlias ?? this.getNextAlias(prop.pivotEntity);
         aliasedName = `${fromAlias}.${prop.name}#${pivotAlias}`;
@@ -1189,7 +1210,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
         const prop = meta.properties[fromField as EntityKey<T>];
         const alias = this.getNextAlias(prop.pivotEntity ?? prop.type);
         const aliasedName = `${fromAlias}.${prop.name}#${alias}`;
-        this._joins[aliasedName] = this.helper.joinOneToReference(prop, this.mainAlias.aliasName, alias, 'leftJoin');
+        this._joins[aliasedName] = this.helper.joinOneToReference(prop, this.mainAlias.aliasName, alias, JoinType.leftJoin);
         this._populateMap[aliasedName] = this._joins[aliasedName].alias;
       }
     });

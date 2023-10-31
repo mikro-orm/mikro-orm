@@ -20,7 +20,7 @@ import {
   ReferenceKind,
   Utils,
 } from '@mikro-orm/core';
-import { QueryType } from './enums';
+import { JoinType, QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
@@ -173,7 +173,7 @@ export class QueryBuilderHelper {
     return data;
   }
 
-  joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}, schema?: string): JoinOptions {
+  joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: JoinType, cond: Dictionary = {}, schema?: string): JoinOptions {
     const prop2 = prop.targetMeta!.properties[prop.mappedBy || prop.inversedBy];
     const table = this.getTableName(prop.type);
     const joinColumns = prop.owner ? prop.referencedColumnNames : prop2.joinColumns;
@@ -187,7 +187,7 @@ export class QueryBuilderHelper {
     };
   }
 
-  joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}, schema?: string): JoinOptions {
+  joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: JoinType, cond: Dictionary = {}, schema?: string): JoinOptions {
     return {
       prop, type, cond, ownerAlias, alias,
       table: this.getTableName(prop.type),
@@ -197,7 +197,7 @@ export class QueryBuilderHelper {
     };
   }
 
-  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary, path: string, schema?: string): Dictionary<JoinOptions> {
+  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: JoinType, cond: Dictionary, path: string, schema?: string): Dictionary<JoinOptions> {
     const pivotMeta = this.metadata.find(prop.pivotEntity)!;
     const ret = {
       [`${ownerAlias}.${prop.name}#${pivotAlias}`]: {
@@ -214,7 +214,7 @@ export class QueryBuilderHelper {
       } as JoinOptions,
     };
 
-    if (type === 'pivotJoin') {
+    if (type === JoinType.pivotJoin) {
       return ret;
     }
 
@@ -230,7 +230,7 @@ export class QueryBuilderHelper {
   processJoins(qb: Knex.QueryBuilder, joins: Dictionary<JoinOptions>, schema?: string): void {
     Object.values(joins).forEach(join => {
       let table = join.table;
-      const method = join.type === 'innerJoin' ? 'inner join' : 'left join';
+      const method = join.type === JoinType.pivotJoin ? 'left join' : join.type;
       const conditions: string[] = [];
       const params: Knex.Value[] = [];
       schema = join.schema && join.schema !== '*' ? join.schema : schema;

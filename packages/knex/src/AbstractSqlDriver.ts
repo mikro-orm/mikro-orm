@@ -52,7 +52,7 @@ import {
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
-import { QueryBuilder, QueryType } from './query';
+import { JoinType, QueryBuilder, QueryType } from './query';
 import { SqlEntityManager } from './SqlEntityManager';
 import type { Field } from './typings';
 import { PivotCollectionPersister } from './PivotCollectionPersister';
@@ -979,7 +979,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const tableAlias = qb.getNextAlias(prop.name);
       const field = parentTableAlias ? `${parentTableAlias}.${prop.name}` : prop.name;
       const path = parentJoinPath ? `${parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
-      qb.join(field, tableAlias, {}, 'leftJoin', path);
+      qb.join(field, tableAlias, {}, JoinType.leftJoin, path);
       const childExplicitFields = explicitFields?.filter(f => Utils.isPlainObject(f)).map(o => (o as Dictionary)[prop.name])[0] || [];
 
       explicitFields?.forEach(f => {
