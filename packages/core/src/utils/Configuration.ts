@@ -518,7 +518,9 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   propagationOnPrototype: boolean;
   populateAfterFlush: boolean;
   serialization: {
-    includePrimaryKeys: boolean;
+    includePrimaryKeys?: boolean;
+    /** Enforce unpopulated references to be returned as objects, e.g. `{ author: { id: 1 } }` instead of `{ author: 1 }`. */
+    forceObject?: boolean;
   };
   persistOnCreate: boolean;
   forceEntityConstructor: boolean | (Constructor<AnyEntity> | string)[];

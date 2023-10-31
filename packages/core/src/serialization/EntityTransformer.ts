@@ -96,7 +96,7 @@ export class EntityTransformer {
 
     // decorated get methods
     meta.props
-      .filter(prop => prop.getterName && !prop.hidden && entity[prop.getterName] as unknown instanceof Function)
+      .filter(prop => prop.getterName && !prop.hidden && entity[prop.getterName] instanceof Function)
       // @ts-ignore
       .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.getterName as keyof Entity & string, entity, raw));
 
@@ -200,7 +200,11 @@ export class EntityTransformer {
       return wrap(child).toJSON() as EntityValue<Entity>;
     }
 
-    return platform.normalizePrimaryKey(wrapped.getPrimaryKey(true) as IPrimaryKey) as unknown as EntityValue<Entity>;
+    if (wrapped.__config.get('serialization').forceObject) {
+      return Utils.primaryKeyToObject(wrapped.__meta, wrapped.getPrimaryKey(true)!) as EntityValue<Entity>;
+    }
+
+    return platform.normalizePrimaryKey(wrapped.getPrimaryKey(true) as IPrimaryKey) as EntityValue<Entity>;
   }
 
   private static processCollection<Entity>(prop: keyof Entity, entity: Entity, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
@@ -215,6 +219,15 @@ export class EntityTransformer {
     }
 
     if (col.isInitialized()) {
+      const wrapped = helper(entity);
+
+      if (wrapped.__config.get('serialization').forceObject) {
+        return col.getItems().map(item => {
+          const wrapped = helper(item);
+          return Utils.primaryKeyToObject(wrapped.__meta, wrapped.getPrimaryKey(true)!) as EntityValue<Entity>;
+        }) as EntityValue<Entity>;
+      }
+
       return col.getIdentifiers() as EntityValue<Entity>;
     }
 
