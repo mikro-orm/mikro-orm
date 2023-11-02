@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.2](https://github.com/mikro-orm/mikro-orm/compare/v5.9.1...v5.9.2) (2023-11-02)
+
+
+### Bug Fixes
+
+* **core:** fix partial loading of embedded properties with joined strategy ([f887e77](https://github.com/mikro-orm/mikro-orm/commit/f887e77686635c9a9d8928c528bbea4bad5254af))
+* **core:** ignore limit, offset and order in `em.count` on virtual entity ([03a7b86](https://github.com/mikro-orm/mikro-orm/commit/03a7b86106f0ec600365504ffa6f6707a6dcd1d6))
+* **mongo:** fix support for `ignoreUndefinedInQuery` ([cef26c5](https://github.com/mikro-orm/mikro-orm/commit/cef26c5e32ef09fd6be8262ef691f50d4832e0c6)), closes [#4891](https://github.com/mikro-orm/mikro-orm/issues/4891)
+
+
+
+
+
 ## [5.9.1](https://github.com/mikro-orm/mikro-orm/compare/v5.9.0...v5.9.1) (2023-10-31)
 
 
