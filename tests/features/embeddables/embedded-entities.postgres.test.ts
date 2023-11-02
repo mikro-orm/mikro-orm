@@ -3,6 +3,7 @@ import {
   Embedded,
   Entity,
   expr,
+  LoadStrategy,
   ManyToOne,
   MikroORM,
   PrimaryKey,
@@ -298,9 +299,27 @@ describe('embedded entities in postgresql', () => {
     await orm.em.fork().find(User, {}, { fields: ['address2'] });
     await orm.em.fork().find(User, {}, { fields: [{ address2: ['street', 'city'] }] });
     await orm.em.fork().find(User, {}, { fields: ['address2.street', 'address2.city'] });
+    await orm.em.fork().find(User, {}, { fields: ['addresses'] });
     expect(mock.mock.calls[0][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_postal_code", "u0"."addr_city", "u0"."addr_country" from "user" as "u0"');
     expect(mock.mock.calls[1][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_city" from "user" as "u0"');
     expect(mock.mock.calls[2][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_city" from "user" as "u0"');
+    expect(mock.mock.calls[3][0]).toMatch('select "u0"."id", "u0"."addresses" from "user" as "u0"');
+  });
+
+  test('partial loading (joined strategy)', async () => {
+    const user = createUser();
+    await orm.em.persistAndFlush(user);
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+    await orm.em.fork().find(User, {}, { fields: ['address2'], strategy: LoadStrategy.JOINED });
+    await orm.em.fork().find(User, {}, { fields: [{ address2: ['street', 'city'] }], strategy: LoadStrategy.JOINED });
+    await orm.em.fork().find(User, {}, { fields: ['address2.street', 'address2.city'], strategy: LoadStrategy.JOINED });
+    await orm.em.fork().find(User, {}, { fields: ['addresses'], strategy: LoadStrategy.JOINED });
+    expect(mock.mock.calls[0][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_postal_code", "u0"."addr_city", "u0"."addr_country" from "user" as "u0"');
+    expect(mock.mock.calls[1][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_city" from "user" as "u0"');
+    expect(mock.mock.calls[2][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_city" from "user" as "u0"');
+    expect(mock.mock.calls[3][0]).toMatch('select "u0"."id", "u0"."addresses" from "user" as "u0"');
   });
 
   test('partial loading 2', async () => {
