@@ -1,4 +1,4 @@
-import { EntitySchema, MikroORM, ReferenceType } from '@mikro-orm/core';
+import { EntitySchema, MikroORM, QueryFlag, ReferenceType } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/better-sqlite';
 import { mockLogger } from '../../bootstrap';
 import type { IAuthor4 } from '../../entities-schema';
@@ -299,6 +299,29 @@ describe('virtual entities (sqlite)', () => {
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
     expect(mock.mock.calls[0][0]).toMatch(sql);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
+
+    // pagination
+    {
+      const [books, total] = await orm.em.findAndCount(BookWithAuthor, {}, { flags: [QueryFlag.PAGINATE], limit: 3, offset: 3 });
+      expect(books).toEqual([
+        {
+          title: 'My Life on the Wall, part 1/2',
+          authorName: 'Jon Snow 2',
+          tags: ['silly-2', 'sick-2'],
+        },
+        {
+          title: 'My Life on the Wall, part 2/2',
+          authorName: 'Jon Snow 2',
+          tags: ['silly-2', 'funny-2', 'sexy-2'],
+        },
+        {
+          title: 'My Life on the Wall, part 3/2',
+          authorName: 'Jon Snow 2',
+          tags: ['funny-2', 'strange-2', 'sexy-2'],
+        },
+      ]);
+      expect(total).toBe(9);
+    }
   });
 
 });

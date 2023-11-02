@@ -176,13 +176,16 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
   protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType): Promise<T[] | number> {
     const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes)
-      .limit(options?.limit, options?.offset)
       .indexHint(options.indexHint!)
       .comment(options.comments!)
       .hintComment(options.hintComments!);
 
-    if (options.orderBy) {
-      qb.orderBy(options.orderBy);
+    if (type !== QueryType.COUNT) {
+      qb.limit(options?.limit, options?.offset);
+
+      if (options.orderBy) {
+        qb.orderBy(options.orderBy);
+      }
     }
 
     qb.where(where);
