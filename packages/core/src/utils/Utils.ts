@@ -231,7 +231,7 @@ export class Utils {
       return o.forEach((item: unknown) => Utils.dropUndefinedProperties(item, value, visited));
     }
 
-    if (!Utils.isObject(o) || visited.has(o)) {
+    if (!Utils.isPlainObject(o) || visited.has(o)) {
       return;
     }
 

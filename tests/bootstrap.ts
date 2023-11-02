@@ -69,6 +69,7 @@ export async function initORMMongo(replicaSet = false) {
     filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
     pool: { min: 1, max: 3 },
     migrations: { path: BASE_DIR + '/../temp/migrations-mongo' },
+    ignoreUndefinedInQuery: true,
   });
 
   ensureIndexes = false;
