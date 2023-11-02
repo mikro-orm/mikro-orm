@@ -905,7 +905,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   joinedProps<T>(meta: EntityMetadata, populate: PopulateOptions<T>[]): PopulateOptions<T>[] {
     return populate.filter(p => {
       const prop = meta.properties[p.field] || {};
-      return (p.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.kind !== ReferenceKind.SCALAR && prop.reference !== ReferenceType.EMBEDDED;
+      return (p.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && ![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind);
     });
   }
 
