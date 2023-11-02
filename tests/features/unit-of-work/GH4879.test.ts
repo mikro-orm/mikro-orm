@@ -68,7 +68,7 @@ const profileSchema = new EntitySchema({
     },
     user: {
       entity: () => User,
-      reference: '1:1',
+      kind: '1:1',
       mappedBy: 'profile',
       ref: true,
       nullable: true,
@@ -105,7 +105,7 @@ const userSchema = new EntitySchema<User>({
     },
     profile: {
       entity: () => Profile,
-      reference: '1:1',
+      kind: '1:1',
       inversedBy: 'user',
       nullable: true,
       ref: true,
