@@ -87,7 +87,7 @@ export class EntityGenerator {
     const esmImport = this.config.get('entityGenerator').esmImport ?? false;
 
     for (const meta of metadata) {
-      if (!meta.pivotTable) {
+      if (!meta.pivotTable || meta.isReferenced) {
         if (this.config.get('entityGenerator').entitySchema) {
           this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform, esmImport));
         } else {
@@ -106,6 +106,12 @@ export class EntityGenerator {
 
   private detectManyToManyRelations(metadata: EntityMetadata[]): void {
     for (const meta of metadata) {
+      meta.isReferenced = metadata.some(m => {
+        return m.tableName !== meta.tableName && m.relations.some(
+          r => {
+            return r.referencedTableName === meta.tableName && (r.kind === ReferenceKind.MANY_TO_ONE || r.kind === ReferenceKind.ONE_TO_ONE);
+          });
+      });
       if (
         meta.compositePK &&                                                         // needs to have composite PK
         meta.primaryKeys.length === meta.relations.length &&                        // all relations are PKs
@@ -121,20 +127,24 @@ export class EntityGenerator {
         }
 
         const name = this.namingStrategy.columnNameToProperty(meta.tableName.replace(new RegExp('^' + owner.tableName + '_'), ''));
-        owner.addProperty({
+        const ownerProp: EntityProperty = {
           name,
           kind: ReferenceKind.MANY_TO_MANY,
           pivotTable: meta.tableName,
           type: meta.relations[1].type,
           joinColumns: meta.relations[0].fieldNames,
           inverseJoinColumns: meta.relations[1].fieldNames,
-        } as EntityProperty);
+        } as EntityProperty;
+        if (meta.isReferenced && meta.className) {
+          ownerProp.pivotEntity = meta.className;
+        }
+        owner.addProperty(ownerProp);
       }
     }
   }
 
   private generateBidirectionalRelations(metadata: EntityMetadata[]): void {
-    for (const meta of metadata.filter(m => !m.pivotTable)) {
+    for (const meta of metadata.filter(m => !m.pivotTable || m.isReferenced)) {
       for (const prop of meta.relations) {
         const targetMeta = metadata.find(m => m.className === prop.type)!;
         const newProp = {
@@ -163,7 +173,7 @@ export class EntityGenerator {
   }
 
   private generateIdentifiedReferences(metadata: EntityMetadata[]): void {
-    for (const meta of metadata.filter(m => !m.pivotTable)) {
+    for (const meta of metadata.filter(m => !m.pivotTable || m.isReferenced)) {
       for (const prop of meta.relations) {
         if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
           prop.ref = true;

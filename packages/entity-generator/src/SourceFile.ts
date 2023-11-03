@@ -327,6 +327,11 @@ export class SourceFile {
       options.pivotTable = this.quote(prop.pivotTable);
     }
 
+    if (prop.pivotEntity && prop.pivotEntity !== prop.pivotTable) {
+      this.entityImports.add(prop.pivotEntity);
+      options.pivotEntity = `() => ${prop.pivotEntity}`;
+    }
+
     if (prop.joinColumns.length === 1) {
       options.joinColumn = this.quote(prop.joinColumns[0]);
     } else {
