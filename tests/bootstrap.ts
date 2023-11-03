@@ -205,7 +205,7 @@ export async function initORMSqlite() {
 
 export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite') {
   const orm = MikroORM.initSync<any>({
-    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, IdentitySchema],
+    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, IdentitySchema],
     dbName: ':memory:',
     baseDir: BASE_DIR,
     driver: type === 'sqlite' ? SqliteDriver : BetterSqliteDriver,

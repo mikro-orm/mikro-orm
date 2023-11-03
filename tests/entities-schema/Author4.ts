@@ -2,6 +2,7 @@ import type { Collection, EventArgs } from '@mikro-orm/core';
 import { EntitySchema, DateType, TimeType, BooleanType, t, ReferenceKind, HiddenProps } from '@mikro-orm/core';
 import type { IBaseEntity5 } from './BaseEntity5';
 import type { IBook4 } from './Book4';
+import { BaseEntity5 } from './BaseEntity5';
 
 export interface IAuthor4 extends IBaseEntity5 {
   name: string;
@@ -45,7 +46,7 @@ export const IdentitySchema = new EntitySchema({
 
 export const Author4 = new EntitySchema<IAuthor4, IBaseEntity5>({
   name: 'Author4',
-  extends: 'BaseEntity5',
+  extends: BaseEntity5,
   properties: {
     name: { type: 'string' },
     email: { type: 'string', unique: true },

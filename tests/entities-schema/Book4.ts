@@ -4,6 +4,7 @@ import type { IBaseEntity5 } from './BaseEntity5';
 import type { IAuthor4 } from './Author4';
 import type { IPublisher4 } from './Publisher4';
 import type { IBookTag4 } from './BookTag4';
+import { BaseEntity5 } from './BaseEntity5';
 
 export interface Book4Meta {
   category: string;
@@ -26,7 +27,7 @@ export interface IBook4 extends Omit<IBaseEntity5, typeof OptionalProps> {
 
 export const Book4 = new EntitySchema<IBook4, IBaseEntity5>({
   name: 'Book4',
-  extends: 'BaseEntity5',
+  extends: BaseEntity5,
   properties: {
     title: { type: t.string },
     price: { type: t.float, nullable: true },

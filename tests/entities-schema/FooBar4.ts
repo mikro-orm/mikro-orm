@@ -1,6 +1,7 @@
 import type { OptionalProps } from '@mikro-orm/core';
 import { ArrayType, BlobType, EntitySchema, JsonType, Uint8ArrayType } from '@mikro-orm/core';
 import type { IFooBaz4, IBaseEntity5 } from './index';
+import { BaseEntity5 } from './index';
 
 export interface IFooBar4 extends Omit<IBaseEntity5, typeof OptionalProps> {
   [OptionalProps]?: 'version' | IBaseEntity5[typeof OptionalProps];
@@ -17,7 +18,7 @@ export interface IFooBar4 extends Omit<IBaseEntity5, typeof OptionalProps> {
 
 export const FooBar4 = new EntitySchema<IFooBar4, IBaseEntity5>({
   name: 'FooBar4',
-  extends: 'BaseEntity5',
+  extends: BaseEntity5,
   properties: {
     name: { type: 'string', default: 'asd' },
     baz: { kind: '1:1', entity: 'FooBaz4', orphanRemoval: true, nullable: true },
