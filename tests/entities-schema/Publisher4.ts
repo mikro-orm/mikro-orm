@@ -3,6 +3,7 @@ import { EntitySchema } from '@mikro-orm/core';
 import type { IBaseEntity5 } from './BaseEntity5';
 import type { IBook4 } from './Book4';
 import type { ITest4 } from './Test4';
+import { BaseEntity5 } from './BaseEntity5';
 
 export interface IPublisher4 extends Omit<IBaseEntity5, typeof OptionalProps> {
   [OptionalProps]?: 'name' | 'type' | IBaseEntity5[typeof OptionalProps];
@@ -20,7 +21,7 @@ export enum PublisherType {
 
 export const Publisher4 = new EntitySchema<IPublisher4, IBaseEntity5>({
   name: 'Publisher4',
-  extends: 'BaseEntity5',
+  extends: BaseEntity5,
   properties: {
     name: { type: 'string', default: 'asd' },
     type: { enum: true, items: () => PublisherType, default: PublisherType.LOCAL },

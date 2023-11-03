@@ -34,8 +34,9 @@ export type EntitySchemaProperty<Target, Owner> =
   | (TypeDef<Target> & PropertyOptions<Owner>);
 type OmitBaseProps<Entity, Base> = IsNever<Base> extends true ? Entity : Omit<Entity, keyof Base>;
 export type EntitySchemaMetadata<Entity, Base = never> =
-  & Omit<Partial<EntityMetadata<Entity>>, 'name' | 'properties'>
+  & Omit<Partial<EntityMetadata<Entity>>, 'name' | 'properties' | 'extends'>
   & ({ name: string } | { class: Constructor<Entity>; name?: string })
+  & { extends?: string | EntitySchema<Base> }
   & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as ExcludeFunctions<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
 
 export class EntitySchema<Entity = any, Base = never> {
@@ -236,8 +237,8 @@ export class EntitySchema<Entity = any, Base = never> {
     this._meta.repository = repository as () => Constructor<EntityRepository<any>>;
   }
 
-  setExtends(base: string): void {
-    this._meta.extends = base;
+  setExtends(base: string | EntitySchema): void {
+    this._meta.extends = base as string;
   }
 
   setClass(proto: Constructor<Entity>) {

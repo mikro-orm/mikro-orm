@@ -19,7 +19,7 @@ export const schema = new EntitySchema<Book, CustomBaseEntity>({
   name: 'Book',
   // if we use actual class, we need this instead:
   // class: Book,
-  extends: 'CustomBaseEntity', // only if we extend custom base entity
+  extends: CustomBaseEntitySchema, // only if we extend custom base entity
   properties: {
     title: { type: 'string' },
     author: { reference: 'm:1', entity: 'Author', inversedBy: 'books' },
@@ -64,7 +64,7 @@ export class Author extends CustomBaseEntity {
 
 export const schema = new EntitySchema<Author, CustomBaseEntity>({
   class: Author,
-  extends: 'CustomBaseEntity',
+  extends: CustomBaseEntitySchema,
   properties: {
     name: { type: 'string' },
     email: { type: 'string', unique: true },

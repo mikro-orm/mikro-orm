@@ -267,14 +267,14 @@ export class MetadataDiscovery {
     }
   }
 
-  discoverReferences<T>(refs: Constructor<T>[]): EntityMetadata<T>[] {
+  discoverReferences<T>(refs: (Constructor<T> | EntitySchema<T>)[]): EntityMetadata<T>[] {
     const found: Constructor<T>[] = [];
 
     for (const entity of refs) {
       const schema = this.getSchema(this.prepare(entity) as Constructor<T>);
       const meta = schema.init().meta;
       this.metadata.set(meta.className, meta);
-      found.push(entity);
+      found.push(entity as Constructor<T>);
     }
 
     for (const entity of found) {
@@ -283,11 +283,17 @@ export class MetadataDiscovery {
 
     // discover parents (base entities) automatically
     for (const meta of Object.values(this.metadata.getAll())) {
+      let parent = meta.extends as any;
+
+      if (parent instanceof EntitySchema && !this.metadata.has(parent.meta.className)) {
+        this.discoverReferences([parent]);
+      }
+
       if (!meta.class) {
         continue;
       }
 
-      const parent = Object.getPrototypeOf(meta.class);
+      parent = Object.getPrototypeOf(meta.class);
 
       if (parent.name !== '' && !this.metadata.has(parent.name)) {
         this.discoverReferences([parent]);
@@ -789,7 +795,7 @@ export class MetadataDiscovery {
   }
 
   private defineBaseEntityProperties(meta: EntityMetadata): number {
-    const base = meta.extends && this.metadata.get(meta.extends);
+    const base = meta.extends && this.metadata.get(Utils.className(meta.extends));
 
     if (!base || base === meta) { // make sure we do not fall into infinite loop
       return 0;
@@ -854,7 +860,9 @@ export class MetadataDiscovery {
       let discriminatorColumn: string | undefined;
 
       const processExtensions = (meta: EntityMetadata) => {
-        const parent = this.discovered.find(m => meta.extends === m.className);
+        const parent = this.discovered.find(m => {
+          return meta.extends && Utils.className(meta.extends) === m.className;
+        });
 
         if (!parent) {
           return;
