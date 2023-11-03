@@ -867,7 +867,7 @@ export type IsSubset<T, U> = keyof U extends keyof T
   ? {}
   : Dictionary extends U
     ? {}
-    : { [K in keyof U as K extends keyof T ? never : K]: never };
+    : { [K in keyof U as K extends keyof T ? never : ExcludeFunctions<U, K>]: never; };
 
 export type MergeSelected<T, U, F extends string> = T extends Selected<U, infer P, infer FF> ? Selected<U, P, F | FF> : T;
 
