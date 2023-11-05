@@ -750,7 +750,6 @@ properties: {
 
   </TabItem>
 </Tabs>
-```
 
 ## Formulas
 
@@ -791,7 +790,6 @@ properties: {
 
   </TabItem>
 </Tabs>
-```
 
 Formulas will be added to the select clause automatically. In case you are facing problems with `NonUniqueFieldNameException`, you can define the formula as a callback that will receive the entity alias in the parameter:
 

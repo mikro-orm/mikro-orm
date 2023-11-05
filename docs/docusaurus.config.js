@@ -47,8 +47,8 @@ module.exports = {
         'and consider <a target="_blank" rel="noopener noreferrer" href="https://github.com/sponsors/B4nan">sponsoring</a> its development! ⭐️',
     },
     prism: {
-      theme: require('prism-react-renderer/themes/github'),
-      darkTheme: require('prism-react-renderer/themes/dracula'),
+      theme: require('prism-react-renderer').themes.github,
+      darkTheme: require('prism-react-renderer').themes.dracula,
     },
     navbar: {
       title: '',
@@ -103,7 +103,7 @@ module.exports = {
           title: 'Docs',
           items: [
             { label: 'Installation & Usage', to: 'docs/installation' },
-            { label: 'Quick Start', href: 'https://github.com/mikro-orm/mikro-orm#-quick-start' },
+            { label: 'Quick Start', to: 'docs/quick-start' },
             { label: 'Migration from v5 to v6', to: 'docs/next/upgrading-v5-to-v6' },
             { label: 'Version 6.0 docs', to: 'docs/next/guide' },
           ],

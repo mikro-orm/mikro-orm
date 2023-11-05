@@ -67,7 +67,7 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$ilike`     | ilike            | (postgres only)                                                                             |
 | `$overlap`   | &&               | (postgres only)                                                                             |
 | `$contains`  | @>               | (postgres only)                                                                             |
-| `$contained` | <@               | (postgres only)                                                                             |
+| `$contained` | \<@              | (postgres only)                                                                             |
 
 ### Logical
 
@@ -107,7 +107,7 @@ values={[
 {label: 'Using an index', value: 'in-query'},
 ]
 }>
-<TabItem value="as-column">
+  <TabItem value="as-column">
 
 ```ts title="./entities/Book.ts"
 import { FullTextType, WeightedFullTextValue } from '@mikro-orm/postgresql';
@@ -137,8 +137,8 @@ export class Book {
 
 And to find results: `repository.findOne({ searchableTitle: { $fulltext: 'query' } })`.
 
-</TabItem>
-<TabItem value="in-query">
+  </TabItem>
+  <TabItem value="in-query">
 
 ```ts title="./entities/Book.ts"
 @Entity()
