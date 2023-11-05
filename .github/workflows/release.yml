@@ -96,12 +96,12 @@ jobs:
         run: |
           corepack enable
 
-      # Yarn dependencies cannot be cached until yarn is installed
-      # WORKAROUND: https://github.com/actions/setup-node/issues/531
-      - name: Extract cached dependencies
-        uses: actions/setup-node@v4
-        with:
-          cache: yarn
+#      # Yarn dependencies cannot be cached until yarn is installed
+#      # WORKAROUND: https://github.com/actions/setup-node/issues/531
+#      - name: Extract cached dependencies
+#        uses: actions/setup-node@v4
+#        with:
+#          cache: yarn
 
       - name: Install Dependencies
         run: |
