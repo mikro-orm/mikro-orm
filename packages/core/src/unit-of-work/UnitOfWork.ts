@@ -476,30 +476,33 @@ export class UnitOfWork {
     }
 
     // Check insert stack if there are any entities matching something from delete stack. This can happen when recreating entities.
-    const inserts: ChangeSet<any>[] = [];
+    const inserts: Dictionary<ChangeSet<any>[]> = {};
 
     for (const cs of this.changeSets.values()) {
       if (cs.type === ChangeSetType.CREATE) {
-        inserts.push(cs);
+        inserts[cs.meta.className] ??= [];
+        inserts[cs.meta.className].push(cs);
       }
     }
 
     for (const cs of this.changeSets.values()) {
       if (cs.type === ChangeSetType.UPDATE) {
-        this.findEarlyUpdates(cs, inserts);
+        this.findEarlyUpdates(cs, inserts[cs.meta.className]);
       }
     }
 
     for (const entity of this.removeStack) {
+      const wrapped = helper(entity);
+
       /* istanbul ignore next */
-      if (helper(entity).__processing) {
+      if (wrapped.__processing) {
         continue;
       }
 
-      const deletePkHash = [helper(entity).getSerializedPrimaryKey(), ...this.expandUniqueProps(entity)];
+      const deletePkHash = [wrapped.getSerializedPrimaryKey(), ...this.expandUniqueProps(entity)];
       let type = ChangeSetType.DELETE;
 
-      for (const cs of inserts) {
+      for (const cs of inserts[wrapped.__meta.className] ?? []) {
         if (deletePkHash.some(hash => hash === cs.getSerializedPrimaryKey() || this.expandUniqueProps(cs.entity).find(child => hash === child))) {
           type = ChangeSetType.DELETE_EARLY;
         }
@@ -957,7 +960,7 @@ export class UnitOfWork {
     }
   }
 
-  private findEarlyUpdates<T extends object>(changeSet: ChangeSet<T>, inserts: ChangeSet<T>[]): void {
+  private findEarlyUpdates<T extends object>(changeSet: ChangeSet<T>, inserts: ChangeSet<T>[] = []): void {
     const props = changeSet.meta.uniqueProps;
 
     for (const prop of props) {
