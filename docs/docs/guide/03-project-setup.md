@@ -593,6 +593,34 @@ and a OneToMany inverse side in `Article` entity:
 comments = new Collection<Comment>(this);
 ```
 
+Don't forget to add the repository to our simple DI container too:
+
+```ts file='db.ts'
+export interface Services {
+  orm: MikroORM;
+  em: EntityManager;
+  user: UserRepository;
+  article: EntityRepository<Article>;
+  // highlight-next-line
+  comment: EntityRepository<Comment>;
+  tag: EntityRepository<Tag>;
+}
+
+export async function initORM(options?: Options): Promise<Services> {
+  // ...
+
+  return cache = {
+    orm,
+    em: orm.em,
+    user: orm.em.getRepository(User),
+    article: orm.em.getRepository(Article),
+    // highlight-next-line
+    comment: orm.em.getRepository(Comment),
+    tag: orm.em.getRepository(Tag),
+  };
+}
+```
+
 > We are using two new options here, `eager` and `orphanRemoval`:
 >
 > - `eager: true` will automatically populate this relation, just like if you would use `populate: ['comments']` explicitly.

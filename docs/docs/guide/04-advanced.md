@@ -545,6 +545,95 @@ app.post('/sign-up', async request => {
 });
 ```
 
+## Rest of the Article endpoints
+
+Let's implement the rest of the article endpoints. We will need a public one for the article detail, one for posting comments, one for updating the article and one for deleting it. The last two will be only allowed for the user who created given article.
+
+With the information you already have, implementing those endpoints should be pretty straightforward:
+
+```ts file='modules/article/routes.ts'
+// article detail
+app.get('/:slug', async request => {
+  const { slug } = request.params as { slug: string };
+  return db.article.findOneOrFail({ slug }, {
+    populate: ['author', 'comments.author', 'text'],
+  });
+});
+
+// create article
+app.post('/:slug/comment', async request => {
+  const { slug, text } = request.params as { slug: string; text: string };
+  const author = getUserFromToken(request);
+  const article = await db.article.findOneOrFail({ slug });
+  const comment = db.comment.create({ author, article, text });
+
+  // We can add the comment to `article.comments` collection,
+  // but in fact it is a no-op, as it will be automatically
+  // propagated by setting Comment.author property.
+  article.comments.add(comment);
+
+  // mention we don't need to persist anything explicitly
+  await db.em.flush();
+
+  return comment;
+});
+
+// create article
+app.post('/', async request => {
+  const { title, description, text } = request.body as { title: string; description: string; text: string };
+  const author = getUserFromToken(request);
+  const article = db.article.create({
+    title, 
+    description,
+    text,
+    author,
+  });
+
+  await db.em.persist(article).flush();
+
+  return article;
+});
+
+// update article
+app.patch('/:id', async request => {
+  const user = getUserFromToken(request);
+  const params = request.params as { id: string };
+  const article = await db.article.findOneOrFail(+params.id);
+  verifyArticlePermissions(user, article);
+  wrap(article).assign(request.body as Article);
+  await db.em.flush();
+
+  return article;
+});
+
+// delete article
+app.delete('/:id', async request => {
+  const user = getUserFromToken(request);
+  const params = request.params as { id: string };
+  const article = await db.article.findOne(+params.id);
+
+  if (!article) {
+    return { notFound: true };
+  }
+
+  verifyArticlePermissions(user, article);
+  // mention `nativeDelete` alternative if we don't care about validations much
+  await db.em.remove(article).flush();
+
+  return { success: true };
+});
+```
+
+And the new validation method:
+
+```ts file='modules/common/utils.ts'
+export function verifyArticlePermissions(user: User, article: Article): void {
+  if (article.author.id !== user.id) {
+    throw new Error('You are not the author of this article!');
+  }
+}
+```
+
 [//]: # (TODO: continue here with the rest of the endpoints for article module)
 
 ## ⛳ Checkpoint 4
