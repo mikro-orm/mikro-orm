@@ -2,27 +2,38 @@
 title: Quick Start
 ---
 
-First install the module via `yarn` or `npm` and do not forget to install the database driver as well:
+In this guide, you will learn how to quickly bootstrap a simple project using MikroORM. For a deeper dive, check out
+the [Getting Started guide](./guide) which follows.
 
-```sh
-yarn add @mikro-orm/core @mikro-orm/mongodb     # for mongo
-yarn add @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
-yarn add @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
-yarn add @mikro-orm/core @mikro-orm/postgresql  # for postgresql
-yarn add @mikro-orm/core @mikro-orm/sqlite      # for sqlite
+## Installation
+
+First install the module via package manager of your choice. Do not forget to install the database driver as well:
+
+```bash npm2yarn
+# for mongodb
+npm install @mikro-orm/core @mikro-orm/mongodb;
+
+# for mysql (works with mariadb too)
+npm install @mikro-orm/core @mikro-orm/mysql;  
+
+# for mariadb (works with mysql too)
+npm install @mikro-orm/core @mikro-orm/mariadb;
+
+# for postgresql (works with cockroachdb too)
+npm install @mikro-orm/core @mikro-orm/postgresql;  
+
+# for sqlite
+npm install @mikro-orm/core @mikro-orm/sqlite; 
+
+# for better-sqlite
+npm install @mikro-orm/core @mikro-orm/better-sqlite; 
 ```
 
-or
+Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) as
+well as `esModuleInterop` in `tsconfig.json` via:
 
-```sh
-npm i -s @mikro-orm/core @mikro-orm/mongodb     # for mongo
-npm i -s @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
-npm i -s @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
-npm i -s @mikro-orm/core @mikro-orm/postgresql  # for postgresql
-npm i -s @mikro-orm/core @mikro-orm/sqlite      # for sqlite
-```
-
-Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) as well as `esModuleInterop` in `tsconfig.json` via:
+> The decorators are opt-in, if you use a different way to define your entity metadata like `EntitySchema`, you don't
+> need to enable them.
 
 ```json
 "experimentalDecorators": true,
@@ -32,7 +43,9 @@ Next you will need to enable support for [decorators](https://www.typescriptlang
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
-> To access driver specific methods like `em.createQueryBuilder()` we need to specify the driver type when calling `MikroORM.init<D>()`. Alternatively we can cast the `orm.em` to `EntityManager` exported from the driver package:
+> To access driver specific methods like `em.createQueryBuilder()` you need to import
+> the `MikroORM`/`EntityManager`/`EntityRepository` class from the driver package. Alternatively you can cast the `orm.em`
+> to `EntityManager` exported from the driver package:
 >
 > ```ts
 > import { EntityManager } from '@mikro-orm/postgresql';
@@ -41,21 +54,49 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 > ```
 
 ```ts
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql'; // or any other driver package
+import { MikroORM } from '@mikro-orm/postgresql'; // or any other driver package
 
-const orm = await MikroORM.init<PostgreSqlDriver>({
+const orm = await MikroORM.init({
   entities: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
   dbName: 'my-db-name',
-  type: 'postgresql',
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```
 
-There are more ways to configure your entities, take a look at [installation page](https://mikro-orm.io/installation/).
+You can read more about all the possible configuration options in [Advanced Configuration](./configuration.md) section.
 
-> Read more about all the possible configuration options in [Advanced Configuration](https://mikro-orm.io/docs/configuration) section.
+## Folder-based discovery
 
-Then you will need to fork entity manager for each request so their [identity maps](https://mikro-orm.io/identity-map/) will not collide. To do so, use the `RequestContext` helper:
+You can also provide paths where we store our entities via `entities` array. Internally it
+uses [`globby`](https://github.com/sindresorhus/globby) so we can
+use [globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns), including negative globs.
+
+```ts
+const orm = await MikroORM.init({
+  entities: ['./dist/app/**/*.entity.js'],
+  entitiesTs: ['./src/app/**/*.entity.ts'],
+  // ...
+});
+```
+
+If you are experiencing problems with folder based discovery, try using `mikro-orm debug` CLI command to check what
+paths are actually being used.
+
+## Synchronous initialization
+
+As opposed to the async `MikroORM.init` method, you can prefer to use synchronous variant `initSync`. This method has
+some limitations:
+
+- database connection will be established when you first interact with the database (or you can use `orm.connect()`
+  explicitly)
+- no loading of the `config` file, `options` parameter is mandatory
+- no support for folder based discovery
+- no check for mismatched package versions
+
+## RequestContext helper
+
+Now you will need to fork entity manager for each request so their [identity maps](https://mikro-orm.io/identity-map/)
+will not collide. To do so, use the `RequestContext` helper:
 
 ```ts
 const app = express();
@@ -65,29 +106,30 @@ app.use((req, res, next) => {
 });
 ```
 
-> You should register this middleware as the last one just before request handlers and before any of your custom middleware that is using the ORM. There might be issues when you register it before request processing middleware like `queryParser` or `bodyParser`, so definitely register the context after them.
+> You should register this middleware as the last one just before request handlers and before any of your custom
+> middleware that is using the ORM. There might be issues when you register it before request processing middleware
+> like `queryParser` or `bodyParser`, so definitely register the context after them.
 
-More info about `RequestContext` is described [here](https://mikro-orm.io/identity-map/#request-context).
+More info about `RequestContext` is described [here](./identity-map.md#request-context).
 
-Now you can start defining your entities (in one of the `entities` folders). This is how simple entity can look like in mongo driver:
+## Entity definition
 
-```ts title="./entities/MongoBook.ts"
+Now you can start defining your entities (in one of the `entities` folders). This is how a simple entity can look like:
+
+```ts title="./entities/Book.ts"
 @Entity()
-export class MongoBook {
+export class Book {
 
   @PrimaryKey()
-  _id: ObjectID;
-
-  @SerializedPrimaryKey()
-  id: string;
+  id: bigint;
 
   @Property()
   title: string;
 
-  @ManyToOne()
+  @ManyToOne(() => Author)
   author: Author;
 
-  @ManyToMany()
+  @ManyToMany(() => BookTag)
   tags = new Collection<BookTag>(this);
 
   constructor(title: string, author: Author) {
@@ -98,37 +140,31 @@ export class MongoBook {
 }
 ```
 
-For SQL drivers, you can use `id: number` PK:
+Or if you want to use UUID primary key:
 
-```ts title="./entities/SqlBook.ts"
-@Entity()
-export class SqlBook {
-
-  @PrimaryKey()
-  id: number;
-
-}
-```
-
-Or if you want to use UUID primary keys:
-
-```ts title="./entities/UuidBook.ts"
+```ts title="./entities/Book.ts"
 import { v4 } from 'uuid';
 
 @Entity()
-export class UuidBook {
+export class Book {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'uuid' })
   uuid = v4();
+
+  // ...
 
 }
 ```
 
 More information can be found in [defining entities section](https://mikro-orm.io/defining-entities/) in docs.
 
-When you have your entities defined, you can start using ORM either via `EntityManager` or via `EntityRepository`s.
+## EntityManager
 
-To save entity state to database, you need to persist it. Persist determines whether to use `insert` or `update` and computes appropriate change-set. Entity references that are not persisted yet (does not have identifier) will be cascade persisted automatically.
+When you have your entities defined, you can start using ORM either via `EntityManager`.
+
+To save entity state to database, you need to persist it. Persist determines whether to use `insert` or `update` and
+computes appropriate change-set. Entity references that are not persisted yet (does not have identifier) will be cascade
+persisted automatically.
 
 ```ts
 // use constructors in your entities for required parameters
@@ -164,19 +200,4 @@ for (const author of authors) {
 }
 ```
 
-More convenient way of fetching entities from database is by using `EntityRepository`, that carries the entity name so you do not have to pass it to every `find` and `findOne` calls:
-
-```ts
-const booksRepository = em.getRepository(Book);
-
-const books = await booksRepository.find({ author: '...' }, {
-  populate: ['author'],
-  limit: 1,
-  offset: 2,
-  orderBy: { title: QueryOrder.DESC },
-});
-
-console.log(books); // Book[]
-```
-
-Take a look at docs about [working with `EntityManager`](https://mikro-orm.io/entity-manager/) or [using `EntityRepository` instead](https://mikro-orm.io/repositories/).
+Take a look at docs about [working with `EntityManager`](./entity-manager.md).

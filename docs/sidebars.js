@@ -1,14 +1,20 @@
 module.exports = {
   docs: [
+    'quick-start',
     {
       type: 'category',
-      label: 'Overview',
+      label: 'Getting Started',
+      collapsed: false,
+      link: {
+        type: 'doc',
+        id: 'guide/introduction',
+      },
       items: [
-        'installation',
-        'defining-entities',
-        'relationships',
-        'entity-manager',
-        'unit-of-work',
+        'guide/first-entity',
+        'guide/relationships',
+        'guide/project-setup',
+        'guide/advanced',
+        'guide/type-safety',
       ],
     },
     {
@@ -21,6 +27,10 @@ module.exports = {
         keywords: ['fundamentals'],
       },
       items: [
+        'defining-entities',
+        'relationships',
+        'entity-manager',
+        'unit-of-work',
         'identity-map',
         'collections',
         'type-safe-relations',
@@ -28,11 +38,7 @@ module.exports = {
         'transactions',
         'inheritance-mapping',
         'cascading',
-        'filters',
-        'deployment',
         'query-builder',
-        'caching',
-        'logging',
       ],
     },
     {
@@ -45,6 +51,10 @@ module.exports = {
         keywords: ['advanced'],
       },
       items: [
+        'filters',
+        'deployment',
+        'caching',
+        'logging',
         'nested-populate',
         'query-conditions',
         'propagation',
@@ -72,6 +82,29 @@ module.exports = {
     },
     {
       type: 'category',
+      label: 'Recipes',
+      link: {
+        type: 'generated-index',
+        title: 'Recipes',
+        slug: '/recipes',
+        keywords: ['recipes'],
+      },
+      items: [
+        'usage-with-sql',
+        'usage-with-mongo',
+        'usage-with-nestjs',
+        'usage-with-js',
+        'usage-with-babel',
+        'usage-with-adminjs',
+        'entity-constructors',
+        'multiple-schemas',
+        'using-bigint-pks',
+        'async-local-storage',
+        'custom-driver',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Reference',
       link: {
         type: 'generated-index',
@@ -85,42 +118,6 @@ module.exports = {
         { type: 'link', label: 'QueryBuilder API', href: '/api/next/knex/class/QueryBuilder' },
         'decorators',
         'configuration',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Usage with Different Drivers',
-      link: {
-        type: 'generated-index',
-        title: 'Usage with Different Drivers',
-        slug: '/drivers',
-        keywords: ['usage with drivers'],
-      },
-      items: [
-        'usage-with-sql',
-        'usage-with-mongo',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Recipes',
-      link: {
-        type: 'generated-index',
-        title: 'Recipes',
-        slug: '/recipes',
-        keywords: ['recipes'],
-      },
-      items: [
-        'quick-start',
-        'usage-with-nestjs',
-        'usage-with-js',
-        'usage-with-babel',
-        'usage-with-adminjs',
-        'entity-constructors',
-        'multiple-schemas',
-        'using-bigint-pks',
-        'async-local-storage',
-        'custom-driver',
       ],
     },
     {
@@ -153,6 +150,7 @@ module.exports = {
         keywords: ['upgrading'],
       },
       items: [
+        'upgrading-v5-to-v6',
         'upgrading-v4-to-v5',
         'upgrading-v3-to-v4',
         'upgrading-v2-to-v3',

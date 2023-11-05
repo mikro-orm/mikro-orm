@@ -34,7 +34,7 @@ Next we will need to enable support for [decorators](https://www.typescriptlang.
 
 Then call `MikroORM.init` as part of bootstrapping our app:
 
-> To access driver specific methods like `em.createQueryBuilder()` we need to specify the driver type when calling `MikroORM.init<D>()`. Alternatively we can cast the `orm.em` to `EntityManager` exported from the driver package:
+> To access driver specific methods like `em.createQueryBuilder()` you need to import the `MikroORM`/`EntityManager`/`EntityRepository` class from the driver package. Alternatively you can cast the `orm.em` to `EntityManager` exported from the driver package:
 >
 > ```ts
 > import { EntityManager } from '@mikro-orm/postgresql';

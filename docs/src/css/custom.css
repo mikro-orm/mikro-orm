@@ -25,12 +25,22 @@
 }
 
 html[data-theme="light"] {
+  --ifm-link-color: rgb(19, 108, 89);
+  --ifm-menu-color-active: rgb(19, 108, 89);
   --ifm-color-warning: #fff3cd;
   --ifm-alert-background-color: #fff3cd;
   --ifm-alert-border-color: #ffeeba;
   --ifm-alert-color: #856404;
   --ra-admonition-icon-color: #856404;
   --docusaurus-highlighted-code-line-bg: rgb(218, 221, 227);
+  --ifm-breadcrumb-color-active: rgb(19, 108, 89);
+}
+
+html[data-theme="dark"] {
+  --ifm-background-color: #131313;
+  --ifm-navbar-background-color: #131313;
+  --ifm-navbar-shadow: #fff;
+  --docusaurus-highlighted-code-line-bg: #1d1e27;
 }
 
 html[data-theme="light"] .admonition-info {
@@ -131,7 +141,7 @@ html[data-theme="light"] .admonition-info {
   top: 5px;
 }
 
-a[href*=edit] {
+a[href*=\/mikro-orm\/mikro-orm\/edit\/] {
   border: 1px solid #ccc;
   border-radius: 100px;
   padding: 8px 16px;
@@ -256,4 +266,25 @@ aside svg[class*=iconExternalLink] {
 
 .apiItemContainer .tsd-readme h1:first-child {
   display: none;
+}
+
+.markdown blockquote {
+  --ifm-code-background: var(--ifm-alert-background-color-highlight);
+  --ifm-link-color: var(--ifm-alert-foreground-color);
+  --ifm-alert-background-color: #f8feff;
+  --ifm-alert-border-color: #bee5eb;
+  --ifm-alert-color: #0c5460;
+  background-color: var(--ifm-alert-background-color);
+  border: var(--ifm-alert-border-width) solid var(--ifm-alert-border-color);
+  border-left-width: var(--ifm-alert-border-left-width);
+  border-radius: var(--ifm-alert-border-radius);
+  padding: var(--ifm-alert-padding-vertical) var(--ifm-alert-padding-horizontal);
+}
+
+html[data-theme="dark"] .markdown blockquote {
+  --ifm-alert-background-color: #02242a;
+  --ifm-alert-border-color: #637c80;
+  --ifm-alert-color: #f8feff;
+  --ifm-link-color: #f8feff;
+  --ifm-link-hover-color: #f8feff;
 }

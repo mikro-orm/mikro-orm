@@ -1,23 +1,20 @@
 ---
-title: Type-Safe Relations
+title: 'Chapter 5: Type-safety'
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
-Entity relations are mapped to entity references - instances of the entity that have at least the primary key available. This reference is stored in identity map, so you will get the same object reference when fetching the same document from database.
+Entity relations are mapped to entity references - instances of the entity that have at least the primary key available. This reference is stored in Identity Map, so you will get the same object reference when fetching the same document from database.
 
 ```ts
 @ManyToOne(() => Author)
 author!: Author; // the value is always instance of the `Author` entity
 ```
 
-You can check whether an entity is initialized via `wrap(entity).isInitialized()`, and use `await wrap(entity).init()` to initialize it. This will trigger database call and populate the entity, keeping the same reference in identity map.
+You can check whether an entity is initialized via `wrap(entity).isInitialized()`, and use `await wrap(entity).init()` to initialize it lazily. This will trigger database call and populate the entity, keeping the same reference in identity map.
 
 ```ts
 const author = em.getReference(Author, 123);
-console.log(author.id); // accessing the id will not trigger any db call
-console.log(wrap(author).isInitialized()); // false
+console.log(author.id); // prints `123`, accessing the id will not trigger any db call
+console.log(wrap(author).isInitialized()); // false, it's just a reference
 console.log(author.name); // undefined
 
 await wrap(author).init(); // this will trigger db call
@@ -57,39 +54,6 @@ You can overcome this issue by using the `Reference` wrapper. It simply wraps th
 
 You can also use `load<K extends keyof T>(prop: K): Promise<T[K]>`, which works like `load()` but returns the specified property.
 
-<Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
-
-```ts title="./entities/Book.ts"
-import { Entity, Ref, ManyToOne, PrimaryKey, ref } from '@mikro-orm/core';
-
-@Entity()
-export class Book {
-
-  @PrimaryKey()
-  id!: number;
-
-  @ManyToOne(() => Author, { ref: true })
-  author: Ref<Author>;
-
-  constructor(author: Author) {
-    this.author = ref(author);
-  }
-
-}
-```
-
-  </TabItem>
-  <TabItem value="ts-morph">
-
 ```ts title="./entities/Book.ts"
 import { Entity, Ref, ManyToOne, PrimaryKey, Reference } from '@mikro-orm/core';
 
@@ -108,27 +72,6 @@ export class Book {
 
 }
 ```
-
-  </TabItem>
-  <TabItem value="entity-schema">
-
-```ts title="./entities/Book.ts"
-export interface IBook {
-  id: number;
-  author: Ref<Author>;
-}
-
-export const Book = new EntitySchema<IBook>({
-  name: 'Book',
-  properties: {
-    id: { type: Number, primary: true },
-    author: { entity: () => Author, ref: true },
-  },
-});
-```
-
-  </TabItem>
-</Tabs>
 
 ```ts
 const book1 = await em.findOne(Book, 1);
@@ -338,7 +281,7 @@ If the reference already exist, you can also re-assign to it via `set()` method:
 book.author.set(new Author(...));
 ```
 
-## What is `Ref` (`IdentifiedReference`)?
+## What is `Ref` type?
 
 `Ref` is an intersection type that adds primary key property to the `Reference` interface. It allows to get the primary key from `Reference` instance directly.
 
@@ -351,88 +294,21 @@ const book = await em.findOne(Book, 1);
 console.log(book.author.id); // ok, returns the PK
 ```
 
-You can also have non-standard primary key:
+## Strict partial loading
+
+The `Loaded` type also respects the partial loading hints (`fields` option). When used, the returned type will only allow accessing selected properties. Primary keys are automatically selected and available on the type level.
 
 ```ts
-author: Ref<Author, 'myPrimaryKey'>;
-
-const book = await em.findOne(Book, 1);
-console.log(book.author.myPrimaryKey); // ok, returns the PK
-```
-
-For MongoDB, define the PK generic type argument as `'id' | '_id'` to access both `string` and `ObjectId` PK values:
-
-<Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
-
-```ts title="./entities/Book.ts"
-@Entity()
-export class Book {
-
-  @PrimaryKey()
-  _id!: ObjectId;
-
-  @SerializedPrimaryKey()
-  id!: string;
-
-  @ManyToOne(() => Author, { ref: true })
-  author!: Ref<Author, 'id' | '_id'>;
-
-}
-```
-
-  </TabItem>
-  <TabItem value="ts-morph">
-
-```ts title="./entities/Book.ts"
-@Entity()
-export class Book {
-
-  @PrimaryKey()
-  _id!: ObjectId;
-
-  @SerializedPrimaryKey()
-  id!: string;
-
-  @ManyToOne()
-  author!: Ref<Author, 'id' | '_id'>;
-
-}
-```
-
-  </TabItem>
-  <TabItem value="entity-schema">
-
-```ts title="./entities/Book.ts"
-export interface IBook {
-  _id: ObjectId;
-  id: string;
-  author: Ref<IAuthor, 'id' | '_id'>;
-}
-
-export const Book = new EntitySchema<IBook>({
-  name: 'Book',
-  properties: {
-    _id: { type: 'ObjectId', primary: true },
-    id: { type: String, serializedPrimaryKey: true },
-    author: { entity: 'Author', ref: true },
-  },
+// book is typed to `Selected<Book, 'author', 'title' | 'author.email'>`
+const book = await em.findOneOrFail(Book, 1, { 
+  fields: ['title', 'author.email'], 
+  populate: ['author'],
 });
-```
 
-  </TabItem>
-</Tabs>
-
-```ts
-const book = await em.findOne(Book, 1);
-console.log(book.author.id); // ok, returns string PK
-console.log(book.author._id); // ok, returns ObjectId PK
+const id = book.id; // ok, PK is selected automatically
+const title = book.title; // ok, title is selected
+const publisher = book.publisher; // fail, not selected
+const author = book.author.id; // ok, PK is selected automatically
+const email = book.author.email; // ok, selected
+const name = book.author.name; // fail, not selected
 ```
