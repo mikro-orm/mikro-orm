@@ -192,7 +192,11 @@ module.exports = {
           },
           {
             from: '/docs/next',
-            to: '/docs/next/installation',
+            to: '/docs/next/guide',
+          },
+          {
+            from: '/docs/next/installation',
+            to: '/docs/next/quick-start',
           },
           {
             from: '/docs/lifecycle-hooks',
