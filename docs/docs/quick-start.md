@@ -198,7 +198,7 @@ export class Book {
 }
 ```
 
-More information can be found in [defining entities section](https://mikro-orm.io/defining-entities/) in docs.
+More information can be found in [defining entities section](defining-entities.md) in docs.
 
 ## EntityManager
 
