@@ -15,7 +15,7 @@
     "@docusaurus/preset-classic": "^2.4.3",
     "@docusaurus/remark-plugin-npm2yarn": "^2.4.3",
     "classnames": "^2.3.2",
-    "docusaurus-plugin-typedoc-api": "^3.0.0",
+    "docusaurus-plugin-typedoc-api": "^4.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "^5.1.3"
