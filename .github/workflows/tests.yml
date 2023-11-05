@@ -20,10 +20,10 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
-      - name: Use Node.js 16
+      - name: Use Node.js 18
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
 
       - name: Enable corepack
         run: |
@@ -54,10 +54,10 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
-      - name: Use Node.js 16
+      - name: Use Node.js 18
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
 
       - name: Enable corepack
         run: |
@@ -88,10 +88,10 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
-      - name: Use Node.js 16
+      - name: Use Node.js 18
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
 
       - name: Enable corepack
         run: |
@@ -191,10 +191,10 @@ jobs:
           fetch-depth: 0 # we need to pull everything to have correct dev version suffix
           ref: master
 
-      - name: Use Node.js 16
+      - name: Use Node.js 18
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
 
       - name: Enable corepack
         run: |
