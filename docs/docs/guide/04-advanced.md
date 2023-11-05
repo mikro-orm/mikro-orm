@@ -416,6 +416,135 @@ Try implementing the tests for those endpoints now!
 
 :::
 
+## Embeddables
+
+Before we move on back to the article endpoint, let's improve our user entity a bit. Say we want to have optional social handles for twitter, facebook or linkedin on the `User` entity. We can use [Embeddables](../embeddables.md) for this, a feature which allows mapping multiple columns to an object.
+
+```ts title='user.entity.ts'
+@Embeddable()
+export class Social {
+
+   @Property()
+   twitter?: string;
+
+   @Property()
+   facebook?: string;
+
+   @Property()
+   linkedin?: string;
+
+}
+
+
+@Entity({ repository: () => UserRepository })
+export class User extends BaseEntity<'bio'> {
+
+  // ...
+
+  // highlight-start
+  @Embedded(() => Social)
+  social?: Social;
+  // highlight-end
+
+}
+```
+
+Try using to CLI to check how this affects the database schema:
+
+```bash
+$ npx mikro-orm-esm schema:update --dump
+
+alter table `user` add column `social_twitter` text null;
+alter table `user` add column `social_facebook` text null;
+alter table `user` add column `social_linkedin` text null;
+```
+
+But maybe it would be a better idea to store the social handles into a JSON column - we can easily achieve that with embeddables too:
+
+```ts
+@Embedded(() => Social, { object: true })
+social?: Social;
+```
+
+And test it again:
+
+```bash
+$ npx mikro-orm-esm schema:update --dump
+
+alter table `user` add column `social` json null;
+```
+
+Yeah, that looks good, let's create a migration for it:
+
+```bash
+$ npx mikro-orm-esm migration:create
+
+Migration20231105213316.ts successfully created
+
+$ npx mikro-orm-esm migration:up
+
+Processing 'Migration20231105213316'
+Applied 'Migration20231105213316'
+Successfully migrated up to the latest version
+```
+
+## Validation via Zod
+
+One more thing in the user module, we need to process this new `User.social` property in our `sign-up` endpoint. 
+
+```ts file='modules/user/routes.ts'
+const user = new User(body.fullName, body.email, body.password);
+user.bio = body.bio ?? '';
+// highlight-next-line
+user.social = body.social as Social;
+await db.em.persist(user).flush();
+```
+
+The code is getting a bit messy, let's use `em.create()` instead to make it clean again:
+
+```diff file='modules/user/routes.ts'
+-const user = new User(body.fullName, body.email, body.password);
+-user.bio = body.bio ?? '';
+-user.social = body.social as Social;
++const user = db.user.create(request.body as RequiredEntityData);
+await db.em.persist(user).flush();
+```
+
+MikroORM will perform some basic validation automatically, but it is generally a good practice to validate the user input explicitly. Let's use [Zod](https://github.com/colinhacks/zod) for it, it will also help with making the TypeScript compiler happy without the type assertion.
+
+```ts file='modules/user/routes.ts'
+const socialSchema = z.object({
+  twitter: z.string().optional(),
+  facebook: z.string().optional(),
+  linkedin: z.string().optional(),
+});
+
+const userSchema = z.object({
+  email: z.string(),
+  fullName: z.string(),
+  password: z.string(),
+  bio: z.string().optional(),
+  social: socialSchema.optional(),
+});
+
+app.post('/sign-up', async request => {
+  const dto = userSchema.parse(request.body);
+
+  if (await db.user.exists(dto.email)) {
+    throw new Error('This email is already registered, maybe you want to sign in?');
+  }
+
+  // thanks to zod, our `dto` is fully typed and passes the `em.create()` checks
+  const user = db.user.create(dto);
+  await db.em.flush(); // no need for explicit `em.persist()` when we use `em.create()`
+
+  // after flush, we have the `user.id` set
+  user.token = app.jwt.sign({ id: user.id });
+
+  return user;
+});
+```
+
 [//]: # (TODO: continue here with the rest of the endpoints for article module)
 
 ## ⛳ Checkpoint 4
