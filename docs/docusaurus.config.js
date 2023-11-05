@@ -105,7 +105,7 @@ module.exports = {
             { label: 'Installation & Usage', to: 'docs/installation' },
             { label: 'Quick Start', href: 'https://github.com/mikro-orm/mikro-orm#-quick-start' },
             { label: 'Migration from v5 to v6', to: 'docs/next/upgrading-v5-to-v6' },
-            { label: 'Version 5.9 docs', to: 'docs/5.9/installation' },
+            { label: 'Version 6.0 docs', to: 'docs/next/guide' },
           ],
         },
         {
