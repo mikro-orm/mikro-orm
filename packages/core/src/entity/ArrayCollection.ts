@@ -430,6 +430,7 @@ export class ArrayCollection<T extends object, O extends object> {
     }
   }
 
+  /** @ignore */
   [inspect.custom](depth: number) {
     const object = { ...this } as Dictionary;
     const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized', '_em', 'readonly'];

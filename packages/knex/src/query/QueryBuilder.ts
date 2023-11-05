@@ -1429,6 +1429,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   /* istanbul ignore next */
+  /** @ignore */
   [inspect.custom](depth: number) {
     const object = { ...this } as Dictionary;
     const hidden = ['metadata', 'driver', 'context', 'platform', 'knex', 'type'];

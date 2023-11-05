@@ -39,6 +39,7 @@ export class ChangeSet<T extends object> {
     return this.serializedPrimaryKey;
   }
 
+  /** @ignore */
   [inspect.custom](depth: number) {
     const object = { ...this } as Dictionary;
     const hidden = ['meta', 'serializedPrimaryKey'];

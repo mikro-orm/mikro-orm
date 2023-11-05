@@ -66,6 +66,7 @@ export class RawQueryFragment {
   }
 
   /* istanbul ignore next */
+  /** @ignore */
   [inspect.custom]() {
     if (this.params) {
       return { sql: this.sql, params: this.params };

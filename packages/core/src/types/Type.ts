@@ -110,6 +110,7 @@ export abstract class Type<JSType = string, DBType = JSType> {
     return false;
   }
 
+  /** @ignore */
   [inspect.custom](depth: number) {
     const object = { ...this };
     const hidden = ['prop', 'platform', 'meta'] as const;

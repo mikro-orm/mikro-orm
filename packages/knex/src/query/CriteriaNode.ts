@@ -120,6 +120,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     return `${path}[pivot]`;
   }
 
+  /** @ignore */
   [inspect.custom]() {
     const o: Dictionary = {};
     (['entityName', 'key', 'index', 'payload'] as const)

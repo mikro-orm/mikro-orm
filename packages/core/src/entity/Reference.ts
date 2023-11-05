@@ -164,6 +164,7 @@ export class Reference<T> {
   }
 
   /* istanbul ignore next */
+  /** @ignore */
   [inspect.custom](depth: number) {
     const object = { ...this };
     const hidden = ['meta'];
@@ -224,6 +225,7 @@ export class ScalarReference<Value> {
   }
 
   /* istanbul ignore next */
+  /** @ignore */
   [inspect.custom]() {
     return this.initialized ? `Ref<${inspect(this.value)}>` : `Ref<?>`;
   }

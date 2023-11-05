@@ -158,6 +158,7 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
   }
 
   /* istanbul ignore next */
+  /** @ignore */
   [inspect.custom]() {
     const type = this.items[0]?.constructor.name;
     const { items, startCursor, endCursor, hasPrevPage, hasNextPage, totalCount, length } = this;

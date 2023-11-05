@@ -242,6 +242,7 @@ export class WrappedEntity<Entity extends object> {
     return Utils.getPrimaryKeyValues(this.entity, this.__meta!.primaryKeys) as Primary<Entity>[];
   }
 
+  /** @ignore */
   [inspect.custom]() {
     return `[WrappedEntity<${this.__meta!.className}>]`;
   }

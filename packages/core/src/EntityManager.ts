@@ -2035,9 +2035,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.getContext(false)._id;
   }
 
-  /**
-   * @internal
-   */
+  /** @ignore */
   [inspect.custom]() {
     return `[EntityManager<${this.id}>]`;
   }
