@@ -7,7 +7,7 @@ slug: /guide
 
 MikroORM is a TypeScript ORM for Node.js based on Data Mapper, Unit of Work, and Identity Map patterns. In this guide, you will learn what those words mean, how to set up a simple API project, how to test it, and many more.
 
-This Getting Started Guide was written as a step-by-step tutorial, accompanied by working StackBlitz examples and a GitHub repository with the final project. It will show you how to create a production-ready application from scratch, all the way down to a docker image you can deploy wherever you want.
+This Getting Started Guide was written as a step-by-step tutorial, accompanied by working StackBlitz examples and a [GitHub repository with the final project](https://github.com/mikro-orm/guide). It will show you how to create a production-ready application from scratch, all the way down to a docker image you can deploy wherever you want.
 
 ## The Stack
 
@@ -69,7 +69,7 @@ And the API routes description:
 
 The code will be structured into self-contained modules: `user`, `article`, and `common` (for shared helpers).
 
-The app will be using Node.js 18, TypeScript 4.8, and we will build it using a modern stack with ECMAScript modules enabled.
+The app will be using Node.js 20, TypeScript 5.2, and we will build it using a modern stack with ECMAScript modules enabled.
 
 ## What will we cover
 
@@ -86,4 +86,3 @@ Here is (an incomplete) list of features you will try going through this guide.
 - virtual entities
 - serialization
 - embeddables
-- ...

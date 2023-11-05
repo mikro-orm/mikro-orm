@@ -219,7 +219,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Installation](installation.md) and [Read Connections](read-connections.md) sections.
+Read more about this in [Installation](quick-start.md) and [Read Connections](read-connections.md) sections.
 
 ### Using short-lived tokens
 

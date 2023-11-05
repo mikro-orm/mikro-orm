@@ -97,7 +97,7 @@ Use `mappedBy`/`inversedBy` instead.
 
 ## SchemaGenerator.generate() is now async
 
-If you used `SchemaGenerator`, now there is CLI tool you can use instead. Learn more in [SchemaGenerator docs](schema-generator.md). To setup CLI, take a look at [installation section](installation.md).
+If you used `SchemaGenerator`, now there is CLI tool you can use instead. Learn more in [SchemaGenerator docs](schema-generator.md). To setup CLI, take a look at [installation section](quick-start.md).
 
 ## New method on NamingStrategy interface
 
