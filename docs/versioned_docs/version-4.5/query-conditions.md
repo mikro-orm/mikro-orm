@@ -79,7 +79,7 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 ### Comparison
 
 | operator     | name             | description                                                         |
-| ------------ | ---------------- | ------------------------------------------------------------------- |
+| ------------ |------------------| ------------------------------------------------------------------- |
 | `$eq`        | equals           | Matches values that are equal to a specified value.                 |
 | `$gt`        | greater          | Matches values that are greater than a specified value.             |
 | `$gte`       | greater or equal | Matches values that are greater than or equal to a specified value. |
@@ -93,7 +93,7 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$ilike`     | ilike            | (postgres only)                                                     |
 | `$overlap`   | &&               | (postgres only)                                                     |
 | `$contains`  | @>               | (postgres only)                                                     |
-| `$contained` | <@               | (postgres only)                                                     |
+| `$contained` | \<@              | (postgres only)                                                     |
 
 ### Logical
 

@@ -2,6 +2,9 @@
 title: Smart Query Conditions
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 When you want to make complex queries, we can easily end up with a lot of boilerplate code full of curly brackets:
 
 ```ts
@@ -49,7 +52,7 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 ### Comparison
 
 | operator     | name             | description                                                                                 |
-| ------------ | ---------------- | ------------------------------------------------------------------------------------------- |
+| ------------ |------------------| ------------------------------------------------------------------------------------------- |
 | `$eq`        | equals           | Matches values that are equal to a specified value.                                         |
 | `$gt`        | greater          | Matches values that are greater than a specified value.                                     |
 | `$gte`       | greater or equal | Matches values that are greater than or equal to a specified value.                         |
@@ -64,7 +67,7 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$ilike`     | ilike            | (postgres only)                                                                             |
 | `$overlap`   | &&               | (postgres only)                                                                             |
 | `$contains`  | @>               | (postgres only)                                                                             |
-| `$contained` | <@               | (postgres only)                                                                             |
+| `$contained` | \<@              | (postgres only)                                                                             |
 
 ### Logical
 
@@ -104,7 +107,7 @@ values={[
 {label: 'ts-morph', value: 'in-query'},
 ]
 }>
-<TabItem value="as-column">
+  <TabItem value="as-column">
 
 ```ts title="./entities/Book.ts"
 import { FullTextType } from '@mikro-orm/postgresql';

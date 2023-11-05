@@ -1,28 +1,28 @@
 {
-  "version-3.6/docs": [
+  "docs": [
     {
       "type": "category",
       "label": "Overview",
       "items": [
         {
           "type": "doc",
-          "id": "version-3.6/installation"
+          "id": "installation"
         },
         {
           "type": "doc",
-          "id": "version-3.6/defining-entities"
+          "id": "defining-entities"
         },
         {
           "type": "doc",
-          "id": "version-3.6/relationships"
+          "id": "relationships"
         },
         {
           "type": "doc",
-          "id": "version-3.6/entity-manager"
+          "id": "entity-manager"
         },
         {
           "type": "doc",
-          "id": "version-3.6/repositories"
+          "id": "repositories"
         }
       ]
     },
@@ -32,43 +32,43 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-3.6/identity-map"
+          "id": "identity-map"
         },
         {
           "type": "doc",
-          "id": "version-3.6/entity-references"
+          "id": "entity-references"
         },
         {
           "type": "doc",
-          "id": "version-3.6/entity-constructors"
+          "id": "entity-constructors"
         },
         {
           "type": "doc",
-          "id": "version-3.6/collections"
+          "id": "collections"
         },
         {
           "type": "doc",
-          "id": "version-3.6/unit-of-work"
+          "id": "unit-of-work"
         },
         {
           "type": "doc",
-          "id": "version-3.6/transactions"
+          "id": "transactions"
         },
         {
           "type": "doc",
-          "id": "version-3.6/cascading"
+          "id": "cascading"
         },
         {
           "type": "doc",
-          "id": "version-3.6/composite-keys"
+          "id": "composite-keys"
         },
         {
           "type": "doc",
-          "id": "version-3.6/deployment"
+          "id": "deployment"
         },
         {
           "type": "doc",
-          "id": "version-3.6/decorators"
+          "id": "decorators"
         }
       ]
     },
@@ -78,79 +78,79 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-3.6/nested-populate"
+          "id": "nested-populate"
         },
         {
           "type": "doc",
-          "id": "version-3.6/query-conditions"
+          "id": "query-conditions"
         },
         {
           "type": "doc",
-          "id": "version-3.6/query-builder"
+          "id": "query-builder"
         },
         {
           "type": "doc",
-          "id": "version-3.6/propagation"
+          "id": "propagation"
         },
         {
           "type": "doc",
-          "id": "version-3.6/serializing"
+          "id": "serializing"
         },
         {
           "type": "doc",
-          "id": "version-3.6/entity-helper"
+          "id": "entity-helper"
         },
         {
           "type": "doc",
-          "id": "version-3.6/property-validation"
+          "id": "property-validation"
         },
         {
           "type": "doc",
-          "id": "version-3.6/lifecycle-hooks"
+          "id": "lifecycle-hooks"
         },
         {
           "type": "doc",
-          "id": "version-3.6/naming-strategy"
+          "id": "naming-strategy"
         },
         {
           "type": "doc",
-          "id": "version-3.6/custom-types"
+          "id": "custom-types"
         },
         {
           "type": "doc",
-          "id": "version-3.6/entity-schema"
+          "id": "entity-schema"
         },
         {
           "type": "doc",
-          "id": "version-3.6/metadata-providers"
+          "id": "metadata-providers"
         },
         {
           "type": "doc",
-          "id": "version-3.6/metadata-cache"
+          "id": "metadata-cache"
         },
         {
           "type": "doc",
-          "id": "version-3.6/debugging"
+          "id": "debugging"
         },
         {
           "type": "doc",
-          "id": "version-3.6/schema-generator"
+          "id": "schema-generator"
         },
         {
           "type": "doc",
-          "id": "version-3.6/entity-generator"
+          "id": "entity-generator"
         },
         {
           "type": "doc",
-          "id": "version-3.6/migrations"
+          "id": "migrations"
         },
         {
           "type": "doc",
-          "id": "version-3.6/read-connections"
+          "id": "read-connections"
         },
         {
           "type": "doc",
-          "id": "version-3.6/configuration"
+          "id": "configuration"
         }
       ]
     },
@@ -160,11 +160,11 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-3.6/usage-with-sql"
+          "id": "usage-with-sql"
         },
         {
           "type": "doc",
-          "id": "version-3.6/usage-with-mongo"
+          "id": "usage-with-mongo"
         }
       ]
     },
@@ -174,23 +174,23 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-3.6/usage-with-nestjs"
+          "id": "usage-with-nestjs"
         },
         {
           "type": "doc",
-          "id": "version-3.6/usage-with-js"
+          "id": "usage-with-js"
         },
         {
           "type": "doc",
-          "id": "version-3.6/custom-driver"
+          "id": "custom-driver"
         },
         {
           "type": "doc",
-          "id": "version-3.6/multiple-schemas"
+          "id": "multiple-schemas"
         },
         {
           "type": "doc",
-          "id": "version-3.6/using-bigint-pks"
+          "id": "using-bigint-pks"
         }
       ]
     },

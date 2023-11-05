@@ -56,7 +56,7 @@ const ret = await em.aggregate(...);
 
 ### How can I add columns to pivot table (M:N relation)
 
-You should model your M:N relation transparently, via 1:m and m:1 properties. More about this can be found in [Composite Keys section](./composite-keys.md/#use-case-3-join-table-with-metadata).
+You should model your M:N relation transparently, via 1:m and m:1 properties. More about this can be found in [Composite Keys section](./composite-keys.md#use-case-3-join-table-with-metadata).
 
 ### You cannot call `em.flush()` from inside lifecycle hook handlers
 
@@ -73,7 +73,7 @@ foo = 'abc';
 
 There are two ways around this:
 
-- Use [TsMorphMetadataProvider](./metadata-providers.md/#tsmorphmetadataprovider)
+- Use [TsMorphMetadataProvider](./metadata-providers.md#tsmorphmetadataprovider)
 - Specify the type explicitly:
 
 ```ts
