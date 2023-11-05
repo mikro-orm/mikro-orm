@@ -24,6 +24,7 @@ import {
   PopulateHint,
   ref,
   raw,
+  ForeignKeyConstraintViolationException,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
@@ -1982,6 +1983,8 @@ describe('EntityManagerPostgre', () => {
   test('exceptions', async () => {
     const driver = orm.em.getDriver();
     await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
+    await expect(orm.em.upsert(Author2, { name: 'author', email: 'email', favouriteAuthor: 123 })).rejects.toThrow(ForeignKeyConstraintViolationException);
+    await expect(orm.em.upsertMany(Author2, [{ name: 'author', email: 'email', favouriteAuthor: 123 }])).rejects.toThrow(ForeignKeyConstraintViolationException);
     await expect(driver.nativeInsert(Author2.name, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
     await expect(driver.nativeInsert(Author2.name, {})).rejects.toThrow(NotNullConstraintViolationException);
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);

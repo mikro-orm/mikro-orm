@@ -558,7 +558,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         qb.ignore();
       }
 
-      return qb.execute('run', false);
+      return this.rethrow(qb.execute('run', false));
     }
 
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
