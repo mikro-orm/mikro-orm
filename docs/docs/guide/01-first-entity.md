@@ -76,7 +76,6 @@ For ESM support to work, we need to set `module` and `moduleResolution` to `Node
   "compilerOptions": {
     "module": "Node16",
     "target": "ES2022",
-    "moduleResolution": "Node16",
     "strict": true,
     "outDir": "dist",
     "declaration": true,
