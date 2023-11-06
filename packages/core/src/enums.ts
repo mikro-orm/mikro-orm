@@ -11,8 +11,8 @@ export enum FlushMode {
 }
 
 export enum PopulateHint {
-  INFER,
-  ALL,
+  INFER = 'infer',
+  ALL = 'all',
 }
 
 export enum GroupOperator {

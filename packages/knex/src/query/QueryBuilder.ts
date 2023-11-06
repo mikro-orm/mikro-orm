@@ -90,7 +90,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /** @internal */
   _populate: PopulateOptions<T>[] = [];
   /** @internal */
-  _populateWhere?: ObjectQuery<T> | PopulateHint;
+  _populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
   /** @internal */
   _populateMap: Dictionary<string> = {};
 
@@ -447,7 +447,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /**
    * @internal
    */
-  populate(populate: PopulateOptions<T>[], populateWhere?: ObjectQuery<T> | PopulateHint): this {
+  populate(populate: PopulateOptions<T>[], populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`): this {
     this.ensureNotFinalized();
     this._populate = populate;
     this._populateWhere = populateWhere;

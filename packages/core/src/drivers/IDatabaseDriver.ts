@@ -97,7 +97,7 @@ export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrder
 export interface FindOptions<T, P extends string = never, F extends string = never> {
   where?: FilterQuery<T>;
   populate?: readonly AutoPath<T, P>[] | boolean;
-  populateWhere?: ObjectQuery<T> | PopulateHint;
+  populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
   fields?: readonly AutoPath<T, F, '*'>[];
   orderBy?: OrderDefinition<T>;
   cache?: boolean | number | [string, number];
@@ -122,8 +122,8 @@ export interface FindOptions<T, P extends string = never, F extends string = nev
   groupBy?: string | string[];
   having?: QBFilterQuery<T>;
   /** sql only */
-  strategy?: LoadStrategy | 'select-in' | 'joined';
-  flushMode?: FlushMode | 'commit' | 'auto' | 'always';
+  strategy?: LoadStrategy | `${LoadStrategy}`;
+  flushMode?: FlushMode | `${FlushMode}`;
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   /** sql only */
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;

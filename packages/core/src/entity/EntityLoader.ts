@@ -25,7 +25,7 @@ import type { LoggingOptions } from '../logging/Logger';
 
 export type EntityLoaderOptions<Entity, Hint extends string = never, Fields extends string = never> = {
   where?: FilterQuery<Entity>;
-  populateWhere?: PopulateHint;
+  populateWhere?: PopulateHint | `${PopulateHint}`;
   fields?: readonly EntityField<Entity, Fields>[];
   orderBy?: QueryOrderMap<Entity> | QueryOrderMap<Entity>[];
   refresh?: boolean;
