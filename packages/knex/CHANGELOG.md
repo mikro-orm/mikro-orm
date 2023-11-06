@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.3](https://github.com/mikro-orm/mikro-orm/compare/v5.9.2...v5.9.3) (2023-11-06)
+
+
+### Bug Fixes
+
+* **core:** return `DriverException` from `em.upsertMany()` ([1ebfbdd](https://github.com/mikro-orm/mikro-orm/commit/1ebfbdd3eaec3910c44eb5c6d4ef8d25eae6031b)), closes [#4897](https://github.com/mikro-orm/mikro-orm/issues/4897)
+
+
+
+
+
 ## [5.9.2](https://github.com/mikro-orm/mikro-orm/compare/v5.9.1...v5.9.2) (2023-11-02)
 
 

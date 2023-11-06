@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.3](https://github.com/mikro-orm/mikro-orm/compare/v5.9.2...v5.9.3) (2023-11-06)
+
+
+### Bug Fixes
+
+* **core:** only check the same entity type when detecting early update/delete ([fef7a1b](https://github.com/mikro-orm/mikro-orm/commit/fef7a1b5f0dc6a013134ae43d7b2de32418ec26c)), closes [#4895](https://github.com/mikro-orm/mikro-orm/issues/4895)
+
+
+### Features
+
+* **core:** fix populating relations with cycles via select-in strategy ([d0b35da](https://github.com/mikro-orm/mikro-orm/commit/d0b35da672bb8f367346bbb2f2b15a6ab851485e)), closes [#4899](https://github.com/mikro-orm/mikro-orm/issues/4899)
+
+
+
+
+
 ## [5.9.2](https://github.com/mikro-orm/mikro-orm/compare/v5.9.1...v5.9.2) (2023-11-02)
 
 
