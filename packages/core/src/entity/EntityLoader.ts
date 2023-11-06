@@ -65,12 +65,12 @@ export class EntityLoader {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
-    entities = entities.filter(e => !visited.has(e));
-    entities.forEach(e => visited.add(e));
     entities.forEach(e => helper(e).__serializationContext.populate ??= populate as PopulateOptions<T>[]);
 
     for (const pop of populate) {
+      entities.forEach(e => visited.add(e));
       await this.populateField<T>(entityName, entities, pop, options as Required<EntityLoaderOptions<T>>);
+      entities.forEach(e => visited.delete(e));
     }
   }
 
@@ -338,8 +338,6 @@ export class EntityLoader {
       }
     }
 
-    const filtered = Utils.unique(children);
-
     if (populated.length === 0 && !populate.children) {
       return;
     }
@@ -349,6 +347,7 @@ export class EntityLoader {
       .filter(orderBy => Utils.isObject(orderBy[prop.name as string]))
       .map(orderBy => orderBy[prop.name as string]);
     const { refresh, filters, ignoreLazyScalarProperties, populateWhere, connectionType } = options;
+    const filtered = Utils.unique(children.filter(e => !(options as Dictionary).visited.has(e)));
 
     await this.populate<T>(prop.type, filtered, populate.children ?? populate.all!, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<T>,
