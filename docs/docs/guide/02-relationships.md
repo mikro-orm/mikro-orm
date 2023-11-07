@@ -663,7 +663,7 @@ Refer to the [Collections section](https://mikro-orm.io/docs/collections) in the
 
 Time to improve our password hashing. Let's use the `argon2` package, which provides `hash` and `verify` functions. They are both async, so we cannot use them inside the entity constructor like before. Instead, we need to use the lifecycle hooks, namely `@BeforeCreate()` and `@BeforeUpdate()`.
 
-> Don't forget to install the `argon2` package via `npm i argon2`.
+> Don't forget to install the `argon2` package via `npm install argon2`.
 
 The plan is following:
 
