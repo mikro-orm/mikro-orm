@@ -16,8 +16,6 @@ createdAt = new Date();
 updatedAt = new Date();
 ```
 
-> If you use the default `reflect-metadata` provider, you need to provide explicit type annotation, e.g. `createdAt: Date = new Date()`. With `ts-morph` we get correct type inference even without it.
-
 The `onUpdate` option here will be executed during the `flush` operation if the ORM detects the entity was updated. For create query, we depend on the property initializers - we already said that the ORM will never call your entity constructor when creating managed entities, so it is safe to use it like this.
 
 ## Custom base entity

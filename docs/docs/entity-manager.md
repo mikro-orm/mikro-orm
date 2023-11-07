@@ -570,21 +570,9 @@ await em.flush(); // calling flush have no effect, as the entity is not managed
 
 > Keep in mind that this can also have [negative effect on the performance](https://stackoverflow.com/questions/9259480/entity-framework-mergeoption-notracking-bad-performance).
 
-## Type of Fetched Entities
-
-Both `em.find` and `em.findOne()` methods have generic return types. All of following examples are equal and will let typescript correctly infer the entity type:
-
-```ts
-const author1 = await em.findOne<Author>(Author.name, 123);
-const author2 = await em.findOne<Author>('Author', 123);
-const author3 = await em.findOne(Author, 123);
-```
-
-As the last one is the least verbose, it should be preferred.
-
 ## Entity Repositories
 
-Although we can use `EntityManager` directly, much more convenient way is to use [`EntityRepository` instead](https://mikro-orm.io/repositories/). You can register our repositories in dependency injection container like [InversifyJS](http://inversify.io/) so we do not need to get them from `EntityManager` each time.
+Although we can use `EntityManager` directly, a more convenient way is to use [`EntityRepository` instead](https://mikro-orm.io/repositories/). You can register your repositories in dependency injection container like [InversifyJS](http://inversify.io/) so we do not need to get them from `EntityManager` each time.
 
 For more examples, take a look at [`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts) or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mysql.test.ts).
 

@@ -131,10 +131,10 @@ export class Author {
   id!: string;
 
   @Property()
-  createdAt: Date = new Date();
+  createdAt = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt: Date = new Date();
+  updatedAt = new Date();
 
   @Property()
   name!: string;
@@ -346,13 +346,13 @@ values={[
 
 ```ts title="./entities/Author.ts"
 @Property()
-foo: number = 1;
+foo = 1;
 
 @Property()
-bar: string = 'abc';
+bar = 'abc';
 
 @Property()
-baz: Date = new Date();
+baz = new Date();
 ```
 
   </TabItem>
@@ -640,7 +640,7 @@ enum Role {
 }
 
 @Enum({ items: () => Role, array: true, default: [Role.User] })
-roles: Role[] = [Role.User];
+roles = [Role.User];
 ```
 
   </TabItem>
@@ -1253,13 +1253,13 @@ import { v4 } from 'uuid';
 export abstract class CustomBaseEntity {
 
   @PrimaryKey()
-  uuid: string = v4();
+  uuid = v4();
 
   @Property()
-  createdAt: Date = new Date();
+  createdAt = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt: Date = new Date();
+  updatedAt = new Date();
 
 }
 ```
@@ -1572,7 +1572,7 @@ import { v4 } from 'uuid';
 export class Book {
 
   @PrimaryKey()
-  uuid: string = v4();
+  uuid = v4();
 
   @Property()
   title!: string;

@@ -60,6 +60,8 @@ While `TsMorphMetadataProvider` do not suffer from any of the following problems
 
 #### Explicit types
 
+> Since v6, the type is inferred automatically based on the runtime default value, as long as it is possible to instantiate the entity without passing any constructor arguments. As long as you keep your constructors aware of that, this limitation does not apply.
+
 Type inference is not supported, we need to always explicitly specify the type:
 
 ```ts

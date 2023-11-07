@@ -38,6 +38,12 @@ You can execute queries in the migration via `Migration.execute()` method, which
 
 While the purpose of migrations is mainly to alter your SQL schema, you can as well use them to modify your data, either by using `this.execute()`, or through an `EntityManager`:
 
+:::warning
+
+Using the `EntityManager` in migrations is possible, but discouraged, as it can lead to errors when your metadata change over time, since this will depend on your currently checked out app state, not on the time when the migration was generated. You should prefer using raw queries in your migrations.
+
+:::
+
 ```ts
 import { Migration } from '@mikro-orm/migrations';
 import { User } from '../entities/User';

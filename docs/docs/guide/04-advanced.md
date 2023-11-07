@@ -672,11 +672,81 @@ You could also use `em.nativeDelete()` or `QueryBuilder` to execute a `DELETE` q
 await db.article.nativeDelete(+params.id);
 ```
 
-:::info Note about batching
+### Batch inserts, updates and deletes
 
 While we do not have such a use case in this guide, a huge benefit of using the `EntityManager` with Unit of Work approach is automatic batching - all the `INSERT`, `UPDATE` and `DELETE` queries will be batched automatically into a single query per entity.
 
-:::
+#### Insert
+
+```ts
+for (let i = 1; i <= 5; i++) {
+  const u = new User(`Peter ${i}`, `peter+${i}@foo.bar`);
+  em.persist(u);
+}
+
+await em.flush();
+```
+
+```sql
+insert into `user` (`name`, `email`) values
+  ('Peter 1', 'peter+1@foo.bar'),
+  ('Peter 2', 'peter+2@foo.bar'),
+  ('Peter 3', 'peter+3@foo.bar'),
+  ('Peter 4', 'peter+4@foo.bar'),
+  ('Peter 5', 'peter+5@foo.bar');
+```
+
+#### Update
+
+```ts
+const users = await em.find(User, {});
+
+for (const user of users) {
+  user.name += ' changed!';
+}
+
+await em.flush();
+```
+
+```sql
+update `user` set
+  `name` = case
+    when (`id` = 1) then 'Peter 1 changed!'
+    when (`id` = 2) then 'Peter 2 changed!'
+    when (`id` = 3) then 'Peter 3 changed!'
+    when (`id` = 4) then 'Peter 4 changed!'
+    when (`id` = 5) then 'Peter 5 changed!'
+    else `priority` end
+  where `id` in (1, 2, 3, 4, 5);
+```
+
+#### Delete
+
+```ts
+const users = await em.find(User, {});
+
+em.remove(users);
+
+await em.flush();
+```
+
+```sql
+delete from `user` where `id` in (1, 2, 3, 4, 5);
+```
+
+### Disabling change tracking
+
+Sometimes you might want to disable identity map and change set tracking for some query. This is possible via `disableIdentityMap` option. Behind the scenes, it will create new context, load the entities inside that, and clear it afterward, so the main identity map will stay clean, but the entities returned from a single find call will be still interconnected.
+
+> As opposed to _managed_ entities, such entities are called _detached_. To be able to work with them, you first need to merge them via `em.merge()`.
+
+```ts
+const user = await em.findOneOrFail(User, { email: 'foo@bar.baz' }, {
+  disableIdentityMap: true,
+});
+user.name = 'changed';
+await em.flush(); // calling flush have no effect, as the entity is not managed
+```
 
 ## Virtual entities
 
