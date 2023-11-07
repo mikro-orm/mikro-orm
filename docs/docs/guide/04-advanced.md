@@ -648,7 +648,6 @@ export function verifyArticlePermissions(user: User, article: Article): void {
 There are several approaches to removing an entity. In this case, we first load the entity, if it does not exist, we return `notFount: true` in the response, if it does, we remove it via `em.remove()`, which marks the entity for removal on the following `flush()` call.
 
 ```ts title='modules/article/routes.ts'
-// delete article
 app.delete('/:id', async request => {
   const user = getUserFromToken(request);
   const params = request.params as { id: string };
@@ -734,18 +733,18 @@ await em.flush();
 delete from `user` where `id` in (1, 2, 3, 4, 5);
 ```
 
-### Disabling change tracking
+## Disabling change tracking
 
 Sometimes you might want to disable identity map and change set tracking for some query. This is possible via `disableIdentityMap` option. Behind the scenes, it will create new context, load the entities inside that, and clear it afterward, so the main identity map will stay clean, but the entities returned from a single find call will be still interconnected.
 
 > As opposed to _managed_ entities, such entities are called _detached_. To be able to work with them, you first need to merge them via `em.merge()`.
 
 ```ts
-const user = await em.findOneOrFail(User, { email: 'foo@bar.baz' }, {
+const user = await db.user.findOneOrFail({ email: 'foo@bar.baz' }, {
   disableIdentityMap: true,
 });
 user.name = 'changed';
-await em.flush(); // calling flush have no effect, as the entity is not managed
+await db.em.flush(); // calling flush have no effect, as the entity is not managed
 ```
 
 ## Virtual entities
