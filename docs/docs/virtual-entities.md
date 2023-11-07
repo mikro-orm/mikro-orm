@@ -5,7 +5,7 @@ title: Virtual Entities
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-Virtual entities don't represent any database table. Instead, they dynamically resolve to an SQL query (or an aggregation in mongo), allowing to map any kind of results onto an entity. Such entities are mean for read purposes, they don't have a primary key and therefore cannot be tracked for changes. In a sense they are similar to (currently unsupported) database views.
+Virtual entities don't represent any database table. Instead, they dynamically resolve to an SQL query (or an aggregation in MongoDB), allowing to map any kind of results onto an entity. Such entities are meant for read purposes, they don't have a primary key and therefore cannot be tracked for changes. In a sense they are similar to (currently unsupported) database views.
 
 To define a virtual entity, provide an `expression`, either as a string (SQL query):
 

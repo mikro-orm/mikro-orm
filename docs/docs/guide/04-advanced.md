@@ -492,7 +492,7 @@ Successfully migrated up to the latest version
 
 One more thing in the user module, we need to process this new `User.social` property in our `sign-up` endpoint. 
 
-```ts file='modules/user/routes.ts'
+```ts title='modules/user/routes.ts'
 const user = new User(body.fullName, body.email, body.password);
 user.bio = body.bio ?? '';
 // highlight-next-line
@@ -512,7 +512,7 @@ await db.em.persist(user).flush();
 
 MikroORM will perform some basic validation automatically, but it is generally a good practice to validate the user input explicitly. Let's use [Zod](https://github.com/colinhacks/zod) for it, it will also help with making the TypeScript compiler happy without the type assertion.
 
-```ts file='modules/user/routes.ts'
+```ts title='modules/user/routes.ts'
 const socialSchema = z.object({
   twitter: z.string().optional(),
   facebook: z.string().optional(),
@@ -545,22 +545,38 @@ app.post('/sign-up', async request => {
 });
 ```
 
+:::info
+
+This example only shows a very basic validation with Zod, which mirrors what MikroORM already handles - it will validate required properties and their types automatically. Check the [Property Validation](../property-validation.md) section for more details.
+
+:::
+
 ## Rest of the Article endpoints
 
 Let's implement the rest of the article endpoints. We will need a public one for the article detail, one for posting comments, one for updating the article and one for deleting it. The last two will be only allowed for the user who created given article.
 
-With the information you already have, implementing those endpoints should be pretty straightforward:
+With the information you already have, implementing those endpoints should be pretty straightforward. The detail endpoint is really simple, all it does is using the `findOneOrFail()` method to get the `Article` based on its `slug`.
 
-```ts file='modules/article/routes.ts'
-// article detail
+:::warning
+
+You should validate the request parameters before working with them! It's left out on purpose as it is outside of scope of this guide.
+
+:::
+
+```ts title='modules/article/routes.ts'
 app.get('/:slug', async request => {
   const { slug } = request.params as { slug: string };
   return db.article.findOneOrFail({ slug }, {
     populate: ['author', 'comments.author', 'text'],
   });
 });
+```
 
-// create article
+### Creating entities
+
+Then we define the endpoint for creating comments - here we use the `getUserFromToken` helper to access the current user based on the token, try to find the article (again based on the `slug` property) and create the comment entity. Since we use `em.create()` here, we don't have to `em.persist()` the new entity, as it happens automatically this way.
+
+```ts title='modules/article/routes.ts'
 app.post('/:slug/comment', async request => {
   const { slug, text } = request.params as { slug: string; text: string };
   const author = getUserFromToken(request);
@@ -577,8 +593,11 @@ app.post('/:slug/comment', async request => {
 
   return comment;
 });
+```
 
-// create article
+Creating a new article is very similar.
+
+```ts title='modules/article/routes.ts'
 app.post('/', async request => {
   const { title, description, text } = request.body as { title: string; description: string; text: string };
   const author = getUserFromToken(request);
@@ -589,12 +608,19 @@ app.post('/', async request => {
     author,
   });
 
-  await db.em.persist(article).flush();
+  await db.em.flush();
 
   return article;
 });
+```
 
-// update article
+### Updating entities
+
+For updating we use `wrap(article).assign()`, a helper method which will map the data to entity graph correctly. It will transform foreign keys into entity references automatically.
+
+> Alternatively, you can use `em.assign()`, which will also work for not managed entities.
+
+```ts title='modules/article/routes.ts'
 app.patch('/:id', async request => {
   const user = getUserFromToken(request);
   const params = request.params as { id: string };
@@ -605,7 +631,23 @@ app.patch('/:id', async request => {
 
   return article;
 });
+```
 
+We also validate that only the author of the article can change it:
+
+```ts title='modules/common/utils.ts'
+export function verifyArticlePermissions(user: User, article: Article): void {
+  if (article.author.id !== user.id) {
+    throw new Error('You are not the author of this article!');
+  }
+}
+```
+
+### Removing entities
+
+There are several approaches to removing an entity. In this case, we first load the entity, if it does not exist, we return `notFount: true` in the response, if it does, we remove it via `em.remove()`, which marks the entity for removal on the following `flush()` call.
+
+```ts title='modules/article/routes.ts'
 // delete article
 app.delete('/:id', async request => {
   const user = getUserFromToken(request);
@@ -624,17 +666,262 @@ app.delete('/:id', async request => {
 });
 ```
 
-And the new validation method:
+You could also use `em.nativeDelete()` or `QueryBuilder` to execute a `DELETE` query.
 
-```ts file='modules/common/utils.ts'
-export function verifyArticlePermissions(user: User, article: Article): void {
-  if (article.author.id !== user.id) {
-    throw new Error('You are not the author of this article!');
+```ts
+await db.article.nativeDelete(+params.id);
+```
+
+:::info Note about batching
+
+While we do not have such a use case in this guide, a huge benefit of using the `EntityManager` with Unit of Work approach is automatic batching - all the `INSERT`, `UPDATE` and `DELETE` queries will be batched automatically into a single query per entity.
+
+:::
+
+## Virtual entities
+
+Let's now improve our first article endpoint - we used `em.findAndCount()` to get paginated results easily, but what if we want to customize the response? One way to do that are [Virtual entities](../virtual-entities.md). They don't represent any database table, instead, they dynamically resolve to an SQL query, allowing you to map any kind of results onto an entity. 
+
+:::info
+
+Virtual entities are meant for read purposes, they don't have a primary key and therefore cannot be tracked for changes. In a way they are similar to native database views - and you can use them to proxy your native database views to ORM entities too.
+
+:::
+
+To define a virtual entity, provide an `expression` in the `@Entity()` decorator options. In can be a string (SQL query) or a callback returning an SQL query or a `QueryBuilder` instance. Only scalar properties (`@Property()`) are supported.
+
+```ts title='modules/article/article-listing.entity.ts'
+import { Entity, EntityManager, Property } from '@mikro-orm/sqlite';
+import { Article } from './article.entity.js';
+
+@Entity({
+  expression: (em: EntityManager) => {
+    return em.getRepository(Article).listArticlesQuery();
+  },
+})
+export class ArticleListing {
+
+  @Property()
+  slug!: string;
+
+  @Property()
+  title!: string;
+
+  @Property()
+  description!: string;
+
+  @Property()
+  tags!: string[];
+
+  @Property()
+  author!: number;
+
+  @Property()
+  authorName!: string;
+
+  @Property()
+  totalComments!: number;
+
+}
+```
+
+Now create a custom repository for the `Article` entity too, and put two methods inside:
+
+```ts title='modules/article/article.repository.ts'
+import { FindOptions, sql, EntityRepository } from '@mikro-orm/sqlite';
+import { Article } from './article.entity.js';
+import { ArticleListing } from './article-listing.entity.js';
+
+// extending the EntityRepository exported from driver package, so we can access things like the QB factory
+export class ArticleRepository extends EntityRepository<Article> {
+
+  listArticlesQuery() {
+    // just a placeholder for now 
+    return this.createQueryBuilder('a');
+  }
+
+  async listArticles(options: FindOptions<ArticleListing>) {
+    const [items, total] = await this.em.findAndCount(ArticleListing, {}, options);
+    return { items, total };
+  }
+
+}
+```
+
+And use this new `listArticles()` method in the endpoint:
+
+```ts title='modules/article/routes.ts'
+// list articles
+app.get('/', async request => {
+  const { limit, offset } = request.query as { limit?: number; offset?: number };
+
+  // highlight-next-line
+  const { items, total } = await db.article.listArticles({
+    limit, offset,
+  });
+
+  return { items, total };
+});
+```
+
+## Using QueryBuilder
+
+The `listArticlesQuery()` repository method will be a bit more complex. We want to load the articles together with the number of corresponding comments. To do that, we can use the `QueryBuilder` with a sub-query which will load the comments count for each selected article. Similarly, we want to load all the tags added to the article. To get the author's name, we can use a simple `JOIN`.
+
+> You can find more details in the [Using Query Builder](../query-builder.md) section.
+
+Let's first do the easy things - we want to select `slug`, `title`, `description` and `author` columns:
+
+```ts title='modules/article/article.repository.ts'
+return this.createQueryBuilder('a')
+  .select(['slug', 'title', 'description', 'author']);
+```
+
+Now let's join the `Author` entity and select the author's name. To have a custom alias on the column, we will use `sql.ref()` helper:
+
+```ts title='modules/article/article.repository.ts'
+return this.createQueryBuilder('a')
+  .select(['slug', 'title', 'description', 'author'])
+  .addSelect(sql.ref('u.full_name').as('authorName'))
+  .join('author', 'u')
+```
+
+And now the sub-queries - we will need two of them, both will use the same `sql.ref()` helper (this time without aliasing) and the `QueryBuilder.as()` method to alias the whole sub-query.
+
+```ts title='modules/article/article.repository.ts'
+import { FindOptions, sql, EntityRepository } from '@mikro-orm/sqlite';
+import { Article } from './article.entity.js';
+import { ArticleListing } from './article-listing.entity.js';
+import { Comment } from './comment.entity.js';
+
+export class ArticleRepository extends EntityRepository<Article> {
+
+  // ...
+  
+  listArticlesQuery() {
+    // sub-query for total number of comments
+    const totalComments = this.em.createQueryBuilder(Comment)
+      .count()
+      .where({ article: sql.ref('a.id') })
+      // by calling `qb.as()` we convert the QB instance to Knex instance
+      .as('totalComments'); 
+
+    // sub-query for all used tags
+    const usedTags = this.em.createQueryBuilder(Article, 'aa')
+      // we need to mark raw query fragment with `sql` helper
+      // otherwise it would be escaped
+      .select(sql`group_concat(distinct t.name)`) 
+      .join('aa.tags', 't')
+      .where({ 'aa.id': sql.ref('a.id') })
+      .groupBy('aa.author')
+      .as('tags');
+
+    // build final query
+    return this.createQueryBuilder('a')
+      .select(['slug', 'title', 'description', 'author'])
+      .addSelect(sql.ref('u.full_name').as('authorName'))
+      .join('author', 'u')
+      .addSelect([totalComments, usedTags]);
+  }
+
+}
+```
+
+Note how we used the `sql` helper function as a tagged template when adding the `group_concat` expression to the select clause. Read more about the support for [raw queries here](../raw-queries.md).
+
+## Updating the tests
+
+We just changed the shape of our API response, which is something we test already, so let's fix our broken tests. First, create some testing comments in our `TestSeeder`:
+
+```diff title='seeders/TestSeeder.ts'
+export class TestSeeder extends Seeder {
+  async run(em: EntityManager): Promise<void> {
+-   em.create(User, {
++   const author = em.create(User, {
+      fullName: "Foo Bar",
+      email: "foo@bar.com",
+      // ...
+    });
+
++   em.assign(author.articles[0], {
++     comments: [
++       { author, text: `random comment ${Math.random()}` },
++       { author, text: `random comment ${Math.random()}` },
++     ],
++   });
++
++   em.assign(author.articles[1], {
++     comments: [{ author, text: `random comment ${Math.random()}` }],
++   });
++
++   em.assign(author.articles[2], {
++     comments: [
++       { author, text: `random comment ${Math.random()}` },
++       { author, text: `random comment ${Math.random()}` },
++       { author, text: `random comment ${Math.random()}` },
++     ],
++   });
   }
 }
 ```
 
-[//]: # (TODO: continue here with the rest of the endpoints for article module)
+```diff title='test/article.test.ts'
+expect(res.json()).toMatchObject({
+  items: [
+-   { author: 1, slug: "title-13", title: "title 1/3" },
+-   { author: 1, slug: "title-23", title: "title 2/3" },
+-   { author: 1, slug: "title-33", title: "title 3/3" },
++   {
++     slug: expect.any(String),
++     title: 'title 1/3',
++     description: 'desc 1/3',
++     tags: ['foo1', 'foo2'],
++     authorName: 'Foo Bar',
++     totalComments: 2,
++   },
++   {
++     slug: expect.any(String),
++     title: 'title 2/3',
++     description: 'desc 2/3',
++     tags: ['foo2'],
++     authorName: 'Foo Bar',
++     totalComments: 1,
++   },
++   {
++     slug: expect.any(String),
++     title: 'title 3/3',
++     description: 'desc 3/3',
++     tags: ['foo2', 'foo3'],
++     authorName: 'Foo Bar',
++     totalComments: 3,
++   },
+  ],
+  total: 3,
+});
+```
+
+## Result cache
+
+MikroORM has a simple [result caching](../caching.md) mechanism, all you need to do is add `cache` option to your `em.find()` options. The value can be one of:
+
+- `true` for default expiration (configurable globally, defaults to 1 second).
+- A number for explicit expiration (in milliseconds).
+- A tuple with first element being the `cacheKey` (`string`) and the second element the expiration (`number`). You can use the cacheKey to clear the cache via `em.clearCache()`.
+
+```ts title='modules/article/routes.ts'
+// list articles
+app.get('/', async request => {
+  const { limit, offset } = request.query as { limit?: number; offset?: number };
+
+  const { items, total } = await db.article.listArticles({
+    limit, offset,
+    // highlight-next-line
+    cache: 5_000, // 5 seconds
+  });
+
+  return { items, total };
+});
+```
 
 ## ⛳ Checkpoint 4
 

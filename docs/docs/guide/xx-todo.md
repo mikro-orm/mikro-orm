@@ -13,11 +13,11 @@
 - [x] relations - add more entities, add relations between them
 - [x] serialization - lazy properties for article.text
 - [x] note about unit tests and required MikroORM.init method
-- [ ] auth - login/register, middleware, create article
-- [ ] custom repository - wrapping the code from previous section
-- [ ] virtual entities - article listing, using QB, also mention findAndCount
+- [x] auth - login/register, middleware, create article
+- [x] custom repository - wrapping the code from previous section
+- [x] virtual entities - article listing, using QB, also mention findAndCount
 - [ ] soft delete - show on comments
-- [ ] embeddables on user profile (social links)
+- [x] embeddables on user profile (social links)
 - [ ] mention QB getResult, execute and awaiting the QB directly
 
 ## Things to showcase
@@ -43,18 +43,17 @@
 - [x] explain constructor usage invariant
 - [ ] orphan removal
 - [ ] add note about existing database and entity generator
-- [ ] virtual `User.token` property
-- [ ] get endpoint, 404 via config, note about local override
+- [x] virtual `User.token` property
+- [x] get endpoint, 404 via config, note about local override
 - [ ] cascading and propagation
 - [ ] default values
 - [ ] repositories with custom methods, maybe note about base entity repo
-- [ ] using QB
+- [x] using QB
 - [ ] em.create() and that it's required for using interface only entities
-- [ ] using virtual entities
+- [x] using virtual entities
 - [ ] soft delete via `onFlush` event
 - [ ] find a way to have the reflection package as dev dependency without much hustle, or at least add a bonus section about this and deployment/docker
 - [ ] example how to go about scripts (forking or allowing global context) and CRON jobs (request context decorator or explicit helper usage)
 
 TODO:
 - mention temp folder for ts-morph and metadata caching + gitignore
-- maybe move the repository section higher?
