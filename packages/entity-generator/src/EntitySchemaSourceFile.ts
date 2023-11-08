@@ -92,10 +92,10 @@ export class EntitySchemaSourceFile extends SourceFile {
     ret += `  properties: {\n`;
     Object.values(this.meta.properties).forEach(prop => {
       const options = this.getPropertyOptions(prop);
-      let def = '{ ' + Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ') + ' }';
+      let def = '{ ' + Object.entries(options).map(([opt, val]) => `${opt}: ${Array.isArray(val) ? `[${val.join(', ')}]` : val}`).join(', ') + ' }';
 
       if (def.length > 80) {
-        def = '{\n' + Object.entries(options).map(([opt, val]) => `      ${opt}: ${val}`).join(',\n') + ',\n    }';
+        def = '{\n' + Object.entries(options).map(([opt, val]) => `      ${opt}: ${Array.isArray(val) ? `[\n        ${val.join(',\n        ')}\n      ]` : val}`).join(',\n') + ',\n    }';
       }
       //
       ret += `    ${prop.name}: ${def},\n`;

@@ -204,7 +204,7 @@ export class SourceFile {
       return `${decorator}()\n`;
     }
 
-    return `${decorator}({ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} })\n`;
+    return `${decorator}({ ${Object.entries(options).map(([opt, val]) => `${opt}: ${Array.isArray(val) ? `[${val.join(', ')}]` : val}`).join(', ')} })\n`;
   }
 
   protected getPropertyIndexes(prop: EntityProperty, options: Dictionary): string[] {
@@ -366,8 +366,14 @@ export class SourceFile {
       return;
     }
 
-    if (prop.fieldNames[0] !== this.namingStrategy.joinKeyColumnName(prop.name, prop.referencedColumnNames[0])) {
-      options.fieldName = this.quote(prop.fieldNames[0]);
+    if (prop.fieldNames.length === 1) {
+      if (prop.fieldNames[0] !== this.namingStrategy.joinKeyColumnName(prop.name, prop.referencedColumnNames[0])) {
+        options.fieldName = this.quote(prop.fieldNames[0]);
+      }
+    } else {
+      if (prop.fieldNames.length > 1 && prop.fieldNames.some((fieldName, i) => fieldName !== this.namingStrategy.joinKeyColumnName(prop.name, prop.referencedColumnNames[i]))) {
+        options.fieldNames = prop.fieldNames.map(fieldName => this.quote(fieldName));
+      }
     }
 
     if (!['no action', 'restrict'].includes(prop.updateRule!.toLowerCase())) {
