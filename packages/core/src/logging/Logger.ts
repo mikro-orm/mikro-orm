@@ -39,6 +39,7 @@ export interface LogContext extends Dictionary {
   params?: unknown[];
   took?: number;
   results?: number;
+  affected?: number;
   level?: 'info' | 'warning' | 'error';
   enabled?: boolean;
   debugMode?: LoggerNamespace[];

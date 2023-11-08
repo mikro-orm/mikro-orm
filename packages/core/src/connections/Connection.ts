@@ -1,5 +1,5 @@
 import { URL } from 'url';
-import type { Configuration, ConnectionOptions, DynamicPassword } from '../utils';
+import { type Configuration, type ConnectionOptions, type DynamicPassword, Utils } from '../utils';
 import type { LogContext, Logger } from '../logging';
 import type { MetadataStorage } from '../metadata';
 import type { ConnectionType, Dictionary, MaybePromise, Primary } from '../typings';
@@ -128,7 +128,12 @@ export abstract class Connection {
 
     try {
       const res = await cb();
-      this.logQuery(query, { ...context, took: Date.now() - now, results: Array.isArray(res) ? res.length : undefined });
+      this.logQuery(query, {
+        ...context,
+        took: Date.now() - now,
+        results: Array.isArray(res) ? res.length : undefined,
+        affected: Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined,
+      });
 
       return res;
     } catch (e) {

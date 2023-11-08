@@ -84,11 +84,17 @@ export class DefaultLogger implements Logger {
     let msg = this.highlighter?.highlight(context.query) ?? context.query;
 
     if (context.took != null) {
+      const meta = [`took ${context.took} ms`];
+
       if (context.results != null) {
-        msg += colors.grey(` [took ${context.took} ms, ${context.results} result${context.results === 0 || context.results > 1 ? 's' : ''}]`);
-      } else {
-        msg += colors.grey(` [took ${context.took} ms]`);
+        meta.push(`${context.results} result${context.results === 0 || context.results > 1 ? 's' : ''}`);
       }
+
+      if (context.affected != null) {
+        meta.push(`${context.affected} row${context.affected === 0 || context.affected > 1 ? 's' : ''} affected`);
+      }
+
+      msg += colors.grey(` [${meta.join(', ')}]`);
     }
 
     if (this.usesReplicas && context.connection) {
