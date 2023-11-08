@@ -517,10 +517,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       } else {
         qb.update(data).where(where);
 
-        // reload generated columns
+        // reload generated columns and version fields
         const returning: string[] = [];
         meta?.props
-          .filter(prop => prop.generated && !prop.primary)
+          .filter(prop => (prop.generated && !prop.primary) || prop.version)
           .forEach(prop => returning.push(prop.name));
 
         qb.returning(returning);
@@ -574,9 +574,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       });
     });
 
-    // reload generated columns
+    // reload generated columns and version fields
     meta?.props
-      .filter(prop => prop.generated && !prop.primary)
+      .filter(prop => (prop.generated && !prop.primary) || prop.version)
       .forEach(prop => returning.add(prop.name));
 
     const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames)).map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ');

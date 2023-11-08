@@ -339,7 +339,7 @@ export class ChangeSetPersister {
    * so we use a single query in case of both versioning and default values is used.
    */
   private async reloadVersionValues<T extends object>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], options?: DriverMethodOptions) {
-    const reloadProps = meta.versionProperty ? [meta.properties[meta.versionProperty]] : [];
+    const reloadProps = meta.versionProperty && !this.platform.usesReturningStatement() ? [meta.properties[meta.versionProperty]] : [];
 
     if (changeSets[0].type === ChangeSetType.CREATE) {
       // do not reload things that already had a runtime value

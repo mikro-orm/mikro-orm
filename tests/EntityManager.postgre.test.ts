@@ -1077,11 +1077,9 @@ describe('EntityManagerPostgre', () => {
 
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = current_timestamp(0) where "id" = $2 and "version" = $3');
-    expect(mock.mock.calls[2][0]).toMatch('select "f0"."id", "f0"."version" from "foo_bar2" as "f0" where "f0"."id" in ($1)');
-    expect(mock.mock.calls[3][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = current_timestamp(0) where "id" = $2 and "version" = $3');
-    expect(mock.mock.calls[4][0]).toMatch('select "f0"."id", "f0"."version" from "foo_bar2" as "f0" where "f0"."id" in ($1)');
-    expect(mock.mock.calls[5][0]).toMatch('commit');
+    expect(mock.mock.calls[1][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = current_timestamp(0) where "id" = $2 and "version" = $3 returning "version"');
+    expect(mock.mock.calls[2][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = current_timestamp(0) where "id" = $2 and "version" = $3 returning "version"');
+    expect(mock.mock.calls[3][0]).toMatch('commit');
   });
 
   test('many to many relation', async () => {
@@ -2390,9 +2388,8 @@ describe('EntityManagerPostgre', () => {
 
     const mock = mockLogger(orm);
     await orm.em.flush();
-    expect(mock).toBeCalledTimes(4);
+    expect(mock).toBeCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch(`update "foo_bar2" set "id" = 321, "version" = current_timestamp(0) where "id" = 1 and "version" = `);
-    expect(mock.mock.calls[2][0]).toMatch(`select "f0"."id", "f0"."version" from "foo_bar2" as "f0" where "f0"."id" in (321)`);
 
     const c = await orm.em.fork().findOne(FooBar2, bar);
     expect(c).toBeDefined();
@@ -2418,10 +2415,9 @@ describe('EntityManagerPostgre', () => {
 
     const mock = mockLogger(orm, ['query']);
     await orm.em.flush();
-    expect(mock).toBeCalledTimes(5);
+    expect(mock).toBeCalledTimes(4);
     expect(mock.mock.calls[1][0]).toMatch('select "f0"."id" from "foo_bar2" as "f0" where (("f0"."id" = $1 and "f0"."version" = $2) or ("f0"."id" = $3 and "f0"."version" = $4))');
     expect(mock.mock.calls[2][0]).toMatch('update "foo_bar2" set "id" = case when ("id" = $1) then $2 when ("id" = $3) then $4 else "id" end, "version" = current_timestamp(0) where "id" in ($5, $6)');
-    expect(mock.mock.calls[3][0]).toMatch('select "f0"."id", "f0"."version" from "foo_bar2" as "f0" where "f0"."id" in ($1, $2)');
 
     const c1 = await orm.em.fork().findOne(FooBar2, bars[0]);
     expect(c1).toBeDefined();

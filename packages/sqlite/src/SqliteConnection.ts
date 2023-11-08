@@ -162,7 +162,7 @@ export class SqliteConnection extends AbstractSqlConnection {
   private isRunQuery(query: string): boolean {
     query = query.trim().toLowerCase();
 
-    if (query.startsWith('insert into') && query.includes(' returning ')) {
+    if ((query.startsWith('insert into') || query.startsWith('update ')) && query.includes(' returning ')) {
       return false;
     }
 
