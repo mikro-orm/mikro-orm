@@ -606,14 +606,23 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = this.getContext();
-    options.schema ??= em._schema;
-    await em.tryFlush(entityName, options);
     entityName = Utils.className(entityName);
+    options.schema ??= em._schema;
+    let entity = em.unitOfWork.tryGetById<Entity>(entityName, where, options.schema);
+
+    // query for a not managed entity which is already in the identity map as it
+    // was provided with a PK this entity does not exist in the db, there can't
+    // be any relations to it, so no need to deal with the populate hint
+    if (entity && !helper(entity).__managed) {
+      return entity as Loaded<Entity, Hint, Fields>;
+    }
+
+    await em.tryFlush(entityName, options);
     const meta = em.metadata.get<Entity>(entityName);
     where = await em.processWhere(entityName, where, options, 'read');
     em.validator.validateEmptyWhere(where);
     em.checkLockRequirements(options.lockMode, meta);
-    let entity = em.unitOfWork.tryGetById<Entity>(entityName, where, options.schema);
+    entity = em.unitOfWork.tryGetById<Entity>(entityName, where, options.schema);
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
 
     if (entity && !em.shouldRefresh(meta, entity, options) && isOptimisticLocking) {
@@ -1214,8 +1223,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         helper(data).setSchema(options.schema);
       }
 
-      // the entity might have been created via `em.create()`, which adds it to the persist stack automatically
-      em.unitOfWork.getPersistStack().delete(data);
+      if (!helper(data).__managed) {
+        // the entity might have been created via `em.create()`, which adds it to the persist stack automatically
+        em.unitOfWork.getPersistStack().delete(data);
+        // it can be also in the identity map if it had a PK value already
+        em.unitOfWork.unsetIdentity(data);
+      }
 
       const meta = helper(data).__meta;
       const payload = em.comparator.prepareEntity(data);
@@ -1259,8 +1272,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
           helper(row).setSchema(options.schema);
         }
 
-        // the entity might have been created via `em.create()`, which adds it to the persist stack automatically
-        em.unitOfWork.getPersistStack().delete(row);
+        if (!helper(row).__managed) {
+          // the entity might have been created via `em.create()`, which adds it to the persist stack automatically
+          em.unitOfWork.getPersistStack().delete(row);
+
+          // it can be also in the identity map if it had a PK value already
+          em.unitOfWork.unsetIdentity(row);
+        }
 
         const payload = em.comparator.prepareEntity(row) as EntityData<Entity>;
         return new ChangeSet<Entity>(row as Entity, ChangeSetType.CREATE, payload, meta);
@@ -1359,7 +1377,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     em.validator.validatePrimaryKey(data as EntityData<Entity>, em.metadata.get(entityName));
     let entity = em.unitOfWork.tryGetById<Entity>(entityName, data as FilterQuery<Entity>, options.schema, false);
 
-    if (entity && helper(entity).__initialized && !options.refresh) {
+    if (entity && helper(entity).__managed && helper(entity).__initialized && !options.refresh) {
       return entity;
     }
 

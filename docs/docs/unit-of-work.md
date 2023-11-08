@@ -8,9 +8,8 @@ MikroORM uses the Identity Map pattern to track objects. Whenever you fetch an o
 This allows MikroORM room for optimizations. If you call the EntityManager and ask for an entity with a specific ID twice, it will return the same instance:
 
 ```ts
-const authorRepository = em.getRepository(Author);
-const jon1 = await authorRepository.findOne(1);
-const jon2 = await authorRepository.findOne(1);
+const jon1 = await em.findOne(Author, 1);
+const jon2 = await em.findOne(Author, 1);
 
 // identity map in action
 console.log(jon1 === jon2); // true
@@ -21,9 +20,8 @@ Only one SELECT query will be fired against the database here. In the second `fi
 The identity map being indexed by primary keys only allows shortcuts when you ask for objects by primary key. When you query by other properties, you will still get the same reference, but two separate database calls will be made:
 
 ```ts
-const authorRepository = em.getRepository(Author);
-const jon1 = await authorRepository.findOne({ name: 'Jon Snow' });
-const jon2 = await authorRepository.findOne({ name: 'Jon Snow' });
+const jon1 = await em.findOne(Author, { name: 'Jon Snow' });
+const jon2 = await em.findOne(Author, { name: 'Jon Snow' });
 
 // identity map in action
 console.log(jon1 === jon2); // true
@@ -38,10 +36,44 @@ The identity map has a second use-case. When you call `em.flush()`, MikroORM wil
 The following code WILL update your database with the changes made to the `Author` object, even if you did not call `em.persist()`:
 
 ```ts
-const authorRepository = em.getRepository(Author);
-const jon = await authorRepository.findOne(1);
+const jon = await em.findOne(Author, 1);
 jon.email = 'foo@bar.com';
-await authorRepository.flush(); // calling em.flush() has same effect
+await em.flush();
+```
+
+## Entities with explicit primary key
+
+When you `em.persist()` a new entity which has the primary key value, it will be automatically added to the identity map. This means that a following call to `em.findOne()` based on its primary key will just return the same unmanaged entity instance instead of querying the database. 
+
+> Such entity is added to the identity map, but still remains unmanaged - it does not have a reference to the `EntityManager` yet.
+
+```ts
+// primary key value provided, will be added to the identity map
+const jon = em.create(Author, {
+  id: 1,
+  name: 'Jon',
+  email: 'foo@bar.com',
+});
+
+// this will not query the database
+const jon2 = await em.findOne(Author, 1);
+console.log(jon === jon2); // true
+await em.flush(); // this inserts the entity
+```
+
+If you called `em.persist()` an entity without the primary key value, the `em.findOne()` call would detect it as well and flush automatically to get the value first.
+
+```ts
+// primary key value not provided
+const jon = em.create(Author, {
+  name: 'Jon',
+  email: 'foo@bar.com',
+});
+
+// this will trigger auto flush and insert the entity, then query for it
+const jon2 = await em.findOne(Author, 1);
+console.log(jon === jon2); // true
+await em.flush(); // this is a no-op
 ```
 
 ## How MikroORM Detects Changes

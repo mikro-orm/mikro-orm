@@ -1,6 +1,6 @@
 import { Author } from '../../entities';
 import type { ChangeSet, ChangeSetComputer, EventSubscriber, FlushEventArgs, MikroORM } from '@mikro-orm/core';
-import { ChangeSetType, EntityValidator, IdentityMap, UnitOfWork } from '@mikro-orm/core';
+import { ChangeSetType, EntityValidator, IdentityMap, UnitOfWork, wrap } from '@mikro-orm/core';
 import { initORMMongo, mockLogger } from '../../bootstrap';
 import FooBar from '../../entities/FooBar';
 import { FooBaz } from '../../entities/FooBaz';
@@ -115,6 +115,9 @@ describe('UnitOfWork', () => {
     expect(uow.getPersistStack().size).toBe(1);
     uow.remove(author);
     expect(uow.getPersistStack().size).toBe(0);
+    expect(uow.getRemoveStack().size).toBe(0); // not managed entity won't be added to the remove stack
+    wrap(author, true).__managed = true;
+    uow.remove(author);
     expect(uow.getRemoveStack().size).toBe(1);
     uow.remove(author);
     expect(uow.getRemoveStack().size).toBe(1);

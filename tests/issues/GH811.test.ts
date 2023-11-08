@@ -88,7 +88,7 @@ describe('GH issue 811', () => {
     const employee = await orm.em.findOneOrFail(Employee, employeeCreate.id);
 
     // previously the `Employee.contact.address` was accidentally cascade merged
-    expect(orm.em.getUnitOfWork().getIdentityMap().values().map(e => helper(e).__originalEntityData)).toEqual([
+    expect(orm.em.getUnitOfWork().getIdentityMap().values().map(e => helper(e).__originalEntityData).filter(Boolean)).toEqual([
       { id: contact.id, name: 'My Contact', address: null },
       { id: employee.id, contact: contact.id, name: 'My Employee' },
     ]);
