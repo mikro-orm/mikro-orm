@@ -383,7 +383,7 @@ export class ObjectHydrator extends Hydrator {
   }
 
   private safeKey(key: string): string {
-    return key.replace(/[^\w]/g, '_');
+    return key.replace(/\W/g, '_');
   }
 
 }
