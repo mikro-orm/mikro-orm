@@ -297,9 +297,14 @@ export class UnitOfWork {
       return;
     }
 
+    const wrapped = helper(entity);
     this.persistStack.add(entity);
-    this.queuedActions.add(helper(entity).__meta.className);
+    this.queuedActions.add(wrapped.__meta.className);
     this.removeStack.delete(entity);
+
+    if (!wrapped.__managed && wrapped.hasPrimaryKey()) {
+      this.identityMap.store(entity);
+    }
 
     if (options.cascade ?? true) {
       this.cascade(entity, Cascade.PERSIST, visited, options);
@@ -307,9 +312,13 @@ export class UnitOfWork {
   }
 
   remove<T extends object>(entity: T, visited?: Set<AnyEntity>, options: { cascade?: boolean } = {}): void {
-    this.removeStack.add(entity);
-    this.queuedActions.add(helper(entity).__meta.className);
-    this.persistStack.delete(entity);
+    if (helper(entity).__managed) {
+      this.removeStack.add(entity);
+      this.queuedActions.add(helper(entity).__meta.className);
+    } else {
+      this.persistStack.delete(entity);
+      this.identityMap.delete(entity);
+    }
 
     // remove from referencing relations that are nullable
     for (const prop of helper(entity).__meta.bidirectionalRelations) {

@@ -87,6 +87,7 @@ export class EntityAssigner {
       // eslint-disable-next-line no-prototype-builtins
       if (options.updateNestedEntities && (entity as object).hasOwnProperty(propName) && Utils.isEntity(entity[propName as EntityKey<T>], true) && Utils.isPlainObject(value)) {
         const unwrappedEntity = Reference.unwrapReference(entity[propName as EntityKey<T>] as object);
+        const wrapped = helper(unwrappedEntity);
 
         if (options.updateByPrimaryKey) {
           const pk = Utils.extractPK(value, prop.targetMeta);
@@ -94,9 +95,10 @@ export class EntityAssigner {
           if (pk) {
             const ref = options.em!.getReference(prop.type, pk as Primary<T>, options);
             // if the PK differs, we want to change the target entity, not update it
-            const sameTarget = helper(ref).getSerializedPrimaryKey() === helper(unwrappedEntity).getSerializedPrimaryKey();
+            const wrappedChild = helper(ref);
+            const sameTarget = wrappedChild.getSerializedPrimaryKey() === wrapped.getSerializedPrimaryKey();
 
-            if (helper(ref).isInitialized() && sameTarget) {
+            if (wrappedChild.__managed && wrappedChild.isInitialized() && sameTarget) {
               return EntityAssigner.assign(ref, value as any, options);
             }
           }
@@ -104,7 +106,7 @@ export class EntityAssigner {
           return EntityAssigner.assignReference<T>(entity, value, prop, options.em!, options);
         }
 
-        if (wrap(unwrappedEntity).isInitialized()) {
+        if (wrapped.__managed && wrap(unwrappedEntity).isInitialized()) {
           return EntityAssigner.assign(unwrappedEntity, value as any, options);
         }
       }
