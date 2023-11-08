@@ -657,7 +657,7 @@ export class EntityComparator {
   }
 
   private safeKey(key: string): string {
-    return key.replace(/[^\w]/g, '_');
+    return key.replace(/\W/g, '_');
   }
 
   /**

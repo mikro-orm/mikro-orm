@@ -1,8 +1,8 @@
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/better-sqlite';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Embeddable()
-export class Settings {
+class Settings {
 
   @Property()
   name: string;
@@ -14,7 +14,7 @@ export class Settings {
 }
 
 @Entity()
-export class User {
+class User {
 
   @PrimaryKey()
   id: number;
@@ -29,19 +29,19 @@ export class User {
 
 }
 
-let orm: MikroORM<BetterSqliteDriver>;
+let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [User, Settings],
     dbName: ':memory:',
-    driver: BetterSqliteDriver,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.createSchema();
 });
 
 afterAll(() => orm.close(true));
+afterEach(() => orm.em.clear());
 
 test('insert an object with embeddable using a QueryBuilder', async () => {
   const foo = new User({ id: 1, settings: { name: 'foo' } });

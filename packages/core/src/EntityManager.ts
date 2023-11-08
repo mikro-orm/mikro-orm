@@ -1927,7 +1927,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (options.fields) {
       autoRefresh = options.fields.some(field => !helper(entity).__loadedProperties.has(field as string));
     } else {
-      autoRefresh = meta.comparableProps.some(prop => !prop.lazy && !helper(entity).__loadedProperties.has(prop.name));
+      autoRefresh = meta.comparableProps.some(prop => {
+        const inlineEmbedded = prop.kind === ReferenceKind.EMBEDDED && !prop.object;
+        return !inlineEmbedded && !prop.lazy && !helper(entity).__loadedProperties.has(prop.name);
+      });
     }
 
     if (autoRefresh) {
