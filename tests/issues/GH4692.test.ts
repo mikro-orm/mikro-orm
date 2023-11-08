@@ -33,7 +33,7 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 beforeEach(() => orm.schema.clearDatabase());
 
-test('4692', async () => {
+test('4692 1/2', async () => {
   const entities = [
     orm.em.create(MyEntity1, { id: 1, uniq1: 1, uniq2: 1, name: 'first' }),
     orm.em.create(MyEntity1, { id: 2, uniq1: 2, uniq2: 1, name: 'second' }),
@@ -44,7 +44,7 @@ test('4692', async () => {
   expect(res).toHaveLength(2);
 });
 
-test('4692', async () => {
+test('4692 2/2', async () => {
   const entity = orm.em.create(MyEntity1, { id: 3, uniq1: 3, uniq2: 3, name: 'third' });
   await orm.em.insert(entity);
 
