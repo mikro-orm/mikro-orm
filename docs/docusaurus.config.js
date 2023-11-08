@@ -102,7 +102,7 @@ module.exports = {
         },
       ],
     },
-    image: 'img/mikro-orm-og.png',
+    image: 'https://opengraph.githubassets.com/8b51ab16e00d8f8480da64948bd38ff0c5e57b3aa55ef8702d49e0ab4ad02f1f/mikro-orm/mikro-orm',
     footer: {
       style: 'dark',
       links: [
