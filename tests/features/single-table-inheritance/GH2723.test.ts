@@ -1,4 +1,4 @@
-import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { Collection, Entity, EntityRef, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -10,7 +10,7 @@ export class Cat {
   name!: string;
 
   @ManyToOne(() => User, { primary: true, deleteRule: 'CASCADE', ref: true })
-  user!: Ref<User>;
+  user!: EntityRef<User>;
 
 }
 

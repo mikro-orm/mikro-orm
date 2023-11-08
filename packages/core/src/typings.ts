@@ -273,14 +273,22 @@ type Relation<T> = {
   [P in keyof T as T[P] extends unknown[] | Record<string | number | symbol, unknown> ? P : never]?: T[P]
 };
 
-/** Identity type that can be used to get around issues with cycles in bidirectional relations. */
+/** Identity type that can be used to get around issues with cycles in bidirectional relations. It will disable reflect-metadata inference. */
 export type Rel<T> = T;
 
-export type Ref<T> = T extends Scalar
-  ? ScalarReference<T>
-  : true extends IsUnknown<PrimaryProperty<T>>
-    ? Reference<T>
-    : ({ [K in PrimaryProperty<T> & keyof T]: T[K] } & Reference<T>);
+/** Alias for `ScalarReference` (see {@apilink Ref}). */
+export type ScalarRef<T> = ScalarReference<T>;
+
+/** Alias for `Reference<T> & { id: number }` (see {@apilink Ref}). */
+export type EntityRef<T> = true extends IsUnknown<PrimaryProperty<T>>
+  ? Reference<T>
+  : ({ [K in PrimaryProperty<T> & keyof T]: T[K] } & Reference<T>);
+
+/**
+ * Ref type represents a `Reference` instance, and adds the primary keys to its prototype automatically, so you can do
+ * `ref.id` instead of `ref.unwrap().id`. It resolves to either `ScalarRef` or `EntityRef`, based on the type argument.
+ */
+export type Ref<T> = T extends Scalar ? ScalarReference<T> : EntityRef<T>;
 
 type EntityDTONested<T> = T extends undefined | null ? T : EntityDTO<T>;
 export type EntityDTOProp<T> = T extends Scalar

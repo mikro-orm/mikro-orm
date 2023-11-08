@@ -44,7 +44,7 @@ export class Book2 {
   title?: string;
 
   @Property({ type: t.text, nullable: true, lazy: true, ref: true })
-  perex?: Ref<Date>;
+  perex?: Ref<string>;
 
   @Property({ type: t.decimal, precision: 8, scale: 2, nullable: true })
   price?: number;
