@@ -645,17 +645,18 @@ export function verifyArticlePermissions(user: User, article: Article): void {
 
 ### Upserting entities
 
-Alternatively, we could use `em.upsert()` instead to create or update the entity in one step. It will use `INSERT ON CONFLICT` query under the hood:
+Alternatively, you could use `em.upsert()` instead to create or update the entity in one step. It will use `INSERT ON CONFLICT` query under the hood:
 
 ```diff
 -const article = await db.article.findOneOrFail(+params.id);
--verifyArticlePermissions(user, article);
 -wrap(article).assign(request.body as Article);
 -await db.em.flush();
 +const article = await db.article.upsert(request.body as Article);
 ```
 
 To upsert many entities in a batch, you can use `em.upsertMany()`, which will handle everything within a single query.
+
+Read more about upserting in [Entity Manager](../entity-manager.md#upsert) section.
 
 ### Removing entities
 
@@ -860,7 +861,7 @@ return this.createQueryBuilder('a')
   .select(['slug', 'title', 'description', 'author']);
 ```
 
-Now let's join the `Author` entity and select the author's name. To have a custom alias on the column, we will use `sql.ref()` helper:
+Now let's join the `User` entity and select the author's name. To have a custom alias on the column, we will use `sql.ref()` helper:
 
 ```ts title='modules/article/article.repository.ts'
 return this.createQueryBuilder('a')

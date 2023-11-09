@@ -53,10 +53,10 @@
     "node": ">= 18.12.0"
   },
   "scripts": {
-    "build": "yarn clean && yarn compile && yarn copy && yarn run -T gen-esm-wrapper dist/index.js dist/index.mjs",
+    "build": "yarn clean && yarn compile && yarn copy && cp src/esm.cmd dist/esm.cmd && yarn run -T gen-esm-wrapper dist/index.js dist/index.mjs",
     "clean": "yarn run -T rimraf ./dist",
     "compile": "yarn run -T tsc -p tsconfig.build.json",
-    "copy": "node ../../scripts/copy.mjs && cp src/esm.cmd dist/esm.cmd"
+    "copy": "node ../../scripts/copy.mjs"
   },
   "publishConfig": {
     "access": "public"
