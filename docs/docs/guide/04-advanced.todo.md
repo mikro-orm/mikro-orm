@@ -1,5 +1,6 @@
 ---
 title: 'Chapter 4: Advanced'
+draft: true
 ---
 
 In this chapter, we will first implement all the methods of `/user` endpoint, including a basic JWT authentication provided via `@fastify/jwt` package, and proceed with the rest of the `/article` endpoints. We will touch on some of the more advanced concepts like custom repositories, virtual entities, `QueryBuilder`, flush events, and more.

@@ -898,6 +898,93 @@ export class ArticleRepository extends EntityRepository<Article> {
 
 Note how we used the `sql` helper function as a tagged template when adding the `group_concat` expression to the select clause. Read more about the support for [raw queries here](../raw-queries.md).
 
+### Executing the Query
+
+In our example, we just return the `QueryBuilder` instance and let the ORM execute it through our virtual entity, you may ask: how can you execute the query manually? There are two ways, the first is the `qb.execute()` method, which gives you raw results (plain objects). By default, it will return an array of items, mapping column names to property names automatically. You can use the first parameter to control the mode and form of result:
+
+```ts
+const res1 = await qb.execute('all'); // returns array of objects, default behavior
+const res2 = await qb.execute('get'); // returns single object
+const res3 = await qb.execute('run'); // returns object like `{ affectedRows: number, insertId: number, row: any }`
+```
+
+Second argument can be used to disable mapping of database columns to property namesIn following example, `Article` entity has `createdAt` property defined with implicit underscored field name `created_at`:
+
+```ts
+const res1 = await em.createQueryBuilder(Article).select('*').execute('get', true);
+console.log(res1); // `createdAt` will be defined, while `created_at` will be missing
+
+const res2 = await em.createQueryBuilder(Article).select('*').execute('get', false);
+console.log(res2); // `created_at` will be defined, while `createdAt` will be missing
+```
+
+To get entity instances from the `QueryBuilder` result, you can use `getResult()` and `getSingleResult()` methods:
+
+```ts
+const article = await em.createQueryBuilder(Article)
+  .select('*')
+  .where({ id: 1 })
+  .getSingleResult();
+console.log(article instanceof Article); // true
+
+const articles = await em.createQueryBuilder(Article)
+  .select('*')
+  .getResult();
+console.log(articles[0] instanceof Article); // true
+```
+
+> You can also use `qb.getResultList()` which is alias for `qb.getResult()`.
+
+### Awaiting the QueryBuilder
+
+You can also await the `QueryBuilder` instance, which will automatically execute the `QueryBuilder` and return appropriate response automatically. The `QueryBuilder` instance is typed based on usage of `select/insert/update/delete/truncate` methods to one of:
+
+- `SelectQueryBuilder`
+    - awaiting yields array of entities (as `qb.getResultList()`)
+- `CountQueryBuilder`
+    - awaiting yields number (as `qb.getCount()`)
+- `InsertQueryBuilder` (extends `RunQueryBuilder`)
+    - awaiting yields `QueryResult`
+- `UpdateQueryBuilder` (extends `RunQueryBuilder`)
+    - awaiting yields `QueryResult`
+- `DeleteQueryBuilder` (extends `RunQueryBuilder`)
+    - awaiting yields `QueryResult`
+- `TruncateQueryBuilder` (extends `RunQueryBuilder`)
+    - awaiting yields `QueryResult`
+
+> `em.qb()` is a shortcut for `em.createQueryBuilder()`.
+
+```ts
+const res1 = await em.qb(User).insert({
+  fullName: 'Jon',
+  email: 'foo@bar.com',
+});
+// res1 is of type `QueryResult<User>`
+console.log(res1.insertId);
+
+const res2 = await em.qb(User)
+  .select('*')
+  .where({ fullName: 'Jon' })
+  .limit(5);
+// res2 is User[]
+console.log(res2.map(p => p.name));
+
+const res3 = await em.qb(User).count().where({ fullName: 'Jon' });
+// res3 is number
+console.log(res3 > 0); // true
+
+const res4 = await em.qb(User)
+  .update({ email: 'foo@bar.com' })
+  .where({ fullName: 'Jon' });
+// res4 is QueryResult<User>
+console.log(res4.affectedRows > 0); // true
+
+const res5 = await em.qb(User).delete().where({ fullName: 'Jon' });
+// res5 is QueryResult<User>
+console.log(res5.affectedRows > 0); // true
+expect(res5.affectedRows > 0).toBe(true); // test the type
+```
+
 ## Updating the tests
 
 We just changed the shape of our API response, which is something we test already, so let's fix our broken tests. First, create some testing comments in our `TestSeeder`:
