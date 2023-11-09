@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --loader ts-node/esm --no-warnings
+#!/usr/bin/env -S node --loader ts-node/esm --no-warnings=ExperimentalWarning
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('@jercle/yargonaut')

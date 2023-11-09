@@ -53,7 +53,7 @@
     "node": ">= 14.0.0"
   },
   "scripts": {
-    "build": "yarn clean && yarn compile && yarn copy && yarn run -T gen-esm-wrapper dist/index.js dist/index.mjs",
+    "build": "yarn clean && yarn compile && yarn copy && cp src/esm.cmd dist/esm.cmd && yarn run -T gen-esm-wrapper dist/index.js dist/index.mjs",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json",
     "copy": "node ../../scripts/copy.mjs"
