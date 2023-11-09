@@ -353,6 +353,24 @@ Article {
 }
 ```
 
+#### Alternative approach with `Opt` type
+
+Another way to make TypeScript aware of what properties are optional is the `Opt` type, you can intersect it with the actual property type. This way the above problem with extending classes is no longer present, as we operate on property level:
+
+```ts title='article.entity.ts'
+export class Article extends BaseEntity {
+
+  @Property({ unique: true })
+  slug: string & Opt;
+
+  @Property({ length: 1000 })
+  description: Opt<string>; // can be used via generics too
+
+  // ...
+  
+}
+```
+
 ## Populating relationships
 
 What if we want to fetch the `Article` together with the `author` relation? We can use `populate` hints for that:

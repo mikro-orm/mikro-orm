@@ -643,6 +643,20 @@ export function verifyArticlePermissions(user: User, article: Article): void {
 }
 ```
 
+### Upserting entities
+
+Alternatively, we could use `em.upsert()` instead to create or update the entity in one step. It will use `INSERT ON CONFLICT` query under the hood:
+
+```diff
+-const article = await db.article.findOneOrFail(+params.id);
+-verifyArticlePermissions(user, article);
+-wrap(article).assign(request.body as Article);
+-await db.em.flush();
++const article = await db.article.upsert(request.body as Article);
+```
+
+To upsert many entities in a batch, you can use `em.upsertMany()`, which will handle everything within a single query.
+
 ### Removing entities
 
 There are several approaches to removing an entity. In this case, we first load the entity, if it does not exist, we return `notFount: true` in the response, if it does, we remove it via `em.remove()`, which marks the entity for removal on the following `flush()` call.
@@ -1064,6 +1078,8 @@ MikroORM has a simple [result caching](../caching.md) mechanism, all you need to
 - A number for explicit expiration (in milliseconds).
 - A tuple with first element being the `cacheKey` (`string`) and the second element the expiration (`number`). You can use the cacheKey to clear the cache via `em.clearCache()`.
 
+Let's enable the caching for our article listing endpoint, with a 5-second expiration:
+
 ```ts title='modules/article/routes.ts'
 // list articles
 app.get('/', async request => {
@@ -1078,6 +1094,8 @@ app.get('/', async request => {
   return { items, total };
 });
 ```
+
+Now when you enable [debug mode](../logging.md) and try to access the endpoint several times within 5 seconds, you should see just the first request producing queries.
 
 ## ⛳ Checkpoint 4
 
