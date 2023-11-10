@@ -728,5 +728,5 @@ We now have 4 entities, a working web app with a single get endpoint and a basic
 
 This is our [`app.ts` file](https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-3?file=src%2Fapp.ts) after this chapter:
 
-<iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-3?embed=1&view=editor&file=src%2Fapp.ts">
+<iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-3?embed=1&ctl=1&view=editor&file=src%2Fapp.ts">
 </iframe>

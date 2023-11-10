@@ -316,5 +316,5 @@ const name = article.author.name; // fail, not selected
 
 See [live demo](https://stackblitz.com/edit/mikro-orm-v6-strict-partial-loading?file=basic.test.ts):
 
-<iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-v6-strict-partial-loading?embed=1&view=editor&file=basic.test.ts">
+<iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-v6-strict-partial-loading?embed=1&ctl=1&view=editor&file=basic.test.ts">
 </iframe>

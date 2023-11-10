@@ -669,5 +669,5 @@ Currently, our app consists of a single `User` entity and a `server.ts` file whe
 
 This is our [`server.ts` file](https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-1?file=src%2Fserver.ts) so far:
 
-<iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-1?embed=1&view=editor&file=src%2Fserver.ts">
+<iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-1?embed=1&ctl=1&view=editor&file=src%2Fserver.ts">
 </iframe>

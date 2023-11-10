@@ -730,5 +730,5 @@ We added 2 new entities: `Article` and `Tag` and a common `BaseEntity`. You can 
 
 This is our [`server.ts` file](https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-2?file=src%2Fserver.ts) after this chapter:
 
-<iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-2?embed=1&view=editor&file=src%2Fserver.ts">
+<iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-2?embed=1&ctl=1&view=editor&file=src%2Fserver.ts">
 </iframe>
