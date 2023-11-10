@@ -665,64 +665,7 @@ Currently, our app consists of a single `User` entity and a `server.ts` file whe
 
 > Due to the nature of how the ESM support in ts-node works, it is not possible to use it inside StackBlitz project - we need to use `node --loader` instead. We also use in-memory database, SQLite feature available via special database name `:memory:`.
 
-https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-1?file=src%2Fserver.ts
+This is our [`server.ts` file](https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-1?file=src%2Fserver.ts) so far:
 
-This is our `server.ts` file so far:
-
-```ts
-import { MikroORM } from '@mikro-orm/core';
-import { User } from './modules/user/user.entity.js';
-
-// initialize the ORM, loading the config file dynamically
-const orm = await MikroORM.init();
-
-// recreate the database schema
-await orm.schema.refreshDatabase();
-
-// create new user entity instance
-const user = new User();
-user.email = 'foo@bar.com';
-user.fullName = 'Foo Bar';
-user.password = '123456';
-
-// fork first to have a separate context
-const em = orm.em.fork();
-
-// first mark the entity with `persist()`, then `flush()`
-await em.persist(user).flush();
-
-// after the entity is flushed, it becomes managed, and has the PK available
-console.log('user id is:', user.id);
-
-// user entity is now managed, if we try to find it again, we get the same reference
-const myUser = await em.findOne(User, user.id);
-console.log('users are the same?', user === myUser)
-
-// modifying the user and flushing yields update queries
-user.bio = '...';
-await em.flush();
-
-// now try to create a new fork, does not matter if from `orm.em` or our existing `em` fork, as by default we get a clean one
-const em2 = em.fork();
-console.log('verify the EM ids are different', em.id, em2.id);
-const myUser2 = await em2.findOne(User, user.id);
-console.log('users are no longer the same, as they came from differnet EM', user === myUser2);
-
-// load user again, this time with the `refresh` option to replace the one in the context
-const myUser3 = await em2.findOne(User, user.id, { refresh: true });
-console.log('myUser2 and myUser3 are no longer the same, only myUser3 is now managed by em2', myUser2 === myUser3);
-
-// if we try to modify myUser2, flushing will not do anything - as this entity is now replaced in the context by myUser3
-myUser2!.bio = 'some change';
-await em2.flush();
-
-// but changing the new myUser3 entity will work
-myUser3!.bio = 'some change';
-await em2.flush();
-
-// finally, remove the entity
-await em2.remove(myUser3!).flush();
-
-// close the ORM, otherwise the process would keep going indefinitely
-await orm.close();
-```
+<iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-1?embed=1&view=editor&file=src%2Fserver.ts">
+</iframe>

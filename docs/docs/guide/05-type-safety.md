@@ -5,21 +5,21 @@ title: 'Chapter 5: Type-safety'
 Entity relations are mapped to entity references - instances of the entity that have at least the primary key available. This reference is stored in Identity Map, so you will get the same object reference when fetching the same document from database.
 
 ```ts
-@ManyToOne(() => Author)
-author!: Author; // the value is always instance of the `Author` entity
+@ManyToOne(() => User)
+author!: User; // the value is always instance of the `User` entity
 ```
 
 You can check whether an entity is initialized via `wrap(entity).isInitialized()`, and use `await wrap(entity).init()` to initialize it lazily. This will trigger database call and populate the entity, keeping the same reference in identity map.
 
 ```ts
-const author = em.getReference(Author, 123);
-console.log(author.id); // prints `123`, accessing the id will not trigger any db call
-console.log(wrap(author).isInitialized()); // false, it's just a reference
-console.log(author.name); // undefined
+const user = em.getReference(User, 123);
+console.log(user.id); // prints `123`, accessing the id will not trigger any db call
+console.log(wrap(user).isInitialized()); // false, it's just a reference
+console.log(user.name); // undefined
 
-await wrap(author).init(); // this will trigger db call
-console.log(wrap(author).isInitialized()); // true
-console.log(author.name); // defined
+await wrap(user).init(); // this will trigger db call
+console.log(wrap(user).isInitialized()); // true
+console.log(user.name); // defined
 ```
 
 The `isInitialized()` method can be used for runtime checks, but that could end up being quite tedious - we can do better! Instead of manual checks for entity state, we can use the `Reference` wrapper.
@@ -30,43 +30,44 @@ When you define `@ManyToOne` and `@OneToOne` properties on your entity, TypeScri
 
 ```ts
 @Entity()
-export class Book {
+export class Article {
 
   @PrimaryKey()
   id!: number;
 
   @ManyToOne()
-  author!: Author;
+  author!: User;
 
-  constructor(author: Author) {
+  constructor(author: User) {
     this.author = author;
   }
 
 }
 
-const book = await em.findOne(Book, 1);
-console.log(book.author instanceof Author); // true
-console.log(wrap(book.author).isInitialized()); // false
-console.log(book.author.name); // undefined as `Author` is not loaded yet
+const article = await em.findOne(Article, 1);
+console.log(article.author instanceof User); // true
+console.log(wrap(article.author).isInitialized()); // false
+console.log(article.author.name); // undefined as `User` is not loaded yet
 ```
 
 You can overcome this issue by using the `Reference` wrapper. It simply wraps the entity, defining `load(): Promise<T>` method that will first lazy load the association if not already available. You can also use `unwrap(): T` method to access the underlying entity without loading it.
 
 You can also use `load<K extends keyof T>(prop: K): Promise<T[K]>`, which works like `load()` but returns the specified property.
 
-```ts title="./entities/Book.ts"
+```ts title="./entities/Article.ts"
 import { Entity, Ref, ManyToOne, PrimaryKey, Reference } from '@mikro-orm/core';
 
 @Entity()
-export class Book {
+export class Article {
 
   @PrimaryKey()
   id!: number;
 
+  // This guide is using `ts-morph` metadata provider, so this is enough.
   @ManyToOne()
-  author: Ref<Author>;
+  author: Ref<User>;
 
-  constructor(author: Author) {
+  constructor(author: User) {
     this.author = ref(author);
   }
 
@@ -74,35 +75,35 @@ export class Book {
 ```
 
 ```ts
-const book1 = await em.findOne(Book, 1);
-book.author instanceof Reference; // true
-book1.author; // Ref<Author> (instance of `Reference` class)
-book1.author.name; // type error, there is no `name` property
-book1.author.unwrap().name; // unsafe sync access, undefined as author is not loaded
-book1.author.isInitialized(); // false
+const article1 = await em.findOne(Article, 1);
+article.author instanceof Reference; // true
+article1.author; // Ref<User> (instance of `Reference` class)
+article1.author.name; // type error, there is no `name` property
+article1.author.unwrap().name; // unsafe sync access, undefined as author is not loaded
+article1.author.isInitialized(); // false
 
-const book2 = await em.findOne(Book, 1, { populate: ['author'] });
-book2.author; // LoadedReference<Author> (instance of `Reference` class)
-book2.author.$.name; // type-safe sync access
+const article2 = await em.findOne(Article, 1, { populate: ['author'] });
+article2.author; // LoadedReference<User> (instance of `Reference` class)
+article2.author.$.name; // type-safe sync access
 ```
 
 There are also `getEntity()` and `getProperty()` methods that are synchronous getters, that will first check if the wrapped entity is initialized, and if not, it will throw and error.
 
 ```ts
-const book = await em.findOne(Book, 1);
-console.log(book.author instanceof Reference); // true
-console.log(wrap(book.author).isInitialized()); // false
-console.log(book.author.getEntity()); // Error: Reference<Author> 123 not initialized
-console.log(book.author.getProperty('name')); // Error: Reference<Author> 123 not initialized
-console.log(await book.author.load('name')); // ok, loading the author first
-console.log(book.author.getProperty('name')); // ok, author already loaded
+const article = await em.findOne(Article, 1);
+console.log(article.author instanceof Reference); // true
+console.log(wrap(article.author).isInitialized()); // false
+console.log(article.author.getEntity()); // Error: Reference<User> 123 not initialized
+console.log(article.author.getProperty('name')); // Error: Reference<User> 123 not initialized
+console.log(await article.author.load('name')); // ok, loading the author first
+console.log(article.author.getProperty('name')); // ok, author already loaded
 ```
 
 If you use different metadata provider than `TsMorphMetadataProvider` (e.g. `ReflectMetadataProvider`), you will also need to explicitly set `ref` parameter:
 
 ```ts
-@ManyToOne(() => Author, { ref: true })
-author!: Ref<Author>;
+@ManyToOne(() => User, { ref: true })
+author!: Ref<User>;
 ```
 
 ### Using `Reference.load()`
@@ -110,13 +111,13 @@ author!: Ref<Author>;
 After retrieving a reference, you can load the full entity by utilizing the asynchronous `Reference.load()` method.
 
 ```ts
-const book1 = await em.findOne(Book, 1);
-(await book1.author.load()).name; // async safe access
+const article1 = await em.findOne(Article, 1);
+(await article1.author.load()).name; // async safe access
 
-const book2 = await em.findOne(Book, 2);
-const author = await book2.author.load();
+const article2 = await em.findOne(Article, 2);
+const author = await article2.author.load();
 author.name;
-await book2.author.load(); // no additional query, already loaded
+await article2.author.load(); // no additional query, already loaded
 ```
 
 > As opposed to `wrap(e).init()` which always refreshes the entity, `Reference.load()` method will query the database only if the entity is not already loaded in Identity Map.
@@ -240,13 +241,13 @@ When you define the property as `Reference` wrapper, you will need to assign the
 ```ts
 import { ref } from '@mikro-orm/core';
 
-const book = await em.findOne(Book, 1);
-const repo = em.getRepository(Author);
+const article = await em.findOne(Article, 1);
+const repo = em.getRepository(User);
 
-book.author = repo.getReference(2, { wrapped: true });
+article.author = repo.getReference(2, { wrapped: true });
 
 // same as:
-book.author = ref(repo.getReference(2));
+article.author = ref(repo.getReference(2));
 await em.flush();
 ```
 
@@ -256,13 +257,13 @@ Since v5 we can also create entity references without access to `EntityManager`.
 import { Entity, ManyToOne, Rel, rel } from '@mikro-orm/core';
 
 @Entity()
-export class Book {
+export class Article {
 
-  @ManyToOne(() => Author, { ref: true })
-  author!: Ref<Author>;
+  @ManyToOne(() => User, { ref: true })
+  author!: Ref<User>;
 
   constructor(authorId: number) {
-    this.author = rel(Author, authorId);
+    this.author = rel(User, authorId);
   }
 
 }
@@ -271,14 +272,14 @@ export class Book {
 Another way is to use `toReference()` method available as part of [`WrappedEntity` interface](entity-helper.md#wrappedentity-and-wrap-helper):
 
 ```ts
-const author = new Author(...)
-book.author = wrap(author).toReference();
+const author = new User(...)
+article.author = wrap(author).toReference();
 ```
 
 If the reference already exist, you can also re-assign to it via `set()` method:
 
 ```ts
-book.author.set(new Author(...));
+article.author.set(new User(...));
 ```
 
 ## What is `Ref` type?
@@ -290,8 +291,8 @@ By default, we try to detect the PK by checking if a property with a known name 
 We can also override this via second generic type argument.
 
 ```ts
-const book = await em.findOne(Book, 1);
-console.log(book.author.id); // ok, returns the PK
+const article = await em.findOne(Article, 1);
+console.log(article.author.id); // ok, returns the PK
 ```
 
 ## Strict partial loading
@@ -299,16 +300,21 @@ console.log(book.author.id); // ok, returns the PK
 The `Loaded` type also respects the partial loading hints (`fields` option). When used, the returned type will only allow accessing selected properties. Primary keys are automatically selected and available on the type level.
 
 ```ts
-// book is typed to `Selected<Book, 'author', 'title' | 'author.email'>`
-const book = await em.findOneOrFail(Book, 1, { 
+// article is typed to `Selected<Article, 'author', 'title' | 'author.email'>`
+const article = await em.findOneOrFail(Article, 1, { 
   fields: ['title', 'author.email'], 
   populate: ['author'],
 });
 
-const id = book.id; // ok, PK is selected automatically
-const title = book.title; // ok, title is selected
-const publisher = book.publisher; // fail, not selected
-const author = book.author.id; // ok, PK is selected automatically
-const email = book.author.email; // ok, selected
-const name = book.author.name; // fail, not selected
+const id = article.id; // ok, PK is selected automatically
+const title = article.title; // ok, title is selected
+const publisher = article.publisher; // fail, not selected
+const author = article.author.id; // ok, PK is selected automatically
+const email = article.author.email; // ok, selected
+const name = article.author.name; // fail, not selected
 ```
+
+See [live demo](https://stackblitz.com/edit/mikro-orm-v6-strict-partial-loading?file=basic.test.ts):
+
+<iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-v6-strict-partial-loading?embed=1&view=editor&file=basic.test.ts">
+</iframe>
