@@ -27,14 +27,14 @@ import { PrimaryKey, Property } from '@mikro-orm/core';
 
 export abstract class BaseEntity {
 
-   @PrimaryKey()
-   id!: number;
+  @PrimaryKey()
+  id!: number;
 
-   @Property()
-   createdAt = new Date();
+  @Property()
+  createdAt = new Date();
 
-   @Property({ onUpdate: () => new Date() })
-   updatedAt = new Date();
+  @Property({ onUpdate: () => new Date() })
+  updatedAt = new Date();
 
 }
 ```
@@ -198,16 +198,16 @@ import { OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 
 export abstract class BaseEntity {
 
-   [OptionalProps]?: 'createdAt' | 'updatedAt';
+  [OptionalProps]?: 'createdAt' | 'updatedAt';
 
-   @PrimaryKey()
-   id!: number;
+  @PrimaryKey()
+  id!: number;
 
-   @Property()
-   createdAt = new Date();
+  @Property()
+  createdAt = new Date();
 
-   @Property({ onUpdate: () => new Date() })
-   updatedAt = new Date();
+  @Property({ onUpdate: () => new Date() })
+  updatedAt = new Date();
 
 }
 ```
@@ -296,7 +296,7 @@ With this change, the `slug` and `description` properties are optional too - but
 
 ```ts title='article.entity.ts'
 export class Article extends BaseEntity {
-   [OptionalProps]?: 'slug' | 'description';
+  [OptionalProps]?: 'slug' | 'description';
 }
 ```
 
@@ -314,8 +314,8 @@ The solution here might not be clear, but it is very simple. Instead of redefini
 
 ```ts title='base.entity.ts'
 export abstract class BaseEntity<Optional = never> {
-   [OptionalProps]?: 'createdAt' | 'updatedAt' | Optional;
-   // all properties remain the same
+  [OptionalProps]?: 'createdAt' | 'updatedAt' | Optional;
+  // all properties remain the same
 }
 ```
 
@@ -323,7 +323,7 @@ We picked the default value of `never` for our type - this is because a union wi
 
 ```ts title='article.entity.ts'
 export class Article extends BaseEntity<'slug' | 'description'> {
-   // all properties remain the same
+  // all properties remain the same
 }
 ```
 

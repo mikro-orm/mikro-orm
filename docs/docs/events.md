@@ -164,7 +164,7 @@ We can observe all the changes that are part of given UnitOfWork via those metho
 
 ```ts
 UnitOfWork.getChangeSets(): ChangeSet<AnyEntity>[];
-UnitOfWork.getOriginalEntityData(): Map<string, EntityData<AnyEntity>>;
+UnitOfWork.getOriginalEntityData(entity): EntityData<AnyEntity>;
 UnitOfWork.getPersistStack(): Set<AnyEntity>;
 UnitOfWork.getRemoveStack(): Set<AnyEntity>;
 UnitOfWork.getCollectionUpdates(): Collection<AnyEntity>[];
@@ -200,7 +200,7 @@ export class FooBarSubscriber implements EventSubscriber {
 
 const bar = new FooBar();
 bar.name = 'bar';
-await em.persistAndFlush(bar);
+await em.persist(bar).flush();
 ```
 
 To create a `DELETE` changeset, you can use the second parameter of `uow.computeChangeSet()`:

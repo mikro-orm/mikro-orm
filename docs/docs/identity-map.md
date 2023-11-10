@@ -90,7 +90,7 @@ Middlewares are executed only for regular HTTP request handlers, what if we need
 
 We can use the `@CreateRequestContext()` decorator. It requires us to first inject the `MikroORM` instance to current context, it will be then used to create the context for us. Under the hood, the decorator will register new request context for our method and execute it inside the context.
 
-This decorator will wrap the underlying method in `RequestContext.createAsync()` call. Every call to such method will create new context (new `EntityManager` fork) which will be used inside.
+This decorator will wrap the underlying method in `RequestContext.create()` call. Every call to such method will create new context (new `EntityManager` fork) which will be used inside.
 
 > `@CreateRequestContext()` should be used only on the top level methods. It should not be nested - a method decorated with it should not call another method that is also decorated with it.
 

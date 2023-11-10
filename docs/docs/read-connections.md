@@ -14,7 +14,6 @@ The connection resolution strategy can be also inverted by setting the `preferRe
 const orm = await MikroORM.init({
   entities: [Author, ...],
   dbName: `my_database`,
-  type: 'mysql',
   user: 'master_user',
   host: 'master_host',
   preferReadReplicas: true, // optional property, defaults to true

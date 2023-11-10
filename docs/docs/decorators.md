@@ -39,7 +39,6 @@ export class Author { ... }
 | --- | --- | --- | --- |
 | `fieldName` | `string` | yes | Override default property name (see [Naming Strategy](naming-strategy.md)). |
 | `type` | `string` &#124; `Constructor<Type>` &#124; `Type` | yes | Explicitly specify the runtime type (see [Metadata Providers](metadata-providers.md) and [Custom Types](custom-types.md)). |
-| `customType` | `Type` | yes | Explicitly specify the mapped type instance for this property (see [Custom Types](custom-types.md)). |
 | `returning` | `boolean` | yes | Whether this property should be part of `returning` clause. Works only in PostgreSQL and SQLite drivers. |
 | `onUpdate` | `() => any` | yes | Automatically update the property value every time entity gets updated. |
 | `persist` | `boolean` | yes | Set to `false` to define [Shadow Property](serializing.md#shadow-properties). |
@@ -463,19 +462,6 @@ Fired right after the record gets deleted from database and it is unset from the
 ```ts
 @AfterDelete()
 async doStuffAfterDelete() {
-  // ...
-}
-```
-
-## Event Subscriber
-
-### @Subscriber()
-
-Used to register an event subscriber. Keep in mind that you need to make sure the file gets loaded in order to make this decorator registration work (e.g. you import that file explicitly somewhere).
-
-```ts
-@Subscriber()
-export class AuthorSubscriber implements EventSubscriber<Author> {
   // ...
 }
 ```

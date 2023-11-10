@@ -149,15 +149,36 @@ em.assign(user, dto);
 `IWrappedEntity` is an interface that defines public helper methods provided by the ORM:
 
 ```ts
-interface IWrappedEntity<T, PK extends keyof T> {
+interface IWrappedEntity<Entity> {
   isInitialized(): boolean;
+  isTouched(): boolean;
   populated(populated?: boolean): void;
-  populate(populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T, P>): Promise<Loaded<T, P>>;
-  init(populated?: boolean, lockMode?: LockMode): Promise<T>;
-  toReference(): IdentifiedReference<T, PK>;
-  toObject(ignoreFields?: string[]): Dictionary;
-  toJSON(...args: any[]): Dictionary;
-  assign(data: any, options?: AssignOptions | boolean): T;
+  populate<Hint extends string = never>(
+    populate: AutoPath<Entity, Hint>[] | boolean,
+    options?: EntityLoaderOptions<Entity, Hint>,
+  ): Promise<Loaded<Entity, Hint>>;
+  init<Hint extends string = never>(
+    populated?: boolean,
+    populate?: Populate<Entity, Hint>,
+    lockMode?: LockMode,
+    connectionType?: ConnectionType,
+  ): Promise<Loaded<Entity, Hint>>;
+  toReference(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
+  toObject(): EntityDTO<Entity>;
+  toObject(ignoreFields: never[]): EntityDTO<Entity>;
+  toObject<Ignored extends EntityKey<Entity>>(ignoreFields: Ignored[]): Omit<EntityDTO<Entity>, Ignored>;
+  toJSON(...args: any[]): EntityDTO<Entity>;
+  toPOJO(): EntityDTO<Entity>;
+  serialize<
+    Hint extends string = never,
+    Exclude extends string = never,
+  >(options?: SerializeOptions<Entity, Hint, Exclude>): EntityDTO<Loaded<Entity, Hint>>;
+  assign<
+    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
+    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
+  >(data: Data & IsSubset<EntityData<Naked>, Data>, options?: AssignOptions): MergeSelected<Entity, Naked, keyof Data & string>;
+  getSchema(): string | undefined;
+  setSchema(schema?: string): void;
 }
 ```
 

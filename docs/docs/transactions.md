@@ -21,7 +21,7 @@ The first approach is to use the implicit transaction handling provided by the M
 ```ts
 const user = new User(...);
 user.name = 'George';
-await orm.em.persistAndFlush(user);
+await orm.em.persist(user).flush();
 ```
 
 Since we do not do any custom transaction demarcation in the above code, `em.flush()` will begin and commit/rollback a transaction. This behavior is made possible by the aggregation of the DML operations by the MikroORM and is sufficient if all the data manipulation that is part of a unit of work happens through the domain model and thus the ORM.

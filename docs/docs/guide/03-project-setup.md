@@ -34,25 +34,25 @@ import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { fastify } from 'fastify';
 
 export async function bootstrap(port = 3001) {
-   const orm = await MikroORM.init();
-   const app = fastify();
+  const orm = await MikroORM.init();
+  const app = fastify();
 
-   // register request context hook
-   app.addHook('onRequest', (request, reply, done) => {
-      RequestContext.create(orm.em, done);
-   });
+  // register request context hook
+  app.addHook('onRequest', (request, reply, done) => {
+    RequestContext.create(orm.em, done);
+  });
 
-   // shut down the connection when closing the app
-   app.addHook('onClose', async () => {
-      await orm.close();
-   });
+  // shut down the connection when closing the app
+  app.addHook('onClose', async () => {
+    await orm.close();
+  });
 
-   // register routes here
-   // ...
+  // register routes here
+  // ...
 
-   const url = await app.listen({ port });
+  const url = await app.listen({ port });
 
-   return { app, url };
+  return { app, url };
 }
 ```
 
@@ -62,10 +62,10 @@ And use this function in the `server.ts` file - you can wipe all the code you ha
 import { bootstrap }  from './app.js';
 
 try {
-   const { url } = await bootstrap();
-   console.log(`server started at ${url}`);
+  const { url } = await bootstrap();
+  console.log(`server started at ${url}`);
 } catch (e) {
-   console.error(e);
+  console.error(e);
 }
 ```
 
@@ -98,12 +98,12 @@ We could use `em.count()` to get the number of entities, but since we want to re
 
 ```ts title='app.ts'
 app.get('/article', async request => {
-   const { limit, offset } = request.query as { limit?: number; offset?: number };
-   const [items, total] = await orm.em.findAndCount(Article, {}, {
-      limit, offset,
-   });
+  const { limit, offset } = request.query as { limit?: number; offset?: number };
+  const [items, total] = await orm.em.findAndCount(Article, {}, {
+    limit, offset,
+  });
 
-   return { items, total };
+  return { items, total };
 });
 ```
 
@@ -117,30 +117,30 @@ Before we get to testing the first endpoint, let's refactor a bit to make the se
 import { EntityManager, EntityRepository, MikroORM, Options } from '@mikro-orm/sqlite';
 
 export interface Services {
-   orm: MikroORM;
-   em: EntityManager;
-   article: EntityRepository<Article>;
-   user: EntityRepository<User>;
-   tag: EntityRepository<Tag>;
+  orm: MikroORM;
+  em: EntityManager;
+  article: EntityRepository<Article>;
+  user: EntityRepository<User>;
+  tag: EntityRepository<Tag>;
 }
 
 let cache: Services;
 
 export async function initORM(options?: Options): Promise<Services> {
-   if (cache) {
-      return cache;
-   }
+  if (cache) {
+    return cache;
+  }
 
-   const orm = await MikroORM.init(options);
+  const orm = await MikroORM.init(options);
 
-   // save to cache before returning
-   return cache = {
-      orm,
-      em: orm.em,
-      article: orm.em.getRepository(Article),
-      user: orm.em.getRepository(User),
-      tag: orm.em.getRepository(Tag),
-   };
+  // save to cache before returning
+  return cache = {
+    orm,
+    em: orm.em,
+    article: orm.em.getRepository(Article),
+    user: orm.em.getRepository(User),
+    tag: orm.em.getRepository(Tag),
+  };
 }
 ```
 
@@ -152,32 +152,32 @@ import { fastify } from 'fastify';
 import { initORM } from './db.js';
 
 export async function bootstrap(port = 3001) {
-   const db = await initORM();
-   const app = fastify();
+  const db = await initORM();
+  const app = fastify();
 
-   // register request context hook
-   app.addHook('onRequest', (request, reply, done) => {
-      RequestContext.create(db.em, done);
-   });
+  // register request context hook
+  app.addHook('onRequest', (request, reply, done) => {
+    RequestContext.create(db.em, done);
+  });
 
-   // shut down the connection when closing the app
-   app.addHook('onClose', async () => {
-      await db.orm.close();
-   });
+  // shut down the connection when closing the app
+  app.addHook('onClose', async () => {
+    await db.orm.close();
+  });
 
-   // register routes here
-   app.get('/article', async request => {
-      const { limit, offset } = request.query as { limit?: number; offset?: number };
-      const [items, total] = await db.article.findAndCount({}, {
-         limit, offset,
-      });
+  // register routes here
+  app.get('/article', async request => {
+    const { limit, offset } = request.query as { limit?: number; offset?: number };
+    const [items, total] = await db.article.findAndCount({}, {
+      limit, offset,
+    });
 
-      return { items, total };
-   });
+    return { items, total };
+  });
 
-   const url = await app.listen({ port });
+  const url = await app.listen({ port });
 
-   return { app, url };
+  return { app, url };
 }
 ````
 
@@ -218,23 +218,23 @@ import { bootstrap } from '../src/app.js';
 import { initORM } from '../src/db.js';
 
 export async function initTestApp(port: number) {
-   // this will create all the ORM services and cache them
-   const { orm } = await initORM({
-      // no need for debug information, it would only pollute the logs 
-      debug: false,
-      // we will use in-memory database, this way we can easily parallelize our tests
-      dbName: ':memory:',
-      // this will ensure the ORM discovers TS entities, with ts-node or ts-jest
-      // it gets inferred automatically, but we are using vitest here
-      tsNode: true,
-   });
+  // this will create all the ORM services and cache them
+  const { orm } = await initORM({
+    // no need for debug information, it would only pollute the logs 
+    debug: false,
+    // we will use in-memory database, this way we can easily parallelize our tests
+    dbName: ':memory:',
+    // this will ensure the ORM discovers TS entities, with ts-node, ts-jest and vitest
+    // it will be inferred automatically, but we are using vitest here
+    // tsNode: true,
+  });
 
-   // create the schema so we can use the database
-   await orm.schema.createSchema();
+  // create the schema so we can use the database
+  await orm.schema.createSchema();
 
-   const { app } = await bootstrap(port);
+  const { app } = await bootstrap(port);
 
-   return app;
+  return app;
 }
 ```
 
@@ -250,30 +250,30 @@ import { initTestApp } from './utils.js';
 let app: FastifyInstance;
 
 beforeAll(async () => {
-   // we use different ports to allow parallel testing
-   app = await initTestApp(30001);
+  // we use different ports to allow parallel testing
+  app = await initTestApp(30001);
 });
 
 afterAll(async () => {
-   // we close only the fastify app - it will close the database connection via onClose hook automatically
-   await app.close();
+  // we close only the fastify app - it will close the database connection via onClose hook automatically
+  await app.close();
 });
 
 test('list all articles', async () => {
-   // mimic the http request via `app.inject()`
-   const res = await app.inject({
-      method: 'get',
-      url: '/article',
-   });
+  // mimic the http request via `app.inject()`
+  const res = await app.inject({
+    method: 'get',
+    url: '/article',
+  });
 
-   // assert it was successful response
-   expect(res.statusCode).toBe(200);
+  // assert it was successful response
+  expect(res.statusCode).toBe(200);
 
-   // with expected shape
-   expect(res.json()).toMatchObject({
-      items: [],
-      total: 0,
-   });
+  // with expected shape
+  expect(res.json()).toMatchObject({
+    items: [],
+    total: 0,
+  });
 });
 ```
 
@@ -299,13 +299,13 @@ Run `npm test` again, you should be good to go:
  ✓ test/article.test.ts (1)
 
 Test Files  1 passed (1)
-     Tests  1 passed (1)
+    Tests  1 passed (1)
   Start at  15:56:41
   Duration  876ms (transform 264ms, setup 0ms, collect 300ms, tests 147ms)
 
 
  PASS  Waiting for file changes...
-       press h to show help, press q to quit
+     press h to show help, press q to quit
 ```
 
 ### Note about unit tests
@@ -373,7 +373,7 @@ import { Seeder } from '@mikro-orm/seeder';
 
 export class TestSeeder extends Seeder {
 
-   async run(em: EntityManager): Promise<void> {}
+  async run(em: EntityManager): Promise<void> {}
 
 }
 ```
@@ -383,33 +383,33 @@ Remember the `em.create()` function we described earlier? It has one special opt
 ```ts title='TestSeeder.ts'
 export class TestSeeder extends Seeder {
 
-   async run(em: EntityManager): Promise<void> {
-      em.create(User, {
-         fullName: 'Foo Bar',
-         email: 'foo@bar.com',
-         password: 'password123',
-         articles: [
-            {
-               title: 'title 1/3',
-               description: 'desc 1/3',
-               text: 'text text text 1/3',
-               tags: [{ id: 1, name: 'foo1' }, { id: 2, name: 'foo2' }],
-            },
-            {
-               title: 'title 2/3',
-               description: 'desc 2/3',
-               text: 'text text text 2/3',
-               tags: [{ id: 2, name: 'foo2' }],
-            },
-            {
-               title: 'title 3/3',
-               description: 'desc 3/3',
-               text: 'text text text 3/3',
-               tags: [{ id: 2, name: 'foo2' }, { id: 3, name: 'foo3' }],
-            },
-         ],
-      });
-   }
+  async run(em: EntityManager): Promise<void> {
+    em.create(User, {
+      fullName: 'Foo Bar',
+      email: 'foo@bar.com',
+      password: 'password123',
+      articles: [
+        {
+          title: 'title 1/3',
+          description: 'desc 1/3',
+          text: 'text text text 1/3',
+          tags: [{ id: 1, name: 'foo1' }, { id: 2, name: 'foo2' }],
+        },
+        {
+          title: 'title 2/3',
+          description: 'desc 2/3',
+          text: 'text text text 2/3',
+          tags: [{ id: 2, name: 'foo2' }],
+        },
+        {
+          title: 'title 3/3',
+          description: 'desc 3/3',
+          text: 'text text text 3/3',
+          tags: [{ id: 2, name: 'foo2' }, { id: 3, name: 'foo3' }],
+        },
+      ],
+    });
+  }
 
 }
 ```
@@ -425,12 +425,12 @@ And adjust the test assertion, as we now get 3 articles in the feed:
 
 ```ts title='article.test.ts'
 expect(res.json()).toMatchObject({
-   items: [
-      { author: 1, slug: 'title-13', title: 'title 1/3', text: 'text text text 1/3' },
-      { author: 1, slug: 'title-23', title: 'title 2/3', text: 'text text text 2/3' },
-      { author: 1, slug: 'title-33', title: 'title 3/3', text: 'text text text 3/3' },
-   ],
-   total: 3,
+  items: [
+    { author: 1, slug: 'title-13', title: 'title 1/3', text: 'text text text 1/3' },
+    { author: 1, slug: 'title-23', title: 'title 2/3', text: 'text text text 2/3' },
+    { author: 1, slug: 'title-33', title: 'title 3/3', text: 'text text text 3/3' },
+  ],
+  total: 3,
 });
 ```
 
@@ -462,9 +462,9 @@ Or via CLI:
 > To run the queries, replace `--dump` with `--run`.
 
 ```bash
-npx mikro-orm-esm schema:create --dump   # Dumps create schema SQL
-npx mikro-orm-esm schema:update --dump   # Dumps update schema SQL
-npx mikro-orm-esm schema:drop --dump     # Dumps drop schema SQL 
+npx mikro-orm-esm schema:create --dump  # Dumps create schema SQL
+npx mikro-orm-esm schema:update --dump  # Dumps update schema SQL
+npx mikro-orm-esm schema:drop --dump    # Dumps drop schema SQL 
 ```
 
 Your production database (the one in `sqlite.db` file in the root of your project) is probably out of sync, as we were mostly using the in-memory database inside the tests. Let's try to sync it via the CLI. First, run it with the `--dump` (or `-d`) flag to see what queries it generates, then run them via `--run` (or `-r`):
@@ -541,10 +541,10 @@ import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20220913202829 extends Migration {
 
-   async up(): Promise<void> {
-      this.addSql('create table `tag` (`id` integer not null primary key autoincrement, `created_at` datetime not null, `updated_at` datetime not null, `name` text not null);');
-      // ...
-   }
+  async up(): Promise<void> {
+    this.addSql('create table `tag` (`id` integer not null primary key autoincrement, `created_at` datetime not null, `updated_at` datetime not null, `name` text not null);');
+    // ...
+  }
 
 }
 ```
@@ -574,14 +574,14 @@ import { BaseEntity } from '../common/base.entity.js';
 @Entity()
 export class Comment extends BaseEntity {
 
-   @Property({ length: 1000 })
-   text!: string;
+  @Property({ length: 1000 })
+  text!: string;
 
-   @ManyToOne()
-   article!: Article;
+  @ManyToOne()
+  article!: Article;
 
-   @ManyToOne()
-   author!: User;
+  @ManyToOne()
+  author!: User;
 
 }
 ```
@@ -610,13 +610,13 @@ export async function initORM(options?: Options): Promise<Services> {
   // ...
 
   return cache = {
-    orm,
-    em: orm.em,
-    user: orm.em.getRepository(User),
-    article: orm.em.getRepository(Article),
-    // highlight-next-line
-    comment: orm.em.getRepository(Comment),
-    tag: orm.em.getRepository(Tag),
+   orm,
+   em: orm.em,
+   user: orm.em.getRepository(User),
+   article: orm.em.getRepository(Article),
+   // highlight-next-line
+   comment: orm.em.getRepository(Comment),
+   tag: orm.em.getRepository(Tag),
   };
 }
 ```
@@ -653,7 +653,7 @@ Migration20220913205718.ts successfully created
 npx mikro-orm-esm migration:pending
 
 ┌─────────────────────────┐
-│ Name                    │
+│ Name              │
 ├─────────────────────────┤
 │ Migration20220913205718 │
 └─────────────────────────┘
@@ -671,7 +671,7 @@ Successfully migrated up to the latest version
 npx mikro-orm-esm migration:list
 
 ┌─────────────────────────┬──────────────────────────┐
-│ Name                    │ Executed at              │
+│ Name              │ Executed at          │
 ├─────────────────────────┼──────────────────────────┤
 │ Migration20220913202829 │ 2022-09-13T18:57:12.000Z │
 │ Migration20220913205718 │ 2022-09-13T18:57:27.000Z │
@@ -694,14 +694,14 @@ Before we call it a day, let's automate running the migrations a bit - we can us
 
 ```ts title='app.ts'
 export async function bootstrap(port = 3001, migrate = true) {
-   const db = await initORM();
+  const db = await initORM();
 
-   if (migrate) {
-      // sync the schema
-      await db.orm.migrator.up();
-   }
+  if (migrate) {
+    // sync the schema
+    await db.orm.migrator.up();
+  }
 
-   // ...
+  // ...
 }
 ```
 
@@ -709,14 +709,14 @@ We need to do this conditionally, as we want to run the migrations only for the 
 
 ```ts title='utils.ts'
 export async function initTestApp(port: number) {
-   const { orm } = await initORM({ ... });
+  const { orm } = await initORM({ ... });
 
-   await orm.schema.createSchema();
-   await orm.seeder.seed(TestSeeder);
+  await orm.schema.createSchema();
+  await orm.seeder.seed(TestSeeder);
 
-   const { app } = await bootstrap(port, false); // <-- here
+  const { app } = await bootstrap(port, false); // <-- here
 
-   return app;
+  return app;
 }
 ```
 

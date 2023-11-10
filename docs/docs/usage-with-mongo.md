@@ -15,13 +15,12 @@ To use MikroORM with mongo database, do not forget to install `@mikro-orm/mongod
 > We need to use `clientUrl` to setup hosts, using `host` or `port` is not supported.
 
 ```ts
-import type { MongoDriver } from '@mikro-orm/mongodb'; // or any other SQL driver package
+import { MikroORM } from '@mikro-orm/mongodb'; // or any other driver package
 
-const orm = await MikroORM.init<MongoDriver>({
+const orm = await MikroORM.init({
   entities: [Author, Book, ...],
   dbName: 'my-db-name',
   clientUrl: '...',
-  type: 'mongo',
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```
@@ -75,7 +74,7 @@ Starting with v3.4, MongoDB driver supports transactions. To use transactions, t
   - use `implicitTransactions: true` to enable them globally
   - or use explicit transaction demarcation via `em.transactional()`
 - you need to explicitly create all collections before working with them
-  - use `orm.getSchemaGenerator().createSchema()` method to do so
+  - use `orm.schema.createSchema()` method to do so
 
 ```sh
 # first create replica set
@@ -83,31 +82,26 @@ $ run-rs -v 4.2.3
 ```
 
 ```ts
-import { MikroORM } from '@mikro-orm/core';
-import { MongoDriver } from '@mikro-orm/mongodb';
+// make sure to import from the MongoDriver package
+import { MikroORM } from '@mikro-orm/mongodb';
 
-// make sure to provide the MongoDriver type hint
-const orm = await MikroORM.init<MongoDriver>({
+const orm = await MikroORM.init({
   entities: [Author, Book, ...],
   clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/my-db-name?replicaSet=rs0',
-  type: 'mongo',
   implicitTransactions: true, // defaults to false
 });
 
-await orm.getSchemaGenerator().createSchema();
+await orm.schema.createSchema();
 ```
-
-> The `createCollections` method is present on the `MongoDriver` class only. You need to have the entity manager correctly typed (as `EntityManager<MongoDriver>`).
 
 ## Indexes
 
 Starting with v3.4, MongoDB driver supports indexes and unique constraints. You can use `@Index()` and `@Unique()` as described in [Defining Entities section](defining-entities.md#indexes). To automatically create new indexes when initializing the ORM, you need to enable `ensureIndexes` option.
 
 ```ts
-const orm = await MikroORM.init<MongoDriver>({
+const orm = await MikroORM.init({
   entities: [Author, Book, ...],
   dbName: 'my-db-name',
-  type: 'mongo',
   ensureIndexes: true, // defaults to false
 });
 ```
@@ -117,7 +111,7 @@ Alternatively you can call `ensureIndexes()` method on the `SchemaGenerator`:
 > SchemaGenerator support for mongo was introduced in v5.
 
 ```ts
-await orm.getSchemaGenerator().ensureIndexes();
+await orm.schema.ensureIndexes();
 ```
 
 You can pass additional index/unique options via `options` parameter:
@@ -149,10 +143,10 @@ To set index weights, you can pass a tuple to the `options` parameter:
 
 ## Native collection methods
 
-Sometimes you need to perform some bulk operation, or you just want to populate your database with initial fixtures. Using ORM for such operations can bring unnecessary boilerplate code. In this case, you can use one of `nativeInsert/nativeUpdate/nativeDelete` methods:
+Sometimes you need to perform some bulk operation, or you just want to populate your database with initial fixtures. Using ORM for such operations can bring unnecessary boilerplate code. In this case, you can use one of `insert/nativeUpdate/nativeDelete` methods:
 
 ```ts
-em.nativeInsert<T extends AnyEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
+em.insert<T extends AnyEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
 em.nativeUpdate<T extends AnyEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<number>;
 em.nativeDelete<T extends AnyEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
 ```
@@ -162,7 +156,7 @@ Those methods execute native driver methods like Mongo's `insertOne/updateMany/d
 They are also available as `EntityRepository` shortcuts:
 
 ```ts
-EntityRepository.nativeInsert(data: any): Promise<IPrimaryKey>;
+EntityRepository.insert(data: any): Promise<IPrimaryKey>;
 EntityRepository.nativeUpdate(where: FilterQuery<T>, data: any): Promise<number>;
 EntityRepository.nativeDelete(where: FilterQuery<T> | any): Promise<number>;
 ```

@@ -100,7 +100,7 @@ user.cars.add(car);
 
 // thanks to bi-directional cascading we only need to persist user entity
 // flushing will create a transaction, insert new car and update user with new email
-await em.persistAndFlush(user);
+await em.persist(user).flush();
 ```
 
 You can find more information about transactions in [Transactions and concurrency](transactions.md) page.

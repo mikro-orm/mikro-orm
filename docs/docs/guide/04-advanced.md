@@ -424,14 +424,14 @@ Before we move on back to the article endpoint, let's improve our user entity a 
 @Embeddable()
 export class Social {
 
-   @Property()
-   twitter?: string;
+  @Property()
+  twitter?: string;
 
-   @Property()
-   facebook?: string;
+  @Property()
+  facebook?: string;
 
-   @Property()
-   linkedin?: string;
+  @Property()
+  linkedin?: string;
 
 }
 

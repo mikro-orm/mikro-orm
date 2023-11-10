@@ -96,10 +96,10 @@ export class FooBar {
 }
 ```
 
-If our type implementation is stateful, e.g. if we want the type to behave differently for each property, we can use `customType` option and provide an instance of the type:
+If your type implementation is stateful, e.g. if you want the type to behave differently for each property, provide an instance of the type:
 
 ```ts
-@Property({ customType: new MyDateType('DD-MM-YYYY') })
+@Property({ type: new MyDateType('DD-MM-YYYY') })
 born?: string;
 ```
 

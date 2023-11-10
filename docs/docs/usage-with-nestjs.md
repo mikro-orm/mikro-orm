@@ -34,7 +34,6 @@ Once the installation process is completed, we can import the `MikroOrmModule` i
       entities: ['./dist/entities'],
       entitiesTs: ['./src/entities'],
       dbName: 'my-db-name.sqlite3',
-      type: 'sqlite',
     }),
   ],
   controllers: [AppController],

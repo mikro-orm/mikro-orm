@@ -27,7 +27,7 @@ MikroORM.init({
 
 > Be careful when overriding the `baseDir` with dynamic values like `__dirname`, as you can end up with valid paths from `ts-node`, but invalid paths from `node`. Ideally you should keep the default of `process.cwd()` there to always have the same base path regardless of how you run the app.
 
-By default, `ReflectMetadataProvider` is used that leverages the `reflect-metadata`. You can also use `TsMorphMetadataProvider` by installing `@mikro-orm/reflection`. This provider will analyse your entity source files (or `.d.ts` type definition files). If you aim to use plain JavaScript instead of TypeScript, use `EntitySchema` or the `JavaScriptMetadataProvider`.
+By default, `ReflectMetadataProvider` is used that leverages the `reflect-metadata`. You can also use `TsMorphMetadataProvider` by installing `@mikro-orm/reflection`. This provider will analyse your entity source files (or `.d.ts` type definition files). If you aim to use plain JavaScript instead of TypeScript, use `EntitySchema`.
 
 > You can also implement your own metadata provider and use it instead. To do so, extend the `MetadataProvider` class.
 
@@ -162,7 +162,6 @@ MikroORM.init({
 >
 > ```ts
 > MikroORM.init({
->   type: 'mysql',
 >   timezone: '+02:00',
 > });
 > ```
@@ -206,7 +205,6 @@ To set up read replicas, you can use `replicas` option. You can provide only tho
 
 ```ts
 MikroORM.init({
-  type: 'mysql',
   dbName: 'my_db_name',
   user: 'write-user',
   host: 'master.db.example.com',
@@ -227,7 +225,6 @@ Many cloud providers include alternative methods for connecting to database inst
 
 ```ts
 MikroORM.init({
-  type: 'mysql',
   dbName: 'my_db_name',
   password: async () => someCallToGetTheToken(),
 });
@@ -237,7 +234,6 @@ The password callback value will be cached, to invalidate this cache we can spec
 
 ```ts
 MikroORM.init({
-  type: 'mysql',
   dbName: 'my_db_name',
   password: async () => {
     const { token, tokenExpiration } = await someCallToGetTheToken();
@@ -480,7 +476,7 @@ By default, metadata discovery results are cached. You can either disable cachin
 
 ```ts
 MikroORM.init({
-  cache: {
+  metadataCache: {
     enabled: true,
     pretty: false, // allows to pretty print the JSON cache
     adapter: FileCacheAdapter, // you can provide your own implementation here, e.g. with redis

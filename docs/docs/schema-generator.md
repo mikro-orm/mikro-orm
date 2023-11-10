@@ -69,7 +69,7 @@ import { MikroORM } from '@mikro-orm/core';
     dbName: 'your-db-name',
     // ...
   });
-  const generator = orm.getSchemaGenerator();
+  const generator = orm.schema;
 
   const dropDump = await generator.getDropSchemaSQL();
   console.log(dropDump);

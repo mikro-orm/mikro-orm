@@ -55,7 +55,7 @@ Once the installation process is completed, we need to set up AdminJS endpoints 
 import AdminJS from 'adminjs';
 import { Database, Resource } from '@adminjs/mikroorm';
 import AdminJSExpress from '@adminjs/express';
-import { MikroORM } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/postgresql';
 import { validate } from 'class-validator'; // optional
 
 const PORT = process.env.PORT ?? 3000;
@@ -65,7 +65,6 @@ const run = async () => {
   const orm = await MikroORM.init({
     entities: [User, Car, Seller], // use your own entities
     dbName: process.env.DATABASE_NAME,
-    type: 'postgresql',
     clientUrl: process.env.DATABASE_URL,
   });
 
@@ -99,7 +98,7 @@ run();
 import AdminJS from 'adminjs';
 import { Database, Resource } from '@adminjs/mikroorm';
 import AdminJSHapi from '@adminjs/hapi';
-import { MikroORM } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/postgresql';
 import { validate } from 'class-validator'; // optional
 
 const PORT = process.env.PORT ?? 3000;
@@ -109,7 +108,6 @@ const run = async () => {
   const orm = await MikroORM.init({
     entities: [User, Car, Seller], // use your own entities
     dbName: process.env.DATABASE_NAME,
-    type: 'postgresql',
     clientUrl: process.env.DATABASE_URL,
   });
 

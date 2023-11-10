@@ -11,7 +11,7 @@ This section shows how the semantics of composite primary keys work and how they
 
 ## General Considerations
 
-ID fields have to have their values set before you call `em.persist(entity)`.
+Primary keys need to have their values set before you call `em.persist(entity)`.
 
 ## Primitive Types only
 
@@ -27,7 +27,8 @@ export class Car {
   @PrimaryKey()
   year: number;
 
-  [PrimaryKeyType]?: [string, number]; // this is needed for proper type checks in `FilterQuery`
+  // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyProp]?: ['name', 'year'];
 
   constructor(name: string, year: number) {
     this.name = name;
@@ -41,7 +42,7 @@ Now you can use this entity:
 
 ```ts
 const car = new Car('Audi A8', 2010);
-await em.persistAndFlush(car);
+await em.persist(car).flush();
 ```
 
 And for querying you need to provide all primary keys in the condition or an array of primary keys in the same order as the keys were defined:
@@ -51,9 +52,9 @@ const audi1 = await em.findOneOrFail(Car, { name: 'Audi A8', year: 2010 });
 const audi2 = await em.findOneOrFail(Car, ['Audi A8', 2010]);
 ```
 
-> If we want to use the second approach with primary key tuple, we will need to specify the type of entity's primary key via `PrimaryKeyType` symbol as shown in the `Car` entity.
+> If you want to use the second approach with primary key tuple, you will need to specify the type of entity's primary key via `PrimaryKeyProp` symbol as shown in the `Car` entity.
 
-> `PrimaryKeyType` is not needed when your entity has single scalar primary key under one of following property names: `id: number | string | bigint`, `_id: any` or `uuid: string`.
+> `PrimaryKeyProp` is not needed when your entity has single scalar primary key under one of following property names: `id: number | string | bigint`, `_id: any` or `uuid: string`.
 
 You can also use this entity in associations. MikroORM will then generate two foreign keys one for name and to year to the related entities.
 
@@ -103,7 +104,7 @@ export class ArticleAttribute {
   @Property()
   value!: string;
 
-  [PrimaryKeyType]?: [number, string]; // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyProp]?: ['article', 'attribute']; // this is needed for proper type checks in `FilterQuery`
 
   constructor(name: string, value: string, article: Article) {
     this.attribute = name;
@@ -136,7 +137,7 @@ export class Address {
   @OneToOne({ primary: true })
   user!: User;
 
-  [PrimaryKeyType]?: number; // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyProp]?: 'user'; // this is needed for proper type checks in `FilterQuery`
 
 }
 ```
@@ -202,7 +203,7 @@ export class OrderItem {
   @Property()
   offeredPrice: number;
 
-  [PrimaryKeyType]?: [number, number]; // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyProp]?: ['order', 'product']; // this is needed for proper type checks in `FilterQuery`
 
   constructor(order: Order, product: Product, amount = 1) {
     this.order = order;

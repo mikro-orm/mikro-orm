@@ -40,7 +40,7 @@ const book3 = new Book('My Life on The Wall, part 3', author);
 book3.publisher = publisher;
 
 // just persist books, author and publisher will be automatically cascade persisted
-await em.persistAndFlush([book1, book2, book3]);
+await em.persist([book1, book2, book3]).flush();
 
 // or one by one
 em.persist(book1);
@@ -581,7 +581,12 @@ For more examples, take a look at [`tests/EntityManager.mongo.test.ts`](https://
 Entity properties provide some support for custom ordering via the `customOrder` attribute. This is useful for values that have a natural order that doesn't align with their underlying data representation. Consider the code below, the natural sorting order would be `high`, `low`, `medium`. However we can provide the `customOrder` to indicate how the enum values should be sorted.
 
 ```ts
-enum Priority { Low = 'low', Medium = 'medium', High = 'high' }
+enum Priority {
+  Low = 'low',
+  Medium = 'medium',
+  High = 'high',
+}
+
 @Entity()
 class Task {
   @PrimaryKey()
@@ -599,11 +604,10 @@ class Task {
 
 // ...
 
-await em.persistAndFlush([
-  em.create(Task, { label: 'A', priority: Priority.Low }),
-  em.create(Task, { label: 'B', priority: Priority.Medium }),
-  em.create(Task, { label: 'C', priority: Priority.High })
-]);
+em.create(Task, { label: 'A', priority: Priority.Low }),
+em.create(Task, { label: 'B', priority: Priority.Medium }),
+em.create(Task, { label: 'C', priority: Priority.High })
+await em.flush();
 
 const tasks = await em.find(Task, {}, { orderBy: { priority: QueryOrder.ASC } });
 for (const t of tasks) {

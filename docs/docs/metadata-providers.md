@@ -125,17 +125,10 @@ author: Author;
 
 We might have to install additional typings, one example is use of `ObjectId` in MongoDB, which requires `@types/mongodb` to be installed.
 
-## JavaScriptMetadataProvider
+## Using EntitySchema
 
-> `JavaScriptMetadataProvider` is deprecated, [use `EntitySchema` instead](entity-schema.md).
+Alternatively, you can use [`EntitySchema`](entity-schema.md) instead, which is suitable for JavaScript only projects.
 
-This provider should be used only if we are not using TypeScript at all and therefore we do not use decorators to annotate our properties. It will require us to specify the whole schema manually.
+> If you want to have absolute control, you can also use `EntitySchema.fromMetadata()` factory method.
 
-```ts
-await MikroORM.init({
-  metadataProvider: JavaScriptMetadataProvider,
-  // ...
-});
-```
-
-We can read more about it in [Usage with JavaScript section](usage-with-js.md).
+Read more about it in [Usage with JavaScript section](usage-with-js.md).

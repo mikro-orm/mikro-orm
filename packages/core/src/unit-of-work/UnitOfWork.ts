@@ -201,12 +201,7 @@ export class UnitOfWork {
   /**
    * Returns stored snapshot of entity state that is used for change set computation.
    */
-  getOriginalEntityData<T extends object>(entity: T): EntityData<T> | undefined;
-
-  /**
-   * Returns stored snapshot of entity state that is used for change set computation.
-   */
-  getOriginalEntityData<T extends object>(entity?: T): EntityData<AnyEntity>[] | EntityData<T> | undefined {
+  getOriginalEntityData<T extends object>(entity: T): EntityData<T> | undefined {
     return helper(entity as T).__originalEntityData;
   }
 

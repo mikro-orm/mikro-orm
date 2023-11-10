@@ -116,7 +116,7 @@ export const UserSchema = new EntitySchema({
   class: User,
   properties: {
     id: { primary: true, type: 'number' },
-    address: { reference: 'embedded', entity: 'Address' },
+    address: { kind: 'embedded', entity: 'Address' },
   },
 });
 
@@ -171,7 +171,7 @@ address = new Address();
   <TabItem value="entity-schema">
 
 ```ts title="./entities/User.ts"
-address: { reference: 'embedded', entity: 'Address', onCreate: () => new Address() },
+address: { kind: 'embedded', entity: 'Address', onCreate: () => new Address() },
 ```
 
   </TabItem>
@@ -225,7 +225,7 @@ export class User {
   <TabItem value="entity-schema">
 
 ```ts title="./entities/User.ts"
-address: { reference: 'embedded', entity: 'Address', prefix: 'myPrefix_' },
+address: { kind: 'embedded', entity: 'Address', prefix: 'myPrefix_' },
 ```
 
   </TabItem>
@@ -261,7 +261,7 @@ address!: Address;
   <TabItem value="entity-schema">
 
 ```ts title="./entities/User.ts"@Entity()
-address: { reference: 'embedded', entity: 'Address', prefix: false },
+address: { kind: 'embedded', entity: 'Address', prefix: false },
 ```
 
   </TabItem>
@@ -299,7 +299,7 @@ address!: Address;
   <TabItem value="entity-schema">
 
 ```ts title="./entities/User.ts"
-address: { reference: 'embedded', entity: 'Address', object: true },
+address: { kind: 'embedded', entity: 'Address', object: true },
 ```
 
   </TabItem>
@@ -343,7 +343,7 @@ addresses: Address[] = [];
   <TabItem value="entity-schema">
 
 ```ts title="./entities/User.ts"
-address: { reference: 'embedded', entity: 'Address', onCreate: () => [], array: true },
+address: { kind: 'embedded', entity: 'Address', onCreate: () => [], array: true },
 ```
 
   </TabItem>
@@ -487,7 +487,7 @@ export const UserSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'number' },
     name: { type: 'string' },
-    address: { reference: 'embedded', entity: 'Address' },
+    address: { kind: 'embedded', entity: 'Address' },
   },
 });
 
@@ -496,7 +496,7 @@ export const ProfileSchema = new EntitySchema({
   embeddable: true,
   properties: {
     username: { type: 'string' },
-    identity: { reference: 'embedded', entity: 'Identity' },
+    identity: { kind: 'embedded', entity: 'Identity' },
   },
 });
 
@@ -703,7 +703,7 @@ export const AnimalSchema = new EntitySchema({
   discriminatorColumn: 'type',
   properties: {
     username: { type: 'string' },
-    identity: { reference: 'embedded', entity: 'Identity' },
+    identity: { kind: 'embedded', entity: 'Identity' },
   },
 });
 
@@ -732,7 +732,7 @@ export const OwnerSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'number' },
     name: { type: 'string' },
-    pet: { reference: 'embedded', entity: 'Cat | Dog' },
+    pet: { kind: 'embedded', entity: 'Cat | Dog' },
   },
 });
 ```

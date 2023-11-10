@@ -2,8 +2,7 @@
 title: Quick Start
 ---
 
-In this guide, you will learn how to quickly bootstrap a simple project using MikroORM. For a deeper dive, check out
-the [Getting Started guide](./guide) which follows.
+In this guide, you will learn how to quickly bootstrap a simple project using MikroORM. For a deeper dive, check out the [Getting Started guide](./guide) which follows.
 
 ## Installation
 
@@ -29,11 +28,9 @@ npm install @mikro-orm/core @mikro-orm/sqlite;
 npm install @mikro-orm/core @mikro-orm/better-sqlite; 
 ```
 
-Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) as
-well as `esModuleInterop` in `tsconfig.json` via:
+Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) as well as `esModuleInterop` in `tsconfig.json` via:
 
-> The decorators are opt-in, if you use a different way to define your entity metadata like `EntitySchema`, you don't
-> need to enable them.
+> The decorators are opt-in, if you use a different way to define your entity metadata like `EntitySchema`, you don't need to enable them.
 
 ```json
 "experimentalDecorators": true,
@@ -43,9 +40,7 @@ well as `esModuleInterop` in `tsconfig.json` via:
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
-> To access driver specific methods like `em.createQueryBuilder()` you need to import
-> the `MikroORM`/`EntityManager`/`EntityRepository` class from the driver package. Alternatively you can cast the `orm.em`
-> to `EntityManager` exported from the driver package:
+> To access driver specific methods like `em.createQueryBuilder()` you need to import the `MikroORM`/`EntityManager`/`EntityRepository` class from the driver package. Alternatively you can cast the `orm.em` to `EntityManager` exported from the driver package:
 >
 > ```ts
 > import { EntityManager } from '@mikro-orm/postgresql';
@@ -67,9 +62,7 @@ You can read more about all the possible configuration options in [Advanced Conf
 
 ## Folder-based discovery
 
-You can also provide paths where we store our entities via `entities` array. Internally it
-uses [`globby`](https://github.com/sindresorhus/globby) so we can
-use [globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns), including negative globs.
+You can also provide paths where we store our entities via `entities` array. Internally it uses [`globby`](https://github.com/sindresorhus/globby) so we can use [globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns), including negative globs.
 
 ```ts
 const orm = await MikroORM.init({
@@ -79,17 +72,17 @@ const orm = await MikroORM.init({
 });
 ```
 
-If you are experiencing problems with folder based discovery, try using `mikro-orm debug` CLI command to check what
-paths are actually being used.
+If you are experiencing problems with folder based discovery, try using `mikro-orm debug` CLI command to check what paths are actually being used.
 
 ## Entity Discovery in TypeScript
 
-In v4 the default metadata provider is `ReflectMetadataProvider`. If you want to use `ts-morph` based discovery (that reads actual TS types via the compiler API), you need to install `@mikro-orm/reflection`.
+The default metadata provider is `ReflectMetadataProvider`. If you want to use `ts-morph` based discovery (that reads actual TS types via the compiler API), you need to install `@mikro-orm/reflection` package.
 
 ```ts
+import { MikroORM } from '@mikro-orm/postgresql';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
-const orm = await MikroORM.init<PostgreSqlDriver>({
+const orm = await MikroORM.init({
   metadataProvider: TsMorphMetadataProvider,
   // ...
 });
@@ -98,7 +91,9 @@ const orm = await MikroORM.init<PostgreSqlDriver>({
 Read more about the differences in [Metadata Providers section](metadata-providers.md).
 
 ```ts
-const orm = await MikroORM.init<PostgreSqlDriver>({
+import { MikroORM } from '@mikro-orm/postgresql';
+
+const orm = await MikroORM.init({
   entities: ['./dist/entities/**/*.js'], // path to your JS entities (dist), relative to `baseDir`
   entitiesTs: ['./src/entities/**/*.ts'], // path to your TS entities (source), relative to `baseDir`
   // ...
@@ -112,13 +107,14 @@ const orm = await MikroORM.init<PostgreSqlDriver>({
 We can also use different [metadata provider](metadata-providers.md) or even write custom one:
 
 - `ReflectMetadataProvider` that uses `reflect-metadata` instead of `ts-morph`
-- `JavaScriptMetadataProvider` that allows you to manually provide the entity schema (mainly for Vanilla JS)
 
-> Using [`EntitySchema`](entity-schema.md) is another way to define your entities, which is better suited than using `JavaScriptMetadataProvider`.
+Using [`EntitySchema`](entity-schema.md) is another way to define your entities and does not depend on the metadata providers at all.
 
 ```ts
-const orm = await MikroORM.init<PostgreSqlDriver>({
-  // default in v4, so not needed to specify explicitly
+import { MikroORM } from '@mikro-orm/postgresql';
+
+const orm = await MikroORM.init({
+  // default since v4, so not needed to specify explicitly
   metadataProvider: ReflectMetadataProvider,
   // ...
 });
@@ -223,7 +219,7 @@ const book3 = new Book('My Life on The Wall, part 3', author);
 book3.publisher = publisher;
 
 // just persist books, author and publisher will be automatically cascade persisted
-await em.persistAndFlush([book1, book2, book3]);
+await em.persist([book1, book2, book3]).flush();
 ```
 
 To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`:
@@ -306,17 +302,19 @@ MikroORM will always try to load the first available config file, based on the o
 ```
 
 ```ts title="./src/mikro-orm.config.ts"
+import { SqliteDriver } from '@mikro-orm/sqlite';
+
 export default {
   entities: [Author, Book, BookTag], // no need for `entitiesTs` this way
   dbName: 'my-db-name',
-  type: 'mongo', // one of `mongo` | `mysql` | `mariadb` | `postgresql` | `sqlite`
+  driver: SqliteDriver, // one of the supported driver classes
 };
 ```
 
 To have the config type-safe, we can define the options variable first, with the `Options` type:
 
-```ts
-import { Options } from '@mikro-orm/core';
+```ts title="./src/mikro-orm.config.ts"
+import { Options } from '@mikro-orm/sqlite';
 
 const config: Options = {
   // ...
@@ -327,11 +325,15 @@ export default config;
 
 Alternatively, we can use the `defineConfig` helper that should provide intellisense even in JavaScript files, without the need for type hints via jsdoc:
 
+> Using `defineConfig` also automatically infers the driver option for you if you import the helper from the driver package
+
 ```ts
-import { defineConfig } from '@mikro-orm/core';
+import { defineConfig } from '@mikro-orm/sqlite';
 
 export default defineConfig({
-  // ...
+  entities: [Author, Book, BookTag], // no need for `entitiesTs` this way
+  dbName: 'my-db-name',
+  // driver: SqliteDriver, // this is inferred as we import `defineConfig` from sqlite package
 });
 ```
 

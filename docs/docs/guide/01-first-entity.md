@@ -172,6 +172,8 @@ Lastly, add some NPM scripts to ease the development. We will build the app via 
 
 This issue with dynamic imports can surface for both the CLI usage and `vitest`. While the `--loader` solution works for the CLI, we can use something more vite-native for `vitest`, let's talk about that part later when you start writing the first test.
 
+> The `ts-node` binary works only on older Node.js versions, for v20 or above, we need to use `node --loader ts-node/esm` instead.
+
 ```json title='package.json'
 {
   "type": "module",
@@ -180,7 +182,7 @@ This issue with dynamic imports can surface for both the CLI usage and `vitest`.
   "mikro-orm": { ... },
   "scripts": {
     "build": "tsc",
-    "start": "ts-node src/server.ts",
+    "start": "node --no-warnings=ExperimentalWarning --loader ts-node/esm src/server.ts",
     "test": "vitest"
   }
 }

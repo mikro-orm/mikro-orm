@@ -32,12 +32,12 @@ const em = orm.em as EntityManager;
 const qb = await em.createQueryBuilder(...);
 ```
 
-To have the `orm.em` variable properly typed, we can use generic type parameter of `MikroORM.init()`:
+To have the `orm.em` variable properly typed, you have to import the `MikroORM` from your driver package:
 
 ```ts
-import { MySqlDriver } from '@mikro-orm/mysql'; // or any other SQL driver package
+import { MikroORM } from '@mikro-orm/mysql'; // or any other SQL driver package
 
-const orm = await MikroORM.init<MySqlDriver>({
+const orm = await MikroORM.init({
   // ...
 });
 console.log(orm.em); // access EntityManager via `em` property

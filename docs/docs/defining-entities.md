@@ -95,9 +95,9 @@ export const Book = new EntitySchema<IBook, CustomBaseEntity>({
   extends: 'CustomBaseEntity',
   properties: {
     title: { type: 'string' },
-    author: { reference: 'm:1', entity: 'Author' },
-    publisher: { reference: 'm:1', entity: 'Publisher', ref: true, nullable: true },
-    tags: { reference: 'm:n', entity: 'BookTag', fixedOrder: true },
+    author: { kind: 'm:1', entity: 'Author' },
+    publisher: { kind: 'm:1', entity: 'Publisher', ref: true, nullable: true },
+    tags: { kind: 'm:n', entity: 'BookTag', fixedOrder: true },
   },
 });
 ```
@@ -272,9 +272,9 @@ export const AuthorSchema = new EntitySchema<Author>({
     termsAccepted: { type: Boolean }
     identities: { type: 'string[]', nullable: true }
     born: { type: Date, nullable: true }
-    books: { reference: '1:m', entity: () => Book, mappedBy: book => book.author }
-    friends: { reference: 'm:n', entity: () => Author }
-    favouriteBook: { reference: 'm:1', entity: () => Book, nullable: true };
+    books: { kind: '1:m', entity: () => Book, mappedBy: book => book.author }
+    friends: { kind: 'm:n', entity: () => Author }
+    favouriteBook: { kind: 'm:1', entity: () => Book, nullable: true };
     version: { type: Number, version: true };
   },
 });
@@ -320,7 +320,7 @@ favouriteBook?: Book;
 
 ```ts title="./entities/Author.ts"
 properties: {
-  favouriteBook: { reference: 'm:1', entity: () => Book, nullable: true },
+  favouriteBook: { kind: 'm:1', entity: () => Book, nullable: true },
 },
 ```
 
@@ -1543,8 +1543,8 @@ export const BookSchema = new EntitySchema<Book>({
   properties: {
     id: { type: Number, primary: true },
     title: { type: String },
-    author: { reference: 'm:1', entity: 'Author' },
-    publisher: { reference: 'm:1', entity: 'Publisher', ref: true, nullable: true },
+    author: { kind: 'm:1', entity: 'Author' },
+    publisher: { kind: 'm:1', entity: 'Publisher', ref: true, nullable: true },
   },
 });
 ```
@@ -1619,7 +1619,7 @@ export const Book = new EntitySchema<IBook>({
   properties: {
     uuid: { type: 'uuid', onCreate: () => v4(), primary: true },
     title: { type: 'string' },
-    author: { entity: () => Author, reference: 'm:1' },
+    author: { entity: () => Author, kind: 'm:1' },
   },
 });
 ```
@@ -1690,7 +1690,7 @@ export const BookSchema = new EntitySchema<Book>({
   properties: {
     uuid: { type: 'uuid', defaultRaw: 'uuid_generate_v4()', primary: true },
     title: { type: 'string' },
-    author: { entity: () => Author, reference: 'm:1' },
+    author: { entity: () => Author, kind: 'm:1' },
   },
 });
 ```

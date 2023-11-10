@@ -50,7 +50,7 @@ When creating an entity the fork will set default schema
 const fork = em.fork({ schema: 'client-123' });
 const user = new User();
 user.email = 'foo@bar.com';
-await fork.persistAndFlush(user);
+await fork.persist(user).flush();
 
 // Will yield the same result as
 const qb = em.createQueryBuilder(User);
