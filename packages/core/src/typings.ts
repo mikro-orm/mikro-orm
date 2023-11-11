@@ -101,6 +101,9 @@ export type OperatorMap<T> = {
   $in?: ExpandScalar<T>[];
   $nin?: ExpandScalar<T>[];
   $not?: Query<T>;
+  $none?: Query<T>;
+  $some?: Query<T>;
+  $every?: Query<T>;
   $gt?: ExpandScalar<T>;
   $gte?: ExpandScalar<T>;
   $lt?: ExpandScalar<T>;

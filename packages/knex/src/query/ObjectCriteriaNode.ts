@@ -19,16 +19,42 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   override process(qb: IQueryBuilder<T>, alias?: string): any {
     const nestedAlias = qb.getAliasForJoinPath(this.getPath());
     const ownerAlias = alias || qb.alias;
+    const keys = Object.keys(this.payload);
 
     if (nestedAlias) {
       alias = nestedAlias;
     }
 
     if (this.shouldAutoJoin(nestedAlias)) {
+      if (keys.some(k => ['$some', '$none', '$every'].includes(k))) {
+        const $and: Dictionary[] = [];
+        const primaryKeys = this.metadata.find(this.entityName)!.primaryKeys.map(pk => `${alias}.${pk}`);
+
+        for (const key of keys) {
+          const payload = (this.payload[key] as CriteriaNode<T>).unwrap();
+          const sub = qb.clone(true).innerJoin(this.key!, qb.getNextAlias(this.prop!.type));
+          sub.select(this.prop!.targetMeta!.primaryKeys);
+
+          if (key === '$every') {
+            sub.where({ $not: { [this.key!]: payload } });
+          } else {
+            sub.where({ [this.key!]: payload });
+          }
+
+          const op = key === '$some' ? '$in' : '$nin';
+
+          $and.push({
+            [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: (sub as Dictionary).getKnexQuery() },
+          });
+        }
+
+        return { $and };
+      }
+
       alias = this.autoJoin(qb, ownerAlias);
     }
 
-    return Object.keys(this.payload).reduce((o, field) => {
+    return keys.reduce((o, field) => {
       const childNode = this.payload[field] as CriteriaNode<T>;
       const payload = childNode.process(qb, this.prop ? alias : ownerAlias);
       const operator = Utils.isOperator(field);
@@ -52,6 +78,14 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         o[`${alias}.${field}`] = payload;
       }
 
+
+      return o;
+    }, {} as Dictionary);
+  }
+
+  override unwrap(): any {
+    return Object.keys(this.payload).reduce((o, field) => {
+      o[field] = this.payload[field].unwrap();
       return o;
     }, {} as Dictionary);
   }
@@ -59,16 +93,17 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   override willAutoJoin(qb: IQueryBuilder<T>, alias?: string) {
     const nestedAlias = qb.getAliasForJoinPath(this.getPath());
     const ownerAlias = alias || qb.alias;
+    const keys = Object.keys(this.payload);
 
     if (nestedAlias) {
       alias = nestedAlias;
     }
 
     if (this.shouldAutoJoin(nestedAlias)) {
-      return true;
+      return !keys.some(k => ['$some', '$none', '$every'].includes(k));
     }
 
-    return Object.keys(this.payload).some(field => {
+    return keys.some(field => {
       const childNode = this.payload[field] as CriteriaNode<T>;
       return childNode.willAutoJoin(qb, this.prop ? alias : ownerAlias);
     });
@@ -92,7 +127,8 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         o[`${alias}.${field}`] = { [k]: tmp, ...(o[`${alias}.${field}`] || {}) };
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
         const idx = prop.referencedPKs.indexOf(k as EntityKey);
-        const key = idx !== -1 && !childAlias ? prop.joinColumns[idx] : k;
+        // FIXME maybe other kinds should be supported too?
+        const key = idx !== -1 && !childAlias && ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) ? prop.joinColumns[idx] : k;
 
         if (key in o) {
           const $and = o.$and ?? [];
@@ -101,9 +137,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           o.$and = $and;
         } else if (Utils.isOperator(k) && Array.isArray(payload[k])) {
             o[key] = payload[k].map((child: Dictionary) => Object.keys(child).reduce((o, childKey) => {
-              const key = (this.isPrefixed(childKey) || Utils.isOperator(childKey))
-                ? childKey
-                : `${childAlias}.${childKey}`;
+              const key = (this.isPrefixed(childKey) || Utils.isOperator(childKey)) ? childKey : `${childAlias}.${childKey}`;
               o[key] = child[childKey];
               return o;
             }, {} as Dictionary));
@@ -128,12 +162,15 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     const operatorKeys = knownKey && Object.keys(this.payload).every(key => Utils.isOperator(key, false));
     const primaryKeys = knownKey && Object.keys(this.payload).every(key => {
       const meta = this.metadata.find(this.entityName)!;
+
       if (!meta.primaryKeys.includes(key)) {
         return false;
       }
+
       if (!Utils.isPlainObject(this.payload[key].payload) || ![ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(meta.properties[key].kind)) {
         return true;
       }
+
       return Object.keys(this.payload[key].payload).every(k => meta.properties[key].targetMeta!.primaryKeys.includes(k));
     });
 

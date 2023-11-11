@@ -137,6 +137,7 @@ export interface IQueryBuilder<T> {
   truncate(): this;
   count(field?: string | string[], distinct?: boolean): this;
   join(field: string, alias: string, cond?: QBFilterQuery, type?: JoinType, path?: string): this;
+  innerJoin(field: string, alias: string, cond?: QBFilterQuery): this;
   leftJoin(field: string, alias: string, cond?: QBFilterQuery): this;
   joinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
   leftJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;
@@ -153,6 +154,7 @@ export interface IQueryBuilder<T> {
   having(cond?: QBFilterQuery | string, params?: any[]): this;
   getAliasForJoinPath(path: string): string | undefined;
   getNextAlias(entityName?: string): string;
+  clone(reset?: boolean): IQueryBuilder<T>;
 }
 
 export interface ICriteriaNode<T extends object> {

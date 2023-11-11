@@ -43,6 +43,10 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     return this.payload;
   }
 
+  unwrap(): any {
+    return this.payload;
+  }
+
   shouldInline(payload: any): boolean {
     return false;
   }
@@ -56,7 +60,9 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     const composite = this.prop?.joinColumns ? this.prop.joinColumns.length > 1 : false;
     const customExpression = CriteriaNode.isCustomExpression(this.key!);
     const scalar = payload === null || Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
-    const operator = Utils.isPlainObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
+    const plainObject = Utils.isPlainObject(payload);
+    const keys = plainObject ? Object.keys(payload) : [];
+    const operator = plainObject && keys.every(k => Utils.isOperator(k, false));
 
     if (composite) {
       return true;
