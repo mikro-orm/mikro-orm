@@ -38,6 +38,9 @@ export enum QueryOperator {
   $overlap = '&&', // postgres only
   $contains = '@>', // postgres only
   $contained = '<@', // postgres only
+  $none = 'none', // collection operators, sql only
+  $some = 'some', // collection operators, sql only
+  $every = 'every', // collection operators, sql only
 }
 
 export const ARRAY_OPERATORS = [

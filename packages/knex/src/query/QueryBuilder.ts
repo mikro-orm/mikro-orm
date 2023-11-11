@@ -844,8 +844,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return ret;
   }
 
-  clone(): QueryBuilder<T> {
+  clone(reset?: boolean): QueryBuilder<T> {
     const qb = new QueryBuilder<T>(this.mainAlias.entityName, this.metadata, this.driver, this.context, this.mainAlias.aliasName, this.connectionType, this.em);
+
+    if (reset) {
+      return qb;
+    }
+
     Object.assign(qb, this);
 
     // clone array/object properties
