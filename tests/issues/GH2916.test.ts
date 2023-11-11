@@ -115,19 +115,19 @@ test('1:m sub-query operators $some, $none and $every', async () => {
     books: { $some: { title: 'Foo' } },
   });
   expect(results.map(res => res.name)).toEqual(['Author 2', 'Author 3', 'Author 5']);
-  expect(mock.mock.calls[0][0]).toBe('[query] select `a0`.* from `author` as `a0` where `a0`.`id` in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where `b1`.`title` = \'Foo\')');
+  expect(mock.mock.calls[0][0]).toBe("[query] select `a0`.* from `author` as `a0` where `a0`.`id` in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where `b1`.`title` = 'Foo')");
 
   results = await orm.em.fork().find(Author, {
     books: { $none: { title: 'Foo' } },
   });
   expect(results.map(res => res.name)).toEqual(['Author 1', 'Author 4']);
-  expect(mock.mock.calls[1][0]).toBe('[query] select `a0`.* from `author` as `a0` where `a0`.`id` not in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where `b1`.`title` = \'Foo\')');
+  expect(mock.mock.calls[1][0]).toBe("[query] select `a0`.* from `author` as `a0` where `a0`.`id` not in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where `b1`.`title` = 'Foo')");
 
   results = await orm.em.fork().find(Author, {
     books: { $every: { title: 'Foo' } },
   });
   expect(results.map(res => res.name)).toEqual(['Author 1', 'Author 2', 'Author 5']);
-  expect(mock.mock.calls[2][0]).toBe('[query] select `a0`.* from `author` as `a0` where `a0`.`id` not in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where not (`b1`.`title` = \'Foo\'))');
+  expect(mock.mock.calls[2][0]).toBe("[query] select `a0`.* from `author` as `a0` where `a0`.`id` not in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where not (`b1`.`title` = 'Foo'))");
 
   results = await orm.em.fork().find(Author, {
     books: { $some: {} },
@@ -208,10 +208,26 @@ test('m:n sub-query operators $some, $none and $every', async () => {
 });
 
 test('allows only one of $some, $none and $every on the given level', async () => {
-  await expect(orm.em.fork().find(Author, {
+  const mock = mockLogger(orm);
+  let results = await orm.em.fork().find(Author, {
     books: {
       $some: { title: 'Foo' },
       $none: { title: 'Foo' },
     },
-  })).rejects.toThrowError("Cannot use more than one collection operator in given level, found $some, $none when querying for 'Author.books'.");
+  });
+  expect(mock.mock.calls[0][0]).toBe("[query] select `a0`.* from `author` as `a0` where `a0`.`id` in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where `b1`.`title` = 'Foo') and `a0`.`id` not in (select `a0`.`id` from `author` as `a0` inner join `book` as `b2` on `a0`.`id` = `b2`.`author_id` where `b2`.`title` = 'Foo')");
+  expect(results).toHaveLength(0);
+
+  results = await orm.em.fork().find(Author, {
+    books: {
+      $some: { title: 'Foo' },
+      $none: { title: 'Foo 123' },
+    },
+  });
+  expect(mock.mock.calls[1][0]).toBe("[query] select `a0`.* from `author` as `a0` where `a0`.`id` in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where `b1`.`title` = 'Foo') and `a0`.`id` not in (select `a0`.`id` from `author` as `a0` inner join `book` as `b2` on `a0`.`id` = `b2`.`author_id` where `b2`.`title` = 'Foo 123')");
+  expect(results.map(res => res.name)).toEqual([
+    'Author 2',
+    'Author 3',
+    'Author 5',
+  ]);
 });

@@ -1,5 +1,5 @@
 ---
-title: Smart Nested Populate
+title: Nested Populate
 ---
 
 `MikroORM` is capable of loading large nested structures while maintaining good performance, querying each database table only once. Imagine you have this nested structure:

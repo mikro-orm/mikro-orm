@@ -27,27 +27,28 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
     if (this.shouldAutoJoin(nestedAlias)) {
       if (keys.some(k => ['$some', '$none', '$every'].includes(k))) {
-        if (keys.length > 1) {
-          throw new Error(`Cannot use more than one collection operator in given level, found ${keys.join(', ')} when querying for '${this.getPath()}'.`);
+        const $and: Dictionary[] = [];
+        const primaryKeys = this.metadata.find(this.entityName)!.primaryKeys.map(pk => `${alias}.${pk}`);
+
+        for (const key of keys) {
+          const payload = (this.payload[key] as CriteriaNode<T>).unwrap();
+          const sub = qb.clone(true).innerJoin(this.key!, qb.getNextAlias(this.prop!.type));
+          sub.select(this.prop!.targetMeta!.primaryKeys);
+
+          if (key === '$every') {
+            sub.where({ $not: { [this.key!]: payload } });
+          } else {
+            sub.where({ [this.key!]: payload });
+          }
+
+          const op = key === '$some' ? '$in' : '$nin';
+
+          $and.push({
+            [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: (sub as Dictionary).getKnexQuery() },
+          });
         }
 
-        const primaryKeys = this.metadata.find(this.entityName)!.primaryKeys;
-        const childNode = this.payload[keys[0]] as CriteriaNode<T>;
-        const payload = childNode.unwrap();
-        const sub = qb.clone(true).innerJoin(this.key!, qb.getNextAlias(this.prop!.type));
-        sub.select(this.prop!.targetMeta!.primaryKeys);
-
-        if (keys[0] === '$every') {
-          sub.where({ $not: { [this.key!]: payload } });
-        } else {
-          sub.where({ [this.key!]: payload });
-        }
-
-        const op = keys[0] === '$some' ? '$in' : '$nin';
-
-        return {
-          [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: (sub as Dictionary).getKnexQuery() },
-        };
+        return { $and };
       }
 
       alias = this.autoJoin(qb, ownerAlias);

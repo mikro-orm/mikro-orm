@@ -1,5 +1,5 @@
 ---
-title: Smart Query Conditions
+title: Query Conditions
 ---
 
 import Tabs from '@theme/Tabs';
@@ -76,6 +76,49 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$and`   | Joins query clauses with a logical AND returns all documents that match the conditions of both clauses. |
 | `$not`   | Inverts the effect of a query expression and returns documents that do not match the query expression.  |
 | `$or`    | Joins query clauses with a logical OR returns all documents that match the conditions of either clause. |
+
+### Collection
+
+In addition to the regular operators that translate to a real SQL operator expression (e.g. `>=`), you can also use the following collection operators:
+
+| operator | description                                                     |
+|----------|-----------------------------------------------------------------|
+| `$some`  | Finds collections that have some record matching the condition. |
+| `$none`  | Finds collections that have no records matching the condition.  |
+| `$every`  | Finds collections where every record is matching the condition. |
+
+This will be resolved as a subquery condition:
+
+```ts
+// finds all authors that have some book called `Foo`
+const res1 = await em.find(Author, {
+  books: { $some: { title: 'Foo' } },
+});
+
+// finds all authors that have no books called `Foo`
+const res2 = await em.find(Author, {
+  books: { $none: { title: 'Foo' } },
+});
+
+// finds all authors that have every book called `Foo`
+const res3 = await em.find(Author, {
+  books: { $every: { title: 'Foo' } },
+});
+```
+
+The condition object can be also empty:
+
+```ts
+// finds all authors that have at least one book
+const res1 = await em.find(Author, {
+  books: { $some: {} },
+});
+
+// finds all authors that have no books
+const res2 = await em.find(Author, {
+  books: { $none: {} },
+});
+```
 
 ## Regular Expressions
 
