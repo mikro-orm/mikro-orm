@@ -28,7 +28,7 @@ export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
    * Returns configured knex instance.
    */
   getKnex(type?: ConnectionType): Knex {
-    return this.getEntityManager().getKnex();
+    return this.getEntityManager().getKnex(type);
   }
 
   /**
