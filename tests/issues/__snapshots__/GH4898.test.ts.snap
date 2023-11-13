@@ -1,263 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`4898-1: mysql-overlap_fk_example-dump 1`] = `
-[
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
-
-@Entity()
-export class Countries {
-
-  [PrimaryKeyProp]?: 'code';
-
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
-
-}
-",
-  "import { Entity, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Countries } from './Countries';
-import { Products } from './Products';
-
-@Entity()
-export class ProductCountryMap {
-
-  [PrimaryKeyProp]?: ['country', 'productId'];
-
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
-  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
-  country!: Countries;
-
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
-  productId!: Products;
-
-  @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
-
-}
-",
-  "import { Entity, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Products } from './Products';
-import { Sellers } from './Sellers';
-
-@Entity()
-export class ProductSellers {
-
-  [PrimaryKeyProp]?: ['sllerId', 'productId'];
-
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
-  @ManyToOne({ entity: () => Sellers, fieldName: 'sller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
-  sllerId!: Sellers;
-
-  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
-  productId!: Products;
-
-  @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
-
-}
-",
-  "import { Entity, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
-
-@Entity()
-export class Products {
-
-  [PrimaryKeyProp]?: 'productId';
-
-  [OptionalProps]?: 'currentQuantity';
-
-  @PrimaryKey()
-  productId!: number;
-
-  @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
-  name!: string;
-
-  @Property({ columnType: 'numeric(10,2)' })
-  currentPrice!: string;
-
-  @Property({ default: 0 })
-  currentQuantity: number = 0;
-
-}
-",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { ProductCountryMap } from './ProductCountryMap';
-import { ProductSellers } from './ProductSellers';
-
-@Entity()
-@Index({ name: 'fk_sales_product_country_map1_idx', properties: ['country', 'productId'] })
-@Index({ name: 'fk_sales_product_sellers1_idx', properties: ['sllerId', 'productId'] })
-export class Sales {
-
-  [PrimaryKeyProp]?: 'saleId';
-
-  [OptionalProps]?: 'quantitySold';
-
-  @PrimaryKey()
-  saleId!: number;
-
-  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade' })
-  country!: ProductCountryMap;
-
-  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['sller_id', 'product_id'], updateRule: 'cascade' })
-  sllerId!: ProductSellers;
-
-  @Property({ columnType: 'numeric(10,2)' })
-  singularPrice!: string;
-
-  @Property({ default: 1 })
-  quantitySold: number = 1;
-
-}
-",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
-
-@Entity()
-export class Sellers {
-
-  [PrimaryKeyProp]?: 'sellerId';
-
-  @PrimaryKey()
-  sellerId!: number;
-
-  @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
-  name!: string;
-
-}
-",
-]
-`;
-
-exports[`4898-2: mysql-nullable_fk_example-dump 1`] = `
-[
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { RecepientEmails } from './RecepientEmails';
-import { SenderEmails } from './SenderEmails';
-
-@Entity()
-@Index({ name: 'fk_email_sending_logs_recepient_emails1_idx', properties: ['recepientId', 'recepient'] })
-@Index({ name: 'fk_email_sending_logs_sender_emails1_idx', properties: ['senderId', 'sender'] })
-@Index({ name: 'fk_email_sending_logs_sender_emails2_idx', properties: ['senderId', 'reply'] })
-export class EmailSendingLogs {
-
-  [PrimaryKeyProp]?: 'logId';
-
-  [OptionalProps]?: 'createdAt';
-
-  @PrimaryKey()
-  logId!: number;
-
-  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'] })
-  recepientId!: RecepientEmails;
-
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'] })
-  sender!: SenderEmails;
-
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true })
-  reply?: SenderEmails;
-
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
-  createdAt!: Date;
-
-}
-",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
-
-@Entity()
-export class Emails {
-
-  [PrimaryKeyProp]?: 'emailId';
-
-  @PrimaryKey()
-  emailId!: number;
-
-  @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
-  address!: string;
-
-}
-",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
-import { Emails } from './Emails';
-import { Recepients } from './Recepients';
-
-@Entity()
-export class RecepientEmails {
-
-  [PrimaryKeyProp]?: ['recepientId', 'emailId'];
-
-  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', primary: true })
-  recepientId!: Recepients;
-
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
-  emailId!: Emails;
-
-}
-",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Emails } from './Emails';
-import { RecepientEmails } from './RecepientEmails';
-
-@Entity()
-export class Recepients {
-
-  [PrimaryKeyProp]?: 'recepientId';
-
-  @PrimaryKey()
-  recepientId!: number;
-
-  @Property({ length: 255 })
-  name!: string;
-
-  @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
-  recepientEmails = new Collection<Emails>(this);
-
-}
-",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
-import { Emails } from './Emails';
-import { Senders } from './Senders';
-
-@Entity()
-export class SenderEmails {
-
-  [PrimaryKeyProp]?: ['senderId', 'emailId'];
-
-  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', primary: true })
-  senderId!: Senders;
-
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
-  emailId!: Emails;
-
-}
-",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Emails } from './Emails';
-import { SenderEmails } from './SenderEmails';
-
-@Entity()
-export class Senders {
-
-  [PrimaryKeyProp]?: 'senderId';
-
-  @PrimaryKey()
-  senderId!: number;
-
-  @Property({ length: 255 })
-  name!: string;
-
-  @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
-  senderEmails = new Collection<Emails>(this);
-
-}
-",
-]
-`;
-
-exports[`4898-3: mysql-ambiguous_fk_example-dump 1`] = `
+exports[`4898 ambiguous_fk_example: mysql-ambiguous_fk_example-dump 1`] = `
 [
   "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
@@ -369,7 +112,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
@@ -377,12 +120,6 @@ import { SellerCountries } from './SellerCountries';
 import { SellerProducts } from './SellerProducts';
 
 @Entity()
-@Index({ name: 'fk_sales_product_colors1_idx', properties: ['colorId', 'productId'] })
-@Index({ name: 'fk_sales_product_countries1_idx', properties: ['country', 'productId'] })
-@Index({ name: 'fk_sales_product_sizes1_idx', properties: ['size', 'productId'] })
-@Index({ name: 'fk_sales_seller_countries1_idx', properties: ['country', 'sellerId'] })
-@Index({ name: 'fk_sales_seller_products1_idx', properties: ['sellerId', 'productId'] })
-@Index({ name: 'fk_sales_seller_products2_idx', properties: ['sellerId', 'exchanged'] })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -390,13 +127,13 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], nullable: true })
+  @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
   colorId?: ProductColors;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], nullable: true })
+  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: ProductSizes;
 
-  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true })
+  @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
   exchanged?: SellerProducts;
 
   @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
@@ -468,7 +205,7 @@ export class Sellers {
 ]
 `;
 
-exports[`4898-4: mysql-non_composite_ambiguous_fk_example-dump 1`] = `
+exports[`4898 non_composite_ambiguous_fk_example: mysql-non_composite_ambiguous_fk_example-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
@@ -554,6 +291,258 @@ export class ShippableProducts {
 
   @ManyToOne({ entity: () => ManufacturedProducts, fieldName: 'product_id', primary: true })
   fkShippableProductsManufacturedProducts1!: ManufacturedProducts;
+
+}
+",
+]
+`;
+
+exports[`4898 nullable_fk_example: mysql-nullable_fk_example-dump 1`] = `
+[
+  "import { Entity, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { RecepientEmails } from './RecepientEmails';
+import { SenderEmails } from './SenderEmails';
+
+@Entity()
+export class EmailSendingLogs {
+
+  [PrimaryKeyProp]?: 'logId';
+
+  [OptionalProps]?: 'createdAt';
+
+  @PrimaryKey()
+  logId!: number;
+
+  @ManyToOne({ entity: () => RecepientEmails, fieldNames: ['recepient_id', 'recepient_email_id'], index: 'fk_email_sending_logs_recepient_emails1_idx' })
+  recepientId!: RecepientEmails;
+
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], index: 'fk_email_sending_logs_sender_emails1_idx' })
+  sender!: SenderEmails;
+
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
+  reply?: SenderEmails;
+
+  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  createdAt!: Date;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Emails {
+
+  [PrimaryKeyProp]?: 'emailId';
+
+  @PrimaryKey()
+  emailId!: number;
+
+  @Unique({ name: 'address_UNIQUE' })
+  @Property({ length: 255 })
+  address!: string;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Recepients } from './Recepients';
+
+@Entity()
+export class RecepientEmails {
+
+  [PrimaryKeyProp]?: ['recepientId', 'emailId'];
+
+  @ManyToOne({ entity: () => Recepients, fieldName: 'recepient_id', primary: true })
+  recepientId!: Recepients;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_recepient_emails_emails1_idx' })
+  emailId!: Emails;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { RecepientEmails } from './RecepientEmails';
+
+@Entity()
+export class Recepients {
+
+  [PrimaryKeyProp]?: 'recepientId';
+
+  @PrimaryKey()
+  recepientId!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
+  recepientEmails = new Collection<Emails>(this);
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Senders } from './Senders';
+
+@Entity()
+export class SenderEmails {
+
+  [PrimaryKeyProp]?: ['senderId', 'emailId'];
+
+  @ManyToOne({ entity: () => Senders, fieldName: 'sender_id', primary: true })
+  senderId!: Senders;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  emailId!: Emails;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { SenderEmails } from './SenderEmails';
+
+@Entity()
+export class Senders {
+
+  [PrimaryKeyProp]?: 'senderId';
+
+  @PrimaryKey()
+  senderId!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
+  senderEmails = new Collection<Emails>(this);
+
+}
+",
+]
+`;
+
+exports[`4898 overlap_fk_example: mysql-overlap_fk_example-dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Countries {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ columnType: 'char(2)' })
+  code!: unknown;
+
+}
+",
+  "import { Entity, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+
+@Entity()
+export class ProductCountryMap {
+
+  [PrimaryKeyProp]?: ['country', 'productId'];
+
+  [OptionalProps]?: 'isCurrentlyAllowed';
+
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  country!: Countries;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  productId!: Products;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean = false;
+
+}
+",
+  "import { Entity, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
+
+@Entity()
+export class ProductSellers {
+
+  [PrimaryKeyProp]?: ['sllerId', 'productId'];
+
+  [OptionalProps]?: 'isCurrentlyAllowed';
+
+  @ManyToOne({ entity: () => Sellers, fieldName: 'sller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  sllerId!: Sellers;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  productId!: Products;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean = false;
+
+}
+",
+  "import { Entity, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Products {
+
+  [PrimaryKeyProp]?: 'productId';
+
+  [OptionalProps]?: 'currentQuantity';
+
+  @PrimaryKey()
+  productId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  currentPrice!: string;
+
+  @Property({ default: 0 })
+  currentQuantity: number = 0;
+
+}
+",
+  "import { Entity, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Sales {
+
+  [PrimaryKeyProp]?: 'saleId';
+
+  [OptionalProps]?: 'quantitySold';
+
+  @PrimaryKey()
+  saleId!: number;
+
+  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  country!: ProductCountryMap;
+
+  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['sller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  sllerId!: ProductSellers;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  singularPrice!: string;
+
+  @Property({ default: 1 })
+  quantitySold: number = 1;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Sellers {
+
+  [PrimaryKeyProp]?: 'sellerId';
+
+  @PrimaryKey()
+  sellerId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
 
 }
 ",

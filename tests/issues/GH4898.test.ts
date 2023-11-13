@@ -1,36 +1,27 @@
 import { MikroORM } from '@mikro-orm/mysql';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
-test('4898-1', async () => {
-  const orm = await MikroORM.init({
-    dbName: 'overlap_fk_example',
+let orm: MikroORM;
+beforeEach(async () => {
+  orm = await MikroORM.init({
+    dbName: 'example_db',
     port: 3308,
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],
     multipleStatements: true,
   });
   await orm.schema.ensureDatabase();
-  await orm.schema.execute(`
--- MySQL Workbench Forward Engineering
+});
 
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+afterEach(async () => {
+  await orm.schema.dropDatabase();
+  await orm.close(true);
+});
 
--- -----------------------------------------------------
--- Schema overlap_fk_example
--- -----------------------------------------------------
-DROP SCHEMA IF EXISTS \`overlap_fk_example\` ;
+describe('4898', () => {
 
--- -----------------------------------------------------
--- Schema overlap_fk_example
--- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS \`overlap_fk_example\` DEFAULT CHARACTER SET utf8 ;
-USE \`overlap_fk_example\` ;
-
--- -----------------------------------------------------
--- Table \`sellers\`
--- -----------------------------------------------------
+  test('overlap_fk_example', async () => {
+    await orm.schema.execute(`
 CREATE TABLE IF NOT EXISTS \`sellers\` (
   \`seller_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`name\` VARCHAR(255) NOT NULL,
@@ -38,10 +29,6 @@ CREATE TABLE IF NOT EXISTS \`sellers\` (
   UNIQUE INDEX \`name_UNIQUE\` (\`name\` ASC) VISIBLE)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`products\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`products\` (
   \`product_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`name\` VARCHAR(255) NOT NULL,
@@ -51,10 +38,6 @@ CREATE TABLE IF NOT EXISTS \`products\` (
   UNIQUE INDEX \`name_UNIQUE\` (\`name\` ASC) VISIBLE)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`product_sellers\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`product_sellers\` (
   \`sller_id\` INT UNSIGNED NOT NULL,
   \`product_id\` INT UNSIGNED NOT NULL,
@@ -72,19 +55,11 @@ CREATE TABLE IF NOT EXISTS \`product_sellers\` (
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`countries\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`countries\` (
   \`code\` CHAR(2) NOT NULL,
   PRIMARY KEY (\`code\`))
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`product_country_map\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`product_country_map\` (
   \`country\` CHAR(2) NOT NULL,
   \`product_id\` INT UNSIGNED NOT NULL,
@@ -102,10 +77,6 @@ CREATE TABLE IF NOT EXISTS \`product_country_map\` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`sales\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`sales\` (
   \`sale_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`country\` CHAR(2) NOT NULL,
@@ -127,52 +98,13 @@ CREATE TABLE IF NOT EXISTS \`sales\` (
     ON DELETE RESTRICT
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
-
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
-
   `);
-  const dump = await orm.entityGenerator.generate();
-  expect(dump).toMatchSnapshot('mysql-overlap_fk_example-dump');
-
-  await orm.schema.dropDatabase();
-  await orm.close(true);
-});
-
-test('4898-2', async () => {
-  const orm = await MikroORM.init({
-    dbName: 'nullable_fk_example',
-    port: 3308,
-    entities: [],
-    entitiesTs: [],
-    discovery: { warnWhenNoEntities: false },
-    extensions: [EntityGenerator],
-    multipleStatements: true,
+    const dump = await orm.entityGenerator.generate();
+    expect(dump).toMatchSnapshot('mysql-overlap_fk_example-dump');
   });
-  await orm.schema.ensureDatabase();
-  await orm.schema.execute(`
--- MySQL Workbench Forward Engineering
 
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-
--- -----------------------------------------------------
--- Schema nullable_fk_example
--- -----------------------------------------------------
-DROP SCHEMA IF EXISTS \`nullable_fk_example\` ;
-
--- -----------------------------------------------------
--- Schema nullable_fk_example
--- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS \`nullable_fk_example\` DEFAULT CHARACTER SET utf8 ;
-USE \`nullable_fk_example\` ;
-
--- -----------------------------------------------------
--- Table \`emails\`
--- -----------------------------------------------------
+  test('nullable_fk_example', async () => {
+    await orm.schema.execute(`
 CREATE TABLE IF NOT EXISTS \`emails\` (
   \`email_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`address\` VARCHAR(255) NOT NULL,
@@ -180,30 +112,18 @@ CREATE TABLE IF NOT EXISTS \`emails\` (
   UNIQUE INDEX \`address_UNIQUE\` (\`address\` ASC) VISIBLE)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`senders\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`senders\` (
   \`sender_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`name\` VARCHAR(255) NOT NULL,
   PRIMARY KEY (\`sender_id\`))
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`recepients\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`recepients\` (
   \`recepient_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`name\` VARCHAR(255) NOT NULL,
   PRIMARY KEY (\`recepient_id\`))
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`sender_emails\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`sender_emails\` (
   \`sender_id\` INT UNSIGNED NOT NULL,
   \`email_id\` INT UNSIGNED NOT NULL,
@@ -221,10 +141,6 @@ CREATE TABLE IF NOT EXISTS \`sender_emails\` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`recepient_emails\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`recepient_emails\` (
   \`recepient_id\` INT UNSIGNED NOT NULL,
   \`email_id\` INT UNSIGNED NOT NULL,
@@ -242,10 +158,6 @@ CREATE TABLE IF NOT EXISTS \`recepient_emails\` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`email_sending_logs\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`email_sending_logs\` (
   \`log_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`sender_id\` INT UNSIGNED NOT NULL,
@@ -274,53 +186,13 @@ CREATE TABLE IF NOT EXISTS \`email_sending_logs\` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
-
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
-
   `);
-  const dump2 = await orm.entityGenerator.generate();
-  expect(dump2).toMatchSnapshot('mysql-nullable_fk_example-dump');
-
-  await orm.schema.dropDatabase();
-  await orm.close(true);
-});
-
-test('4898-3', async () => {
-
-  const orm = await MikroORM.init({
-    dbName: 'ambiguous_fk_example',
-    port: 3308,
-    entities: [],
-    entitiesTs: [],
-    discovery: { warnWhenNoEntities: false },
-    extensions: [EntityGenerator],
-    multipleStatements: true,
+    const dump = await orm.entityGenerator.generate();
+    expect(dump).toMatchSnapshot('mysql-nullable_fk_example-dump');
   });
-  await orm.schema.ensureDatabase();
-  await orm.schema.execute(`
--- MySQL Workbench Forward Engineering
 
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-
--- -----------------------------------------------------
--- Schema ambiguous_fk_example
--- -----------------------------------------------------
-DROP SCHEMA IF EXISTS \`ambiguous_fk_example\` ;
-
--- -----------------------------------------------------
--- Schema ambiguous_fk_example
--- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS \`ambiguous_fk_example\` DEFAULT CHARACTER SET utf8 ;
-USE \`ambiguous_fk_example\` ;
-
--- -----------------------------------------------------
--- Table \`products\`
--- -----------------------------------------------------
+  test('ambiguous_fk_example', async () => {
+    await orm.schema.execute(`
 CREATE TABLE IF NOT EXISTS \`products\` (
   \`product_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`name\` VARCHAR(255) NOT NULL,
@@ -328,10 +200,6 @@ CREATE TABLE IF NOT EXISTS \`products\` (
   UNIQUE INDEX \`name_UNIQUE\` (\`name\` ASC) VISIBLE)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`colors\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`colors\` (
   \`color_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`name\` VARCHAR(255) NOT NULL,
@@ -339,10 +207,6 @@ CREATE TABLE IF NOT EXISTS \`colors\` (
   UNIQUE INDEX \`name_UNIQUE\` (\`name\` ASC) VISIBLE)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`product_colors\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`product_colors\` (
   \`color_id\` INT UNSIGNED NOT NULL,
   \`product_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -360,10 +224,6 @@ CREATE TABLE IF NOT EXISTS \`product_colors\` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`product_sizes\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`product_sizes\` (
   \`product_id\` INT UNSIGNED NOT NULL,
   \`size\` SMALLINT UNSIGNED NOT NULL,
@@ -376,19 +236,11 @@ CREATE TABLE IF NOT EXISTS \`product_sizes\` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`countries\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`countries\` (
   \`country\` CHAR(2) NOT NULL,
   PRIMARY KEY (\`country\`))
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`sellers\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`sellers\` (
   \`seller_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`name\` VARCHAR(255) NOT NULL,
@@ -396,10 +248,6 @@ CREATE TABLE IF NOT EXISTS \`sellers\` (
   UNIQUE INDEX \`name_UNIQUE\` (\`name\` ASC) VISIBLE)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`seller_countries\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`seller_countries\` (
   \`country\` CHAR(2) NOT NULL,
   \`seller_id\` INT UNSIGNED NOT NULL,
@@ -417,10 +265,6 @@ CREATE TABLE IF NOT EXISTS \`seller_countries\` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`seller_products\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`seller_products\` (
   \`seller_id\` INT UNSIGNED NOT NULL,
   \`product_id\` INT UNSIGNED NOT NULL,
@@ -438,10 +282,6 @@ CREATE TABLE IF NOT EXISTS \`seller_products\` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`product_countries\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`product_countries\` (
   \`country\` CHAR(2) NOT NULL,
   \`product_id\` INT UNSIGNED NOT NULL,
@@ -459,10 +299,6 @@ CREATE TABLE IF NOT EXISTS \`product_countries\` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`sales\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`sales\` (
   \`sale_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`country\` CHAR(2) NOT NULL,
@@ -509,61 +345,19 @@ CREATE TABLE IF NOT EXISTS \`sales\` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
-
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
   `);
-  const dump = await orm.entityGenerator.generate();
-  expect(dump).toMatchSnapshot('mysql-ambiguous_fk_example-dump');
-
-  await orm.schema.dropDatabase();
-  await orm.close(true);
-});
-
-test('4898-4', async () => {
-  const orm = await MikroORM.init({
-    dbName: 'non_composite_ambiguous_fk_example',
-    port: 3308,
-    entities: [],
-    entitiesTs: [],
-    discovery: { warnWhenNoEntities: false },
-    extensions: [EntityGenerator],
-    multipleStatements: true,
+    const dump = await orm.entityGenerator.generate();
+    expect(dump).toMatchSnapshot('mysql-ambiguous_fk_example-dump');
   });
-  await orm.schema.ensureDatabase();
-  await orm.schema.execute(`
--- MySQL Workbench Forward Engineering
 
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-
--- -----------------------------------------------------
--- Schema non_composite_ambiguous_fk_example
--- -----------------------------------------------------
-DROP SCHEMA IF EXISTS \`non_composite_ambiguous_fk_example\` ;
-
--- -----------------------------------------------------
--- Schema non_composite_ambiguous_fk_example
--- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS \`non_composite_ambiguous_fk_example\` DEFAULT CHARACTER SET utf8 ;
-USE \`non_composite_ambiguous_fk_example\` ;
-
--- -----------------------------------------------------
--- Table \`products\`
--- -----------------------------------------------------
+  test('non_composite_ambiguous_fk_example', async () => {
+    await orm.schema.execute(`
 CREATE TABLE IF NOT EXISTS \`products\` (
   \`product_id\` INT UNSIGNED NOT NULL,
   \`name\` VARCHAR(255) NOT NULL,
   PRIMARY KEY (\`product_id\`))
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`manufactured_products\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`manufactured_products\` (
   \`product_id\` INT UNSIGNED NOT NULL,
   \`place\` VARCHAR(255) NOT NULL,
@@ -575,10 +369,6 @@ CREATE TABLE IF NOT EXISTS \`manufactured_products\` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`deliverable_products\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`deliverable_products\` (
   \`product_id\` INT UNSIGNED NOT NULL,
   \`starting_at\` DATETIME NOT NULL,
@@ -590,10 +380,6 @@ CREATE TABLE IF NOT EXISTS \`deliverable_products\` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`destinations\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`destinations\` (
   \`destination_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`name\` VARCHAR(255) NOT NULL,
@@ -601,10 +387,6 @@ CREATE TABLE IF NOT EXISTS \`destinations\` (
   UNIQUE INDEX \`name_UNIQUE\` (\`name\` ASC) VISIBLE)
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table \`shippable_products\`
--- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS \`shippable_products\` (
   \`product_id\` INT UNSIGNED NOT NULL,
   \`destination\` VARCHAR(255) NOT NULL,
@@ -632,16 +414,9 @@ CREATE TABLE IF NOT EXISTS \`shippable_products\` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
-
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
-
   `);
-  const dump = await orm.entityGenerator.generate();
-  expect(dump).toMatchSnapshot('mysql-non_composite_ambiguous_fk_example-dump');
+    const dump = await orm.entityGenerator.generate();
+    expect(dump).toMatchSnapshot('mysql-non_composite_ambiguous_fk_example-dump');
+  });
 
-  await orm.schema.dropDatabase();
-  await orm.close(true);
 });

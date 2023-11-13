@@ -109,7 +109,7 @@ export abstract class SchemaHelper {
     tableName = this.platform.quoteIdentifier(tableName);
     const keyName = this.platform.quoteIdentifier(index.keyName);
 
-    return `create index ${keyName} on ${tableName} (${index.columnNames.map(c => this.platform.quoteIdentifier(c)).join(', ')})`;
+    return `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} (${index.columnNames.map(c => this.platform.quoteIdentifier(c)).join(', ')})`;
   }
 
   getDropIndexSQL(tableName: string, index: IndexDef): string {

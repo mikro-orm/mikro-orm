@@ -158,11 +158,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
   async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
     const sql = `select k.constraint_name as constraint_name, nullif(k.table_schema, schema()) as schema_name, k.table_name as table_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule
-    from information_schema.key_column_usage k
-    inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = k.table_name
-    where k.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
-    and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null
-    order by constraint_name, k.ordinal_position`;
+        from information_schema.key_column_usage k
+        inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = k.table_name
+        where k.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
+        and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null
+        order by constraint_name, k.ordinal_position`;
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
 

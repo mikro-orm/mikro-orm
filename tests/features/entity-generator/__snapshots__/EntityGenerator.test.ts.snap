@@ -736,6 +736,8 @@ export class User2 {
   firstName!: string;
   lastName!: string;
   foo?: number;
+  favouriteCarName?: string;
+  favouriteCarYear?: number;
   favouriteCar?: Ref<Car2>;
   cars = new Collection<Car2>(this);
   sandwiches = new Collection<Sandwich>(this);
@@ -747,6 +749,8 @@ export const User2Schema = new EntitySchema({
     firstName: { primary: true, type: 'string', length: 100 },
     lastName: { primary: true, type: 'string', length: 100 },
     foo: { type: 'number', nullable: true },
+    favouriteCarName: { type: 'string', length: 100, nullable: true },
+    favouriteCarYear: { type: 'number', nullable: true },
     favouriteCar: {
       kind: '1:1',
       entity: () => Car2,
@@ -1293,6 +1297,12 @@ export class User2 {
 
   @Property({ nullable: true })
   foo?: number;
+
+  @Property({ length: 100, nullable: true })
+  favouriteCarName?: string;
+
+  @Property({ nullable: true })
+  favouriteCarYear?: number;
 
   @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteCar?: Car2;
@@ -2463,6 +2473,12 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
+  @Property({ length: 100, nullable: true })
+  favouriteCarName?: string;
+
+  @Property({ nullable: true })
+  favouriteCarYear?: number;
+
   @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteCar?: Car2;
 
@@ -3061,6 +3077,12 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
+  @Property({ length: 100, nullable: true })
+  favouriteCarName?: string;
+
+  @Property({ nullable: true })
+  favouriteCarYear?: number;
+
   @OneToOne({ entity: () => Car2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteCar?: Ref<Car2>;
 
@@ -3572,6 +3594,12 @@ export class User2 {
 
   @Property({ nullable: true })
   foo?: number;
+
+  @Property({ length: 100, nullable: true })
+  favouriteCarName?: string;
+
+  @Property({ nullable: true })
+  favouriteCarYear?: number;
 
   @OneToOne({ entity: () => Car2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteCar?: Ref<Car2>;
@@ -4100,6 +4128,12 @@ export class User2 {
 
   @Property({ nullable: true })
   foo?: number;
+
+  @Property({ length: 100, nullable: true })
+  favouriteCarName?: string;
+
+  @Property({ nullable: true })
+  favouriteCarYear?: number;
 
   @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteCar?: Car2;

@@ -2,12 +2,11 @@
 
 exports[`4892: mysql-entity-dump 1`] = `
 [
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
 @Entity()
-@Index({ name: 'fk_email_messages_log_sender_emails1_idx', properties: ['senderId', 'sender'] })
 export class EmailMessagesLog {
 
   [PrimaryKeyProp]?: 'logId';
@@ -15,7 +14,7 @@ export class EmailMessagesLog {
   @PrimaryKey()
   logId!: number;
 
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'cascade' })
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'cascade', index: 'fk_email_messages_log_sender_emails1_idx' })
   senderId!: SenderEmails;
 
   @ManyToOne({ entity: () => Emails, updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_email_messages_log_emails1_idx' })

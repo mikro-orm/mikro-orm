@@ -1,8 +1,9 @@
 import { MikroORM } from '@mikro-orm/mysql';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
-test('4892', async () => {
-  const orm = await MikroORM.init({
+let orm: MikroORM;
+beforeAll(async () => {
+  orm = await MikroORM.init({
     dbName: 'pivot_ref_examples',
     port: 3308,
     discovery: { warnWhenNoEntities: false },
@@ -10,6 +11,14 @@ test('4892', async () => {
     multipleStatements: true,
   });
   await orm.schema.ensureDatabase();
+});
+
+afterAll(async () => {
+  await orm.schema.dropDatabase();
+  await orm.close(true);
+});
+
+test('4892', async () => {
   await orm.schema.execute(`
 CREATE TABLE IF NOT EXISTS \`sender\` (
   \`sender_id\` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -64,7 +73,4 @@ ENGINE = InnoDB;
   `);
   const dump = await orm.entityGenerator.generate();
   expect(dump).toMatchSnapshot('mysql-entity-dump');
-
-  await orm.schema.dropDatabase();
-  await orm.close(true);
 });
