@@ -1,5 +1,6 @@
 ---
 title: Using Query Builder
+sidebar_label: Query Builder
 ---
 
 :::info
