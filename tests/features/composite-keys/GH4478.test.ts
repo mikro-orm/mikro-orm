@@ -75,7 +75,7 @@ test(`GH issue 4478`, async () => {
   expect(mock.mock.calls).toMatchSnapshot();
   orm.em.clear();
 
-  const sa = await orm.em.find(StudentAllocation, { academicYear: '2023' }, { populate: true });
+  const sa = await orm.em.find(StudentAllocation, { academicYear: '2023' }, { populate: ['*'] });
   expect(wrap(sa[0]).toObject()).toEqual({
     academicYear: '2023',
     school: {

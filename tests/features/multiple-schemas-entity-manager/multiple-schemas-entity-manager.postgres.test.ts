@@ -127,7 +127,7 @@ describe('multiple connected schemas in postgres', () => {
     expect(wrap(author.books[2].tags[0]).getSchema()).toBe('n2');
 
     fork.clear();
-    author = await fork.findOneOrFail(Author, author, { populate: true });
+    author = await fork.findOneOrFail(Author, author, { populate: ['*'] });
 
     expect(fork.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'Author-n1:1',
@@ -231,7 +231,7 @@ describe('multiple connected schemas in postgres', () => {
     expect(wrap(author.books[2].tags[0]).getSchema()).toBe('n2');
 
     fork.clear();
-    author = await fork.findOneOrFail(Author, author, { populate: true });
+    author = await fork.findOneOrFail(Author, author, { populate: ['*'] });
 
     expect(fork.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'Author-n1:1',
@@ -334,7 +334,7 @@ describe('multiple connected schemas in postgres', () => {
     expect(wrap(author.books[2].tags[0]).getSchema()).toBe('n2');
 
     fork.clear();
-    author = await fork.findOneOrFail(Author, author, { populate: true });
+    author = await fork.findOneOrFail(Author, author, { populate: ['*'] });
 
     expect(fork.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'Author-n1:1',
@@ -509,7 +509,7 @@ describe('multiple connected schemas in postgres', () => {
     mock.mockReset();
 
     const fork = mainForkN4.fork();
-    await fork.findOneOrFail(Author, author, { populate: true, schema: 'n5' });
+    await fork.findOneOrFail(Author, author, { populate: ['*'], schema: 'n5' });
 
     expect(mock.mock.calls[0][0]).toMatch(`select "a0".* from "n1"."author" as "a0" where "a0"."id" = 1 limit 1`);
     expect(mock.mock.calls[1][0]).toMatch(`select "b0".* from "n5"."book" as "b0" where "b0"."author_id" in (1)`);

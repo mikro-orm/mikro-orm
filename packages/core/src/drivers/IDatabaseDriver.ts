@@ -1,6 +1,6 @@
 import type {
   ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary, QBFilterQuery,
-  IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath, ObjectQuery, FilterObject,
+  IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath, ObjectQuery, FilterObject, Populate,
 } from '../typings';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint } from '../enums';
@@ -96,7 +96,7 @@ export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrder
 
 export interface FindOptions<T, P extends string = never, F extends string = never> {
   where?: FilterQuery<T>;
-  populate?: readonly AutoPath<T, P>[] | boolean;
+  populate?: Populate<T, P>;
   populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
   fields?: readonly AutoPath<T, F, '*'>[];
   orderBy?: OrderDefinition<T>;
@@ -183,7 +183,7 @@ export interface CountOptions<T extends object, P extends string = never>  {
   groupBy?: string | readonly string[];
   having?: QBFilterQuery<T>;
   cache?: boolean | number | [string, number];
-  populate?: readonly AutoPath<T, P>[] | boolean;
+  populate?: Populate<T, P>;
   ctx?: Transaction;
   connectionType?: ConnectionType;
   /** sql only */
@@ -194,7 +194,7 @@ export interface CountOptions<T extends object, P extends string = never>  {
   hintComments?: string | string[];
 }
 
-export interface UpdateOptions<T>  {
+export interface UpdateOptions<T> {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   schema?: string;
   ctx?: Transaction;

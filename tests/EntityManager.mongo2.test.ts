@@ -24,12 +24,23 @@ describe('EntityManagerMongo2', () => {
     const book0 = await orm.em.findOne(Book, { author: { books: { publisher: ['1', '2'] } } }, { populate: ['publisher', 'tags'] });
     expect(book0).toBeNull();
 
-    const book1 = await orm.em.findOneOrFail(Book, bible, { populate: ['publisher', 'tags'] });
+    const book1 = await orm.em.findOneOrFail(Book, bible, { populate: ['*'] });
     expect(book1.publisher!.$.name).toBe('Publisher 123');
     expect(book1.tags.$[0].name).toBe('t1');
     expect(book1.tags.$[1].name).toBe('t2');
     expect(book1.tags.$[2].name).toBe('t3');
+    // type safe `populate: ['*']`
+    expect(book1.tags.$[0].books.$[0].tags.$[0].books.$[0].tags.$[0].name).toBe('t1');
     orm.em.clear();
+
+    const book2 = await orm.em.findOneOrFail(Book, bible, {});
+    // @ts-expect-error
+    expect(book2.publisher!.$.name).toBeUndefined();
+    // @ts-expect-error
+    expect(book2.tags.$[0].name).toBeUndefined();
+    orm.em.clear();
+    // @ts-expect-error base entity helpers and other functions are excluded
+    await expect(() => orm.em.findOneOrFail(Book, bible, { populate: 'populate' })).rejects.toThrow("Entity 'Book' does not have property 'populate'");
 
     const books = await orm.em.find(Book, { id: bible.id }, {
       populate: ['publisher.books.publisher'],

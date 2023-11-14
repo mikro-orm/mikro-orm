@@ -123,7 +123,7 @@ describe('multiple connected schemas in postgres', () => {
     expect(wrap(author.books[2].tags[0]).getSchema()).toBe('n2');
 
     orm.em.clear();
-    author = await orm.em.findOneOrFail(Author, author, { populate: true });
+    author = await orm.em.findOneOrFail(Author, author, { populate: ['*'] });
 
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'Author-n1:1',
@@ -293,7 +293,7 @@ describe('multiple connected schemas in postgres', () => {
     mock.mockReset();
 
     const fork = orm.em.fork();
-    await fork.findOneOrFail(Author, author, { populate: true, schema: 'n5' });
+    await fork.findOneOrFail(Author, author, { populate: ['*'], schema: 'n5' });
 
     expect(mock.mock.calls[0][0]).toMatch(`select "a0".* from "n1"."author" as "a0" where "a0"."id" = 1 limit 1`);
     expect(mock.mock.calls[1][0]).toMatch(`select "b0".* from "n5"."book" as "b0" where "b0"."author_id" in (1)`);

@@ -137,7 +137,7 @@ describe('custom pivot entity for m:n with additional properties (bidirectional,
   test(`should work`, async () => {
     const { order1, order2, product1, product2, product3, product4, product5 } = await createEntities();
 
-    const orders = await orm.em.find(Order, {}, { populate: true });
+    const orders = await orm.em.find(Order, {}, { populate: ['*'] });
     expect(orders).toHaveLength(3);
 
     // test inverse side

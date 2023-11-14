@@ -52,7 +52,7 @@ describe('GH issue 228', () => {
     const mock = mockLogger(orm, ['query']);
     await orm.em.findAndCount(A, {}, {
       orderBy: { type: 'asc' },
-      populate: true,
+      populate: ['*'],
     });
 
     const queries: string[] = mock.mock.calls.map(c => c[0]).sort();

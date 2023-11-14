@@ -42,7 +42,7 @@ describe('GH issue 1115', () => {
     await orm.em.persistAndFlush(a);
     orm.em.clear();
 
-    const user = await orm.em.findOne(A, { id: 1 }, { populate: true });
+    const user = await orm.em.findOne(A, { id: 1 }, { populate: ['*'] });
     const data = JSON.parse(JSON.stringify(user));
     await expect(data.property).toEqual({ id: 1, property: 'foo' });
   });

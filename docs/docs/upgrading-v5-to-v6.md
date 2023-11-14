@@ -430,3 +430,18 @@ for (const book of author.books) {
   // ...
 }
 ```
+
+## Type-safe `populate: ['*']` and removed `populate: true` support
+
+When populating all relations, the `Loaded` type will now respect `*` in the populate hint. The old boolean variant is now removed in favor of new `populate: ['*']`.
+
+> This also applies to the `serialize()` helper and its `populate` parameter.
+
+```diff
+const users = await em.find(User, {}, {
+-  populate: true,
++  populate: ['*'],
+});
+```
+
+`populate: false` is still allowed and serves as a way to disable eager loaded properties.

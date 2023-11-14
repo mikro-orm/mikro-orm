@@ -253,7 +253,7 @@ describe('Joined loading strategy', () => {
     await orm.em.persistAndFlush(author2);
     orm.em.clear();
 
-    const a2 = await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: true, strategy: LoadStrategy.SELECT_IN });
+    const a2 = await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: ['*'], strategy: LoadStrategy.SELECT_IN });
     expect(a2.books2).toHaveLength(2);
     expect(a2.books).toHaveLength(2);
   });
