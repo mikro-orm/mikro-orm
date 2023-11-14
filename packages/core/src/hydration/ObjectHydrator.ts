@@ -58,27 +58,6 @@ export class ObjectHydrator extends Hydrator {
     context.set('Collection', Collection);
     context.set('Reference', Reference);
 
-    const preCondition = (dataKey: string) => {
-      /* istanbul ignore next */
-      const path = dataKey.match(/\[[^\]]+]|\.\w+/g) ?? [];
-      path.pop();
-
-      if (path.length === 0) {
-        return '';
-      }
-
-      let ret = '';
-      let prev = '';
-
-      for (const p of path) {
-        const key = prev ? prev + p : p;
-        ret += `data${key} && `;
-        prev = key;
-      }
-
-      return ret;
-    };
-
     const hydrateScalar = (prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
       const entityKey = path.map(k => this.wrap(k)).join('');
       const tz = this.platform.getTimezone();

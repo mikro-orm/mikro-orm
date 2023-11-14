@@ -85,3 +85,31 @@ test('JSON serialization with upsertMany', async () => {
     ['[query] insert into `my_entity2` (`field`, `id`) values (\'{"firstName":"Albert","lastName":"Doe"}\', 1) on conflict (`id`) do update set `field` = excluded.`field` returning `id`'],
   ]);
 });
+
+test('upsertMany with managed entity calls assign', async () => {
+  const mock = mockLogger(orm, ['query', 'query-params']);
+  const entity1 = orm.em.create(MyEntity1, {
+    id: 1,
+    field: {
+      firstName: 'John',
+      lastName: 'Doe',
+    },
+  });
+  await orm.em.flush();
+  (entity1.field as any).firstName = '123';
+  await orm.em.upsertMany([entity1]);
+  await orm.em.flush();
+  expect(mock.mock.calls).toEqual([
+    ['[query] begin'],
+    [`[query] insert into \`my_entity1\` (\`id\`, \`field\`) values (1, '{"firstName":"John","lastName":"Doe"}')`],
+    ['[query] commit'],
+    ['[query] begin'],
+    [`[query] update \`my_entity1\` set \`field\` = '{"firstName":"123","lastName":"Doe"}' where \`id\` = 1`],
+    ['[query] commit'],
+  ]);
+});
+
+test('validation', async () => {
+  await expect(orm.em.upsert(MyEntity1, {})).rejects.toThrow('Unique property value required for upsert, provide one of: id');
+  await expect(orm.em.upsertMany(MyEntity1, [{}])).rejects.toThrow('Unique property value required for upsert, provide one of: id');
+});
