@@ -1,27 +1,15 @@
-import { MikroORM } from '@mikro-orm/mysql';
+import { MikroORM, MikroORMOptions } from '@mikro-orm/mysql';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 let orm: MikroORM;
-beforeEach(async () => {
-  orm = await MikroORM.init({
-    dbName: 'example_db',
-    port: 3308,
-    discovery: { warnWhenNoEntities: false },
-    extensions: [EntityGenerator],
-    multipleStatements: true,
-  });
-  await orm.schema.ensureDatabase();
-});
 
 afterEach(async () => {
   await orm.schema.dropDatabase();
   await orm.close(true);
 });
 
-describe('4898', () => {
-
-  test('overlap_fk_example', async () => {
-    await orm.schema.execute(`
+const schemas = {
+  overlap_fk_example:  `
 CREATE TABLE IF NOT EXISTS \`sellers\` (
   \`seller_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`name\` VARCHAR(255) NOT NULL,
@@ -39,12 +27,12 @@ CREATE TABLE IF NOT EXISTS \`products\` (
 ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS \`product_sellers\` (
-  \`sller_id\` INT UNSIGNED NOT NULL,
+  \`seller_id\` INT UNSIGNED NOT NULL,
   \`product_id\` INT UNSIGNED NOT NULL,
   \`is_currently_allowed\` TINYINT(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (\`sller_id\`, \`product_id\`),
+  PRIMARY KEY (\`seller_id\`, \`product_id\`),
   CONSTRAINT \`fk_product_sellers_sellers\`
-    FOREIGN KEY (\`sller_id\`)
+    FOREIGN KEY (\`seller_id\`)
     REFERENCES \`sellers\` (\`seller_id\`)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
@@ -80,16 +68,17 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS \`sales\` (
   \`sale_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`country\` CHAR(2) NOT NULL,
-  \`sller_id\` INT UNSIGNED NOT NULL,
+  \`seller_id\` INT UNSIGNED NOT NULL,
   \`product_id\` INT UNSIGNED NOT NULL,
   \`singular_price\` DECIMAL(10,2) NOT NULL,
   \`quantity_sold\` INT UNSIGNED NOT NULL DEFAULT 1,
   PRIMARY KEY (\`sale_id\`),
-  INDEX \`fk_sales_product_sellers1_idx\` (\`sller_id\` ASC, \`product_id\` ASC) VISIBLE,
+  INDEX \`fk_sales_product_sellers1_idx\` (\`seller_id\` ASC, \`product_id\` ASC) VISIBLE,
   INDEX \`fk_sales_product_country_map1_idx\` (\`country\` ASC, \`product_id\` ASC) VISIBLE,
+  INDEX \`product_id_idx\` (\`product_id\` ASC) VISIBLE,
   CONSTRAINT \`fk_sales_product_sellers1\`
-    FOREIGN KEY (\`sller_id\` , \`product_id\`)
-    REFERENCES \`product_sellers\` (\`sller_id\` , \`product_id\`)
+    FOREIGN KEY (\`seller_id\` , \`product_id\`)
+    REFERENCES \`product_sellers\` (\`seller_id\` , \`product_id\`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
   CONSTRAINT \`fk_sales_product_country_map1\`
@@ -98,13 +87,8 @@ CREATE TABLE IF NOT EXISTS \`sales\` (
     ON DELETE RESTRICT
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
-  `);
-    const dump = await orm.entityGenerator.generate();
-    expect(dump).toMatchSnapshot('mysql-overlap_fk_example-dump');
-  });
-
-  test('nullable_fk_example', async () => {
-    await orm.schema.execute(`
+  `,
+  nullable_fk_example: `
 CREATE TABLE IF NOT EXISTS \`emails\` (
   \`email_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`address\` VARCHAR(255) NOT NULL,
@@ -186,13 +170,8 @@ CREATE TABLE IF NOT EXISTS \`email_sending_logs\` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
-  `);
-    const dump = await orm.entityGenerator.generate();
-    expect(dump).toMatchSnapshot('mysql-nullable_fk_example-dump');
-  });
-
-  test('ambiguous_fk_example', async () => {
-    await orm.schema.execute(`
+  `,
+  ambiguous_fk_example: `
 CREATE TABLE IF NOT EXISTS \`products\` (
   \`product_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`name\` VARCHAR(255) NOT NULL,
@@ -314,6 +293,8 @@ CREATE TABLE IF NOT EXISTS \`sales\` (
   INDEX \`fk_sales_product_countries1_idx\` (\`country\` ASC, \`product_id\` ASC) VISIBLE,
   INDEX \`fk_sales_product_colors1_idx\` (\`color_id\` ASC, \`product_id\` ASC) VISIBLE,
   INDEX \`fk_sales_seller_products2_idx\` (\`seller_id\` ASC, \`exchanged_product_id\` ASC) VISIBLE,
+  INDEX \`product_id_idx\` (\`product_id\` ASC) VISIBLE,
+  UNIQUE INDEX \`product_id__size__color_id-UNIQUE\` (\`product_id\` ASC, \`color_id\` ASC, \`size\` ASC) VISIBLE,
   CONSTRAINT \`fk_sales_product_sizes1\`
     FOREIGN KEY (\`size\` , \`product_id\`)
     REFERENCES \`product_sizes\` (\`size\` , \`product_id\`)
@@ -345,13 +326,8 @@ CREATE TABLE IF NOT EXISTS \`sales\` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
-  `);
-    const dump = await orm.entityGenerator.generate();
-    expect(dump).toMatchSnapshot('mysql-ambiguous_fk_example-dump');
-  });
-
-  test('non_composite_ambiguous_fk_example', async () => {
-    await orm.schema.execute(`
+  `,
+  non_composite_ambiguous_fk_example: `
 CREATE TABLE IF NOT EXISTS \`products\` (
   \`product_id\` INT UNSIGNED NOT NULL,
   \`name\` VARCHAR(255) NOT NULL,
@@ -414,9 +390,74 @@ CREATE TABLE IF NOT EXISTS \`shippable_products\` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
-  `);
-    const dump = await orm.entityGenerator.generate();
-    expect(dump).toMatchSnapshot('mysql-non_composite_ambiguous_fk_example-dump');
-  });
+  `,
+  fk_index_selection_example: `
+CREATE TABLE IF NOT EXISTS \`cars\` (
+  \`car_brand\` VARCHAR(255) NOT NULL,
+  \`car_year\` YEAR NOT NULL,
+  PRIMARY KEY (\`car_brand\`, \`car_year\`))
+ENGINE = InnoDB;
 
+CREATE TABLE IF NOT EXISTS \`fashionable_colors\` (
+  \`year\` YEAR NOT NULL,
+  \`color\` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (\`year\`, \`color\`))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS \`users\` (
+  \`user_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  \`favorite_car_brand\` VARCHAR(255) NULL,
+  \`favorite_car_year\` YEAR NULL,
+  \`favorite_color\` VARCHAR(255) NULL,
+  \`favorite_book\` VARCHAR(255) NULL,
+  PRIMARY KEY (\`user_id\`),
+  INDEX \`fk_users_cars_idx\` (\`favorite_car_brand\` ASC, \`favorite_car_year\` ASC) INVISIBLE,
+  UNIQUE INDEX \`when_set_unique\` (\`favorite_car_brand\` ASC, \`favorite_car_year\` ASC, \`favorite_color\` ASC) INVISIBLE,
+  INDEX \`fk_users_fashionable_colors1_idx\` (\`favorite_car_year\` ASC, \`favorite_color\` ASC) INVISIBLE,
+  INDEX \`favorites_idx\` (\`favorite_car_year\` ASC, \`favorite_color\` ASC, \`favorite_book\` ASC) VISIBLE,
+  CONSTRAINT \`fk_users_cars\`
+    FOREIGN KEY (\`favorite_car_brand\` , \`favorite_car_year\`)
+    REFERENCES \`cars\` (\`car_brand\` , \`car_year\`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT \`fk_users_fashionable_colors1\`
+    FOREIGN KEY (\`favorite_car_year\` , \`favorite_color\`)
+    REFERENCES \`fashionable_colors\` (\`year\` , \`color\`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+`,
+} as const;
+
+describe('4898', () => {
+
+  describe.each(Object.keys(schemas))('%s', i => {
+    const schemaName = i as keyof typeof schemas;
+
+    beforeEach(async () => {
+      orm = await MikroORM.init({
+        dbName: schemaName,
+        port: 3308,
+        discovery: { warnWhenNoEntities: false },
+        extensions: [EntityGenerator],
+        multipleStatements: true,
+      });
+      await orm.schema.ensureDatabase();
+    });
+
+    describe.each(['never', 'always', 'smart'])('scalarPropertiesForRelations=%s', i => {
+      const scalarPropertiesForRelations = i as NonNullable<MikroORMOptions['entityGenerator']['scalarPropertiesForRelations']>;
+      beforeEach(() => {
+        orm.config.get('entityGenerator').scalarPropertiesForRelations = scalarPropertiesForRelations;
+      });
+
+      test.each([true, false])('entitySchema=%s', async entitySchema => {
+        orm.config.get('entityGenerator').entitySchema = entitySchema;
+
+        await orm.schema.execute(schemas[schemaName]);
+        const dump = await orm.entityGenerator.generate();
+        expect(dump).toMatchSnapshot(expect.getState().currentTestName);
+      });
+    });
+  });
 });

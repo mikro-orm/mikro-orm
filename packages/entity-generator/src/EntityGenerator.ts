@@ -48,6 +48,8 @@ export class EntityGenerator {
     const baseDir = Utils.normalizePath(options.baseDir ?? (this.config.get('baseDir') + '/generated-entities'));
     const schema = await DatabaseSchema.create(this.connection, this.platform, this.config);
 
+    const scalarPropertiesForRelations = this.config.get('entityGenerator').scalarPropertiesForRelations!;
+
     let metadata = schema.getTables()
       .filter(table => !options.schema || table.schema === options.schema)
       .sort((a, b) => a.name!.localeCompare(b.name!))
@@ -60,7 +62,7 @@ export class EntityGenerator {
             }
           });
         }
-        return table.getEntityDeclaration(this.namingStrategy, this.helper);
+        return table.getEntityDeclaration(this.namingStrategy, this.helper, scalarPropertiesForRelations);
       });
 
     for (const meta of metadata) {
@@ -117,10 +119,14 @@ export class EntityGenerator {
       }
       if (
         meta.compositePK &&                                                         // needs to have composite PK
-        meta.primaryKeys.length === meta.relations.length &&                        // all relations are PKs
         meta.relations.length === 2 &&                                              // there are exactly two relation properties
-        meta.relations.length === meta.props.length &&                              // all properties are relations
-        meta.relations.every(prop => prop.kind === ReferenceKind.MANY_TO_ONE)       // all relations are m:1
+        !meta.relations.some(rel => !rel.primary || rel.kind !== ReferenceKind.MANY_TO_ONE) && // all relations are m:1 and PKs
+        (
+          // all properties are relations...
+          meta.relations.length === meta.props.length
+          // ... or at least all fields involved are only the fields of the relations
+          || (new Set<string>(meta.props.flatMap(prop => prop.fieldNames)).size === (new Set<string>(meta.relations.flatMap(rel => rel.fieldNames)).size))
+        )
       ) {
         meta.pivotTable = true;
         const owner = metadata.find(m => m.className === meta.relations[0].type);

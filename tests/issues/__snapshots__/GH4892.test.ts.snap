@@ -15,7 +15,7 @@ export class EmailMessagesLog {
   logId!: number;
 
   @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'cascade', index: 'fk_email_messages_log_sender_emails1_idx' })
-  senderId!: SenderEmails;
+  sender!: SenderEmails;
 
   @ManyToOne({ entity: () => Emails, updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_email_messages_log_emails1_idx' })
   recepient!: Emails;
@@ -66,13 +66,13 @@ import { Sender } from './Sender';
 @Entity()
 export class SenderEmails {
 
-  [PrimaryKeyProp]?: ['senderId', 'emailId'];
+  [PrimaryKeyProp]?: ['sender', 'email'];
 
   @ManyToOne({ entity: () => Sender, fieldName: 'sender_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
-  senderId!: Sender;
+  sender!: Sender;
 
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', primary: true, index: 'fk_sender_emails_emails1_idx' })
-  emailId!: Emails;
+  email!: Emails;
 
 }
 ",

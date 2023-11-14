@@ -41,7 +41,7 @@ import type { MikroORM } from '../MikroORM';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
-  static readonly DEFAULTS: MikroORMOptions = {
+  static readonly DEFAULTS = {
     pool: {},
     entities: [],
     entitiesTs: [],
@@ -113,6 +113,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     entityGenerator: {
       bidirectionalRelations: false,
       identifiedReferences: false,
+      scalarPropertiesForRelations: 'never',
     },
     metadataCache: {
       pretty: false,
@@ -135,7 +136,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     },
     preferReadReplicas: true,
     dynamicImportProvider: /* istanbul ignore next */ (id: string) => import(id),
-  };
+  } satisfies MikroORMOptions;
 
   private readonly options: MikroORMOptions<D>;
   private readonly logger: Logger;
@@ -566,6 +567,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     identifiedReferences?: boolean;
     entitySchema?: boolean;
     esmImport?: boolean;
+    scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
   };
   metadataCache: {
     enabled?: boolean;

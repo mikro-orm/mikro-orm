@@ -225,11 +225,11 @@ export class EntitySchema<Entity = any, Base = never> {
     this.addProperty(name, type, prop);
   }
 
-  addIndex<T>(options: IndexOptions<Dictionary<EntityKey>>): void {
+  addIndex(options: IndexOptions<Entity>): void {
     this._meta.indexes.push(options as any);
   }
 
-  addUnique<T>(options: UniqueOptions<Dictionary<EntityKey>> & Pick<IndexOptions<Dictionary<EntityKey>>, 'expression'>): void {
+  addUnique(options: UniqueOptions<Entity>): void {
     this._meta.uniques.push(options as any);
   }
 
