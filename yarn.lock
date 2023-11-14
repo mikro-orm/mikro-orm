@@ -1147,7 +1147,7 @@ __metadata:
   resolution: "@mikro-orm/better-sqlite@workspace:packages/better-sqlite"
   dependencies:
     "@mikro-orm/core": "npm:^5.9.2"
-    "@mikro-orm/knex": "npm:5.9.2"
+    "@mikro-orm/knex": "npm:5.9.3"
     better-sqlite3: "npm:8.7.0"
     fs-extra: "npm:11.1.1"
     sqlstring-sqlite: "npm:0.1.1"
@@ -1161,9 +1161,9 @@ __metadata:
   resolution: "@mikro-orm/cli@workspace:packages/cli"
   dependencies:
     "@jercle/yargonaut": "npm:1.1.5"
-    "@mikro-orm/core": "npm:5.9.2"
+    "@mikro-orm/core": "npm:5.9.3"
     "@mikro-orm/entity-generator": "npm:^5.9.2"
-    "@mikro-orm/knex": "npm:5.9.2"
+    "@mikro-orm/knex": "npm:5.9.3"
     "@mikro-orm/migrations": "npm:^5.9.2"
     "@mikro-orm/seeder": "npm:^5.9.2"
     fs-extra: "npm:11.1.1"
@@ -1207,7 +1207,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/core@npm:5.9.2, @mikro-orm/core@npm:^5.9.2, @mikro-orm/core@workspace:packages/core":
+"@mikro-orm/core@npm:5.9.3, @mikro-orm/core@npm:^5.9.2, @mikro-orm/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/core@workspace:packages/core"
   dependencies:
@@ -1216,7 +1216,7 @@ __metadata:
     esprima: "npm:4.0.1"
     fs-extra: "npm:11.1.1"
     globby: "npm:11.1.0"
-    mikro-orm: "npm:5.9.2"
+    mikro-orm: "npm:5.9.3"
     reflect-metadata: "npm:0.1.13"
   languageName: unknown
   linkType: soft
@@ -1226,14 +1226,14 @@ __metadata:
   resolution: "@mikro-orm/entity-generator@workspace:packages/entity-generator"
   dependencies:
     "@mikro-orm/core": "npm:^5.9.2"
-    "@mikro-orm/knex": "npm:5.9.2"
+    "@mikro-orm/knex": "npm:5.9.3"
     fs-extra: "npm:11.1.1"
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/knex@npm:5.9.2, @mikro-orm/knex@workspace:packages/knex":
+"@mikro-orm/knex@npm:5.9.3, @mikro-orm/knex@workspace:packages/knex":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/knex@workspace:packages/knex"
   dependencies:
@@ -1251,7 +1251,7 @@ __metadata:
   resolution: "@mikro-orm/mariadb@workspace:packages/mariadb"
   dependencies:
     "@mikro-orm/core": "npm:^5.9.2"
-    "@mikro-orm/knex": "npm:5.9.2"
+    "@mikro-orm/knex": "npm:5.9.3"
     mariadb: "npm:2.5.6"
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -1263,7 +1263,7 @@ __metadata:
   resolution: "@mikro-orm/migrations-mongodb@workspace:packages/migrations-mongodb"
   dependencies:
     "@mikro-orm/core": "npm:^5.9.2"
-    "@mikro-orm/mongodb": "npm:5.9.2"
+    "@mikro-orm/mongodb": "npm:5.9.3"
     fs-extra: "npm:11.1.1"
     mongodb: "npm:6.2.0"
     umzug: "npm:3.4.0"
@@ -1277,7 +1277,7 @@ __metadata:
   resolution: "@mikro-orm/migrations@workspace:packages/migrations"
   dependencies:
     "@mikro-orm/core": "npm:^5.9.2"
-    "@mikro-orm/knex": "npm:5.9.2"
+    "@mikro-orm/knex": "npm:5.9.3"
     fs-extra: "npm:11.1.1"
     umzug: "npm:3.4.0"
   peerDependencies:
@@ -1294,7 +1294,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/mongodb@npm:5.9.2, @mikro-orm/mongodb@workspace:packages/mongodb":
+"@mikro-orm/mongodb@npm:5.9.3, @mikro-orm/mongodb@workspace:packages/mongodb":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/mongodb@workspace:packages/mongodb"
   dependencies:
@@ -1311,7 +1311,7 @@ __metadata:
   resolution: "@mikro-orm/mysql@workspace:packages/mysql"
   dependencies:
     "@mikro-orm/core": "npm:^5.9.2"
-    "@mikro-orm/knex": "npm:5.9.2"
+    "@mikro-orm/knex": "npm:5.9.3"
     mysql2: "npm:3.6.3"
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -1323,7 +1323,7 @@ __metadata:
   resolution: "@mikro-orm/postgresql@workspace:packages/postgresql"
   dependencies:
     "@mikro-orm/core": "npm:^5.9.2"
-    "@mikro-orm/knex": "npm:5.9.2"
+    "@mikro-orm/knex": "npm:5.9.3"
     pg: "npm:8.11.3"
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -1409,7 +1409,7 @@ __metadata:
   resolution: "@mikro-orm/sqlite@workspace:packages/sqlite"
   dependencies:
     "@mikro-orm/core": "npm:^5.9.2"
-    "@mikro-orm/knex": "npm:5.9.2"
+    "@mikro-orm/knex": "npm:5.9.3"
     fs-extra: "npm:11.1.1"
     sqlite3: "npm:5.1.6"
     sqlstring-sqlite: "npm:0.1.1"
@@ -7331,7 +7331,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mikro-orm@npm:5.9.2, mikro-orm@workspace:packages/mikro-orm":
+"mikro-orm@npm:5.9.3, mikro-orm@workspace:packages/mikro-orm":
   version: 0.0.0-use.local
   resolution: "mikro-orm@workspace:packages/mikro-orm"
   languageName: unknown
