@@ -45,7 +45,7 @@ test('explicit serialization with ORM BaseEntity', async () => {
 
 test('explicit serialization', async () => {
   const { god, author, publisher, book1, book2, book3 } = await createEntities();
-  const jon = await orm.em.findOneOrFail(Author2, author, { populate: true })!;
+  const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] })!;
 
   const o1 = wrap(jon).serialize();
   expect(o1).toMatchObject({
@@ -179,9 +179,9 @@ test('explicit serialization', async () => {
 
 test('explicit serialization with populate: true', async () => {
   const { god, author, publisher } = await createEntities();
-  const jon = await orm.em.findOneOrFail(Author2, author, { populate: true })!;
+  const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] })!;
 
-  const o8 = serialize(jon, { populate: true });
+  const o8 = serialize(jon, { populate: ['*'] });
   expect(o8).toMatchObject({
     id: jon.id,
     createdAt: jon.createdAt,
@@ -202,7 +202,7 @@ test('explicit serialization with not initialized properties', async () => {
   const { author } = await createEntities();
   const jon = await orm.em.findOneOrFail(Author2, author)!;
 
-  const o = serialize(jon, { populate: true });
+  const o = serialize(jon, { populate: ['*'] });
   expect(o).toMatchObject({
     id: jon.id,
     createdAt: jon.createdAt,
@@ -213,7 +213,7 @@ test('explicit serialization with not initialized properties', async () => {
     name: 'Jon Snow',
   });
 
-  const o2 = serialize(jon.favouriteBook!, { populate: true });
+  const o2 = serialize(jon.favouriteBook!, { populate: ['*'] });
   expect(o2).toEqual({
     uuid: jon.favouriteBook!.uuid,
   });

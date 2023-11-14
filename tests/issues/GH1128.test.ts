@@ -46,7 +46,7 @@ describe('GH issue 1128', () => {
     });
     orm.em.clear();
 
-    const entity = await orm.em.findOneOrFail(A, { id: 1 }, { populate: true });
+    const entity = await orm.em.findOneOrFail(A, { id: 1 }, { populate: ['*'] });
     expect(entity.entities).toHaveLength(2);
     expect(entity.entities[0].entity).toBe(entity.id);
     expect(entity.entities[1].entity).toBe(entity.id);

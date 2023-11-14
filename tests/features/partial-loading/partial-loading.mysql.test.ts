@@ -191,7 +191,7 @@ describe('partial loading (mysql)', () => {
     const mock = mockLogger(orm, ['query']);
 
     const r1 = await orm.em.find(Book2, b1, {
-      fields: ['uuid', 'title', 'author', 'author.email'],
+      fields: ['uuid', 'title', 'author.email'],
       populate: ['author'],
       filters: false,
     });

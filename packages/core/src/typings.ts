@@ -40,8 +40,9 @@ export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? nev
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
 export type IsAny<T> = 0 extends (1 & T) ? true : false;
-export type IsNever<T> = [T] extends [never] ? true : false;
+export type IsNever<T, True = true, False = false> = [T] extends [never] ? True : False;
 export type NoInfer<T> = [T][T extends any ? 0 : never];
+export type MaybePromise<T> = T | Promise<T>;
 
 export type DeepPartial<T> = T & {
   [P in keyof T]?: T[P] extends (infer U)[]
@@ -141,7 +142,7 @@ export interface IWrappedEntity<Entity> {
   isInitialized(): boolean;
   isTouched(): boolean;
   populated(populated?: boolean): void;
-  populate<Hint extends string = never>(populate: AutoPath<Entity, Hint>[] | boolean, options?: EntityLoaderOptions<Entity, Hint>): Promise<Loaded<Entity, Hint>>;
+  populate<Hint extends string = never>(populate: AutoPath<Entity, Hint>[] | false, options?: EntityLoaderOptions<Entity>): Promise<Loaded<Entity, Hint>>;
   init<Hint extends string = never>(populated?: boolean, populate?: Populate<Entity, Hint>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<Entity, Hint>>;
   toReference(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
   toObject(): EntityDTO<Entity>;
@@ -792,7 +793,7 @@ export type FilterDef = {
   args?: boolean;
 };
 
-export type Populate<T, P extends string = never> = AutoPath<T, P>[] | boolean;
+export type Populate<T, P extends string = never> = readonly AutoPath<T, P, '*'>[] | false;
 
 export type PopulateOptions<T> = {
   field: EntityKey<T>;
@@ -801,15 +802,16 @@ export type PopulateOptions<T> = {
   children?: PopulateOptions<T[keyof T]>[];
 };
 
-type Loadable<T extends object> = Collection<T, any> | Reference<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
+type Loadable<T extends object> = Collection<T, any> | Reference<T> | Ref<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
 type ExtractType<T> = T extends Loadable<infer U> ? U : T;
 
+type ExtractStringKeys<T> = { [K in keyof T]: ExcludeFunctions<T, K> }[keyof T] & {};
 type StringKeys<T, E extends string = never> = T extends Collection<any, any>
-  ? `${Exclude<keyof ExtractType<T> | E, symbol>}`
+  ? ExtractStringKeys<ExtractType<T>> | E
   : T extends Reference<any>
-    ? `${Exclude<keyof ExtractType<T> | E, symbol>}`
+    ? ExtractStringKeys<ExtractType<T>> | E
     : T extends object
-      ? `${Exclude<keyof ExtractType<T> | E, symbol>}`
+      ? ExtractStringKeys<ExtractType<T>> | E
       : never;
 type GetStringKey<T, K extends StringKeys<T, string>, E extends string> = K extends keyof T ? ExtractType<T[K]> : (K extends E ? keyof T : never);
 
@@ -827,23 +829,26 @@ type CollectionKeys<T> = T extends object
   }[keyof T] & {}
   : never;
 
-export type AutoPath<O, P extends string, E extends string = never, D extends Prev[number] = 5> =
-  [D] extends [never] ? any :
-  P extends any ?
-    (P & `${string}.` extends never ? P : P & `${string}.`) extends infer Q
-    // P extends infer Q
-      ? Q extends `${infer A}.${infer B}`
-        ? A extends StringKeys<O, E>
-          ? `${A}.${AutoPath<Defined<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
-          : never
-        : Q extends StringKeys<O, E>
-          ? (Defined<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<Defined<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q}.`)
-          : StringKeys<O, E> | `${CollectionKeys<O>}:ref`
-      : never
-    : never;
+export type AutoPath<O, P extends string | boolean, E extends string = never, D extends Prev[number] = 9> =
+  P extends boolean
+    ? P
+    : [D] extends [never]
+      ? any
+      : P extends any
+        ? P extends string
+          ? (P & `${string}.` extends never ? P : P & `${string}.`) extends infer Q
+            ? Q extends `${infer A}.${infer B}`
+              ? A extends StringKeys<O, E>
+                ? `${A}.${AutoPath<Defined<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
+                : never
+              : Q extends StringKeys<O, E>
+                ? (Defined<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<Defined<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q}.`)
+                : StringKeys<O, E> | `${CollectionKeys<O>}:ref`
+              : never
+            : never
+          : never;
 
-export type ArrayElement<ArrayType extends unknown[]> =
-  ArrayType extends (infer ElementType)[] ? ElementType : never;
+export type ArrayElement<ArrayType extends unknown[]> = ArrayType extends (infer ElementType)[] ? ElementType : never;
 
 export type ExpandProperty<T> = T extends Reference<infer U>
   ? NonNullable<U>
@@ -864,13 +869,33 @@ type LoadedLoadable<T, E extends object> =
           ? T
           : E;
 
+type IsTrue<T> = IsNever<T> extends true
+  ? false
+  : T extends boolean
+    ? T extends true
+      ? true
+      : false
+    : false;
+type StringLiteral<T> = T extends string ? string extends T ? never : T : never;
 type Prefix<T, K> = K extends `${infer S}.${string}` ? S : (K extends '*' ? keyof T : K);
-type IsPrefixed<T, K, L extends string> = K extends Prefix<T, L> ? K : (K extends PrimaryProperty<T> ? K : never);
+export type IsPrefixed<T, K extends keyof T, L extends string> = K extends symbol
+  ? never
+  : IsTrue<L> extends true
+    ? (T[K] & {} extends Loadable<any> ? K : never)
+    : IsNever<StringLiteral<L>> extends true
+      ? never
+      : K extends Prefix<T, L>
+        ? K
+        : K extends PrimaryProperty<T>
+          ? K
+          : never;
 
 // filter by prefix and map to suffix
-type Suffix<Key, Hint extends string> = Hint extends `${infer Pref}.${infer Suf}`
+type Suffix<Key, Hint extends string, All = true | '*'> = Hint extends `${infer Pref}.${infer Suf}`
   ? (Pref extends Key ? Suf : never)
-  : never;
+  : Hint extends All
+    ? Hint
+    : never;
 
 type Defined<T> = T & {};
 
@@ -880,31 +905,38 @@ export type IsSubset<T, U> = keyof U extends keyof T
     ? {}
     : { [K in keyof U as K extends keyof T ? never : ExcludeFunctions<U, K>]: never; };
 
-export type MergeSelected<T, U, F extends string> = T extends Selected<U, infer P, infer FF> ? Selected<U, P, F | FF> : T;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __selectedType: unique symbol;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __loadedType: unique symbol;
+
+export type MergeSelected<T, U, F extends string> =
+  T extends { [__selectedType]?: [U, infer P, infer FF] } // Selected<U, infer P, infer FF>
+    ? string extends FF
+      ? T
+      : string extends P
+        ? Selected<U, never, F | (FF & string)>
+        : Selected<U, P & string, F | (FF & string)>
+    : T;
 
 type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
 type LoadedProp<T, L extends string = never, F extends string = '*'> = LoadedLoadable<T, Loaded<ExtractType<T>, L, F>>;
 export type AddEager<T> = ExtractEagerProps<T> & string;
 
 export type Selected<T, L extends string = never, F extends string = '*'> = {
-  [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L>, Suffix<K, F>> | AddOptional<T[K]>;
-};
+  [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
+} & { [__selectedType]?: [T, L, F] };
 
-export type EntityType<T> = T | Selected<T, never, never> | Loaded<T, never, never>;
-export type FromEntityType<T> = T extends Selected<infer U, never, never>
-  ? true extends IsUnknown<U>
-    ? T : U
-  : T extends Loaded<infer U, never, never>
-    ? true extends IsUnknown<U>
-      ? T : U
-    : T;
+export type EntityType<T> = T | { [__loadedType]?: T } | { [__selectedType]?: [T, any, any] };
+export type FromEntityType<T> = T extends EntityType<infer U> ? U : T;
 
 /**
  * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
  */
-export type Loaded<T, L extends string = never, F extends string = '*'> = [F] extends ['*'] ? (T & {
+export type Loaded<T, L extends string = never, F extends string = '*'> = ([F] extends ['*'] ? (T & {
   [K in keyof T as IsPrefixed<T, K, L | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L>> | AddOptional<T[K]>;
-}) : Selected<T, L, F>;
+}) : Selected<T, L, F>) & { [__loadedType]?: T };
 
 export interface LoadedReference<T> extends Reference<Defined<T>> {
   $: Defined<T>;
@@ -977,7 +1009,5 @@ export interface ISeedManager {
 export interface Seeder<T extends Dictionary = Dictionary> {
   run(em: EntityManager, context?: T): void | Promise<void>;
 }
-
-export type MaybePromise<T> = T | Promise<T>;
 
 export type ConnectionType = 'read' | 'write';

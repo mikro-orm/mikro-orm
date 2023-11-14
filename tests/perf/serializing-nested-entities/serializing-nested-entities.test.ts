@@ -18,7 +18,7 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('perf: serialize nested entities', async () => {
-  const risks = await orm.em.find(Risk, {}, { populate: true });
+  const risks = await orm.em.find(Risk, {}, { populate: ['*'] });
   const project = await orm.em.findOneOrFail(Project, { id: 1 });
 
   // Serialize a collection of 150 entities

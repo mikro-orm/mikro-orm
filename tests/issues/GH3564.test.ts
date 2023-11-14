@@ -88,7 +88,7 @@ describe(`GH issue 3564`, () => {
     car.parts[0].parts.add(electrolyte); // add part 'Electrolyte' to part 'Battery'
     await orm.em.flush();
 
-    await orm.em.refresh(car, { populate: true });
+    await orm.em.refresh(car, { populate: ['*'] });
 
     expect(car.parts.count()).toBe(1); // should be one, since we removed the 'Electrolyte'
     expect(car.parts[0].parts.count()).toBe(2); // the part 'Battery' has 2 parts now
@@ -103,7 +103,7 @@ describe(`GH issue 3564`, () => {
     battery.parts.set([electrolyte, electrode]); // add part 'Electrolyte' to part 'Battery'
     await orm.em.flush();
 
-    await orm.em.refresh(car, { populate: true });
+    await orm.em.refresh(car, { populate: ['*'] });
 
     expect(car.parts.count()).toBe(1); // should be one, since we removed the 'Electrolyte'
     expect(car.parts[0].parts.count()).toBe(2); // the part 'Battery' has 2 parts now
@@ -130,7 +130,7 @@ describe(`GH issue 3564`, () => {
       }],
     });
     await orm.em.flush();
-    await orm.em.refresh(car, { populate: true });
+    await orm.em.refresh(car, { populate: ['*'] });
 
     expect(car.parts.count()).toBe(1); // should be one, since we removed the 'Electrolyte'
     expect(car.parts[0].parts.count()).toBe(2); // the part 'Battery' has 2 parts now

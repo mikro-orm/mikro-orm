@@ -1307,7 +1307,7 @@ describe('EntityManagerMySql', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    tag = await orm.em.findOneOrFail(BookTag2, tag1.id, { populate: ['books'] });
+    tag = await orm.em.findOneOrFail(BookTag2, tag1.id, { populate: ['books'] as const });
     expect(tag.books.count()).toBe(0);
   });
 
