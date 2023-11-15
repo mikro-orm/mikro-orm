@@ -893,7 +893,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     });
 
     // skip if we got the PKs via returning statement (`rows`)
-    const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(allWhere![0]) ? Object.keys(allWhere![0]) : meta!.primaryKeys) as (keyof Entity)[];
+    const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(allWhere![0]) ? Object.keys(allWhere![0]).flatMap(key => Utils.splitPrimaryKeys(key)) : meta!.primaryKeys) as (keyof Entity)[];
     const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options) as string[];
     const reloadFields = returning.length > 0 && !this.getPlatform().usesReturningStatement();
 
