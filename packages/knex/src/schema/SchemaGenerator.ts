@@ -186,7 +186,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     const { fromSchema, toSchema } = await this.prepareSchemaForComparison(options);
     const comparator = new SchemaComparator(this.platform);
     const diffUp = comparator.compare(fromSchema, toSchema);
-    const diffDown = comparator.compare(toSchema, fromSchema);
+    const diffDown = comparator.compare(toSchema, fromSchema, diffUp);
 
     return {
       up: await this.diffToSQL(diffUp, options),

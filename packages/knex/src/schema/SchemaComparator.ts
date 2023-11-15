@@ -31,7 +31,7 @@ export class SchemaComparator {
    * operations to change the schema stored in fromSchema to the schema that is
    * stored in toSchema.
    */
-  compare(fromSchema: DatabaseSchema, toSchema: DatabaseSchema): SchemaDifference {
+  compare(fromSchema: DatabaseSchema, toSchema: DatabaseSchema, inverseDiff?: SchemaDifference): SchemaDifference {
     const diff: SchemaDifference = { newTables: {}, removedTables: {}, changedTables: {}, orphanedForeignKeys: [], newNamespaces: new Set(), removedNamespaces: new Set(), fromSchema };
     const foreignKeysToTable: Dictionary<ForeignKey[]> = {};
 
@@ -57,7 +57,7 @@ export class SchemaComparator {
       if (!fromSchema.hasTable(tableName)) {
         diff.newTables[tableName] = toSchema.getTable(tableName)!;
       } else {
-        const tableDifferences = this.diffTable(fromSchema.getTable(tableName)!, toSchema.getTable(tableName)!);
+        const tableDifferences = this.diffTable(fromSchema.getTable(tableName)!, toSchema.getTable(tableName)!, inverseDiff?.changedTables[tableName]);
 
         if (tableDifferences !== false) {
           diff.changedTables[tableName] = tableDifferences;
@@ -119,7 +119,7 @@ export class SchemaComparator {
    * Returns the difference between the tables fromTable and toTable.
    * If there are no differences this method returns the boolean false.
    */
-  diffTable(fromTable: DatabaseTable, toTable: DatabaseTable): TableDifference | false {
+  diffTable(fromTable: DatabaseTable, toTable: DatabaseTable, inverseTableDiff?: TableDifference): TableDifference | false {
     let changes = 0;
     const tableDifferences: TableDifference = {
       name: fromTable.getShortestName(),
@@ -188,7 +188,7 @@ export class SchemaComparator {
       changes++;
     }
 
-    this.detectColumnRenamings(tableDifferences);
+    this.detectColumnRenamings(tableDifferences, inverseTableDiff);
     const fromTableIndexes = fromTable.getIndexes();
     const toTableIndexes = toTable.getIndexes();
 
@@ -299,13 +299,20 @@ export class SchemaComparator {
    * Try to find columns that only changed their name, rename operations maybe cheaper than add/drop
    * however ambiguities between different possibilities should not lead to renaming at all.
    */
-  private detectColumnRenamings(tableDifferences: TableDifference): void {
+  private detectColumnRenamings(tableDifferences: TableDifference, inverseTableDiff?: TableDifference): void {
     const renameCandidates: Dictionary<[Column, Column][]> = {};
 
     for (const addedColumn of Object.values(tableDifferences.addedColumns)) {
       for (const removedColumn of Object.values(tableDifferences.removedColumns)) {
         const diff = this.diffColumn(addedColumn, removedColumn);
+
         if (diff.size !== 0) {
+          continue;
+        }
+
+        const renamedColumn = inverseTableDiff?.renamedColumns[addedColumn.name];
+
+        if (renamedColumn && renamedColumn?.name !== removedColumn.name) {
           continue;
         }
 
