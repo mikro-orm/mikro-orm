@@ -283,8 +283,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         return;
       }
 
-      const tz = this.platform.getTimezone();
-
       meta2.props
         .filter(prop => prop.persist === false && prop.fieldNames)
         .forEach(prop => {
@@ -542,7 +540,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const meta = this.metadata.get<T>(entityName);
 
     if (options.upsert) {
-      const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where[0]) ? Object.keys(where[0]) : meta!.primaryKeys) as (keyof T)[];
+      const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where[0]) ? Object.keys(where[0]).flatMap(key => Utils.splitPrimaryKeys(key)) : meta!.primaryKeys) as (keyof T)[];
       const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
       const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options);
       qb.insert(data as T[])
