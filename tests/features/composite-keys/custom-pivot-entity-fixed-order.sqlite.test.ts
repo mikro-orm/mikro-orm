@@ -130,7 +130,7 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     const { product1, product2, product3, product4, product5 } = await createEntities();
     const productRepository = orm.em.getRepository(Product);
 
-    const orders = await orm.em.find(Order, {}, { populate: true });
+    const orders = await orm.em.find(Order, {}, { populate: ['*'] });
     expect(orders).toHaveLength(3);
 
     // test M:N lazy load

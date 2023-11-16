@@ -127,7 +127,7 @@ describe('GH issue 1134', () => {
   afterAll(() => orm.close(true));
 
   test('Load nested data with smart populate (select-in strategy)', async () => {
-    const entity = await orm.em.getRepository(N).findAll({ populate: true });
+    const entity = await orm.em.getRepository(N).findAll({ populate: ['*'] });
     const json = JSON.parse(JSON.stringify(entity));
 
     // check both entity and DTO
@@ -149,25 +149,25 @@ describe('GH issue 1134', () => {
   });
 
   test('Load nested data with smart populate (select-in strategy will be forced due to `populate: true`)', async () => {
-    const entity = await orm.em.getRepository(N).findAll({ populate: true, strategy: LoadStrategy.JOINED });
+    const entity = await orm.em.getRepository(N).findAll({ populate: ['*'], strategy: LoadStrategy.JOINED });
     const json = JSON.parse(JSON.stringify(entity));
 
     // check both entity and DTO
-    [entity, json].forEach(item => {
-      expect(item[0].m[0].e).toMatchObject({
-        a: {
-          value: 'A2',
+    const expected = {
+      a: {
+        value: 'A2',
+      },
+      t: {
+        value: 'T2',
+      },
+      v: {
+        i: {
+          value: 6,
         },
-        t: {
-          value: 'T2',
-        },
-        v: {
-          i: {
-            value: 6,
-          },
-        },
-      });
-    });
+      },
+    };
+    expect(entity[0].m[0].e).toMatchObject(expected);
+    expect(json[0].m[0].e).toMatchObject(expected);
   });
 });
 

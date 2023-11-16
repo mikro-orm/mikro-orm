@@ -23,7 +23,7 @@ import type { Platform } from '../platforms/Platform';
 import { helper } from './wrap';
 import type { LoggingOptions } from '../logging/Logger';
 
-export type EntityLoaderOptions<Entity, Hint extends string = never, Fields extends string = never> = {
+export type EntityLoaderOptions<Entity, Fields extends string = never> = {
   where?: FilterQuery<Entity>;
   populateWhere?: PopulateHint | `${PopulateHint}`;
   fields?: readonly EntityField<Entity, Fields>[];
@@ -54,7 +54,7 @@ export class EntityLoader {
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<Entity extends object, Hint extends string = never, Fields extends string = never>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Hint, Fields>): Promise<void> {
+  async populate<Entity extends object, Fields extends string = never>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): Promise<void> {
     if (entities.length === 0 || Utils.isEmpty(populate)) {
       return;
     }
@@ -94,19 +94,22 @@ export class EntityLoader {
     }
   }
 
-  normalizePopulate<Entity>(entityName: string, populate: PopulateOptions<Entity>[] | true, strategy?: LoadStrategy, lookup = true): PopulateOptions<Entity>[] {
-    if (populate === true || populate.some(p => p.all)) {
-      populate = this.lookupAllRelationships(entityName);
-    } else {
-      populate = Utils.asArray(populate);
+  normalizePopulate<Entity>(entityName: string, populate: (PopulateOptions<Entity> | boolean)[] | PopulateOptions<Entity> | boolean, strategy?: LoadStrategy, lookup = true): PopulateOptions<Entity>[] {
+    const meta = this.metadata.find(entityName)!;
+    let normalized = Utils.asArray(populate).map(field => {
+      return typeof field === 'boolean' || field.field === '*' ? { all: !!field, field: meta.primaryKeys[0] } as PopulateOptions<Entity> : field;
+    });
+
+    if (normalized.some(p => p.all)) {
+      normalized = this.lookupAllRelationships(entityName);
     }
 
-    if (lookup) {
-      populate = this.lookupEagerLoadedRelationships(entityName, populate, strategy);
+    if (lookup && populate !== false) {
+      normalized = this.lookupEagerLoadedRelationships(entityName, normalized, strategy);
     }
 
     // convert nested `field` with dot syntax to PopulateOptions with children array
-    populate.forEach(p => {
+    normalized.forEach(p => {
       if (!p.field.includes('.')) {
         return;
       }
@@ -114,13 +117,13 @@ export class EntityLoader {
       const [f, ...parts] = p.field.split('.');
       p.field = f as EntityKey<Entity>;
       p.children = p.children || [];
-      const prop = this.metadata.find(entityName)!.properties[f];
+      const prop = meta.properties[f];
       p.strategy ??= prop.strategy;
       p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy, p.all));
     });
 
     // merge same fields
-    return this.mergeNestedPopulate(populate);
+    return this.mergeNestedPopulate(normalized);
   }
 
   /**
@@ -628,8 +631,9 @@ export class EntityLoader {
       .filter(prop => {
         const eager = prop.eager && !populate.some(p => p.field === `${prop.name}:ref`);
         const populated = populate.some(p => p.field === prop.name);
+        const disabled = populate.some(p => p.field === prop.name && p.all === false);
 
-        return eager || populated;
+        return !disabled && (eager || populated);
       })
       .forEach(prop => {
         const field = this.getRelationName(meta, prop);

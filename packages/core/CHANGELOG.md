@@ -4,7 +4,29 @@ All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
 
-# [6.0.0-rc.0](https://github.com/mikro-orm/mikro-orm/compare/v5.9.2...7ec838150) (2023-11-05)
+## [6.0.0-rc.1](https://github.com/mikro-orm/mikro-orm/compare/7ec838150...9be482d) (2023-11-14)
+
+
+### Bug Fixes
+
+* **cli:** support `mikro-orm-esm` on windows ([341bed8](https://github.com/mikro-orm/mikro-orm/commit/341bed80376f888dcd396a42e99a8b9eb6ed12ea))
+* **core:** fix auto-refresh detection in `em.find` for inlined embedded properties ([3df1d17](https://github.com/mikro-orm/mikro-orm/commit/3df1d17e0e85870e26e761e720e9cb461b106726)), closes [#4904](https://github.com/mikro-orm/mikro-orm/issues/4904)
+* **knex:** respect connection type in `em.getKnex()` ([46957ba](https://github.com/mikro-orm/mikro-orm/commit/46957ba7a7a89004fe6cd40ebc226911fca9ca89))
+
+
+### Features
+
+* **core:** add entity to identity map on `em.persist()` ([1b09d26](https://github.com/mikro-orm/mikro-orm/commit/1b09d263f94f4c216936f6f85673810f7c6f9099)), closes [#4905](https://github.com/mikro-orm/mikro-orm/issues/4905)
+* **core:** add `ScalarRef` and `EntityRef` types to allow explicit control ([1ef7856](https://github.com/mikro-orm/mikro-orm/commit/1ef7856a1cdf8d327765fc86e450b06c9ddd97c9)), closes [#4907](https://github.com/mikro-orm/mikro-orm/issues/4907)
+* **core:** allow passing string values for `PopulateHint` enum (`populateWhere`) ([2bd21eb](https://github.com/mikro-orm/mikro-orm/commit/2bd21ebc431ba7ff0e9cf0d488ff5455aa707203))
+* **core:** allow type-safe populate all via `populate: ['*']` ([#4927](https://github.com/mikro-orm/mikro-orm/issues/4927)) ([7780f34](https://github.com/mikro-orm/mikro-orm/commit/7780f34fae2a34b38f9e291b302b1e38ece447a6)), closes [#4920](https://github.com/mikro-orm/mikro-orm/issues/4920)
+* **sql:** print number of affected rows for insert and update queries ([36336d9](https://github.com/mikro-orm/mikro-orm/commit/36336d9e17a4bf67d8f78fa00feb777fb9ea00f0))
+* **sql:** support `$some`, `$none` and `$every` subquery operators ([#4917](https://github.com/mikro-orm/mikro-orm/issues/4917)) ([50d2265](https://github.com/mikro-orm/mikro-orm/commit/50d2265507e5add684317e2722666ac817bae804)), closes [#2916](https://github.com/mikro-orm/mikro-orm/issues/2916)
+* **sql:** use returning statements for reloading version fields on update ([0a3abd7](https://github.com/mikro-orm/mikro-orm/commit/0a3abd7d9142377fc823dfadcccf6b365f3f53a7))
+
+
+
+## [6.0.0-rc.0](https://github.com/mikro-orm/mikro-orm/compare/v5.9.2...7ec838150) (2023-11-05)
 
 
 ### Bug Fixes
@@ -84,6 +106,16 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### BREAKING CHANGES
 
 Please see the [upgrading guide](https://mikro-orm.io/docs/next/upgrading-v5-to-v6).
+
+
+## [5.9.3](https://github.com/mikro-orm/mikro-orm/compare/v5.9.2...v5.9.3) (2023-11-06)
+
+
+### Bug Fixes
+
+* **core:** only check the same entity type when detecting early update/delete ([fef7a1b](https://github.com/mikro-orm/mikro-orm/commit/fef7a1b5f0dc6a013134ae43d7b2de32418ec26c)), closes [#4895](https://github.com/mikro-orm/mikro-orm/issues/4895)
+* **core:** return `DriverException` from `em.upsertMany()` ([1ebfbdd](https://github.com/mikro-orm/mikro-orm/commit/1ebfbdd3eaec3910c44eb5c6d4ef8d25eae6031b)), closes [#4897](https://github.com/mikro-orm/mikro-orm/issues/4897)
+* **core:** fix populating relations with cycles via select-in strategy ([d0b35da](https://github.com/mikro-orm/mikro-orm/commit/d0b35da672bb8f367346bbb2f2b15a6ab851485e)), closes [#4899](https://github.com/mikro-orm/mikro-orm/issues/4899)
 
 
 ## [5.9.2](https://github.com/mikro-orm/mikro-orm/compare/v5.9.1...v5.9.2) (2023-11-02)
@@ -1437,7 +1469,7 @@ Please see the [upgrading guide](https://mikro-orm.io/docs/next/upgrading-v5-to-
 
 
 
-# [5.0.0](https://github.com/mikro-orm/mikro-orm/compare/v4.5.3...v5.0.0) (2022-02-06)
+## [5.0.0](https://github.com/mikro-orm/mikro-orm/compare/v4.5.3...v5.0.0) (2022-02-06)
 
 
 ### Bug Fixes

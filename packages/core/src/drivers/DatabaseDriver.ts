@@ -102,9 +102,12 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         continue;
       }
 
-      const pk = coll.property.targetMeta!.primaryKeys[0];
-      const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
-      await this.nativeUpdate<T>(coll.owner.constructor.name, helper(coll.owner).getPrimaryKey() as FilterQuery<T>, data, options);
+      /* istanbul ignore next */
+      {
+        const pk = coll.property.targetMeta!.primaryKeys[0];
+        const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
+        await this.nativeUpdate<T>(coll.owner.constructor.name, helper(coll.owner).getPrimaryKey() as FilterQuery<T>, data, options);
+      }
     }
   }
 

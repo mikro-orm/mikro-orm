@@ -78,7 +78,7 @@ test('GH issue 3543', async () => {
     customerId: '456',
     companyId: '789',
     orderId: order.orderId,
-  }, { populate: true });
+  }, { populate: ['*'] });
 
   order.events.removeAll();
   await orm.em.flush();
@@ -88,7 +88,7 @@ test('GH issue 3543', async () => {
     customerId: '456',
     companyId: '789',
     orderId: order.orderId,
-  }, { populate: true });
+  }, { populate: ['*'] });
 
   expect(order.events).toHaveLength(0);
 });
@@ -110,7 +110,7 @@ test('GH issue 3543 without orphan removal builds correct query', async () => {
     customerId: '456',
     companyId: '789',
     orderId: order.orderId,
-  }, { populate: true });
+  }, { populate: ['*'] });
 
   // disconnecting the relation without orphan removal throws, as it means nulling it on the owning side, which would fail as it is a non-null PK column
   expect(() => order.events.removeAll()).toThrowError(

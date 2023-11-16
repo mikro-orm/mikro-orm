@@ -1,6 +1,7 @@
 import { inspect } from 'util';
 import type {
   AddEager,
+  AutoPath,
   ConnectionType,
   Dictionary,
   EntityClass,
@@ -8,7 +9,6 @@ import type {
   EntityProperty,
   Loaded,
   LoadedReference,
-  Populate,
   Primary,
   Ref,
 } from '../typings';
@@ -248,7 +248,7 @@ Object.defineProperties(ScalarReference.prototype, {
 });
 
 export interface LoadReferenceOptions<T, P extends string = never> {
-  populate?: Populate<T, P>;
+  populate?: readonly AutoPath<T, P>[] | AutoPath<T, P>;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   connectionType?: ConnectionType;
   refresh?: boolean;

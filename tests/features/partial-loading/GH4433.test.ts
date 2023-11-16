@@ -130,7 +130,7 @@ test(`GH issue 4433 (select-in) - only id`, async () => {
     A,
     { },
     {
-      populate: true,
+      populate: ['*'],
       fields: ['*', 'b.id'],
       strategy: LoadStrategy.SELECT_IN,
     },

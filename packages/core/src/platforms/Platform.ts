@@ -432,7 +432,7 @@ export abstract class Platform {
 
   shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, includeFormulas = true): boolean {
     if (prop.formula) {
-      return includeFormulas && (!prop.lazy || populate === true || (populate !== false && populate.some(p => p.field === prop.name)));
+      return includeFormulas && (!prop.lazy || populate === true || (populate !== false && populate.some(p => p.field === prop.name || p.all)));
     }
 
     if (prop.persist === false) {

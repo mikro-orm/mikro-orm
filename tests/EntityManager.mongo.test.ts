@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import type { EntityProperty } from '@mikro-orm/core';
+import type { EntityProperty, Selected } from '@mikro-orm/core';
 import {
   Collection,
   Configuration,
@@ -945,7 +945,7 @@ describe('EntityManagerMongo', () => {
     expect(wrap(publishers4[1].tests[0]).isInitialized()).toBe(false);
 
     orm.em.clear();
-    const publishers5 = await repo.findAll({ orderBy: { id: 1 }, populate: false });
+    const publishers5 = await repo.findAll({ orderBy: { id: 1 } });
     await publishers5[0].tests.init({ ref: true });
     await publishers5[1].tests.init({ ref: true });
     expect(publishers5).toBeInstanceOf(Array);
@@ -1369,7 +1369,7 @@ describe('EntityManagerMongo', () => {
     const repo = orm.em.getRepository(BookTag);
 
     orm.em.clear();
-    const tags = await repo.findAll({ populate: true });
+    const tags = await repo.findAll({ populate: ['*'] });
     expect(tags.length).toBe(5);
     expect(tags[0]).toBeInstanceOf(BookTag);
     expect(tags[0].books.isInitialized()).toBe(true);

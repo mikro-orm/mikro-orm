@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers';
 
 @Entity()
-export class Recipe {
+class Recipe {
 
   @PrimaryKey({ type: t.uuid })
   id: string = v4();
@@ -21,7 +21,7 @@ export class Recipe {
 }
 
 @Entity()
-export class Ingredient {
+class Ingredient {
 
   @PrimaryKey({ type: t.uuid })
   id: string = v4();
@@ -35,7 +35,7 @@ export class Ingredient {
 }
 
 @Entity()
-export class User {
+class User {
 
   @PrimaryKey({ type: t.uuid })
   id: string = v4();

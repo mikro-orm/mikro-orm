@@ -130,8 +130,11 @@ test('4062', async () => {
   const loaded = await orm.em.findOneOrFail(
     Category,
     { id: category.id },
-    { populate: true },
+    { populate: ['*'] },
   );
+  // type-safe populate: ['*']
+  const a = loaded.articles.$[0].category.$.articles.$[0].category.$.articles.$[0].category.$.articles.$[0].category.$;
+  expect(a).toBe(loaded);
 
   orm.em.assign(loaded, plainUpdate);
 

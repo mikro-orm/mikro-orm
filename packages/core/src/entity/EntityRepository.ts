@@ -226,7 +226,7 @@ export class EntityRepository<Entity extends object> {
   async populate<
     Hint extends string = never,
     Fields extends string = never,
-  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint>[] | boolean, options?: EntityLoaderOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
+  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint>[] | false, options?: EntityLoaderOptions<Entity, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
     this.validateRepositoryType(entities, 'populate');
     return this.getEntityManager().populate(entities as Entity, populate, options);
   }
@@ -250,7 +250,7 @@ export class EntityRepository<Entity extends object> {
     Ent extends EntityType<Entity>,
     Naked extends FromEntityType<Ent> = FromEntityType<Ent>,
     Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
-  >(entity: Ent, data: Data & IsSubset<EntityData<Naked>, Data>, options?: AssignOptions): MergeSelected<Ent, Naked, keyof Data & string> {
+  >(entity: Ent | Partial<Ent>, data: Data & IsSubset<EntityData<Naked>, Data>, options?: AssignOptions): MergeSelected<Ent, Naked, keyof Data & string> {
     this.validateRepositoryType(entity as Entity, 'assign');
     return this.getEntityManager().assign(entity, data as any, options) as any;
   }

@@ -89,7 +89,7 @@ test('json property hydration 1/2', async () => {
   orm.em.clear();
 
   Page.log = [];
-  const results = await orm.em.find(Course, {}, { populate: true });
+  const results = await orm.em.find(Course, {}, { populate: ['*'] });
   expect(results[0].published?.page.attestations).toEqual(['attestation1', 'attestation2']);
   expect(Page.log).toEqual([
     ['attestation1', 'attestation2'],
@@ -115,7 +115,7 @@ test('json property hydration 2/2', async () => {
   await orm.em.persistAndFlush(cr1);
   orm.em.clear();
 
-  const results = await orm.em.find(Course, {}, { populate: true });
+  const results = await orm.em.find(Course, {}, { populate: ['*'] });
   expect(results[0].published?.page2.attestations).toEqual(['attestation1', 'attestation2']);
 
   const mock = mockLogger(orm);

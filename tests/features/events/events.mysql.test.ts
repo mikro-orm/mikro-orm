@@ -217,7 +217,7 @@ describe('events (mysql)', () => {
     ]);
     EverythingSubscriber.log.length = 0;
 
-    const authors3 = await orm.em.fork().find(Author2, {}, { populate: true });
+    const authors3 = await orm.em.fork().find(Author2, {}, { populate: ['*'] });
     expect(authors3).toHaveLength(1);
     expect(EverythingSubscriber.log.map(l => [l[0], l[1].entity.constructor.name]).filter(a => a[0] === EventType.onLoad)).toEqual([
       ['onLoad', 'Author2'],

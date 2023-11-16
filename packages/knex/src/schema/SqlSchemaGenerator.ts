@@ -180,7 +180,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const { fromSchema, toSchema } = await this.prepareSchemaForComparison(options);
     const comparator = new SchemaComparator(this.platform);
     const diffUp = comparator.compare(fromSchema, toSchema);
-    const diffDown = comparator.compare(toSchema, fromSchema);
+    const diffDown = comparator.compare(toSchema, fromSchema, diffUp);
 
     return {
       up: await this.diffToSQL(diffUp, options),
@@ -268,7 +268,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       return `${schema}.${referencedTableName.replace(/^\*\./, '')}`;
     }
 
-    if (schemaName === this.platform.getDefaultSchemaName()) {
+    if (!schemaName || schemaName === this.platform.getDefaultSchemaName()) {
       return tableName;
     }
 
