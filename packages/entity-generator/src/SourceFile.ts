@@ -260,6 +260,10 @@ export class SourceFile {
       options.nullable = true;
     }
 
+    if (prop.persist === false) {
+      options.persist = false;
+    }
+
     if (prop.default == null) {
       return;
     }

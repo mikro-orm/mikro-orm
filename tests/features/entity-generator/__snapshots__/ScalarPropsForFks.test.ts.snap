@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ScalarPropsForFks generate entities with columns for all composite foreign key properties [mysql]: mysql-entity-composite-fk-prop-always-dump 1`] = `
+exports[`ScalarPropsForFks generate entities with columns for all foreign key properties [mysql]: mysql-entity-composite-fk-prop-always-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -10,7 +10,7 @@ export class Address2 {
 
   [PrimaryKeyProp]?: ['authorId', 'author'];
 
-  @PrimaryKey()
+  @PrimaryKey({ persist: false })
   authorId!: number;
 
   @Property({ length: 255 })
@@ -71,11 +71,11 @@ export class Author2 {
   bornTime?: string;
 
   @Index({ name: 'author2_favourite_book_uuid_pk_index' })
-  @Property({ length: 36, nullable: true })
+  @Property({ length: 36, nullable: true, persist: false })
   favouriteBookUuidPk?: string;
 
   @Index({ name: 'author2_favourite_author_id_index' })
-  @Property({ nullable: true })
+  @Property({ nullable: true, persist: false })
   favouriteAuthorId?: number;
 
   @Property({ columnType: 'json', nullable: true })
@@ -117,11 +117,11 @@ export class BaseUser2 {
   ownerProp?: string;
 
   @Index({ name: 'base_user2_favourite_employee_id_index' })
-  @Property({ nullable: true })
+  @Property({ nullable: true, persist: false })
   favouriteEmployeeId?: number;
 
   @Unique({ name: 'base_user2_favourite_manager_id_unique' })
-  @Property({ nullable: true })
+  @Property({ nullable: true, persist: false })
   favouriteManagerId?: number;
 
   @Property({ nullable: true })
@@ -192,11 +192,11 @@ export class Book2 {
   meta?: any;
 
   @Index({ name: 'book2_author_id_index' })
-  @Property()
+  @Property({ persist: false })
   authorId!: number;
 
   @Index({ name: 'book2_publisher_id_index' })
-  @Property({ nullable: true })
+  @Property({ nullable: true, persist: false })
   publisherId?: number;
 
   @Property({ length: 255, nullable: true, default: 'lol' })
@@ -226,11 +226,11 @@ export class Book2Tags {
   order!: number;
 
   @Index({ name: 'book2_tags_book2_uuid_pk_index' })
-  @Property({ fieldName: 'book2_uuid_pk', length: 36 })
+  @Property({ fieldName: 'book2_uuid_pk', length: 36, persist: false })
   book2UuidPk!: string;
 
   @Index({ name: 'book2_tags_book_tag2_id_index' })
-  @Property({ fieldName: 'book_tag2_id' })
+  @Property({ fieldName: 'book_tag2_id', persist: false })
   bookTag2Id!: bigint;
 
   @ManyToOne({ entity: () => Book2, updateRule: 'cascade', deleteRule: 'cascade' })
@@ -253,10 +253,10 @@ export class CarOwner2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ length: 100 })
+  @Property({ length: 100, persist: false })
   carName!: string;
 
-  @Property()
+  @Property({ persist: false })
   carYear!: number;
 
   @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
@@ -300,7 +300,7 @@ export class Configuration2 {
   property!: string;
 
   @Index({ name: 'configuration2_test_id_index' })
-  @PrimaryKey()
+  @PrimaryKey({ persist: false })
   testId!: number;
 
   @Property({ length: 255 })
@@ -340,11 +340,11 @@ export class FooBar2 {
   nameWithSpace?: string;
 
   @Unique({ name: 'foo_bar2_baz_id_unique' })
-  @Property({ nullable: true })
+  @Property({ nullable: true, persist: false })
   bazId?: number;
 
   @Unique({ name: 'foo_bar2_foo_bar_id_unique' })
-  @Property({ nullable: true })
+  @Property({ nullable: true, persist: false })
   fooBarId?: number;
 
   @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -403,11 +403,11 @@ export class FooParam2 {
   [OptionalProps]?: 'version';
 
   @Index({ name: 'foo_param2_bar_id_index' })
-  @PrimaryKey()
+  @PrimaryKey({ persist: false })
   barId!: number;
 
   @Index({ name: 'foo_param2_baz_id_index' })
-  @PrimaryKey()
+  @PrimaryKey({ persist: false })
   bazId!: number;
 
   @Property({ length: 255 })
@@ -491,11 +491,11 @@ export class Publisher2Tests {
   id!: number;
 
   @Index({ name: 'publisher2_tests_publisher2_id_index' })
-  @Property({ fieldName: 'publisher2_id' })
+  @Property({ fieldName: 'publisher2_id', persist: false })
   publisher2Id!: number;
 
   @Index({ name: 'publisher2_tests_test2_id_index' })
-  @Property({ fieldName: 'test2_id' })
+  @Property({ fieldName: 'test2_id', persist: false })
   test2Id!: number;
 
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade' })
@@ -542,24 +542,28 @@ export class Test2 {
   name?: string;
 
   @Unique({ name: 'test2_book_uuid_pk_unique' })
-  @Property({ length: 36, nullable: true })
+  @Property({ length: 36, nullable: true, persist: false })
   bookUuidPk?: string;
 
   @Index({ name: 'test2_parent_id_index' })
-  @Property({ nullable: true })
+  @Property({ nullable: true, persist: false })
   parentId?: number;
 
   @Property({ default: 1 })
   version: number = 1;
 
-  @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  fooBar?: FooBar2;
+  @Unique({ name: 'test2_foo___bar_unique' })
+  @Property({ fieldName: 'foo___bar', nullable: true, persist: false })
+  fooBar?: number;
 
   @Property({ fieldName: 'foo___baz', nullable: true })
   fooBaz?: number;
 
   @OneToOne({ entity: () => Book2, deleteRule: 'set null', nullable: true })
   book?: Book2;
+
+  @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  fooBar2?: FooBar2;
 
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   parent?: Test2;
@@ -583,10 +587,10 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
-  @Property({ length: 100, nullable: true })
+  @Property({ length: 100, nullable: true, persist: false })
   favouriteCarName?: string;
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, persist: false })
   favouriteCarYear?: number;
 
   @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -597,7 +601,7 @@ export class User2 {
 ]
 `;
 
-exports[`ScalarPropsForFks generate entities with columns for some composite foreign key properties [mysql]: mysql-entity-composite-fk-prop-smart-dump 1`] = `
+exports[`ScalarPropsForFks generate entities with columns for some foreign key properties [mysql]: mysql-entity-composite-fk-prop-smart-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -1095,10 +1099,10 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
-  @Property({ length: 100, nullable: true })
+  @Property({ length: 100, nullable: true, persist: false })
   favouriteCarName?: string;
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, persist: false })
   favouriteCarYear?: number;
 
   @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })

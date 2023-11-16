@@ -13,7 +13,7 @@ import {
   type EntityProperty,
   type MikroORMOptions,
   type NamingStrategy,
-  type UniqueOptions,
+  type UniqueOptions, PropertyOptions,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
 import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings';
@@ -252,7 +252,7 @@ export class DatabaseTable {
     }
 
     for (const column of this.getColumns().filter(column => !skippedColumnNames.includes(column.name))) {
-      const prop = this.getPropertyDeclaration(column, namingStrategy, schemaHelper, compositeFkIndexes, compositeFkUniques, fksOnColumnProps.get(column.name));
+      const prop = this.getPropertyDeclaration(column, namingStrategy, schemaHelper, compositeFkIndexes, compositeFkUniques, columnFks, fksOnColumnProps.get(column.name));
       schema.addProperty(prop.name, prop.type, prop);
     }
 
@@ -295,11 +295,13 @@ export class DatabaseTable {
           nullableForeignKeys.add(currentFk);
         }
         if (scalarPropertiesForRelations === 'always') {
-          fksOnStandaloneProps.set(columnName, [fkIndex, currentFk]);
+          const baseName = this.getSafeBaseNameForStandaloneFk(namingStrategy, columnName, currentFk, fks);
+          fksOnStandaloneProps.set(baseName, [fkIndex, currentFk]);
+          fkIndexes.set(fkIndex, { fk: currentFk, baseName });
         } else {
           fksOnColumnProps.set(columnName, currentFk);
+          fkIndexes.set(fkIndex, { fk: currentFk, baseName: columnName });
         }
-        fkIndexes.set(fkIndex, { fk: currentFk, baseName: columnName });
         continue;
       }
 
@@ -326,11 +328,13 @@ export class DatabaseTable {
         // It is safe to just render this FK attached to the specific column.
         const columnName = specificColumnNames[0];
         if (scalarPropertiesForRelations === 'always') {
-          fksOnStandaloneProps.set(columnName, [fkIndex, currentFk]);
+          const baseName = this.getSafeBaseNameForStandaloneFk(namingStrategy, columnName, currentFk, fks);
+          fksOnStandaloneProps.set(baseName, [fkIndex, currentFk]);
+          fkIndexes.set(fkIndex, { fk: currentFk, baseName });
         } else {
           fksOnColumnProps.set(columnName, currentFk);
+          fkIndexes.set(fkIndex, { fk: currentFk, baseName: columnName });
         }
-        fkIndexes.set(fkIndex, { fk: currentFk, baseName: columnName });
         continue;
       }
 
@@ -341,36 +345,23 @@ export class DatabaseTable {
           // It is safe to name the FK after the nullable column, or any non-nullable one (the first one is picked).
           const columnName = nullableColumnsInFk.at(0) ?? currentFk.columnNames[0];
           if (scalarPropertiesForRelations === 'always') {
-            fksOnStandaloneProps.set(columnName, [fkIndex, currentFk]);
+            const baseName = this.getSafeBaseNameForStandaloneFk(namingStrategy, columnName, currentFk, fks);
+            fksOnStandaloneProps.set(baseName, [fkIndex, currentFk]);
+            fkIndexes.set(fkIndex, { fk: currentFk, baseName });
           } else {
             fksOnColumnProps.set(columnName, currentFk);
+            fkIndexes.set(fkIndex, { fk: currentFk, baseName: columnName });
           }
-          fkIndexes.set(fkIndex, { fk: currentFk, baseName: columnName });
           continue;
         }
 
         // If the first nullable column's name with FK is different from the name without FK,
         // name a standalone prop after the column, but treat the column prop itself as not having FK.
-        const firstNullableColumnName = nullableColumnsInFk[0];
-        if (this.getPropertyName(namingStrategy, firstNullableColumnName, currentFk) !== this.getPropertyName(namingStrategy, firstNullableColumnName)) {
-          fksOnStandaloneProps.set(firstNullableColumnName, [fkIndex, currentFk]);
-          fkIndexes.set(fkIndex, { fk: currentFk, baseName: firstNullableColumnName });
-          continue;
-        }
+        const columnName = nullableColumnsInFk[0];
+        const baseName = this.getSafeBaseNameForStandaloneFk(namingStrategy, columnName, currentFk, fks);
+        fksOnStandaloneProps.set(baseName, [fkIndex, currentFk]);
+        fkIndexes.set(fkIndex, { fk: currentFk, baseName });
       }
-
-      if (!fks.some(fk => fk !== currentFk && fk.referencedTableName === currentFk.referencedTableName) && !this.getColumn(currentFk.referencedTableName)) {
-        // Composite FK is the only one in this table that references this other table.
-        // The name of the referenced table is not shared with a column in this table,
-        // so it is safe to output prop name based on the referenced entity.
-        fksOnStandaloneProps.set(currentFk.referencedTableName, [fkIndex, currentFk]);
-        fkIndexes.set(fkIndex, { fk: currentFk, baseName: currentFk.referencedTableName });
-        continue;
-      }
-
-      // Any ambiguous FK is rendered with a name based on the FK constraint name
-      fksOnStandaloneProps.set(currentFk.constraintName, [fkIndex, currentFk]);
-      fkIndexes.set(fkIndex, { fk: currentFk, baseName: currentFk.constraintName });
     }
 
     const columnsInFks = Object.keys(columnFks);
@@ -473,6 +464,21 @@ export class DatabaseTable {
     return Array.from(propBaseNames).map(baseName => this.getPropertyName(namingStrategy, baseName, fksOnColumnProps.get(baseName)));
   }
 
+  private getSafeBaseNameForStandaloneFk(namingStrategy: NamingStrategy, preferredName: string, currentFk: ForeignKey, fks: ForeignKey[]) {
+    if (this.getPropertyName(namingStrategy, preferredName, currentFk) !== this.getPropertyName(namingStrategy, preferredName)) {
+      return preferredName;
+    }
+    if (!fks.some(fk => fk !== currentFk && fk.referencedTableName === currentFk.referencedTableName) && !this.getColumn(currentFk.referencedTableName)) {
+      // FK is the only one in this table that references this other table.
+      // The name of the referenced table is not shared with a column in this table,
+      // so it is safe to output prop name based on the referenced entity.
+      return currentFk.referencedTableName;
+    }
+
+    // Any ambiguous FK is rendered with a name based on the FK constraint name
+    return currentFk.constraintName;
+  }
+
   /**
    * The shortest name is stripped of the default namespace. All other namespaced elements are returned as full-qualified names.
    */
@@ -568,6 +574,7 @@ export class DatabaseTable {
     schemaHelper: SchemaHelper,
     compositeFkIndexes: Dictionary<{ keyName: string }>,
     compositeFkUniques: Dictionary<{ keyName: string }>,
+    columnFks: Record<string, ForeignKey[]>,
     fk?: ForeignKey,
   ) {
     const prop = this.getPropertyName(namingStrategy, column.name, fk);
@@ -603,6 +610,7 @@ export class DatabaseTable {
       unique: unique ? unique.keyName : undefined,
       enum: !!column.enumItems?.length,
       items: column.enumItems,
+      persist: !(column.name in columnFks && typeof fk === 'undefined'),
       ...fkOptions,
     };
   }

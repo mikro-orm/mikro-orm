@@ -7,7 +7,7 @@ import { initORMMySql, initORMPostgreSql, initORMSqlite } from '../../bootstrap'
 
 describe('ScalarPropsForFks', () => {
 
-  test('generate entities with columns for all composite foreign key properties [mysql]', async () => {
+  test('generate entities with columns for all foreign key properties [mysql]', async () => {
     const orm = await initORMMySql('mysql', { entityGenerator: { scalarPropertiesForRelations: 'always' } }, true);
     const dump = await orm.entityGenerator.generate({ save: true, baseDir: './temp/entities' });
     expect(dump).toMatchSnapshot('mysql-entity-composite-fk-prop-always-dump');
@@ -18,7 +18,7 @@ describe('ScalarPropsForFks', () => {
     await orm.close(true);
   });
 
-  test('generate entities with columns for some composite foreign key properties [mysql]', async () => {
+  test('generate entities with columns for some foreign key properties [mysql]', async () => {
     const orm = await initORMMySql('mysql', { entityGenerator: { scalarPropertiesForRelations: 'smart' } }, true);
     const dump = await orm.entityGenerator.generate({ save: true, baseDir: './temp/entities' });
     expect(dump).toMatchSnapshot('mysql-entity-composite-fk-prop-smart-dump');
