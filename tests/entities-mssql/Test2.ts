@@ -32,8 +32,4 @@ export class Test2 {
     return t;
   }
 
-  getConfiguration(): Record<string, string> {
-    return this.config.getItems().reduce((c, v) => { c[v.property] = v.value; return c; }, {});
-  }
-
 }

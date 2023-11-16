@@ -2,7 +2,7 @@ import { SchemaGenerator } from '@mikro-orm/knex';
 
 export class MsSqlSchemaGenerator extends SchemaGenerator {
 
-  async clearDatabase(options?: { schema?: string; truncate?: boolean }): Promise<void> {
+  override async clearDatabase(options?: { schema?: string; truncate?: boolean }): Promise<void> {
     // truncate by default, so no value is considered as true
     /* istanbul ignore if */
     if (options?.truncate === false) {

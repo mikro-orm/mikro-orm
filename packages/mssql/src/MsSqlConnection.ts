@@ -1,11 +1,15 @@
-import type { Knex } from '@mikro-orm/knex';
-import { AbstractSqlConnection } from '@mikro-orm/knex';
-import type { Dictionary, IsolationLevel, TransactionEventBroadcaster } from '@mikro-orm/core';
+import { AbstractSqlConnection, type Knex } from '@mikro-orm/knex';
+import type { Dictionary } from '@mikro-orm/core';
 
 export class MsSqlConnection extends AbstractSqlConnection {
 
-  async connect(): Promise<void> {
+  override createKnex() {
     this.client = this.createKnexClient('mssql');
+    this.connected = true;
+  }
+
+  override async connect(): Promise<void> {
+    this.createKnex();
 
     try {
       const dbName = this.platform.quoteIdentifier(this.config.get('dbName'));
@@ -19,7 +23,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
     return 'mssql://sa@localhost:1433';
   }
 
-  getConnectionOptions(): Knex.MsSqlConnectionConfig {
+  override getConnectionOptions(): Knex.MsSqlConnectionConfig {
     const config = super.getConnectionOptions() as Dictionary;
 
     config.options ??= {};
@@ -27,31 +31,6 @@ export class MsSqlConnection extends AbstractSqlConnection {
     delete config.database;
 
     return config as Knex.MsSqlConnectionConfig;
-  }
-
-  async begin(options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
-    if (!options.ctx) {
-      if (options.isolationLevel) {
-        this.logQuery(`set transaction isolation level ${options.isolationLevel}`);
-      }
-
-      this.logQuery('begin');
-    }
-
-    return super.begin(options);
-  }
-
-  async commit(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
-    this.logQuery('commit');
-    return super.commit(ctx, eventBroadcaster);
-  }
-
-  async rollback(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
-    if (eventBroadcaster?.isTopLevel()) {
-      this.logQuery('rollback');
-    }
-
-    return super.rollback(ctx, eventBroadcaster);
   }
 
   protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {

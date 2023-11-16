@@ -1,16 +1,14 @@
-import type { AnyEntity, RequiredEntityData } from '@mikro-orm/core';
-import { QueryFlag, Utils } from '@mikro-orm/core';
-import type { InsertQueryBuilder, Knex } from '@mikro-orm/knex';
-import { QueryBuilder } from '@mikro-orm/knex';
+import { QueryFlag, Utils, type AnyEntity, type RequiredEntityData } from '@mikro-orm/core';
+import { QueryBuilder, type InsertQueryBuilder, type Knex } from '@mikro-orm/knex';
 
 export class MsSqlQueryBuilder<T extends AnyEntity<T> = AnyEntity> extends QueryBuilder<T> {
 
-  insert(data: RequiredEntityData<T> | RequiredEntityData<T>[]): InsertQueryBuilder<T> {
+  override insert(data: RequiredEntityData<T> | RequiredEntityData<T>[]): InsertQueryBuilder<T> {
     this.checkIdentityInsert(data);
     return super.insert(data);
   }
 
-  getKnex(): Knex.QueryBuilder {
+  override getKnex(): Knex.QueryBuilder {
     const qb = super.getKnex();
 
     if (this.flags.has(QueryFlag.IDENTITY_INSERT)) {
@@ -21,7 +19,7 @@ export class MsSqlQueryBuilder<T extends AnyEntity<T> = AnyEntity> extends Query
   }
 
   private appendIdentityInsert(qb: Knex.QueryBuilder) {
-    const meta = this.metadata.get(this.entityName);
+    const meta = this.metadata.get(this.mainAlias.entityName);
     const table = this.driver.getTableName(meta, { schema: this._schema });
 
     const originalToSQL = qb.toSQL;
@@ -35,7 +33,7 @@ export class MsSqlQueryBuilder<T extends AnyEntity<T> = AnyEntity> extends Query
   }
 
   private checkIdentityInsert(data: RequiredEntityData<T> | RequiredEntityData<T>[]) {
-    const meta = this.metadata.find(this.entityName);
+    const meta = this.metadata.find(this.mainAlias.entityName);
 
     if (!meta) {
       return;

@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Entity, Filter, Formula, IdentifiedReference, JsonType, ManyToMany, ManyToOne, OneToOne, OptionalProps, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, Filter, Formula, Ref, JsonType, ManyToMany, ManyToOne, OneToOne, OptionalProps, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
@@ -41,8 +41,8 @@ export class Book2 {
   @ManyToOne({ entity: 'Author2', cascade: [] })
   author: Author2;
 
-  @ManyToOne(() => Publisher2, { cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, wrappedReference: true })
-  publisher?: IdentifiedReference<Publisher2>;
+  @ManyToOne(() => Publisher2, { cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, ref: true })
+  publisher?: Ref<Publisher2>;
 
   @OneToOne({ cascade: [], mappedBy: 'book', nullable: true })
   test?: Test2;

@@ -38,7 +38,6 @@ import { EntityComparator } from './EntityComparator';
 import type { Type } from '../types/Type';
 import type { MikroORM } from '../MikroORM';
 
-
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
   static readonly DEFAULTS: MikroORMOptions = {
@@ -135,7 +134,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     },
     preferReadReplicas: true,
     dynamicImportProvider: /* istanbul ignore next */ (id: string) => import(id),
-    'mssql': { className: 'MsSqlDriver', module: () => require('@mikro-orm/mssql') },
   };
 
   private readonly options: MikroORMOptions<D>;

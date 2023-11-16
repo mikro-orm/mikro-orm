@@ -13,7 +13,7 @@ describe('EntityManagerMsSql', () => {
   let orm: MikroORM<MsSqlDriver>;
 
   beforeAll(async () => orm = await initORMMsSql());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase({ truncate: false }));
 
   test('isConnected()', async () => {
     await expect(orm.isConnected()).resolves.toBe(true);
@@ -25,7 +25,7 @@ describe('EntityManagerMsSql', () => {
 
   test('getConnectionOptions()', async () => {
     const config = new Configuration({
-      type: 'mssql',
+      driver: MsSqlDriver,
       clientUrl: 'mssql://sa@127.0.0.1:1234/db_name',
       host: '127.0.0.10',
       password: 'Root.Root',
@@ -139,7 +139,7 @@ describe('EntityManagerMsSql', () => {
     const author = new Author2('name', 'email');
     author.termsAccepted = true;
     author.favouriteAuthor = author;
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     const a = await repo.findOne(author);
     const authors = await repo.find({ favouriteAuthor: author });
     expect(a).toBe(author);
@@ -276,10 +276,10 @@ describe('EntityManagerMsSql', () => {
     book3.publisher = wrap(publisher).toReference();
 
     const repo = orm.em.getRepository(Book2);
-    repo.persist(book1);
-    repo.persist(book2);
-    repo.persist(book3);
-    await repo.flush();
+    orm.em.persist(book1);
+    orm.em.persist(book2);
+    orm.em.persist(book3);
+    await orm.em.flush();
     orm.em.clear();
 
     const publisher7k = (await orm.em.getRepository(Publisher2).findOne({ name: '7K publisher' }))!;
@@ -369,7 +369,7 @@ describe('EntityManagerMsSql', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
     expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
-    await orm.em.getRepository(Book2).remove(lastBook[0]).flush();
+    await orm.em.remove(lastBook[0]).flush();
   });
 
   test('json properties', async () => {
@@ -608,7 +608,7 @@ describe('EntityManagerMsSql', () => {
   test('findOne by id', async () => {
     const authorRepository = orm.em.getRepository(Author2);
     const jon = new Author2('Jon Snow', 'snow@wall.st');
-    await authorRepository.persistAndFlush(jon);
+    await orm.em.persistAndFlush(jon);
 
     orm.em.clear();
     let author = (await authorRepository.findOne(jon.id))!;
@@ -640,17 +640,17 @@ describe('EntityManagerMsSql', () => {
     expect(jon.name).toBe('Jon Snow');
     expect(jon.born).toEqual(new Date('1990-03-23'));
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
-    expect(wrap(jon.favouriteBook).isInitialized()).toBe(false);
+    expect(wrap(jon.favouriteBook!).isInitialized()).toBe(false);
 
-    await wrap(jon.favouriteBook).init();
+    await wrap(jon.favouriteBook!).init();
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
-    expect(wrap(jon.favouriteBook).isInitialized()).toBe(true);
+    expect(wrap(jon.favouriteBook!).isInitialized()).toBe(true);
     expect(jon.favouriteBook!.title).toBe('Bible');
 
     const em2 = orm.em.fork();
     const bible2 = await em2.findOneOrFail(Book2, { uuid: bible.uuid });
     expect(wrap(bible2, true).__em!.id).toBe(em2.id);
-    expect(wrap(bible2.publisher, true).__em!.id).toBe(em2.id);
+    expect(wrap(bible2.publisher!, true).__em!.id).toBe(em2.id);
     const publisher2 = await bible2.publisher!.load();
     expect(wrap(publisher2, true).__em!.id).toBe(em2.id);
   });
@@ -915,7 +915,7 @@ describe('EntityManagerMsSql', () => {
     expect(tags[0].books[0].author.name).toBe('Jon Snow');
     expect(tags[0].books[0].publisher).toBeInstanceOf(Reference);
     expect(tags[0].books[0].publisher!.unwrap()).toBeInstanceOf(Publisher2);
-    expect(wrap(tags[0].books[0].publisher).isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0].publisher!).isInitialized()).toBe(true);
     expect(tags[0].books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
     expect(tags[0].books[0].publisher!.unwrap().tests.count()).toBe(2);
     expect(tags[0].books[0].publisher!.unwrap().tests[0].name).toBe('t11');
@@ -948,25 +948,25 @@ describe('EntityManagerMsSql', () => {
     expect(author.versionAsString).toBeUndefined();
     expect(author.code).toBe('snow@wall.st - Jon Snow');
 
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.id).toBeDefined();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
 
     author.name = 'John Snow';
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.version).toBe(2);
     expect(author.versionAsString).toBe('v2');
 
     expect(Author2.beforeDestroyCalled).toBe(0);
     expect(Author2.afterDestroyCalled).toBe(0);
-    await repo.removeAndFlush(author);
+    await orm.em.removeAndFlush(author);
     expect(Author2.beforeDestroyCalled).toBe(1);
     expect(Author2.afterDestroyCalled).toBe(1);
 
     const author2 = new Author2('Johny Cash', 'johny@cash.com');
-    await repo.persistAndFlush(author2);
-    await repo.removeAndFlush(author2);
+    await orm.em.persistAndFlush(author2);
+    await orm.em.removeAndFlush(author2);
     expect(Author2.beforeDestroyCalled).toBe(2);
     expect(Author2.afterDestroyCalled).toBe(2);
   });
@@ -990,7 +990,7 @@ describe('EntityManagerMsSql', () => {
   test('trying to populate non-existing or non-reference property will throw', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('Johny Cash', 'johny@cash.com');
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     orm.em.clear();
 
     // @ts-expect-error non-existing property
@@ -1007,7 +1007,7 @@ describe('EntityManagerMsSql', () => {
     const t3 = Test2.create('t3');
     await orm.em.persistAndFlush([t1, t2, t3]);
     publisher.tests.add(t2, t1, t3);
-    await repo.persistAndFlush(publisher);
+    await orm.em.persistAndFlush(publisher);
     orm.em.clear();
 
     const ent = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
@@ -1025,10 +1025,10 @@ describe('EntityManagerMsSql', () => {
     await expect(author.updatedAt).toBeDefined();
     // allow 1 ms difference as updated time is recalculated when persisting
     await expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
 
     author.name = 'name1';
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     await expect(author.createdAt).toBeDefined();
     await expect(author.updatedAt).toBeDefined();
     await expect(author.updatedAt).not.toEqual(author.createdAt);
@@ -1044,7 +1044,7 @@ describe('EntityManagerMsSql', () => {
 
   test('EM supports native insert/update/delete', async () => {
     orm.config.getLogger().setDebugMode(false);
-    const res1 = await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
+    const res1 = await orm.em.insert(Author2, { name: 'native name 1', email: 'native1@email.com' });
     expect(typeof res1).toBe('number');
 
     const res2 = await orm.em.nativeUpdate(Author2, { name: 'native name 1' }, { name: 'new native name' });
@@ -1053,7 +1053,7 @@ describe('EntityManagerMsSql', () => {
     const res3 = await orm.em.nativeDelete(Author2, { name: 'new native name' });
     expect(res3).toBe(1);
 
-    const res4 = await orm.em.nativeInsert(Author2, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2', email: 'native2@email.com' });
+    const res4 = await orm.em.insert(Author2, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2', email: 'native2@email.com' });
     expect(typeof res4).toBe('number');
 
     const res5 = await orm.em.nativeUpdate(Author2, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
@@ -1066,7 +1066,7 @@ describe('EntityManagerMsSql', () => {
     expect(b.createdAt).toBeInstanceOf(Date);
 
     const mock = mockLogger(orm, ['query', 'query-params']);
-    await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
+    await orm.em.insert(Author2, { name: 'native name 1', email: 'native1@email.com' });
     expect(mock.mock.calls[0][0]).toMatch(`insert into [author2] ([email], [name]) output inserted.[id], inserted.[created_at], inserted.[updated_at], inserted.[age], inserted.[terms_accepted] values ('native1@email.com', 'native name 1')`);
     orm.config.set('debug', ['query']);
   });

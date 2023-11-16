@@ -14,7 +14,7 @@ export class FooBar2 extends BaseEntity22 {
   @OneToOne({ orphanRemoval: true, nullable: true })
   baz?: FooBaz2;
 
-  @OneToOne({ nullable: true, onDelete: 'no action', onUpdateIntegrity: 'no action' })
+  @OneToOne({ nullable: true, deleteRule: 'no action', updateRule: 'no action' })
   fooBar?: FooBar2;
 
   @Property({ version: true, length: 0 })

@@ -1,51 +1,58 @@
 import type { SchemaGenerator, SqlEntityManager } from '@mikro-orm/knex';
-import { AbstractSqlPlatform } from '@mikro-orm/knex';
+import { AbstractSqlPlatform, SqlSchemaGenerator } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
 import { MsSqlSchemaHelper } from './MsSqlSchemaHelper';
 import { MsSqlExceptionConverter } from './MsSqlExceptionConverter';
 import type { IDatabaseDriver } from '@mikro-orm/core';
 import { MsSqlSchemaGenerator } from './MsSqlSchemaGenerator';
+import { EntityManager, MikroORM } from '@mikro-orm/core';
 
 // TODO check what methods are needed
 export class MsSqlPlatform extends AbstractSqlPlatform {
 
-  protected readonly schemaHelper: MsSqlSchemaHelper = new MsSqlSchemaHelper(this);
-  protected readonly exceptionConverter = new MsSqlExceptionConverter();
+  protected override readonly schemaHelper: MsSqlSchemaHelper = new MsSqlSchemaHelper(this);
+  protected override readonly exceptionConverter = new MsSqlExceptionConverter();
 
-  usesOutputStatement(): boolean {
+  /** @inheritDoc */
+  override lookupExtensions(orm: MikroORM): void {
+    MsSqlSchemaGenerator.register(orm);
+  }
+
+  override usesOutputStatement(): boolean {
     return true;
   }
 
-  convertsJsonAutomatically(): boolean {
+  // TODO verify
+  override convertsJsonAutomatically(): boolean {
     return false;
   }
 
-  getCurrentTimestampSQL(length: number): string {
+  override getCurrentTimestampSQL(length: number): string {
     return `current_timestamp`;
   }
 
-  getTimeTypeDeclarationSQL(): string {
+  override getTimeTypeDeclarationSQL(): string {
     return 'time';
   }
 
-  getRegExpOperator(): string {
+  override getRegExpOperator(): string {
     throw new Error('Not supported');
   }
 
-  getBlobDeclarationSQL(): string {
+  override getBlobDeclarationSQL(): string {
     return 'varbinary(max)';
   }
 
-  getJsonDeclarationSQL(): string {
+  override getJsonDeclarationSQL(): string {
     return 'nvarchar(max)';
   }
 
-  quoteIdentifier(id: string): string {
+  override quoteIdentifier(id: string): string {
     return `[${id.replace('.', `].[`)}]`;
   }
 
-  quoteValue(value: any): string {
+  override quoteValue(value: any): string {
     if (value instanceof Buffer) {
       return `0x${value.toString('hex')}`;
     }
@@ -57,9 +64,9 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return SqlString.escape(value);
   }
 
-  getSchemaGenerator(driver: IDatabaseDriver, em?: SqlEntityManager): SchemaGenerator {
-    /* istanbul ignore next */
-    return this.config.getCachedService(MsSqlSchemaGenerator, em ?? driver as any); // cast as `any` to get around circular dependencies
+  /* istanbul ignore next: kept for type inference only */
+  override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MsSqlSchemaGenerator {
+    return new MsSqlSchemaGenerator(em ?? driver as any);
   }
 
 }

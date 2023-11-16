@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, OneToOne, PrimaryKeyType, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -8,13 +8,13 @@ export class FooParam2 {
   @ManyToOne(() => FooBar2, { primary: true })
   bar!: FooBar2;
 
-  @ManyToOne(() => FooBaz2, { primary: true, onDelete: 'no action', onUpdateIntegrity: 'no action' })
+  @ManyToOne(() => FooBaz2, { primary: true, deleteRule: 'no action', updateRule: 'no action' })
   baz!: FooBaz2;
 
   @Property()
   value: string;
 
-  [PrimaryKeyType]: [number, number];
+  [PrimaryKeyProp]?: ['bar', 'baz'];
 
   constructor(bar: FooBar2, baz: FooBaz2, value: string) {
     this.bar = bar;

@@ -15,7 +15,7 @@ export class User2 {
   foo?: number;
 
   // disabled cascading due to https://stackoverflow.com/questions/27613117/introducing-foreign-key-constraint-may-cause-cycles-or-multiple-cascade-paths-s
-  // @ManyToMany({ entity: () => Car2, onUpdateIntegrity: 'no action', onDelete: 'no action' })
+  // @ManyToMany({ entity: () => Car2, updateRule: 'no action', deleteRule: 'no action' })
   @ManyToMany({ entity: () => Car2 })
   cars = new Collection<Car2>(this);
 

@@ -51,10 +51,10 @@ export class Author2 extends BaseEntity2 {
   bornTime?: string;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
-  books!: Collection<Book2>;
+  books = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author', strategy: LoadStrategy.JOINED, orderBy: { title: QueryOrder.ASC } })
-  books2!: Collection<Book2>;
+  books2 = new Collection<Book2>(this);
 
   @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL] })
   address?: Address2;
@@ -68,7 +68,7 @@ export class Author2 extends BaseEntity2 {
   @ManyToMany(() => Author2, a => a.following)
   followers: Collection<Author2> = new Collection<Author2>(this);
 
-  @ManyToOne({ nullable: true, onUpdateIntegrity: 'no action', onDelete: 'cascade' })
+  @ManyToOne({ nullable: true, updateRule: 'no action', deleteRule: 'cascade' })
   favouriteBook?: Book2;
 
   @ManyToOne({ nullable: true })
