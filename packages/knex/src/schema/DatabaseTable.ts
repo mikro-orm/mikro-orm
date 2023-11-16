@@ -1,4 +1,17 @@
-import { Cascade, DateTimeType, DecimalType, EntitySchema, ReferenceKind, t, Utils, type Dictionary, type EntityMetadata, type EntityProperty, type NamingStrategy } from '@mikro-orm/core';
+import {
+  Cascade,
+  DateTimeType,
+  DecimalType,
+  EntitySchema,
+  ReferenceKind,
+  t,
+  Utils,
+  type Dictionary,
+  type EntityMetadata,
+  type EntityProperty,
+  type NamingStrategy,
+  type Configuration,
+} from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
 import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
@@ -66,7 +79,7 @@ export class DatabaseTable {
     this.columns[column.name] = column;
   }
 
-  addColumnFromProperty(prop: EntityProperty, meta: EntityMetadata) {
+  addColumnFromProperty(prop: EntityProperty, meta: EntityMetadata, config: Configuration) {
     prop.fieldNames.forEach((field, idx) => {
       const type = prop.enum ? 'enum' : prop.columnTypes[idx];
       const mappedType = this.platform.getMappedType(type);
@@ -119,7 +132,7 @@ export class DatabaseTable {
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
       const constraintName = this.getIndexName(true, prop.fieldNames, 'foreign');
-      let schema = prop.targetMeta!.schema === '*' ? this.schema : prop.targetMeta!.schema ?? this.schema;
+      let schema = prop.targetMeta!.schema === '*' ? this.schema : (prop.targetMeta!.schema ?? config.get('schema', this.platform.getDefaultSchemaName()));
 
       if (prop.referencedTableName.includes('.')) {
         schema = undefined;

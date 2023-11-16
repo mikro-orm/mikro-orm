@@ -268,7 +268,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       return `${schema}.${referencedTableName.replace(/^\*\./, '')}`;
     }
 
-    if (schemaName === this.platform.getDefaultSchemaName()) {
+    if (!schemaName || schemaName === this.platform.getDefaultSchemaName()) {
       return tableName;
     }
 
