@@ -134,7 +134,7 @@ describe('MetadataValidator', () => {
     meta.AuthorProfile.root = meta.AuthorProfile;
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).toThrowError(`Virtual entity AuthorProfile cannot have primary key AuthorProfile.id`);
     delete properties.id.primary;
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).toThrowError(`Only scalar and embedded properties are allowed inside virtual entity. Found '1:m' in AuthorProfile.invalid1`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).toThrowError(`Only scalars, embedded properties and to-many relations are allowed inside virtual entity. Found '1:m' in AuthorProfile.invalid1`);
     delete properties.invalid1;
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).not.toThrowError();
   });
