@@ -68,7 +68,7 @@ export class DatabaseSchema {
       table.comment = meta.comment;
       meta.props
         .filter(prop => this.shouldHaveColumn(meta, prop))
-        .forEach(prop => table.addColumnFromProperty(prop, meta));
+        .forEach(prop => table.addColumnFromProperty(prop, meta, config));
       meta.indexes.forEach(index => table.addIndex(meta, index, 'index'));
       meta.uniques.forEach(index => table.addIndex(meta, index, 'unique'));
       table.addIndex(meta, { properties: meta.props.filter(prop => prop.primary).map(prop => prop.name) }, 'primary');
