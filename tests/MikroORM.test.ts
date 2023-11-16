@@ -92,9 +92,10 @@ describe('MikroORM', () => {
     const pathExistsMock = jest.spyOn(fs as any, 'pathExists');
     pathExistsMock.mockImplementation(async path => {
       const str = path as string;
-      return str.endsWith('.json') || (str.includes('/mikro-orm.config.ts') && !str.includes('/src/mikro-orm.config.ts'));
+      return str.endsWith('.json') || (str.endsWith('/mikro-orm.config.ts') && !str.endsWith('/src/mikro-orm.config.ts'));
     });
     jest.mock('../mikro-orm.config.ts', () => options, { virtual: true });
+    jest.mock(Utils.normalizePath(process.cwd()) + '/mikro-orm.config.ts', () => options, { virtual: true });
     const pkg = { 'mikro-orm': { useTsNode: true } } as any;
     jest.mock('../package.json', () => pkg, { virtual: true });
 

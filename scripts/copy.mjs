@@ -143,6 +143,9 @@ if (options['pin-versions']) {
 copy('README.md', root, target);
 copy('LICENSE',  root, target);
 copy('package.json', process.cwd(), target);
+if (resolve(process.cwd()) === resolve(root, 'packages/cli')) {
+  copy('esm.cmd', resolve(process.cwd(), 'src'), target);
+}
 rewrite(resolve(target, 'package.json'), pkg => {
   return pkg.replace(/dist\//g, '').replace(/src\/(.*)\.ts/g, '$1.js');
 });

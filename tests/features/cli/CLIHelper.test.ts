@@ -4,28 +4,40 @@ import { CLIConfigurator, CLIHelper } from '@mikro-orm/cli';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { SqliteDriver } from '@mikro-orm/sqlite';
+import { resolve } from 'node:path';
 
 jest.mock(process.cwd() + '/mikro-orm.config.js', () => ({ driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
+jest.mock(process.cwd().replaceAll('\\', '/') + '/mikro-orm.config.js', () => ({ driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
 jest.mock(process.cwd() + '/mikro-orm.config.ts', () => ({ driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
+jest.mock(process.cwd().replaceAll('\\', '/') + '/mikro-orm.config.ts', () => ({ driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
 jest.mock(process.cwd() + '/mikro-orm-async.config.js', () => (Promise.resolve({ driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] })), { virtual: true });
+jest.mock(process.cwd().replaceAll('\\', '/') + '/mikro-orm-async.config.js', () => (Promise.resolve({ driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] })), { virtual: true });
 jest.mock(process.cwd() + '/mikro-orm-async-catch.config.js', () => (Promise.reject('FooError')), { virtual: true });
+jest.mock(process.cwd().replaceAll('\\', '/') + '/mikro-orm-async-catch.config.js', () => (Promise.reject('FooError')), { virtual: true });
+
 const pkg = { 'mikro-orm': {} } as any;
 jest.mock(process.cwd() + '/package.json', () => pkg, { virtual: true });
+jest.mock(process.cwd() + '\\package.json', () => pkg, { virtual: true });
 
 const tscBase = { compilerOptions: { baseUrl: '.', paths: { '@some-path/some': './libs/paths' } } } as any;
 jest.mock(process.cwd() + '/tsconfig.base.json', () => tscBase, { virtual: true });
+jest.mock(process.cwd() + '\\tsconfig.base.json', () => tscBase, { virtual: true });
 
 const tscExtendedAbs = { extends: process.cwd() + '/tsconfig.base.json', compilerOptions: { module: 'commonjs' } } as any;
 jest.mock(process.cwd() + '/tsconfig.extended-abs.json', () => tscExtendedAbs, { virtual: true });
+jest.mock(process.cwd() + '\\tsconfig.extended-abs.json', () => tscExtendedAbs, { virtual: true });
 
 const tscExtended = { extends: './tsconfig.extended-abs.json', compilerOptions: { module: 'commonjs' } } as any;
 jest.mock(process.cwd() + '/tsconfig.extended.json', () => tscExtended, { virtual: true });
+jest.mock(process.cwd() + '\\tsconfig.extended.json', () => tscExtended, { virtual: true });
 
 const tscWithoutBaseUrl = { compilerOptions: { paths: { '@some-path/some': './libs/paths' } } };
 jest.mock(process.cwd() + '/tsconfig.without-baseurl.json', () => tscWithoutBaseUrl, { virtual: true });
+jest.mock(process.cwd() + '\\tsconfig.without-baseurl.json', () => tscWithoutBaseUrl, { virtual: true });
 
 const tsc = { compilerOptions: { } } as any;
 jest.mock(process.cwd() + '/tsconfig.json', () => tsc, { virtual: true });
+jest.mock(process.cwd() + '\\tsconfig.json', () => tsc, { virtual: true });
 
 process.env.FORCE_COLOR = '0';
 
@@ -79,7 +91,7 @@ describe('CLIHelper', () => {
     pkg['mikro-orm'].useTsNode = true;
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
+    expect(requireFromMock).toHaveBeenCalledWith('ts-node', resolve(process.cwd(), './tsconfig.json'));
   });
 
   test('configures yargs instance [ts-node] without paths', async () => {
@@ -89,8 +101,8 @@ describe('CLIHelper', () => {
     const registerSpy = jest.spyOn(require('ts-node'), 'register');
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
-    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.json');
+    expect(requireFromMock).toHaveBeenCalledWith('ts-node', resolve(process.cwd(), './tsconfig.json'));
+    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', resolve(process.cwd(), './tsconfig.json'));
     expect(registerSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -124,8 +136,8 @@ describe('CLIHelper', () => {
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(requireFromMock).toHaveBeenCalledTimes(2);
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.extended-abs.json');
-    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.extended-abs.json');
+    expect(requireFromMock).toHaveBeenCalledWith('ts-node', resolve(process.cwd(), './tsconfig.extended-abs.json'));
+    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', resolve(process.cwd(), './tsconfig.extended-abs.json'));
     expect(registerPathsMock).toHaveBeenCalledWith({
       baseUrl: '.',
       paths: { '@some-path/some': './libs/paths' },
@@ -163,8 +175,8 @@ describe('CLIHelper', () => {
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(requireFromMock).toHaveBeenCalledTimes(2);
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.without-baseurl.json');
-    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.without-baseurl.json');
+    expect(requireFromMock).toHaveBeenCalledWith('ts-node', resolve(process.cwd(), './tsconfig.without-baseurl.json'));
+    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', resolve(process.cwd(), './tsconfig.without-baseurl.json'));
     expect(registerPathsMock).toHaveBeenCalledWith({
       baseUrl: '.',
       paths: { '@some-path/some': './libs/paths' },
@@ -235,7 +247,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
   test('gets ORM configuration [from package.json] with promise', async () => {
     pathExistsMock.mockResolvedValue(true);
-    pkg['mikro-orm'].configPaths = [`${process.cwd()}/mikro-orm-async.config.js`];
+    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-async.config.js`];
     const conf = await CLIHelper.getConfiguration();
     expect(conf).toBeInstanceOf(Configuration);
     expect(conf.get('dbName')).toBe('foo_bar');
@@ -246,7 +258,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   test('gets ORM configuration [from package.json] with rejected promise', async () => {
     expect.assertions(1);
     pathExistsMock.mockResolvedValue(true);
-    pkg['mikro-orm'].configPaths = [`${process.cwd()}/mikro-orm-async-catch.config.js`];
+    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-async-catch.config.js`];
     await expect(CLIHelper.getConfiguration()).rejects.toEqual('FooError');
     delete pkg['mikro-orm'].configPaths;
   });
@@ -282,7 +294,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
         return true;
       }
 
-      return (path as string).endsWith(process.cwd() + '/mikro-orm.config.ts');
+      return (path as string).endsWith(Utils.normalizePath(process.cwd() + '/mikro-orm.config.ts'));
     });
     pkg['mikro-orm'].useTsNode = true;
     await expect(CLIHelper.getORM()).rejects.toThrowError('No entities were discovered');
