@@ -62,7 +62,7 @@ You can read more about all the possible configuration options in [Advanced Conf
 
 ## Folder-based discovery
 
-You can also provide paths where we store our entities via `entities` array. Internally it uses [`globby`](https://github.com/sindresorhus/globby) so we can use [globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns), including negative globs.
+You can also provide paths where you store your entities via `entities` array. The paths are resolved via [`globby`](https://github.com/sindresorhus/globby) internally, so you can use [globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns), including **negative globs**.
 
 ```ts
 const orm = await MikroORM.init({
@@ -100,15 +100,11 @@ const orm = await MikroORM.init({
 });
 ```
 
-> It is important that `entities` will point to the compiled JS files, and `entitiesTs` will point to the TS source files. We should not mix those.
+> It is important that `entities` will point to the compiled JS files, and `entitiesTs` will point to the TS source files. You should not mix those.
 
 > For `ts-morph` discovery to work in production, you need to deploy `.d.ts` declaration files. Be sure to enable `compilerOptions.declaration` in your `tsconfig.json`.
 
-We can also use different [metadata provider](metadata-providers.md) or even write custom one:
-
-- `ReflectMetadataProvider` that uses `reflect-metadata` instead of `ts-morph`
-
-Using [`EntitySchema`](entity-schema.md) is another way to define your entities and does not depend on the metadata providers at all.
+You can also use different the default [`ReflectMetadataProvider`](metadata-providers.md#reflectmetadataprovider) or even write custom one. Using [`EntitySchema`](entity-schema.md) is another way to define your entities and does not depend on the metadata providers at all.
 
 ```ts
 import { MikroORM } from '@mikro-orm/postgresql';
@@ -242,7 +238,7 @@ Take a look at docs about [working with `EntityManager`](./entity-manager.md).
 
 ## Setting up the Commandline Tool
 
-MikroORM ships with a number of command line tools that are very helpful during development, like `SchemaGenerator` and `EntityGenerator`. We can call this command from the NPM binary directory or use `npx`:
+MikroORM ships with a number of command line tools that are very helpful during development, like `SchemaGenerator` and `EntityGenerator`. You can call this command from the NPM binary directory or use `npx`:
 
 > To work with the CLI, first install `@mikro-orm/cli` package locally. The version needs to be aligned with the `@mikro-orm/core` package.
 
@@ -260,13 +256,31 @@ $ npx mikro-orm
 $ yarn mikro-orm
 ```
 
-For CLI to be able to access our database, we will need to create `mikro-orm.config.js` file that exports our ORM configuration.
+For CLI to be able to access your database, you will need to create `mikro-orm.config.js` file that exports your ORM configuration.
 
 > ORM configuration file can export the Promise, like: `export default Promise.resolve({...});`.
 
-TypeScript is also supported, just enable `useTsNode` flag in our `package.json` file. By default, when `useTsNode` is not enabled, CLI will ignore `.ts` files, so if you want to out-out of this behaviour, enable the `alwaysAllowTs` option. This would be useful if you want to use MikroORM with [Bun](https://bun.sh), which has TypeScript support out of the box. There we can also set up array of possible paths to `mikro-orm.config` file, as well as use different file name. The `package.json` file can be located in the current working directory, or in one of its parent folders.
+To enable TypeScript support, add `useTsNode` flag to the `mikro-orm` section in your `package.json` file. By default, when `useTsNode` is not enabled, CLI will ignore `.ts` files, so if you want to oup-out of this behaviour, enable the `alwaysAllowTs` option. This would be useful if you want to use MikroORM with [Bun](https://bun.sh), which has TypeScript support out of the box. 
 
-You can use these environment variables to override the CLI settings:
+> The `useTsNode` is a flag only for the CLI, it has no effect on your application.
+
+You can also set up array of possible paths to `mikro-orm.config.*` file in the `package.json`, as well as use different file name. The `package.json` file can be located in the current working directory, or in one of its parent folders.
+
+```json title="./package.json"
+{
+  "name": "your-app",
+  "dependencies": { ... },
+  "mikro-orm": {
+    "useTsNode": true,
+    "configPaths": [
+      "./src/mikro-orm.config.ts",
+      "./dist/mikro-orm.config.js"
+    ]
+  }
+}
+```
+
+Another way to control these CLI related settings is with the environment variables:
 
 - `MIKRO_ORM_CLI`: the path to ORM config file
 - `MIKRO_ORM_CLI_USE_TS_NODE`: register ts-node
@@ -279,101 +293,85 @@ Alternatively, you can also specify the config path via `--config` option:
 $ npx mikro-orm debug --config ./my-config.ts
 ```
 
-This option will be respected also when you run your app, not just when you use the CLI.
+The `--config` flag will be respected also when you run your app (as long as it is part of `process.argv`), not just when you use the CLI.
 
 > Do not forget to install `ts-node` when enabling `useTsNode` flag.
 
-> The `useTsNode` is used only when executing the CLI, it is not respected when running our app.
+MikroORM will always try to load the first available config file, based on the order in `configPaths`. When you have `useTsNode` disabled or `ts-node` is not already registered nor detected, TS config files will be ignored.
 
-MikroORM will always try to load the first available config file, based on the order in `configPaths`. This means that if we specify the first item as the TS config, but we do not have `ts-node` enabled and installed, it will fail to load it.
-
-```json title="./package.json"
-{
-  "name": "our-app",
-  "dependencies": { ... },
-  "mikro-orm": {
-    "useTsNode": true,
-    "configPaths": [
-      "./src/mikro-orm.config.ts",
-      "./dist/mikro-orm.config.js"
-    ]
-  }
-}
-```
-
-```ts title="./src/mikro-orm.config.ts"
-import { SqliteDriver } from '@mikro-orm/sqlite';
-
-export default {
-  entities: [Author, Book, BookTag], // no need for `entitiesTs` this way
-  dbName: 'my-db-name',
-  driver: SqliteDriver, // one of the supported driver classes
-};
-```
-
-To have the config type-safe, we can define the options variable first, with the `Options` type:
-
-```ts title="./src/mikro-orm.config.ts"
-import { Options } from '@mikro-orm/sqlite';
-
-const config: Options = {
-  // ...
-};
-
-export default config;
-```
-
-Alternatively, we can use the `defineConfig` helper that should provide intellisense even in JavaScript files, without the need for type hints via jsdoc:
-
-> Using `defineConfig` also automatically infers the driver option for you if you import the helper from the driver package
+Preferred way of creating to the configuration object is with the `defineConfig` helper. It will provide intellisense even in JavaScript files, without the need for type hints via jsdoc:
 
 ```ts
 import { defineConfig } from '@mikro-orm/sqlite';
 
 export default defineConfig({
-  entities: [Author, Book, BookTag], // no need for `entitiesTs` this way
+  entities: [Author, Book, BookTag],
   dbName: 'my-db-name',
-  // driver: SqliteDriver, // this is inferred as we import `defineConfig` from sqlite package
+  // this is inferred as you import `defineConfig` from sqlite package
+  // driver: SqliteDriver, 
 });
 ```
 
-When we have `useTsNode` disabled and `ts-node` is not already registered and detected, TS config files will be ignored.
+Using `defineConfig` also automatically infers the driver option for you if you import the helper from the driver package. This means you don't have to provide the `driver` option explicitly.
 
-Once we have the CLI config properly set up, we can omit the `MikroORM.init()` options parameter, and the CLI config will be automatically used. This process may fail if we use bundlers that use tree shaking. As the config file is not referenced anywhere statically, it would not be compiled - for that the best approach is to provide the config explicitly:
+Alternatively, you can use the `Options` type:
+
+```ts title="./src/mikro-orm.config.ts"
+import { Options } from '@mikro-orm/sqlite';
+
+const config: Options = {
+  entities: [Author, Book, BookTag],
+  dbName: 'my-db-name',
+  driver: SqliteDriver,
+};
+
+export default config;
+```
+
+Once you have the CLI config properly set up, you can omit the `MikroORM.init()` options parameter, and the CLI config will be automatically used. This process may fail if you use bundlers that use tree shaking. As the config file is not referenced anywhere statically, it would not be compiled - for that the best approach is to provide the config explicitly:
 
 ```ts
 import config from './mikro-orm.config';
 const orm = await MikroORM.init(config);
 ```
 
-> We can also use different names for this file, simply rename it in the `configPaths` array our in `package.json`. We can also use `MIKRO_ORM_CLI` environment variable with the path to override `configPaths` value.
-
-Now we should be able to start using the CLI. All available commands are listed in the CLI help:
+Now you should be able to start using the CLI. All available commands are listed in the CLI help:
 
 ```sh
+$ npx mikro-orm
+
 Usage: mikro-orm <command> [options]
 
 Commands:
   mikro-orm cache:clear             Clear metadata cache
-  mikro-orm cache:generate          Generate metadata cache for production
+  mikro-orm cache:generate          Generate metadata cache
   mikro-orm generate-entities       Generate entities based on current database
                                     schema
+  mikro-orm database:create         Create your database if it does not exist
   mikro-orm database:import <file>  Imports the SQL file to the database
+  mikro-orm seeder:run              Seed the database using the seeder class
+  mikro-orm seeder:create <seeder>  Create a new seeder class
   mikro-orm schema:create           Create database schema based on current
                                     metadata
   mikro-orm schema:drop             Drop database schema based on current
                                     metadata
   mikro-orm schema:update           Update database schema based on current
                                     metadata
+  mikro-orm schema:fresh            Drop and recreate database schema based on
+                                    current metadata
   mikro-orm migration:create        Create new migration with current schema
                                     diff
   mikro-orm migration:up            Migrate up to the latest version
   mikro-orm migration:down          Migrate one step down
   mikro-orm migration:list          List all executed migrations
+  mikro-orm migration:check         Check if migrations are needed. Useful for
+                                    bash scripts.
   mikro-orm migration:pending       List all pending migrations
+  mikro-orm migration:fresh         Clear the database and rerun all migrations
   mikro-orm debug                   Debug CLI configuration
 
 Options:
+      --config   Set path to the ORM configuration file                 [string]
   -v, --version  Show version number                                   [boolean]
   -h, --help     Show help                                             [boolean]
 
@@ -381,6 +379,6 @@ Examples:
   mikro-orm schema:update --run  Runs schema synchronization
 ```
 
-To verify our setup, we can use `mikro-orm debug` command.
+To verify your setup, you can use `mikro-orm debug` command.
 
-> When we have CLI config properly set up, we can omit the `options` parameter when calling `MikroORM.init()`.
+> When you have CLI config properly set up, you can omit the `options` parameter when calling `MikroORM.init()`.
