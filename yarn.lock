@@ -417,13 +417,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/cli@npm:18.4.1":
-  version: 18.4.1
-  resolution: "@commitlint/cli@npm:18.4.1"
+"@commitlint/cli@npm:18.4.2":
+  version: 18.4.2
+  resolution: "@commitlint/cli@npm:18.4.2"
   dependencies:
     "@commitlint/format": "npm:^18.4.0"
-    "@commitlint/lint": "npm:^18.4.0"
-    "@commitlint/load": "npm:^18.4.1"
+    "@commitlint/lint": "npm:^18.4.2"
+    "@commitlint/load": "npm:^18.4.2"
     "@commitlint/read": "npm:^18.4.0"
     "@commitlint/types": "npm:^18.4.0"
     execa: "npm:^5.0.0"
@@ -433,16 +433,16 @@ __metadata:
     yargs: "npm:^17.0.0"
   bin:
     commitlint: cli.js
-  checksum: 08354788971437ef6b4693564d1a0476b0f89ce89f9d0257f7885af525904c1ba2a0dafa7321d635bc7a034ea4dbef978f5b662ef524d545ec8e8db98888b54b
+  checksum: 85ba164a302a8c347f626487f9ad5c1d47aa8e5570732c8c7008f62873a0f512e3df86e1f590355dac77ec5c9a670a25ae19fb416f46d49f65e6038e6f914895
   languageName: node
   linkType: hard
 
-"@commitlint/config-conventional@npm:18.4.0":
-  version: 18.4.0
-  resolution: "@commitlint/config-conventional@npm:18.4.0"
+"@commitlint/config-conventional@npm:18.4.2":
+  version: 18.4.2
+  resolution: "@commitlint/config-conventional@npm:18.4.2"
   dependencies:
     conventional-changelog-conventionalcommits: "npm:^7.0.2"
-  checksum: d9101033e13bb5caee0c6691675c2bb8f3d374ad24a19dd29a25d6c81702b5cf549d06b3a1238b53aeae5bf00c6072c61fd6f7370c40b3506c2d0f84f8038bc9
+  checksum: ed4a5c593e5519ccea93ee050c5bbaa642f43ca89b4795929b3be199402d3fd04f2f6651be58441bbbeb49b26158359c2b67d6c08fe4c64d0beb2405d2dd5052
   languageName: node
   linkType: hard
 
@@ -487,31 +487,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/is-ignored@npm:^18.4.0":
-  version: 18.4.0
-  resolution: "@commitlint/is-ignored@npm:18.4.0"
+"@commitlint/is-ignored@npm:^18.4.2":
+  version: 18.4.2
+  resolution: "@commitlint/is-ignored@npm:18.4.2"
   dependencies:
     "@commitlint/types": "npm:^18.4.0"
     semver: "npm:7.5.4"
-  checksum: 2194e2dacbe8097b049c2d4251de4db6d09067daad5a6e7dc66d9d6afb92ef495f888055fd3eb05fd736ee5c85575092ca4b880563abde9f76c85cf37fc6e680
+  checksum: 2baaf822e0c9f521ae8bc0fa5aa2d25643e5a84509d704d332f02c6ec6c7f52107bdae7d32d022884e9f21878667b5e5134efa215322fdd5f0e7de84d670a81a
   languageName: node
   linkType: hard
 
-"@commitlint/lint@npm:^18.4.0":
-  version: 18.4.0
-  resolution: "@commitlint/lint@npm:18.4.0"
+"@commitlint/lint@npm:^18.4.2":
+  version: 18.4.2
+  resolution: "@commitlint/lint@npm:18.4.2"
   dependencies:
-    "@commitlint/is-ignored": "npm:^18.4.0"
+    "@commitlint/is-ignored": "npm:^18.4.2"
     "@commitlint/parse": "npm:^18.4.0"
     "@commitlint/rules": "npm:^18.4.0"
     "@commitlint/types": "npm:^18.4.0"
-  checksum: b7e2240f597f3c32f6b9bce0108cdf85db1ad1cf4f148ef4d1e6aa7d1c666c3d570ab05956c916115000b82c9e78580cae7c4ee738ea5eb31e966b51e91e4998
+  checksum: 85e062c6e44052a3585b3c38066082be1f79205a7435b5135af7a54e0d0cb2b9a0d20c1aa19807d4369f32e808769a294cbb31309e4e8f65fcce9f636d8e8367
   languageName: node
   linkType: hard
 
-"@commitlint/load@npm:^18.4.1":
-  version: 18.4.1
-  resolution: "@commitlint/load@npm:18.4.1"
+"@commitlint/load@npm:^18.4.2":
+  version: 18.4.2
+  resolution: "@commitlint/load@npm:18.4.2"
   dependencies:
     "@commitlint/config-validator": "npm:^18.4.0"
     "@commitlint/execute-rule": "npm:^18.4.0"
@@ -525,7 +525,7 @@ __metadata:
     lodash.merge: "npm:^4.6.2"
     lodash.uniq: "npm:^4.5.0"
     resolve-from: "npm:^5.0.0"
-  checksum: 77cb8b02c39fd0a28214cea898811100b1b0c33047914a9294df862ad0c75965b3000ddb1806a5e89054141ce5217419b419d5d3d9bcf757e904f34b530d7474
+  checksum: 8b3422171c1b2af7e1da8852eca27ad0b3b6025b9e74812423acd797001cdcfee9386175098c8bd6063342376df36825c7023ed252773a702129d49c05586c54
   languageName: node
   linkType: hard
 
@@ -1346,8 +1346,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/root@workspace:."
   dependencies:
-    "@commitlint/cli": "npm:18.4.1"
-    "@commitlint/config-conventional": "npm:18.4.0"
+    "@commitlint/cli": "npm:18.4.2"
+    "@commitlint/config-conventional": "npm:18.4.2"
     "@mikro-orm/mongo-highlighter": "npm:1.0.0"
     "@mikro-orm/sql-highlighter": "npm:1.0.1"
     "@side/jest-runtime": "npm:^1.1.0"
