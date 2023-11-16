@@ -25,8 +25,8 @@ export class MetadataValidator {
 
     if (meta.virtual || meta.expression) {
       for (const prop of Utils.values(meta.properties)) {
-        if (![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind)) {
-          throw new MetadataError(`Only scalar and embedded properties are allowed inside virtual entity. Found '${prop.kind}' in ${meta.className}.${prop.name}`);
+        if (![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED, ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+          throw new MetadataError(`Only scalars, embedded properties and to-many relations are allowed inside virtual entity. Found '${prop.kind}' in ${meta.className}.${prop.name}`);
         }
 
         if (prop.primary) {

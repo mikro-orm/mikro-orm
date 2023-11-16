@@ -248,13 +248,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       ret.push(entity);
     }
 
-    if (meta.virtual) {
-      await em.unitOfWork.dispatchOnLoadEvent();
-      await em.storeCache(options.cache, cached!, () => ret);
-
-      return ret;
-    }
-
     const unique = Utils.unique(ret);
     await em.entityLoader.populate<Entity, Fields>(entityName, unique as Entity[], populate, {
       ...options as Dictionary,
@@ -264,7 +257,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       lookup: false,
     });
     await em.unitOfWork.dispatchOnLoadEvent();
-    await em.storeCache(options.cache, cached!, () => unique.map(e => helper(e).toPOJO()));
+
+    if (meta.virtual) {
+      await em.storeCache(options.cache, cached!, () => ret);
+    } else {
+      await em.storeCache(options.cache, cached!, () => unique.map(e => helper(e).toPOJO()));
+    }
 
     return unique;
   }
