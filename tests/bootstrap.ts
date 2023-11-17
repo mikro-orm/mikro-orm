@@ -81,7 +81,7 @@ export async function closeReplSets(): Promise<void> {
 }
 
 export async function initORMMongo(replicaSet = false) {
-  const dbName = `mikro-orm-test-${(Math.random() + 1).toString(36).substring(7)}`;
+  const dbName = `mikro-orm-test-${(Math.random() + 1).toString(36).substring(2)}`;
   const clientUrl = replicaSet
     ? await initMongoReplSet(dbName)
     : `mongodb://localhost:27017/${dbName}`;
@@ -109,7 +109,7 @@ export async function initORMMongo(replicaSet = false) {
 }
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}, simple?: boolean) {
-  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(7)}`;
+  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
   let orm = MikroORM.initSync<AbstractSqlDriver>(Utils.merge({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2, User2, CarOwner2, CompanyOwner2, Employee2, Manager2, BaseUser2, Dummy2],
     clientUrl: `mysql://root@127.0.0.1:3306/${dbName}`,
@@ -152,7 +152,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 }
 
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = []) {
-  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(7)}`;
+  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
   const orm = MikroORM.initSync({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, ...entities],
     dbName,

@@ -217,8 +217,11 @@ export class DatabaseTable {
       && (index.columnNames.length > 1 // All composite indexes are to be mapped to entity decorators or FK props.
         || !(index.columnNames[0] in columnFks) // Non-composite indexes for scalar props are to be mapped to the column.
         || skippedColumnNames.includes(index.columnNames[0]) // Non-composite indexes for skipped columns are to be mapped as entity decorators.
-      ),
+      )
+      // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
+      && !index.columnNames.some(col => col === null),
     );
+
     for (const index of potentiallyUnmappedIndexes) {
       const ret: UniqueOptions<Dictionary<EntityKey>> = { name: index.keyName };
 
@@ -258,6 +261,7 @@ export class DatabaseTable {
 
     const addedStandaloneFkPropsBasedOnColumn = new Set<string>;
     const nonSkippedColumns = this.getColumns().filter(column => !skippedColumnNames.includes(column.name));
+
     for (const column of nonSkippedColumns) {
       const columnName = column.name;
       const standaloneFkPropBasedOnColumn = fksOnStandaloneProps.get(columnName);
@@ -302,6 +306,7 @@ export class DatabaseTable {
     const columnFks: Record<string, ForeignKey[]> = {};
     const fkIndexes = new Map<IndexDef, {fk: ForeignKey; baseName: string}>();
     const nullableForeignKeys = new Set<ForeignKey>();
+
     for (const currentFk of fks) {
       const fkIndex = this.findFkIndex(currentFk);
 
@@ -435,6 +440,7 @@ export class DatabaseTable {
 
       return a.keyName.localeCompare(b.keyName);
     });
+
     return possibleIndexes[0];
   }
 
@@ -442,6 +448,7 @@ export class DatabaseTable {
     const propBaseNames = new Set<string>();
     const columnNames = index.columnNames;
     const l = columnNames.length;
+
     for (let i = 0; i < l; ++i) {
       const columnName = columnNames[i];
 
@@ -456,9 +463,7 @@ export class DatabaseTable {
       // If the prop named after the column has a FK and the FK's columns are a subset of this index,
       // include this prop and move on.
       const columnPropFk = fksOnColumnProps.get(columnName);
-      if (columnPropFk && !columnPropFk.columnNames.some(fkColumnName => {
-        return !columnNames.includes(fkColumnName);
-      })) {
+      if (columnPropFk && !columnPropFk.columnNames.some(fkColumnName => !columnNames.includes(fkColumnName))) {
         propBaseNames.add(columnName);
         continue;
       }
@@ -471,13 +476,13 @@ export class DatabaseTable {
         if (!columnFks[columnName].includes(fk)) {
           continue;
         }
-        if (!fk.columnNames.some(fkColumnName => {
-          return !columnNames.includes(fkColumnName);
-        })) {
+
+        if (!fk.columnNames.some(fkColumnName => !columnNames.includes(fkColumnName))) {
           propBaseNames.add(propName);
           propAdded = true;
         }
       }
+
       if (propAdded) {
         continue;
       }
@@ -486,6 +491,7 @@ export class DatabaseTable {
       // Break the whole prop creation.
       return;
     }
+
     return Array.from(propBaseNames).map(baseName => this.getPropertyName(namingStrategy, baseName, fksOnColumnProps.get(baseName)));
   }
 

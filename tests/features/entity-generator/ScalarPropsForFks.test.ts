@@ -1,9 +1,5 @@
 import { pathExists, remove } from 'fs-extra';
-import { MikroORM } from '@mikro-orm/core';
-import { DatabaseTable } from '@mikro-orm/knex';
-import { SqliteDriver } from '@mikro-orm/sqlite';
-import { MongoDriver } from '@mikro-orm/mongodb';
-import { initORMMySql, initORMPostgreSql, initORMSqlite } from '../../bootstrap';
+import { initORMMySql } from '../../bootstrap';
 
 describe('ScalarPropsForFks', () => {
 
