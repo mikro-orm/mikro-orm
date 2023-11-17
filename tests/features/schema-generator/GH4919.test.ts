@@ -42,7 +42,7 @@ beforeAll(async () => {
 
 afterAll(() => orm.close(true));
 
-test('4782', async () => {
+test('GH #4919', async () => {
   const testMigration = async (e1: any, e2: any, snap: string) => {
     if (e2) {
       orm.getMetadata().reset(e1.name);
