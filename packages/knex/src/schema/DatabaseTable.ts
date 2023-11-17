@@ -1,19 +1,19 @@
 import {
   Cascade,
+  type Configuration,
   DateTimeType,
   DecimalType,
-  EntitySchema,
-  ReferenceKind,
-  t,
-  Utils,
-  type Configuration,
   type Dictionary,
   type EntityKey,
   type EntityMetadata,
   type EntityProperty,
+  EntitySchema,
   type MikroORMOptions,
   type NamingStrategy,
+  ReferenceKind,
+  t,
   type UniqueOptions,
+  Utils,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
 import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings';
@@ -196,7 +196,6 @@ export class DatabaseTable {
     schemaHelper: SchemaHelper,
     scalarPropertiesForRelations: NonNullable<MikroORMOptions['entityGenerator']['scalarPropertiesForRelations']>,
   ): EntityMetadata {
-
     const {
       fksOnColumnProps,
       fksOnStandaloneProps,
@@ -235,7 +234,9 @@ export class DatabaseTable {
       const properties = this.getIndexProperties(index, columnFks, fksOnColumnProps, fksOnStandaloneProps, namingStrategy);
 
       // If there is a column that cannot be unambiguously mapped to a prop, render an expression.
-      if (typeof properties === 'undefined') {
+      if (index.expression) {
+        ret.expression = index.expression;
+      } else if (typeof properties === 'undefined') {
         ret.expression = schemaHelper.getCreateIndexSQL(this.name, index);
       } else {
         ret.properties = properties;
@@ -669,10 +670,16 @@ export class DatabaseTable {
     if (fk) {
       const idx = fk.columnNames.indexOf(baseName);
       let replacedFieldName = field.replace(new RegExp(`_${fk.referencedColumnNames[idx]}$`), '');
+
       if (replacedFieldName === field) {
         replacedFieldName = field.replace(new RegExp(`_${namingStrategy.referenceColumnName()}$`), '');
       }
+
       field = replacedFieldName;
+    }
+
+    if (field.startsWith('_')) {
+      return field;
     }
 
     return namingStrategy.columnNameToProperty(field);

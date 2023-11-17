@@ -29,20 +29,24 @@ export class SourceFile {
 
     this.meta.indexes.forEach(index => {
       this.coreImports.add('Index');
+
       if (index.expression) {
-        ret += `@Index({ name: '${index.name}', expression: ${this.quote(index.expression)})\n`;
+        ret += `@Index({ name: '${index.name}', expression: ${this.quote(index.expression)} })\n`;
         return;
       }
+
       const properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
       ret += `@Index({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
     });
 
     this.meta.uniques.forEach(index => {
       this.coreImports.add('Unique');
+
       if (index.expression) {
-        ret += `@Unique({ name: '${index.name}', expression: ${this.quote(index.expression)})\n`;
+        ret += `@Unique({ name: '${index.name}', expression: ${this.quote(index.expression)} })\n`;
         return;
       }
+
       const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
       ret += `@Unique({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
     });

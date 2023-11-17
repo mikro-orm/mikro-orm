@@ -85,8 +85,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     for (const index of allIndexes) {
       const key = this.getTableKey(index);
-      ret[key] ??= [];
-      ret[key].push({
+      const indexDef: IndexDef = {
         columnNames: index.index_def.map((name: string) => unquote(name)),
         composite: index.index_def.length > 1,
         // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
@@ -94,7 +93,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         keyName: index.constraint_name,
         unique: index.unique,
         primary: index.primary,
-      });
+      };
+
+      if (index.index_def.some((col: string) => col.match(/[(): ,"'`]/)) || index.expression.match(/ where /i)) {
+        indexDef.expression = index.expression;
+      }
+
+      ret[key] ??= [];
+      ret[key].push(indexDef);
     }
 
     return ret;
@@ -439,7 +445,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         select pg_get_indexdef(idx.indexrelid, k + 1, true)
         from generate_subscripts(idx.indkey, 1) as k
         order by k
-      ) as index_def
+      ) as index_def,
+      pg_get_indexdef(idx.indexrelid) as expression
       from pg_index idx
       join pg_class as i on i.oid = idx.indexrelid
       join pg_namespace as ns on i.relnamespace = ns.oid

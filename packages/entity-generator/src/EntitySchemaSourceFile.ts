@@ -75,7 +75,7 @@ export class EntitySchemaSourceFile extends SourceFile {
       ret += `  indexes: [\n`;
       this.meta.indexes.forEach(index => {
         if (index.expression) {
-          ret += `    { name: '${index.name}', expression: '${index.expression}' },\n`;
+          ret += `    { name: '${index.name}', expression: ${this.quote(index.expression)} },\n`;
           return;
         }
         const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
@@ -84,11 +84,11 @@ export class EntitySchemaSourceFile extends SourceFile {
       ret += `  ],\n`;
     }
 
-    if (this.meta.indexes.length > 0) {
+    if (this.meta.uniques.length > 0) {
       ret += `  uniques: [\n`;
       this.meta.uniques.forEach(index => {
         if (index.expression) {
-          ret += `    { name: '${index.name}', expression: '${index.expression}' },\n`;
+          ret += `    { name: '${index.name}', expression: ${this.quote(index.expression)} },\n`;
           return;
         }
         const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
