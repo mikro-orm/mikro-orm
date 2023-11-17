@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TypesForScalarDecorators generate entities from schema [mysql]: dump 1`] = `
+[
+  "import { Entity, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  [OptionalProps]?: 'createdAt';
+
+  @PrimaryKey({ type: 'number' })
+  userId!: number;
+
+  @Property({ length: 255, type: 'string' })
+  username!: string;
+
+  @Property({ type: 'bigint' })
+  views!: bigint;
+
+  @Property({ type: 'boolean' })
+  enabled!: boolean;
+
+  @Property({ length: 0, type: 'Date', defaultRaw: \`CURRENT_TIMESTAMP\` })
+  createdAt!: Date;
+
+}
+",
+]
+`;

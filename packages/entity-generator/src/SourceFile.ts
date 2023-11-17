@@ -18,10 +18,13 @@ export class SourceFile {
   protected readonly coreImports = new Set<string>();
   protected readonly entityImports = new Set<string>();
 
-  constructor(protected readonly meta: EntityMetadata,
-              protected readonly namingStrategy: NamingStrategy,
-              protected readonly platform: Platform,
-              protected readonly esmImport: boolean) { }
+  constructor(
+    protected readonly meta: EntityMetadata,
+    protected readonly namingStrategy: NamingStrategy,
+    protected readonly platform: Platform,
+    protected readonly esmImport: boolean,
+    protected readonly scalarTypeInDecorator: boolean,
+  ) { }
 
   generate(): string {
     this.coreImports.add('Entity');
@@ -260,6 +263,9 @@ export class SourceFile {
   }
 
   protected getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
+    if (this.scalarTypeInDecorator && prop.kind === ReferenceKind.SCALAR && !prop.enum) {
+      options.type = this.quote(prop.type);
+    }
     if (prop.nullable && !prop.mappedBy) {
       options.nullable = true;
     }
