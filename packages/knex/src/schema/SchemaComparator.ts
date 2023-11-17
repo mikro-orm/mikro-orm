@@ -579,8 +579,8 @@ export class SchemaComparator {
     }
 
     if (to.mappedType instanceof JsonType) {
-      const defaultValueFrom = parseJsonSafe(from.default.replace(/^'(.*)'$/, '$1'));
-      const defaultValueTo = parseJsonSafe(to.default?.replace(/^'(.*)'$/, '$1'));
+      const defaultValueFrom = parseJsonSafe(from.default.replace(/^(_\w+\\)?'(.*?)\\?'$/, '$2'));
+      const defaultValueTo = parseJsonSafe(to.default?.replace(/^\(?'(.*?)'\)?$/, '$1'));
 
       return Utils.equals(defaultValueFrom, defaultValueTo);
     }
