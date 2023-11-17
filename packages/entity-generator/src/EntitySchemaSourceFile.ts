@@ -74,6 +74,10 @@ export class EntitySchemaSourceFile extends SourceFile {
     if (this.meta.indexes.length > 0) {
       ret += `  indexes: [\n`;
       this.meta.indexes.forEach(index => {
+        if (index.expression) {
+          ret += `    { name: '${index.name}', expression: '${index.expression}' },\n`;
+          return;
+        }
         const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
         ret += `    { name: '${index.name}', properties: [${properties.join(', ')}] },\n`;
       });
@@ -83,6 +87,10 @@ export class EntitySchemaSourceFile extends SourceFile {
     if (this.meta.indexes.length > 0) {
       ret += `  uniques: [\n`;
       this.meta.uniques.forEach(index => {
+        if (index.expression) {
+          ret += `    { name: '${index.name}', expression: '${index.expression}' },\n`;
+          return;
+        }
         const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
         ret += `    { name: '${index.name}', properties: [${properties.join(', ')}] },\n`;
       });
@@ -92,10 +100,10 @@ export class EntitySchemaSourceFile extends SourceFile {
     ret += `  properties: {\n`;
     Object.values(this.meta.properties).forEach(prop => {
       const options = this.getPropertyOptions(prop);
-      let def = '{ ' + Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ') + ' }';
+      let def = '{ ' + Object.entries(options).map(([opt, val]) => `${opt}: ${Array.isArray(val) ? `[${val.join(', ')}]` : val}`).join(', ') + ' }';
 
       if (def.length > 80) {
-        def = '{\n' + Object.entries(options).map(([opt, val]) => `      ${opt}: ${val}`).join(',\n') + ',\n    }';
+        def = '{\n' + Object.entries(options).map(([opt, val]) => `      ${opt}: ${Array.isArray(val) ? `[\n        ${val.join(',\n        ')}\n      ]` : val}`).join(',\n') + ',\n    }';
       }
       //
       ret += `    ${prop.name}: ${def},\n`;

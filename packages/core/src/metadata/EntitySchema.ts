@@ -225,11 +225,11 @@ export class EntitySchema<Entity = any, Base = never> {
     this.addProperty(name, type, prop);
   }
 
-  addIndex<T>(options: Required<Omit<IndexOptions<T>, 'name' | 'type' | 'options' | 'expression'>> & { name?: string; expression?: string; options?: Dictionary }): void {
+  addIndex(options: IndexOptions<Entity>): void {
     this._meta.indexes.push(options as any);
   }
 
-  addUnique<T>(options: Required<Omit<UniqueOptions<T>, 'name' | 'options' | 'expression'>> & { name?: string; options?: Dictionary }): void {
+  addUnique(options: UniqueOptions<Entity>): void {
     this._meta.uniques.push(options as any);
   }
 

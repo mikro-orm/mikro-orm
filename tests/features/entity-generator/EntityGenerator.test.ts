@@ -141,7 +141,7 @@ describe('EntityGenerator', () => {
     });
 
     const helper = orm.em.getDriver().getPlatform().getSchemaHelper()!;
-    const meta = table.getEntityDeclaration(orm.config.getNamingStrategy(), helper);
+    const meta = table.getEntityDeclaration(orm.config.getNamingStrategy(), helper, orm.config.get('entityGenerator').scalarPropertiesForRelations!);
     expect(meta.properties.name.default).toBeUndefined();
     expect(meta.properties.name.nullable).toBe(true);
     expect(meta.properties.name.columnTypes[0]).toBe('varchar(50)');

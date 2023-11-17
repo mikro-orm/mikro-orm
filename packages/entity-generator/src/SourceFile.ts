@@ -29,12 +29,20 @@ export class SourceFile {
 
     this.meta.indexes.forEach(index => {
       this.coreImports.add('Index');
-      const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
+      if (index.expression) {
+        ret += `@Index({ name: '${index.name}', expression: ${this.quote(index.expression)})\n`;
+        return;
+      }
+      const properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
       ret += `@Index({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
     });
 
     this.meta.uniques.forEach(index => {
       this.coreImports.add('Unique');
+      if (index.expression) {
+        ret += `@Unique({ name: '${index.name}', expression: ${this.quote(index.expression)})\n`;
+        return;
+      }
       const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
       ret += `@Unique({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
     });
@@ -204,7 +212,7 @@ export class SourceFile {
       return `${decorator}()\n`;
     }
 
-    return `${decorator}({ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} })\n`;
+    return `${decorator}({ ${Object.entries(options).map(([opt, val]) => `${opt}: ${Array.isArray(val) ? `[${val.join(', ')}]` : val}`).join(', ')} })\n`;
   }
 
   protected getPropertyIndexes(prop: EntityProperty, options: Dictionary): string[] {
@@ -250,6 +258,10 @@ export class SourceFile {
   protected getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
     if (prop.nullable && !prop.mappedBy) {
       options.nullable = true;
+    }
+
+    if (prop.persist === false) {
+      options.persist = false;
     }
 
     if (prop.default == null) {
@@ -327,6 +339,11 @@ export class SourceFile {
       options.pivotTable = this.quote(prop.pivotTable);
     }
 
+    if (prop.pivotEntity && prop.pivotEntity !== prop.pivotTable) {
+      this.entityImports.add(prop.pivotEntity);
+      options.pivotEntity = `() => ${prop.pivotEntity}`;
+    }
+
     if (prop.joinColumns.length === 1) {
       options.joinColumn = this.quote(prop.joinColumns[0]);
     } else {
@@ -361,8 +378,14 @@ export class SourceFile {
       return;
     }
 
-    if (prop.fieldNames[0] !== this.namingStrategy.joinKeyColumnName(prop.name, prop.referencedColumnNames[0])) {
-      options.fieldName = this.quote(prop.fieldNames[0]);
+    if (prop.fieldNames.length === 1) {
+      if (prop.fieldNames[0] !== this.namingStrategy.joinKeyColumnName(prop.name, prop.referencedColumnNames[0])) {
+        options.fieldName = this.quote(prop.fieldNames[0]);
+      }
+    } else {
+      if (prop.fieldNames.length > 1 && prop.fieldNames.some((fieldName, i) => fieldName !== this.namingStrategy.joinKeyColumnName(prop.name, prop.referencedColumnNames[i]))) {
+        options.fieldNames = prop.fieldNames.map(fieldName => this.quote(fieldName));
+      }
     }
 
     if (!['no action', 'restrict'].includes(prop.updateRule!.toLowerCase())) {

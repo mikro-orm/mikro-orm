@@ -53,6 +53,10 @@ By default, the `EntityGenerator` generates only owning sides of relations (e.g.
 - `esmImport` to use esm style import for imported entities e.x. when `esmImport=true`, generated entities include `import Author from './Author.js'`
 - `skipTables` to ignore some database tables (accepts array of table names)
 - `skipColumns` to ignore some database tables columns (accepts an object, keys are table names with schema prefix if available, values are arrays of column names)
+- `scalarPropertiesForRelations` to control how scalar column properties are generated for foreign key relations. Possible values: 
+  - `'never'` - (default) Do not generate any scalar properties for columns covered by foreign key relations. This effectively forces the application to always provide the entire relation, or (if all columns in the relation are nullable) omit the entire relation.
+  - `'always'` - Generate all scalar properties for all columns covered by foreign key relations. This enables the application to deal with code that disables foreign key checks.
+  - `'smart'` - Only generate scalar properties for foreign key relations, where doing so is necessary to enable the management of rows where a composite foreign key is not enforced due to some columns being set to NULL. This enables the application to deal with all rows that could possibly be part of a table, even when foreign key checks are always enabled.
 
 ```ts
 const dump = await orm.entityGenerator.generate({

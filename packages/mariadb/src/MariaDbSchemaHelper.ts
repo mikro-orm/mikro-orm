@@ -57,7 +57,8 @@ export class MariaDbSchemaHelper extends SchemaHelper {
   async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<IndexDef[]>> {
     const sql = `select table_name as table_name, nullif(table_schema, schema()) as schema_name, index_name as index_name, non_unique as non_unique, column_name as column_name
         from information_schema.statistics where table_schema = database()
-        and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})`;
+        and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
+        order by schema_name, table_name, index_name, seq_in_index`;
     const allIndexes = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
 
@@ -161,11 +162,12 @@ export class MariaDbSchemaHelper extends SchemaHelper {
   }
 
   async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
-    const sql = `select distinct k.constraint_name as constraint_name, nullif(k.table_schema, schema()) as schema_name, k.table_name as table_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule `
-      + `from information_schema.key_column_usage k `
-      + `inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = k.table_name `
-      + `where (${tables.map(t => `k.table_name = '${t.table_name}'`).join(' or ')}) `
-      + `and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null`;
+    const sql = `select k.constraint_name as constraint_name, nullif(k.table_schema, schema()) as schema_name, k.table_name as table_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule
+        from information_schema.key_column_usage k
+        inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = k.table_name
+        where k.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
+        and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null
+        order by constraint_name, k.ordinal_position`;
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
 

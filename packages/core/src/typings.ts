@@ -639,7 +639,7 @@ export interface EntityMetadata<T = any> {
   hydrateProps: EntityProperty<T>[]; // for Hydrator
   uniqueProps: EntityProperty<T>[];
   indexes: { properties: (EntityKey<T>) | (EntityKey<T>)[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
-  uniques: { properties: (EntityKey<T>) | (EntityKey<T>)[]; name?: string; options?: Dictionary }[];
+  uniques: { properties: (EntityKey<T>) | (EntityKey<T>)[]; name?: string; options?: Dictionary; expression?: string }[];
   checks: CheckConstraint<T>[];
   repository: () => Constructor<EntityRepository<any>>;
   hooks: { [K in EventType]?: (keyof T | EventSubscriber<T>[EventType])[] };
