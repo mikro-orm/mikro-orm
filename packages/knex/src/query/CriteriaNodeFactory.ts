@@ -73,18 +73,27 @@ export class CriteriaNodeFactory {
       return this.createNode(metadata, entityName, map, node, key);
     }
 
-    const operator = Object.keys(payload[key]).some(f => Utils.isOperator(f));
+    // array operators can be used on embedded properties
+    const allowedOperators = ['$contains', '$contained', '$overlap'];
+    const operator = Object.keys(payload[key]).some(f => Utils.isOperator(f) && !allowedOperators.includes(f));
 
     if (operator) {
       throw ValidationError.cannotUseOperatorsInsideEmbeddables(entityName, prop.name, payload);
     }
 
     const map = Object.keys(payload[key]).reduce((oo, k) => {
-      if (!prop.embeddedProps[k]) {
+      if (!prop.embeddedProps[k] && !allowedOperators.includes(k)) {
         throw ValidationError.invalidEmbeddableQuery(entityName, k, prop.type);
       }
 
-      oo[prop.embeddedProps[k].name] = payload[key][k];
+      if (prop.embeddedProps[k]) {
+        oo[prop.embeddedProps[k].name] = payload[key][k];
+      } else if (typeof payload[key][k] === 'object') {
+        oo[k] = JSON.stringify(payload[key][k]);
+      } else {
+        oo[k] = payload[key][k];
+      }
+
       return oo;
     }, {} as Dictionary);
 

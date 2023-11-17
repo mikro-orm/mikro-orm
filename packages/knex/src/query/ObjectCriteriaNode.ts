@@ -127,7 +127,6 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         o[`${alias}.${field}`] = { [k]: tmp, ...(o[`${alias}.${field}`] || {}) };
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
         const idx = prop.referencedPKs.indexOf(k as EntityKey);
-        // FIXME maybe other kinds should be supported too?
         const key = idx !== -1 && !childAlias && ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) ? prop.joinColumns[idx] : k;
 
         if (key in o) {
