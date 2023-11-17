@@ -81,7 +81,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
         o[`${alias}.${field}`] = { [k]: tmp, ...(o[`${alias}.${field}`] || {}) };
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
         const idx = prop.referencedPKs.indexOf(k);
-        const key = idx !== -1 && !childAlias ? prop.joinColumns[idx] : k;
+        const key = idx !== -1 && !childAlias && ![ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) ? prop.joinColumns[idx] : k;
 
         if (key in o) {
           const $and = o.$and ?? [];

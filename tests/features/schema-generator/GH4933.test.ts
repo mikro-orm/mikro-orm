@@ -24,7 +24,7 @@ class Relation {
   @PrimaryKey()
   id!: string;
 
-  @ManyToOne(() => Two, { deleteRule: 'set null' })
+  @ManyToOne(() => Two, { onDelete: 'set null' })
   appliedBy?: Rel<Two>;
 
 }

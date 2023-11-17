@@ -1,5 +1,4 @@
-import { Entity, IDatabaseDriver, MikroORM, PrimaryKey, Property, Utils } from '@mikro-orm/core';
-import { PLATFORMS } from '../../bootstrap';
+import { Entity, IDatabaseDriver, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 class User {
@@ -23,13 +22,13 @@ const options = {
   'postgresql': { dbName: 'mikro_orm_upsert' },
 };
 
-describe.each(Utils.keys(options))('GH #4923 [%s]',  type => {
+describe.each(Object.keys(options))('GH #4923 [%s]',  type => {
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
       entities: [User],
-      driver: PLATFORMS[type],
+      type,
       ...options[type],
     });
     await orm.schema.refreshDatabase();

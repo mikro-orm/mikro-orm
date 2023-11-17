@@ -7,7 +7,7 @@ class Two {
   @PrimaryKey()
   id!: string;
 
-  @ManyToOne(() => One, { deleteRule: 'cascade' })
+  @ManyToOne(() => One, { onDelete: 'cascade' })
   one!: Rel<One>;
 
 }
@@ -18,7 +18,7 @@ class One {
   @PrimaryKey()
   id!: string;
 
-  @ManyToOne(() => Two, { deleteRule: 'cascade' })
+  @ManyToOne(() => Two, { onDelete: 'cascade' })
   two!: Two;
 
 }

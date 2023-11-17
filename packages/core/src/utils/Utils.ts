@@ -913,7 +913,7 @@ export class Utils {
     return ([] as T[]).concat.apply([], arrays);
   }
 
-  static isOperator(key: string, includeGroupOperators = true): boolean {
+  static isOperator(key: string, includeGroupOperators = true): key is QueryOperator {
     if (!includeGroupOperators) {
       return !!QueryOperator[key];
     }

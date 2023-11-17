@@ -279,7 +279,7 @@ export class QueryBuilderHelper {
     if (Utils.isOperator(key, false) && Utils.isPlainObject(value)) {
       const parts = Object.keys(value).map(k => this.processJoinClause(k, (value as Dictionary)[k], params, key));
 
-      return key === '$not' ? `not ${this.wrapQueryGroup(parts)}` : this.wrapQueryGroup(parts);
+      return key as unknown === '$not' ? `not ${this.wrapQueryGroup(parts)}` : this.wrapQueryGroup(parts);
     }
 
     if (Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k, false))) {
