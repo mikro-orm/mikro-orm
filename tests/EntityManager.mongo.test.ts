@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import type { EntityProperty, Selected } from '@mikro-orm/core';
+import type { EntityProperty } from '@mikro-orm/core';
 import {
   Collection,
   Configuration,
@@ -26,7 +26,7 @@ describe('EntityManagerMongo', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMongo(true));
+  beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => orm.schema.clearDatabase());
 
   afterAll(async () => {
@@ -419,43 +419,6 @@ describe('EntityManagerMongo', () => {
     expect(() => orm.em.merge(author)).toThrowError(`You cannot merge entity 'Author' without identifier!`);
   });
 
-  test('transactions', async () => {
-    const god1 = new Author('God1', 'hello@heaven1.god');
-    await orm.em.begin({ readPreference: 'secondary' });
-    await orm.em.persist(god1).flush();
-    await orm.em.rollback();
-    const res1 = await orm.em.findOne(Author, { name: 'God1' });
-    expect(res1).toBeNull();
-
-    await orm.em.begin();
-    const god2 = new Author('God2', 'hello@heaven2.god');
-    orm.em.persist(god2);
-    await orm.em.commit();
-    const res2 = await orm.em.findOne(Author, { name: 'God2' });
-    expect(res2).not.toBeNull();
-
-    await orm.em.transactional(async em => {
-      const god3 = new Author('God3', 'hello@heaven3.god');
-      em.persist(god3);
-    });
-    const res3 = await orm.em.findOne(Author, { name: 'God3' });
-    expect(res3).not.toBeNull();
-
-    const err = new Error('Test');
-
-    try {
-      await orm.em.transactional(async em => {
-        const god4 = new Author('God4', 'hello@heaven4.god');
-        em.persist(god4);
-        throw err;
-      });
-    } catch (e) {
-      expect(e).toBe(err);
-      const res4 = await orm.em.findOne(Author, { name: 'God4' });
-      expect(res4).toBeNull();
-    }
-  });
-
   test('fork', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
@@ -582,16 +545,10 @@ describe('EntityManagerMongo', () => {
 
     expect(() => driver.getPlatform().generateCustomOrder('foo', [1, 2, 3])).toThrow();
 
-    const conn = driver.getConnection();
-    const ctx = await conn.begin();
-    const first = await driver.nativeInsert<Publisher>(Publisher.name, { name: 'test 123', type: PublisherType.GLOBAL }, { ctx });
-    await conn.commit(ctx);
+    const first = await driver.nativeInsert<Publisher>(Publisher.name, { name: 'test 123', type: PublisherType.GLOBAL });
     await driver.nativeUpdate<Publisher>(Publisher.name, first.insertId, { name: 'test 456' });
     await driver.nativeUpdateMany<Publisher>(Publisher.name, [first.insertId], [{ name: 'test 789' }]);
-
-    await conn.transactional(async ctx => {
-      await driver.nativeDelete(Publisher.name, first.insertId, { ctx });
-    });
+    await driver.nativeDelete(Publisher.name, first.insertId);
 
     // multi inserts
     const res = await driver.nativeInsertMany(Publisher.name, [
@@ -781,10 +738,10 @@ describe('EntityManagerMongo', () => {
     expect(book1.tags.toJSON()).toEqual([wrap(tag1).toJSON(), wrap(tag3).toJSON()]);
 
     // ensure we don't have separate update queries for collection sync
-    expect(mock.mock.calls).toHaveLength(5);
-    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('book-tag').insertMany(`);
-    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('author').insertMany(`);
-    expect(mock.mock.calls[3][0]).toMatch(`db.getCollection('books-table').insertMany(`);
+    expect(mock.mock.calls).toHaveLength(3);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('book-tag').insertMany(`);
+    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('author').insertMany(`);
+    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('books-table').insertMany(`);
     orm.em.clear();
 
     // test inverse side
@@ -1700,13 +1657,11 @@ describe('EntityManagerMongo', () => {
     expect(a1.toJSON()).toMatchObject({ favouriteAuthor: a1.id });
 
     // check fired queries
-    expect(mock.mock.calls.length).toBe(6);
-    expect(mock.mock.calls[0][0]).toMatch(/db\.begin\(\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: '.*', name: '.*', email: '.*', termsAccepted: .* } ], { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'b1', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b2', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b3', author: ObjectId\('.*'\) } ], { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { favouriteAuthor: ObjectId\('.*'\), updatedAt: ISODate\('.*'\) } }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[4][0]).toMatch(/db\.commit\(\);/);
-    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('author'\)\.find\(.*\)\.toArray\(\);/);
+    expect(mock.mock.calls.length).toBe(4);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: '.*', name: '.*', email: '.*', termsAccepted: .* } ], {}\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'b1', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b2', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b3', author: ObjectId\('.*'\) } ], {}\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { favouriteAuthor: ObjectId\('.*'\), updatedAt: ISODate\('.*'\) } }, {}\);/);
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('author'\)\.find\(.*\)\.toArray\(\);/);
   });
 
   test('self referencing via another entity M:1 (1 step)', async () => {
@@ -1895,13 +1850,9 @@ describe('EntityManagerMongo', () => {
     expect(book.tags.isDirty()).toBe(true);
 
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(/db\.begin\(\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\(.*\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall\.st', termsAccepted: false } ], { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'B123', author: ObjectId\('.*'\) } ], { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[3][0]).toMatch(/db\.commit\(\);/);
-    expect(mock.mock.calls[4][0]).toMatch(/db\.begin\(\);/);
-    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('books-table'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { tags: \[ ObjectId\('0000007b5c9c61c332380f78'\), ObjectId\('0000007b5c9c61c332380f79'\) ] } }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[6][0]).toMatch(/db\.commit\(\);/);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\(.*\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall\.st', termsAccepted: false } ], {}\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'B123', author: ObjectId\('.*'\) } ], {}\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { tags: \[ ObjectId\('0000007b5c9c61c332380f78'\), ObjectId\('0000007b5c9c61c332380f79'\) ] } }, {}\);/);
   });
 
   test('automatically fix PK in collection instead of entity when flushing (m:n)', async () => {
@@ -2019,8 +1970,8 @@ describe('EntityManagerMongo', () => {
     author.age = 30;
     await orm.em.persistAndFlush(author);
 
-    expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[1][0]).toMatch(/\[90m\[query] \[39mdb\[0m.\[0mgetCollection\(\[33m'author'\[39m\)\[0m.\[0minsertMany\(\[ \{ createdAt: ISODate\('.*'\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall.st', age: 30, termsAccepted: false } ], \{ session: '\[ClientSession]' }\);\[90m \[took \d+ ms]\[39m/);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch(/\[90m\[query] \[39mdb\[0m.\[0mgetCollection\(\[33m'author'\[39m\)\[0m.\[0minsertMany\(\[ \{ createdAt: ISODate\('.*'\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall.st', age: 30, termsAccepted: false } ], \{}\);\[90m \[took \d+ ms]\[39m/);
 
     Object.assign(orm.config.getLogger(), { highlighter: new NullHighlighter() });
   });
@@ -2248,8 +2199,8 @@ describe('EntityManagerMongo', () => {
     book.metaArray.push('c');
     await orm.em.flush();
 
-    expect(mock.mock.calls[1][0]).toMatch(`'$set': { metaArray: [ 'a', 'b' ] }`);
-    expect(mock.mock.calls[4][0]).toMatch(`'$set': { metaArray: [ 'a', 'b', 'c' ] }`);
+    expect(mock.mock.calls[0][0]).toMatch(`'$set': { metaArray: [ 'a', 'b' ] }`);
+    expect(mock.mock.calls[1][0]).toMatch(`'$set': { metaArray: [ 'a', 'b', 'c' ] }`);
 
     const b1 = await orm.em.findOne(Book, { metaArray: 'a' });
     expect(b1).not.toBeNull();

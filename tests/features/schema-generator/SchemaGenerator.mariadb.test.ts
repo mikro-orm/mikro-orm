@@ -1,71 +1,61 @@
-import { MikroORM, Utils } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
 import { BASE_DIR, initORMMySql } from '../../bootstrap';
-import {
-  Address2,
-  Author2,
-  Book2,
-  BookTag2,
-  Configuration2,
-  FooBar2,
-  FooBaz2,
-  Publisher2,
-  Test2,
-} from '../../entities-sql';
+import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import { MariaDbDriver } from '@mikro-orm/mariadb';
 
-describe('SchemaGenerator (no FKs)', () => {
+describe('SchemaGenerator', () => {
 
-  test('create/drop database [mysql]', async () => {
-    const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
-      dbName: `mikro_orm_test_nofk_${Utils.randomInt(1, 10000)}`,
-      port: 3308,
-      baseDir: BASE_DIR,
-      driver: MySqlDriver,
-      schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false },
-      multipleStatements: true,
-    });
-
-    await orm.schema.ensureDatabase();
-    await orm.schema.dropDatabase();
-    await orm.close(true);
-  });
-
-  test('create schema also creates the database if not exists [mysql]', async () => {
-    const dbName = `mikro_orm_test_nofk_${Utils.randomInt(1, 10000)}`;
+  test('create/drop database [mariadb]', async () => {
+    const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       port: 3308,
       baseDir: BASE_DIR,
-      driver: MySqlDriver,
+      driver: MariaDbDriver,
+      multipleStatements: true,
+    });
+
+    await orm.schema.ensureDatabase();
+    await orm.schema.dropDatabase(dbName);
+    await orm.close(true);
+    await expect(orm.schema.ensureDatabase()).rejects.toThrow('Unable to acquire a connection');
+  });
+
+  test('create schema also creates the database if not exists [mariadb]', async () => {
+    const dbName = `mikro_orm_test_${Date.now()}`;
+    const orm = await MikroORM.init({
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
+      dbName,
+      port: 3308,
+      baseDir: BASE_DIR,
+      driver: MariaDbDriver,
       migrations: { path: BASE_DIR + '/../temp/migrations' },
-      schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false },
       multipleStatements: true,
     });
 
     await orm.schema.createSchema();
     await orm.schema.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
-
-    await orm.isConnected();
+    await expect(orm.schema.ensureDatabase()).rejects.toThrow('Unable to acquire a connection');
   });
 
-  test('generate schema from metadata [mysql]', async () => {
-    const orm = await initORMMySql('mysql', { schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false } }, true);
+  test('generate schema from metadata [mariadb]', async () => {
+    const orm = await initORMMySql('mariadb', {}, true);
     await orm.schema.ensureDatabase();
 
     const dropDump = await orm.schema.getDropSchemaSQL();
-    expect(dropDump).toMatchSnapshot('mysql-drop-schema-dump');
+    expect(dropDump).toMatchSnapshot('mariadb-drop-schema-dump');
 
     const createDump = await orm.schema.getCreateSchemaSQL();
-    expect(createDump).toMatchSnapshot('mysql-create-schema-dump');
+    expect(createDump).toMatchSnapshot('mariadb-create-schema-dump');
 
     const updateDump = await orm.schema.getUpdateSchemaSQL();
-    expect(updateDump).toMatchSnapshot('mysql-update-schema-dump');
+    expect(updateDump).toMatchSnapshot('mariadb-update-schema-dump');
 
+    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
