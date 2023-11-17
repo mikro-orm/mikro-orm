@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.4](https://github.com/mikro-orm/mikro-orm/compare/v5.9.3...v5.9.4) (2023-11-17)
+
+
+### Bug Fixes
+
+* **cli:** support `mikro-orm-esm` on windows ([c491af9](https://github.com/mikro-orm/mikro-orm/commit/c491af9113eed8d274c2ec1f2a736a4cfbaa81f7))
+
+
+
+
+
 ## [5.9.3](https://github.com/mikro-orm/mikro-orm/compare/v5.9.2...v5.9.3) (2023-11-06)
 
 **Note:** Version bump only for package @mikro-orm/cli

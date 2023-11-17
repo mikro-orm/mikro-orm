@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.4](https://github.com/mikro-orm/mikro-orm/compare/v5.9.3...v5.9.4) (2023-11-17)
+
+
+### Bug Fixes
+
+* **core:** fix auto-refresh detection in `em.find` for inlined embedded properties ([759b7b8](https://github.com/mikro-orm/mikro-orm/commit/759b7b8b5aa95bea8c6b1074ec1f5c2c9ffc5286)), closes [#4904](https://github.com/mikro-orm/mikro-orm/issues/4904)
+* **core:** support composite PKs in `em.upsertMany()` ([85c38d4](https://github.com/mikro-orm/mikro-orm/commit/85c38d4465bf37b8448522c835ad77ce6300e317)), closes [#4923](https://github.com/mikro-orm/mikro-orm/issues/4923)
+
+
+
+
+
 ## [5.9.3](https://github.com/mikro-orm/mikro-orm/compare/v5.9.2...v5.9.3) (2023-11-06)
 
 
