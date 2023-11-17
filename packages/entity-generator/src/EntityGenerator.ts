@@ -92,9 +92,9 @@ export class EntityGenerator {
     for (const meta of metadata) {
       if (!meta.pivotTable || this.referencedEntities.has(meta)) {
         if (this.config.get('entityGenerator').entitySchema) {
-          this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform, esmImport));
+          this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform, esmImport, true));
         } else {
-          this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform, esmImport));
+          this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform, esmImport, this.config.get('entityGenerator').scalarTypeInDecorator!));
         }
       }
     }

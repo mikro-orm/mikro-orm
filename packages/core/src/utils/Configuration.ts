@@ -113,6 +113,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     entityGenerator: {
       bidirectionalRelations: false,
       identifiedReferences: false,
+      scalarTypeInDecorator: false,
       scalarPropertiesForRelations: 'never',
     },
     metadataCache: {
@@ -567,6 +568,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     identifiedReferences?: boolean;
     entitySchema?: boolean;
     esmImport?: boolean;
+    scalarTypeInDecorator?: boolean;
     scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
   };
   metadataCache: {

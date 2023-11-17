@@ -53,6 +53,7 @@ By default, the `EntityGenerator` generates only owning sides of relations (e.g.
 - `esmImport` to use esm style import for imported entities e.x. when `esmImport=true`, generated entities include `import Author from './Author.js'`
 - `skipTables` to ignore some database tables (accepts array of table names)
 - `skipColumns` to ignore some database tables columns (accepts an object, keys are table names with schema prefix if available, values are arrays of column names)
+- `scalarTypeInDecorator` to include the `type` option in scalar property decorators. This information is discovered at runtime, but the process of discovery can be skipped by including this option in the decorator. If using `EntitySchema`, this type information is always included.
 - `scalarPropertiesForRelations` to control how scalar column properties are generated for foreign key relations. Possible values: 
   - `'never'` - (default) Do not generate any scalar properties for columns covered by foreign key relations. This effectively forces the application to always provide the entire relation, or (if all columns in the relation are nullable) omit the entire relation.
   - `'always'` - Generate all scalar properties for all columns covered by foreign key relations. This enables the application to deal with code that disables foreign key checks.
