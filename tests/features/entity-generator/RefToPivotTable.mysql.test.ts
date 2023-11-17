@@ -18,7 +18,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('4892', async () => {
+test('RefToPivotTable', async () => {
   await orm.schema.execute(`
 CREATE TABLE IF NOT EXISTS \`sender\` (
   \`sender_id\` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
