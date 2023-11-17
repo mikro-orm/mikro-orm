@@ -106,6 +106,20 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Please see the [upgrading guide](https://mikro-orm.io/docs/next/upgrading-v5-to-v6).
 
 
+## [5.9.4](https://github.com/mikro-orm/mikro-orm/compare/v5.9.3...v5.9.4) (2023-11-17)
+
+
+### Bug Fixes
+
+* **cli:** support `mikro-orm-esm` on windows ([c491af9](https://github.com/mikro-orm/mikro-orm/commit/c491af9113eed8d274c2ec1f2a736a4cfbaa81f7))
+* **core:** fix auto-refresh detection in `em.find` for inlined embedded properties ([759b7b8](https://github.com/mikro-orm/mikro-orm/commit/759b7b8b5aa95bea8c6b1074ec1f5c2c9ffc5286)), closes [#4904](https://github.com/mikro-orm/mikro-orm/issues/4904)
+* **core:** support composite PKs in `em.upsertMany()` ([85c38d4](https://github.com/mikro-orm/mikro-orm/commit/85c38d4465bf37b8448522c835ad77ce6300e317)), closes [#4923](https://github.com/mikro-orm/mikro-orm/issues/4923)
+* **mysql:** improve diffing of defaults for JSON columns ([d92a440](https://github.com/mikro-orm/mikro-orm/commit/d92a44059b3b6dc8eeb107e8bd6fd4644f18383a)), closes [#4926](https://github.com/mikro-orm/mikro-orm/issues/4926)
+* **schema:** do not inherit schema for FKs if not a wildcard entity ([cc7fed9](https://github.com/mikro-orm/mikro-orm/commit/cc7fed9fcdf62e6ff76f4fa9d2b65192d6ca5f46)), closes [#4918](https://github.com/mikro-orm/mikro-orm/issues/4918)
+* **schema:** respect explicit schema in FKs to STI entities ([cc19ebb](https://github.com/mikro-orm/mikro-orm/commit/cc19ebb3addf6e68891e78c36b8857280ddae4a5)), closes [#4933](https://github.com/mikro-orm/mikro-orm/issues/4933)
+* **schema:** respect up migration when detecting column renaming in down migration ([d5af5bd](https://github.com/mikro-orm/mikro-orm/commit/d5af5bdd3a709212edb9aa0127d29d8bd9610f25)), closes [#4919](https://github.com/mikro-orm/mikro-orm/issues/4919)
+
+
 ## [5.9.3](https://github.com/mikro-orm/mikro-orm/compare/v5.9.2...v5.9.3) (2023-11-06)
 
 
