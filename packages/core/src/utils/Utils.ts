@@ -961,7 +961,7 @@ export class Utils {
     return ([] as T[]).concat.apply([], arrays);
   }
 
-  static isOperator(key: PropertyKey, includeGroupOperators = true): key is QueryOperator {
+  static isOperator(key: PropertyKey, includeGroupOperators = true): boolean {
     if (!includeGroupOperators) {
       return key in QueryOperator;
     }
