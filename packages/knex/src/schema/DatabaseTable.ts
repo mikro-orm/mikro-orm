@@ -219,7 +219,7 @@ export class DatabaseTable {
         || skippedColumnNames.includes(index.columnNames[0]) // Non-composite indexes for skipped columns are to be mapped as entity decorators.
       )
       // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
-      && !index.columnNames.some(col => col === null),
+      && !(index.columnNames.some(col => !col) && !index.expression),
     );
 
     for (const index of potentiallyUnmappedIndexes) {
@@ -448,6 +448,10 @@ export class DatabaseTable {
     const propBaseNames = new Set<string>();
     const columnNames = index.columnNames;
     const l = columnNames.length;
+
+    if (columnNames.some(col => !col)) {
+      return;
+    }
 
     for (let i = 0; i < l; ++i) {
       const columnName = columnNames[i];

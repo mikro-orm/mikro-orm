@@ -95,7 +95,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         primary: index.primary,
       };
 
-      if (index.index_def.some((col: string) => col.match(/[(): ,"'`]/)) || index.expression.match(/ where /i)) {
+      if (index.index_def.some((col: string) => col.match(/[(): ,"'`]/)) || index.expression?.match(/ where /i)) {
         indexDef.expression = index.expression;
       }
 

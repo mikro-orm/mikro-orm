@@ -56,7 +56,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<IndexDef[]>> {
-    const sql = `select table_name as table_name, nullif(table_schema, schema()) as schema_name, index_name as index_name, non_unique as non_unique, column_name as column_name
+    const sql = `select table_name as table_name, nullif(table_schema, schema()) as schema_name, index_name as index_name, non_unique as non_unique, column_name as column_name, expression as expression
         from information_schema.statistics where table_schema = database()
         and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
         order by schema_name, table_name, index_name, seq_in_index`;
@@ -65,14 +65,21 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
     for (const index of allIndexes) {
       const key = this.getTableKey(index);
-      ret[key] ??= [];
-      ret[key].push({
+      const indexDef: IndexDef = {
         columnNames: [index.column_name],
         keyName: index.index_name,
         unique: !index.non_unique,
         primary: index.index_name === 'PRIMARY',
         constraint: !index.non_unique,
-      });
+      };
+
+      if (!index.column_name || index.column_name.match(/[(): ,"'`]/) || index.expression?.match(/ where /i)) {
+        indexDef.expression = index.expression; // required for the `getCreateIndexSQL()` call
+        indexDef.expression = this.getCreateIndexSQL(index.table_name, indexDef, !!index.expression);
+      }
+
+      ret[key] ??= [];
+      ret[key].push(indexDef);
     }
 
     for (const key of Object.keys(ret)) {

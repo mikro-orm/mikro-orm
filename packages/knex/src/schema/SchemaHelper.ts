@@ -100,16 +100,20 @@ export abstract class SchemaHelper {
     return `alter table ${tableReference} rename column ${oldColumnName} to ${columnName}`;
   }
 
-  getCreateIndexSQL(tableName: string, index: IndexDef): string {
-    /* istanbul ignore if */
-    if (index.expression) {
+  getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
+    if (index.expression && !partialExpression) {
       return index.expression;
     }
 
     tableName = this.platform.quoteIdentifier(tableName);
     const keyName = this.platform.quoteIdentifier(index.keyName);
+    const sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
 
-    return `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} (${index.columnNames.map(c => this.platform.quoteIdentifier(c)).join(', ')})`;
+    if (index.expression && partialExpression) {
+      return `${sql}(${index.expression})`;
+    }
+
+    return `${sql}(${index.columnNames.map(c => this.platform.quoteIdentifier(c)).join(', ')})`;
   }
 
   getDropIndexSQL(tableName: string, index: IndexDef): string {
