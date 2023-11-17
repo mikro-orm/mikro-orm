@@ -2,22 +2,22 @@
 
 exports[`ScalarPropsForFks generate entities with columns for all foreign key properties [mysql]: mysql-entity-composite-fk-prop-always-dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 @Entity()
 export class Address2 {
 
-  [PrimaryKeyProp]?: ['authorId', 'author'];
+  [PrimaryKeyProp]?: 'author';
 
-  @PrimaryKey({ persist: false })
+  @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  author!: Author2;
+
+  @Property({ persist: false })
   authorId!: number;
 
   @Property({ length: 255 })
   value!: string;
-
-  @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
-  author!: Author2;
 
 }
 ",
@@ -70,9 +70,15 @@ export class Author2 {
   @Property({ columnType: 'time', nullable: true })
   bornTime?: string;
 
+  @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
+  favouriteBook?: Book2;
+
   @Index({ name: 'author2_favourite_book_uuid_pk_index' })
   @Property({ length: 36, nullable: true, persist: false })
   favouriteBookUuidPk?: string;
+
+  @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteAuthor?: Author2;
 
   @Index({ name: 'author2_favourite_author_id_index' })
   @Property({ nullable: true, persist: false })
@@ -80,12 +86,6 @@ export class Author2 {
 
   @Property({ columnType: 'json', nullable: true })
   identity?: any;
-
-  @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  favouriteAuthor?: Author2;
-
-  @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
-  favouriteBook?: Book2;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   authorToFriend = new Collection<Author2>(this);
@@ -116,9 +116,15 @@ export class BaseUser2 {
   @Property({ length: 255, nullable: true })
   ownerProp?: string;
 
+  @ManyToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteEmployee?: BaseUser2;
+
   @Index({ name: 'base_user2_favourite_employee_id_index' })
   @Property({ nullable: true, persist: false })
   favouriteEmployeeId?: number;
+
+  @OneToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteManager?: BaseUser2;
 
   @Unique({ name: 'base_user2_favourite_manager_id_unique' })
   @Property({ nullable: true, persist: false })
@@ -129,12 +135,6 @@ export class BaseUser2 {
 
   @Property({ length: 255, nullable: true })
   managerProp?: string;
-
-  @ManyToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  favouriteEmployee?: BaseUser2;
-
-  @OneToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  favouriteManager?: BaseUser2;
 
 }
 
@@ -191,9 +191,15 @@ export class Book2 {
   @Property({ columnType: 'json', nullable: true })
   meta?: any;
 
+  @ManyToOne({ entity: () => Author2 })
+  author!: Author2;
+
   @Index({ name: 'book2_author_id_index' })
   @Property({ persist: false })
   authorId!: number;
+
+  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
+  publisher?: Publisher2;
 
   @Index({ name: 'book2_publisher_id_index' })
   @Property({ nullable: true, persist: false })
@@ -201,12 +207,6 @@ export class Book2 {
 
   @Property({ length: 255, nullable: true, default: 'lol' })
   foo?: string;
-
-  @ManyToOne({ entity: () => Author2 })
-  author!: Author2;
-
-  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
-  publisher?: Publisher2;
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
   bookToTagUnordered = new Collection<BookTag2>(this);
@@ -225,19 +225,19 @@ export class Book2Tags {
   @PrimaryKey()
   order!: number;
 
+  @ManyToOne({ entity: () => Book2, updateRule: 'cascade', deleteRule: 'cascade' })
+  book2!: Book2;
+
   @Index({ name: 'book2_tags_book2_uuid_pk_index' })
   @Property({ fieldName: 'book2_uuid_pk', length: 36, persist: false })
   book2UuidPk!: string;
 
+  @ManyToOne({ entity: () => BookTag2, updateRule: 'cascade', deleteRule: 'cascade' })
+  bookTag2!: BookTag2;
+
   @Index({ name: 'book2_tags_book_tag2_id_index' })
   @Property({ fieldName: 'book_tag2_id', persist: false })
   bookTag2Id!: bigint;
-
-  @ManyToOne({ entity: () => Book2, updateRule: 'cascade', deleteRule: 'cascade' })
-  book2!: Book2;
-
-  @ManyToOne({ entity: () => BookTag2, updateRule: 'cascade', deleteRule: 'cascade' })
-  bookTag2!: BookTag2;
 
 }
 ",
@@ -253,19 +253,18 @@ export class CarOwner2 {
   @Property({ length: 255 })
   name!: string;
 
+  @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
+  car!: Car2;
+
   @Property({ length: 100, persist: false })
   carName!: string;
 
   @Property({ persist: false })
   carYear!: number;
 
-  @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
-  car!: Car2;
-
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { User2 } from './User2';
+  "import { Entity, Index, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Car2 {
@@ -283,9 +282,6 @@ export class Car2 {
   @Property()
   price!: number;
 
-  @ManyToMany({ entity: () => User2, pivotTable: 'user2_cars', joinColumns: ['car2_name', 'car2_year'], inverseJoinColumns: ['user2_first_name', 'user2_last_name'] })
-  user2Cars = new Collection<User2>(this);
-
 }
 ",
   "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
@@ -294,20 +290,20 @@ import { Test2 } from './Test2';
 @Entity()
 export class Configuration2 {
 
-  [PrimaryKeyProp]?: ['property', 'testId', 'test'];
+  [PrimaryKeyProp]?: ['property', 'test'];
 
   @PrimaryKey({ length: 255 })
   property!: string;
 
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
+  test!: Test2;
+
   @Index({ name: 'configuration2_test_id_index' })
-  @PrimaryKey({ persist: false })
+  @Property({ persist: false })
   testId!: number;
 
   @Property({ length: 255 })
   value!: string;
-
-  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
-  test!: Test2;
 
 }
 ",
@@ -321,9 +317,8 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, OneToOne, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
-import { Test2 } from './Test2';
 
 @Entity()
 export class FooBar2 {
@@ -339,9 +334,15 @@ export class FooBar2 {
   @Property({ fieldName: 'name with space', length: 255, nullable: true })
   nameWithSpace?: string;
 
+  @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  baz?: FooBaz2;
+
   @Unique({ name: 'foo_bar2_baz_id_unique' })
   @Property({ nullable: true, persist: false })
   bazId?: number;
+
+  @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  fooBar?: FooBar2;
 
   @Unique({ name: 'foo_bar2_foo_bar_id_unique' })
   @Property({ nullable: true, persist: false })
@@ -361,15 +362,6 @@ export class FooBar2 {
 
   @Property({ columnType: 'json', nullable: true })
   objectProperty?: any;
-
-  @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  baz?: FooBaz2;
-
-  @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  fooBar?: FooBar2;
-
-  @ManyToMany({ entity: () => Test2, pivotTable: 'test2_bars', joinColumn: 'foo_bar2_id', inverseJoinColumn: 'test2_id' })
-  test2Bars = new Collection<Test2>(this);
 
 }
 ",
@@ -391,23 +383,29 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
 export class FooParam2 {
 
-  [PrimaryKeyProp]?: ['barId', 'bazId', 'bar', 'baz'];
+  [PrimaryKeyProp]?: ['bar', 'baz'];
 
   [OptionalProps]?: 'version';
 
+  @ManyToOne({ entity: () => FooBar2, updateRule: 'cascade', primary: true })
+  bar!: FooBar2;
+
   @Index({ name: 'foo_param2_bar_id_index' })
-  @PrimaryKey({ persist: false })
+  @Property({ persist: false })
   barId!: number;
 
+  @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
+  baz!: FooBaz2;
+
   @Index({ name: 'foo_param2_baz_id_index' })
-  @PrimaryKey({ persist: false })
+  @Property({ persist: false })
   bazId!: number;
 
   @Property({ length: 255 })
@@ -415,12 +413,6 @@ export class FooParam2 {
 
   @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date;
-
-  @ManyToOne({ entity: () => FooBar2, updateRule: 'cascade', primary: true })
-  bar!: FooBar2;
-
-  @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
-  baz!: FooBaz2;
 
 }
 ",
@@ -490,24 +482,23 @@ export class Publisher2Tests {
   @PrimaryKey()
   id!: number;
 
+  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade' })
+  publisher2!: Publisher2;
+
   @Index({ name: 'publisher2_tests_publisher2_id_index' })
   @Property({ fieldName: 'publisher2_id', persist: false })
   publisher2Id!: number;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
+  test2!: Test2;
 
   @Index({ name: 'publisher2_tests_test2_id_index' })
   @Property({ fieldName: 'test2_id', persist: false })
   test2Id!: number;
 
-  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade' })
-  publisher2!: Publisher2;
-
-  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
-  test2!: Test2;
-
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { User2 } from './User2';
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Sandwich {
@@ -521,12 +512,9 @@ export class Sandwich {
   @Property()
   price!: number;
 
-  @ManyToMany({ entity: () => User2, pivotTable: 'user2_sandwiches', joinColumn: 'sandwich_id', inverseJoinColumns: ['user2_first_name', 'user2_last_name'] })
-  user2Sandwiches = new Collection<User2>(this);
-
 }
 ",
-  "import { Entity, Index, ManyToOne, OneToOne, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToOne, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -541,9 +529,15 @@ export class Test2 {
   @Property({ length: 255, nullable: true })
   name?: string;
 
+  @OneToOne({ entity: () => Book2, deleteRule: 'set null', nullable: true })
+  book?: Book2;
+
   @Unique({ name: 'test2_book_uuid_pk_unique' })
   @Property({ length: 36, nullable: true, persist: false })
   bookUuidPk?: string;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  parent?: Test2;
 
   @Index({ name: 'test2_parent_id_index' })
   @Property({ nullable: true, persist: false })
@@ -559,19 +553,17 @@ export class Test2 {
   @Property({ fieldName: 'foo___baz', nullable: true })
   fooBaz?: number;
 
-  @OneToOne({ entity: () => Book2, deleteRule: 'set null', nullable: true })
-  book?: Book2;
-
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar2?: FooBar2;
 
-  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  parent?: Test2;
+  @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
+  bars = new Collection<FooBar2>(this);
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Car2 } from './Car2';
+import { Sandwich } from './Sandwich';
 
 @Entity()
 export class User2 {
@@ -587,14 +579,20 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
+  @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteCar?: Car2;
+
   @Property({ length: 100, nullable: true, persist: false })
   favouriteCarName?: string;
 
   @Property({ nullable: true, persist: false })
   favouriteCarYear?: number;
 
-  @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  favouriteCar?: Car2;
+  @ManyToMany({ entity: () => Car2, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumns: ['car2_name', 'car2_year'] })
+  cars = new Collection<Car2>(this);
+
+  @ManyToMany({ entity: () => Sandwich, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumn: 'sandwich_id' })
+  sandwiches = new Collection<Sandwich>(this);
 
 }
 ",
@@ -1099,14 +1097,14 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
+  @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteCar?: Car2;
+
   @Property({ length: 100, nullable: true, persist: false })
   favouriteCarName?: string;
 
   @Property({ nullable: true, persist: false })
   favouriteCarYear?: number;
-
-  @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  favouriteCar?: Car2;
 
   @ManyToMany({ entity: () => Car2, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumns: ['car2_name', 'car2_year'] })
   cars = new Collection<Car2>(this);

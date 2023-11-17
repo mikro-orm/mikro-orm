@@ -427,6 +427,46 @@ CREATE TABLE IF NOT EXISTS \`users\` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 `,
+  fk_shared_with_column_example: `
+CREATE TABLE IF NOT EXISTS \`countries\` (
+  \`code\` CHAR(2) NOT NULL,
+  PRIMARY KEY (\`code\`))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS \`legal_user_countries\` (
+  \`country\` CHAR(2) NOT NULL,
+  PRIMARY KEY (\`country\`),
+  CONSTRAINT \`fk_legal_user_countries_countries1\`
+    FOREIGN KEY (\`country\`)
+    REFERENCES \`countries\` (\`code\`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS \`users\` (
+  \`user_id\` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  \`user_country\` CHAR(2) NOT NULL,
+  \`user_country_born\` CHAR(2) NOT NULL,
+  PRIMARY KEY (\`user_id\`),
+  INDEX \`fk_users_countries_idx\` (\`user_country\` ASC) VISIBLE,
+  INDEX \`fk_users_countries1_idx\` (\`user_country_born\` ASC) VISIBLE,
+  CONSTRAINT \`user_country\`
+    FOREIGN KEY (\`user_country\`)
+    REFERENCES \`countries\` (\`code\`)
+    ON DELETE RESTRICT
+    ON UPDATE RESTRICT,
+  CONSTRAINT \`user_country__is_legal\`
+    FOREIGN KEY (\`user_country\`)
+    REFERENCES \`legal_user_countries\` (\`country\`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT \`user_country_born\`
+    FOREIGN KEY (\`user_country_born\`)
+    REFERENCES \`countries\` (\`code\`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+`,
 } as const;
 
 describe('4898', () => {
@@ -451,12 +491,24 @@ describe('4898', () => {
         orm.config.get('entityGenerator').scalarPropertiesForRelations = scalarPropertiesForRelations;
       });
 
-      test.each([true, false])('entitySchema=%s', async entitySchema => {
-        orm.config.get('entityGenerator').entitySchema = entitySchema;
+      describe.each([true, false])('bidirectionalRelations=%s', bidirectionalRelations => {
+        beforeEach(() => {
+          orm.config.get('entityGenerator').bidirectionalRelations = bidirectionalRelations;
+        });
 
-        await orm.schema.execute(schemas[schemaName]);
-        const dump = await orm.entityGenerator.generate();
-        expect(dump).toMatchSnapshot(expect.getState().currentTestName);
+        describe.each([true, false])('identifiedReferences=%s', identifiedReferences => {
+          beforeEach(() => {
+            orm.config.get('entityGenerator').identifiedReferences = identifiedReferences;
+          });
+
+          test.each([true, false])('entitySchema=%s', async entitySchema => {
+            orm.config.get('entityGenerator').entitySchema = entitySchema;
+
+            await orm.schema.execute(schemas[schemaName]);
+            const dump = await orm.entityGenerator.generate();
+            expect(dump).toMatchSnapshot('dump');
+          });
+        });
       });
     });
   });
