@@ -68,7 +68,7 @@ body:
       options:
         - label: Read the [Contributing Guidelines](https://github.com/mikro-orm/mikro-orm/blob/master/CONTRIBUTING.md).
           required: true
-        - label: Read the [docs](https://mikro-orm.io/guide/).
+        - label: Read the [docs](https://mikro-orm.io/docs).
           required: true
         - label: Check that there isn't [already an issue](https://github.com/mikro-orm/mikro-orm/issues) that reports the same bug to avoid creating a duplicate.
           required: true
