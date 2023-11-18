@@ -1,5 +1,15 @@
 import type { Knex } from 'knex';
-import type { CheckCallback, Dictionary, EntityProperty, GroupOperator, RawQueryFragment, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
+import type {
+  CheckCallback,
+  Dictionary,
+  EntityProperty,
+  GroupOperator,
+  RawQueryFragment,
+  QBFilterQuery,
+  QueryOrderMap,
+  Type,
+  QueryFlag,
+} from '@mikro-orm/core';
 import type { JoinType, QueryType } from './query/enums';
 import type { DatabaseSchema, DatabaseTable } from './schema';
 
@@ -155,6 +165,9 @@ export interface IQueryBuilder<T> {
   getAliasForJoinPath(path: string): string | undefined;
   getNextAlias(entityName?: string): string;
   clone(reset?: boolean): IQueryBuilder<T>;
+  setFlag(flag: QueryFlag): this;
+  unsetFlag(flag: QueryFlag): this;
+  hasFlag(flag: QueryFlag): boolean;
 }
 
 export interface ICriteriaNode<T extends object> {

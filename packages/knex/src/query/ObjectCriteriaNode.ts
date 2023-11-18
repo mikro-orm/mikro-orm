@@ -2,6 +2,7 @@ import {
   ALIAS_REPLACEMENT,
   type Dictionary,
   type EntityKey,
+  QueryFlag,
   raw,
   RawQueryFragment,
   ReferenceKind,
@@ -183,12 +184,17 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     const operator = Utils.isPlainObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
     const field = `${alias}.${this.prop!.name}`;
 
+    const method = qb.hasFlag(QueryFlag.INFER_POPULATE) ? 'joinAndSelect' : 'join';
+
     if (this.prop!.kind === ReferenceKind.MANY_TO_MANY && (scalar || operator)) {
       qb.join(field, nestedAlias, undefined, JoinType.pivotJoin, this.getPath());
     } else {
       const prev = qb._fields?.slice();
-      qb.join(field, nestedAlias, undefined, JoinType.leftJoin, this.getPath());
-      qb._fields = prev;
+      qb[method](field, nestedAlias, undefined, JoinType.leftJoin, this.getPath());
+
+      if (!qb.hasFlag(QueryFlag.INFER_POPULATE)) {
+        qb._fields = prev;
+      }
     }
 
     return nestedAlias;

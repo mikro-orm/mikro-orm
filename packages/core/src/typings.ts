@@ -793,7 +793,7 @@ export type FilterDef = {
   args?: boolean;
 };
 
-export type Populate<T, P extends string = never> = readonly AutoPath<T, P, '*'>[] | false;
+export type Populate<T, P extends string = never> = readonly AutoPath<T, P, '*' | '$infer'>[] | false;
 
 export type PopulateOptions<T> = {
   field: EntityKey<T>;

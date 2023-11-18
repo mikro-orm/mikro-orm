@@ -1,5 +1,5 @@
 ---
-title: Nested Populate
+title: Populating relations
 ---
 
 `MikroORM` is capable of loading large nested structures while maintaining good performance, querying each database table only once. Imagine you have this nested structure:
@@ -10,7 +10,9 @@ title: Nested Populate
 When you use nested populate while querying all `BookTag`s, this is what happens in the background:
 
 ```ts
-const tags = await em.findAll(BookTag, { populate: ['books.publisher.tests', 'books.author'] });
+const tags = await em.find(BookTag, {}, {
+  populate: ['books.publisher.tests', 'books.author'],
+});
 console.log(tags[0].books[0].publisher.tests[0].name); // prints name of nested test
 console.log(tags[0].books[0].author.name); // prints name of nested author
 ```
@@ -20,8 +22,6 @@ console.log(tags[0].books[0].author.name); // prints name of nested author
 3. Load all `Publisher`s associated with previously loaded `Book`s
 4. Load all `Test`s associated with previously loaded `Publisher`s
 5. Load all `Author`s associated with previously loaded `Book`s
-
-> You can also populate all relationships by passing `populate: ['*']`.
 
 For SQL drivers with pivot tables this means:
 
@@ -52,6 +52,33 @@ db.getCollection("publisher").find({"_id":{"$in":[...]}}).toArray();
 db.getCollection("test").find({"_id":{"$in":[...]}}).toArray();
 db.getCollection("author").find({"_id":{"$in":[...]}}).toArray();
 ```
+
+## Populating all relations
+
+You can also populate all relationships by passing `populate: ['*']`. The result will be also strictly typed (the `Loaded` type respects the star hint).
+
+```ts
+const tags = await em.find(BookTag, {}, { 
+  populate: ['*'],
+});
+```
+
+> This will always use select-in strategy to deal with possible cycles.
+
+## Inferring populate hint from filter
+
+If you want to automatically select all the relations that are part of your filter query, use `populate: ['$infer']`:
+
+```ts
+// this will populate all the books and their authors, all via a single query
+const tags = await em.find(BookTag, {
+  books: { author: { name: '...' } },
+}, { 
+  populate: ['$infer'],
+});
+```
+
+> This will always use joined strategy as we already have the relations joined because they are in the filter. This feature is not available in MongoDB driver as there is no join support.
 
 ## Filter on populated entities
 
@@ -93,7 +120,7 @@ A value provided on a specific query overrides whatever default is specified glo
 
 ## Loading strategies
 
-The way that MikroORM fetches the data in a populate is also configurable. By default MikroORM uses a "where in" strategy which runs one separate query for each level of a populate. If you're using an SQL database you can also ask MikroORM to use a join for all tables involved in the populate and run it as a single query. This is again configurable globally or per query.
+The way that MikroORM fetches the data based on populate hint is also configurable. By default, MikroORM uses a "select in" strategy which runs one separate query for each level of a populate. If you're using an SQL database you can also ask MikroORM to use a join for all tables involved in the populate and run it as a single query. This is again configurable globally or per query.
 
 For more information see the [Loading Strategies section](./loading-strategies.md).
 

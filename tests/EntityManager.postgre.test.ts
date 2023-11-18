@@ -1807,6 +1807,88 @@ describe('EntityManagerPostgre', () => {
       'where "b0"."author_id" is not null and "a3"."name" = $1');
   });
 
+  test('populate: $infer', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    book1.perex = ref('asd 1');
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    book2.perex = ref('asd 2');
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    book3.perex = ref('asd 3');
+    const t1 = Test2.create('t1');
+    t1.book = book1;
+    const t2 = Test2.create('t2');
+    t2.book = book2;
+    const t3 = Test2.create('t3');
+    t3.book = book3;
+    author.books.add(book1, book2, book3);
+    await orm.em.persistAndFlush([author, t1, t2, t3]);
+    author.favouriteBook = book3;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+    const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } }, { populate: ['perex', '$infer'] });
+    expect(res2).toHaveLength(3);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(wrap(res2[0]).toObject()).toMatchObject({
+      title: 'My Life on The Wall, part 1',
+      perex: 'asd 1',
+      author: {
+        id: 1,
+        name: 'Jon Snow',
+        email: 'snow@wall.st',
+        favouriteBook: {
+          title: 'My Life on The Wall, part 3',
+          perex: 'asd 3',
+          author: {
+            name: 'Jon Snow',
+            email: 'snow@wall.st',
+          },
+        },
+      },
+    });
+    expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed", ' +
+      '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity", ' +
+      '"b2"."uuid_pk" as "b2__uuid_pk", "b2"."created_at" as "b2__created_at", "b2"."title" as "b2__title", "b2"."price" as "b2__price", "b2".price * 1.19 as "b2__price_taxed", "b2"."double" as "b2__double", "b2"."meta" as "b2__meta", "b2"."author_id" as "b2__author_id", "b2"."publisher_id" as "b2__publisher_id", ' +
+      '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", "a3"."identity" as "a3__identity" ' +
+      'from "book2" as "b0" ' +
+      'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
+      'left join "book2" as "b2" on "a1"."favourite_book_uuid_pk" = "b2"."uuid_pk" ' +
+      'left join "author2" as "a3" on "b2"."author_id" = "a3"."id" ' +
+      'where "b0"."author_id" is not null and "a3"."name" = $1');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const res4 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } }, { populate: ['$infer'] });
+    expect(res4).toHaveLength(3);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed", ' +
+      '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity", ' +
+      '"b2"."uuid_pk" as "b2__uuid_pk", "b2"."created_at" as "b2__created_at", "b2"."title" as "b2__title", "b2"."price" as "b2__price", "b2".price * 1.19 as "b2__price_taxed", "b2"."double" as "b2__double", "b2"."meta" as "b2__meta", "b2"."author_id" as "b2__author_id", "b2"."publisher_id" as "b2__publisher_id", ' +
+      '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", "a3"."identity" as "a3__identity" ' +
+      'from "book2" as "b0" ' +
+      'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
+      'left join "book2" as "b2" on "a1"."favourite_book_uuid_pk" = "b2"."uuid_pk" ' +
+      'left join "author2" as "a3" on "b2"."author_id" = "a3"."id" ' +
+      'where "b0"."author_id" is not null and "a3"."name" = $1');
+    expect(wrap(res4[0]).toObject()).toMatchObject({
+      title: 'My Life on The Wall, part 1',
+      author: {
+        id: 1,
+        name: 'Jon Snow',
+        email: 'snow@wall.st',
+        favouriteBook: {
+          title: 'My Life on The Wall, part 3',
+          author: {
+            name: 'Jon Snow',
+            email: 'snow@wall.st',
+          },
+        },
+      },
+    });
+  });
+
   test('datetime is stored in correct timezone', async () => {
     const author = new Author2('n', 'e');
     author.createdAt = new Date('2000-01-01T00:00:00Z');

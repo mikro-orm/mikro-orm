@@ -94,6 +94,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const fields = this.buildFields(meta, populate, joinedProps, qb, qb.alias, options.fields as unknown as Field<T>[]);
     const joinedPropsOrderBy = this.buildJoinedPropsOrderBy(entityName, qb, meta, joinedProps);
     const orderBy = [...Utils.asArray(options.orderBy), ...joinedPropsOrderBy];
+    Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
 
     if (Utils.isPrimaryKey(where, meta.compositePK)) {
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as FilterQuery<T>;
@@ -127,7 +128,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       qb.setLockMode(options.lockMode, options.lockTableAliases);
     }
 
-    Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
     const result = await this.rethrow(qb.execute('all'));
 
     if (isCursorPagination && !first && !!last) {

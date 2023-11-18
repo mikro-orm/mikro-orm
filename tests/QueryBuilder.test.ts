@@ -260,6 +260,7 @@ describe('QueryBuilder', () => {
       .populate([{ field: 'asd' }])
       .setFlag(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)
       .limit(2, 1);
+    expect(qb.hasFlag(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)).toBe(true);
     const sql = 'select `fz`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `fz` left join `foo_bar2` as `e1` on `fz`.`id` = `e1`.`baz_id` limit ? offset ?';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual([2, 1]);
