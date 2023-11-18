@@ -89,30 +89,19 @@ export class Collection<T extends object, O extends object = object> extends Arr
     }
 
     const em = this.getEntityManager();
-    const pivotMeta = em.getMetadata().find(this.property.pivotEntity)!;
-    const where = this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta);
 
     if (!em.getPlatform().usesPivotTable() && this.property.kind === ReferenceKind.MANY_TO_MANY && this.property.owner) {
       return this._count = this.length;
     }
 
-    if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
-      const count = await em.count(this.property.type, where, {
-        populate: [{ field: this.property.pivotEntity } as any],
-      });
-
-      if (!options.where) {
-        this._count = count;
-      }
-
-      return count;
-    }
-
+    const pivotMeta = em.getMetadata().find(this.property.pivotEntity)!;
+    const where = this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta);
     const count = await em.count(this.property.type, where);
 
     if (!options.where) {
       this._count = count;
     }
+
     return count;
   }
 
@@ -444,9 +433,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     if (this.property.kind === ReferenceKind.ONE_TO_MANY) {
       dict[this.property.mappedBy] = val;
-    } else if (pivotMeta && this.property.owner && !this.property.inversedBy) {
-      const key = `${this.property.pivotEntity}.${pivotMeta.relations[0].name}`;
-      dict[key] = val;
     } else {
       const key = this.property.owner ? this.property.inversedBy : this.property.mappedBy;
       dict[key] = val;
