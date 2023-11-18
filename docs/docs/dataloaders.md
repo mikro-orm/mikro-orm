@@ -5,7 +5,7 @@ sidebar_label: Dataloaders
 
 The n+1 problem is when multiple types of data are requested in one query, but where n requests are required instead of just one. This is typically encountered when data is nested, such as if you were requesting authors and the name of their books. It is an inherent problem of GraphQL APIs and can be solved by batching multiple requests into a single one. This can be automated via the dataloader library which will coalesce all individual loads which occur within a single frame of execution (a single tick of the event loop) and then call your batch function with all requested keys. That means writing a batch loading function for each and every db call which aggregates multiple queries into a single one, plus filtering the results to reassign them to the original queries. Fortunately MikroORM has plently of metadata to trasparently automate this process so that you won't have to write your own batch loading functions.
 
-In the current version MikroORM is able to automatically batch references and collections, but if you are interested to try it out there is an out of tree library which takes care of batching whole find queries with a subset of the operators supported.
+In the current version MikroORM is able to automatically batch references and collections, but if you are interested to try it out there is an [out of tree library](https://github.com/darkbasic/mikro-orm-dataloaders) which takes care of batching whole find queries with a subset of the operators supported.
 
 Dataloaders are disabled by default but they can be easily enabled globally:
 
