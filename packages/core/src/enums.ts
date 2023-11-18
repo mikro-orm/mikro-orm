@@ -97,6 +97,7 @@ export enum QueryFlag {
   CONVERT_CUSTOM_TYPES = 'CONVERT_CUSTOM_TYPES',
   INCLUDE_LAZY_FORMULAS = 'INCLUDE_LAZY_FORMULAS',
   AUTO_JOIN_ONE_TO_ONE_OWNER = 'AUTO_JOIN_ONE_TO_ONE_OWNER',
+  INFER_POPULATE = 'INFER_POPULATE',
 }
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];

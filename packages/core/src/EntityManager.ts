@@ -40,31 +40,30 @@ import type {
 } from './drivers';
 import type {
   AnyEntity,
+  AnyString,
   AutoPath,
   ConnectionType,
   Dictionary,
   EntityData,
   EntityDictionary,
   EntityDTO,
+  EntityKey,
   EntityMetadata,
   EntityName,
   FilterDef,
   FilterQuery,
+  FromEntityType,
   GetRepository,
   IHydrator,
+  IsSubset,
   Loaded,
   MaybePromise,
+  MergeSelected,
   ObjectQuery,
-  Populate,
   PopulateOptions,
   Primary,
-  RequiredEntityData,
   Ref,
-  EntityKey,
-  AnyString,
-  FromEntityType,
-  IsSubset,
-  MergeSelected,
+  RequiredEntityData,
 } from './typings';
 import {
   EventType,
@@ -72,6 +71,7 @@ import {
   LoadStrategy,
   LockMode,
   PopulateHint,
+  QueryFlag,
   ReferenceKind,
   SCALAR_TYPES,
   type TransactionOptions,
@@ -279,6 +279,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return { where: {} as ObjectQuery<Entity>, populateWhere: options.populateWhere };
     }
 
+    /* istanbul ignore next */
     if (options.populateWhere === PopulateHint.INFER) {
       return { where, populateWhere: options.populateWhere };
     }
@@ -369,6 +370,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return children;
     };
     lookUpChildren(children, meta.className);
+    /* istanbul ignore next */
     (where as Dictionary)[meta.root.discriminatorColumn!] = children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue;
 
     return where;
@@ -1864,7 +1866,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Hint extends string = never,
     Fields extends string = never,
-  >(entityName: string, options: Pick<FindOptions<Entity, Hint, Fields>, 'populate' | 'strategy' | 'fields'>): PopulateOptions<Entity>[] {
+  >(entityName: string, options: Pick<FindOptions<Entity, Hint, Fields>, 'populate' | 'strategy' | 'fields' | 'flags'>): PopulateOptions<Entity>[] {
     if (options.populate === false) {
       return [];
     }
@@ -1908,16 +1910,25 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (typeof options.populate !== 'boolean') {
       options.populate = Utils.asArray(options.populate).map(field => {
+        /* istanbul ignore next */
         if (typeof field === 'boolean') {
-          return { field: meta.primaryKeys[0], strategy: options.strategy, all: field };
+          return [{ field: meta.primaryKeys[0], strategy: options.strategy, all: field }];
+        }
+
+        // will be handled in QueryBuilder when processing the where condition via CriteriaNode
+        if (field === '$infer') {
+          options.flags ??= [];
+          options.flags.push(QueryFlag.INFER_POPULATE);
+
+          return [];
         }
 
         if (Utils.isString(field)) {
-          return { field, strategy: options.strategy };
+          return [{ field, strategy: options.strategy }];
         }
 
-        return field;
-      }) as any;
+        return [field];
+      }).flat() as any;
     }
 
     const ret: PopulateOptions<Entity>[] = this.entityLoader.normalizePopulate<Entity>(entityName, options.populate as true, options.strategy as LoadStrategy);

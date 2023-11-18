@@ -255,7 +255,6 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this._joins[`${fromAlias}.${prop.name}#${alias}`].subquery = subquery;
     }
 
-    this.addSelect(this.getFieldsForJoinedLoad(prop, alias, fields));
     const populate = this._joinedProps.get(fromAlias);
     const item = { field: prop.name, strategy: LoadStrategy.JOINED, children: [] };
 
@@ -266,6 +265,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     this._joinedProps.set(alias, item);
+    this.addSelect(this.getFieldsForJoinedLoad(prop, alias, fields));
 
     return this as SelectQueryBuilder<T>;
   }
@@ -288,8 +288,28 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
   protected getFieldsForJoinedLoad(prop: EntityProperty<T>, alias: string, explicitFields?: string[]): Field<T>[] {
     const fields: Field<T>[] = [];
+    const populate: PopulateOptions<T>[] = [];
+    const joinKey = Object.keys(this._joins).find(join => join.endsWith(`#${alias}`));
+
+    if (joinKey) {
+      const path = this._joins[joinKey].path!.split('.').slice(1);
+      let children = this._populate;
+
+      for (let i = 0; i < path.length; i++) {
+        const child = children.filter(hint => hint.field === path[i]);
+
+        if (child.length === 0) {
+          break;
+        }
+
+        children = child.flatMap(c => c.children) as any;
+      }
+
+      populate.push(...children);
+    }
+
     prop.targetMeta!.props
-      .filter(prop => explicitFields ? explicitFields.includes(prop.name) || prop.primary : this.platform.shouldHaveColumn(prop, this._populate))
+      .filter(prop => explicitFields ? explicitFields.includes(prop.name) || prop.primary : this.platform.shouldHaveColumn(prop, populate))
       .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<T>(this, prop, alias)));
 
     return fields;
@@ -440,7 +460,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   returning(fields?: Field<T> | Field<T>[]): this {
-    this._returning = fields != null ? Utils.asArray(fields) : fields;
+    this._returning = Utils.asArray(fields);
     return this;
   }
 
@@ -508,6 +528,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this.ensureNotFinalized();
     this.flags.delete(flag);
     return this;
+  }
+
+  hasFlag(flag: QueryFlag): boolean {
+    return this.flags.has(flag);
   }
 
   cache(config: boolean | number | [string, number] = true): this {
