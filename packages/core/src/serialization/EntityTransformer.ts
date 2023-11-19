@@ -228,7 +228,7 @@ export class EntityTransformer {
         }) as EntityValue<Entity>;
       }
 
-      return col.getIdentifiers() as EntityValue<Entity>;
+      return col.map(i => wrap(i, true).getSerializedPrimaryKey()) as EntityValue<Entity>;
     }
 
     return undefined;
