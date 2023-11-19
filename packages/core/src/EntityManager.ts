@@ -390,7 +390,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       for (const hint of (options.populate as unknown as PopulateOptions<Entity>[])) {
         const field = hint.field.split(':')[0] as EntityKey<Entity>;
         const prop = meta.properties[field];
-        const joined = (hint.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.kind !== ReferenceKind.SCALAR;
+        const joined = (options.strategy || hint.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.kind !== ReferenceKind.SCALAR;
 
         if (!joined) {
           continue;
@@ -626,7 +626,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
 
     if (entity && !em.shouldRefresh(meta, entity, options) && isOptimisticLocking) {
-      return em.lockAndPopulate(entityName, entity, where, options);
+      return em.lockAndPopulate(meta, entity, where, options);
     }
 
     em.validator.validateParams(where);
@@ -664,10 +664,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: true,
     });
 
-    if (!meta.virtual) {
-      await em.lockAndPopulate(entityName, entity, where, options);
-    }
-
+    await em.lockAndPopulate(meta, entity, where, options);
     await em.unitOfWork.dispatchOnLoadEvent();
     await em.storeCache(options.cache, cached!, () => helper(entity!).toPOJO());
 
@@ -1830,16 +1827,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
   }
 
-  private async lockAndPopulate<T extends object, P extends string = never, F extends string = '*'>(entityName: string, entity: T, where: FilterQuery<T>, options: FindOneOptions<T, P, F>): Promise<Loaded<T, P, F>> {
-    if (options.lockMode === LockMode.OPTIMISTIC) {
+  private async lockAndPopulate<T extends object, P extends string = never, F extends string = '*'>(meta: EntityMetadata<T>, entity: T, where: FilterQuery<T>, options: FindOneOptions<T, P, F>): Promise<Loaded<T, P, F>> {
+    if (!meta.virtual && options.lockMode === LockMode.OPTIMISTIC) {
       await this.lock(entity, options.lockMode, {
         lockVersion: options.lockVersion,
         lockTableAliases: options.lockTableAliases,
       });
     }
 
-    const preparedPopulate = this.preparePopulate<T, P, F>(entityName, options);
-    await this.entityLoader.populate(entityName, [entity], preparedPopulate, {
+    const preparedPopulate = this.preparePopulate<T, P, F>(meta.className, options);
+    await this.entityLoader.populate(meta.className, [entity], preparedPopulate, {
       ...options as Dictionary,
       ...this.getPopulateWhere<T>(where as ObjectQuery<T>, options),
       convertCustomTypes: false,
