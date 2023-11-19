@@ -211,7 +211,7 @@ export class EntityTransformer {
     const col = entity[prop] as Collection<AnyEntity>;
 
     if (raw && col.isInitialized(true)) {
-      return col.getItems().map(item => wrap(item).toPOJO()) as EntityValue<Entity>;
+      return col.map(item => helper(item).toPOJO()) as EntityValue<Entity>;
     }
 
     if (col.shouldPopulate(populated)) {
@@ -222,13 +222,13 @@ export class EntityTransformer {
       const wrapped = helper(entity);
 
       if (wrapped.__config.get('serialization').forceObject) {
-        return col.getItems().map(item => {
+        return col.map(item => {
           const wrapped = helper(item);
           return Utils.primaryKeyToObject(wrapped.__meta, wrapped.getPrimaryKey(true)!) as EntityValue<Entity>;
         }) as EntityValue<Entity>;
       }
 
-      return col.map(i => wrap(i, true).getSerializedPrimaryKey()) as EntityValue<Entity>;
+      return col.map(i => helper(i).getPrimaryKey(true)) as EntityValue<Entity>;
     }
 
     return undefined;
