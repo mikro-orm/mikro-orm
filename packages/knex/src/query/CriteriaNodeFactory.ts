@@ -36,7 +36,11 @@ export class CriteriaNodeFactory {
     const node = new ArrayCriteriaNode<T>(metadata, entityName, parent, key);
     node.payload = payload.map((item, index) => {
       const n = this.createNode(metadata, entityName, item, node);
-      n.index = key === '$and' ? index : undefined; // we care about branching only for $and
+
+      // we care about branching only for $and
+      if (key === '$and' && payload.length > 1) {
+        n.index = index;
+      }
 
       return n;
     });

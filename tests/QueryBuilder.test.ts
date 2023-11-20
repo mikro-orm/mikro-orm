@@ -2273,6 +2273,20 @@ describe('QueryBuilder', () => {
   });
 
   test('branching to-many relations (#2677)', async () => {
+    // no branching as there is only one item in $and array
+    const qb0 = orm.em.createQueryBuilder(Book2);
+    qb0.select('*').where({
+      $and: [
+        { tags: { name: 'tag1' } },
+      ],
+    }).orderBy({ tags: { name: 1 } });
+    expect(qb0.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `e0` ' +
+      'left join `book2_tags` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
+      'where `e1`.`name` = ? ' +
+      'order by `e1`.`name` asc');
+
     // branching as its m:n
     const qb1 = orm.em.createQueryBuilder(Book2);
     qb1.select('*').where({
