@@ -37,6 +37,7 @@ import type {
   UpdateOptions,
   UpsertManyOptions,
   UpsertOptions,
+  FindAllOptions,
 } from './drivers';
 import type {
   AnyEntity,
@@ -265,6 +266,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     return unique;
+  }
+
+  /**
+   * Finds all entities of given type, optionally matching the `where` condition provided in the `options` parameter.
+   */
+  async findAll<
+    Entity extends object,
+    Hint extends string = never,
+    Fields extends string = never,
+  >(entityName: EntityName<Entity>, options?: FindAllOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
+    return this.find<Entity, Hint, Fields>(entityName, options?.where ?? {}, options);
   }
 
   private getPopulateWhere<
@@ -1639,7 +1651,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
+   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all the specified entities.
    */
   async populate<
     Entity extends object,

@@ -570,13 +570,13 @@ describe('EntityManagerPostgre', () => {
       { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { nested: { foo: '1', deep: { str: 'a', qux: false, baz: 2 } } } },
     ]);
 
-    const res14 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { nested: { foo: 'asc' } } } });
+    const res14 = await orm.em.fork().findAll(Book2, { orderBy: { meta: { nested: { foo: 'asc' } } } });
     expect(res14.map(r => r.title)).toEqual(['t3', 't2', 't1']);
 
-    const res15 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { nested: { deep: { str: 'asc' } } } } });
+    const res15 = await orm.em.fork().findAll(Book2, { orderBy: { meta: { nested: { deep: { str: 'asc' } } } } });
     expect(res15.map(r => r.title)).toEqual(['t3', 't2', 't1']);
 
-    const res16 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { nested: { deep: { baz: QueryOrder.DESC } } } } });
+    const res16 = await orm.em.fork().findAll(Book2, { orderBy: { meta: { nested: { deep: { baz: QueryOrder.DESC } } } } });
     expect(res16.map(r => r.title)).toEqual(['t1', 't3', 't2']);
   });
 
@@ -849,7 +849,7 @@ describe('EntityManagerPostgre', () => {
 
     mock.mock.calls.length = 0;
     await orm.em.transactional(async em => {
-      await em.find(Book2, {}, {
+      await em.findAll(Book2, {
         lockMode: LockMode.PESSIMISTIC_PARTIAL_WRITE,
         lockTableAliases: ['b0'],
         populate: ['author'],
@@ -867,7 +867,7 @@ describe('EntityManagerPostgre', () => {
     const mock = mockLogger(orm, ['query']);
 
     await orm.em.transactional(async em => {
-      await em.find(Book2, {}, {
+      await em.findAll(Book2, {
         lockMode: LockMode.PESSIMISTIC_PARTIAL_WRITE,
         populate: ['author', 'tags'],
         populateWhere: PopulateHint.INFER,
@@ -1439,7 +1439,7 @@ describe('EntityManagerPostgre', () => {
     expect(tags[0].books[0].publisher!.unwrap().tests[1].name).toBe('t12');
 
     orm.em.clear();
-    const books = await orm.em.find(Book2, {}, {
+    const books = await orm.em.findAll(Book2, {
       populate: ['publisher.tests', 'author'],
       orderBy: { title: QueryOrder.ASC },
     });
@@ -1500,7 +1500,10 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
-    const res = await orm.em.find(Author2, { books: { title: { $in: ['b1', 'b2'] } } }, { populate: ['books.perex'] });
+    const res = await orm.em.findAll(Author2, {
+      where: { books: { title: { $in: ['b1', 'b2'] } } },
+      populate: ['books.perex'],
+    });
     expect(res).toHaveLength(1);
     expect(res[0].books.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('select "a0".* from "author2" as "a0" left join "book2" as "b1" on "a0"."id" = "b1"."author_id" where "b1"."title" in ($1, $2)');

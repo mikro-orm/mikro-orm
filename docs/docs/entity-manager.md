@@ -110,7 +110,7 @@ await em.remove(book1).flush();
 
 ## Fetching Entities with EntityManager
 
-To fetch entities from database we can use `find()` and `findOne()`:
+To fetch entities from database we can use `em.find()` and `em.findOne()`:
 
 ```ts
 const author = await em.findOne(Author, 123);
@@ -132,10 +132,22 @@ for (const author of authors) {
 }
 ```
 
+Alternatively, there is also `em.findAll()`, which does not have the second `where` parameter and defaults to returning all entities. You can still use the `where` option of this method though:
+
+```ts
+const books = await em.findAll(Book, {
+  where: { publisher: { $ne: null } }, // optional
+});
+```
+
 To populate entity relations, we can use `populate` parameter.
 
 ```ts
-const books = await em.find(Book, { foo: 1 }, { populate: ['author.friends'] });
+const books = await em.findAll(Book, {
+  where: { publisher: { $ne: null } },
+  // highlight-next-line
+  populate: ['author.friends'],
+});
 ```
 
 You can also use `em.populate()` helper to populate relations (or to ensure they are fully populated) on already loaded entities. This is also handy when loading entities via `QueryBuilder`:
