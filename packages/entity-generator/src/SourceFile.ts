@@ -1,7 +1,9 @@
 import {
+  Cascade,
   DateType,
   DecimalType,
   type Dictionary,
+  type EmbeddableOptions,
   type EntityMetadata,
   type EntityOptions,
   type EntityProperty,
@@ -13,6 +15,11 @@ import {
   UnknownType,
   Utils,
 } from '@mikro-orm/core';
+
+/**
+ * @see https://github.com/tc39/proposal-regexp-unicode-property-escapes#other-examples
+ */
+const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$\u200C\u200D\p{ID_Continue}])*$/u;
 
 export class SourceFile {
 
@@ -27,8 +34,14 @@ export class SourceFile {
   ) { }
 
   generate(): string {
-    this.coreImports.add('Entity');
-    let ret = `@Entity(${this.getCollectionDecl()})\n`;
+    let ret = '';
+    if (this.meta.embeddable) {
+      this.coreImports.add('Embeddable');
+      ret += `@Embeddable(${this.getEmbeddableDeclOptions()})\n`;
+    } else {
+      this.coreImports.add('Entity');
+      ret += `@Entity(${this.getEntityDeclOptions()})\n`;
+    }
 
     this.meta.indexes.forEach(index => {
       this.coreImports.add('Index');
@@ -54,8 +67,19 @@ export class SourceFile {
       ret += `@Unique({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
     });
 
-    ret += `export class ${this.meta.className} {`;
+    ret += `export `;
+    if (this.meta.abstract) {
+      ret += `abstract `;
+    }
+    ret += `class ${this.meta.className}`;
+    if (this.meta.extends) {
+      this.entityImports.add(this.meta.extends);
+      ret += ` extends ${this.meta.extends}`;
+    }
+    ret += ' {';
     const enumDefinitions: string[] = [];
+    const eagerProperties: EntityProperty<any>[] = [];
+    const hiddenProperties: EntityProperty<any>[] = [];
     const optionalProperties: EntityProperty<any>[] = [];
     const primaryProps: EntityProperty<any>[] = [];
     let classBody = '\n';
@@ -76,6 +100,14 @@ export class SourceFile {
         enumDefinitions.push(this.getEnumClassDefinition(enumClassName, prop.items as string[], 2));
       }
 
+      if (prop.eager) {
+        eagerProperties.push(prop);
+      }
+
+      if (prop.hidden) {
+        hiddenProperties.push(prop);
+      }
+
       if (!prop.nullable && typeof prop.default !== 'undefined') {
           optionalProperties.push(prop);
       }
@@ -94,6 +126,18 @@ export class SourceFile {
       } else {
         ret += `\n\n${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames[0]};`;
       }
+    }
+
+    if (eagerProperties.length > 0) {
+      this.coreImports.add('EagerProps');
+      const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
+      ret += `\n\n${' '.repeat(2)}[EagerProps]?: ${eagerPropertyNames.join(' | ')};`;
+    }
+
+    if (hiddenProperties.length > 0) {
+      this.coreImports.add('HiddenProps');
+      const hiddenPropertyNames = hiddenProperties.map(prop => `'${prop.name}'`).sort();
+      ret += `\n\n${' '.repeat(2)}[HiddenProps]?: ${hiddenPropertyNames.join(' | ')};`;
     }
 
     if (optionalProperties.length > 0) {
@@ -147,7 +191,11 @@ export class SourceFile {
       return `${padding}${prop.name}${optional}: Ref<${prop.type}>;\n`;
     }
 
-    const ret = `${prop.name}${optional}: ${prop.type}`;
+    let ret = `${prop.name}${optional}: ${prop.type}`;
+
+    if (prop.kind === ReferenceKind.EMBEDDED && prop.array) {
+      ret += '[]';
+    }
 
     if (!useDefault) {
       return `${padding + ret};\n`;
@@ -173,7 +221,27 @@ export class SourceFile {
     return ret;
   }
 
-  private getCollectionDecl() {
+  protected serializeObject(options: {}, spaces?: number): string {
+    const sep = typeof spaces === 'undefined' ? ', ' : `,\n${' '.repeat(spaces)}`;
+    const doIndent = typeof spaces !== 'undefined';
+    if (Array.isArray(options)) {
+      return `[${doIndent ? `\n${' '.repeat(spaces)}` : ''}${options.map(val => `${doIndent ? ' '.repeat(spaces) : ''}${this.serializeValue(val, doIndent ? spaces + 2 : undefined)}`).join(sep)}${doIndent ? `\n${' '.repeat(spaces + 2)}` : ''}]`;
+    }
+    return `{${doIndent ? `\n${' '.repeat(spaces)}` : ' '}${Object.entries(options).map(
+      ([opt, val]) => {
+        return `${doIndent ? ' '.repeat(spaces + 2) : ''}${identifierRegex.test(opt) ? opt : JSON.stringify(opt)}: ${this.serializeValue(val, doIndent ? spaces + 2 : undefined)}`;
+      },
+    ).join(sep) }${doIndent ? `,\n${' '.repeat(spaces + 2)}` : ' '}}`;
+  }
+
+  protected serializeValue(val: unknown, spaces?: number) {
+    if (typeof val === 'object' && val !== null) {
+      return this.serializeObject(val, spaces);
+    }
+    return val;
+  }
+
+  private getEntityDeclOptions() {
     const options: EntityOptions<unknown> = {};
 
     if (this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className)) {
@@ -184,11 +252,48 @@ export class SourceFile {
       options.schema = this.quote(this.meta.schema);
     }
 
+    if (typeof this.meta.expression === 'string') {
+      options.expression = this.meta.expression;
+    }
+
+    if (this.meta.comment) {
+      options.comment = this.meta.comment;
+    }
+
+    if (this.meta.readonly && !this.meta.virtual) {
+      options.readonly = this.meta.readonly;
+    }
+    if (this.meta.virtual) {
+      options.virtual = this.meta.virtual;
+    }
+
+    return this.getCollectionDecl(options);
+  }
+
+  private getEmbeddableDeclOptions() {
+    const options: EmbeddableOptions = {};
+    return this.getCollectionDecl(options);
+  }
+
+  private getCollectionDecl(options: EntityOptions<unknown> | EmbeddableOptions) {
+    if (this.meta.abstract) {
+      options.abstract = true;
+    }
+    if (this.meta.discriminatorValue) {
+      options.discriminatorValue = typeof this.meta.discriminatorValue === 'string' ? this.quote(this.meta.discriminatorValue) : this.meta.discriminatorValue;
+    }
+    if (this.meta.discriminatorColumn) {
+      options.discriminatorColumn = this.quote(this.meta.discriminatorColumn);
+    }
+    if (this.meta.discriminatorMap) {
+      options.discriminatorMap = this.meta.discriminatorMap;
+    }
+
     if (!Utils.hasObjectKeys(options)) {
       return '';
     }
 
-    return `{ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} }`;
+    return this.serializeObject(options);
   }
 
   private getPropertyDecorator(prop: EntityProperty, padLeft: number): string {
@@ -201,10 +306,12 @@ export class SourceFile {
       this.getManyToManyDecoratorOptions(options, prop);
     } else if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this.getOneToManyDecoratorOptions(options, prop);
-    } else if (prop.kind !== ReferenceKind.SCALAR) {
-      this.getForeignKeyDecoratorOptions(options, prop);
-    } else {
+    } else if (prop.kind === ReferenceKind.SCALAR || typeof prop.kind === 'undefined') {
       this.getScalarPropertyDecoratorOptions(options, prop);
+    } else if (prop.kind === ReferenceKind.EMBEDDED) {
+      this.getEmbeddedPropertyDeclarationOptions(options, prop);
+    } else {
+      this.getForeignKeyDecoratorOptions(options, prop);
     }
 
     if (prop.enum) {
@@ -219,7 +326,7 @@ export class SourceFile {
       return `${decorator}()\n`;
     }
 
-    return `${decorator}({ ${Object.entries(options).map(([opt, val]) => `${opt}: ${Array.isArray(val) ? `[${val.join(', ')}]` : val}`).join(', ')} })\n`;
+    return `${decorator}(${this.serializeObject(options)})\n`;
   }
 
   protected getPropertyIndexes(prop: EntityProperty, options: Dictionary): string[] {
@@ -272,6 +379,31 @@ export class SourceFile {
 
     if (prop.persist === false) {
       options.persist = false;
+    }
+    if (prop.hidden) {
+      options.hidden = true;
+    }
+    if (prop.version) {
+      options.version = true;
+    }
+    if (prop.concurrencyCheck) {
+      options.concurrencyCheck = true;
+    }
+    if (prop.eager) {
+      options.eager = true;
+    }
+    if (prop.lazy) {
+      options.lazy = true;
+    }
+    if (prop.orphanRemoval) {
+      options.orphanRemoval = true;
+    }
+    if (prop.cascade && (prop.cascade.length !== 1 || prop.cascade[0] !== Cascade.PERSIST)) {
+      this.coreImports.add('Cascade');
+      options.cascade = `[${prop.cascade.map(value => 'Cascade.' + value.toUpperCase()).join(', ')}]`;
+    }
+    if (typeof prop.comment === 'string') {
+      options.comment = prop.comment;
     }
 
     if (prop.default == null) {
@@ -389,6 +521,21 @@ export class SourceFile {
     options.mappedBy = this.quote(prop.mappedBy);
   }
 
+  protected getEmbeddedPropertyDeclarationOptions(options: Dictionary, prop: EntityProperty) {
+    this.coreImports.add('Embedded');
+    this.entityImports.add(prop.type);
+    options.entity = `() => ${prop.type}`;
+    if (prop.array) {
+      options.array = true;
+    }
+    if (prop.object) {
+      options.object = true;
+    }
+    if (prop.prefix === false || typeof prop.prefix === 'string') {
+      options.prefix = prop.prefix;
+    }
+  }
+
   protected getForeignKeyDecoratorOptions(options: OneToOneOptions<any, any>, prop: EntityProperty) {
     const parts = prop.referencedTableName.split('.', 2);
     const className = this.namingStrategy.getEntityName(...parts.reverse() as [string, string]);
@@ -442,6 +589,10 @@ export class SourceFile {
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY) {
       return '@ManyToMany';
+    }
+
+    if (prop.kind === ReferenceKind.EMBEDDED) {
+      return '@Embedded';
     }
 
     if (prop.primary) {

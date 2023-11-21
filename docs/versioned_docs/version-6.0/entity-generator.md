@@ -84,6 +84,8 @@ Available options:
 | `scalarPropertiesForRelations: 'never' \| 'always' \| 'smart'` | <ul><li> `'never'` (default) - Do not generate any scalar properties for columns covered by foreign key relations. This effectively forces the application to always provide the entire relation, or (if all columns in the relation are nullable) omit the entire relation.</li><li> `'always'` - Generate all scalar properties for all columns covered by foreign key relations. This enables the application to deal with code that disables foreign key checks.</li><li> `'smart'` - Only generate scalar properties for foreign key relations, where doing so is necessary to enable the management of rows where a composite foreign key is not enforced due to some columns being set to NULL. This enables the application to deal with all rows that could possibly be part of a table, even when foreign key checks are always enabled.</li></ul> |
 | `onlyPurePivotTables: boolean`                                 | By default, M:N relations are allowed to use pivot tables containing additional columns. If set to `true`, M:N relations will not be generated for such pivot tables.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `readOnlyPivotTables: boolean`                                 | By default, M:N relations are only generated if the collection would be writable, i.e. any additional columns need to be optional and have non-unique default values. If set to `true`, also generate M:N relations even if the collection would be read only (meaning the only way to write to it is by using the pivot entity directly). Such collections will include the `persist: false` option. This setting is effectively meaningless if `onlyPurePivotTables` is set to `true`.                                                                                                                                                                                                                                                                                                                                                                     |
+| `onInitialMetadata: MetadataProcessor`                         | A function can be provided to do processing of the initially collected metadata collection. Triggered after checking for tables and columns affected by skipping, but before ManyToMany and bi-directional relations detections. This hook is the appropriate place to add virtual and embeddable entities, and any owning sides of OneToOne or ManyToOne references. The generator can then figure out the inverse side and/or if any ManyToMany relations are affected. The function may return a promise, in which case, the promise will be awaited before moving on.                                                                                                                                                                                                                                                                                    |
+| `onProcessedMetadata: MetadataProcessor`                       | A function can be provided to do processing of the final metadata collection. Triggered after ManyToMany and bi-directional relation checking, just before outputting the metadata into files. This is the appropriate place for changes that need to be universally applied, including to ManyToMany and inverse side relation properties. The function may return a promise, in which case, the promise will be awaited before moving on.                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 Example configuration:
 
@@ -102,6 +104,98 @@ const dump = await orm.entityGenerator.generate({
 });
 
 ```
+
+## Processing of generated metadata
+
+There are several features that are impossible to infer from the database schema alone.
+
+The configuration settings `onInitialMetadata` and `onProcessedMetadata` can be used to add that information to the generated metadata, before the metadata is ultimately saved as a file. Note that this is different from the `onMetadata` hook in the configuration. The `onMetadata` hook does not affect the entity files, but those in the generator options do.
+
+Some of the things that are suitable for these hooks include
+
+- Adding the `hidden` flag on certain columns and relations.
+- Adding the `lazy` flag on certain columns.
+- Adding the `eager` flag on certain relations.
+- Adding the `orphanRemoval` flag on certain inverse relations.
+- Adding the `cascade` option on certain relations.
+- Tweaking the `type` of JSON columns to a specific (inline defined) shape.
+- Adding Single Table Inheritance definitions.
+- Adding `@Embedded` entities and references to them.
+- Adding `virtual` entities.
+
+Here's an example that will make any column named "password" (regardless of what table is defined in) be lazy and hidden in its `onInitialMetadata` and in `onProcessedMetadata` will make all ManyToMany relations be hidden.
+
+```ts
+import { ReferenceKind } from "@mikro-orm/core";
+
+await orm.entityGenerator.generate({
+    onInitialMetadata: (metadata, platform) => {
+        metadata.forEach((entity) => {
+            Object.entries(entity.properties).forEach(propEntry => {
+                const [propName, propOptions] = propEntry;
+                if (propName === 'password') {
+                    propOptions.hidden = true;
+                    propOptions.lazy = true;
+                }
+            });
+        });
+    },
+    onProcessedMetadata: (metadata, platform) => {
+        metadata.forEach((entity) => {
+            Object.entries(entity.properties).forEach(propEntry => {
+                const [propName, propOptions] = propEntry;
+                if (propOptions.kind === ReferenceKind.MANY_TO_MANY) {
+                    propOptions.hidden = true;
+                }
+            });
+        });
+    }
+});
+```
+
+Adding embedded and virtual entities via the hooks can be somewhat tricky. The metadata objects are internal, and thus fewer checks are in place on them.
+
+Here's an example that defines a simple embeddable with just two properties and adds a reference to it that is otherwise known to be a JSON column.
+
+```ts
+import { ReferenceKind } from "@mikro-orm/core";
+
+await orm.entityGenerator.generate({
+    onInitialMetadata: (metadata, platform) => {
+        const embeddableEntityMeta = new EntityMetadata({
+            className: 'IdentitiesContainer',
+            collection: platform.getConfig().getNamingStrategy().classToTableName('IdentitiesContainer'),
+            embeddable: true,
+        });
+        embeddableEntityMeta.addProperty(
+            {
+                name: 'github',
+                type: 'string',
+                nullable: true,
+                fieldNames: ['github'],
+                columnTypes: ['varchar(255)'],
+            },
+        );
+        embeddableEntityMeta.addProperty(
+            {
+                name: 'local',
+                type: 'number',
+                nullable: true,
+                fieldNames: ['local'],
+                columnTypes: ['int'],
+            },
+        );
+        metadata.push(embeddableEntityMeta);
+
+        const identitiesPropOnAuthor = metadata.find(entity => entity.className === 'Author')!.properties.identities;
+        identitiesPropOnAuthor.kind = ReferenceKind.EMBEDDED;
+        identitiesPropOnAuthor.object = true;
+        identitiesPropOnAuthor.type = 'IdentitiesContainer';
+    },
+});
+```
+
+An alternative approach is to define the embedded entities manually. The generator's metadata hooks only need to add the references to these embedded entities.
 
 ## Current limitations
 

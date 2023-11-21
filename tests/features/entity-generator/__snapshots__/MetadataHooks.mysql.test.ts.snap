@@ -1,0 +1,1402 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MetadataHooks [mysql] metadata hooks with decorators: mysql-defaults-dump 1`] = `
+[
+  "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Author2 } from './Author2';
+
+@Entity()
+export class Address2 {
+
+  [PrimaryKeyProp]?: 'author';
+
+  @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  author!: Author2;
+
+  @Property({ length: 255 })
+  value!: string;
+
+}
+",
+  "import { Cascade, Collection, EagerProps, Embedded, Entity, HiddenProps, Index, ManyToMany, ManyToOne, OneToMany, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { IdentitiesContainer } from './IdentitiesContainer';
+
+@Entity({ readonly: true })
+@Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
+@Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
+export class Author2 {
+
+  [EagerProps]?: 'favouriteBook';
+
+  [HiddenProps]?: 'authorToFriend' | 'email';
+
+  [OptionalProps]?: 'createdAt' | 'termsAccepted' | 'updatedAt';
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  createdAt!: Date;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  updatedAt!: Date;
+
+  @Index({ name: 'custom_idx_name_123' })
+  @Property({ length: 255, comment: 'author name' })
+  name!: string;
+
+  @Index({ name: 'custom_email_index_name' })
+  @Unique({ name: 'custom_email_unique_name' })
+  @Property({ length: 255, hidden: true })
+  email!: string;
+
+  @Property({ nullable: true, concurrencyCheck: true })
+  age?: number;
+
+  @Index({ name: 'author2_terms_accepted_index' })
+  @Property({ lazy: true, default: false })
+  termsAccepted: boolean = false;
+
+  @Property({ nullable: true })
+  optional?: boolean;
+
+  @Property({ columnType: 'text', nullable: true })
+  identities?: string;
+
+  @Index({ name: 'author2_born_index' })
+  @Property({ columnType: 'date', nullable: true })
+  born?: string;
+
+  @Index({ name: 'born_time_idx' })
+  @Property({ columnType: 'time', nullable: true })
+  bornTime?: string;
+
+  @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true, eager: true, cascade: [Cascade.PERSIST, Cascade.MERGE] })
+  favouriteBook?: Book2;
+
+  @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteAuthor?: Author2;
+
+  @Embedded({ entity: () => IdentitiesContainer, array: true, object: true, prefix: false, nullable: true })
+  identity?: IdentitiesContainer[];
+
+  @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })
+  authorToFriend = new Collection<Author2>(this);
+
+  @ManyToMany({ entity: () => Author2, joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
+  following = new Collection<Author2>(this);
+
+  @OneToMany({ entity: () => Book2, mappedBy: 'author', orphanRemoval: true })
+  authorInverse = new Collection<Book2>(this);
+
+  @OneToMany({ entity: () => Author2, mappedBy: 'favouriteAuthor' })
+  favouriteAuthorInverse = new Collection<Author2>(this);
+
+  @ManyToMany({ entity: () => Author2, mappedBy: 'authorToFriend' })
+  authorToFriendInverse = new Collection<Author2>(this);
+
+  @ManyToMany({ entity: () => Author2, mappedBy: 'following' })
+  followingInverse = new Collection<Author2>(this);
+
+}
+",
+  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+
+@Entity({ abstract: true, discriminatorColumn: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
+export abstract class BaseUser2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 100 })
+  firstName!: string;
+
+  @Property({ length: 100 })
+  lastName!: string;
+
+  @Index({ name: 'base_user2_type_index' })
+  @Enum({ items: () => BaseUser2Type })
+  type!: BaseUser2Type;
+
+  @Property({ length: 255, nullable: true })
+  ownerProp?: string;
+
+  @ManyToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteEmployee?: BaseUser2;
+
+  @OneToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteManager?: BaseUser2;
+
+  @Unique({ name: 'base_user2_employee_prop_unique' })
+  @Property({ nullable: true })
+  employeeProp?: number;
+
+  @Property({ length: 255, nullable: true })
+  managerProp?: string;
+
+  @OneToMany({ entity: () => BaseUser2, mappedBy: 'favouriteEmployee' })
+  favouriteEmployeeInverse = new Collection<BaseUser2>(this);
+
+  @OneToOne({ entity: () => BaseUser2, mappedBy: 'favouriteManager' })
+  favouriteManagerInverse?: BaseUser2;
+
+}
+
+export enum BaseUser2Type {
+  EMPLOYEE = 'employee',
+  MANAGER = 'manager',
+  OWNER = 'owner',
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Book2Tags } from './Book2Tags';
+
+@Entity()
+export class BookTag2 {
+
+  @PrimaryKey()
+  id!: bigint;
+
+  @Property({ length: 50 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Book2, mappedBy: 'bookToTagUnordered' })
+  bookToTagUnorderedInverse = new Collection<Book2>(this);
+
+  @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2' })
+  bookTag2Inverse = new Collection<Book2Tags>(this);
+
+}
+",
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Author2 } from './Author2';
+import { Book2Tags } from './Book2Tags';
+import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
+
+@Entity()
+export class Book2 {
+
+  [PrimaryKeyProp]?: 'uuidPk';
+
+  [OptionalProps]?: 'createdAt';
+
+  @PrimaryKey({ length: 36 })
+  uuidPk!: string;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  createdAt!: Date;
+
+  @Index({ name: 'book2_title_index' })
+  @Property({ length: 255, nullable: true })
+  title?: string;
+
+  @Property({ columnType: 'text', nullable: true })
+  perex?: string;
+
+  @Property({ columnType: 'numeric(8,2)', nullable: true })
+  price?: string;
+
+  @Property({ columnType: 'double', nullable: true })
+  double?: number;
+
+  @Property({ columnType: 'json', nullable: true })
+  meta?: any;
+
+  @ManyToOne({ entity: () => Author2 })
+  author!: Author2;
+
+  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
+  publisher?: Publisher2;
+
+  @Property({ length: 255, nullable: true, default: 'lol' })
+  foo?: string;
+
+  @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
+  bookToTagUnordered = new Collection<BookTag2>(this);
+
+  @OneToMany({ entity: () => Author2, mappedBy: 'favouriteBook' })
+  favouriteBookInverse = new Collection<Author2>(this);
+
+  @OneToMany({ entity: () => Book2Tags, mappedBy: 'book2' })
+  book2Inverse = new Collection<Book2Tags>(this);
+
+  @OneToOne({ entity: () => Test2, mappedBy: 'book' })
+  bookInverse?: Test2;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
+
+@Entity({ tableName: 'book2_tags' })
+export class Book2Tags {
+
+  [PrimaryKeyProp]?: 'order';
+
+  @PrimaryKey()
+  order!: number;
+
+  @ManyToOne({ entity: () => Book2, updateRule: 'cascade', deleteRule: 'cascade' })
+  book2!: Book2;
+
+  @ManyToOne({ entity: () => BookTag2, updateRule: 'cascade', deleteRule: 'cascade' })
+  bookTag2!: BookTag2;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Car2 } from './Car2';
+
+@Entity()
+export class CarOwner2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
+  car!: Car2;
+
+}
+",
+  "import { Collection, Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { CarOwner2 } from './CarOwner2';
+import { User2 } from './User2';
+
+@Entity()
+export class Car2 {
+
+  [PrimaryKeyProp]?: ['name', 'year'];
+
+  @Index({ name: 'car2_name_index' })
+  @PrimaryKey({ length: 100 })
+  name!: string;
+
+  @Index({ name: 'car2_year_index' })
+  @PrimaryKey()
+  year!: number;
+
+  @Property()
+  price!: number;
+
+  @OneToMany({ entity: () => CarOwner2, mappedBy: 'car' })
+  carInverse = new Collection<CarOwner2>(this);
+
+  @OneToOne({ entity: () => User2, mappedBy: 'favouriteCar' })
+  favouriteCarInverse?: User2;
+
+  @ManyToMany({ entity: () => User2, mappedBy: 'cars' })
+  carsInverse = new Collection<User2>(this);
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Test2 } from './Test2';
+
+@Entity()
+export class Configuration2 {
+
+  [PrimaryKeyProp]?: ['property', 'test'];
+
+  @PrimaryKey({ length: 255 })
+  property!: string;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
+  test!: Test2;
+
+  @Property({ length: 255 })
+  value!: string;
+
+}
+",
+  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+
+@Entity()
+export class Dummy2 {
+
+  @PrimaryKey()
+  id!: number;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+import { FooBaz2 } from './FooBaz2';
+import { FooParam2 } from './FooParam2';
+import { Test2 } from './Test2';
+
+@Entity()
+export class FooBar2 {
+
+  [OptionalProps]?: 'version';
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ fieldName: 'name with space', length: 255, nullable: true })
+  nameWithSpace?: string;
+
+  @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  baz?: FooBaz2;
+
+  @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  fooBar?: FooBar2;
+
+  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  version!: Date;
+
+  @Property({ length: 65535, nullable: true })
+  blob?: Buffer;
+
+  @Property({ length: 65535, nullable: true })
+  blob2?: Buffer;
+
+  @Property({ columnType: 'text', nullable: true })
+  array?: string;
+
+  @Property({ columnType: 'json', nullable: true })
+  objectProperty?: any;
+
+  @OneToOne({ entity: () => Test2, mappedBy: 'fooBar' })
+  fooBarInverse?: Test2;
+
+  @OneToMany({ entity: () => FooParam2, mappedBy: 'bar' })
+  barInverse = new Collection<FooParam2>(this);
+
+  @ManyToMany({ entity: () => Test2, mappedBy: 'bars' })
+  barsInverse = new Collection<Test2>(this);
+
+}
+",
+  "import { Collection, Entity, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+import { FooParam2 } from './FooParam2';
+
+@Entity()
+export class FooBaz2 {
+
+  [OptionalProps]?: 'version';
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  version!: Date;
+
+  @OneToMany({ entity: () => FooParam2, mappedBy: 'baz' })
+  bazInverse = new Collection<FooParam2>(this);
+
+}
+",
+  "import { Entity, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
+
+@Entity()
+export class FooParam2 {
+
+  [PrimaryKeyProp]?: ['bar', 'baz'];
+
+  [OptionalProps]?: 'version';
+
+  @ManyToOne({ entity: () => FooBar2, updateRule: 'cascade', primary: true })
+  bar!: FooBar2;
+
+  @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
+  baz!: FooBaz2;
+
+  @Property({ length: 255 })
+  value!: string;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  version!: Date;
+
+}
+",
+  "import { Collection, Entity, Enum, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Publisher2Tests } from './Publisher2Tests';
+
+@Entity()
+export class Publisher2 {
+
+  [OptionalProps]?: 'name' | 'type' | 'type2';
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255, default: 'asd' })
+  name!: string;
+
+  @Enum({ items: () => Publisher2Type, default: 'local' })
+  type: Publisher2Type = Publisher2Type.LOCAL;
+
+  @Enum({ items: () => Publisher2Type2, default: 'LOCAL' })
+  type2: Publisher2Type2 = Publisher2Type2.LOCAL;
+
+  @Property({ columnType: 'tinyint', nullable: true })
+  enum1?: number;
+
+  @Property({ columnType: 'tinyint', nullable: true })
+  enum2?: number;
+
+  @Property({ columnType: 'tinyint', nullable: true })
+  enum3?: number;
+
+  @Enum({ items: () => Publisher2Enum4, nullable: true })
+  enum4?: Publisher2Enum4;
+
+  @Enum({ items: () => Publisher2Enum5, nullable: true })
+  enum5?: Publisher2Enum5;
+
+  @OneToMany({ entity: () => Book2, mappedBy: 'publisher' })
+  publisherInverse = new Collection<Book2>(this);
+
+  @OneToMany({ entity: () => Publisher2Tests, mappedBy: 'publisher2' })
+  publisher2Inverse = new Collection<Publisher2Tests>(this);
+
+}
+
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+
+export enum Publisher2Enum4 {
+  A = 'a',
+  B = 'b',
+  C = 'c',
+}
+
+export enum Publisher2Enum5 {
+  A = 'a',
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
+
+@Entity({ tableName: 'publisher2_tests' })
+export class Publisher2Tests {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade' })
+  publisher2!: Publisher2;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
+  test2!: Test2;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { User2 } from './User2';
+
+@Entity()
+export class Sandwich {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property()
+  price!: number;
+
+  @ManyToMany({ entity: () => User2, mappedBy: 'sandwiches' })
+  sandwichesInverse = new Collection<User2>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Configuration2 } from './Configuration2';
+import { FooBar2 } from './FooBar2';
+import { Publisher2Tests } from './Publisher2Tests';
+
+@Entity()
+export class Test2 {
+
+  [OptionalProps]?: 'version';
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255, nullable: true })
+  name?: string;
+
+  @OneToOne({ entity: () => Book2, deleteRule: 'set null', nullable: true })
+  book?: Book2;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  parent?: Test2;
+
+  @Property({ version: true, default: 1 })
+  version: number = 1;
+
+  @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  fooBar?: FooBar2;
+
+  @Property({ fieldName: 'foo___baz', nullable: true })
+  fooBaz?: number;
+
+  @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
+  bars = new Collection<FooBar2>(this);
+
+  @OneToMany({ entity: () => Configuration2, mappedBy: 'test' })
+  testInverse = new Collection<Configuration2>(this);
+
+  @OneToMany({ entity: () => Publisher2Tests, mappedBy: 'test2' })
+  test2Inverse = new Collection<Publisher2Tests>(this);
+
+  @OneToMany({ entity: () => Test2, mappedBy: 'parent' })
+  parentInverse = new Collection<Test2>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Car2 } from './Car2';
+import { Sandwich } from './Sandwich';
+
+@Entity()
+export class User2 {
+
+  [PrimaryKeyProp]?: ['firstName', 'lastName'];
+
+  @PrimaryKey({ length: 100 })
+  firstName!: string;
+
+  @PrimaryKey({ length: 100 })
+  lastName!: string;
+
+  @Property({ nullable: true })
+  foo?: number;
+
+  @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteCar?: Car2;
+
+  @ManyToMany({ entity: () => Car2, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumns: ['car2_name', 'car2_year'] })
+  cars = new Collection<Car2>(this);
+
+  @ManyToMany({ entity: () => Sandwich, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumn: 'sandwich_id' })
+  sandwiches = new Collection<Sandwich>(this);
+
+}
+",
+  "import { Entity, HiddenProps, Index, Property, Unique } from '@mikro-orm/core';
+
+@Entity({ expression: "SELECT name, email FROM author2", comment: 'test', virtual: true })
+export class AuthorPartialView {
+
+  [HiddenProps]?: 'email';
+
+  @Index({ name: 'custom_idx_name_123' })
+  @Property({ length: 255, comment: 'author name' })
+  name!: string;
+
+  @Index({ name: 'custom_email_index_name' })
+  @Unique({ name: 'custom_email_unique_name' })
+  @Property({ length: 255, hidden: true })
+  email!: string;
+
+}
+",
+  "import { Embeddable, Property } from '@mikro-orm/core';
+
+@Embeddable()
+export class IdentitiesContainer {
+
+  @Property()
+  github!: string;
+
+  @Property()
+  local!: number;
+
+}
+",
+  "import { Entity } from '@mikro-orm/core';
+import { BaseUser2 } from './BaseUser2';
+
+@Entity({ virtual: true })
+export class Employee2 extends BaseUser2 {
+}
+",
+  "import { Entity } from '@mikro-orm/core';
+import { BaseUser2 } from './BaseUser2';
+
+@Entity({ virtual: true })
+export class Manager2 extends BaseUser2 {
+}
+",
+  "import { Entity } from '@mikro-orm/core';
+import { BaseUser2 } from './BaseUser2';
+
+@Entity({ virtual: true, discriminatorValue: 'owner' })
+export class CompanyOwner2 extends BaseUser2 {
+}
+",
+]
+`;
+
+exports[`MetadataHooks [mysql] metadata hooks with entity schema: mysql-EntitySchema-dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Address2 {
+  [PrimaryKeyProp]?: 'author';
+  author!: Author2;
+  value!: string;
+}
+
+export const Address2Schema = new EntitySchema({
+  class: Address2,
+  properties: {
+    author: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Author2,
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    value: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { Collection, EagerProps, EntitySchema, HiddenProps, OptionalProps } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+
+export class Author2 {
+  [EagerProps]?: 'favouriteBook';
+  [HiddenProps]?: 'authorToFriend' | 'email';
+  [OptionalProps]?: 'createdAt' | 'termsAccepted' | 'updatedAt';
+  id!: number;
+  createdAt!: Date;
+  updatedAt!: Date;
+  name!: string;
+  email!: string;
+  age?: number;
+  termsAccepted: boolean = false;
+  optional?: boolean;
+  identities?: string;
+  born?: string;
+  bornTime?: string;
+  favouriteBook?: Book2;
+  favouriteAuthor?: Author2;
+  identity?: IdentitiesContainer[];
+  authorToFriend = new Collection<Author2>(this);
+  following = new Collection<Author2>(this);
+  authorInverse = new Collection<Book2>(this);
+  favouriteAuthorInverse = new Collection<Author2>(this);
+  authorToFriendInverse = new Collection<Author2>(this);
+  followingInverse = new Collection<Author2>(this);
+}
+
+export const Author2Schema = new EntitySchema({
+  class: Author2,
+  indexes: [
+    { name: 'author2_name_age_index', properties: ['name', 'age'] },
+  ],
+  uniques: [
+    { name: 'author2_name_email_unique', properties: ['name', 'email'] },
+  ],
+  properties: {
+    id: { primary: true, type: 'number' },
+    createdAt: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    updatedAt: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    name: {
+      type: 'string',
+      length: 255,
+      comment: 'author name',
+      index: 'custom_idx_name_123',
+    },
+    email: {
+      type: 'string',
+      length: 255,
+      hidden: true,
+      index: 'custom_email_index_name',
+      unique: 'custom_email_unique_name',
+    },
+    age: { type: 'number', nullable: true, concurrencyCheck: true },
+    termsAccepted: {
+      type: 'boolean',
+      lazy: true,
+      default: false,
+      index: 'author2_terms_accepted_index',
+    },
+    optional: { type: 'boolean', nullable: true },
+    identities: { type: 'string', columnType: 'text', nullable: true },
+    born: {
+      type: 'string',
+      columnType: 'date',
+      nullable: true,
+      index: 'author2_born_index',
+    },
+    bornTime: { type: 'string', columnType: 'time', nullable: true, index: 'born_time_idx' },
+    favouriteBook: {
+      kind: 'm:1',
+      entity: () => Book2,
+      deleteRule: 'cascade',
+      nullable: true,
+      eager: true,
+      cascade: [Cascade.PERSIST, Cascade.MERGE],
+    },
+    favouriteAuthor: {
+      kind: 'm:1',
+      entity: () => Author2,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    identity: {
+      kind: 'embedded',
+      entity: () => IdentitiesContainer,
+      array: true,
+      object: true,
+      prefix: false,
+      nullable: true,
+    },
+    authorToFriend: {
+      kind: 'm:n',
+      entity: () => Author2,
+      pivotTable: 'author_to_friend',
+      joinColumn: 'author2_1_id',
+      inverseJoinColumn: 'author2_2_id',
+      hidden: true,
+    },
+    following: {
+      kind: 'm:n',
+      entity: () => Author2,
+      joinColumn: 'author2_1_id',
+      inverseJoinColumn: 'author2_2_id',
+    },
+    authorInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'author', orphanRemoval: true },
+    favouriteAuthorInverse: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteAuthor' },
+    authorToFriendInverse: { kind: 'm:n', entity: () => Author2, mappedBy: 'authorToFriend' },
+    followingInverse: { kind: 'm:n', entity: () => Author2, mappedBy: 'following' },
+  },
+});
+",
+  "import { Collection, EntitySchema } from '@mikro-orm/core';
+
+export abstract class BaseUser2 {
+  id!: number;
+  firstName!: string;
+  lastName!: string;
+  type!: BaseUser2Type;
+  ownerProp?: string;
+  favouriteEmployee?: BaseUser2;
+  favouriteManager?: BaseUser2;
+  employeeProp?: number;
+  managerProp?: string;
+  favouriteEmployeeInverse = new Collection<BaseUser2>(this);
+  favouriteManagerInverse?: BaseUser2;
+}
+
+export enum BaseUser2Type {
+  EMPLOYEE = 'employee',
+  MANAGER = 'manager',
+  OWNER = 'owner',
+}
+
+export const BaseUser2Schema = new EntitySchema({
+  class: BaseUser2,
+  properties: {
+    id: { primary: true, type: 'number' },
+    firstName: { type: 'string', length: 100 },
+    lastName: { type: 'string', length: 100 },
+    type: { enum: true, items: () => BaseUser2Type, index: 'base_user2_type_index' },
+    ownerProp: { type: 'string', length: 255, nullable: true },
+    favouriteEmployee: {
+      kind: 'm:1',
+      entity: () => BaseUser2,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    favouriteManager: {
+      kind: '1:1',
+      entity: () => BaseUser2,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    employeeProp: { type: 'number', nullable: true, unique: 'base_user2_employee_prop_unique' },
+    managerProp: { type: 'string', length: 255, nullable: true },
+    favouriteEmployeeInverse: { kind: '1:m', entity: () => BaseUser2, mappedBy: 'favouriteEmployee' },
+    favouriteManagerInverse: { kind: '1:1', entity: () => BaseUser2, mappedBy: 'favouriteManager' },
+  },
+});
+",
+  "import { Collection, EntitySchema } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Book2Tags } from './Book2Tags';
+
+export class BookTag2 {
+  id!: bigint;
+  name!: string;
+  bookToTagUnorderedInverse = new Collection<Book2>(this);
+  bookTag2Inverse = new Collection<Book2Tags>(this);
+}
+
+export const BookTag2Schema = new EntitySchema({
+  class: BookTag2,
+  properties: {
+    id: { primary: true, type: 'bigint' },
+    name: { type: 'string', length: 50 },
+    bookToTagUnorderedInverse: { kind: 'm:n', entity: () => Book2, mappedBy: 'bookToTagUnordered' },
+    bookTag2Inverse: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'bookTag2' },
+  },
+});
+",
+  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
+import { Book2Tags } from './Book2Tags';
+import { BookTag2 } from './BookTag2';
+
+export class Book2 {
+  [PrimaryKeyProp]?: 'uuidPk';
+  [OptionalProps]?: 'createdAt';
+  uuidPk!: string;
+  createdAt!: Date;
+  title?: string;
+  perex?: string;
+  price?: string;
+  double?: number;
+  meta?: any;
+  author!: Author2;
+  publisher?: Publisher2;
+  foo?: string;
+  bookToTagUnordered = new Collection<BookTag2>(this);
+  favouriteBookInverse = new Collection<Author2>(this);
+  book2Inverse = new Collection<Book2Tags>(this);
+  bookInverse?: Test2;
+}
+
+export const Book2Schema = new EntitySchema({
+  class: Book2,
+  properties: {
+    uuidPk: { primary: true, type: 'string', length: 36 },
+    createdAt: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    title: { type: 'string', length: 255, nullable: true, index: 'book2_title_index' },
+    perex: { type: 'string', columnType: 'text', nullable: true },
+    price: { type: 'string', columnType: 'numeric(8,2)', nullable: true },
+    double: { type: 'number', columnType: 'double', nullable: true },
+    meta: { type: 'any', columnType: 'json', nullable: true },
+    author: { kind: 'm:1', entity: () => Author2 },
+    publisher: {
+      kind: 'm:1',
+      entity: () => Publisher2,
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      nullable: true,
+    },
+    foo: { type: 'string', length: 255, nullable: true, default: 'lol' },
+    bookToTagUnordered: {
+      kind: 'm:n',
+      entity: () => BookTag2,
+      pivotTable: 'book_to_tag_unordered',
+      joinColumn: 'book2_uuid_pk',
+      inverseJoinColumn: 'book_tag2_id',
+    },
+    favouriteBookInverse: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteBook' },
+    book2Inverse: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'book2' },
+    bookInverse: { kind: '1:1', entity: () => Test2, mappedBy: 'book' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Book2Tags {
+  [PrimaryKeyProp]?: 'order';
+  order!: number;
+  book2!: Book2;
+  bookTag2!: BookTag2;
+}
+
+export const Book2TagsSchema = new EntitySchema({
+  class: Book2Tags,
+  tableName: 'book2_tags',
+  properties: {
+    order: { primary: true, type: 'number' },
+    book2: {
+      kind: 'm:1',
+      entity: () => Book2,
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    bookTag2: {
+      kind: 'm:1',
+      entity: () => BookTag2,
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class CarOwner2 {
+  id!: number;
+  name!: string;
+  car!: Car2;
+}
+
+export const CarOwner2Schema = new EntitySchema({
+  class: CarOwner2,
+  properties: {
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+    car: { kind: 'm:1', entity: () => Car2, updateRule: 'cascade' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { CarOwner2 } from './CarOwner2';
+import { User2 } from './User2';
+
+export class Car2 {
+  [PrimaryKeyProp]?: ['name', 'year'];
+  name!: string;
+  year!: number;
+  price!: number;
+  carInverse = new Collection<CarOwner2>(this);
+  favouriteCarInverse?: User2;
+  carsInverse = new Collection<User2>(this);
+}
+
+export const Car2Schema = new EntitySchema({
+  class: Car2,
+  properties: {
+    name: { primary: true, type: 'string', length: 100, index: 'car2_name_index' },
+    year: { primary: true, type: 'number', index: 'car2_year_index' },
+    price: { type: 'number' },
+    carInverse: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
+    favouriteCarInverse: { kind: '1:1', entity: () => User2, mappedBy: 'favouriteCar' },
+    carsInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'cars' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Configuration2 {
+  [PrimaryKeyProp]?: ['property', 'test'];
+  property!: string;
+  test!: Test2;
+  value!: string;
+}
+
+export const Configuration2Schema = new EntitySchema({
+  class: Configuration2,
+  properties: {
+    property: { primary: true, type: 'string', length: 255 },
+    test: { primary: true, kind: 'm:1', entity: () => Test2, updateRule: 'cascade' },
+    value: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class Dummy2 {
+  id!: number;
+}
+
+export const Dummy2Schema = new EntitySchema({
+  class: Dummy2,
+  properties: {
+    id: { primary: true, type: 'number' },
+  },
+});
+",
+  "import { Collection, EntitySchema, OptionalProps } from '@mikro-orm/core';
+import { FooParam2 } from './FooParam2';
+import { Test2 } from './Test2';
+
+export class FooBar2 {
+  [OptionalProps]?: 'version';
+  id!: number;
+  name!: string;
+  nameWithSpace?: string;
+  baz?: FooBaz2;
+  fooBar?: FooBar2;
+  version!: Date;
+  blob?: Buffer;
+  blob2?: Buffer;
+  array?: string;
+  objectProperty?: any;
+  fooBarInverse?: Test2;
+  barInverse = new Collection<FooParam2>(this);
+  barsInverse = new Collection<Test2>(this);
+}
+
+export const FooBar2Schema = new EntitySchema({
+  class: FooBar2,
+  properties: {
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+    nameWithSpace: { type: 'string', fieldName: 'name with space', length: 255, nullable: true },
+    baz: {
+      kind: '1:1',
+      entity: () => FooBaz2,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    fooBar: {
+      kind: '1:1',
+      entity: () => FooBar2,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    version: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    blob: { type: 'Buffer', length: 65535, nullable: true },
+    blob2: { type: 'Buffer', length: 65535, nullable: true },
+    array: { type: 'string', columnType: 'text', nullable: true },
+    objectProperty: { type: 'any', columnType: 'json', nullable: true },
+    fooBarInverse: { kind: '1:1', entity: () => Test2, mappedBy: 'fooBar' },
+    barInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
+    barsInverse: { kind: 'm:n', entity: () => Test2, mappedBy: 'bars' },
+  },
+});
+",
+  "import { Collection, EntitySchema, OptionalProps } from '@mikro-orm/core';
+import { FooParam2 } from './FooParam2';
+
+export class FooBaz2 {
+  [OptionalProps]?: 'version';
+  id!: number;
+  name!: string;
+  version!: Date;
+  bazInverse = new Collection<FooParam2>(this);
+}
+
+export const FooBaz2Schema = new EntitySchema({
+  class: FooBaz2,
+  properties: {
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+    version: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    bazInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
+  },
+});
+",
+  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class FooParam2 {
+  [PrimaryKeyProp]?: ['bar', 'baz'];
+  [OptionalProps]?: 'version';
+  bar!: FooBar2;
+  baz!: FooBaz2;
+  value!: string;
+  version!: Date;
+}
+
+export const FooParam2Schema = new EntitySchema({
+  class: FooParam2,
+  properties: {
+    bar: { primary: true, kind: 'm:1', entity: () => FooBar2, updateRule: 'cascade' },
+    baz: { primary: true, kind: 'm:1', entity: () => FooBaz2, updateRule: 'cascade' },
+    value: { type: 'string', length: 255 },
+    version: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+  },
+});
+",
+  "import { Collection, EntitySchema, OptionalProps } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Publisher2Tests } from './Publisher2Tests';
+
+export class Publisher2 {
+  [OptionalProps]?: 'name' | 'type' | 'type2';
+  id!: number;
+  name!: string;
+  type: Publisher2Type = Publisher2Type.LOCAL;
+  type2: Publisher2Type2 = Publisher2Type2.LOCAL;
+  enum1?: number;
+  enum2?: number;
+  enum3?: number;
+  enum4?: Publisher2Enum4;
+  enum5?: Publisher2Enum5;
+  publisherInverse = new Collection<Book2>(this);
+  publisher2Inverse = new Collection<Publisher2Tests>(this);
+}
+
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+
+export enum Publisher2Enum4 {
+  A = 'a',
+  B = 'b',
+  C = 'c',
+}
+
+export enum Publisher2Enum5 {
+  A = 'a',
+}
+
+export const Publisher2Schema = new EntitySchema({
+  class: Publisher2,
+  properties: {
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, default: 'asd' },
+    type: { enum: true, items: () => Publisher2Type, default: 'local' },
+    type2: { enum: true, items: () => Publisher2Type2, default: 'LOCAL' },
+    enum1: { type: 'number', columnType: 'tinyint', nullable: true },
+    enum2: { type: 'number', columnType: 'tinyint', nullable: true },
+    enum3: { type: 'number', columnType: 'tinyint', nullable: true },
+    enum4: { enum: true, items: () => Publisher2Enum4, nullable: true },
+    enum5: { enum: true, items: () => Publisher2Enum5, nullable: true },
+    publisherInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
+    publisher2Inverse: { kind: '1:m', entity: () => Publisher2Tests, mappedBy: 'publisher2' },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class Publisher2Tests {
+  id!: number;
+  publisher2!: Publisher2;
+  test2!: Test2;
+}
+
+export const Publisher2TestsSchema = new EntitySchema({
+  class: Publisher2Tests,
+  tableName: 'publisher2_tests',
+  properties: {
+    id: { primary: true, type: 'number' },
+    publisher2: {
+      kind: 'm:1',
+      entity: () => Publisher2,
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    test2: {
+      kind: 'm:1',
+      entity: () => Test2,
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema } from '@mikro-orm/core';
+import { User2 } from './User2';
+
+export class Sandwich {
+  id!: number;
+  name!: string;
+  price!: number;
+  sandwichesInverse = new Collection<User2>(this);
+}
+
+export const SandwichSchema = new EntitySchema({
+  class: Sandwich,
+  properties: {
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+    price: { type: 'number' },
+    sandwichesInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'sandwiches' },
+  },
+});
+",
+  "import { Collection, EntitySchema, OptionalProps } from '@mikro-orm/core';
+import { Configuration2 } from './Configuration2';
+import { FooBar2 } from './FooBar2';
+import { Publisher2Tests } from './Publisher2Tests';
+
+export class Test2 {
+  [OptionalProps]?: 'version';
+  id!: number;
+  name?: string;
+  book?: Book2;
+  parent?: Test2;
+  version: number = 1;
+  fooBar?: FooBar2;
+  fooBaz?: number;
+  bars = new Collection<FooBar2>(this);
+  testInverse = new Collection<Configuration2>(this);
+  test2Inverse = new Collection<Publisher2Tests>(this);
+  parentInverse = new Collection<Test2>(this);
+}
+
+export const Test2Schema = new EntitySchema({
+  class: Test2,
+  properties: {
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, nullable: true },
+    book: { kind: '1:1', entity: () => Book2, deleteRule: 'set null', nullable: true },
+    parent: {
+      kind: 'm:1',
+      entity: () => Test2,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    version: { type: 'number', version: true, default: 1 },
+    fooBar: {
+      kind: '1:1',
+      entity: () => FooBar2,
+      fieldName: 'foo___bar',
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    bars: {
+      kind: 'm:n',
+      entity: () => FooBar2,
+      joinColumn: 'test2_id',
+      inverseJoinColumn: 'foo_bar2_id',
+    },
+    testInverse: { kind: '1:m', entity: () => Configuration2, mappedBy: 'test' },
+    test2Inverse: { kind: '1:m', entity: () => Publisher2Tests, mappedBy: 'test2' },
+    parentInverse: { kind: '1:m', entity: () => Test2, mappedBy: 'parent' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Car2 } from './Car2';
+import { Sandwich } from './Sandwich';
+
+export class User2 {
+  [PrimaryKeyProp]?: ['firstName', 'lastName'];
+  firstName!: string;
+  lastName!: string;
+  foo?: number;
+  favouriteCar?: Car2;
+  cars = new Collection<Car2>(this);
+  sandwiches = new Collection<Sandwich>(this);
+}
+
+export const User2Schema = new EntitySchema({
+  class: User2,
+  properties: {
+    firstName: { primary: true, type: 'string', length: 100 },
+    lastName: { primary: true, type: 'string', length: 100 },
+    foo: { type: 'number', nullable: true },
+    favouriteCar: {
+      kind: '1:1',
+      entity: () => Car2,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    cars: {
+      kind: 'm:n',
+      entity: () => Car2,
+      joinColumns: ['user2_first_name', 'user2_last_name'],
+      inverseJoinColumns: ['car2_name', 'car2_year'],
+    },
+    sandwiches: {
+      kind: 'm:n',
+      entity: () => Sandwich,
+      joinColumns: ['user2_first_name', 'user2_last_name'],
+      inverseJoinColumn: 'sandwich_id',
+    },
+  },
+});
+",
+  "import { EntitySchema, HiddenProps } from '@mikro-orm/core';
+
+export class AuthorPartialView {
+  [HiddenProps]?: 'email';
+  name!: string;
+  email!: string;
+}
+
+export const AuthorPartialViewSchema = new EntitySchema({
+  class: AuthorPartialView,
+  properties: {
+    name: {
+      type: 'string',
+      length: 255,
+      comment: 'author name',
+      index: 'custom_idx_name_123',
+    },
+    email: {
+      type: 'string',
+      length: 255,
+      hidden: true,
+      index: 'custom_email_index_name',
+      unique: 'custom_email_unique_name',
+    },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class IdentitiesContainer {
+  github!: string;
+  local!: number;
+}
+
+export const IdentitiesContainerSchema = new EntitySchema({
+  class: IdentitiesContainer,
+  properties: {
+    github: {  },
+    local: {  },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+import { BaseUser2 } from './BaseUser2';
+
+export class Employee2 extends BaseUser2 {
+}
+
+export const Employee2Schema = new EntitySchema({
+  class: Employee2,
+  properties: {
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+import { BaseUser2 } from './BaseUser2';
+
+export class Manager2 extends BaseUser2 {
+}
+
+export const Manager2Schema = new EntitySchema({
+  class: Manager2,
+  properties: {
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+import { BaseUser2 } from './BaseUser2';
+
+export class CompanyOwner2 extends BaseUser2 {
+}
+
+export const CompanyOwner2Schema = new EntitySchema({
+  class: CompanyOwner2,
+  properties: {
+  },
+});
+",
+]
+`;

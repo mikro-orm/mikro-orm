@@ -525,7 +525,7 @@ export class EntityMetadata<T = any> {
     this.root ??= this;
     const props = Object.values<EntityProperty<T>>(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
     this.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
-    this.relations = this.props.filter(prop => prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED);
+    this.relations = this.props.filter(prop => typeof prop.kind !== 'undefined' && prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED);
     this.bidirectionalRelations = this.relations.filter(prop => prop.mappedBy || prop.inversedBy);
     this.uniqueProps = this.props.filter(prop => prop.unique);
     this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this));
@@ -780,6 +780,8 @@ export interface GenerateOptions {
   fileName?: (className: string) => string;
   onlyPurePivotTables?: boolean;
   readOnlyPivotTables?: boolean;
+  onInitialMetadata?: MetadataProcessor;
+  onProcessedMetadata?: MetadataProcessor;
 }
 
 export interface IEntityGenerator {
@@ -1151,3 +1153,5 @@ export interface Seeder<T extends Dictionary = Dictionary> {
 }
 
 export type ConnectionType = 'read' | 'write';
+
+export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform) => MaybePromise<void>;
