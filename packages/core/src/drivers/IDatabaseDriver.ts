@@ -94,6 +94,10 @@ export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<
 
 export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
 
+export interface FindAllOptions<T, P extends string = never, F extends string = never> extends FindOptions<T, P, F> {
+  where?: FilterQuery<T>;
+}
+
 export interface FindOptions<T, P extends string = never, F extends string = never> {
   where?: FilterQuery<T>;
   populate?: Populate<T, P>;

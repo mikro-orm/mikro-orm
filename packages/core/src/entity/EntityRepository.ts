@@ -19,6 +19,7 @@ import type {
 import type {
   CountOptions,
   DeleteOptions,
+  FindAllOptions,
   FindByCursorOptions,
   FindOneOptions,
   FindOneOrFailOptions,
@@ -112,7 +113,7 @@ export class EntityRepository<Entity extends object> {
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
   async upsertMany(entitiesOrData?: EntityData<Entity>[] | Entity[], options?: NativeInsertUpdateOptions<Entity>): Promise<Entity[]> {
-    return this.getEntityManager().upsertMany<Entity>(this.entityName, entitiesOrData, options);
+    return this.getEntityManager().upsertMany(this.entityName, entitiesOrData, options);
   }
 
   /**
@@ -122,7 +123,7 @@ export class EntityRepository<Entity extends object> {
     Hint extends string = never,
     Fields extends string = never,
   >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
-    return this.getEntityManager().find<Entity, Hint, Fields>(this.entityName, where as FilterQuery<Entity>, options);
+    return this.getEntityManager().find(this.entityName, where as FilterQuery<Entity>, options);
   }
 
   /**
@@ -133,7 +134,7 @@ export class EntityRepository<Entity extends object> {
     Hint extends string = never,
     Fields extends string = never,
   >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields>): Promise<[Loaded<Entity, Hint, Fields>[], number]> {
-    return this.getEntityManager().findAndCount<Entity, Hint, Fields>(this.entityName, where, options);
+    return this.getEntityManager().findAndCount(this.entityName, where, options);
   }
 
   /**
@@ -143,7 +144,7 @@ export class EntityRepository<Entity extends object> {
     Hint extends string = never,
     Fields extends string = never,
   >(where: FilterQuery<Entity>, options?: FindByCursorOptions<Entity, Hint, Fields>): Promise<Cursor<Entity, Hint, Fields>> {
-    return this.getEntityManager().findByCursor<Entity, Hint, Fields>(this.entityName, where, options);
+    return this.getEntityManager().findByCursor(this.entityName, where, options);
   }
 
   /**
@@ -152,15 +153,15 @@ export class EntityRepository<Entity extends object> {
   async findAll<
     Hint extends string = never,
     Fields extends string = never,
-  >(options?: FindOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
-    return this.getEntityManager().find<Entity, Hint, Fields>(this.entityName, {} as FilterQuery<Entity>, options);
+  >(options?: FindAllOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
+    return this.getEntityManager().findAll(this.entityName, options);
   }
 
   /**
    * @inheritDoc EntityManager.insert
    */
   async insert(data: Entity | RequiredEntityData<Entity>, options?: NativeInsertUpdateOptions<Entity>): Promise<Primary<Entity>> {
-    return this.getEntityManager().insert<Entity>(this.entityName, data, options);
+    return this.getEntityManager().insert(this.entityName, data, options);
   }
 
   /**
@@ -221,7 +222,7 @@ export class EntityRepository<Entity extends object> {
   }
 
   /**
-   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
+   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all the specified entities.
    */
   async populate<
     Hint extends string = never,
@@ -233,7 +234,7 @@ export class EntityRepository<Entity extends object> {
 
   /**
    * Creates new instance of given entity and populates it with given data.
-   * The entity constructor will be used unless you provide `{ managed: true }` in the options parameter.
+   * The entity constructor will be used unless you provide `{ managed: true }` in the `options` parameter.
    * The constructor will be given parameters based on the defined constructor of the entity. If the constructor
    * parameter matches a property name, its value will be extracted from `data`. If no matching property exists,
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<Entity>)` and
