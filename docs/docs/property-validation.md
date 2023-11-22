@@ -64,7 +64,7 @@ When you want to define some optional properties in your own base entity class, 
 ```ts
 @Entity()
 // highlight-next-line
-class MyBaseEntity<T extends object, Optional extends keyof T = never> {
+class MyBaseEntity<Entity extends object, Optional extends keyof Entity = never> {
 
   // highlight-next-line
   [OptionalProps]?: 'foo' | 'bar' | Optional;
