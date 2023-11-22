@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@mikro-orm/knex": "5.9.4",
-    "mysql2": "3.6.3"
+    "mysql2": "3.6.5"
   },
   "devDependencies": {
     "@mikro-orm/core": "^5.9.2"
