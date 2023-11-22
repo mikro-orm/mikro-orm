@@ -591,6 +591,28 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return entity;
   }
 
+  private cleanupUpsertRow(meta: EntityMetadata<any>, row?: Dictionary) {
+    if (!row) {
+      return row;
+    }
+
+    const copy: Dictionary = {};
+
+    for (const [key, value] of Object.entries(row)) {
+      const prop = meta.hydrateProps.find(p => p.fieldNames[0] === key);
+
+      // ignore composite foreign keys with default value that are not null
+      if (prop && prop.reference !== ReferenceType.SCALAR && prop.fieldNames.length > 1 && prop.defaultRaw && value != null) {
+        continue;
+      }
+
+
+      copy[key] = value;
+    }
+
+    return copy;
+  }
+
   /**
    * Creates or updates the entity, based on whether it is already present in the database.
    * This method performs an `insert on conflict merge` query ensuring the database is in sync, returning a managed
@@ -699,7 +721,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: true,
     });
 
-    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta, true);
+    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, this.cleanupUpsertRow(meta, ret.row), meta, true);
     const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys) as (keyof Entity)[];
     const returning = getOnConflictReturningFields(meta, data, uniqueFields, options) as string[];
 
@@ -882,7 +904,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         convertCustomTypes: true,
       });
 
-      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, Utils.isEntity(data![i]) ? {} : data![i], res.rows?.[i], meta, true);
+      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, Utils.isEntity(data![i]) ? {} : data![i], this.cleanupUpsertRow(meta, res.rows?.[i]), meta, true);
 
       if (!helper(entity).hasPrimaryKey()) {
         loadPK.set(entity, allWhere[i]);
