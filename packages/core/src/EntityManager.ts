@@ -599,7 +599,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const copy: Dictionary = {};
 
     for (const [key, value] of Object.entries(row)) {
-      const prop = meta.props.find(p => p.fieldNames[0] === key);
+      const prop = meta.props.find(p => p.fieldNames && p.fieldNames[0] === key);
 
       // ignore composite foreign keys with default value that are not null
       if (prop && prop.reference !== ReferenceType.SCALAR && prop.fieldNames.length > 1 && prop.defaultRaw && value != null) {
