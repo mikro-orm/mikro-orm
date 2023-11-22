@@ -786,8 +786,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         where = { [unique[propIndex]]: (data as Dictionary)[unique[propIndex]] } as FilterQuery<Entity>;
       } else if (meta.uniques.length > 0) {
         for (const u of meta.uniques) {
-          if (Utils.asArray(u.properties).every(p => data![p] != null)) {
-            where = Utils.asArray(u.properties).reduce((o, key) => {
+          if (Utils.asArray<EntityKey<Entity>>(u.properties).every(p => data![p] != null)) {
+            where = Utils.asArray<EntityKey<Entity>>(u.properties).reduce((o, key) => {
               o[key] = data![key];
               return o;
             }, {} as any);
@@ -948,8 +948,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
           where = { [unique[propIndex]]: row[unique[propIndex] as EntityKey<Entity>] } as FilterQuery<Entity>;
         } else if (meta.uniques.length > 0) {
           for (const u of meta.uniques) {
-            if (Utils.asArray(u.properties).every(p => row[p] != null)) {
-              where = Utils.asArray(u.properties).reduce((o, key) => {
+            if (Utils.asArray<EntityKey<Entity>>(u.properties).every(p => row[p] != null)) {
+              where = Utils.asArray<EntityKey<Entity>>(u.properties).reduce((o, key) => {
                 o[key] = row[key];
                 return o;
               }, {} as Dictionary) as FilterQuery<Entity>;

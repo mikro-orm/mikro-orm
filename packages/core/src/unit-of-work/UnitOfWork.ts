@@ -617,7 +617,7 @@ export class UnitOfWork {
     }).filter(i => i) as string[];
 
     const compoundUniqueHashes = wrapped.__meta.uniques.map(unique => {
-      const props = Utils.asArray(unique.properties);
+      const props = Utils.asArray<EntityKey<T>>(unique.properties);
 
       if (props.every(prop => entity[prop] != null)) {
         return Utils.getPrimaryKeyHash(props.map(p => {
