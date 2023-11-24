@@ -153,7 +153,7 @@ describe('custom types [mysql]', () => {
 
     // custom types with SQL fragments with joined strategy (GH #1594)
     const a2 = await orm.em.findOneOrFail(Address, addr, { populate: ['location'], strategy: LoadStrategy.JOINED });
-    expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id`, `a0`.`location_id`, `l1`.`id` as `l1__id`, `l1`.`rank` as `l1__rank`, ST_AsText(`l1`.`point`) as `l1__point`, ST_AsText(`l1`.`extended_point`) as `l1__extended_point` from `address` as `a0` left join `location` as `l1` on `a0`.`location_id` = `l1`.`id` where `a0`.`id` = 1');
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `l1`.`id` as `l1__id`, `l1`.`rank` as `l1__rank`, ST_AsText(`l1`.`point`) as `l1__point`, ST_AsText(`l1`.`extended_point`) as `l1__extended_point` from `address` as `a0` left join `location` as `l1` on `a0`.`location_id` = `l1`.`id` where `a0`.`id` = 1');
     expect(a2.location.point).toBeInstanceOf(Point);
     expect(a2.location.point).toMatchObject({ latitude: 2.34, longitude: 9.87 });
     expect(a2.location.extendedPoint).toBeInstanceOf(Point);

@@ -208,7 +208,7 @@ export class EntityLoader {
       return [];
     }
 
-    const filtered = this.filterCollections<Entity>(entities, field, options);
+    const filtered = this.filterCollections<Entity>(entities, field, options, ref);
     const innerOrderBy = Utils.asArray(options.orderBy)
       .filter(orderBy => (Array.isArray(orderBy[prop.name]) && (orderBy[prop.name] as unknown[]).length > 0) || Utils.isObject(orderBy[prop.name]))
       .flatMap(orderBy => orderBy[prop.name]);
@@ -316,7 +316,23 @@ export class EntityLoader {
     const ids = Utils.unique(children.map(e => e.__helper.getPrimaryKey()));
     const where = this.mergePrimaryCondition<Entity>(ids, fk as FilterKey<Entity>, options, meta, this.metadata, this.driver.getPlatform());
     const fields = this.buildFields(options.fields, prop, ref) as any;
-    const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging } = options;
+
+    /* eslint-disable prefer-const */
+    let {
+      refresh,
+      filters,
+      convertCustomTypes,
+      lockMode,
+      strategy,
+      populateWhere,
+      connectionType,
+      logging,
+    } = options;
+    /* eslint-enable prefer-const */
+
+    if (typeof populateWhere === 'object') {
+      populateWhere = await this.extractChildCondition({ where: populateWhere } as any, prop);
+    }
 
     const items = await this.em.find(prop.type, where, {
       refresh, filters, convertCustomTypes, lockMode, populateWhere, logging,
@@ -545,12 +561,12 @@ export class EntityLoader {
     return children;
   }
 
-  private filterCollections<Entity extends object>(entities: Entity[], field: keyof Entity, options: Required<EntityLoaderOptions<Entity>>): Entity[] {
+  private filterCollections<Entity extends object>(entities: Entity[], field: keyof Entity, options: Required<EntityLoaderOptions<Entity>>, ref?: string): Entity[] {
     if (options.refresh) {
       return entities.filter(e => e[field]);
     }
 
-    return entities.filter(e => Utils.isCollection(e[field]) && !(e[field] as unknown as Collection<AnyEntity>).isInitialized(true));
+    return entities.filter(e => Utils.isCollection(e[field]) && !(e[field] as unknown as Collection<AnyEntity>).isInitialized(!ref));
   }
 
   private filterReferences<Entity extends object>(entities: Entity[], field: keyof Entity & string, options: Required<EntityLoaderOptions<Entity>>): Entity[keyof Entity][] {

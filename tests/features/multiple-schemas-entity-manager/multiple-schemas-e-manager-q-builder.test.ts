@@ -158,14 +158,14 @@ describe('multiple connected schemas in postgres', () => {
      * Main table Domain(n2) will make sure that the schema used for * joins will be n2 and ignore fork settings
      */
     expect(mock.mock.calls[2][0]).toMatch(
-      'select "d0"."id", "d0"."scope", "s1"."id" as "s1__id", "s1"."name" as "s1__name", "s1"."domain_id" as "s1__domain_id" from "n2"."domain" as "d0" left join "n2"."sub_domain" as "s1" on "d0"."id" = "s1"."domain_id" where "d0"."id" = 1',
+      'select "d0".*, "s1"."id" as "s1__id", "s1"."name" as "s1__name", "s1"."domain_id" as "s1__domain_id" from "n2"."domain" as "d0" left join "n2"."sub_domain" as "s1" on "d0"."id" = "s1"."domain_id" where "d0"."id" = 1',
     );
 
     /**
      * Main table topic(*) will join Domain(n2)
      */
     expect(mock.mock.calls[3][0]).toMatch(
-      'select "t0"."id", "t0"."name", "t0"."domain_id", "d1"."id" as "d1__id", "d1"."scope" as "d1__scope" from "n5"."topic" as "t0" left join "n2"."domain" as "d1" on "t0"."domain_id" = "d1"."id" where "t0"."id" = 1',
+      'select "t0".*, "d1"."id" as "d1__id", "d1"."scope" as "d1__scope" from "n5"."topic" as "t0" left join "n2"."domain" as "d1" on "t0"."domain_id" = "d1"."id" where "t0"."id" = 1',
     );
   });
 

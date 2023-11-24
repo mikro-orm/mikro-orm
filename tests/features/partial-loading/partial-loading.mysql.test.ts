@@ -327,7 +327,8 @@ describe('partial loading (mysql)', () => {
       'from `book_tag2` as `b0` ' +
       'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
       'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
-      'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`');
+      'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id` ' +
+      'order by `b2`.`order` asc');
   });
 
   test('partial nested loading (object notation)', async () => {

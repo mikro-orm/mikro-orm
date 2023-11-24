@@ -9,7 +9,7 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode';
-import type { IQueryBuilder } from '../typings';
+import type { IQueryBuilder, ICriteriaNodeProcessOptions } from '../typings';
 import { JoinType, QueryType } from './enums';
 
 /**
@@ -17,10 +17,11 @@ import { JoinType, QueryType } from './enums';
  */
 export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
-  override process(qb: IQueryBuilder<T>, alias?: string): any {
-    const nestedAlias = qb.getAliasForJoinPath(this.getPath());
-    const ownerAlias = alias || qb.alias;
+  override process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
+    const nestedAlias = qb.getAliasForJoinPath(this.getPath(), options);
+    const ownerAlias = options?.alias || qb.alias;
     const keys = Object.keys(this.payload);
+    let alias = options?.alias;
 
     if (nestedAlias) {
       alias = nestedAlias;
@@ -57,7 +58,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
     return keys.reduce((o, field) => {
       const childNode = this.payload[field] as CriteriaNode<T>;
-      const payload = childNode.process(qb, this.prop ? alias : ownerAlias);
+      const payload = childNode.process(qb, { ...options, alias: this.prop ? alias : ownerAlias });
       const operator = Utils.isOperator(field);
       const isRawField = RawQueryFragment.isKnownFragment(field);
       // we need to keep the prefixing for formulas otherwise we would lose aliasing context when nesting inside group operators
@@ -66,7 +67,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       const primaryKey = this.key && this.metadata.find(this.entityName)!.primaryKeys.includes(field);
 
       if (childNode.shouldInline(payload)) {
-        const childAlias = qb.getAliasForJoinPath(childNode.getPath());
+        const childAlias = qb.getAliasForJoinPath(childNode.getPath(), options);
         this.inlineChildPayload(o, payload, field as EntityKey, alias, childAlias);
       } else if (childNode.shouldRename(payload)) {
         o[childNode.renameFieldToPK(qb)] = payload;
@@ -183,7 +184,6 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     const scalar = Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || customExpression;
     const operator = Utils.isPlainObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
     const field = `${alias}.${this.prop!.name}`;
-
     const method = qb.hasFlag(QueryFlag.INFER_POPULATE) ? 'joinAndSelect' : 'join';
 
     if (this.prop!.kind === ReferenceKind.MANY_TO_MANY && (scalar || operator)) {
