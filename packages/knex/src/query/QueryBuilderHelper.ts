@@ -388,7 +388,7 @@ export class QueryBuilderHelper {
 
   isOneToOneInverse(field: string, meta?: EntityMetadata): boolean {
     meta ??= this.metadata.find(this.entityName)!;
-    const prop = meta.properties[field];
+    const prop = meta.properties[field.replace(/:ref$/, '')];
 
     return prop && prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
   }
@@ -594,30 +594,28 @@ export class QueryBuilderHelper {
     return replacement;
   }
 
-  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap | FlatQueryOrderMap[], populate: Dictionary<string>): string {
+  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap | FlatQueryOrderMap[], populate: Dictionary<string>): string[] {
     if (Array.isArray(orderBy)) {
-      return orderBy
-        .map(o => this.getQueryOrder(type, o, populate))
-        .filter(o => o)
-        .join(', ');
+      return orderBy.flatMap(o => this.getQueryOrder(type, o, populate));
     }
 
     return this.getQueryOrderFromObject(type, orderBy, populate);
   }
 
-  getQueryOrderFromObject(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string {
+  getQueryOrderFromObject(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string[] {
     const ret: string[] = [];
-    Object.keys(orderBy).forEach(key => {
+
+    for (const key of Object.keys(orderBy)) {
       const direction = orderBy[key];
       const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
       const raw = RawQueryFragment.getKnownFragment(key);
 
       if (raw) {
         ret.push(`${this.platform.formatQuery(raw.sql, raw.params)} ${order.toLowerCase()}`);
-        return;
+        continue;
       }
 
-      Utils.splitPrimaryKeys(key).forEach(f => {
+      for (const f of Utils.splitPrimaryKeys(key)) {
         // eslint-disable-next-line prefer-const
         let [alias, field] = this.splitField(f, true);
         alias = populate[alias] || alias;
@@ -638,14 +636,14 @@ export class QueryBuilderHelper {
         }
 
         if (Array.isArray(order)) {
-          order.forEach(part => ret.push(this.getQueryOrderFromObject(type, part, populate)));
+          order.forEach(part => ret.push(...this.getQueryOrderFromObject(type, part, populate)));
         } else {
           ret.push(`${colPart} ${order.toLowerCase()}`);
         }
-      });
-    });
+      }
+    }
 
-    return ret.join(', ');
+    return ret;
   }
 
   finalize(type: QueryType, qb: Knex.QueryBuilder, meta?: EntityMetadata, data?: Dictionary, returning?: Field<any>[]): void {
@@ -681,23 +679,28 @@ export class QueryBuilderHelper {
     }
   }
 
-  splitField<T>(field: EntityKey<T>, greedyAlias = false): [string, EntityKey<T>] {
+  splitField<T>(field: EntityKey<T>, greedyAlias = false): [string, EntityKey<T>, string | undefined] {
     const parts = field.split('.') as EntityKey<T>[];
+    const ref = parts[parts.length - 1].split(':')[1];
+
+    if (ref) {
+      parts[parts.length - 1] = parts[parts.length - 1].substring(0, parts[parts.length - 1].indexOf(':')) as any;
+    }
 
     if (parts.length === 1) {
-      return [this.alias, parts[0]];
+      return [this.alias, parts[0], ref];
     }
 
     if (greedyAlias) {
       const fromField = parts.pop()!;
       const fromAlias = parts.join('.');
-      return [fromAlias, fromField];
+      return [fromAlias, fromField, ref];
     }
 
     const fromAlias = parts.shift()!;
     const fromField = parts.join('.') as EntityKey<T>;
 
-    return [fromAlias, fromField];
+    return [fromAlias, fromField, ref];
   }
 
   getLockSQL(qb: Knex.QueryBuilder, lockMode: LockMode, lockTables: string[] = []): void {

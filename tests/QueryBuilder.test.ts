@@ -2117,6 +2117,8 @@ describe('QueryBuilder', () => {
     node.payload = { foo: 123 };
     const qb = orm.em.createQueryBuilder(Author2, 'a');
     expect(qb.getAliasForJoinPath(node.getPath())).toBe('a');
+    expect(qb.getAliasForJoinPath(Author2.name)).toBe('a');
+    expect(qb.getAliasForJoinPath()).toBe('a');
   });
 
   test('pivot joining of m:n when target entity is null (GH issue 548)', async () => {

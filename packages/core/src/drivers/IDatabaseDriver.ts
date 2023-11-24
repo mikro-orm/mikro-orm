@@ -102,6 +102,7 @@ export interface FindOptions<T, P extends string = never, F extends string = nev
   where?: FilterQuery<T>;
   populate?: Populate<T, P>;
   populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
+  populateOrderBy?: OrderDefinition<T>;
   fields?: readonly AutoPath<T, F, '*'>[];
   orderBy?: OrderDefinition<T>;
   cache?: boolean | number | [string, number];

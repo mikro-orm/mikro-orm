@@ -1,33 +1,45 @@
 import { v4 } from 'uuid';
-import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, FilterQuery } from '@mikro-orm/core';
+import type { AnyEntity, ChangeSet, EventSubscriber, FilterQuery, FlushEventArgs } from '@mikro-orm/core';
 import {
+  ChangeSetType,
   Collection,
   Configuration,
   EntityManager,
+  ForeignKeyConstraintViolationException,
+  InvalidFieldNameException,
+  IsolationLevel,
+  LoadStrategy,
   LockMode,
   MikroORM,
+  NonUniqueFieldNameException,
+  NotNullConstraintViolationException,
+  PopulateHint,
   QueryFlag,
   QueryOrder,
-  Reference,
-  ValidationError,
-  ChangeSetType,
-  wrap,
-  UniqueConstraintViolationException,
-  TableNotFoundException,
-  NotNullConstraintViolationException,
-  TableExistsException,
-  SyntaxErrorException,
-  NonUniqueFieldNameException,
-  InvalidFieldNameException,
-  LoadStrategy,
-  IsolationLevel,
-  PopulateHint,
-  ref,
   raw,
-  ForeignKeyConstraintViolationException,
+  ref,
+  Reference,
+  SyntaxErrorException,
+  TableExistsException,
+  TableNotFoundException,
+  UniqueConstraintViolationException,
+  ValidationError,
+  wrap,
 } from '@mikro-orm/core';
-import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
-import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
+import { PostgreSqlConnection, PostgreSqlDriver } from '@mikro-orm/postgresql';
+import {
+  Address2,
+  Author2,
+  Book2,
+  BookTag2,
+  FooBar2,
+  FooBaz2,
+  Label2,
+  Publisher2,
+  PublisherType,
+  PublisherType2,
+  Test2,
+} from './entities-sql';
 import { initORMPostgreSql, mockLogger } from './bootstrap';
 import { performance } from 'perf_hooks';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
@@ -858,7 +870,7 @@ describe('EntityManagerPostgre', () => {
     });
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0".price * 1.19 as "price_taxed", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity" from "book2" as "b0" left join "author2" as "a1" on "b0"."author_id" = "a1"."id" where "b0"."author_id" is not null for update of "b0" skip locked');
+    expect(mock.mock.calls[1][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed", "a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity" from "book2" as "b0" left join "author2" as "a1" on "b0"."author_id" = "a1"."id" where "b0"."author_id" is not null for update of "b0" skip locked');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -1227,10 +1239,12 @@ describe('EntityManagerPostgre', () => {
     const p2 = new Publisher2('bar');
     p2.tests.add(new Test2(), new Test2());
     await orm.em.persistAndFlush([p1, p2]);
-    const repo = orm.em.getRepository(Publisher2);
-
     orm.em.clear();
-    const publishers = await repo.findAll({ populate: ['tests'], orderBy: { id: 1 } });
+
+    const publishers = await orm.em.findAll(Publisher2, {
+      populate: ['tests'],
+      orderBy: { id: 1 },
+    });
     expect(publishers).toBeInstanceOf(Array);
     expect(publishers.length).toBe(2);
     expect(publishers[0]).toBeInstanceOf(Publisher2);
@@ -1242,7 +1256,10 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(publishers[1].tests.getItems()[0]).isInitialized()).toBe(true);
 
     orm.em.clear();
-    const publishers2 = await repo.findAll({ populate: ['tests:ref'], orderBy: { id: 1 } });
+    const publishers2 = await orm.em.findAll(Publisher2, {
+      populate: ['tests:ref'],
+      orderBy: { id: 1 },
+    });
     expect(publishers2).toBeInstanceOf(Array);
     expect(publishers2.length).toBe(2);
     expect(publishers2[0]).toBeInstanceOf(Publisher2);
@@ -1255,7 +1272,12 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(publishers2[1].tests[0]).isInitialized()).toBe(false);
 
     orm.em.clear();
-    const publishers3 = await repo.findAll({ populate: ['tests:ref'], strategy: 'joined', orderBy: { id: 1 } });
+
+    const publishers3 = await orm.em.findAll(Publisher2, {
+      populate: ['tests:ref'],
+      strategy: 'joined',
+      orderBy: { id: 1 },
+    });
     expect(publishers3).toBeInstanceOf(Array);
     expect(publishers3.length).toBe(2);
     expect(publishers3[0]).toBeInstanceOf(Publisher2);
@@ -1268,7 +1290,9 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(publishers3[1].tests[0]).isInitialized()).toBe(false);
 
     orm.em.clear();
-    const publishers4 = await repo.findAll({ orderBy: { id: 1 } });
+    const publishers4 = await orm.em.findAll(Publisher2, {
+      orderBy: { id: 1 },
+    });
     await orm.em.populate(publishers4, ['tests:ref']);
     expect(publishers4).toBeInstanceOf(Array);
     expect(publishers4.length).toBe(2);
@@ -1282,7 +1306,9 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(publishers4[1].tests[0]).isInitialized()).toBe(false);
 
     orm.em.clear();
-    const publishers5 = await repo.findAll({ orderBy: { id: 1 } });
+    const publishers5 = await orm.em.findAll(Publisher2, {
+      orderBy: { id: 1 },
+    });
     await publishers5[0].tests.init({ ref: true });
     await publishers5[1].tests.init({ ref: true });
     expect(publishers5).toBeInstanceOf(Array);

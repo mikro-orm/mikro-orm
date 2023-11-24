@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import { ReferenceKind, Utils, type Dictionary, type EntityProperty, type MetadataStorage, type EntityKey } from '@mikro-orm/core';
-import type { ICriteriaNode, IQueryBuilder } from '../typings';
+import type { ICriteriaNode, ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings';
 
 /**
  * Helper for working with deeply nested where/orderBy/having criteria. Uses composite pattern to build tree from the payload.
@@ -39,7 +39,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     }
   }
 
-  process(qb: IQueryBuilder<T>, alias?: string): any {
+  process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
     return this.payload;
   }
 

@@ -152,7 +152,7 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
     return Utils.asArray(orderBy).flatMap(order => {
       return Utils.keys(order)
         .map(key => meta.properties[key as EntityKey<Entity>])
-        .filter(prop => [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))
+        .filter(prop => prop && ([ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner)))
         .map(prop => [prop.name, order[prop.name] as QueryOrder] as const);
     });
   }

@@ -228,6 +228,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const meta = this.metadata.get<Entity>(entityName);
     options = { ...options };
+    // save the original hint value so we know it was infer/all
+    (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
     options.populateWhere = await this.applyJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
     const results = await em.driver.find<Entity, Hint, Fields>(entityName, where, { ctx: em.transactionContext, ...options });
 
@@ -658,6 +660,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     options = { ...options };
+    // save the original hint value so we know it was infer/all
+    (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
     options.populateWhere = await this.applyJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
     const data = await em.driver.findOne<Entity, Hint, Fields>(entityName, where, {
       ctx: em.transactionContext,

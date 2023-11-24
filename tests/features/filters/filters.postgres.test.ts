@@ -177,7 +177,7 @@ describe('filters [postgres]', () => {
     mock.mockReset();
 
     const e2 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits.details'], strategy: LoadStrategy.JOINED });
-    expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "b1"."id" as "b1__id", "b1"."benefit_status" as "b1__benefit_status", "b1"."name" as "b1__name", "d3"."id" as "d3__id", "d3"."description" as "d3__description", "d3"."benefit_id" as "d3__benefit_id", "d3"."active" as "d3__active" ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "b1"."id" as "b1__id", "b1"."benefit_status" as "b1__benefit_status", "b1"."name" as "b1__name", "d3"."id" as "d3__id", "d3"."description" as "d3__description", "d3"."benefit_id" as "d3__benefit_id", "d3"."active" as "d3__active" ' +
       'from "employee" as "e0" ' +
       'left join "employee_benefits" as "e2" on "e0"."id" = "e2"."employee_id" ' +
       'left join "public"."benefit" as "b1" on "e2"."benefit_id" = "b1"."id" and "b1"."benefit_status" = $1 ' +

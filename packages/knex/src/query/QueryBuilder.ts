@@ -40,7 +40,7 @@ import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { type Alias, QueryBuilderHelper } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
-import type { Field, JoinOptions } from '../typings';
+import type { Field, ICriteriaNodeProcessOptions, JoinOptions } from '../typings';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 export interface ExecuteOptions {
@@ -91,6 +91,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
   _populate: PopulateOptions<T>[] = [];
   /** @internal */
   _populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
+  /** @internal */
+  __populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
   /** @internal */
   _populateMap: Dictionary<string> = {};
 
@@ -296,11 +298,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
       let children = this._populate;
 
       for (let i = 0; i < path.length; i++) {
-        const child = children.filter(hint => hint.field === path[i]);
-
-        if (child.length === 0) {
-          break;
-        }
+        const child = children.filter(hint => {
+          const [propName] = hint.field.split(':', 2) as [EntityKey<T>];
+          return propName === path[i];
+        });
 
         children = child.flatMap(c => c.children) as any;
       }
@@ -399,7 +400,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
         convertCustomTypes: false,
         type: 'orderBy',
       })!;
-      this._orderBy.push(CriteriaNodeFactory.createNode<T>(this.metadata, this.mainAlias.entityName, processed).process(this));
+      this._orderBy.push(CriteriaNodeFactory.createNode<T>(this.metadata, this.mainAlias.entityName, processed).process(this, { matchPopulateJoins: true }));
     });
 
     return this;
@@ -596,16 +597,18 @@ export class QueryBuilder<T extends object = AnyEntity> {
   getKnexQuery(): Knex.QueryBuilder {
     this.finalize();
     const qb = this.getQueryBase();
+    const type = this.type ?? QueryType.SELECT;
     (qb as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
 
-    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type ?? QueryType.SELECT, this._cond, qb), this._cond && !this._onConflict);
+    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(type, this._cond, qb), this._cond && !this._onConflict);
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), this._groupBy);
-    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type ?? QueryType.SELECT, this._having, qb, undefined, 'having'), this._having);
+    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(type, this._having, qb, undefined, 'having'), this._having);
     Utils.runIfNotEmpty(() => {
-      const queryOrder = this.helper.getQueryOrder(this.type ?? QueryType.SELECT, this._orderBy as FlatQueryOrderMap[], this._populateMap);
+      const queryOrder = this.helper.getQueryOrder(type, this._orderBy as FlatQueryOrderMap[], this._populateMap);
 
-      if (queryOrder) {
-        qb.orderByRaw(queryOrder);
+      if (queryOrder.length > 0) {
+        const sql = Utils.unique(queryOrder).join(', ');
+        qb.orderByRaw(sql);
         return;
       }
     }, this._orderBy);
@@ -613,7 +616,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     Utils.runIfNotEmpty(() => qb.offset(this._offset!), this._offset);
     Utils.runIfNotEmpty(() => this._comments.forEach(comment => qb.comment(comment)), this._comments);
     Utils.runIfNotEmpty(() => this._hintComments.forEach(comment => qb.hintComment(comment)), this._hintComments);
-    Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(this.type ?? QueryType.SELECT, this._onConflict!, qb), this._onConflict);
+    Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(type, this._onConflict!, qb), this._onConflict);
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
       return this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
@@ -623,7 +626,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.helper.getLockSQL(qb, this.lockMode, this.lockTables);
     }
 
-    this.helper.finalize(this.type ?? QueryType.SELECT, qb, this.mainAlias.metadata, this._data, this._returning);
+    this.helper.finalize(type, qb, this.mainAlias.metadata, this._data, this._returning);
 
     return qb;
   }
@@ -665,18 +668,57 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /**
    * @internal
    */
-  getAliasForJoinPath(path?: string): string | undefined {
+  getAliasForJoinPath(path?: string | JoinOptions, options?: ICriteriaNodeProcessOptions): string | undefined {
     if (!path || path === this.mainAlias.entityName) {
       return this.mainAlias.aliasName;
     }
 
-    const join = Object.values(this._joins).find(j => j.path === path);
+    const join = typeof path === 'string' ? this.getJoinForPath(path, options) : path;
 
-    if (path.endsWith('[pivot]') && join) {
+    if (join?.path?.endsWith('[pivot]')) {
       return join.alias;
     }
 
     return join?.inverseAlias || join?.alias;
+  }
+
+  /**
+   * @internal
+   */
+  getJoinForPath(path: string, options?: ICriteriaNodeProcessOptions): JoinOptions | undefined {
+    const joins = Object.values(this._joins);
+
+    if (joins.length === 0) {
+      return undefined;
+    }
+
+    let join = joins.find(j => j.path === path);
+
+    if (options?.preferNoBranch) {
+      join = joins.find(j => {
+        return j.path?.replace(/\[\d+]|\[populate]/g, '') === path.replace(/\[\d+]|\[populate]/g, '');
+      });
+    }
+
+    if (!join && options?.ignoreBranching) {
+      join = joins.find(j => {
+        return j.path?.replace(/\[\d+]/g, '') === path.replace(/\[\d+]/g, '');
+      });
+    }
+
+    if (!join && options?.matchPopulateJoins && options?.ignoreBranching) {
+      join = joins.find(j => {
+        return j.path?.replace(/\[\d+]|\[populate]/g, '') === path.replace(/\[\d+]|\[populate]/g, '');
+      });
+    }
+
+    if (!join && options?.matchPopulateJoins) {
+      join = joins.find(j => {
+        return j.path?.replace(/\[populate]/g, '') === path.replace(/\[populate]/g, '');
+      });
+    }
+
+    return join;
   }
 
   /**
@@ -767,15 +809,16 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     function propagatePopulateHint<U extends object>(entity: U, hint: PopulateOptions<U>[]) {
       helper(entity).__serializationContext.populate ??= hint;
-      hint.forEach(pop => {
-        const value = entity[pop.field];
+      hint.forEach(hint => {
+        const [propName] = hint.field.split(':', 2) as [EntityKey<T>];
+        const value = entity[propName];
 
         if (Utils.isEntity<U>(value, true)) {
           helper(value).populated();
-          propagatePopulateHint<any>(value, pop.children ?? []);
+          propagatePopulateHint<any>(value, hint.children ?? []);
         } else if (Utils.isCollection(value)) {
           value.populated();
-          value.getItems(false).forEach(item => propagatePopulateHint<any>(item, pop.children ?? []));
+          value.getItems(false).forEach(item => propagatePopulateHint<any>(item, hint.children ?? []));
         }
       });
     }
@@ -879,7 +922,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     // clone array/object properties
     const properties = [
-      'flags', '_populate', '_populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
+      'flags', '_populate', '_populateWhere', '__populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
       '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
       '_comments', '_hintComments',
     ] as const;
@@ -1092,12 +1135,6 @@ export class QueryBuilder<T extends object = AnyEntity> {
         const cols = this.helper.mapJoinColumns(this.type ?? QueryType.SELECT, this._joins[f]);
         ret.push(...cols as string[]);
       }
-
-      if (this._joins[f].prop.kind !== ReferenceKind.ONE_TO_ONE && this._joins[f].inverseJoinColumns) {
-        this._joins[f].inverseJoinColumns!.forEach(inverseJoinColumn => {
-          Utils.renameKey(this._cond, inverseJoinColumn, `${this._joins[f].alias}.${inverseJoinColumn!}`);
-        });
-      }
     });
 
     return ret as U[];
@@ -1220,8 +1257,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
     if (meta && this.flags.has(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)) {
       const relationsToPopulate = this._populate.map(({ field }) => field);
       meta.relations
-        .filter(prop => prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
-        .map(prop => ({ field: prop.name }))
+        .filter(prop => prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name) && !relationsToPopulate.includes(`${prop.name}:ref` as any))
+        .map(prop => ({ field: `${prop.name}:ref` as any }))
         .forEach(item => this._populate.push(item));
     }
 
@@ -1305,8 +1342,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
           return replaceOnConditions(cond[k]);
         }
 
-        const [a] = this.helper.splitField(k as EntityKey<T>);
-        const join = joins.find(j => j.alias === a);
+        const [alias] = this.helper.splitField(k as EntityKey<T>);
+        const join = joins.find(j => j.alias === alias);
 
         if (join) {
           join.cond = { ...join.cond, [k]: cond[k] };
@@ -1314,12 +1351,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
       });
     };
 
-    if (this._populateWhere === PopulateHint.INFER) {
-      replaceOnConditions(this._cond);
-    } else if (typeof this._populateWhere === 'object') {
+    if (typeof this._populateWhere === 'object') {
       const cond = CriteriaNodeFactory
           .createNode<T>(this.metadata, this.mainAlias.entityName, this._populateWhere)
-          .process(this);
+          .process(this, { matchPopulateJoins: true, ignoreBranching: true, preferNoBranch: true });
       replaceOnConditions(cond);
     }
   }

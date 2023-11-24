@@ -31,6 +31,7 @@ export class SqlitePlatform extends AbstractSqlPlatform {
       return 'text';
     }
 
+    /* istanbul ignore next */
     return this.getTinyIntTypeDeclarationSQL(column);
   }
 
