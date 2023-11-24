@@ -144,12 +144,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const meta = this.metadata.find(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, opts.populate as unknown as PopulateOptions<T>[], opts.fields);
     const joinedProps = this.joinedProps(meta, populate, options);
-    const hasToManyJoins = joinedProps.some(hint => {
-      const [propName] = hint.field.split(':', 2) as [EntityKey<T>];
-      const prop = meta.properties[propName];
-
-      return prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind);
-    });
+    const hasToManyJoins = joinedProps.some(hint => this.hasToManyJoins(hint, meta));
 
     if (joinedProps.length === 0 || !hasToManyJoins) {
       opts.limit = 1;
@@ -163,6 +158,21 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const res = await this.find<T>(entityName, where, opts);
 
     return res[0] || null;
+  }
+
+  protected hasToManyJoins<T extends object>(hint: PopulateOptions<T>, meta: EntityMetadata<T>): boolean {
+    const [propName] = hint.field.split(':', 2) as [EntityKey<T>];
+    const prop = meta.properties[propName];
+
+    if (prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+      return true;
+    }
+
+    if (hint.children && prop.targetMeta) {
+      return hint.children.some(hint => this.hasToManyJoins(hint as any, prop.targetMeta as any));
+    }
+
+    return false;
   }
 
   override async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<EntityData<T>[]> {
