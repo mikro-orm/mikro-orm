@@ -226,8 +226,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   private renameFields<T extends object>(entityName: string, data: T, where = false, object?: boolean): T {
     // copy to new variable to prevent changing the T type or doing as unknown casts
     const copiedData: Dictionary = Object.assign({}, data); // copy first
-    Utils.renameKey(copiedData, 'id', '_id');
     const meta = this.metadata.find(entityName);
+
+    if (meta?.serializedPrimaryKey && !meta.embeddable && meta.serializedPrimaryKey !== meta.primaryKeys[0]) {
+      Utils.renameKey(copiedData, meta.serializedPrimaryKey, meta.primaryKeys[0]);
+    }
 
     if (meta && !meta.embeddable) {
       this.inlineEmbeddables(meta, copiedData, where);
