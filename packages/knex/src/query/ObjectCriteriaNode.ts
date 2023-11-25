@@ -30,9 +30,15 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     if (this.shouldAutoJoin(nestedAlias)) {
       if (keys.some(k => ['$some', '$none', '$every'].includes(k))) {
         const $and: Dictionary[] = [];
-        const primaryKeys = this.metadata.find(this.entityName)!.primaryKeys.map(pk => `${alias}.${pk}`);
+        const primaryKeys = this.metadata.find(this.entityName)!.primaryKeys.map(pk => {
+          return [QueryType.SELECT, QueryType.COUNT].includes(qb.type!) ? `${alias}.${pk}` : pk;
+        });
 
         for (const key of keys) {
+          if (!['$some', '$none', '$every'].includes(key)) {
+            throw new Error('Mixing collection operators with other filters is not allowed.');
+          }
+
           const payload = (this.payload[key] as CriteriaNode<T>).unwrap();
           const sub = qb.clone(true).innerJoin(this.key!, qb.getNextAlias(this.prop!.type));
           sub.select(this.prop!.targetMeta!.primaryKeys);
@@ -126,7 +132,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       if (Utils.isOperator(k, false)) {
         const tmp = payload[k];
         delete payload[k];
-        o[`${alias}.${field}`] = { [k]: tmp, ...(o[`${alias}.${field}`] || {}) };
+        o[this.aliased(field, alias)] = { [k]: tmp, ...(o[this.aliased(field, alias)] || {}) };
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
         const idx = prop.referencedPKs.indexOf(k as EntityKey);
         const key = idx !== -1 && !childAlias && ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) ? prop.joinColumns[idx] : k;
@@ -138,7 +144,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           o.$and = $and;
         } else if (Utils.isOperator(k) && Array.isArray(payload[k])) {
             o[key] = payload[k].map((child: Dictionary) => Object.keys(child).reduce((o, childKey) => {
-              const key = (this.isPrefixed(childKey) || Utils.isOperator(childKey)) ? childKey : `${childAlias}.${childKey}`;
+              const key = (this.isPrefixed(childKey) || Utils.isOperator(childKey)) ? childKey : this.aliased(childKey, childAlias);
               o[key] = child[childKey];
               return o;
             }, {} as Dictionary));
@@ -149,6 +155,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         o[k] = payload[k];
       } else {
         o[`${childAlias}.${k}`] = payload[k];
+        o[this.aliased(k, childAlias)] = payload[k];
       }
     }
   }

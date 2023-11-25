@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, ManyToMany, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/better-sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../../helpers';
 
 @Entity()
 class Author {
@@ -293,4 +293,32 @@ test('allows only one of $some, $none and $every on the given level', async () =
     'Author 3',
     'Author 5',
   ]);
+});
+
+test('update query with $none', async () => {
+  const mock = mockLogger(orm);
+  await orm.em.nativeUpdate(Author, {
+    books: {
+      $none: { title: 'Foo' },
+    },
+  }, { name: 'foobar' });
+  expect(mock.mock.calls[0][0]).toBe("[query] update `author` set `name` = 'foobar' where `id` not in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where `b1`.`title` = 'Foo')");
+});
+
+test('disallow mixing', async () => {
+  const mock = mockLogger(orm);
+  // separate branches work
+  await orm.em.fork().find(Author, {
+    $and: [
+      { books: { $none: { title: 'Foo' } } },
+      { books: { title: 'bar' } },
+    ],
+  });
+  // mixing throws
+  await expect(orm.em.fork().find(Author, {
+    books: {
+      $none: { title: 'Foo' },
+      title: 'bar',
+    },
+  })).rejects.toThrow('Mixing collection operators with other filters is not allowed.');
 });

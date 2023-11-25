@@ -126,6 +126,10 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     return `${path}[pivot]`;
   }
 
+  aliased(field: string, alias?: string) {
+    return alias ? `${alias}.${field}` : field;
+  }
+
   /** @ignore */
   [inspect.custom]() {
     const o: Dictionary = {};
