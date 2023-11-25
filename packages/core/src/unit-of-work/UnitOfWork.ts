@@ -172,7 +172,7 @@ export class UnitOfWork {
       hash = Utils.getPrimaryKeyHash(keys);
     }
 
-    schema ??= meta.schema;
+    schema ??= meta.schema ?? this.em.config.get('schema');
 
     if (schema) {
       hash = `${schema}:${hash}`;
