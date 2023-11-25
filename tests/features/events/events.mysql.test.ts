@@ -210,20 +210,20 @@ describe('events (mysql)', () => {
     const authors2 = await orm.em.fork().find(Author2, {}, { populate: ['books'] });
     expect(authors2).toHaveLength(1);
     expect(EverythingSubscriber.log.map(l => [l[0], l[1].entity.constructor.name]).filter(a => a[0] === EventType.onLoad)).toEqual([
+      ['onLoad', 'Book2'],
+      ['onLoad', 'Book2'],
+      ['onLoad', 'Book2'],
       ['onLoad', 'Author2'],
-      ['onLoad', 'Book2'],
-      ['onLoad', 'Book2'],
-      ['onLoad', 'Book2'],
     ]);
     EverythingSubscriber.log.length = 0;
 
     const authors3 = await orm.em.fork().find(Author2, {}, { populate: ['*'] });
     expect(authors3).toHaveLength(1);
     expect(EverythingSubscriber.log.map(l => [l[0], l[1].entity.constructor.name]).filter(a => a[0] === EventType.onLoad)).toEqual([
+      ['onLoad', 'Book2'],
+      ['onLoad', 'Book2'],
+      ['onLoad', 'Book2'],
       ['onLoad', 'Author2'],
-      ['onLoad', 'Book2'],
-      ['onLoad', 'Book2'],
-      ['onLoad', 'Book2'],
       ['onLoad', 'Publisher2'],
       ['onLoad', 'BookTag2'],
       ['onLoad', 'BookTag2'],

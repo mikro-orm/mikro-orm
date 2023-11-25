@@ -36,7 +36,7 @@ describe('EntityManagerMySql', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql('mysql', { loadStrategy: 'joined' }, true));
+  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   beforeEach(async () => orm.schema.clearDatabase());
   afterEach(() => {
     orm.config.set('debug', false);
@@ -1728,14 +1728,14 @@ describe('EntityManagerMySql', () => {
       orderBy: { title: QueryOrder.DESC },
       strategy: 'joined',
     });
-    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id`, `t1`.`name` as `t1__name`, `t3`.`id` as `test_id` ' +
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id`, `t1`.`name` as `t1__name`, `t5`.`id` as `test_id` ' +
       'from `book2` as `b0` ' +
       'left join `book_to_tag_unordered` as `b2` on `b0`.`uuid_pk` = `b2`.`book2_uuid_pk` ' +
       'left join `book_tag2` as `t1` on `b2`.`book_tag2_id` = `t1`.`id` ' +
-      'left join `test2` as `t3` on `b0`.`uuid_pk` = `t3`.`book_uuid_pk` ' +
-      'left join `book_to_tag_unordered` as `b5` on `b0`.`uuid_pk` = `b5`.`book2_uuid_pk` ' +
-      'left join `book_tag2` as `b4` on `b5`.`book_tag2_id` = `b4`.`id` ' +
-      'where `b0`.`author_id` is not null and `b4`.`name` != ? ' +
+      'left join `book_to_tag_unordered` as `b4` on `b0`.`uuid_pk` = `b4`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `b3` on `b4`.`book_tag2_id` = `b3`.`id` ' +
+      'left join `test2` as `t5` on `b0`.`uuid_pk` = `t5`.`book_uuid_pk` ' +
+      'where `b0`.`author_id` is not null and `b3`.`name` != ? ' +
       'order by `b0`.`title` desc, `t1`.`name` asc');
     expect(books3.length).toBe(3);
     expect(books3[0].perex).toBeInstanceOf(ScalarReference);
@@ -1755,14 +1755,14 @@ describe('EntityManagerMySql', () => {
       orderBy: { title: QueryOrder.DESC },
       strategy: 'joined',
     });
-    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id`, `t1`.`name` as `t1__name`, `t3`.`id` as `test_id` ' +
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id`, `t1`.`name` as `t1__name`, `t5`.`id` as `test_id` ' +
       'from `book2` as `b0` ' +
       'left join `book_to_tag_unordered` as `b2` on `b0`.`uuid_pk` = `b2`.`book2_uuid_pk` ' +
       'left join `book_tag2` as `t1` on `b2`.`book_tag2_id` = `t1`.`id` and `t1`.`name` != ? ' +
-      'left join `test2` as `t3` on `b0`.`uuid_pk` = `t3`.`book_uuid_pk` ' +
-      'left join `book_to_tag_unordered` as `b5` on `b0`.`uuid_pk` = `b5`.`book2_uuid_pk` ' +
-      'left join `book_tag2` as `b4` on `b5`.`book_tag2_id` = `b4`.`id` ' +
-      'where `b0`.`author_id` is not null and `b4`.`name` != ? ' +
+      'left join `book_to_tag_unordered` as `b4` on `b0`.`uuid_pk` = `b4`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `b3` on `b4`.`book_tag2_id` = `b3`.`id` ' +
+      'left join `test2` as `t5` on `b0`.`uuid_pk` = `t5`.`book_uuid_pk` ' +
+      'where `b0`.`author_id` is not null and `b3`.`name` != ? ' +
       'order by `b0`.`title` desc, `t1`.`name` asc');
 
     expect(books4.length).toBe(3);
@@ -1784,14 +1784,14 @@ describe('EntityManagerMySql', () => {
       strategy: 'joined',
     });
 
-    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id`, `t1`.`name` as `t1__name`, `t3`.`id` as `test_id` ' +
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id`, `t1`.`name` as `t1__name`, `t5`.`id` as `test_id` ' +
       'from `book2` as `b0` ' +
       'left join `book_to_tag_unordered` as `b2` on `b0`.`uuid_pk` = `b2`.`book2_uuid_pk` ' +
       'left join `book_tag2` as `t1` on `b2`.`book_tag2_id` = `t1`.`id` and `t1`.`name` != ? ' +
-      'left join `test2` as `t3` on `b0`.`uuid_pk` = `t3`.`book_uuid_pk` ' +
-      'left join `book_to_tag_unordered` as `b5` on `b0`.`uuid_pk` = `b5`.`book2_uuid_pk` ' +
-      'left join `book_tag2` as `b4` on `b5`.`book_tag2_id` = `b4`.`id` ' +
-      'where `b0`.`author_id` is not null and `b4`.`name` != ? ' +
+      'left join `book_to_tag_unordered` as `b4` on `b0`.`uuid_pk` = `b4`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `b3` on `b4`.`book_tag2_id` = `b3`.`id` ' +
+      'left join `test2` as `t5` on `b0`.`uuid_pk` = `t5`.`book_uuid_pk` ' +
+      'where `b0`.`author_id` is not null and `b3`.`name` != ? ' +
       'order by `b0`.`title` desc, `t1`.`name` asc');
 
     expect(books5.length).toBe(3);

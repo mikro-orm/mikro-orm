@@ -111,30 +111,68 @@ describe('GH #2647, #2742', () => {
     return { provider, user, member, session, participant };
   }
 
-  it('should be able to populate circularity', async () => {
+  it('should be able to populate circularity (select-in)', async () => {
     const { session, member } = createEntities([1, 2, 3]);
     await orm.em.flush();
     orm.em.clear();
 
-    const res = await orm.em.find(Participant, { session, member });
+    const res = await orm.em.find(Participant, { session, member }, { strategy: 'select-in' });
     expect(res).toHaveLength(1);
     expect(res[0]).toBe(res[0].session.lastActionBy);
-    await orm.em.getUnitOfWork().computeChangeSets();
+    orm.em.getUnitOfWork().computeChangeSets();
     expect(orm.em.getUnitOfWork().getChangeSets()).toHaveLength(0);
   });
 
-  it('should be able to find entity with nested composite key (multi insert)', async () => {
+  it('should be able to find entity with nested composite key (multi insert, select-in)', async () => {
     createEntities([11, 12, 13]);
     createEntities([21, 22, 23]);
     createEntities([31, 32, 33]);
     await orm.em.flush();
     orm.em.clear();
 
-    const res = await orm.em.find(Participant, {});
+    const res = await orm.em.find(Participant, {}, { strategy: 'select-in' });
     expect(res).toHaveLength(3);
     expect(res[0]).toBe(res[0].session.lastActionBy);
     expect(res[1]).toBe(res[1].session.lastActionBy);
     expect(res[2]).toBe(res[2].session.lastActionBy);
+  });
+
+  it('should be able to populate circularity (joined)', async () => {
+    const { session, member } = createEntities([1, 2, 3]);
+    await orm.em.flush();
+    orm.em.clear();
+
+    const res = await orm.em.find(Participant, { session, member }, { strategy: 'joined' });
+    expect(res).toHaveLength(1);
+    expect(res[0]).toBe(res[0].session.lastActionBy);
+    orm.em.getUnitOfWork().computeChangeSets();
+    expect(orm.em.getUnitOfWork().getChangeSets()).toHaveLength(0);
+  });
+
+  it('should be able to find entity with nested composite key (multi insert, joined)', async () => {
+    createEntities([11, 12, 13]);
+    createEntities([21, 22, 23]);
+    createEntities([31, 32, 33]);
+    await orm.em.flush();
+    orm.em.clear();
+
+    const res = await orm.em.find(Participant, {}, { strategy: 'joined' });
+    expect(res).toHaveLength(3);
+    expect(res[0]).toBe(res[0].session.lastActionBy);
+    expect(res[1]).toBe(res[1].session.lastActionBy);
+    expect(res[2]).toBe(res[2].session.lastActionBy);
+  });
+
+  test('creating entity instance from POJO', async () => {
+    const participant = orm.em.getEntityFactory().create(Participant, {
+      session: {
+        id: 3,
+        owner: { provider: { id: 1 }, user: { id: 2 } },
+        lastActionBy: [3, [1, 2]],
+      },
+      member: { provider: { id: 1 }, user: { id: 2 } },
+    }, { merge: true, newEntity: false });
+    expect(participant).toBe(participant.session.lastActionBy);
   });
 
 });

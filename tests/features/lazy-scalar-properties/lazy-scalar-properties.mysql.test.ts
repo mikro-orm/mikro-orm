@@ -15,7 +15,9 @@ describe('lazy scalar properties (mysql)', () => {
     await orm.close(true);
   });
 
-  test('lazy scalar properties', async () => {
+  test('lazy scalar properties (select-in)', async () => {
+    orm.config.set('loadStrategy', 'select-in');
+
     const book = new Book2('b', new Author2('n', 'e'));
     book.perex = ref('123');
     await orm.em.persistAndFlush(book);
@@ -73,6 +75,55 @@ describe('lazy scalar properties (mysql)', () => {
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and `b0`.`author_id` in (?) ' +
       'order by `b0`.`title` asc');
+  });
+
+  test('lazy scalar properties (joined)', async () => {
+    orm.config.set('loadStrategy', 'joined');
+
+    const book = new Book2('b', new Author2('n', 'e'));
+    book.perex = ref('123');
+    await orm.em.persistAndFlush(book);
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+
+    const r1 = await orm.em.find(Author2, {}, { populate: ['books'] });
+    expect(r1[0].books[0].perex?.unwrap()).not.toBe('123');
+    await wrap(r1[0]).populate(['books.perex']);
+    expect(r1[0].books[0].perex?.unwrap()).toBe('123');
+    expect(mock.mock.calls).toHaveLength(2);
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`created_at` as `b1__created_at`, `b1`.`title` as `b1__title`, `b1`.`price` as `b1__price`, `b1`.price * 1.19 as `b1__price_taxed`, `b1`.`double` as `b1__double`, `b1`.`meta` as `b1__meta`, `b1`.`author_id` as `b1__author_id`, `b1`.`publisher_id` as `b1__publisher_id`, `a2`.`author_id` as `address_author_id` ' +
+      'from `author2` as `a0` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
+      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
+      'order by `b1`.`title` asc');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const r2 = await orm.em.find(Author2, {}, { populate: ['books.perex'] });
+    expect(r2[0].books[0].perex?.get()).toBe('123');
+    expect(mock.mock.calls).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`created_at` as `b1__created_at`, `b1`.`title` as `b1__title`, `b1`.`perex` as `b1__perex`, `b1`.`price` as `b1__price`, `b1`.price * 1.19 as `b1__price_taxed`, `b1`.`double` as `b1__double`, `b1`.`meta` as `b1__meta`, `b1`.`author_id` as `b1__author_id`, `b1`.`publisher_id` as `b1__publisher_id`, `a2`.`author_id` as `address_author_id` ' +
+      'from `author2` as `a0` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
+      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
+      'order by `b1`.`title` asc');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const r3 = await orm.em.findOne(Author2, book.author, { populate: ['books'] });
+    expect(r3!.books[0].perex?.unwrap()).not.toBe('123');
+    await expect(r3!.books[0].perex?.load()).resolves.toBe('123');
+    expect(mock.mock.calls).toHaveLength(2);
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`created_at` as `b1__created_at`, `b1`.`title` as `b1__title`, `b1`.`price` as `b1__price`, `b1`.price * 1.19 as `b1__price_taxed`, `b1`.`double` as `b1__double`, `b1`.`meta` as `b1__meta`, `b1`.`author_id` as `b1__author_id`, `b1`.`publisher_id` as `b1__publisher_id`, `a2`.`author_id` as `address_author_id` from `author2` as `a0` left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` where `a0`.`id` = ? order by `b1`.`title` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`perex` from `book2` as `b0` where `b0`.`author_id` is not null and `b0`.`uuid_pk` in (?)');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const r4 = await orm.em.findOne(Author2, book.author, { populate: ['books.perex'] });
+    expect(r4!.books[0].perex?.$).toBe('123');
+    expect(mock.mock.calls).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`created_at` as `b1__created_at`, `b1`.`title` as `b1__title`, `b1`.`perex` as `b1__perex`, `b1`.`price` as `b1__price`, `b1`.price * 1.19 as `b1__price_taxed`, `b1`.`double` as `b1__double`, `b1`.`meta` as `b1__meta`, `b1`.`author_id` as `b1__author_id`, `b1`.`publisher_id` as `b1__publisher_id`, `a2`.`author_id` as `address_author_id` from `author2` as `a0` left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` where `a0`.`id` = ? order by `b1`.`title` asc');
   });
 
   test('em.populate() respects lazy scalar properties', async () => {

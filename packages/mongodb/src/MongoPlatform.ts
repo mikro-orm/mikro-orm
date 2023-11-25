@@ -13,6 +13,7 @@ export class MongoPlatform extends Platform {
 
   override setConfig(config: Configuration) {
     config.set('autoJoinOneToOneOwner', false);
+    config.set('loadStrategy', 'select-in');
     config.get('discovery').inferDefaultValues = false;
     super.setConfig(config);
   }

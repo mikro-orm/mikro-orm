@@ -240,6 +240,7 @@ describe('custom order [sqlite]', () => {
     em.clear();
 
     const users = await em.find(User, {}, {
+      strategy: 'select-in',
       populate: ['tasks'],
       orderBy: {
         name: QueryOrder.ASC,
@@ -253,6 +254,21 @@ describe('custom order [sqlite]', () => {
     expect(ret).toEqual(['u1-1c', 'u1-1b', 'u1-1a', 'u2-2b', 'u2-2a', 'u2-2c']);
     expect(mock.mock.calls[4][0]).toMatch('select `u0`.* from `user` as `u0` left join `task` as `t1` on `u0`.`id` = `t1`.`owner_id` order by `u0`.`name` asc, (case when `t1`.`priority` = \'low\' then 0 when `t1`.`priority` = \'medium\' then 1 when `t1`.`priority` = \'high\' then 2 else null end) asc');
     expect(mock.mock.calls[5][0]).toMatch('select `t0`.* from `task` as `t0` where `t0`.`owner_id` in (1, 2) order by (case when `t0`.`priority` = \'low\' then 0 when `t0`.`priority` = \'medium\' then 1 when `t0`.`priority` = \'high\' then 2 else null end) asc');
+
+
+    const users2 = await em.find(User, {}, {
+      populate: ['tasks'],
+      orderBy: {
+        name: QueryOrder.ASC,
+        tasks: {
+          priority: QueryOrder.ASC,
+        },
+      },
+    });
+
+    const ret2 = users2.flatMap(u => u.tasks.getItems()).map(({ owner, label }) => `${owner?.name}-${label}`);
+    expect(ret2).toEqual(['u1-1c', 'u1-1b', 'u1-1a', 'u2-2b', 'u2-2a', 'u2-2c']);
+    expect(mock.mock.calls[6][0]).toMatch(`select \`u0\`.*, \`t1\`.\`id\` as \`t1__id\`, \`t1\`.\`label\` as \`t1__label\`, \`t1\`.\`owner_id\` as \`t1__owner_id\`, \`t1\`.\`priority\` as \`t1__priority\`, \`t1\`.\`rating\` as \`t1__rating\`, \`t1\`.\`difficulty\` as \`t1__difficulty\` from \`user\` as \`u0\` left join \`task\` as \`t1\` on \`u0\`.\`id\` = \`t1\`.\`owner_id\` order by \`u0\`.\`name\` asc, (case when \`t1\`.\`priority\` = 'low' then 0 when \`t1\`.\`priority\` = 'medium' then 1 when \`t1\`.\`priority\` = 'high' then 2 else null end) asc`);
   });
 
 });

@@ -24,14 +24,55 @@ describe('EntityHelperMySql', () => {
     expect(dto.id).toBeUndefined();
   });
 
-  test(`toObject handles recursion in 1:1`, async () => {
+  test(`toObject handles recursion in 1:1 (select-in)`, async () => {
     const bar = FooBar2.create('fb');
     bar.baz = new FooBaz2('fz');
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
     const repo = orm.em.getRepository(FooBar2);
-    const a = await repo.findOneOrFail(bar.id, { populate: ['baz.bar'] });
+    const a = await repo.findOneOrFail(bar.id, { populate: ['baz.bar'], strategy: 'select-in' });
+    expect(wrap(a.baz!).isInitialized()).toBe(true);
+    expect(wrap(a.baz!.bar!).isInitialized()).toBe(true);
+    expect(wrap(a).toJSON()).toEqual({
+      baz: {
+        bar: {
+          id: 1,
+          name: 'fb',
+          nameWithSpace: null,
+          objectProperty: null,
+          random: 123,
+          version: a.version,
+          array: null,
+          blob: null,
+          blob2: null,
+          fooBar: null,
+        }, // circular reference breaks the cycle
+        id: 1,
+        name: 'fz',
+        version: a.baz!.version,
+      },
+      fooBar: null,
+      id: 1,
+      name: 'fb',
+      nameWithSpace: null,
+      random: 123,
+      version: a.version,
+      array: null,
+      objectProperty: null,
+      blob: null,
+      blob2: null,
+    });
+  });
+
+  test(`toObject handles recursion in 1:1 (joined)`, async () => {
+    const bar = FooBar2.create('fb');
+    bar.baz = new FooBaz2('fz');
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const repo = orm.em.getRepository(FooBar2);
+    const a = await repo.findOneOrFail(bar.id, { populate: ['baz.bar'], strategy: 'joined' });
     expect(wrap(a.baz!).isInitialized()).toBe(true);
     expect(wrap(a.baz!.bar!).isInitialized()).toBe(true);
     expect(wrap(a).toJSON()).toEqual({

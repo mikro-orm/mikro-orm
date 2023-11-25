@@ -27,6 +27,7 @@ class OrderItem {
 
   @ManyToOne({
     entity: () => Order,
+    strategy: LoadStrategy.SELECT_IN,
     eager: true,
     nullable: true,
   })
@@ -34,7 +35,6 @@ class OrderItem {
 
   @ManyToOne({
     entity: () => Order,
-    strategy: LoadStrategy.JOINED,
     eager: true,
     nullable: true,
   })
