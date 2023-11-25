@@ -70,7 +70,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     baseDir: process.cwd(),
     hydrator: ObjectHydrator,
     flushMode: FlushMode.AUTO,
-    loadStrategy: LoadStrategy.SELECT_IN,
+    loadStrategy: LoadStrategy.JOINED,
     dataloader: Dataloader.OFF,
     populateWhere: PopulateHint.ALL,
     connect: true,

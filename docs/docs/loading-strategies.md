@@ -3,66 +3,85 @@ title: Relationship Loading Strategies
 sidebar_label: Loading Strategies
 ---
 
-> `JOINED` loading strategy is SQL only feature.
+MikroORM supports two loading strategies:
 
-Controls how relationships get loaded when querying. By default, populated relationships are loaded via the `select-in` strategy. This strategy issues one additional `SELECT` statement per relation being loaded.
+- `select-in` which uses separate queries for each relation - it you populate two relations, you will get three queries - one for the root entity, and one for each populated relation.
+- `joined` which uses a single query and joins the relations instead.
 
-The loading strategy can be specified both at mapping time and when loading entities.
+> `joined` strategy is supported **only in SQL drivers** and is the **default** for those since v6.
 
-For example, given the following entities:
+## Configuring the strategy
+
+The loading strategy can be specified both at mapping time and when loading entities, as well as globally in your ORM config.
+
+Given the following entities:
 
 ```ts
-import { Entity, LoadStrategy, OneToMany, ManyToOne } from '@mikro-orm/core';
+import { Entity, LoadStrategy, OneToMany, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 
 @Entity()
 export class Author {
+
+  @PrimaryKey()
+  id!: number;
+
   @OneToMany(() => Book, b => b.author)
   books = new Collection<Book>(this);
+
 }
 
 @Entity()
 export class Book {
+
+  @PrimaryKey()
+  id!: number;
+
   @ManyToOne()
   author: Author;
+
 }
 ```
 
-The following will issue two SQL statements. One to load the author and another to load all the books belonging to that author:
+With the default `joined` strategy, this will issue a single query both the `Author` entity and its `books` relation.
 
 ```ts
-const author = await orm.em.findOne(Author, 1, { populate: ['books'] });
+const author = await orm.em.findOne(Author, 1, {
+  populate: ['books'],
+});
 ```
 
-If we update the `Author.books` mapping to the following:
+To override the strategy, you can use the `strategy` option:
+
+```ts
+const author = await orm.em.findOne(Author, 1, {
+  populate: ['books'],
+  strategy: 'select-in',
+});
+```
+
+This will issue two SQL statements, one to load the author and another to load all the books belonging to that author:
+
+Alternatively, you can control the strategy in your entity definition.
 
 ```ts
 import { Entity, LoadStrategy, OneToMany } from '@mikro-orm/core';
 
 @Entity()
 export class Author {
+  
+  // ...
+  
   @OneToMany({
     entity: () => Book,
     mappedBy: b => b.author,
-    strategy: LoadStrategy.JOINED,
+    strategy: 'select-in', // force select-in strategy for this relation
   })
   books = new Collection<Book>(this);
+
 }
 ```
 
-The following will issue **one** SQL statement:
-
-```ts
-const author = await orm.em.findOne(Author, 1, { populate: ['books'] });
-```
-
-You can also specify the load strategy as needed. This will override whatever strategy is declared in the mapping. This also works for nested populates:
-
-```ts
-const author = await orm.em.findOne(Author, 1, {
-  populate: ['books.publisher'],
-  strategy: LoadStrategy.JOINED
-});
-```
+The strategy defined on property level will always take a precedence.
 
 ## Changing the loading strategy globally
 
@@ -70,38 +89,37 @@ You can use `loadStrategy` option in the ORM config:
 
 ```ts
 MikroORM.init({
-  loadStrategy: LoadStrategy.JOINED,
+  // ...
+  populate: ['books'],
+  loadStrategy: 'select-in', // 'joined' is the default for SQL drivers
 });
 ```
 
 This value will be used as the default, specifying the loading strategy on property level has precedence, as well as specifying it in the `FindOptions`.
 
-## Population where condition
+## Population `where` condition
 
-> This applies only to SELECT_IN strategy, as JOINED strategy implies the inference.
-
-In v4, when we used populate hints in `em.find()` and similar methods, the query for our entity would be analysed and parts of it extracted and used for the population. Following example would find all authors that have books with given IDs, and populate their books collection, again using this PK condition, resulting in only such books being in those collections.
-
-```ts
-// this would end up with `Author.books` collections having only books of PK 1, 2, 3
-const a = await em.find(Author, { books: [1, 2, 3] }, { populate: ['books'] });
-```
-
-Following this example, if we wanted to load all books, we would need a separate `em.populate()` call:
-
-```ts
-const a = await em.find(Author, { books: [1, 2, 3] });
-await em.populate(a, ['books']);
-```
-
-This behaviour changed and is now configurable both globally and locally, via `populateWhere` option. Globally we can specify one of `PopulateHint.ALL` and `PopulateHint.INFER`, the former being the default in v5, the latter being the default behaviour in v4. Locally (via `FindOptions`) we can also specify custom where condition that will be passed to `em.populate()` call.
+The where condition is by default applied only to the root entity. This can be controlled via `populateWhere` option. It accepts one of `all` (default), `infer` (use same condition as the `where` query) or an explicit filter query.
 
 ```ts
 await em.find(Author, { ... }, {
-  // defaults to PopulateHint.ALL in v5
-  populateWhere: PopulateHint.INFER, // revert to v4 behaviour
+  populate: ['books'],
+  populateWhere: 'infer', // defaults to `all`
 
-  // or we can specify custom condition for the population:
-  // populateWhere: { ... },
+  // or specify custom query, will be used via `join on` conditions
+  // populateWhere: { age: { $gte: 18 } },
+});
+```
+
+> `populateWhere` can be also set globally, the default is `all`.
+
+## Population `order by` clause
+
+Similarly to the `populateWhere`, you can also control the `order by` clause used for the populate queries. The default behaviour is to use the same ordering as for the root entity, and you can use `populateOrderBy` option to add a different ordering:
+
+```ts
+await em.find(Author, { ... }, {
+  populate: ['books'],
+  populateOrderBy: { books: { publishedAt: 'desc' } },
 });
 ```

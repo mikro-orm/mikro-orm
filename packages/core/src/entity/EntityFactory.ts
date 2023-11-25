@@ -210,7 +210,6 @@ export class EntityFactory {
     }
 
     const pks = Utils.getOrderedPrimaryKeys<T>(id, meta);
-
     const exists = this.unitOfWork.getById<T>(entityName, pks as Primary<T>, schema);
 
     if (exists) {
@@ -305,7 +304,7 @@ export class EntityFactory {
       return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0]] as Primary<T>, schema);
     }
 
-    if (meta.primaryKeys.some(pk => data[pk] == null)) {
+    if (!Array.isArray(data) && meta.primaryKeys.some(pk => data[pk] == null)) {
       return undefined;
     }
 

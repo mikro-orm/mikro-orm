@@ -632,6 +632,28 @@ export class Utils {
     return cond;
   }
 
+  /**
+   * Maps nested FKs from `[1, 2, 3]` to `[1, [2, 3]]`.
+   */
+  static mapFlatCompositePrimaryKey(fk: Primary<any>[], prop: EntityProperty, fieldNames = prop.fieldNames, idx = 0): Primary<any> | Primary<any>[] {
+    if (!prop.targetMeta) {
+      return fk[idx++];
+    }
+
+    const parts: Primary<any>[] = [];
+
+    for (const pk of prop.targetMeta.getPrimaryProps()) {
+      parts.push(this.mapFlatCompositePrimaryKey(fk, pk, fieldNames, idx));
+      idx += pk.fieldNames.length;
+    }
+
+    if (parts.length < 2) {
+      return parts[0];
+    }
+
+    return parts;
+  }
+
   static getPrimaryKeyCondFromArray<T extends object>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
     return meta.getPrimaryProps().reduce((o, pk, idx) => {
       if (Array.isArray(pks[idx]) && pk.targetMeta) {

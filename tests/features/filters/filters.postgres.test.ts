@@ -166,7 +166,7 @@ describe('filters [postgres]', () => {
     orm.em.clear();
     mock.mockReset();
 
-    const e1 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits.details'] });
+    const e1 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits.details'], strategy: 'select-in' });
     expect(mock.mock.calls[0][0]).toMatch(`select "e0".* from "employee" as "e0" where "e0"."id" = $1 limit $2`);
     expect(mock.mock.calls[1][0]).toMatch(`select "b1".*, "e0"."benefit_id" as "fk__benefit_id", "e0"."employee_id" as "fk__employee_id" from "employee_benefits" as "e0" inner join "public"."benefit" as "b1" on "e0"."benefit_id" = "b1"."id" where "b1"."benefit_status" = $1 and "e0"."employee_id" in ($2)`);
     expect(mock.mock.calls[2][0]).toMatch(`select "b0".* from "benefit_detail" as "b0" where "b0"."active" = $1 and "b0"."benefit_id" in ($2)`);
@@ -176,7 +176,7 @@ describe('filters [postgres]', () => {
     orm.em.clear();
     mock.mockReset();
 
-    const e2 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits.details'], strategy: LoadStrategy.JOINED });
+    const e2 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits.details'], strategy: 'joined' });
     expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "b1"."id" as "b1__id", "b1"."benefit_status" as "b1__benefit_status", "b1"."name" as "b1__name", "d3"."id" as "d3__id", "d3"."description" as "d3__description", "d3"."benefit_id" as "d3__benefit_id", "d3"."active" as "d3__active" ' +
       'from "employee" as "e0" ' +
       'left join "employee_benefits" as "e2" on "e0"."id" = "e2"."employee_id" ' +

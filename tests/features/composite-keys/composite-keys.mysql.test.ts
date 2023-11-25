@@ -227,6 +227,60 @@ describe('composite keys in mysql', () => {
     expect(c3).toBeNull();
   });
 
+  test('populate pivot reference with composite FK', async () => {
+    const car1 = new Car2('Audi A8', 2011, 100_000);
+    const car2 = new Car2('Audi A8', 2012, 150_000);
+    const car3 = new Car2('Audi A8', 2013, 200_000);
+    const user1 = new User2('John', 'Doe 1');
+    const user2 = new User2('John', 'Doe 2');
+    const user3 = new User2('John', 'Doe 3');
+    user1.cars.add(car1, car3);
+    user2.cars.add(car3);
+    user2.cars.add(car2, car3);
+    await orm.em.persistAndFlush([user1, user2, user3]);
+    orm.em.clear();
+
+    const u1 = await orm.em.findOneOrFail(User2, user1, {
+      populate: ['cars:ref'],
+    });
+    expect(u1.cars.isDirty()).toBe(false);
+    expect(u1.cars.isInitialized()).toBe(true);
+    expect(u1.cars.isInitialized(true)).toBe(false);
+    expect(u1.cars.getItems()).toMatchObject([
+      { name: 'Audi A8', price: undefined, year: 2011 },
+      { name: 'Audi A8', price: undefined, year: 2013 },
+    ]);
+    expect(wrap(u1).toJSON()).toEqual({
+      firstName: 'John',
+      lastName: 'Doe 1',
+      favouriteCar: null,
+      foo: null,
+      cars: [
+        { name: 'Audi A8', price: undefined, year: 2011 },
+        { name: 'Audi A8', price: undefined, year: 2013 },
+      ],
+    });
+
+    u1.foo = 321;
+    u1.cars[0].price = 350_000;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const u2 = await orm.em.findOneOrFail(User2, u1, { populate: ['cars'] });
+    expect(u2.cars[0].price).toBe(350_000);
+
+    const c1 = await orm.em.findOneOrFail(Car2, { name: car1.name, year: car1.year });
+    expect(c1).toBe(u2.cars[0]);
+
+    await orm.em.remove(u2).flush();
+    const o3 = await orm.em.findOne(User2, u1);
+    expect(o3).toBeNull();
+    const c2 = await orm.em.findOneOrFail(Car2, car1);
+    await orm.em.remove(c2).flush();
+    const c3 = await orm.em.findOne(Car2, car1);
+    expect(c3).toBeNull();
+  });
+
   test('composite entity in m:n relationship, one of entity is composite', async () => {
     const sandwich1 = new Sandwich('Fish Sandwich', 100);
     const sandwich2 = new Sandwich('Fried Egg Sandwich', 200);

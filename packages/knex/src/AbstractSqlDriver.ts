@@ -270,18 +270,18 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   private mapJoinedProps<T extends object>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[], qb: QueryBuilder<T>, root: EntityData<T>, map: Dictionary, parentJoinPath?: string) {
     const joinedProps = this.joinedProps(meta, populate);
 
-    joinedProps.forEach(p => {
-      const [propName, ref] = p.field.split(':', 2) as [EntityKey<T>, string | undefined];
-      const relation = meta.properties[propName];
+    joinedProps.forEach(hint => {
+      const [propName, ref] = hint.field.split(':', 2) as [EntityKey<T>, string | undefined];
+      const prop = meta.properties[propName];
 
       /* istanbul ignore next */
-      if (!relation) {
+      if (!prop) {
         return;
       }
 
-      const pivotRefJoin = relation.kind === ReferenceKind.MANY_TO_MANY && ref;
-      const meta2 = this.metadata.find<T>(relation.type)!;
-      let path = parentJoinPath ? `${parentJoinPath}.${relation.name}` : `${meta.name}.${relation.name}`;
+      const pivotRefJoin = prop.kind === ReferenceKind.MANY_TO_MANY && ref;
+      const meta2 = this.metadata.find<T>(prop.type)!;
+      let path = parentJoinPath ? `${parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
 
       if (!parentJoinPath) {
         path = '[populate]' + path;
@@ -297,20 +297,20 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       if (pivotRefJoin) {
         let item;
 
-        if (relation.inverseJoinColumns.length > 1) { // composite keys
-          item = relation.inverseJoinColumns.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as EntityValue<T>;
+        if (prop.inverseJoinColumns.length > 1) { // composite keys
+          item = prop.inverseJoinColumns.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as EntityValue<T>;
         } else {
-          const alias = `${relationAlias}__${relation.inverseJoinColumns[0]}` as EntityKey<T>;
+          const alias = `${relationAlias}__${prop.inverseJoinColumns[0]}` as EntityKey<T>;
           item = root![alias] as EntityValue<T>;
         }
 
-        relation.joinColumns.forEach(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
-        relation.inverseJoinColumns.forEach(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
+        prop.joinColumns.forEach(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
+        prop.inverseJoinColumns.forEach(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
 
-        result[relation.name] ??= [] as EntityValue<T>;
+        result[prop.name] ??= [] as EntityValue<T>;
 
         if (item) {
-          (result[relation.name] as EntityData<T>[]).push(item);
+          (result[prop.name] as EntityData<T>[]).push(item);
         }
 
         return;
@@ -323,12 +323,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       }));
 
       if (!hasPK) {
-        if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(relation.kind)) {
-          result[relation.name] ??= [] as EntityValue<T>;
+        if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
+          result[prop.name] ??= [] as EntityValue<T>;
         }
 
-        if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(relation.kind)) {
-          result[relation.name] ??= null;
+        if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+          result[prop.name] ??= null;
         }
 
         return;
@@ -338,7 +338,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       meta2.props
         .filter(prop => prop.persist === false && prop.fieldNames)
+        .filter(prop => !prop.lazy || populate.some(p => p.field === prop.name || p.all))
         .forEach(prop => {
+          /* istanbul ignore if */
           if (prop.fieldNames.length > 1) { // composite keys
             relationPojo[prop.name as EntityKey<T>] = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as EntityValue<T>;
           } else {
@@ -348,11 +350,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         });
 
       meta2.props
-        .filter(prop => this.platform.shouldHaveColumn(prop, p.children as any || []))
+        .filter(prop => this.platform.shouldHaveColumn(prop, hint.children as any || []))
         .forEach(prop => {
           if (prop.fieldNames.length > 1) { // composite keys
-            relationPojo[prop.name] = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as EntityValue<T>;
+            const fk = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as Primary<T>[];
             prop.fieldNames.map(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
+            relationPojo[prop.name] = Utils.mapFlatCompositePrimaryKey(fk, prop) as EntityValue<T>;
           } else if (prop.runtimeType === 'Date') {
             const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
             relationPojo[prop.name] = (typeof root![alias] === 'string' ? new Date(root![alias] as string) : root![alias]) as EntityValue<T>;
@@ -364,14 +367,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           }
         });
 
-      if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(relation.kind)) {
-        result[relation.name] ??= [] as EntityValue<T>;
-        (result[relation.name] as EntityData<T>[]).push(relationPojo);
+      if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
+        result[prop.name] ??= [] as EntityValue<T>;
+        (result[prop.name] as EntityData<T>[]).push(relationPojo);
       } else {
-        result[relation.name] = relationPojo as EntityValue<T>;
+        result[prop.name] = relationPojo as EntityValue<T>;
       }
 
-      const populateChildren = p.children as any || [];
+      const populateChildren = hint.children as any || [];
       this.mapJoinedProps(relationPojo, meta2, populateChildren, qb, root, map, path);
     });
   }
@@ -959,7 +962,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const [propName, ref] = hint.field.split(':', 2);
       const prop = meta.properties[propName] || {};
 
-      return (options?.strategy || hint.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && ![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind);
+      if (ref) {
+        // keep only pivot ref joins here, as that only triggers actual join
+        return prop.kind === ReferenceKind.MANY_TO_MANY;
+      }
+
+      return (prop.strategy || options?.strategy || hint.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && ![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind);
     });
   }
 
@@ -1083,7 +1091,20 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const knex = this.connection.getKnex();
     const aliased = knex.ref(tableAlias ? `${tableAlias}__${prop.fieldNames[0]}` : prop.fieldNames[0]).toString();
 
-    if (prop.customType?.convertToJSValueSQL && tableAlias) {
+    if (tableAlias && prop.customTypes?.some(type => type.convertToJSValueSQL)) {
+      return prop.fieldNames.map((col, idx) => {
+        if (!prop.customTypes[idx].convertToJSValueSQL) {
+          return col;
+        }
+
+        const prefixed = knex.ref(col).withSchema(tableAlias).toString();
+        const aliased = knex.ref(`${tableAlias}__${col}`).toString();
+
+        return raw(`${prop.customTypes[idx].convertToJSValueSQL!(prefixed, this.platform)} as ${aliased}`);
+      });
+    }
+
+    if (tableAlias && prop.customType?.convertToJSValueSQL) {
       const prefixed = knex.ref(prop.fieldNames[0]).withSchema(tableAlias).toString();
       return [raw(`${prop.customType.convertToJSValueSQL(prefixed, this.platform)} as ${aliased}`)];
     }
@@ -1254,7 +1275,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const meta2 = this.metadata.find<T>(prop.type)!;
 
       if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.fixedOrder && join) {
-        orderBy.push({ [`${(join.ownerAlias)}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>);
+        const alias = ref ? propAlias : join.ownerAlias;
+        orderBy.push({ [`${alias}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>);
       }
 
       if (propOrderBy) {
