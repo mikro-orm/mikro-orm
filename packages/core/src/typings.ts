@@ -95,16 +95,16 @@ export type ExpandScalar<T> = null | (T extends string
       : T);
 
 export type OperatorMap<T> = {
-  $and?: Query<T>[];
-  $or?: Query<T>[];
+  $and?: ExpandQuery<T>[];
+  $or?: ExpandQuery<T>[];
   $eq?: ExpandScalar<T> | ExpandScalar<T>[];
   $ne?: ExpandScalar<T>;
   $in?: ExpandScalar<T>[];
   $nin?: ExpandScalar<T>[];
-  $not?: Query<T>;
-  $none?: Query<T>;
-  $some?: Query<T>;
-  $every?: Query<T>;
+  $not?: ExpandQuery<T>;
+  $none?: ExpandQuery<T>;
+  $some?: ExpandQuery<T>;
+  $every?: ExpandQuery<T>;
   $gt?: ExpandScalar<T>;
   $gte?: ExpandScalar<T>;
   $lt?: ExpandScalar<T>;
@@ -119,18 +119,23 @@ export type OperatorMap<T> = {
   $exists?: boolean;
 };
 
-export type FilterValue2<T> = T | ExpandScalar<T> | Primary<T>;
-export type FilterValue<T> = OperatorMap<FilterValue2<T>> | FilterValue2<T> | FilterValue2<T>[] | null;
-export type FilterObject<T> = { -readonly [K in EntityKey<T>]?: Query<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null };
+export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T>;
+export type FilterValue<T> = OperatorMap<FilterItemValue<T>> | FilterItemValue<T> | FilterItemValue<T>[] | null;
+export type FilterObject<T> = { -readonly [K in EntityKey<T>]?: ExpandQuery<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null };
+export type ExpandObject<T> = T extends object
+  ? T extends Scalar
+    ? never
+    : FilterObject<T>
+  : never;
 
-export type Query<T> = T extends object
+export type ExpandQuery<T> = T extends object
   ? T extends Scalar
     ? never
     : FilterQuery<T>
   : FilterValue<T>;
 
 export type EntityProps<T> = { -readonly [K in EntityKey<T>]?: T[K] };
-export type ObjectQuery<T> = Compute<OperatorMap<T> & FilterObject<T>>;
+export type ObjectQuery<T> = OperatorMap<T> & ExpandObject<T>;
 export type FilterQuery<T> =
   | ObjectQuery<T>
   | NonNullable<ExpandScalar<Primary<T>>>

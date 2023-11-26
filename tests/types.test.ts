@@ -1,4 +1,4 @@
-import { OptionalProps, ref, wrap } from '@mikro-orm/core';
+import { EntityRepository, OptionalProps, ref, wrap } from '@mikro-orm/core';
 import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
@@ -12,7 +12,7 @@ import type {
   OperatorMap,
   Primary,
   PrimaryKeyProp,
-  Query,
+  ExpandQuery,
 } from '../packages/core/src/typings';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql';
 import type { Author, Book } from './entities';
@@ -163,56 +163,56 @@ describe('check typings', () => {
 
   test('Query', async () => {
     // assert<Has<FilterQuery<Author['born']>, Date>>(true);
-    assert<Has<Query<Author['born']>, number>>(false);
+    assert<Has<ExpandQuery<Author['born']>, number>>(false);
     // assert<Has<Query<Author['born']>, string>>(true);
-    assert<Has<Query<Author>, { born?: Date }>>(false);
-    assert<Has<Query<Author>, { born?: number }>>(false);
-    assert<Has<Query<Author>, { born?: string }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: string }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: null }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: number }>>(false);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: number } }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: null } }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: string } }>>(false);
+    assert<Has<ExpandQuery<Author>, { born?: Date }>>(false);
+    assert<Has<ExpandQuery<Author>, { born?: number }>>(false);
+    assert<Has<ExpandQuery<Author>, { born?: string }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: string }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: null }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: number }>>(false);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: { author: number } }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: { author: null } }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: { author: string } }>>(false);
     // assert<Has<Query<Author2>, Author2>>(true);
-    assert<Has<Query<Author2>, number>>(true);
-    assert<Has<Query<Author2>, string>>(false);
-    assert<Has<Query<Author2>, { books: { author: { born?: string } }; favouriteBook: null }>>(false);
-    assert<Has<Query<Author2>, { books: { author: { born?: number } }; favouriteBook: null }>>(false);
+    assert<Has<ExpandQuery<Author2>, number>>(true);
+    assert<Has<ExpandQuery<Author2>, string>>(false);
+    assert<Has<ExpandQuery<Author2>, { books: { author: { born?: string } }; favouriteBook: null }>>(false);
+    assert<Has<ExpandQuery<Author2>, { books: { author: { born?: number } }; favouriteBook: null }>>(false);
     // assert<Has<Query<Book2>, { author: { born?: Date } }>>(true);
-    assert<Has<Query<Book2>, { author: { born?: string } }>>(false);
-    assert<Has<Query<Book2>, { author: { born?: number } }>>(false);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: { born: Date } } }>>(false);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: { born: string } } }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: { books: string[] } } }>>(true);
-    assert<IsAssignable<Query<Book2>, { author: { books: string[] } }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: string } } }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } } }>>(false);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: null } } }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: null }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: string }>>(true);
-    assert<Has<Query<Author2>, { favouriteBook: number }>>(false);
-    assert<Has<Query<Book2>, { author: { born?: Date }; favouriteBook: string }>>(false); // favouriteBook does not exist on Book2
-    assert<IsAssignable<Query<Book2>, { author: { books: { publisher: number } } }>>(true);
-    assert<IsAssignable<Query<Book2>, { author: { books: { publisher: null } } }>>(true);
-    assert<Has<Query<Author2>, { favouriteBook?: Query<Book2> }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: FilterValue<Book2> }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: string }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: string[] }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: Book2 }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: Book2[] }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: null }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: Author2 }; favouriteBook: Book2 }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: string } }; favouriteBook: null }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: string } }; favouriteBook: Book2 }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: string } }; favouriteBook: null }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: string } }; favouriteBook: { title: null } }>>(true);
+    assert<Has<ExpandQuery<Book2>, { author: { born?: string } }>>(false);
+    assert<Has<ExpandQuery<Book2>, { author: { born?: number } }>>(false);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: { author: { born: Date } } }>>(false);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: { author: { born: string } } }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: { author: { books: string[] } } }>>(true);
+    assert<IsAssignable<ExpandQuery<Book2>, { author: { books: string[] } }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } } }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: Date } } }>>(false);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: null } } }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: null }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: string }>>(true);
+    assert<Has<ExpandQuery<Author2>, { favouriteBook: number }>>(false);
+    assert<Has<ExpandQuery<Book2>, { author: { born?: Date }; favouriteBook: string }>>(false); // favouriteBook does not exist on Book2
+    assert<IsAssignable<ExpandQuery<Book2>, { author: { books: { publisher: number } } }>>(true);
+    assert<IsAssignable<ExpandQuery<Book2>, { author: { books: { publisher: null } } }>>(true);
+    assert<Has<ExpandQuery<Author2>, { favouriteBook?: ExpandQuery<Book2> }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: FilterValue<Book2> }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: string }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: string[] }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: Book2 }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: Book2[] }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: null }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: Author2 }; favouriteBook: Book2 }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } }; favouriteBook: null }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } }; favouriteBook: Book2 }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } }; favouriteBook: null }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } }; favouriteBook: { title: null } }>>(true);
 
-    let t1: Query<Book2>;
+    let t1: ExpandQuery<Book2>;
     t1 = { author: { books: { publisher: 1 } } }; // ok
     // @ts-expect-error
     t1 = { author: { books: { publisher: '1' } } }; // should fail
-    let t2: Query<Author2>;
+    let t2: ExpandQuery<Author2>;
     t2 = { age: { $gte: 1 } };
     t2 = { born: '1' };
     t2 = { books: { author: { born: '2020-11-11' } }, favouriteBook: null }; // accepts string date
@@ -252,7 +252,7 @@ describe('check typings', () => {
     assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: string }, { name: string }] }>>(true);
     // assert<Has<FilterQuery<Author2>, Author2>>(true);
     assert<Has<FilterQuery<Author2>, number>>(true);
-    assert<Has<FilterQuery<Author2>, { favouriteBook?: Query<Book2> }>>(true);
+    assert<Has<FilterQuery<Author2>, { favouriteBook?: ExpandQuery<Book2> }>>(true);
     // assert<Has<FilterQuery<Book2>, { author: { favouriteBook?: Query<Book2> } }>>(true);
     // assert<Has<FilterQuery<Book2>, { author: { favouriteBook?: { title?: string } } }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: FilterValue<BookTag2> } } }>>(true);
@@ -802,6 +802,25 @@ describe('check typings', () => {
 
     const secondParentModel = {} as Loaded<ParentModel, 'child.grandChild'>;
     secondParentModel.child = ref(childModel);
+  });
+
+  test('GH #4962', async () => {
+    interface AbstractEntity extends BaseEntity {
+      id: number;
+      status?: string;
+    }
+
+    abstract class AbstractRepository<
+      Entity extends AbstractEntity
+    > extends EntityRepository<Entity> {
+
+      async countWaiting() {
+        return this.find({
+          status: 'waiting',
+        } as FilterQuery<Entity>);
+      }
+
+    }
   });
 
 });
