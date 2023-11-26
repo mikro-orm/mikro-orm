@@ -435,10 +435,10 @@ describe('EntityManagerMongo', () => {
 
     const spy = jest.spyOn(EntityManager.prototype, 'getContext');
     const fork2 = orm.em.fork({ disableContextResolution: true });
-    expect(spy).toBeCalledTimes(2);
+    expect(spy).toHaveBeenCalledTimes(2);
 
     const fork3 = orm.em.fork({ disableContextResolution: false });
-    expect(spy).toBeCalledTimes(5);
+    expect(spy).toHaveBeenCalledTimes(5);
   });
 
   test('findOne with empty where will throw', async () => {
@@ -786,10 +786,10 @@ describe('EntityManagerMongo', () => {
     expect(wrap(book.tags.getItems()[0]).isInitialized()).toBe(false);
     const initSpy = jest.spyOn(Collection.prototype, 'init');
     const items2 = await book.tags.loadItems();
-    expect(initSpy).toBeCalledTimes(1);
+    expect(initSpy).toHaveBeenCalledTimes(1);
     expect(book.tags.getItems()).toEqual(items2);
     const items3 = await book.tags.loadItems();
-    expect(initSpy).toBeCalledTimes(1);
+    expect(initSpy).toHaveBeenCalledTimes(1);
     expect(items3).toEqual(items2);
 
     // test collection CRUD

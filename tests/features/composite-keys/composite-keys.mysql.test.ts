@@ -153,7 +153,7 @@ describe('composite keys in mysql', () => {
     const connMock = jest.spyOn(AbstractSqlConnection.prototype, 'execute');
     const cc = await orm.em.findOneOrFail(Car2, car11, { populate: ['users'], strategy: LoadStrategy.JOINED });
     expect(cc.users[0].foo).toBe(42);
-    expect(connMock).toBeCalledTimes(1);
+    expect(connMock).toHaveBeenCalledTimes(1);
   });
 
   test('composite entity in m:1 relationship (multi update)', async () => {
@@ -412,7 +412,7 @@ describe('composite keys in mysql', () => {
 
     const mock = mockLogger(orm);
     await orm.em.flush();
-    expect(mock).toBeCalledTimes(3);
+    expect(mock).toHaveBeenCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch("update `car2` set `year` = 2015 where `name` = 'Audi A8' and `year` = 2010");
 
     const c = await orm.em.fork().findOne(Car2, car);
@@ -431,7 +431,7 @@ describe('composite keys in mysql', () => {
 
     const mock = mockLogger(orm);
     await orm.em.flush();
-    expect(mock).toBeCalledTimes(3);
+    expect(mock).toHaveBeenCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch("update `car2` set `year` = case when (`name` = 'Audi A8 a' and `year` = 2011) then 2015 when (`name` = 'Audi A8 b' and `year` = 2012) then 2016 else `year` end where (`name`, `year`) in (('Audi A8 a', 2011), ('Audi A8 b', 2012))");
 
     const c1 = await orm.em.fork().findOne(Car2, cars[0]);
@@ -443,7 +443,7 @@ describe('composite keys in mysql', () => {
     expect(c2!.year).toBe(2016);
 
     await orm.em.flush();
-    expect(mock).toBeCalledTimes(5);
+    expect(mock).toHaveBeenCalledTimes(5);
   });
 
   test('qb.leftJoinAndSelect() with FK as PK', async () => {

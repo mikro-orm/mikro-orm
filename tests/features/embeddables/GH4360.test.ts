@@ -46,5 +46,5 @@ test('conversion of Date properties in object embeddables', async () => {
   await orm.em.findOneOrFail(Owner, 1);
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock).not.toBeCalled();
+  expect(mock).not.toHaveBeenCalled();
 });

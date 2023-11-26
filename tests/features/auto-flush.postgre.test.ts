@@ -47,7 +47,7 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     const a1 = new Author2('A1', 'a1@example.com');
     orm.em.persist(a1);
     const r1 = await orm.em.find(Author2, {});
-    expect(mock).toBeCalledTimes(4);
+    expect(mock).toHaveBeenCalledTimes(4);
     expect(r1).toHaveLength(3);
     mock.mockReset();
 
@@ -55,13 +55,13 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     const b4 = new Book2('b4', a1, 444);
     orm.em.persist(b4);
     const r2 = await orm.em.find(Author2, {});
-    expect(mock).toBeCalledTimes(1);
+    expect(mock).toHaveBeenCalledTimes(1);
     expect(r2).toHaveLength(3);
     mock.mockReset();
 
     // but querying for book will trigger auto-flush
     const r3 = await orm.em.find(Book2, {});
-    expect(mock).toBeCalledTimes(4);
+    expect(mock).toHaveBeenCalledTimes(4);
     expect(r3).toHaveLength(4);
   });
 

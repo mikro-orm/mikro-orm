@@ -23,7 +23,7 @@ describe('ImportDatabaseCommand', () => {
     const cmd = new ImportCommand();
 
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
-    expect(close).toBeCalledTimes(1);
+    expect(close).toHaveBeenCalledTimes(1);
     expect(connection.loadFile.mock.calls.length).toBe(1);
   });
 

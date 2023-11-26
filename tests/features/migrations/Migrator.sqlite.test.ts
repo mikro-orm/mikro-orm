@@ -136,7 +136,7 @@ describe('Migrator (sqlite)', () => {
     schemaMock.mockReturnValueOnce([]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const migration1 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).not.toBeCalledWith('Migration20191013214813.ts');
+    expect(logMigrationMock).not.toHaveBeenCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
     const outOfSync = await migrator.checkMigrationNeeded();
     expect(outOfSync).toBe(false);
@@ -144,7 +144,7 @@ describe('Migrator (sqlite)', () => {
 
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration2 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).toBeCalledWith({ name: 'Migration20191013214813.ts', context: null });
+    expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
     await remove(process.cwd() + '/temp/migrations-3/' + migration2.fileName);
   });
@@ -169,11 +169,11 @@ describe('Migrator (sqlite)', () => {
     downMock.mockImplementationOnce(() => void 0 as any);
     const migrator = new Migrator(orm.em);
     await migrator.up();
-    expect(upMock).toBeCalledTimes(1);
-    expect(downMock).toBeCalledTimes(0);
+    expect(upMock).toHaveBeenCalledTimes(1);
+    expect(downMock).toHaveBeenCalledTimes(0);
     await migrator.down();
-    expect(upMock).toBeCalledTimes(1);
-    expect(downMock).toBeCalledTimes(1);
+    expect(upMock).toHaveBeenCalledTimes(1);
+    expect(downMock).toHaveBeenCalledTimes(1);
     upMock.mockRestore();
     downMock.mockRestore();
   });
@@ -217,7 +217,7 @@ describe('Migrator (sqlite)', () => {
     const spy1 = jest.spyOn(Migration.prototype, 'addSql');
     mock.mock.calls.length = 0;
     await runner.run(migration1, 'up');
-    expect(spy1).toBeCalledWith('select 1 + 1');
+    expect(spy1).toHaveBeenCalledWith('select 1 + 1');
     expect(mock.mock.calls).toHaveLength(5);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('pragma foreign_keys = off;');

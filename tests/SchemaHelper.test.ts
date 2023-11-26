@@ -35,9 +35,9 @@ describe('SchemaHelper', () => {
       collate: jest.fn(),
     } as any;
     helper.finalizeTable(mock, 'charset', 'collate');
-    expect(mock.engine).toBeCalledWith('InnoDB');
-    expect(mock.charset).toBeCalledWith('charset');
-    expect(mock.collate).toBeCalledWith('collate');
+    expect(mock.engine).toHaveBeenCalledWith('InnoDB');
+    expect(mock.charset).toHaveBeenCalledWith('charset');
+    expect(mock.collate).toHaveBeenCalledWith('collate');
   });
 
   test('sqlite schema helper', async () => {

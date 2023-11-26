@@ -47,14 +47,14 @@ describe('GenerateEntitiesCommand', () => {
     expect(showHelpMock.mock.calls.length).toBe(1);
 
     expect(generate.mock.calls.length).toBe(0);
-    expect(closeSpy).toBeCalledTimes(0);
+    expect(closeSpy).toHaveBeenCalledTimes(0);
     await expect(cmd.handler({ save: true } as any)).resolves.toBeUndefined();
     expect(generate.mock.calls.length).toBe(1);
-    expect(closeSpy).toBeCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
 
     await expect(cmd.handler({ dump: true } as any)).resolves.toBeUndefined();
     expect(generate.mock.calls.length).toBe(2);
-    expect(closeSpy).toBeCalledTimes(2);
+    expect(closeSpy).toHaveBeenCalledTimes(2);
   });
 
 });

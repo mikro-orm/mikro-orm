@@ -71,5 +71,5 @@ test('extra updates caused by property initializers with forceEntityConstructor 
 
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock).not.toBeCalled();
+  expect(mock).not.toHaveBeenCalled();
 });

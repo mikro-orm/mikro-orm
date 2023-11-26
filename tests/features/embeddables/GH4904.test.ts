@@ -103,5 +103,5 @@ test('preserve data fields that match pivot field', async () => {
   await orm.em.findOne(TestEntity2, 'def');
   await orm.em.findOne(TestEntity2, 'def'); // should not trigger SQL query
 
-  expect(mock).toBeCalledTimes(2);
+  expect(mock).toHaveBeenCalledTimes(2);
 });

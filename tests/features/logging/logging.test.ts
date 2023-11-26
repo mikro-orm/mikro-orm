@@ -47,7 +47,7 @@ describe('logging', () => {
 
   it(`logs on query - baseline`, async () => {
     const ex = await orm.em.fork().findOneOrFail(Example, { id: 1 });
-    expect(mockedLogger).toBeCalledTimes(1);
+    expect(mockedLogger).toHaveBeenCalledTimes(1);
   });
 
   it(`overrides the default namespace`, async () => {
@@ -58,16 +58,16 @@ describe('logging', () => {
     example.title = 'An update';
     await em.persistAndFlush(example);
 
-    expect(mockedLogger).toBeCalledTimes(1);
+    expect(mockedLogger).toHaveBeenCalledTimes(1);
   });
 
   it(`overrides the default debug config via the enabled flag`, async () => {
     await orm.em.fork().findOneOrFail(Example, { id: 1 }, { logging: { enabled: false } });
-    expect(mockedLogger).not.toBeCalled();
+    expect(mockedLogger).not.toHaveBeenCalled();
 
     setDebug([]);
     await orm.em.fork().findOneOrFail(Example, { id: 1 }, { logging: { enabled: true } });
-    expect(mockedLogger).toBeCalledTimes(1);
+    expect(mockedLogger).toHaveBeenCalledTimes(1);
   });
 
 });

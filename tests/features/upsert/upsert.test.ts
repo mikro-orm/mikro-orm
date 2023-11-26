@@ -195,11 +195,11 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     expect(mock.mock.calls).toMatchSnapshot();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     author.age = 123;
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
 
     orm.em.clear();
     const authors = await orm.em.find(Author, {}, { orderBy: { email: 'asc' } });
@@ -214,7 +214,7 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     expect(author22).toBe(authors[1]);
     expect(author32).toBe(authors[2]);
     expect(author22.age).toBe(321);
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
     await orm.em.flush();
     await orm.em.refresh(author22);
     expect(author22.age).toBe(321);
@@ -224,11 +224,11 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     expect(mock.mock.calls).toMatchSnapshot();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     fooBars[0].propName = '12345';
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
 
     orm.em.clear();
     const fooBarsReloaded = await orm.em.find(FooBar, {}, { orderBy: { name: 'asc' } });
@@ -243,7 +243,7 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     expect(fooBar22).toBe(fooBarsReloaded[1]);
     expect(fooBar32).toBe(fooBarsReloaded[2]);
     expect(fooBar22.propName).toBe('12345');
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
     await orm.em.flush();
     await orm.em.refresh(fooBar22);
     expect(fooBar22.propName).toBe('12345');
@@ -335,7 +335,7 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     }
 
     const entities = await orm.em.upsertMany(Author, data, { batchSize: 100 });
-    expect(mock).toBeCalledTimes(orm.em.getPlatform().usesReturningStatement() ? 10 : 20);
+    expect(mock).toHaveBeenCalledTimes(orm.em.getPlatform().usesReturningStatement() ? 10 : 20);
     expect(entities).toHaveLength(1000);
   });
 

@@ -91,7 +91,7 @@ describe.each(Utils.keys(options))('JSON properties [%s]',  type => {
 
     const mock = mockLogger(orm);
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
   });
 
   test('em.flush() with various JSON values', async () => {
@@ -104,42 +104,42 @@ describe.each(Utils.keys(options))('JSON properties [%s]',  type => {
 
     const mock = mockLogger(orm);
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     res.value = 'bar';
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     res.value = 123;
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     res.value = [1, 2, 3];
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     res.value = false;
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     wrap(res).assign({ value: { lol: true } });
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
   });
 
   test('find with special characters in JSON property key', async () => {

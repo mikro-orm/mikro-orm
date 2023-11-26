@@ -108,7 +108,7 @@ describe('GH issue 446', () => {
     const c1 = await orm.em.findOneOrFail(C, c.b.a.id, { populate: ['b.a'] });
     const mock = mockLogger(orm);
     const c23 = await orm.em.findOneOrFail(C, c.b.a.id);
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
     expect(c1).toBe(c23);
     expect(c1).toBeInstanceOf(C);
     expect(c1.b).toBeInstanceOf(B);

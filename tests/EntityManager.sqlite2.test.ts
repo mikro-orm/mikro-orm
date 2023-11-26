@@ -1145,7 +1145,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     // no queries as we dropped the state by refreshing
     const mock = mockLogger(orm);
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     orm.em.clear();
 
@@ -1202,7 +1202,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
 
     const mock = mockLogger(orm, ['query']);
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     ref.name = 'new name';
     ref.email = 'new email';

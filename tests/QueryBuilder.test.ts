@@ -56,7 +56,7 @@ describe('QueryBuilder', () => {
     qb.select('*').where({ name: 'test 123', type: PublisherType.GLOBAL });
     const spy = jest.spyOn(MySqlDriver.prototype, 'getConnection');
     await qb.execute();
-    expect(spy).toBeCalledWith('read');
+    expect(spy).toHaveBeenCalledWith('read');
   });
 
   test('insert query picks write replica', async () => {
@@ -64,7 +64,7 @@ describe('QueryBuilder', () => {
     qb.insert({ name: 'test 123', type: PublisherType.GLOBAL });
     const spy = jest.spyOn(MySqlDriver.prototype, 'getConnection');
     await qb.execute('run');
-    expect(spy).toBeCalledWith('write');
+    expect(spy).toHaveBeenCalledWith('write');
   });
 
   test('select where is null', async () => {

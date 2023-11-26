@@ -296,7 +296,7 @@ describe('Joined loading strategy', () => {
 
     const connMock = jest.spyOn(AbstractSqlConnection.prototype, 'execute');
     const b1 = await orm.em.findOneOrFail(FooBar2, { id: bar.id }, { populate: ['baz'] });
-    expect(connMock).toBeCalledTimes(1);
+    expect(connMock).toHaveBeenCalledTimes(1);
     expect(b1.baz).toBeInstanceOf(FooBaz2);
     expect(b1.baz!.id).toBe(baz.id);
     expect(wrap(b1).toJSON()).toMatchObject({ baz: { id: baz.id, bar: bar.id, name: 'baz' } });

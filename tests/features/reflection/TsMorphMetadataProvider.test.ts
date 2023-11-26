@@ -110,9 +110,9 @@ describe('TsMorphMetadataProvider', () => {
   test('should ignore entity without path', async () => {
     const provider = new TsMorphMetadataProvider({} as any);
     const initProperties = jest.spyOn(TsMorphMetadataProvider.prototype, 'initProperties' as any);
-    expect(initProperties).toBeCalledTimes(0);
+    expect(initProperties).toHaveBeenCalledTimes(0);
     provider.loadEntityMetadata({} as any, 'name');
-    expect(initProperties).toBeCalledTimes(0);
+    expect(initProperties).toHaveBeenCalledTimes(0);
   });
 
   test('should throw when source file not found', async () => {

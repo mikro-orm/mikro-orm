@@ -45,27 +45,27 @@ describe('FreshSchemaCommand', () => {
     expect(dropSchema.mock.calls.length).toBe(0);
     expect(createSchema.mock.calls.length).toBe(0);
     expect(seed.mock.calls.length).toBe(0);
-    expect(closeSpy).toBeCalledTimes(0);
+    expect(closeSpy).toHaveBeenCalledTimes(0);
 
     await expect(cmd.handler({ run: true } as any)).resolves.toBeUndefined();
     expect(dropSchema.mock.calls.length).toBe(1);
     expect(createSchema.mock.calls.length).toBe(1);
     expect(seed.mock.calls.length).toBe(0);
-    expect(closeSpy).toBeCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
 
     await expect(cmd.handler({ run: true, seed: '' } as any)).resolves.toBeUndefined();
     expect(dropSchema.mock.calls.length).toBe(2);
     expect(createSchema.mock.calls.length).toBe(2);
     expect(seed.mock.calls.length).toBe(1);
-    expect(seed).toBeCalledWith(orm.config.get('seeder').defaultSeeder);
-    expect(closeSpy).toBeCalledTimes(2);
+    expect(seed).toHaveBeenCalledWith(orm.config.get('seeder').defaultSeeder);
+    expect(closeSpy).toHaveBeenCalledTimes(2);
 
     await expect(cmd.handler({ run: true, seed: 'UsersSeeder' } as any)).resolves.toBeUndefined();
     expect(dropSchema.mock.calls.length).toBe(3);
     expect(createSchema.mock.calls.length).toBe(3);
     expect(seed.mock.calls.length).toBe(2);
-    expect(seed).toBeCalledWith('UsersSeeder');
-    expect(closeSpy).toBeCalledTimes(3);
+    expect(seed).toHaveBeenCalledWith('UsersSeeder');
+    expect(closeSpy).toHaveBeenCalledTimes(3);
   });
 
 });

@@ -290,8 +290,8 @@ describe('SchemaGenerator', () => {
 
     await orm.schema.refreshDatabase();
 
-    expect(dropSchema).toBeCalledTimes(1);
-    expect(createSchema).toBeCalledTimes(1);
+    expect(dropSchema).toHaveBeenCalledTimes(1);
+    expect(createSchema).toHaveBeenCalledTimes(1);
 
     dropSchema.mockRestore();
     createSchema.mockRestore();

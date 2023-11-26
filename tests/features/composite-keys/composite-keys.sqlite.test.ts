@@ -402,7 +402,7 @@ describe('composite keys in sqlite', () => {
     const connMock = jest.spyOn(AbstractSqlConnection.prototype, 'execute');
     const cc = await orm.em.findOneOrFail(Car2, car11, { populate: ['users'], strategy: LoadStrategy.JOINED });
     expect(cc.users[0].foo).toBe(42);
-    expect(connMock).toBeCalledTimes(1);
+    expect(connMock).toHaveBeenCalledTimes(1);
   });
 
   test('composite entity in m:1 relationship (multi update)', async () => {

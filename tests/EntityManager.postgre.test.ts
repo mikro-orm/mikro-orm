@@ -2511,7 +2511,7 @@ describe('EntityManagerPostgre', () => {
 
     const mock = mockLogger(orm);
     await orm.em.flush();
-    expect(mock).toBeCalledTimes(3);
+    expect(mock).toHaveBeenCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch(`update "foo_bar2" set "id" = 321, "version" = current_timestamp(0) where "id" = 1 and "version" = `);
 
     const c = await orm.em.fork().findOne(FooBar2, bar);
@@ -2538,7 +2538,7 @@ describe('EntityManagerPostgre', () => {
 
     const mock = mockLogger(orm, ['query']);
     await orm.em.flush();
-    expect(mock).toBeCalledTimes(4);
+    expect(mock).toHaveBeenCalledTimes(4);
     expect(mock.mock.calls[1][0]).toMatch('select "f0"."id" from "foo_bar2" as "f0" where (("f0"."id" = $1 and "f0"."version" = $2) or ("f0"."id" = $3 and "f0"."version" = $4))');
     expect(mock.mock.calls[2][0]).toMatch('update "foo_bar2" set "id" = case when ("id" = $1) then $2 when ("id" = $3) then $4 else "id" end, "version" = current_timestamp(0) where "id" in ($5, $6)');
 

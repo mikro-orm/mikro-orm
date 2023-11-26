@@ -37,17 +37,17 @@ describe('CreateMigrationCommand', () => {
 
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(createMigrationMock.mock.calls.length).toBe(1);
-    expect(closeSpy).toBeCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
 
     await expect(cmd.handler({ blank: true, dump: true } as any)).resolves.toBeUndefined();
     expect(createMigrationMock.mock.calls.length).toBe(2);
-    expect(closeSpy).toBeCalledTimes(2);
+    expect(closeSpy).toHaveBeenCalledTimes(2);
     expect(dumpMock).toHaveBeenLastCalledWith('1 successfully created');
 
     createMigrationMock.mockImplementationOnce(async () => ({ fileName: '', code: '', diff: { up: [], down: [] } }));
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(createMigrationMock.mock.calls.length).toBe(3);
-    expect(closeSpy).toBeCalledTimes(3);
+    expect(closeSpy).toHaveBeenCalledTimes(3);
     expect(dumpMock).toHaveBeenLastCalledWith('No changes required, schema is up-to-date');
   });
 
