@@ -184,8 +184,12 @@ export class MigrationCommandFactory {
     if (!await migrator.checkMigrationNeeded()) {
       return CLIHelper.dump(colors.green(`No changes required, schema is up-to-date`));
     }
+    const diff = await migrator.getSchemaDiff(false, false);
     await orm.close(true);
     CLIHelper.dump(colors.yellow(`Changes detected. Please create migration to update schema.`));
+    CLIHelper.dump(colors.yellow(``));
+    CLIHelper.dump(colors.yellow(`Pending changes:`));
+    CLIHelper.dump(colors.yellow(diff.up.join('\n')));
     process.exit(1);
   }
 

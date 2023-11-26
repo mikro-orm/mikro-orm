@@ -306,7 +306,7 @@ export class Migrator implements IMigrator {
     };
   }
 
-  private async getSchemaDiff(blank: boolean, initial: boolean): Promise<{ up: string[]; down: string[] }> {
+  async getSchemaDiff(blank: boolean, initial: boolean): Promise<{ up: string[]; down: string[] }> {
     const up: string[] = [];
     const down: string[] = [];
 
