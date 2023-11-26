@@ -23,10 +23,22 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
+    expect(await orm.checkConnection()).toEqual({
+      ok: true,
+    });
     await orm.close(true);
     expect(await orm.isConnected()).toBe(false);
+    const check = await orm.checkConnection();
+    expect(check).toMatchObject({
+      ok: false,
+      error: expect.any(Error),
+      reason: 'Unable to acquire a connection',
+    });
     await orm.connect();
     expect(await orm.isConnected()).toBe(true);
+    expect(await orm.checkConnection()).toEqual({
+      ok: true,
+    });
 
     // as the db lives only in memory, we need to re-create the schema after reconnection
     await orm.schema.createSchema();

@@ -50,17 +50,35 @@ export abstract class AbstractSqlConnection extends Connection {
     return this.client;
   }
 
+  /**
+   * @inheritDoc
+   */
   override async close(force?: boolean): Promise<void> {
     await super.close(force);
     await this.getKnex().destroy();
   }
 
+  /**
+   * @inheritDoc
+   */
   async isConnected(): Promise<boolean> {
     try {
       await this.getKnex().raw('select 1');
       return true;
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * @inheritDoc
+   */
+  async checkConnection(): Promise<{ ok: boolean; reason?: string; error?: Error }> {
+    try {
+      await this.getKnex().raw('select 1');
+      return { ok: true };
+    } catch (error: any) {
+      return { ok: false, reason: error.message, error };
     }
   }
 

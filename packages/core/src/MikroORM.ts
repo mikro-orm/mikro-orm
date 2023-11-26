@@ -158,6 +158,13 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Checks whether the database connection is active, returns .
+   */
+  async checkConnection(): Promise<{ ok: boolean; reason?: string; error?: Error }> {
+    return this.driver.getConnection().checkConnection();
+  }
+
+  /**
    * Closes the database connection.
    */
   async close(force = false): Promise<void> {

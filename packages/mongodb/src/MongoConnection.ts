@@ -82,7 +82,21 @@ export class MongoConnection extends Connection {
   }
 
   async isConnected(): Promise<boolean> {
-    return this.connected;
+    try {
+      const res = await this.db?.command({ ping: 1 });
+      return this.connected = !!res.ok;
+    } catch (error) {
+      return this.connected = false;
+    }
+  }
+
+  async checkConnection(): Promise<{ ok: boolean; reason?: string; error?: Error }> {
+    try {
+      const res = await this.db?.command({ ping: 1 });
+      return { ok: !!res.ok };
+    } catch (error: any) {
+      return { ok: false, reason: error.message, error };
+    }
   }
 
   getClient(): MongoClient {
