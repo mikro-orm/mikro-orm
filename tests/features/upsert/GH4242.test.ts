@@ -114,6 +114,7 @@ test('4242 2/4', async () => {
   expect(loadedDs4).toEqual([{
     id: expect.any(String),
     updatedAt: expect.any(Date),
+    optional: null,
     tenantWorkflowId: 1,
   }]);
   await orm.em.flush();
@@ -180,6 +181,7 @@ test('4242 4/4', async () => {
   expect(loadedDs4).toEqual({
     id: expect.any(String),
     updatedAt: expect.any(Date),
+    optional: null,
     tenantWorkflowId: 1,
   });
   await orm.em.flush();
