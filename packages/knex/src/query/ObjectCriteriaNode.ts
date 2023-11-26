@@ -9,7 +9,7 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode';
-import type { IQueryBuilder, ICriteriaNodeProcessOptions } from '../typings';
+import type { ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings';
 import { JoinType, QueryType } from './enums';
 
 /**
@@ -118,7 +118,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   }
 
   override shouldInline(payload: any): boolean {
-    const customExpression = ObjectCriteriaNode.isCustomExpression(this.key!);
+    const customExpression = RawQueryFragment.isKnownFragment(this.key!);
     const scalar = Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
     const operator = Utils.isObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
 
@@ -151,7 +151,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         } else {
           o[key] = payload[k];
         }
-      } else if (ObjectCriteriaNode.isCustomExpression(k)) {
+      } else if (RawQueryFragment.isKnownFragment(k)) {
         o[k] = payload[k];
       } else {
         o[`${childAlias}.${k}`] = payload[k];
@@ -187,7 +187,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
   private autoJoin<T>(qb: IQueryBuilder<T>, alias: string): string {
     const nestedAlias = qb.getNextAlias(this.prop?.pivotTable ?? this.entityName);
-    const customExpression = ObjectCriteriaNode.isCustomExpression(this.key!);
+    const customExpression = RawQueryFragment.isKnownFragment(this.key!);
     const scalar = Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || customExpression;
     const operator = Utils.isPlainObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
     const field = `${alias}.${this.prop!.name}`;

@@ -12,16 +12,9 @@ export abstract class MetadataProvider {
 
   abstract loadEntityMetadata(meta: EntityMetadata, name: string): void;
 
-  /**
-   * Re-hydrates missing attributes like `customType` (functions/instances are lost when caching to JSON)
-   */
   loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
     Object.values(cache.properties).forEach(prop => {
       const metaProp = meta.properties[prop.name];
-
-      if (prop.customType) {
-        prop.customType = metaProp.customType;
-      }
 
       if (metaProp?.enum && Array.isArray(metaProp.items)) {
         delete prop.items;

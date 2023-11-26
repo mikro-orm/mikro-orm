@@ -219,10 +219,6 @@ export class MetadataDiscovery {
   }
 
   private async discoverDirectories(paths: string[]): Promise<void> {
-    if (paths.length === 0) {
-      return;
-    }
-
     paths = paths.map(path => Utils.normalizePath(path));
     const files = await globby(paths, { cwd: Utils.normalizePath(this.config.get('baseDir')) });
     this.logger.log('discovery', `- processing ${colors.cyan('' + files.length)} files`);
@@ -308,15 +304,7 @@ export class MetadataDiscovery {
       return entity.schema;
     }
 
-    // save path to entity from schema
-    if ('entity' in entity && 'schema' in entity) {
-      const meta = this.metadata.get(entity.entity.name, true);
-      meta.path = (entity.schema as EntityMetadata).path;
-
-      return entity.entity;
-    }
-
-    return entity;
+    return entity as EntityClass<T>;
   }
 
   private getSchema<T>(entity: Constructor<T> | EntitySchema<T>): EntitySchema<T> {
@@ -1225,14 +1213,6 @@ export class MetadataDiscovery {
       prop.customType = new Uint8ArrayType();
     }
 
-    if (!prop.customType && ['json', 'jsonb'].includes(prop.type)) {
-      prop.customType = new JsonType();
-    }
-
-    if (prop.kind === ReferenceKind.SCALAR && !prop.customType && prop.columnTypes && ['json', 'jsonb'].includes(prop.columnTypes[0])) {
-      prop.customType = new JsonType();
-    }
-
     const mappedType = this.getMappedType(prop);
 
     if (!prop.customType && mappedType instanceof BigIntType) {
@@ -1300,7 +1280,8 @@ export class MetadataDiscovery {
       prop.scale ??= pk.scale;
     });
 
-    if (prop.kind === ReferenceKind.SCALAR && prop.type == null && prop.columnTypes) {
+    if (prop.kind === ReferenceKind.SCALAR && (prop.type == null || prop.type === 'object') && prop.columnTypes?.[0]) {
+      delete (prop as Dictionary).type;
       const mappedType = this.getMappedType(prop);
       prop.type = mappedType.compareAsType();
     }

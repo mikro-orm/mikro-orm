@@ -18,6 +18,7 @@ import {
   QueryOrder,
   raw,
   ref,
+  sql,
   Reference,
   SyntaxErrorException,
   TableExistsException,
@@ -1714,7 +1715,7 @@ describe('EntityManagerPostgre', () => {
     ]);
     const mock = mockLogger(orm, ['query', 'query-params']);
     const res = await orm.em.find(Author2, {
-      [raw('? = ? union select * from author2; --', [1, 1])]: 1,
+      [sql`1 = 1 union select * from author2; --`]: 1,
     });
     expect(res).toHaveLength(3);
 
@@ -1723,9 +1724,7 @@ describe('EntityManagerPostgre', () => {
     await expect(orm.em.find(Author2, {
       // @ts-expect-error
       ['1 = 1 union select * from author2; --']: 1,
-    })).rejects.toThrow('column a0.1 = 1 union select * from author2; -- does not exist');
-
-    expect(mock.mock.calls[1][0]).toMatch('select "a0".* from "author2" as "a0" where "a0"."1 = 1 union select * from author2; --" = 1');
+    })).rejects.toThrow('Trying to query by not existing property Author2.1 = 1 union select * from author2; --');
   });
 
   test('insert with raw sql fragment', async () => {

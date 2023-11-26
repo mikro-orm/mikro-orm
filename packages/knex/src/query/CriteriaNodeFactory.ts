@@ -1,8 +1,16 @@
-import { ReferenceKind, Utils, ValidationError, type Dictionary, type EntityMetadata, type MetadataStorage, type EntityKey } from '@mikro-orm/core';
+import {
+  type Dictionary,
+  type EntityKey,
+  type EntityMetadata,
+  type MetadataStorage,
+  RawQueryFragment,
+  ReferenceKind,
+  Utils,
+  ValidationError,
+} from '@mikro-orm/core';
 import { ObjectCriteriaNode } from './ObjectCriteriaNode';
 import { ArrayCriteriaNode } from './ArrayCriteriaNode';
 import { ScalarCriteriaNode } from './ScalarCriteriaNode';
-import { CriteriaNode } from './CriteriaNode';
 import type { ICriteriaNode } from '../typings';
 
 /**
@@ -11,7 +19,7 @@ import type { ICriteriaNode } from '../typings';
 export class CriteriaNodeFactory {
 
   static createNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
-    const customExpression = CriteriaNode.isCustomExpression(key || '');
+    const customExpression = RawQueryFragment.isKnownFragment(key || '');
     const scalar = Utils.isPrimaryKey(payload) || Utils.isRawSql(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
 
     if (Array.isArray(payload) && !scalar) {

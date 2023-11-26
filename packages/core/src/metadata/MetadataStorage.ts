@@ -1,4 +1,4 @@
-import { EntityMetadata, type Dictionary, type EntityData } from '../typings';
+import { EntityMetadata, type Dictionary, type EntityData, type EntityName } from '../typings';
 import { Utils } from '../utils/Utils';
 import { MetadataError } from '../errors';
 import type { EntityManager } from '../EntityManager';
@@ -65,20 +65,27 @@ export class MetadataStorage {
     return this.metadata[type];
   }
 
-  get<T = any>(entity: string, init = false, validate = true): EntityMetadata<T> {
-    if (validate && !init && !this.has(entity)) {
-      throw MetadataError.missingMetadata(entity);
+  get<T = any>(entityName: EntityName<T>, init = false, validate = true): EntityMetadata<T> {
+    entityName = Utils.className(entityName);
+
+    if (validate && !init && !this.has(entityName)) {
+      throw MetadataError.missingMetadata(entityName);
     }
 
-    if (init && !this.has(entity)) {
-      this.metadata[entity] = new EntityMetadata();
+    if (init && !this.has(entityName)) {
+      this.metadata[entityName] = new EntityMetadata();
     }
 
-    return this.metadata[entity];
+    return this.metadata[entityName];
   }
 
-  find<T = any>(entity: string): EntityMetadata<T> | undefined {
-    return this.metadata[entity];
+  find<T = any>(entityName: EntityName<T>): EntityMetadata<T> | undefined {
+    if (!entityName) {
+      return;
+    }
+
+    entityName = Utils.className(entityName);
+    return this.metadata[entityName];
   }
 
   has(entity: string): boolean {

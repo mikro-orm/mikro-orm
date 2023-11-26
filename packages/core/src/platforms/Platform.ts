@@ -270,6 +270,7 @@ export abstract class Platform {
       case 'uuid': return Type.getType(UuidType);
       case 'date': return Type.getType(DateType);
       case 'datetime': return Type.getType(DateTimeType);
+      case 'timestamp': return Type.getType(DateTimeType);
       case 'time': return Type.getType(TimeType);
       case 'object':
       case 'json': return Type.getType(JsonType);

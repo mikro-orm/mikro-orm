@@ -2109,6 +2109,7 @@ describe('QueryBuilder', () => {
     const node = new CriteriaNode(orm.em.getMetadata(), Author2.name);
     node.payload = { foo: 123 };
     expect(node.process({} as any)).toBe(node.payload);
+    expect(node.willAutoJoin({} as any)).toBe(false);
     expect(inspect(node)).toBe(`CriteriaNode { entityName: 'Author2', payload: { foo: 123 } }`);
   });
 

@@ -11,7 +11,7 @@ jest.mock('knex', () => ({ knex }));
 
 (global as any).process.env.FORCE_COLOR = 0;
 
-import { Configuration, Dictionary, EntityManager, EntitySchema, MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
+import { Configuration, EntityManager, EntityMetadata, MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
 import fs from 'fs-extra';
 import { BASE_DIR } from './helpers';
 import { Author, Test } from './entities';
@@ -105,6 +105,10 @@ describe('MikroORM', () => {
     expect(orm.em).toBeInstanceOf(EntityManager);
     expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Test']);
     expect(await orm.isConnected()).toBe(false);
+
+    for (const meta of orm.getMetadata()) {
+      expect(meta).toBeInstanceOf(EntityMetadata);
+    }
 
     await orm.connect();
     expect(await orm.isConnected()).toBe(true);
