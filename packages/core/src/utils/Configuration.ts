@@ -564,6 +564,11 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     managementDbName?: string;
   };
   entityGenerator: {
+    baseDir?: string;
+    save?: boolean;
+    schema?: string;
+    skipTables?: string[];
+    skipColumns?: Record<string, string[]>;
     bidirectionalRelations?: boolean;
     identifiedReferences?: boolean;
     entitySchema?: boolean;

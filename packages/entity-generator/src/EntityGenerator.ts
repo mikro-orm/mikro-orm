@@ -1,12 +1,12 @@
 import { ensureDir, writeFile } from 'fs-extra';
 import {
-  ReferenceKind,
-  Utils,
   type EntityMetadata,
   type EntityProperty,
   type GenerateOptions,
   type MikroORM,
   type NamingStrategy,
+  ReferenceKind,
+  Utils,
 } from '@mikro-orm/core';
 import {
   type AbstractSqlConnection,
@@ -45,11 +45,31 @@ export class EntityGenerator {
   }
 
   async generate(options: GenerateOptions = {}): Promise<string[]> {
-    const baseDir = Utils.normalizePath(options.baseDir ?? (this.config.get('baseDir') + '/generated-entities'));
+    const defaultPath = `${this.config.get('baseDir')}/generated-entities`;
+    const baseDir = Utils.normalizePath(options.path ?? defaultPath);
     const schema = await DatabaseSchema.create(this.connection, this.platform, this.config);
+    Utils.mergeConfig(options, this.config.get('entityGenerator'));
+    const metadata = this.getEntityMetadata(schema, options);
 
-    const scalarPropertiesForRelations = this.config.get('entityGenerator').scalarPropertiesForRelations!;
+    for (const meta of metadata) {
+      if (!meta.pivotTable || this.referencedEntities.has(meta)) {
+        if (this.config.get('entityGenerator').entitySchema) {
+          this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform, !!options.esmImport, true));
+        } else {
+          this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform, !!options.esmImport, options.scalarTypeInDecorator!));
+        }
+      }
+    }
 
+    if (options.save) {
+      await ensureDir(baseDir);
+      await Promise.all(this.sources.map(file => writeFile(baseDir + '/' + file.getBaseName(), file.generate())));
+    }
+
+    return this.sources.map(file => file.generate());
+  }
+
+  private getEntityMetadata(schema: DatabaseSchema, options: GenerateOptions) {
     let metadata = schema.getTables()
       .filter(table => !options.schema || table.schema === options.schema)
       .sort((a, b) => a.name!.localeCompare(b.name!))
@@ -62,7 +82,7 @@ export class EntityGenerator {
             }
           });
         }
-        return table.getEntityDeclaration(this.namingStrategy, this.helper, scalarPropertiesForRelations);
+        return table.getEntityDeclaration(this.namingStrategy, this.helper, options.scalarPropertiesForRelations!);
       });
 
     for (const meta of metadata) {
@@ -79,47 +99,32 @@ export class EntityGenerator {
 
     this.detectManyToManyRelations(metadata);
 
-    if (this.config.get('entityGenerator').bidirectionalRelations) {
+    if (options.bidirectionalRelations) {
       this.generateBidirectionalRelations(metadata);
     }
 
-    if (this.config.get('entityGenerator').identifiedReferences) {
+    if (options.identifiedReferences) {
       this.generateIdentifiedReferences(metadata);
     }
 
-    const esmImport = this.config.get('entityGenerator').esmImport ?? false;
-
-    for (const meta of metadata) {
-      if (!meta.pivotTable || this.referencedEntities.has(meta)) {
-        if (this.config.get('entityGenerator').entitySchema) {
-          this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform, esmImport, true));
-        } else {
-          this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform, esmImport, this.config.get('entityGenerator').scalarTypeInDecorator!));
-        }
-      }
-    }
-
-    if (options.save) {
-      await ensureDir(baseDir);
-      await Promise.all(this.sources.map(file => writeFile(baseDir + '/' + file.getBaseName(), file.generate())));
-    }
-
-    return this.sources.map(file => file.generate());
+    return metadata;
   }
 
   private detectManyToManyRelations(metadata: EntityMetadata[]): void {
     for (const meta of metadata) {
-      if (metadata.some(m => {
-        return m.tableName !== meta.tableName && m.relations.some(
-          r => {
-            return r.referencedTableName === meta.tableName && (r.kind === ReferenceKind.MANY_TO_ONE || r.kind === ReferenceKind.ONE_TO_ONE);
-          });
-      })) {
+      const isReferenced = metadata.some(m => {
+        return m.tableName !== meta.tableName && m.relations.some(r => {
+          return r.referencedTableName === meta.tableName && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(r.kind);
+        });
+      });
+
+      if (isReferenced) {
         this.referencedEntities.add(meta);
       }
+
       if (
-        meta.compositePK &&                                                         // needs to have composite PK
-        meta.relations.length === 2 &&                                              // there are exactly two relation properties
+        meta.compositePK && // needs to have composite PK
+        meta.relations.length === 2 && // there are exactly two relation properties
         !meta.relations.some(rel => !rel.primary || rel.kind !== ReferenceKind.MANY_TO_ONE) && // all relations are m:1 and PKs
         (
           // all properties are relations...

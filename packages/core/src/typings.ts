@@ -682,11 +682,17 @@ export interface ISchemaGenerator {
 }
 
 export interface GenerateOptions {
-  baseDir?: string;
+  path?: string;
   save?: boolean;
   schema?: string;
   skipTables?: string[];
   skipColumns?: Record<string, string[]>;
+  bidirectionalRelations?: boolean;
+  identifiedReferences?: boolean;
+  entitySchema?: boolean;
+  esmImport?: boolean;
+  scalarTypeInDecorator?: boolean;
+  scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
 }
 
 export interface IEntityGenerator {

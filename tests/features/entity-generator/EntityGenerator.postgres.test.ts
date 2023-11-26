@@ -1,9 +1,6 @@
 import { pathExists, remove } from 'fs-extra';
-import { MikroORM } from '@mikro-orm/core';
 import { DatabaseTable } from '@mikro-orm/knex';
-import { SqliteDriver } from '@mikro-orm/sqlite';
-import { MongoDriver } from '@mikro-orm/mongodb';
-import { initORMMySql, initORMPostgreSql, initORMSqlite } from '../../bootstrap';
+import { initORMPostgreSql } from '../../bootstrap';
 
 describe('EntityGenerator', () => {
 
@@ -51,7 +48,7 @@ describe('EntityGenerator', () => {
     const orm = await initORMPostgreSql();
     const dump = await orm.entityGenerator.generate({
       save: true,
-      baseDir: './temp/entities',
+      path: './temp/entities',
       skipTables: ['test2', 'test2_bars'],
       skipColumns: { 'public.book2': ['price'] },
     });
@@ -68,7 +65,7 @@ describe('EntityGenerator', () => {
     await orm.schema.dropSchema();
     const schema = `create table "publisher2" ("id" serial primary key, "test" varchar null default '123', "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) default 'LOCAL')`;
     await orm.schema.execute(schema);
-    const dump = await orm.entityGenerator.generate({ save: false, baseDir: './temp/entities' });
+    const dump = await orm.entityGenerator.generate({ save: false, path: './temp/entities' });
     expect(dump).toMatchSnapshot('postgres-entity-dump-enum-default-value');
     await orm.schema.execute(`drop table if exists "publisher2"`);
     await orm.close(true);
