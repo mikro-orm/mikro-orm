@@ -564,7 +564,7 @@ Next, let's try to do the same, but with an `EntityManager` fork:
 // now try to create a new fork, does not matter if from `orm.em` or our existing `em` fork, as by default we get a clean one
 const em2 = em.fork();
 console.log('verify the EM ids are different:', em.id, em2.id);
-const myUser2 = await em2.findOne(User, user.id);
+const myUser2 = await em2.findOneOrFail(User, user.id);
 console.log('users are no longer the same, as they came from differnet EM:', user === myUser2);
 ```
 
@@ -576,6 +576,12 @@ verify the EM ids are different: 3 4
 users are no longer the same, as they came from differnet EM: false
 ```
 
+:::info
+
+We just used `em.findOneOrFail()` instead of `em.findOne()`, as you may have guessed, its purpose is to always return a value, or throw otherwise.
+
+:::
+
 You can see there is a select query to load the user. This is because we used a new fork, that is clean by default - it has an empty Identity Map, and therefore it needs to load the entity from the database. In the previous example, we already had it present by the time we were calling `em.findOne()`. You queried the entity by its primary key, and such query will always first check the identity map and prefer the results from it instead of querying the database.
 
 ### Refreshing loaded entities
@@ -586,31 +592,36 @@ The behavior described above is often what we want and serves as a first-level c
 
 1. fork first, to have a clear context
 2. use `disableIdentityMap: true` in the `FindOptions`
-3. use `refresh: true` in the `FindOptions`
+3. use `em.refresh(entity)`
 
-The first two have pretty much the same effect, using `disableIdentityMap` just does the forking for us behind the scenes. Let's talk about the last one - refreshing. With `refresh: true`, the `EntityManager` will ignore the contents of the Identity Map and always fetch the entity from the database. Moreover, this freshly loaded entity will replace the one that is already loaded (if there is one). This means the flag can break the identity invariant that no entity has more than one instance - so be careful with it.
+The first two have pretty much the same effect, using `disableIdentityMap` just does the forking for us behind the scenes. Let's talk about the last one - refreshing. With `em.refresh()`, the `EntityManager` will ignore the contents of the Identity Map and always fetch the entity from the database.
 
 ```ts title='server.ts'
-// load user again, this time with the `refresh` option to replace the one in the context
-const myUser3 = await em2.findOne(User, user.id, { refresh: true });
-console.log('myUser2 and myUser3 are no longer the same, only myUser3 is now managed by em2:', myUser2 === myUser3);
+// change the user
+myUser2.bio = 'changed';
 
-// if we try to modify myUser2, flushing will not do anything - as this entity is now replaced in the context by myUser3
-myUser2!.bio = 'this change will be ignored, myUser2 is not managed';
-await em2.flush();
+// reload user with `em.refresh()`
+await em2.refresh(myUser2);
+console.log('changes are lost', myUser2);
 
-// but changing the new myUser3 entity will work
-myUser3!.bio = 'some change, will be saved';
+// let's try again
+myUser2!.bio = 'some change, will be saved';
 await em2.flush();
 ```
 
 Running the `npm start` script again, we get the following:
 
 ```
-[query] select `u0`.* from `user` as `u0` where `u0`.`id` = 1 limit 1 [took 0 ms]
-myUser2 and myUser3 are no longer the same, only myUser3 is now managed by em2: true
+[query] select `u0`.* from `user` as `u0` where `u0`.`id` = 1 limit 1 [took 1 ms, 1 result]
+changes are lost User {
+  fullName: 'Foo Bar',
+  email: 'foo@bar.com',
+  password: '123456',
+  bio: '...',
+  id: 1
+}
 [query] begin
-[query] update `user` set `bio` = 'some change, will be saved' where `id` = 1 [took 14 ms]
+[query] update `user` set `bio` = 'some change, will be saved' where `id` = 1 [took 0 ms, 1 row affected]
 [query] commit
 ```
 

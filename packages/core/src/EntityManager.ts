@@ -578,7 +578,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Refreshes the persistent state of an entity from the database, overriding any local changes that have not yet been persisted.
+   * Refreshes the persistent state of an entity from the database, overriding any local changes that have not yet been
+   * persisted. Returns the same entity instance (same object reference), but re-hydrated. If the entity is no longer
+   * in database, the method returns `null`.
    */
   async refresh<
     Entity extends object,
@@ -594,12 +596,18 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     });
 
     if (reloaded) {
-      this.config.getHydrator(this.metadata).hydrate(entity, helper(entity).__meta, helper(reloaded).toPOJO() as object, this.getEntityFactory(), 'full');
+      this.config.getHydrator(this.metadata).hydrate(
+        entity,
+        helper(entity).__meta,
+        helper(reloaded).toPOJO() as object,
+        this.getEntityFactory(),
+        'full',
+      );
     } else {
       this.getUnitOfWork().unsetIdentity(entity);
     }
 
-    return reloaded;
+    return reloaded ? entity as any : reloaded;
   }
 
   /**
