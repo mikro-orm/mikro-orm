@@ -48,7 +48,7 @@ export class EntityGenerator {
     const defaultPath = `${this.config.get('baseDir')}/generated-entities`;
     const baseDir = Utils.normalizePath(options.path ?? defaultPath);
     const schema = await DatabaseSchema.create(this.connection, this.platform, this.config);
-    Utils.mergeConfig(options, this.config.get('entityGenerator'));
+    options = Utils.mergeConfig({}, this.config.get('entityGenerator'), options);
     const metadata = this.getEntityMetadata(schema, options);
 
     for (const meta of metadata) {
