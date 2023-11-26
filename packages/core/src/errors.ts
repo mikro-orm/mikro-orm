@@ -224,6 +224,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`Duplicate ${subject} are not allowed: ${paths.join(', ')}`);
   }
 
+  static duplicateFieldName(className: string, names: [string, string][]): MetadataError {
+    return new MetadataError(`Duplicate fieldNames are not allowed: ${names.map(n => `${className}.${n[0]} (fieldName: '${n[0]}')`).join(', ')}`);
+  }
+
   static multipleDecorators(entityName: string, propertyName: string): MetadataError {
     return new MetadataError(`Multiple property decorators used on '${entityName}.${propertyName}' property`);
   }

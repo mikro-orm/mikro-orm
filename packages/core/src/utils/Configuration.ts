@@ -52,6 +52,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       warnWhenNoEntities: true,
       requireEntitiesArray: false,
       checkDuplicateTableNames: true,
+      checkDuplicateFieldNames: true,
       alwaysAnalyseProperties: true,
       disableDynamicFileAccess: false,
       checkDuplicateEntities: true,
@@ -490,24 +491,27 @@ export interface PoolConfig {
   Promise?: any;
 }
 
+export interface MetadataDiscoveryOptions {
+  warnWhenNoEntities?: boolean;
+  requireEntitiesArray?: boolean;
+  checkDuplicateTableNames?: boolean;
+  checkDuplicateFieldNames?: boolean;
+  alwaysAnalyseProperties?: boolean;
+  disableDynamicFileAccess?: boolean;
+  inferDefaultValues?: boolean;
+  getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
+  checkDuplicateEntities?: boolean;
+  onMetadata?: (meta: EntityMetadata, platform: Platform) => MaybePromise<void>;
+  afterDiscovered?: (storage: MetadataStorage, platform: Platform) => MaybePromise<void>;
+}
+
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {
   entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
   entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
   extensions: { register: (orm: MikroORM) => void }[];
   subscribers: (EventSubscriber | Constructor<EventSubscriber>)[];
   filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
-  discovery: {
-    warnWhenNoEntities?: boolean;
-    requireEntitiesArray?: boolean;
-    checkDuplicateTableNames?: boolean;
-    alwaysAnalyseProperties?: boolean;
-    disableDynamicFileAccess?: boolean;
-    inferDefaultValues?: boolean;
-    getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
-    checkDuplicateEntities?: boolean;
-    onMetadata?: (meta: EntityMetadata, platform: Platform) => MaybePromise<void>;
-    afterDiscovered?: (storage: MetadataStorage, platform: Platform) => MaybePromise<void>;
-  };
+  discovery: MetadataDiscoveryOptions;
   driver?: { new(config: Configuration): D };
   driverOptions: Dictionary;
   namingStrategy?: { new(): NamingStrategy };

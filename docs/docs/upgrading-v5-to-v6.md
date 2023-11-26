@@ -456,3 +456,43 @@ const users = await em.find(User, {}, {
 ```
 
 `populate: false` is still allowed and serves as a way to disable eager loaded properties.
+
+## Duplicate field names are now validated
+
+When you use the same `fieldName` for two properties in one entity, error will be thrown:
+
+```ts
+@Entity()
+class User {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ name: 'custom_name' })
+  name!: number;
+
+  @Property({ name: 'custom_name' })
+  age!: number;
+
+}
+```
+
+This does not apply to virtual properties:
+
+```ts
+@Entity()
+class User {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => User, { name: 'parent_id' })
+  parent!: User;
+
+  @Property({ name: 'parent_id',  })
+  parentId!: number;
+
+}
+```
+
+> This validation can be disabled via `discovery.checkDuplicateFieldNames` ORM config option.
