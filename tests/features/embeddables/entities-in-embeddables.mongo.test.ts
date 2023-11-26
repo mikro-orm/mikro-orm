@@ -375,10 +375,10 @@ describe('embedded entities in mongo', () => {
     expect(u5._id).toEqual(u1._id);
 
     const err1 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
-    await expect(orm.em.findOneOrFail(User, { profile1: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err1);
+    await expect(orm.em.findOneOrFail(User, { profile1: { identity: { city: 'London 1' } as any } })).rejects.toThrow(err1);
 
     const err2 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
-    await expect(orm.em.findOneOrFail(User, { profile2: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err2);
+    await expect(orm.em.findOneOrFail(User, { profile2: { identity: { city: 'London 1' } as any } })).rejects.toThrow(err2);
   });
 
   test('populating entities in embeddables', async () => {

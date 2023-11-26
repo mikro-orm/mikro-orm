@@ -154,7 +154,7 @@ describe('GH issue 725', () => {
 
     const test = new Test2();
     const err = `Trying to persist not discovered entity of type Test2. Entity with this name was discovered, but not the prototype you are passing to the ORM. If using EntitySchema, be sure to point to the implementation via \`class\`.`;
-    expect(() => orm.em.persist(test)).toThrowError(err);
+    expect(() => orm.em.persist(test)).toThrow(err);
     await orm.close();
   });
 

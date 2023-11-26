@@ -113,8 +113,8 @@ describe('EntityRepository', () => {
 
   test('assign() and populate() validates entity type', async () => {
     const e = Object.create(Author.prototype, {});
-    await expect(repo.populate(e, [])).rejects.toThrowError(`Trying to use EntityRepository.populate() with 'Author' entity while the repository is of type 'Publisher'`);
-    expect(() => repo.assign(e, {})).toThrowError(`Trying to use EntityRepository.assign() with 'Author' entity while the repository is of type 'Publisher'`);
+    await expect(repo.populate(e, [])).rejects.toThrow(`Trying to use EntityRepository.populate() with 'Author' entity while the repository is of type 'Publisher'`);
+    expect(() => repo.assign(e, {})).toThrow(`Trying to use EntityRepository.assign() with 'Author' entity while the repository is of type 'Publisher'`);
   });
 
   test('getEntityName() returns the correct value', async () => {

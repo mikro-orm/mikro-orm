@@ -54,8 +54,8 @@ describe('EntityAssignerMongo', () => {
     assign(book, { tags: [wrap(tag2).toObject()] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
     expect(book.tags.isDirty()).toBe(true);
-    expect(() => assign(book, { tags: [false] } as any)).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [ false ]`);
-    expect(() => assign(book, { publisher: [{ foo: 'bar' }] } as EntityData<Book>)).toThrowError(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
+    expect(() => assign(book, { tags: [false] } as any)).toThrow(`Invalid collection values provided for 'Book.tags' in Book.assign(): [ false ]`);
+    expect(() => assign(book, { publisher: [{ foo: 'bar' }] } as EntityData<Book>)).toThrow(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
   });
 
   test('#assign() should ignore undefined properties', async () => {

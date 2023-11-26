@@ -150,7 +150,7 @@ describe('embedded entities in mongo', () => {
     user2.profile1 = new Profile('u1', new Identity('e3'));
     user2.profile2 = new Profile('u4', new Identity('e4', new IdentityMeta('f4')));
 
-    await expect(orm.em.persistAndFlush([user1, user2])).rejects.toThrowError(/E11000 duplicate key error collection: mikro-orm-test-nested-embeddables\.user index: profile1_username_1 dup key: \{ profile1_username: "u1" }/);
+    await expect(orm.em.persistAndFlush([user1, user2])).rejects.toThrow(/E11000 duplicate key error collection: mikro-orm-test-nested-embeddables\.user index: profile1_username_1 dup key: \{ profile1_username: "u1" }/);
   });
 
   test('persist and load', async () => {
@@ -247,10 +247,10 @@ describe('embedded entities in mongo', () => {
     expect(u5._id).toEqual(u1._id);
 
     const err1 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
-    await expect(orm.em.findOneOrFail(User, { profile1: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err1);
+    await expect(orm.em.findOneOrFail(User, { profile1: { identity: { city: 'London 1' } as any } })).rejects.toThrow(err1);
 
     const err2 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
-    await expect(orm.em.findOneOrFail(User, { profile2: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err2);
+    await expect(orm.em.findOneOrFail(User, { profile2: { identity: { city: 'London 1' } as any } })).rejects.toThrow(err2);
   });
 
   test('#assign() works with nested embeddables', async () => {

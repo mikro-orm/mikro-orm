@@ -48,7 +48,7 @@ describe('QueryBuilder', () => {
     expect(qb2.getFormattedQuery()).toBe('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = \'test 123\' and `e0`.`type` = \'global\' order by (point(location_latitude, location_longitude) <@> point(53.46, 9.9)) asc');
 
     // trying to modify finalized QB will throw
-    expect(() => qb2.where('foo = 123')).toThrowError('This QueryBuilder instance is already finalized, clone it first if you want to modify it.');
+    expect(() => qb2.where('foo = 123')).toThrow('This QueryBuilder instance is already finalized, clone it first if you want to modify it.');
   });
 
   test('select query picks read replica', async () => {
@@ -269,7 +269,7 @@ describe('QueryBuilder', () => {
   test('validation of unknown alias', async () => {
     const qb = orm.em.createQueryBuilder(FooBar2, 'fb1');
     qb.select('*').joinAndSelect('fb1.baz', 'fz');
-    expect(() => qb.join('fb0.baz', 'b')).toThrowError(`Trying to join 'baz' with alias 'fb0', but 'fb0' is not a known alias. Available aliases are: 'fb1', 'fz'.`);
+    expect(() => qb.join('fb0.baz', 'b')).toThrow(`Trying to join 'baz' with alias 'fb0', but 'fb0' is not a known alias. Available aliases are: 'fb1', 'fz'.`);
   });
 
   test('complex select with mapping of joined results', async () => {
@@ -277,7 +277,7 @@ describe('QueryBuilder', () => {
     qb.select('*').joinAndSelect('fb1.baz', 'fz');
 
     const err = `Trying to join 'fz.fooBar', but 'fooBar' is not a defined relation on FooBaz2`;
-    expect(() => qb.leftJoinAndSelect('fz.fooBar', 'fb2')).toThrowError(err);
+    expect(() => qb.leftJoinAndSelect('fz.fooBar', 'fb2')).toThrow(err);
 
     qb.leftJoinAndSelect('fz.bar', 'fb2')
       .where({ 'fz.name': 'baz' })
@@ -812,7 +812,7 @@ describe('QueryBuilder', () => {
 
   test('select with unsupported operator', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
-    expect(() => qb.select('*').where({ $test: { foo: 'bar' } })).toThrowError('Trying to query by not existing property Test2.$test');
+    expect(() => qb.select('*').where({ $test: { foo: 'bar' } })).toThrow('Trying to query by not existing property Test2.$test');
   });
 
   test('select distinct id with left join', async () => {
@@ -1319,20 +1319,20 @@ describe('QueryBuilder', () => {
   test('select with deep where with invalid property throws error', async () => {
     const qb0 = orm.em.createQueryBuilder(Book2);
     const err = 'Trying to query by not existing property Author2.undefinedName';
-    expect(() => qb0.select('*').where({ author: { undefinedName: 'Jon Snow' } }).getQuery()).toThrowError(err);
+    expect(() => qb0.select('*').where({ author: { undefinedName: 'Jon Snow' } }).getQuery()).toThrow(err);
   });
 
   test('pessimistic locking requires active transaction', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ name: '...' });
-    expect(() => qb.setLockMode(LockMode.NONE)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE_OR_FAIL)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_PARTIAL_WRITE)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ_OR_FAIL)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_PARTIAL_READ)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.OPTIMISTIC).getQuery()).toThrowError('The optimistic lock on entity Author2 failed');
+    expect(() => qb.setLockMode(LockMode.NONE)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE_OR_FAIL)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_PARTIAL_WRITE)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ_OR_FAIL)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_PARTIAL_READ)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.OPTIMISTIC).getQuery()).toThrow('The optimistic lock on entity Author2 failed');
   });
 
   test('insert query', async () => {
@@ -1500,20 +1500,20 @@ describe('QueryBuilder', () => {
 
   test('trying to call qb.update/delete() after qb.where() will throw', async () => {
     const err1 = 'You are trying to call `qb.where().update()`. Calling `qb.update()` before `qb.where()` is required.';
-    expect(() => orm.em.qb(Publisher2).where({ id: 123, type: PublisherType.LOCAL }).update({ name: 'test 123', type: PublisherType.GLOBAL })).toThrowError(err1);
-    expect(() => orm.em.qb(Book2).where({ uuid: { $in: ['1', '2', '3'] }, author: 123 }).update({ author: 321 })).toThrowError(err1);
-    expect(() => orm.em.qb(FooParam2).where({ bar: { baz: 123 } }).update({ value: 'test 123' })).toThrowError(err1);
+    expect(() => orm.em.qb(Publisher2).where({ id: 123, type: PublisherType.LOCAL }).update({ name: 'test 123', type: PublisherType.GLOBAL })).toThrow(err1);
+    expect(() => orm.em.qb(Book2).where({ uuid: { $in: ['1', '2', '3'] }, author: 123 }).update({ author: 321 })).toThrow(err1);
+    expect(() => orm.em.qb(FooParam2).where({ bar: { baz: 123 } }).update({ value: 'test 123' })).toThrow(err1);
 
     expect(() => orm.em.qb(Author2).where({
       $or: [
         { email: 'value1' },
         { name: { $in: ['value2'], $ne: 'value3' } },
       ],
-    }).update({ name: '123' })).toThrowError(err1);
+    }).update({ name: '123' })).toThrow(err1);
 
     const qb2 = orm.em.createQueryBuilder(FooParam2);
     const err2 = 'You are trying to call `qb.where().delete()`. Calling `qb.delete()` before `qb.where()` is required.';
-    expect(() => qb2.where({ bar: { baz: 123 } }).delete()).toThrowError(err2);
+    expect(() => qb2.where({ bar: { baz: 123 } }).delete()).toThrow(err2);
   });
 
   test('update query with or condition and auto-joining', async () => {
@@ -2920,7 +2920,7 @@ describe('QueryBuilder', () => {
       pg.em.clear();
 
       const qb5 = pg.em.createQueryBuilder(Author2, 'a');
-      expect(() => qb5.leftJoinLateralAndSelect('a.books', 'sub', { author: sql.ref('a.id') })).toThrowError('Lateral join can be used only with a sub-query.');
+      expect(() => qb5.leftJoinLateralAndSelect('a.books', 'sub', { author: sql.ref('a.id') })).toThrow('Lateral join can be used only with a sub-query.');
       pg.em.clear();
     }
 

@@ -190,7 +190,7 @@ describe('Migrator (postgres)', () => {
     getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
     const migrator = orm.migrator;
     const err = 'Initial migration cannot be created, as some migrations already exist';
-    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrowError(err);
+    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrow(err);
 
     getExecutedMigrationsMock.mockResolvedValueOnce([]);
     const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
@@ -206,11 +206,11 @@ describe('Migrator (postgres)', () => {
     ]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: custom.author2, custom.book2`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err2);
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err2);
 
     metadataMock.mockReturnValueOnce({});
     const err3 = `No entities found`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err3);
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err3);
 
     schemaMock.mockReturnValueOnce([]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
@@ -316,7 +316,7 @@ describe('Migrator (postgres)', () => {
     expect(mock.mock.calls[5][0]).toMatch('commit');
     mock.mock.calls.length = 0;
 
-    await expect(runner.run(migration1, 'down')).rejects.toThrowError('This migration cannot be reverted');
+    await expect(runner.run(migration1, 'down')).rejects.toThrow('This migration cannot be reverted');
     const executed = await migrator.getExecutedMigrations();
     expect(executed).toEqual([]);
 

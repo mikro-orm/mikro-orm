@@ -134,7 +134,7 @@ describe('EntityManagerMongo2', () => {
     expect(tags).toHaveLength(5);
     expect(books[0].tags).toHaveLength(5);
     expect(tags.map(t => t.name)).toEqual(['tag 11-06', 'tag 11-07', 'tag 11-08', 'tag 11-09', 'tag 11-10']);
-    expect(() => books[0].tags.add(orm.em.create(BookTag, { name: 'new' }))).toThrowError('You cannot modify collection Book.tags as it is marked as readonly.');
+    expect(() => books[0].tags.add(orm.em.create(BookTag, { name: 'new' }))).toThrow('You cannot modify collection Book.tags as it is marked as readonly.');
     expect(wrap(books[0]).toObject()).toMatchObject({
       tags: books[0].tags.getItems().map(t => ({ name: t.name })),
     });

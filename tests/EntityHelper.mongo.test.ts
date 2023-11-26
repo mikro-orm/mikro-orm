@@ -86,7 +86,7 @@ describe('EntityHelperMongo', () => {
     expect(wrap(god, true).__touched).toBe(false); // propagation is not working on not managed entities when `useDefineForClassFields` is enabled
     expect(god.isTouched()).toBe(false); // propagation is not working on not managed entities when `useDefineForClassFields` is enabled
     god.populated();
-    await expect(god.populate(['favouriteAuthor'])).rejects.toThrowError('Entity Author is not managed.');
+    await expect(god.populate(['favouriteAuthor'])).rejects.toThrow('Entity Author is not managed.');
     expect(wrap(god, true).__populated).toBe(true);
     expect(wrap(god, true).__platform).toBe(orm.em.getDriver().getPlatform());
 

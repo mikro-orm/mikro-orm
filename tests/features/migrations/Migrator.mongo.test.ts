@@ -178,7 +178,7 @@ describe('Migrator (mongo)', () => {
     expect(mock.mock.calls[2][0]).toMatch('db.commit()');
     mock.mock.calls.length = 0;
 
-    await expect(runner.run(migration1, 'down')).rejects.toThrowError('This migration cannot be reverted');
+    await expect(runner.run(migration1, 'down')).rejects.toThrow('This migration cannot be reverted');
     const executed = await migrator.getExecutedMigrations();
     expect(executed).toEqual([]);
 

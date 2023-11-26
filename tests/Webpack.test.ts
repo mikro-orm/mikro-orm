@@ -33,7 +33,7 @@ describe('Webpack', () => {
       discovery: { disableDynamicFileAccess: true },
     } as Options;
     const err = `Please provide either 'type' or 'entity' attribute in AuthorWpI.books. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`;
-    await expect(MikroORM.init(options)).rejects.toThrowError(err);
+    await expect(MikroORM.init(options)).rejects.toThrow(err);
   });
 
   test('should throw error if entities is not defined', async () => {
@@ -44,7 +44,7 @@ describe('Webpack', () => {
       discovery: { disableDynamicFileAccess: true },
     } as Options;
     const err = `[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`;
-    await expect(MikroORM.init(options)).rejects.toThrowError(err);
+    await expect(MikroORM.init(options)).rejects.toThrow(err);
   });
 
 });

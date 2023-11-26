@@ -86,9 +86,9 @@ describe('EntityManagerSqlite', () => {
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
     const err1 = "insert into `not_existing` (`foo`) values ('bar') - SQLITE_ERROR: no such table: not_existing";
-    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
+    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
     const err2 = 'delete from `not_existing` - SQLITE_ERROR: no such table: not_existing';
-    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
+    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {
@@ -433,7 +433,7 @@ describe('EntityManagerSqlite', () => {
   test('findOne supports optimistic locking [unversioned entity]', async () => {
     const author = new Author3('name', 'email');
     await orm.em.persistAndFlush(author);
-    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrowError('Cannot obtain optimistic lock on unversioned entity Author3');
+    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrow('Cannot obtain optimistic lock on unversioned entity Author3');
   });
 
   test('findOne supports optimistic locking [versioned entity]', async () => {
@@ -447,22 +447,22 @@ describe('EntityManagerSqlite', () => {
     const test = new Test3();
     test.name = 'test';
     await orm.em.persistAndFlush(test);
-    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrowError('The optimistic lock failed, version 2 was expected, but is actually 1');
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrow('The optimistic lock failed, version 2 was expected, but is actually 1');
   });
 
   test('findOne supports optimistic locking [testLockUnmanagedEntityThrowsException]', async () => {
     const test = new Test3();
     test.name = 'test';
-    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrowError('Entity Test3 is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrow('Entity Test3 is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
   });
 
   test('pessimistic locking requires active transaction', async () => {
     const test = Test3.create('Lock test');
     await orm.em.persistAndFlush(test);
-    await expect(orm.em.findOne(Test3, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.findOne(Test3, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_WRITE)).rejects.toThrowError('An open transaction is required for this operation');
+    await expect(orm.em.findOne(Test3, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.findOne(Test3, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_WRITE)).rejects.toThrow('An open transaction is required for this operation');
   });
 
   test('findOne does not support pessimistic locking [pessimistic write]', async () => {
@@ -623,9 +623,9 @@ describe('EntityManagerSqlite', () => {
     tags = await orm.em.find(BookTag3, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
-    expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
-    expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
-    expect(() => tags[0].books.contains(book1)).toThrowError(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
+    expect(() => tags[0].books.getItems()).toThrow(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
+    expect(() => tags[0].books.remove(book1, book2)).toThrow(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
+    expect(() => tags[0].books.contains(book1)).toThrow(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
 
     // test M:N lazy load
     orm.em.clear();
@@ -796,8 +796,8 @@ describe('EntityManagerSqlite', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author3' does not have property 'tests'`);
-    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author3' does not have property 'tests'`);
+    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author3' does not have property 'tests'`);
+    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author3' does not have property 'tests'`);
   });
 
   test('many to many collection does have fixed order', async () => {

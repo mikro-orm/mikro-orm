@@ -333,7 +333,7 @@ describe('composite keys in mysql', () => {
     const ref = orm.em.getReference(Car2, ['n', 1], { wrapped: true });
     expect(ref.unwrap()).toBeInstanceOf(Car2);
     expect(wrap(ref, true).__primaryKeys).toEqual(['n', 1]);
-    expect(() => orm.em.getReference(Car2, 1 as any)).toThrowError('Composite key required for entity Car2.');
+    expect(() => orm.em.getReference(Car2, 1 as any)).toThrow('Composite key required for entity Car2.');
     expect(wrap(ref).toJSON()).toEqual({ name: 'n', year: 1 });
   });
 

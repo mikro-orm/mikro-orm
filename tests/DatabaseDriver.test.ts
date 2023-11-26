@@ -73,18 +73,18 @@ describe('DatabaseDriver', () => {
     expect(driver.createEntityManager()).toBeInstanceOf(EntityManager);
     expect(driver.getPlatform().getRepositoryClass()).toBe(EntityRepository);
     expect(driver.getPlatform().quoteValue('a')).toBe('a');
-    await expect(driver.aggregate('', [])).rejects.toThrowError('Aggregations are not supported by Driver driver');
-    await expect(driver.nativeUpdateMany('', [], [])).rejects.toThrowError('Batch updates are not supported by Driver driver');
-    await expect(driver.lockPessimistic({}, { lockMode: LockMode.NONE })).rejects.toThrowError('Pessimistic locks are not supported by Driver driver');
+    await expect(driver.aggregate('', [])).rejects.toThrow('Aggregations are not supported by Driver driver');
+    await expect(driver.nativeUpdateMany('', [], [])).rejects.toThrow('Batch updates are not supported by Driver driver');
+    await expect(driver.lockPessimistic({}, { lockMode: LockMode.NONE })).rejects.toThrow('Pessimistic locks are not supported by Driver driver');
     const e1 = driver.convertException(new Error('test'));
     const e2 = driver.convertException(e1);
     expect(e1).toBe(e2);
   });
 
   test('not supported', async () => {
-    expect(() => driver.getPlatform().getFullTextWhereClause({} as any)).toThrowError('Full text searching is not supported by this driver.');
-    expect(() => driver.getPlatform().supportsCreatingFullTextIndex()).toThrowError('Full text searching is not supported by this driver.');
-    expect(() => driver.getPlatform().getFullTextIndexExpression({} as any, {} as any, {} as any, {} as any)).toThrowError('Full text searching is not supported by this driver.');
+    expect(() => driver.getPlatform().getFullTextWhereClause({} as any)).toThrow('Full text searching is not supported by this driver.');
+    expect(() => driver.getPlatform().supportsCreatingFullTextIndex()).toThrow('Full text searching is not supported by this driver.');
+    expect(() => driver.getPlatform().getFullTextIndexExpression({} as any, {} as any, {} as any, {} as any)).toThrow('Full text searching is not supported by this driver.');
   });
 
 });

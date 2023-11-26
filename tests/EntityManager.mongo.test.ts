@@ -91,8 +91,8 @@ describe('EntityManagerMongo', () => {
     const fullTextBooks = (await booksRepository.find({ $fulltext: 'life wall' }))!;
     expect(fullTextBooks.length).toBe(4);
 
-    await expect(booksRepository.find({ title: { $fulltext: 'life wall' } })).rejects.toThrowError('Full text search is only supported on the top level of the query object.');
-    await expect(booksRepository.find({ author: { name: { $fulltext: 'god' } } })).rejects.toThrowError('Full text search is only supported on the top level of the query object.');
+    await expect(booksRepository.find({ title: { $fulltext: 'life wall' } })).rejects.toThrow('Full text search is only supported on the top level of the query object.');
+    await expect(booksRepository.find({ author: { name: { $fulltext: 'god' } } })).rejects.toThrow('Full text search is only supported on the top level of the query object.');
 
     // count test
     const count = await authorRepository.count();
@@ -286,15 +286,15 @@ describe('EntityManagerMongo', () => {
 
   test(`entity.init() and collection.init() works only for managed entities`, async () => {
     const author = new Author('a', 'b');
-    await expect(wrap(author).init()).rejects.toThrowError('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
-    await expect(author.books.init()).rejects.toThrowError('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+    await expect(wrap(author).init()).rejects.toThrow('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+    await expect(author.books.init()).rejects.toThrow('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
   });
 
   test(`persisting 1:1 created via assign from inverse (gh #210)`, async () => {
     expect(() => wrap(new FooBaz()).assign({
       name: 'fz',
       bar: { name: 'fb' },
-    })).toThrowError('To use assign() on not managed entities, explicitly provide EM instance: wrap(entity).assign(data, { em: orm.em })');
+    })).toThrow('To use assign() on not managed entities, explicitly provide EM instance: wrap(entity).assign(data, { em: orm.em })');
 
     const baz = wrap(new FooBaz()).assign({
       name: 'fz',
@@ -416,7 +416,7 @@ describe('EntityManagerMongo', () => {
 
   test('should throw when trying to merge entity without id', async () => {
     const author = new Author('test', 'test');
-    expect(() => orm.em.merge(author)).toThrowError(`You cannot merge entity 'Author' without identifier!`);
+    expect(() => orm.em.merge(author)).toThrow(`You cannot merge entity 'Author' without identifier!`);
   });
 
   test('fork', async () => {
@@ -442,9 +442,9 @@ describe('EntityManagerMongo', () => {
   });
 
   test('findOne with empty where will throw', async () => {
-    await expect(orm.em.findOne(Author, {})).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne(Author, undefined!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne(Author, null!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne(Author, {})).rejects.toThrow(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne(Author, undefined!)).rejects.toThrow(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne(Author, null!)).rejects.toThrow(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
   });
 
   test('findOne should initialize entity that is already in IM', async () => {
@@ -536,9 +536,9 @@ describe('EntityManagerMongo', () => {
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 }, { orderBy: {} })).toBeNull();
     expect(driver.getPlatform().usesPivotTable()).toBe(false);
     expect(driver.getPlatform().usesImplicitTransactions()).toBe(false);
-    await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables');
-    await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
-    await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
+    await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrow('MongoDriver does not use pivot tables');
+    await expect(driver.getConnection().execute('')).rejects.toThrow('MongoConnection does not support generic execute method');
+    await expect(driver.getConnection().execute('')).rejects.toThrow('MongoConnection does not support generic execute method');
     expect(driver.getConnection().getCollection(BookTag).collectionName).toBe('book-tag');
     expect(orm.em.getCollection(BookTag).collectionName).toBe('book-tag');
     expect(orm.em.getRepository(BookTag).getCollection().collectionName).toBe('book-tag');
@@ -763,9 +763,9 @@ describe('EntityManagerMongo', () => {
     let tags = await orm.em.find(BookTag, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
-    expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
-    expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
-    expect(() => tags[0].books.contains(book1)).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
+    expect(() => tags[0].books.getItems()).toThrow(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
+    expect(() => tags[0].books.remove(book1, book2)).toThrow(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
+    expect(() => tags[0].books.contains(book1)).toThrow(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
 
     // test M:N lazy load
     orm.em.clear();
@@ -1437,8 +1437,8 @@ describe('EntityManagerMongo', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
-    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
+    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author' does not have property 'tests'`);
+    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author' does not have property 'tests'`);
   });
 
   test('many to many collection does have fixed order', async () => {
@@ -1838,7 +1838,7 @@ describe('EntityManagerMongo', () => {
     expect(book.tags).not.toBeInstanceOf(Collection);
     expect(book.tags).toEqual(['0000007b5c9c61c332380f78', tag]);
     orm.em.persist(book);
-    await expect(orm.em.flush()).rejects.toThrowError(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given. If you are using Object.assign(entity, data), use em.assign(entity, data) instead.`);
+    await expect(orm.em.flush()).rejects.toThrow(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given. If you are using Object.assign(entity, data), use em.assign(entity, data) instead.`);
 
     wrap(book).assign({ tags: ['0000007b5c9c61c332380f78', tag] }, { em: orm.em });
     expect(book.tags).toBeInstanceOf(Collection);
@@ -1858,13 +1858,13 @@ describe('EntityManagerMongo', () => {
   test('automatically fix PK in collection instead of entity when flushing (m:n)', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     const book = new Book('B123', author);
-    expect(() => book.tags.set(['0000007b5c9c61c332380f78' as any])).toThrowError(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given.`);
+    expect(() => book.tags.set(['0000007b5c9c61c332380f78' as any])).toThrow(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given.`);
   });
 
   test('automatically map raw results to entities when setting collection items', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const bookData = { title: 'Bible', author: god.id };
-    expect(() => god.books.add(bookData as any)).toThrowError(`Entity of type Book expected for property Author.books, { title: 'Bible', author: undefined } of type object given.`);
+    expect(() => god.books.add(bookData as any)).toThrow(`Entity of type Book expected for property Author.books, { title: 'Bible', author: undefined } of type object given.`);
   });
 
   test('allow undefined value in nullable properties', async () => {
@@ -1901,8 +1901,8 @@ describe('EntityManagerMongo', () => {
     expect(ref._id).toBeInstanceOf(ObjectId);
     expect(ref.unwrap()).toBeInstanceOf(Author);
     expect(wrap(ref.unwrap()).isInitialized()).toBe(false);
-    expect(() => ref.getEntity()).toThrowError(`Reference<Author> ${ref.id} not initialized`);
-    expect(() => ref.getProperty('email')).toThrowError(`Reference<Author> ${ref.id} not initialized`);
+    expect(() => ref.getEntity()).toThrow(`Reference<Author> ${ref.id} not initialized`);
+    expect(() => ref.getProperty('email')).toThrow(`Reference<Author> ${ref.id} not initialized`);
 
     const ref2 = Reference.create(author);
     const ref3 = Reference.create(ref2);
@@ -1983,10 +1983,10 @@ describe('EntityManagerMongo', () => {
 
     const a1 = await orm.em.findOneOrFail(Author, author.id);
     expect(a1).not.toBeNull();
-    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79')).rejects.toThrowError(`Author not found ('0000007b5c9c61c332380f79')`);
-    await expect(orm.em.findOneOrFail(Author, { name: 'test' })).rejects.toThrowError('Author not found ({ name: \'test\' })');
-    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79', { failHandler: () => new Error('Test') })).rejects.toThrowError('Test');
-    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79', { failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Author');
+    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79')).rejects.toThrow(`Author not found ('0000007b5c9c61c332380f79')`);
+    await expect(orm.em.findOneOrFail(Author, { name: 'test' })).rejects.toThrow('Author not found ({ name: \'test\' })');
+    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79', { failHandler: () => new Error('Test') })).rejects.toThrow('Test');
+    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79', { failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrow('Failed: Author');
   });
 
   test('setting optional boolean to false', async () => {
@@ -2025,7 +2025,7 @@ describe('EntityManagerMongo', () => {
 
     let tag = await orm.em.findOneOrFail(BookTag, tag1.id, { populate: ['books'] });
     const err = 'You cannot modify inverse side of M:N collection BookTag.books when the owning side is not initialized. Consider working with the owning side instead (Book.tags).';
-    expect(() => tag.books.add(orm.em.getReference(Book, book4.id))).toThrowError(err);
+    expect(() => tag.books.add(orm.em.getReference(Book, book4.id))).toThrow(err);
     orm.em.clear();
 
     tag = await orm.em.findOneOrFail(BookTag, tag1.id, { populate: ['books'] });
@@ -2258,7 +2258,7 @@ describe('EntityManagerMongo', () => {
       host: 'foo',
       dbName: 'bar',
       driver: MongoDriver,
-    })).rejects.toThrowError('Mongo driver does not support `host` options, use `clientUrl` instead!');
+    })).rejects.toThrow('Mongo driver does not support `host` options, use `clientUrl` instead!');
   });
 
   test('validation for `_id` PK field name', async () => {
@@ -2267,7 +2267,7 @@ describe('EntityManagerMongo', () => {
       entities: [schema],
       dbName: 'bar',
       driver: MongoDriver,
-    })).rejects.toThrowError(`WrongPrimaryKeyEntity.id has wrong field name, '_id' is required in current driver`);
+    })).rejects.toThrow(`WrongPrimaryKeyEntity.id has wrong field name, '_id' is required in current driver`);
   });
 
   test('GH #4431', async () => {

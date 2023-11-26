@@ -204,9 +204,9 @@ describe('EntityManagerPostgre', () => {
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
     const err1 = `insert into "not_existing" ("foo") values ('bar') - relation "not_existing" does not exist`;
-    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
+    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
     const err2 = `delete from "not_existing" - relation "not_existing" does not exist`;
-    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
+    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
   });
 
   test('connection returns correct URL', async () => {
@@ -294,7 +294,7 @@ describe('EntityManagerPostgre', () => {
     const god1 = new Author2('God1', 'hello@heaven1.god');
     await expect(orm.em.transactional(async em => {
       await em.persistAndFlush(god1);
-    }, { readOnly: true, isolationLevel: IsolationLevel.READ_COMMITTED })).rejects.toThrowError(/cannot execute INSERT in a read-only transaction/);
+    }, { readOnly: true, isolationLevel: IsolationLevel.READ_COMMITTED })).rejects.toThrow(/cannot execute INSERT in a read-only transaction/);
 
     expect(mock.mock.calls[0][0]).toMatch('begin transaction isolation level read committed read only');
     expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "age"');
@@ -394,8 +394,8 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('em.commit/rollback validation', async () => {
-    await expect(orm.em.commit()).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.rollback()).rejects.toThrowError('An open transaction is required for this operation');
+    await expect(orm.em.commit()).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.rollback()).rejects.toThrow('An open transaction is required for this operation');
   });
 
   test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates]', async () => {
@@ -778,7 +778,7 @@ describe('EntityManagerPostgre', () => {
   test('findOne supports optimistic locking [unversioned entity]', async () => {
     const author = new Author2('name', 'email');
     await orm.em.persistAndFlush(author);
-    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrowError('Cannot obtain optimistic lock on unversioned entity Author2');
+    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrow('Cannot obtain optimistic lock on unversioned entity Author2');
   });
 
   test('findOne supports optimistic locking [versioned entity]', async () => {
@@ -792,13 +792,13 @@ describe('EntityManagerPostgre', () => {
     const test = new Test2();
     test.name = 'test';
     await orm.em.persistAndFlush(test);
-    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrowError('The optimistic lock failed, version 2 was expected, but is actually 1');
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrow('The optimistic lock failed, version 2 was expected, but is actually 1');
   });
 
   test('findOne supports optimistic locking [testLockUnmanagedEntityThrowsException]', async () => {
     const test = new Test2();
     test.name = 'test';
-    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrowError('Entity Test2 is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrow('Entity Test2 is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
   });
 
   test('batch updates increments version field (optimistic locking)', async () => {
@@ -817,10 +817,10 @@ describe('EntityManagerPostgre', () => {
   test('pessimistic locking requires active transaction', async () => {
     const test = Test2.create('Lock test');
     await orm.em.persistAndFlush(test);
-    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_WRITE)).rejects.toThrowError('An open transaction is required for this operation');
+    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_WRITE)).rejects.toThrow('An open transaction is required for this operation');
   });
 
   test('findOne supports pessimistic locking [pessimistic write]', async () => {
@@ -1147,9 +1147,9 @@ describe('EntityManagerPostgre', () => {
     tags = await orm.em.find(BookTag2, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
-    expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
-    expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
-    expect(() => tags[0].books.contains(book1)).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
+    expect(() => tags[0].books.getItems()).toThrow(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
+    expect(() => tags[0].books.remove(book1, book2)).toThrow(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
+    expect(() => tags[0].books.contains(book1)).toThrow(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
 
     // test M:N lazy load
     orm.em.clear();
@@ -1554,8 +1554,8 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author2' does not have property 'tests'`);
-    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author2' does not have property 'tests'`);
+    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author2' does not have property 'tests'`);
+    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author2' does not have property 'tests'`);
   });
 
   test('many to many collection does have fixed order', async () => {
@@ -2081,7 +2081,7 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
 
     await expect(orm.em.findOneOrFail(Author2, { identities: { $contains: ['2'] } })).resolves.toBeTruthy();
-    await expect(orm.em.findOneOrFail(Author2, { identities: { $contains: ['4'] } })).rejects.toThrowError();
+    await expect(orm.em.findOneOrFail(Author2, { identities: { $contains: ['4'] } })).rejects.toThrow();
   });
 
   test(`toObject uses serializedName on PKs`, async () => {
@@ -2301,19 +2301,19 @@ describe('EntityManagerPostgre', () => {
     orm.config.set('allowGlobalContext', false);
 
     const err = 'Using global EntityManager instance methods for context specific actions is disallowed. If you need to work with the global instance\'s identity map, use `allowGlobalContext` configuration option or `fork()` instead.';
-    expect(() => orm.em.create(Author2, { name: 'a1', email: 'e1' })).toThrowError(err);
+    expect(() => orm.em.create(Author2, { name: 'a1', email: 'e1' })).toThrow(err);
     const author = new Author2('a', 'e');
-    expect(() => orm.em.persist(author)).toThrowError(err);
-    expect(() => orm.em.assign(author, { name: 'b' })).toThrowError(err);
-    expect(() => orm.em.assign(author, { books: ['1', '2', '3'] })).toThrowError(err);
-    await expect(orm.em.flush()).rejects.toThrowError(err);
+    expect(() => orm.em.persist(author)).toThrow(err);
+    expect(() => orm.em.assign(author, { name: 'b' })).toThrow(err);
+    expect(() => orm.em.assign(author, { books: ['1', '2', '3'] })).toThrow(err);
+    await expect(orm.em.flush()).rejects.toThrow(err);
 
     const fork = orm.em.fork();
-    await expect(fork.flush()).resolves.not.toThrowError();
-    expect(() => fork.create(Author2, { name: 'a1', email: 'e1' })).not.toThrowError();
-    expect(() => fork.persist(author)).not.toThrowError();
-    expect(() => fork.assign(author, { name: 'b' })).not.toThrowError();
-    expect(() => fork.assign(author, { books: ['1', '2', '3'] })).not.toThrowError();
+    await expect(fork.flush()).resolves.not.toThrow();
+    expect(() => fork.create(Author2, { name: 'a1', email: 'e1' })).not.toThrow();
+    expect(() => fork.persist(author)).not.toThrow();
+    expect(() => fork.assign(author, { name: 'b' })).not.toThrow();
+    expect(() => fork.assign(author, { books: ['1', '2', '3'] })).not.toThrow();
 
     orm.config.set('allowGlobalContext', true);
   });
@@ -2329,7 +2329,7 @@ describe('EntityManagerPostgre', () => {
     const res2 = await orm.em.find(FooBar2, {}, { disableIdentityMap: true });
     expect(res2).toHaveLength(1);
 
-    await expect(orm.em.find(FooBar2, {}, { disableIdentityMap: false })).rejects.toThrowError(/Using global EntityManager instance methods for context specific actions is disallowed/);
+    await expect(orm.em.find(FooBar2, {}, { disableIdentityMap: false })).rejects.toThrow(/Using global EntityManager instance methods for context specific actions is disallowed/);
 
     orm.config.set('allowGlobalContext', true);
     orm.config.set('disableIdentityMap', false);

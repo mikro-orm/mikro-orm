@@ -287,7 +287,7 @@ describe('embedded entities in postgresql', () => {
     expect(u3.address1.postalCode).toBe('123');
     expect(u3).toBe(u1);
     const err = 'Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { \'$or\': [ [Object], [Object] ] } })';
-    await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
+    await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrow(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
     expect(mock.mock.calls[10][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."address4"->>\'postal_code\' = $1 limit $2');

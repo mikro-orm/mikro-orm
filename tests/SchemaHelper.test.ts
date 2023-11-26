@@ -14,13 +14,13 @@ describe('SchemaHelper', () => {
     expect(helper.getSchemaEnd()).toBe('\n');
     expect(helper.getChangeColumnCommentSQL('a', {} as any)).toBe('');
     await expect(helper.getEnumDefinitions(jest.fn() as any, [], '')).resolves.toEqual({});
-    expect(() => helper.getListTablesSQL()).toThrowError('Not supported by given driver');
-    expect(() => helper.getAlterNativeEnumSQL('table')).toThrowError('Not supported by given driver');
-    expect(() => helper.getDropNativeEnumSQL('table')).toThrowError('Not supported by given driver');
-    expect(() => helper.getForeignKeysSQL('table')).toThrowError('Not supported by given driver');
-    await expect(helper.getColumns({} as any, 'table')).rejects.toThrowError('Not supported by given driver');
-    await expect(helper.getIndexes({} as any, 'table')).rejects.toThrowError('Not supported by given driver');
-    await expect(helper.getChecks({} as any, 'table')).rejects.toThrowError('Not supported by given driver');
+    expect(() => helper.getListTablesSQL()).toThrow('Not supported by given driver');
+    expect(() => helper.getAlterNativeEnumSQL('table')).toThrow('Not supported by given driver');
+    expect(() => helper.getDropNativeEnumSQL('table')).toThrow('Not supported by given driver');
+    expect(() => helper.getForeignKeysSQL('table')).toThrow('Not supported by given driver');
+    await expect(helper.getColumns({} as any, 'table')).rejects.toThrow('Not supported by given driver');
+    await expect(helper.getIndexes({} as any, 'table')).rejects.toThrow('Not supported by given driver');
+    await expect(helper.getChecks({} as any, 'table')).rejects.toThrow('Not supported by given driver');
   });
 
   test('mysql schema helper', async () => {

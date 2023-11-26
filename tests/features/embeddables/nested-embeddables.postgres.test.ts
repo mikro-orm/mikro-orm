@@ -268,10 +268,10 @@ describe('embedded entities in postgres', () => {
     expect(u5.id).toEqual(u1.id);
 
     const err1 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
-    await expect(orm.em.findOneOrFail(User, { profile1: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err1);
+    await expect(orm.em.findOneOrFail(User, { profile1: { identity: { city: 'London 1' } as any } })).rejects.toThrow(err1);
 
     const err2 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
-    await expect(orm.em.findOneOrFail(User, { profile2: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err2);
+    await expect(orm.em.findOneOrFail(User, { profile2: { identity: { city: 'London 1' } as any } })).rejects.toThrow(err2);
   });
 
   test('partial loading', async () => {
@@ -431,7 +431,7 @@ describe('embedded entities in postgres', () => {
     user2.profile1 = new Profile('u1', new Identity('e3'));
     user2.profile2 = new Profile('u4', new Identity('e4', new IdentityMeta('f4')));
 
-    await expect(orm.em.persistAndFlush([user1, user2])).rejects.toThrowError(/duplicate key value violates unique constraint "user_profile1_username_unique"/);
+    await expect(orm.em.persistAndFlush([user1, user2])).rejects.toThrow(/duplicate key value violates unique constraint "user_profile1_username_unique"/);
   });
 
 });

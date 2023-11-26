@@ -37,7 +37,7 @@ describe('CheckMigrationCommand', () => {
 
     const mockExit = jest.spyOn(process, 'exit').mockImplementationOnce(() => { throw new Error('Mock'); });
 
-    await expect(cmd.handler({} as any)).rejects.toThrowError('Mock');
+    await expect(cmd.handler({} as any)).rejects.toThrow('Mock');
     expect(checkMigrationMock.mock.calls.length).toBe(1);
     expect(closeSpy).toHaveBeenCalledTimes(1);
     expect(dumpMock).toHaveBeenLastCalledWith('Changes detected. Please create migration to update schema.');

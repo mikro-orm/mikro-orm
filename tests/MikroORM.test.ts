@@ -26,22 +26,22 @@ describe('MikroORM', () => {
 
   test('should throw when not enough config provided', async () => {
     const err = `No driver specified, please fill in the \`driver\` option or use \`defineConfig\` helper (to define your ORM config) or \`MikroORM\` class (to call the \`init\` method) exported from the driver package (e.g. \`import { defineConfig } from '@mikro-orm/mysql'; export defineConfig({ ... })\`).`;
-    expect(() => new MikroORM({ entities: ['entities'], clientUrl: '' })).toThrowError(err);
-    expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities'], dbName: '' })).toThrowError('No database specified, please fill in `dbName` or `clientUrl` option');
-    expect(() => new MikroORM({ driver: MongoDriver, entities: [], dbName: 'test' })).toThrowError('No entities found, please use `entities` option');
-    expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities/*.js'], dbName: 'test' })).not.toThrowError();
-    expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities/*.ts'], dbName: 'test' })).not.toThrowError();
-    expect(() => new MikroORM({ driver: MongoDriver, dbName: 'test', entities: [Author], clientUrl: 'test' })).not.toThrowError();
-    expect(() => new MikroORM({ driver: MongoDriver, dbName: 'test', entities: ['entities'], clientUrl: 'test' })).not.toThrowError();
+    expect(() => new MikroORM({ entities: ['entities'], clientUrl: '' })).toThrow(err);
+    expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities'], dbName: '' })).toThrow('No database specified, please fill in `dbName` or `clientUrl` option');
+    expect(() => new MikroORM({ driver: MongoDriver, entities: [], dbName: 'test' })).toThrow('No entities found, please use `entities` option');
+    expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities/*.js'], dbName: 'test' })).not.toThrow();
+    expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities/*.ts'], dbName: 'test' })).not.toThrow();
+    expect(() => new MikroORM({ driver: MongoDriver, dbName: 'test', entities: [Author], clientUrl: 'test' })).not.toThrow();
+    expect(() => new MikroORM({ driver: MongoDriver, dbName: 'test', entities: ['entities'], clientUrl: 'test' })).not.toThrow();
   });
 
   test('should work with Configuration object instance', async () => {
-    expect(() => new MikroORM(new Configuration({ driver: MongoDriver, dbName: 'test', entities: [Author], clientUrl: 'test' }))).not.toThrowError();
-    expect(() => new MikroORM(new Configuration({ driver: MongoDriver, dbName: 'test', baseDir: __dirname + '/../packages/core', entities: [__dirname + '/entities'], clientUrl: 'test' }))).not.toThrowError();
+    expect(() => new MikroORM(new Configuration({ driver: MongoDriver, dbName: 'test', entities: [Author], clientUrl: 'test' }))).not.toThrow();
+    expect(() => new MikroORM(new Configuration({ driver: MongoDriver, dbName: 'test', baseDir: __dirname + '/../packages/core', entities: [__dirname + '/entities'], clientUrl: 'test' }))).not.toThrow();
   });
 
   test('should throw when no entity discovered', async () => {
-    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', entities: ['not-existing/path'] })).rejects.toThrowError('No entities were discovered');
+    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', entities: ['not-existing/path'] })).rejects.toThrow('No entities were discovered');
   });
 
   test('should work with absolute paths (GH issue #1073)', async () => {
@@ -49,7 +49,7 @@ describe('MikroORM', () => {
   });
 
   test('should throw when multiple entities with same file name discovered', async () => {
-    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'] })).rejects.toThrowError('Duplicate entity names are not allowed: Dup1, Dup2');
+    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'] })).rejects.toThrow('Duplicate entity names are not allowed: Dup1, Dup2');
   });
 
   test('should NOT throw when multiple entities with same file name discovered ("checkDuplicateEntities" false)', async () => {
@@ -62,17 +62,17 @@ describe('MikroORM', () => {
 
   test('should throw when only abstract entities were discovered', async () => {
     const err = 'Only abstract entities were discovered, maybe you forgot to use @Entity() decorator?';
-    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: [BaseEntity2] })).rejects.toThrowError(err);
+    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: [BaseEntity2] })).rejects.toThrow(err);
   });
 
   test('should throw when a relation is pointing to not discovered entity', async () => {
     const err = 'Entity \'FooBaz2\' was not discovered, please make sure to provide it in \'entities\' array when initializing the ORM';
-    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', entities: [Author2, BaseEntity2] })).rejects.toThrowError(err);
+    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', entities: [Author2, BaseEntity2] })).rejects.toThrow(err);
   });
 
   test('should throw when only multiple property decorators are used', async () => {
     const err = `Multiple property decorators used on 'MultiDecorator.name' property`;
-    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-4'] })).rejects.toThrowError(err);
+    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-4'] })).rejects.toThrow(err);
   });
 
   test('folder based discover with multiple entities in single file', async () => {

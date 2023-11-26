@@ -71,7 +71,7 @@ describe('GH issue 1176', () => {
         const user = new User(username);
         em.persist(user);
 
-        await expect(em.flush()).rejects.toThrowError(
+        await expect(em.flush()).rejects.toThrow(
           /^insert.+duplicate key value/,
         );
       });
@@ -94,7 +94,7 @@ describe('GH issue 1176', () => {
           em.persist(user);
         });
 
-        await expect(work).rejects.toThrowError(/^insert.+duplicate key value/);
+        await expect(work).rejects.toThrow(/^insert.+duplicate key value/);
       });
     });
 
@@ -121,7 +121,7 @@ describe('GH issue 1176', () => {
           }
         };
 
-        await expect(work).rejects.toThrowError(/^insert.+duplicate key value/);
+        await expect(work).rejects.toThrow(/^insert.+duplicate key value/);
       });
     });
   });
@@ -154,7 +154,7 @@ describe('GH issue 1176', () => {
         const user = new User(username);
         em.persist(user);
 
-        await expect(em.flush()).rejects.toThrowError(
+        await expect(em.flush()).rejects.toThrow(
           /^COMMIT.+duplicate key value/,
         );
       });
@@ -179,7 +179,7 @@ describe('GH issue 1176', () => {
           });
         };
 
-        await expect(work).rejects.toThrowError(/^COMMIT.+duplicate key value/);
+        await expect(work).rejects.toThrow(/^COMMIT.+duplicate key value/);
       });
     });
 
@@ -206,7 +206,7 @@ describe('GH issue 1176', () => {
           }
         };
 
-        await expect(work).rejects.toThrowError(/^COMMIT.+duplicate key value/);
+        await expect(work).rejects.toThrow(/^COMMIT.+duplicate key value/);
       });
     });
   });

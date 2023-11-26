@@ -33,7 +33,7 @@ describe('GH issue 755', () => {
       dbName: ':memory:',
     };
     const err = `Entity Test has wrong index definition: 'created_at' does not exist. You need to use property name, not column name.`;
-    await expect(MikroORM.init(options)).rejects.toThrowError(err);
+    await expect(MikroORM.init(options)).rejects.toThrow(err);
   });
 
 });

@@ -123,7 +123,7 @@ describe('Migrator', () => {
     getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
     const migrator = new Migrator(orm.em);
     const err = 'Initial migration cannot be created, as some migrations already exist';
-    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrowError(err);
+    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrow(err);
   });
 
   test('initial migration cannot be created if tables already exist', async () => {
@@ -138,7 +138,7 @@ describe('Migrator', () => {
     schemaMock.mockReturnValueOnce([{ name: 'author2' } as DatabaseTable, { name: 'book2' } as DatabaseTable]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: author2, book2`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err2);
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err2);
   });
 
   test('initial migration cannot be created if no entity metadata is found', async () => {
@@ -147,7 +147,7 @@ describe('Migrator', () => {
     const metadataMock = jest.spyOn(MetadataStorage.prototype, 'getAll');
     metadataMock.mockReturnValueOnce({});
     const err3 = `No entities found`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err3);
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err3);
   });
 
   test('do not log a migration if the schema does not exist yet', async () => {

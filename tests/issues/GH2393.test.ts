@@ -32,7 +32,7 @@ describe('GH issue 2393', () => {
       entities: [A, B],
       dbName: ':memory:',
       connect: false,
-    })).rejects.toThrowError('A.coll has unknown \'mappedBy\' reference: B.undefined');
+    })).rejects.toThrow('A.coll has unknown \'mappedBy\' reference: B.undefined');
   });
 
 });

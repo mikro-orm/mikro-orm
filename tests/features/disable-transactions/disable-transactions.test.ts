@@ -124,7 +124,7 @@ test('no rollback as transactions are disabled', async () => {
     throw new Error('roll me back');
   });
 
-  await expect(transaction).rejects.toThrowError('roll me back');
+  await expect(transaction).rejects.toThrow('roll me back');
 
   const count = await orm.em.count(Example);
   expect(count).toBe(2); // rollback didn't happen
@@ -156,7 +156,7 @@ test('should handle rollback in no-op transaction', async () => {
     throw new Error('should not get here');
   });
 
-  await expect(transaction).rejects.toThrowError('roll me back');
+  await expect(transaction).rejects.toThrow('roll me back');
 
   const count = await orm.em.count(Example);
   expect(count).toBe(1); // rollback didn't happen
