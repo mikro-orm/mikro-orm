@@ -342,6 +342,7 @@ export class Utils {
             return;
           }
 
+          /* istanbul ignore next */
           if (!(key in target)) {
             Object.assign(target, { [key]: {} });
           }
@@ -425,27 +426,13 @@ export class Utils {
   /**
    * Renames object key, keeps order of properties.
    */
-  static renameKey<T>(payload: T, from: string | keyof T, to: string, recursive = false): void {
-    if (Utils.isObject(payload)) {
-      if ((from as string) in payload && !(to in payload)) {
-        Object.keys(payload).forEach(key => {
-          const value = payload[key];
-          delete payload[key];
-          payload[from === key ? to : key as keyof T] = value;
-        }, payload);
-      }
-
-      if (recursive) {
-        Object.keys(payload).forEach(key => {
-          Utils.renameKey(payload[key], from, to, recursive);
-        });
-      }
-
-      return;
-    }
-
-    if (recursive && Array.isArray(payload)) {
-      payload.forEach(item => Utils.renameKey(item, from, to, recursive));
+  static renameKey<T>(payload: T, from: string | keyof T, to: string): void {
+    if (Utils.isObject(payload) && (from as string) in payload && !(to in payload)) {
+      Object.keys(payload).forEach(key => {
+        const value = payload[key];
+        delete payload[key];
+        payload[from === key ? to : key as keyof T] = value;
+      }, payload);
     }
   }
 
@@ -460,6 +447,7 @@ export class Utils {
     try {
       return tokenize(func.toString(), { tolerant: true });
     } catch {
+      /* istanbul ignore next */
       return [];
     }
   }
@@ -588,6 +576,7 @@ export class Utils {
   }
 
   static getPrimaryKeyValues<T>(entity: T, primaryKeys: string[], allowScalar = false, convertCustomTypes = false) {
+    /* istanbul ignore next */
     if (entity == null) {
       return entity;
     }
@@ -1170,7 +1159,7 @@ export class Utils {
     return ret;
   }
 
-  static setPayloadProperty<T>(entity: EntityDictionary<T>, meta: EntityMetadata<T>, prop: EntityProperty<T>, value: unknown, idx: number[] = []): void {
+  static setPayloadProperty<T>(entity: EntityDictionary<T>, meta: EntityMetadata<T>, prop: EntityProperty<T>, value: unknown, idx: number[]): void {
     function isObjectProperty(prop: EntityProperty): boolean {
       return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop.object || !!prop.array;
     }
