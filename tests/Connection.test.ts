@@ -27,6 +27,10 @@ class CustomConnection extends Connection {
     return false;
   }
 
+  async checkConnection(): Promise<{ ok: boolean; reason?: string; error?: Error }> {
+    return { ok: false, reason: 'foo' };
+  }
+
 }
 
 describe('Connection', () => {

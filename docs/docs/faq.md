@@ -134,3 +134,16 @@ To fix this, disable the [`useDefineForClassFields`](https://www.typescriptlang.
   }
 }
 ```
+
+### How can I check if database connection works?
+
+There are two methods you can use to check the database status, they live on the `Connection` class and both have a shortcut on the `MikroORM` class too:
+
+```ts
+// boolean
+const isConnected = await orm.isConnected();
+// object with `ok`, `reason` and `error` keys
+const check = await orm.checkConnection();
+
+console.log(check.ok, check.reason);
+```

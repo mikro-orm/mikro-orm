@@ -12,6 +12,25 @@ describe('EntityManagerMongo2', () => {
   beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => orm.schema.clearDatabase());
 
+  test('isConnected()', async () => {
+    expect(await orm.isConnected()).toBe(true);
+    expect(await orm.checkConnection()).toEqual({
+      ok: true,
+    });
+    await orm.close(true);
+    expect(await orm.isConnected()).toBe(false);
+    expect(await orm.checkConnection()).toMatchObject({
+      ok: false,
+      error: expect.any(Error),
+      reason: 'Client must be connected before running operations',
+    });
+    await orm.connect();
+    expect(await orm.isConnected()).toBe(true);
+    expect(await orm.checkConnection()).toEqual({
+      ok: true,
+    });
+  });
+
   test('loaded references and collections', async () => {
     const pub = new Publisher('Publisher 123');
     const god = new Author('God', 'hello@heaven.god');
