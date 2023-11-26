@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.0-rc.2](https://github.com/mikro-orm/mikro-orm/compare/9be482d...b868f0287) (2023-11-26)
+
+
+### Bug Fixes
+
+
+* **core:** fix returning statement hydration after `em.upsert` ([ccd2fdb](https://github.com/mikro-orm/mikro-orm/commit/ccd2fdba6af2015da47ec0be98c3621a4813ef6c)), closes [#4945](https://github.com/mikro-orm/mikro-orm/issues/4945)
+* **mongo:** don't rename `id` to `_id` for embeddables and entities without serialized PK ([0cee82d](https://github.com/mikro-orm/mikro-orm/commit/0cee82d1806456443ec5d096a574f856c7d1102e)), closes [#4960](https://github.com/mikro-orm/mikro-orm/issues/4960)
+* **sql:** do not alias conditions for update queries with collection operators ([5820d66](https://github.com/mikro-orm/mikro-orm/commit/5820d66cc7a81a357d6397f1e234a5485f2054d5)), closes [#4956](https://github.com/mikro-orm/mikro-orm/issues/4956)
+* **core:** respect global `schema` option in first level cache ([1833455](https://github.com/mikro-orm/mikro-orm/commit/18334552e69d39d5e344bbf62a95888c24ff7349))
+* **sql:** do not branch to-many joins for `$and` with a single item ([a737b20](https://github.com/mikro-orm/mikro-orm/commit/a737b207744a85b2034a5e4a2b362e4aaefea570))
+* **core:** ensure correct serialization of not fully populated collections ([a39a850](https://github.com/mikro-orm/mikro-orm/commit/a39a850ee6b7d9173dadb654a1718d374783f38c))
+* **mysql:** improve diffing of defaults for JSON columns ([53c3911](https://github.com/mikro-orm/mikro-orm/commit/53c39118851eac1ad10e1f32d9e88055a4476018)), closes [#4926](https://github.com/mikro-orm/mikro-orm/issues/4926)
+* **entity-generator:** use index expressions for complex indexes (e.g. conditional) ([64a39f8](https://github.com/mikro-orm/mikro-orm/commit/64a39f82c7d391d28e28c639512a810c516f08a9)), closes [#4911](https://github.com/mikro-orm/mikro-orm/issues/4911)
+* **postgres:** allow postgres array operators on embedded array properties ([ecf1f0c](https://github.com/mikro-orm/mikro-orm/commit/ecf1f0c96484178a4d7fc8228c2a41198d20ec30)), closes [#4930](https://github.com/mikro-orm/mikro-orm/issues/4930)
+* **schema:** respect explicit schema in FKs to STI entities ([22e7470](https://github.com/mikro-orm/mikro-orm/commit/22e74700ee64eada056cdfc18e46f5c62416216c)), closes [#4933](https://github.com/mikro-orm/mikro-orm/issues/4933)
+* **schema:** do not inherit schema for FKs if not a wildcard entity ([aa2e889](https://github.com/mikro-orm/mikro-orm/commit/aa2e8892eaff7b173b1f1a6c5f8838746dea8961)), closes [#4918](https://github.com/mikro-orm/mikro-orm/issues/4918)
+* **schema:** respect up migration when detecting column renaming in down migration ([ff50836](https://github.com/mikro-orm/mikro-orm/commit/ff50836ce15e2d05a4d44ccebc016d757540cec6)), closes [#4919](https://github.com/mikro-orm/mikro-orm/issues/4919)
+* **core:** support composite PKs in `em.upsertMany()` ([0ba5b6e](https://github.com/mikro-orm/mikro-orm/commit/0ba5b6e12c59ffd3b194d44560cc011b269b86f3)), closes [#4923](https://github.com/mikro-orm/mikro-orm/issues/4923)
+
+
+### Features
+
+* **core:** add `orm.checkConnection()` helper ([#4961](https://github.com/mikro-orm/mikro-orm/issues/4961)) ([b868f02](https://github.com/mikro-orm/mikro-orm/commit/b868f02870c116315513188d4bf24bee5c362d24)), closes [#4959](https://github.com/mikro-orm/mikro-orm/issues/4959)
+* **sql:** use joined strategy as default for SQL drivers ([#4958](https://github.com/mikro-orm/mikro-orm/issues/4958)) ([90ec766](https://github.com/mikro-orm/mikro-orm/commit/90ec7663d01ea0bd577b15051f7bfb02afc687e2))
+* **sql:** rework joined strategy to support the default `populateWhere: 'all'` ([#4957](https://github.com/mikro-orm/mikro-orm/issues/4957)) ([e5dbc24](https://github.com/mikro-orm/mikro-orm/commit/e5dbc245d0a3eebc5013321345d2d5d7630cc312))
+* **core:** add `em.findAll()` with optional `where` option ([#4946](https://github.com/mikro-orm/mikro-orm/issues/4946)) ([23b0551](https://github.com/mikro-orm/mikro-orm/commit/23b05510b833c970e3af3930dcb82fe74f61a798)), closes [#3982](https://github.com/mikro-orm/mikro-orm/issues/3982)
+* **core:** allow inferring populate hint from filter via `populate: ['$infer']` ([#4939](https://github.com/mikro-orm/mikro-orm/issues/4939)) ([080fdbb](https://github.com/mikro-orm/mikro-orm/commit/080fdbb7cde3a1c5d158330eeef0b6b855712c9d)), closes [#1309](https://github.com/mikro-orm/mikro-orm/issues/1309)
+* **entity-generator:** added ability to output type option in decorator ([#4935](https://github.com/mikro-orm/mikro-orm/issues/4935)) ([2d1936a](https://github.com/mikro-orm/mikro-orm/commit/2d1936a80f948e0fd83b8fc89bb48feb132537d6))
+* **entity-generator:** allow generating scalar properties for FKs ([#4892](https://github.com/mikro-orm/mikro-orm/issues/4892)) ([abad6ca](https://github.com/mikro-orm/mikro-orm/commit/abad6ca9dcafaaf9319261b4ac116ef5ad6485b3)), closes [#4898](https://github.com/mikro-orm/mikro-orm/issues/4898)
+* **core:** allow M:1 and 1:1 relations in virtual entities ([#4932](https://github.com/mikro-orm/mikro-orm/issues/4932)) ([164a69e](https://github.com/mikro-orm/mikro-orm/commit/164a69eaa13a66805423071f7ccd4ddbe8a15c59))
+
+
 ## [6.0.0-rc.1](https://github.com/mikro-orm/mikro-orm/compare/7ec838150...9be482d) (2023-11-14)
 
 
