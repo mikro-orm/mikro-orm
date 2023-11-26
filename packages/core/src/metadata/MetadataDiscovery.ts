@@ -167,7 +167,7 @@ export class MetadataDiscovery {
       return this.discoverDirectories(paths).then(() => {
         this.discoverReferences(refs);
         this.discoverMissingTargets();
-        this.validator.validateDiscovered(this.discovered, options.warnWhenNoEntities, options.checkDuplicateTableNames, options.checkDuplicateEntities);
+        this.validator.validateDiscovered(this.discovered, options);
 
         return this.discovered;
       });
@@ -175,7 +175,7 @@ export class MetadataDiscovery {
 
     this.discoverReferences(refs);
     this.discoverMissingTargets();
-    this.validator.validateDiscovered(this.discovered, this.config.get('discovery').warnWhenNoEntities!);
+    this.validator.validateDiscovered(this.discovered, options);
 
     return this.discovered;
   }
@@ -562,7 +562,7 @@ export class MetadataDiscovery {
     }
 
     meta.forceConstructor = this.shouldForceConstructorUsage(meta);
-    this.validator.validateEntityDefinition(this.metadata, meta.name!);
+    this.validator.validateEntityDefinition(this.metadata, meta.name!, this.config.get('discovery'));
 
     for (const prop of Object.values(meta.properties)) {
       this.initNullability(prop);
