@@ -8,7 +8,6 @@ import {
   type EntityMetadata,
   type EntityProperty,
   EntitySchema,
-  type MikroORMOptions,
   type NamingStrategy,
   ReferenceKind,
   t,
@@ -194,7 +193,7 @@ export class DatabaseTable {
   getEntityDeclaration(
     namingStrategy: NamingStrategy,
     schemaHelper: SchemaHelper,
-    scalarPropertiesForRelations: NonNullable<MikroORMOptions['entityGenerator']['scalarPropertiesForRelations']>,
+    scalarPropertiesForRelations: 'always' | 'never' | 'smart',
   ): EntityMetadata {
     const {
       fksOnColumnProps,
@@ -213,13 +212,13 @@ export class DatabaseTable {
     const compositeFkUniques: Dictionary<{ keyName: string }> = {};
 
     const potentiallyUnmappedIndexes = this.indexes.filter(index =>
-      !index.primary // Skip primary index. Whether it's in use by scalar column or FK, it's already mapped.
-      && (index.columnNames.length > 1 // All composite indexes are to be mapped to entity decorators or FK props.
-        || !(index.columnNames[0] in columnFks) // Non-composite indexes for scalar props are to be mapped to the column.
-        || skippedColumnNames.includes(index.columnNames[0]) // Non-composite indexes for skipped columns are to be mapped as entity decorators.
-      )
-      // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
-      && !(index.columnNames.some(col => !col) && !index.expression),
+        !index.primary // Skip primary index. Whether it's in use by scalar column or FK, it's already mapped.
+        && (index.columnNames.length > 1 // All composite indexes are to be mapped to entity decorators or FK props.
+          || !(index.columnNames[0] in columnFks) // Non-composite indexes for scalar props are to be mapped to the column.
+          || skippedColumnNames.includes(index.columnNames[0]) // Non-composite indexes for skipped columns are to be mapped as entity decorators.
+        )
+        // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
+        && !(index.columnNames.some(col => !col) && !index.expression),
     );
 
     for (const index of potentiallyUnmappedIndexes) {
@@ -298,13 +297,13 @@ export class DatabaseTable {
 
   private foreignKeysToProps(
     namingStrategy: NamingStrategy,
-    scalarPropertiesForRelations: NonNullable<MikroORMOptions['entityGenerator']['scalarPropertiesForRelations']>,
+    scalarPropertiesForRelations: 'always' | 'never' | 'smart',
   ) {
     const fks = Object.values(this.getForeignKeys());
     const fksOnColumnProps = new Map<string, ForeignKey>();
     const fksOnStandaloneProps = new Map<string, [IndexDef, ForeignKey]>();
     const columnFks: Record<string, ForeignKey[]> = {};
-    const fkIndexes = new Map<IndexDef, {fk: ForeignKey; baseName: string}>();
+    const fkIndexes = new Map<IndexDef, { fk: ForeignKey; baseName: string }>();
     const nullableForeignKeys = new Set<ForeignKey>();
 
     for (const currentFk of fks) {
@@ -315,9 +314,11 @@ export class DatabaseTable {
         const columnName = currentFk.columnNames[0];
         columnFks[columnName] ??= [];
         columnFks[columnName].push(currentFk);
+
         if (this.getColumn(columnName)?.nullable) {
           nullableForeignKeys.add(currentFk);
         }
+
         if (scalarPropertiesForRelations === 'always') {
           const baseName = this.getSafeBaseNameForFkProp(namingStrategy, currentFk, fks, columnName);
           fksOnStandaloneProps.set(baseName, [fkIndex, currentFk]);
@@ -326,21 +327,26 @@ export class DatabaseTable {
           fksOnColumnProps.set(columnName, currentFk);
           fkIndexes.set(fkIndex, { fk: currentFk, baseName: columnName });
         }
+
         continue;
       }
 
       const specificColumnNames: string[] = [];
       const nullableColumnsInFk = [];
+
       for (const columnName of currentFk.columnNames) {
         columnFks[columnName] ??= [];
         columnFks[columnName].push(currentFk);
+
         if (!fks.some(fk => fk !== currentFk && fk.columnNames.includes(columnName))) {
           specificColumnNames.push(columnName);
         }
+
         if (this.getColumn(columnName)?.nullable) {
           nullableColumnsInFk.push(columnName);
         }
       }
+
       if (nullableColumnsInFk.length > 0) {
         nullableForeignKeys.add(currentFk);
       }
@@ -351,6 +357,7 @@ export class DatabaseTable {
         // or its only nullable column is this very one.
         // It is safe to just render this FK attached to the specific column.
         const columnName = specificColumnNames[0];
+
         if (scalarPropertiesForRelations === 'always') {
           const baseName = this.getSafeBaseNameForFkProp(namingStrategy, currentFk, fks, columnName);
           fksOnStandaloneProps.set(baseName, [fkIndex, currentFk]);
@@ -359,6 +366,7 @@ export class DatabaseTable {
           fksOnColumnProps.set(columnName, currentFk);
           fkIndexes.set(fkIndex, { fk: currentFk, baseName: columnName });
         }
+
         continue;
       }
 
@@ -368,6 +376,7 @@ export class DatabaseTable {
           // Also, this FK is either not nullable, or has only one nullable column.
           // It is safe to name the FK after the nullable column, or any non-nullable one (the first one is picked).
           const columnName = nullableColumnsInFk.at(0) ?? currentFk.columnNames[0];
+
           if (scalarPropertiesForRelations === 'always') {
             const baseName = this.getSafeBaseNameForFkProp(namingStrategy, currentFk, fks, columnName);
             fksOnStandaloneProps.set(baseName, [fkIndex, currentFk]);
@@ -376,6 +385,7 @@ export class DatabaseTable {
             fksOnColumnProps.set(columnName, currentFk);
             fkIndexes.set(fkIndex, { fk: currentFk, baseName: columnName });
           }
+
           continue;
         }
 
@@ -385,6 +395,7 @@ export class DatabaseTable {
         const baseName = this.getSafeBaseNameForFkProp(namingStrategy, currentFk, fks, columnName);
         fksOnStandaloneProps.set(baseName, [fkIndex, currentFk]);
         fkIndexes.set(fkIndex, { fk: currentFk, baseName });
+
         continue;
       }
 
@@ -395,7 +406,7 @@ export class DatabaseTable {
     }
 
     const columnsInFks = Object.keys(columnFks);
-    const skippingHandlers: Record<typeof scalarPropertiesForRelations, (column: Column) => boolean> = {
+    const skippingHandlers: Record<'always' | 'never' | 'smart', (column: Column) => boolean> = {
       // Never generate scalar props for composite keys,
       // i.e. always skip columns if they are covered by foreign keys.
       never: (column: Column) => columnsInFks.includes(column.name) && !fksOnColumnProps.has(column.name),
@@ -415,6 +426,7 @@ export class DatabaseTable {
           );
       },
     };
+
     const skippedColumnNames = this.getColumns().filter(skippingHandlers[scalarPropertiesForRelations]).map(column => column.name);
 
     return { fksOnColumnProps, fksOnStandaloneProps, columnFks, fkIndexes, nullableForeignKeys, skippedColumnNames };
@@ -745,7 +757,13 @@ export class DatabaseTable {
     return '' + val;
   }
 
-  addIndex(meta: EntityMetadata, index: { properties: string | string[]; name?: string; type?: string; expression?: string; options?: Dictionary }, type: 'index' | 'unique' | 'primary') {
+  addIndex(meta: EntityMetadata, index: {
+    properties: string | string[];
+    name?: string;
+    type?: string;
+    expression?: string;
+    options?: Dictionary;
+  }, type: 'index' | 'unique' | 'primary') {
     const properties = Utils.unique(Utils.flatten(Utils.asArray(index.properties).map(prop => {
       const root = prop.replace(/\..+$/, '');
 

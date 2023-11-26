@@ -1,15 +1,13 @@
 import { pathExists, remove } from 'fs-extra';
 import { MikroORM } from '@mikro-orm/core';
-import { DatabaseTable } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { MongoDriver } from '@mikro-orm/mongodb';
-import { initORMMySql, initORMPostgreSql, initORMSqlite } from '../../bootstrap';
+import { initORMMySql } from '../../bootstrap';
 
 describe('EntityGenerator', () => {
 
   test('generate entities from schema [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
-    const dump = await orm.entityGenerator.generate({ save: true, baseDir: './temp/entities' });
+    const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities' });
     expect(dump).toMatchSnapshot('mysql-entity-dump');
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
     await remove('./temp/entities');
@@ -22,7 +20,7 @@ describe('EntityGenerator', () => {
     const orm = await initORMMySql('mysql', {}, true);
     const dump = await orm.entityGenerator.generate({
       save: true,
-      baseDir: './temp/entities',
+      path: './temp/entities',
       skipTables: ['test2', 'test2_bars'],
       skipColumns: { book2: ['price'] },
     });
@@ -36,7 +34,7 @@ describe('EntityGenerator', () => {
 
   test('generate entities with bidirectional relations [mysql]', async () => {
     const orm = await initORMMySql('mysql', { entityGenerator: { bidirectionalRelations: true } }, true);
-    const dump = await orm.entityGenerator.generate({ save: true, baseDir: './temp/entities' });
+    const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities' });
     expect(dump).toMatchSnapshot('mysql-entity-bidirectional-dump');
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
     await remove('./temp/entities');
@@ -52,7 +50,7 @@ describe('EntityGenerator', () => {
         identifiedReferences: true,
       },
     }, true);
-    const dump = await orm.entityGenerator.generate({ save: true, baseDir: './temp/entities' });
+    const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities' });
     expect(dump).toMatchSnapshot('mysql-entity-bidirectional-dump');
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
     await remove('./temp/entities');
@@ -69,7 +67,7 @@ describe('EntityGenerator', () => {
         entitySchema: true,
       },
     }, true);
-    const dump = await orm.entityGenerator.generate({ save: true, baseDir: './temp/entities' });
+    const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities' });
     expect(dump).toMatchSnapshot('mysql-entity-schema-bidirectional-dump');
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
     await orm.schema.dropDatabase();
@@ -93,7 +91,7 @@ describe('EntityGenerator', () => {
       },
     }, true);
     const generator = orm.getEntityGenerator();
-    const dump = await generator.generate({ save: true, baseDir: './temp/entities' });
+    const dump = await generator.generate({ save: true, path: './temp/entities' });
     expect(dump).toMatchSnapshot('mysql-entity-named-dump');
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
     await remove('./temp/entities');
@@ -113,7 +111,7 @@ describe('EntityGenerator', () => {
     await orm.schema.execute(`
       create table if not exists \`123_table_name\` (\`id\` int(10) unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
     `);
-    const dump = await orm.entityGenerator.generate({ save: false, baseDir: './temp/entities' });
+    const dump = await orm.entityGenerator.generate({ save: false, path: './temp/entities' });
     expect(dump).toMatchSnapshot('mysql-entity-dump-underscore-entity-schema');
     await orm.schema.execute(`
       drop table if exists \`123_table_name\`;
@@ -127,7 +125,7 @@ describe('EntityGenerator', () => {
     await orm.schema.execute(`
       CREATE TABLE if not exists \`vrf\` (  \`id\` int(11) NOT NULL AUTO_INCREMENT,  \`vrf_id\` int(11) DEFAULT NULL,  \`comments\` varchar(150) DEFAULT NULL,  \`created_at\` timestamp NULL DEFAULT current_timestamp(),  \`updated_at\` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),  PRIMARY KEY (\`id\`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
-    const dump = await orm.entityGenerator.generate({ save: false, baseDir: './temp/entities' });
+    const dump = await orm.entityGenerator.generate({ save: false, path: './temp/entities' });
     expect(dump).toMatchSnapshot('mysql-entity-gh-3285');
     await orm.schema.execute(`
       drop table if exists \`vrf\`;
@@ -141,7 +139,7 @@ describe('EntityGenerator', () => {
     await orm.schema.execute(`
       CREATE TABLE if not exists \`vrf\` (  \`id\` int(11) NOT NULL AUTO_INCREMENT,  \`vrf_id\` int(11) DEFAULT NULL,  \`comments\` varchar(150) DEFAULT NULL,  \`created_at\` timestamp NULL DEFAULT current_timestamp(),  \`updated_at\` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),  PRIMARY KEY (\`id\`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
-    const dump = await orm.entityGenerator.generate({ save: false, baseDir: './temp/entities' });
+    const dump = await orm.entityGenerator.generate({ save: false, path: './temp/entities' });
     expect(dump).toMatchSnapshot('mariadb-entity-gh-3285');
     await orm.schema.execute(`
       drop table if exists \`vrf\`;
@@ -154,7 +152,7 @@ describe('EntityGenerator', () => {
     await orm.schema.dropSchema();
     const schema = "create table `publisher2` (`id` int(10) unsigned not null auto_increment primary key, `test` varchar(100) null default '123', `type` enum('local', 'global') not null default 'local', `type2` enum('LOCAL', 'GLOBAL') default 'LOCAL') default character set utf8mb4 engine = InnoDB;";
     await orm.schema.execute(schema);
-    const dump = await orm.entityGenerator.generate({ save: false, baseDir: './temp/entities' });
+    const dump = await orm.entityGenerator.generate({ save: false, path: './temp/entities' });
     expect(dump).toMatchSnapshot('mysql-entity-dump-enum-default-value');
     await orm.schema.execute('drop table if exists `publisher2`');
     await orm.close(true);
@@ -165,7 +163,7 @@ describe('EntityGenerator', () => {
     await orm.schema.dropSchema();
     const schema = "create table if not exists `account` (`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, `active` tinyint(1) NOT NULL DEFAULT '0', `receive_email_notifications` tinyint(1) NOT NULL DEFAULT '1', PRIMARY KEY (`id`)) default character set utf8mb4 engine = InnoDB;";
     await orm.schema.execute(schema);
-    const dump = await orm.entityGenerator.generate({ save: false, baseDir: './temp/entities' });
+    const dump = await orm.entityGenerator.generate({ save: false, path: './temp/entities' });
     expect(dump).toMatchSnapshot('generate-OptionalProps');
     await orm.schema.execute('drop table if exists `account`');
     await orm.close(true);
