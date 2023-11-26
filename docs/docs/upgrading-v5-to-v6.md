@@ -31,6 +31,16 @@ const email = book.author.email; // ok, selected
 const name = book.author.name; // fail, not selected
 ```
 
+## Joined strategy changes
+
+The joined strategy now supports `populateWhere: 'all'`, which is the default behavior, and means "populate the full relations regardless of the where condition". This was previously not working with the joined strategy, as it was reusing the same join clauses as the where clause. In v6, the joined strategy will use a separate join branch for the populated relations. **This aligns the behavior between the strategies.**
+
+The `order by` clause is shared for both the join branches and a new `populateOrderBy` option is added to allow control of the order of populated relations separately.
+
+**The default loading strategy for SQL drivers has been changed to the joined strategy.**
+
+> To keep the old behaviour, you can override the default loading strategy in your ORM config.
+
 ## Removed methods from `EntityRepository`
 
 Following methods are no longer available on the `EntityRepository` instance. 
