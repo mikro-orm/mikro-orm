@@ -828,11 +828,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: true,
     });
 
-    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta, true);
+    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta);
     const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys) as (keyof Entity)[];
     const returning = getOnConflictReturningFields(meta, data, uniqueFields, options) as string[];
 
-    if (options.onConflictAction === 'ignore' || !helper(entity).hasPrimaryKey() || (returning.length > 0 && !this.getPlatform().usesReturningStatement())) {
+    if (options.onConflictAction === 'ignore' || !helper(entity).hasPrimaryKey() || (returning.length > 0 && !(this.getPlatform().usesReturningStatement() && ret.row))) {
       const where = {} as FilterQuery<Entity>;
       uniqueFields.forEach(prop => where[prop as EntityKey] = data![prop as EntityKey]);
       const data2 = await this.driver.findOne(meta.className, where, {
@@ -1011,7 +1011,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         convertCustomTypes: true,
       });
 
-      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, Utils.isEntity(data![i]) ? {} : data![i], res.rows?.[i], meta, true);
+      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, Utils.isEntity(data![i]) ? {} : data![i], res.rows?.[i], meta);
 
       if (!helper(entity).hasPrimaryKey()) {
         loadPK.set(entity, allWhere[i]);
@@ -1024,7 +1024,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     // skip if we got the PKs via returning statement (`rows`)
     const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(allWhere![0]) ? Object.keys(allWhere![0]).flatMap(key => Utils.splitPrimaryKeys(key)) : meta!.primaryKeys) as (keyof Entity)[];
     const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options) as string[];
-    const reloadFields = returning.length > 0 && !this.getPlatform().usesReturningStatement();
+    const reloadFields = returning.length > 0 && !(this.getPlatform().usesReturningStatement() && res.rows?.length);
 
     if (options.onConflictAction === 'ignore' || (!res.rows?.length && loadPK.size > 0) || reloadFields) {
       const unique = meta.hydrateProps.filter(p => !p.lazy).map(p => p.name);
