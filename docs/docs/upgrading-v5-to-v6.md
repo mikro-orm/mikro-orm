@@ -477,7 +477,7 @@ class User {
 }
 ```
 
-This does not apply to virtual properties:
+This does not apply to [virtual properties](./defining-entities.md#virtual-properties):
 
 ```ts
 @Entity()
@@ -489,7 +489,7 @@ class User {
   @ManyToOne(() => User, { name: 'parent_id' })
   parent!: User;
 
-  @Property({ name: 'parent_id',  })
+  @Property({ name: 'parent_id', persist: false })
   parentId!: number;
 
 }
