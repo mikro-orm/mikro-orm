@@ -99,7 +99,7 @@ export abstract class AbstractSqlPlatform extends Platform {
     return this.getSearchJsonPropertyKey(path.split('->'), type, aliased);
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
     const [a, ...b] = path;
     const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
 

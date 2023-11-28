@@ -1,7 +1,7 @@
 import { Reference } from '../entity/Reference';
 import { Utils } from './Utils';
 import type { Dictionary, EntityMetadata, EntityProperty, FilterDef, FilterQuery, ObjectQuery } from '../typings';
-import { ARRAY_OPERATORS, GroupOperator, ReferenceType } from '../enums';
+import { GroupOperator, ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { JsonType } from '../types/JsonType';
@@ -244,8 +244,8 @@ export class QueryHelper {
       }, {} as ObjectQuery<T>);
     }
 
-    if (Array.isArray(cond) && !(key && ARRAY_OPERATORS.includes(key))) {
-      return (cond as ObjectQuery<T>[]).map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as unknown as ObjectQuery<T>;
+    if (Array.isArray(cond) && !(key && Utils.isArrayOperator(key))) {
+      return (cond as FilterQuery<T>[]).map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as unknown as FilterQuery<T>;
     }
 
     if (platform.isRaw(cond)) {
@@ -287,7 +287,7 @@ export class QueryHelper {
 
     const operatorObject = Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k));
     const type = operatorObject ? typeof Object.values(value)[0] : typeof value;
-    const k = platform.getSearchJsonPropertyKey(path, type, alias);
+    const k = platform.getSearchJsonPropertyKey(path, type, alias, value);
     o[k] = value;
 
     return o;

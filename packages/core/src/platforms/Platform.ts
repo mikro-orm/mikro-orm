@@ -305,7 +305,7 @@ export abstract class Platform {
     return path;
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
     return path.join('.');
   }
 

@@ -551,7 +551,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const conds = where.map(cond => {
       if (Utils.isPlainObject(cond) && Utils.getObjectKeysSize(cond) === 1) {
-        cond = Object.values(cond)[0];
+        cond = Object.values(cond)[0] as object;
       }
 
       if (pks.length > 1) {

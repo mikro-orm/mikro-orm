@@ -162,7 +162,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'jsonb';
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
     const first = path.shift();
     const last = path.pop();
     const root = aliased ? expr(alias => this.quoteIdentifier(`${alias}.${first}`)) : this.quoteIdentifier(first!);
@@ -171,12 +171,18 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       boolean: 'bool',
     };
     const cast = (key: string) => type in types ? `(${key})::${types[type]}` : key;
+    let lastOperator = '->>';
 
-    if (path.length === 0) {
-      return cast(`${root}->>'${last}'`);
+    // force `->` for operator payloads with array values
+    if (Utils.isPlainObject(value) && Object.keys(value).every(key => Utils.isArrayOperator(key) && Array.isArray(value[key]))) {
+      lastOperator = '->';
     }
 
-    return cast(`${root}->${path.map(a => this.quoteValue(a)).join('->')}->>'${last}'`);
+    if (path.length === 0) {
+      return cast(`${root}${lastOperator}'${last}'`);
+    }
+
+    return cast(`${root}->${path.map(a => this.quoteValue(a)).join('->')}${lastOperator}'${last}'`);
   }
 
   quoteIdentifier(id: string, quote = '"'): string {
