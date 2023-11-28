@@ -227,7 +227,7 @@ export class EntityRepository<Entity extends object> {
   async populate<
     Hint extends string = never,
     Fields extends string = never,
-  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint>[] | false, options?: EntityLoaderOptions<Entity, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
+  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint, '*'>[] | false, options?: EntityLoaderOptions<Entity, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
     this.validateRepositoryType(entities, 'populate');
     return this.getEntityManager().populate(entities as Entity, populate, options);
   }

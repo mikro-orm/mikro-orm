@@ -1880,7 +1880,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       return ret;
-    }, [] as AutoPath<T, P>[]);
+    }, [] as string[]);
   }
 
   private preparePopulate<
