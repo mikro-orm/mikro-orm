@@ -113,7 +113,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const meta = this.metadata.find(entityName)!;
 
     if (meta.expression instanceof Function) {
-      const em = this.createEntityManager<MongoDriver>(false);
+      const em = this.createEntityManager<MongoDriver>();
       return meta.expression(em, where, options) as EntityData<T>[];
     }
 
