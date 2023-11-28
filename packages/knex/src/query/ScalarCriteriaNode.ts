@@ -23,8 +23,10 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
       }
     }
 
-    if (this.payload && typeof this.payload === 'object' && Object.keys(this.payload).some(key => Utils.isArrayOperator(key))) {
-      for (const key of Object.keys(this.payload)) {
+    if (this.payload && typeof this.payload === 'object') {
+      const keys = Object.keys(this.payload).filter(key => Utils.isArrayOperator(key) && Array.isArray(this.payload[key]));
+
+      for (const key of keys) {
         this.payload[key] = JSON.stringify(this.payload[key]);
       }
     }
