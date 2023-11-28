@@ -19,6 +19,8 @@ import { Countries } from './Countries';
 import { Products } from './Products';
 
 @Entity()
+@Index({ name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['countries', 'productId'] })
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
@@ -183,6 +185,10 @@ export class ProductCountryMap {
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
+  ],
   properties: {
     country: { type: 'unknown', columnType: 'char(2)', persist: false },
     product: {
@@ -342,6 +348,8 @@ import { Countries } from './Countries';
 import { Products } from './Products';
 
 @Entity()
+@Index({ name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['countries', 'productId'] })
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
@@ -508,6 +516,10 @@ export class ProductCountryMap {
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
+  ],
   properties: {
     country: { type: 'unknown', columnType: 'char(2)', persist: false },
     product: {
@@ -687,6 +699,8 @@ import { Products } from './Products';
 import { Sales } from './Sales';
 
 @Entity()
+@Index({ name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['countries', 'productId'] })
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
@@ -871,6 +885,10 @@ export class ProductCountryMap {
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
+  ],
   properties: {
     country: { type: 'unknown', columnType: 'char(2)', persist: false },
     product: {
@@ -1045,6 +1063,8 @@ import { Products } from './Products';
 import { Sales } from './Sales';
 
 @Entity()
+@Index({ name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['countries', 'productId'] })
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
@@ -1231,6 +1251,10 @@ export class ProductCountryMap {
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
+  ],
   properties: {
     country: { type: 'unknown', columnType: 'char(2)', persist: false },
     product: {
@@ -1410,11 +1434,13 @@ export class Countries {
 
 }
 ",
-  "import { Entity, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
 @Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
@@ -1554,6 +1580,10 @@ export class ProductCountryMap {
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
   properties: {
     country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
     product: {
@@ -1699,11 +1729,13 @@ export class Countries {
 
 }
 ",
-  "import { Entity, ManyToOne, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
 @Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
@@ -1845,6 +1877,10 @@ export class ProductCountryMap {
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
   properties: {
     country: {
       primary: true,
@@ -2009,12 +2045,14 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
 
 @Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
@@ -2174,6 +2212,10 @@ export class ProductCountryMap {
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
   properties: {
     country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
     product: {
@@ -2333,12 +2375,14 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
 
 @Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
@@ -2500,6 +2544,10 @@ export class ProductCountryMap {
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
   properties: {
     country: {
       primary: true,
@@ -2670,11 +2718,13 @@ export class Countries {
 
 }
 ",
-  "import { Entity, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
 @Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
@@ -2814,6 +2864,10 @@ export class ProductCountryMap {
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
   properties: {
     country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
     product: {
@@ -2959,11 +3013,13 @@ export class Countries {
 
 }
 ",
-  "import { Entity, ManyToOne, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
 @Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
@@ -3105,6 +3161,10 @@ export class ProductCountryMap {
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
   properties: {
     country: {
       primary: true,
@@ -3269,12 +3329,14 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
 
 @Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
@@ -3434,6 +3496,10 @@ export class ProductCountryMap {
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
   properties: {
     country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
     product: {
@@ -3593,12 +3659,14 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
 
 @Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
@@ -3760,6 +3828,10 @@ export class ProductCountryMap {
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
   properties: {
     country: {
       primary: true,

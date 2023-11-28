@@ -48,6 +48,8 @@ CREATE TABLE IF NOT EXISTS \`product_country_map\` (
   \`product_id\` INT UNSIGNED NOT NULL,
   \`is_currently_allowed\` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (\`country\`, \`product_id\`),
+  INDEX \`full_idx\` (\`country\` ASC, \`product_id\` ASC, \`is_currently_allowed\` ASC) VISIBLE,
+  INDEX \`primary_reindex_idx\` (\`country\` ASC, \`product_id\` ASC) VISIBLE,
   CONSTRAINT \`fk_product_country_map_products1\`
     FOREIGN KEY (\`product_id\`)
     REFERENCES \`products\` (\`product_id\`)
@@ -92,8 +94,11 @@ beforeAll(async () => {
     extensions: [EntityGenerator],
     multipleStatements: true,
   });
-  await orm.schema.ensureDatabase();
-  await orm.schema.execute(schema);
+  const driver = orm.config.getDriver();
+  if (!await driver.getPlatform().getSchemaHelper()?.databaseExists(driver.getConnection(), schemaName)) {
+    await orm.schema.createSchema({ schema: schemaName });
+    await orm.schema.execute(schema);
+  }
   await orm.close(true);
 });
 
@@ -111,17 +116,6 @@ afterEach(async () => {
   await orm.close(true);
 });
 
-afterAll(async () => {
-  orm = await MikroORM.init({
-    dbName: schemaName,
-    port: 3308,
-    discovery: { warnWhenNoEntities: false },
-    extensions: [EntityGenerator],
-    multipleStatements: true,
-  });
-  await orm.schema.dropDatabase();
-  await orm.close(true);
-});
 describe(schemaName, () => {
   describe.each(['never', 'always', 'smart'])('scalarPropertiesForRelations=%s', i => {
     const scalarPropertiesForRelations = i as NonNullable<MikroORMOptions['entityGenerator']['scalarPropertiesForRelations']>;

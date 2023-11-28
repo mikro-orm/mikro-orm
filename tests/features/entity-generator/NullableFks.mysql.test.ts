@@ -96,8 +96,11 @@ beforeAll(async () => {
     extensions: [EntityGenerator],
     multipleStatements: true,
   });
-  await orm.schema.ensureDatabase();
-  await orm.schema.execute(schema);
+  const driver = orm.config.getDriver();
+  if (!await driver.getPlatform().getSchemaHelper()?.databaseExists(driver.getConnection(), schemaName)) {
+    await orm.schema.createSchema({ schema: schemaName });
+    await orm.schema.execute(schema);
+  }
   await orm.close(true);
 });
 
@@ -112,18 +115,6 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await orm.close(true);
-});
-
-afterAll(async () => {
-  orm = await MikroORM.init({
-    dbName: schemaName,
-    port: 3308,
-    discovery: { warnWhenNoEntities: false },
-    extensions: [EntityGenerator],
-    multipleStatements: true,
-  });
-  await orm.schema.dropDatabase();
   await orm.close(true);
 });
 

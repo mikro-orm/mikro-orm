@@ -2,24 +2,20 @@ import { MikroORM } from '@mikro-orm/mysql';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 let orm: MikroORM;
-beforeAll(async () => {
+
+test('RefToPivotTable', async () => {
+  const schemaName = 'pivot_ref_examples';
   orm = await MikroORM.init({
-    dbName: 'pivot_ref_examples',
+    dbName: schemaName,
     port: 3308,
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],
     multipleStatements: true,
   });
-  await orm.schema.ensureDatabase();
-});
-
-afterAll(async () => {
-  await orm.schema.dropDatabase();
-  await orm.close(true);
-});
-
-test('RefToPivotTable', async () => {
-  await orm.schema.execute(`
+  const driver = orm.config.getDriver();
+  if (!await driver.getPlatform().getSchemaHelper()?.databaseExists(driver.getConnection(), schemaName)) {
+    await orm.schema.createSchema({ schema: schemaName });
+    await orm.schema.execute(`
 CREATE TABLE IF NOT EXISTS \`sender\` (
   \`sender_id\` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
   \`name\` VARCHAR(255) NOT NULL,
@@ -71,6 +67,7 @@ CREATE TABLE IF NOT EXISTS \`email_messages_log\` (
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
   `);
+  }
   const dump = await orm.entityGenerator.generate();
   expect(dump).toMatchSnapshot('mysql-entity-dump');
 });

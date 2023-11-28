@@ -9,6 +9,7 @@ describe('EntityGenerator', () => {
     const orm = await initORMMySql('mysql', {}, true);
     const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities' });
     expect(dump).toMatchSnapshot('mysql-entity-dump');
+
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
     await remove('./temp/entities');
 

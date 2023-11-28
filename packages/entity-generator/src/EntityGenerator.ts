@@ -1,4 +1,3 @@
-import { ensureDir, writeFile } from 'fs-extra';
 import {
   type EntityMetadata,
   type EntityProperty,
@@ -17,8 +16,9 @@ import {
   type EntityManager,
   type SchemaHelper,
 } from '@mikro-orm/knex';
-import { SourceFile } from './SourceFile';
+import { ensureDir, writeFile } from 'fs-extra';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
+import { SourceFile } from './SourceFile';
 
 export class EntityGenerator {
 
@@ -97,7 +97,7 @@ export class EntityGenerator {
 
     metadata = metadata.filter(table => !options.skipTables || !options.skipTables.includes(table.tableName));
 
-    this.detectManyToManyRelations(metadata);
+    this.detectManyToManyRelations(metadata, options.onlyPurePivotTables!, options.readOnlyPivotTables!);
 
     if (options.bidirectionalRelations) {
       this.generateBidirectionalRelations(metadata);
@@ -110,7 +110,7 @@ export class EntityGenerator {
     return metadata;
   }
 
-  private detectManyToManyRelations(metadata: EntityMetadata[]): void {
+  private detectManyToManyRelations(metadata: EntityMetadata[], onlyPurePivotTables: boolean, readOnlyPivotTables: boolean): void {
     for (const meta of metadata) {
       const isReferenced = metadata.some(m => {
         return m.tableName !== meta.tableName && m.relations.some(r => {
@@ -122,39 +122,100 @@ export class EntityGenerator {
         this.referencedEntities.add(meta);
       }
 
-      if (
-        meta.compositePK && // needs to have composite PK
-        meta.relations.length === 2 && // there are exactly two relation properties
-        !meta.relations.some(rel => !rel.primary || rel.kind !== ReferenceKind.MANY_TO_ONE) && // all relations are m:1 and PKs
-        (
-          // all properties are relations...
-          meta.relations.length === meta.props.length
-          // ... or at least all fields involved are only the fields of the relations
-          || (new Set<string>(meta.props.flatMap(prop => prop.fieldNames)).size === (new Set<string>(meta.relations.flatMap(rel => rel.fieldNames)).size))
-        )
-      ) {
-        meta.pivotTable = true;
-        const owner = metadata.find(m => m.className === meta.relations[0].type);
 
-        if (!owner) {
+      // Entities with non-composite PKs are never pivot tables. Skip.
+      if (!meta.compositePK) {
+        continue;
+      }
+
+      // Entities where there are not exactly 2 PK relations that are both ManyToOne are never pivot tables. Skip.
+      const pkRelations = meta.relations.filter(rel => rel.primary);
+      if (
+          pkRelations.length !== 2 ||
+          pkRelations.some(rel => rel.kind !== ReferenceKind.MANY_TO_ONE)
+      ) {
+        continue;
+      }
+
+      const pkRelationFields = new Set<string>(pkRelations.flatMap(rel => rel.fieldNames));
+      const nonPkFields = Array.from(new Set<string>(meta.props.flatMap(prop => prop.fieldNames))).filter(fieldName => !pkRelationFields.has(fieldName));
+
+      let fixedOrderColumn: string | undefined;
+      let isReadOnly = false;
+
+      // If there are any fields other than the ones in the two PK relations, table may or may not be a pivot one.
+      // Check further and skip on disqualification.
+      if (nonPkFields.length > 0) {
+        // Additional columns have been disabled with the setting.
+        // Skip table even it otherwise would have qualified as a pivot table.
+        if (onlyPurePivotTables) {
           continue;
         }
 
-        const name = this.namingStrategy.columnNameToProperty(meta.tableName.replace(new RegExp('^' + owner.tableName + '_'), ''));
-        const ownerProp = {
-          name,
-          kind: ReferenceKind.MANY_TO_MANY,
-          pivotTable: meta.tableName,
-          type: meta.relations[1].type,
-          joinColumns: meta.relations[0].fieldNames,
-          inverseJoinColumns: meta.relations[1].fieldNames,
-        } as EntityProperty;
+        const pkRelationNames = pkRelations.map(rel => rel.name);
+        let otherProps = meta.props
+          .filter(prop => !pkRelationNames.includes(prop.name) &&
+            prop.persist !== false && // Skip checking non-persist props
+            prop.fieldNames.some(fieldName => nonPkFields.includes(fieldName)),
+          );
 
-        if (this.referencedEntities.has(meta)) {
-          ownerProp.pivotEntity = meta.className;
+        // Deal with the auto increment column first. That is the column used for fixed ordering, if present.
+        const autoIncrementProp = meta.props.find(prop => prop.autoincrement && prop.fieldNames.length === 1);
+        if (autoIncrementProp) {
+          otherProps = otherProps.filter(prop => prop !== autoIncrementProp);
+          fixedOrderColumn = autoIncrementProp.fieldNames[0];
         }
-        owner.addProperty(ownerProp);
+
+        isReadOnly = otherProps.some(prop => {
+          // If the prop is non-nullable and unique, it will trivially end up causing issues.
+          // Mark as read only.
+          if (!prop.nullable && prop.unique) {
+            return true;
+          }
+
+          // Any other props need to also be optional.
+          // Whether they have a default or are generated,
+          // we've already checked that not explicitly setting the property means the default is either NULL,
+          // or a non-unique non-null value, making it safe to write to pivot entity.
+          return !prop.optional;
+        });
+
+        if (isReadOnly && !readOnlyPivotTables) {
+          continue;
+        }
+
+        // If this now proven pivot entity has persistent props other than the fixed order column,
+        // output it, by considering it as a referenced one.
+        if (otherProps.length > 0) {
+          this.referencedEntities.add(meta);
+        }
       }
+
+      meta.pivotTable = true;
+      const owner = metadata.find(m => m.className === meta.relations[0].type)!;
+
+      const name = this.namingStrategy.columnNameToProperty(meta.tableName.replace(new RegExp('^' + owner.tableName + '_'), ''));
+      const ownerProp = {
+        name,
+        kind: ReferenceKind.MANY_TO_MANY,
+        pivotTable: meta.tableName,
+        type: meta.relations[1].type,
+        joinColumns: meta.relations[0].fieldNames,
+        inverseJoinColumns: meta.relations[1].fieldNames,
+      } as EntityProperty;
+
+      if (this.referencedEntities.has(meta)) {
+        ownerProp.pivotEntity = meta.className;
+      }
+      if (fixedOrderColumn) {
+        ownerProp.fixedOrder = true;
+        ownerProp.fixedOrderColumn = fixedOrderColumn;
+      }
+      if (isReadOnly) {
+        ownerProp.persist = false;
+      }
+
+      owner.addProperty(ownerProp);
     }
   }
 
@@ -169,6 +230,7 @@ export class EntityGenerator {
           referencedTableName: meta.tableName,
           referencedColumnNames: Utils.flatten(targetMeta.getPrimaryProps().map(pk => pk.fieldNames)),
           mappedBy: prop.name,
+          persist: prop.persist,
         } as EntityProperty;
 
         if (prop.kind === ReferenceKind.MANY_TO_ONE) {
