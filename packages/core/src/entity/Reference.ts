@@ -115,7 +115,7 @@ export class Reference<T> {
   async load<TT extends T, K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P> | K): Promise<Loaded<TT, P> | T[K]> {
     const opts: Dictionary = typeof options === 'object' ? options : { prop: options } as LoadReferenceOptions<T, P>;
 
-    if (opts.dataloader ?? (DataloaderUtils.getDataloaderType(helper(this.entity).__em.config.get('dataloader')) > Dataloader.REFERENCE)) {
+    if (opts.dataloader ?? [Dataloader.ALL, Dataloader.REFERENCE].includes(DataloaderUtils.getDataloaderType(helper(this.entity).__em.config.get('dataloader')))) {
       return helper(this.entity).__em.refLoader.load(this);
     }
 

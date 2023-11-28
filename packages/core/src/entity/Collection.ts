@@ -314,7 +314,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     const em = this.getEntityManager();
 
-    if (options.dataloader ?? (DataloaderUtils.getDataloaderType(em.config.get('dataloader')) > Dataloader.COLLECTION)) {
+    if (options.dataloader ?? [Dataloader.ALL, Dataloader.COLLECTION].includes(DataloaderUtils.getDataloaderType(em.config.get('dataloader')))) {
       const order = [...this.items]; // copy order of references
       const customOrder = !!options.orderBy;
       const items: TT[] = await em.colLoader.load(this);
