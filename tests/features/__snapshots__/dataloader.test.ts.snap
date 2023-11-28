@@ -3,13 +3,13 @@
 exports[`Dataloader Collection dataloader can be disabled per-query 1`] = `
 [
   [
-    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a0\`.\`author_1_id\` in (1)",
+    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a1\`.\`age\` < 80 and \`a0\`.\`author_1_id\` in (1)",
   ],
   [
-    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a0\`.\`author_1_id\` in (2)",
+    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a1\`.\`age\` < 80 and \`a0\`.\`author_1_id\` in (2)",
   ],
   [
-    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a0\`.\`author_1_id\` in (3)",
+    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a1\`.\`age\` < 80 and \`a0\`.\`author_1_id\` in (3)",
   ],
   [
     "[query] select \`b0\`.* from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1)",
@@ -56,7 +56,7 @@ exports[`Dataloader Collection.load 1`] = `
     "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ( values (1, 2), (1, 3))",
   ],
   [
-    "[query] select \`a0\`.*, \`b1\`.\`id\` as \`b1__id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`email\` as \`b1__email\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a2\` on \`a0\`.\`id\` = \`a2\`.\`author_2_id\` left join \`author\` as \`b1\` on \`a2\`.\`author_1_id\` = \`b1\`.\`id\` left join \`author_buddies\` as \`a3\` on \`a0\`.\`id\` = \`a3\`.\`author_2_id\` where \`a3\`.\`author_1_id\` in (1, 2, 3)",
+    "[query] select \`a0\`.*, \`b1\`.\`id\` as \`b1__id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`age\` as \`b1__age\`, \`b1\`.\`email\` as \`b1__email\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a2\` on \`a0\`.\`id\` = \`a2\`.\`author_2_id\` left join \`author\` as \`b1\` on \`a2\`.\`author_1_id\` = \`b1\`.\`id\` and \`b1\`.\`age\` < 80 left join \`author_buddies\` as \`a3\` on \`a0\`.\`id\` = \`a3\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a3\`.\`author_1_id\` in (1, 2, 3)",
   ],
 ]
 `;
@@ -73,7 +73,7 @@ exports[`Dataloader Dataloader can be globally enabled for Collections with true
     "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ( values (1, 2), (1, 3))",
   ],
   [
-    "[query] select \`a0\`.*, \`b1\`.\`id\` as \`b1__id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`email\` as \`b1__email\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a2\` on \`a0\`.\`id\` = \`a2\`.\`author_2_id\` left join \`author\` as \`b1\` on \`a2\`.\`author_1_id\` = \`b1\`.\`id\` left join \`author_buddies\` as \`a3\` on \`a0\`.\`id\` = \`a3\`.\`author_2_id\` where \`a3\`.\`author_1_id\` in (1, 2, 3)",
+    "[query] select \`a0\`.*, \`b1\`.\`id\` as \`b1__id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`age\` as \`b1__age\`, \`b1\`.\`email\` as \`b1__email\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a2\` on \`a0\`.\`id\` = \`a2\`.\`author_2_id\` left join \`author\` as \`b1\` on \`a2\`.\`author_1_id\` = \`b1\`.\`id\` and \`b1\`.\`age\` < 80 left join \`author_buddies\` as \`a3\` on \`a0\`.\`id\` = \`a3\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a3\`.\`author_1_id\` in (1, 2, 3)",
   ],
 ]
 `;
@@ -81,7 +81,7 @@ exports[`Dataloader Dataloader can be globally enabled for Collections with true
 exports[`Dataloader Dataloader can be globally enabled for References with true, Dataloader.ALL, Dataloader.REFERENCE 1`] = `
 [
   [
-    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`id\` in (1, 2)",
+    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`age\` < 80 and \`a0\`.\`id\` in (1, 2)",
   ],
   [
     "[query] select \`b0\`.* from \`book\` as \`b0\` where \`b0\`.\`id\` in (5, 3, 4)",
@@ -95,13 +95,13 @@ exports[`Dataloader Dataloader can be globally enabled for References with true,
 exports[`Dataloader Dataloader should not be globally enabled for Collections with false, Dataloader.OFF, Dataloader.REFERENCE 1`] = `
 [
   [
-    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a0\`.\`author_1_id\` in (1)",
+    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a1\`.\`age\` < 80 and \`a0\`.\`author_1_id\` in (1)",
   ],
   [
-    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a0\`.\`author_1_id\` in (2)",
+    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a1\`.\`age\` < 80 and \`a0\`.\`author_1_id\` in (2)",
   ],
   [
-    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a0\`.\`author_1_id\` in (3)",
+    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a1\`.\`age\` < 80 and \`a0\`.\`author_1_id\` in (3)",
   ],
   [
     "[query] select \`b0\`.* from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1)",
@@ -139,10 +139,10 @@ exports[`Dataloader Dataloader should not be globally enabled for Collections wi
 exports[`Dataloader Dataloader should not be globally enabled for References with false, Dataloader.OFF, Dataloader.COLLECTION 1`] = `
 [
   [
-    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`id\` = 1 limit 1",
+    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`age\` < 80 and \`a0\`.\`id\` = 1 limit 1",
   ],
   [
-    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`id\` = 2 limit 1",
+    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`age\` < 80 and \`a0\`.\`id\` = 2 limit 1",
   ],
   [
     "[query] select \`b0\`.* from \`book\` as \`b0\` where \`b0\`.\`id\` = 5 limit 1",
@@ -168,10 +168,10 @@ exports[`Dataloader Dataloader should not be globally enabled for References wit
 exports[`Dataloader Reference dataloader can be disabled per-query 1`] = `
 [
   [
-    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`id\` = 1 limit 1",
+    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`age\` < 80 and \`a0\`.\`id\` = 1 limit 1",
   ],
   [
-    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`id\` = 2 limit 1",
+    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`age\` < 80 and \`a0\`.\`id\` = 2 limit 1",
   ],
   [
     "[query] select \`b0\`.* from \`book\` as \`b0\` where \`b0\`.\`id\` = 5 limit 1",
@@ -197,7 +197,7 @@ exports[`Dataloader Reference dataloader can be disabled per-query 1`] = `
 exports[`Dataloader Reference.load 1`] = `
 [
   [
-    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`id\` in (1, 2)",
+    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`age\` < 80 and \`a0\`.\`id\` in (1, 2)",
   ],
   [
     "[query] select \`b0\`.* from \`book\` as \`b0\` where \`b0\`.\`id\` in (5, 3, 4)",
@@ -220,7 +220,7 @@ exports[`Dataloader getColBatchLoadFn 1`] = `
     "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ( values (1, 2), (1, 3))",
   ],
   [
-    "[query] select \`a0\`.*, \`b1\`.\`id\` as \`b1__id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`email\` as \`b1__email\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a2\` on \`a0\`.\`id\` = \`a2\`.\`author_2_id\` left join \`author\` as \`b1\` on \`a2\`.\`author_1_id\` = \`b1\`.\`id\` left join \`author_buddies\` as \`a3\` on \`a0\`.\`id\` = \`a3\`.\`author_2_id\` where \`a3\`.\`author_1_id\` in (1, 2, 3)",
+    "[query] select \`a0\`.*, \`b1\`.\`id\` as \`b1__id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`age\` as \`b1__age\`, \`b1\`.\`email\` as \`b1__email\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a2\` on \`a0\`.\`id\` = \`a2\`.\`author_2_id\` left join \`author\` as \`b1\` on \`a2\`.\`author_1_id\` = \`b1\`.\`id\` and \`b1\`.\`age\` < 80 left join \`author_buddies\` as \`a3\` on \`a0\`.\`id\` = \`a3\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a3\`.\`author_1_id\` in (1, 2, 3)",
   ],
 ]
 `;
@@ -228,7 +228,7 @@ exports[`Dataloader getColBatchLoadFn 1`] = `
 exports[`Dataloader getRefBatchLoadFn 1`] = `
 [
   [
-    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`id\` in (1, 2)",
+    "[query] select \`a0\`.* from \`author\` as \`a0\` where \`a0\`.\`age\` < 80 and \`a0\`.\`id\` in (1, 2)",
   ],
   [
     "[query] select \`b0\`.* from \`book\` as \`b0\` where \`b0\`.\`id\` in (5, 3, 4)",
