@@ -318,23 +318,52 @@ describe('Dataloader', () => {
     expect(serialize(refsA)).toEqual(serialize(refsB));
   });
 
-  test('Dataloader can be globally enabled for References', async () => {
-    const orm = await MikroORM.init({
-      dbName: ':memory:',
-      dataloader: Dataloader.ALL,
-      entities: [Author, Book, Chat, Message],
-      loggerFactory: options => new SimpleLogger(options),
-    });
-    await orm.schema.createSchema();
-    await populateDatabase(orm.em);
+  test('Dataloader can be globally enabled for References with true, Dataloader.ALL, Dataloader.REFERENCE', async () => {
+    async function getRefs(dataloader: Dataloader | boolean) {
+      const orm = await MikroORM.init({
+        dbName: ':memory:',
+        dataloader,
+        entities: [Author, Book, Chat, Message],
+        loggerFactory: options => new SimpleLogger(options),
+      });
+      await orm.schema.createSchema();
+      await populateDatabase(orm.em);
+      const refs = getReferences(orm.em);
+      const mock = mockLogger(orm);
+      await Promise.all(refs.map(ref => ref.load()));
+      await orm.em.flush();
+      await orm.close(true);
+      return mock.mock.calls;
+    }
 
-    const refs = getReferences(orm.em);
-    const mock = mockLogger(orm);
-    await Promise.all(refs.map(ref => ref.load()));
-    await orm.em.flush();
-    expect(mock.mock.calls).toMatchSnapshot();
+    const res = structuredClone(await getRefs(Dataloader.ALL));
+    expect(res).toMatchSnapshot();
+    expect(await getRefs(true)).toEqual(res);
+    expect(await getRefs(Dataloader.REFERENCE)).toEqual(res);
+  });
 
-    await orm.close(true);
+  test('Dataloader should not be globally enabled for References with false, Dataloader.OFF, Dataloader.COLLECTION', async () => {
+    async function getRefs(dataloader: Dataloader | boolean) {
+      const orm = await MikroORM.init({
+        dbName: ':memory:',
+        dataloader,
+        entities: [Author, Book, Chat, Message],
+        loggerFactory: options => new SimpleLogger(options),
+      });
+      await orm.schema.createSchema();
+      await populateDatabase(orm.em);
+      const refs = getReferences(orm.em);
+      const mock = mockLogger(orm);
+      await Promise.all(refs.map(ref => ref.load()));
+      await orm.em.flush();
+      await orm.close(true);
+      return mock.mock.calls;
+    }
+
+    const res = structuredClone(await getRefs(Dataloader.OFF));
+    expect(res).toMatchSnapshot();
+    expect(await getRefs(false)).toEqual(res);
+    expect(await getRefs(Dataloader.COLLECTION)).toEqual(res);
   });
 
   test('Reference dataloader can be disabled per-query', async () => {
@@ -455,23 +484,52 @@ describe('Dataloader', () => {
     }
   });
 
-  test('Dataloader can be globally enabled for Collections', async () => {
-    const orm = await MikroORM.init({
-      dbName: ':memory:',
-      dataloader: Dataloader.ALL,
-      entities: [Author, Book, Chat, Message],
-      loggerFactory: options => new SimpleLogger(options),
-    });
-    await orm.schema.createSchema();
-    await populateDatabase(orm.em);
+  test('Dataloader can be globally enabled for Collections with true, Dataloader.ALL, Dataloader.COLLECTION', async () => {
+    async function getCols(dataloader: Dataloader | boolean) {
+      const orm = await MikroORM.init({
+        dbName: ':memory:',
+        dataloader,
+        entities: [Author, Book, Chat, Message],
+        loggerFactory: options => new SimpleLogger(options),
+      });
+      await orm.schema.createSchema();
+      await populateDatabase(orm.em);
+      const cols = await getCollections(orm.em);
+      const mock = mockLogger(orm);
+      await Promise.all(cols.map(col => col.load()));
+      await orm.em.flush();
+      await orm.close(true);
+      return mock.mock.calls;
+    }
 
-    const cols = await getCollections(orm.em);
-    const mock = mockLogger(orm);
-    await Promise.all(cols.map(col => col.load()));
-    await orm.em.flush();
-    expect(mock.mock.calls).toMatchSnapshot();
+    const res = structuredClone(await getCols(Dataloader.ALL));
+    expect(res).toMatchSnapshot();
+    expect(await getCols(true)).toEqual(res);
+    expect(await getCols(Dataloader.COLLECTION)).toEqual(res);
+  });
 
-    await orm.close(true);
+  test('Dataloader should not be globally enabled for Collections with false, Dataloader.OFF, Dataloader.REFERENCE', async () => {
+    async function getCols(dataloader: Dataloader | boolean) {
+      const orm = await MikroORM.init({
+        dbName: ':memory:',
+        dataloader,
+        entities: [Author, Book, Chat, Message],
+        loggerFactory: options => new SimpleLogger(options),
+      });
+      await orm.schema.createSchema();
+      await populateDatabase(orm.em);
+      const cols = await getCollections(orm.em);
+      const mock = mockLogger(orm);
+      await Promise.all(cols.map(col => col.load()));
+      await orm.em.flush();
+      await orm.close(true);
+      return mock.mock.calls;
+    }
+
+    const res = structuredClone(await getCols(Dataloader.OFF));
+    expect(res).toMatchSnapshot();
+    expect(await getCols(false)).toEqual(res);
+    expect(await getCols(Dataloader.REFERENCE)).toEqual(res);
   });
 
   test('Collection dataloader can be disabled per-query', async () => {
