@@ -1,4 +1,4 @@
-import { ReferenceKind } from '@mikro-orm/core';
+import { ReferenceKind, Utils } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode';
 import type { IQueryBuilder, ICriteriaNodeProcessOptions } from '../typings';
 import { JoinType } from './enums';
@@ -20,6 +20,12 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
       // select the owner as virtual property when joining from 1:1 inverse side, but only if the parent is root entity
       if (this.prop!.kind === ReferenceKind.ONE_TO_ONE && !parentPath.includes('.') && !qb._fields?.includes(field)) {
         qb.addSelect(field);
+      }
+    }
+
+    if (this.payload && typeof this.payload === 'object' && Object.keys(this.payload).some(key => Utils.isArrayOperator(key))) {
+      for (const key of Object.keys(this.payload)) {
+        this.payload[key] = JSON.stringify(this.payload[key]);
       }
     }
 

@@ -86,7 +86,6 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         o[`${alias}.${field}`] = payload;
       }
 
-
       return o;
     }, {} as Dictionary);
   }
