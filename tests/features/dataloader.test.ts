@@ -18,6 +18,7 @@ import {
   SimpleLogger,
   Dataloader,
   serialize,
+  Filter,
 } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
@@ -26,6 +27,7 @@ enum PublisherType {
   GLOBAL = 'global',
 }
 
+@Filter({ name: 'young', cond: { age: { $lt: 80 } }, default: true })
 @Entity()
 class Author {
 
@@ -34,6 +36,9 @@ class Author {
 
   @Property()
   name: string;
+
+  @Property()
+  age: number;
 
   @Property()
   email: string;
@@ -55,11 +60,12 @@ class Author {
   @OneToMany(() => Chat, chat => chat.owner)
   ownedChats: Collection<Chat> = new Collection<Chat>(this);
 
-  constructor({ id, name, email }: { id?: number; name: string; email: string }) {
+  constructor({ id, name, age, email }: { id?: number; name: string; age: number; email: string }) {
     if (id) {
       this.id = id;
     }
     this.name = name;
+    this.age = age;
     this.email = email;
   }
 
@@ -162,19 +168,17 @@ class Message {
 
 async function populateDatabase(em: MikroORM['em']) {
   const authors = [
-    new Author({ id : 1, name: 'a', email: 'a@a.com' }),
-    new Author({ id: 2, name: 'b', email: 'b@b.com' }),
-    new Author({ id: 3, name: 'c', email: 'c@c.com' }),
-    new Author({ id: 4, name: 'd', email:  'd@d.com' }),
-    new Author({ id: 5, name: 'e', email: 'e@e.com' }),
+    new Author({ id : 1, name: 'a', age: 31, email: 'a@a.com' }),
+    new Author({ id: 2, name: 'b', age: 47, email: 'b@b.com' }),
+    new Author({ id: 3, name: 'c', age: 26, email: 'c@c.com' }),
+    new Author({ id: 4, name: 'd', age: 87, email:  'd@d.com' }),
+    new Author({ id: 5, name: 'e', age: 39, email: 'e@e.com' }),
   ];
-  authors[0].friends.add([authors[1], authors[3], authors[4]]);
   authors[0].friends.add([authors[1], authors[3], authors[4]]);
   authors[1].friends.add([authors[0]]);
   authors[2].friends.add([authors[3]]);
   authors[3].friends.add([authors[0], authors[2]]);
   authors[4].friends.add([authors[0]]);
-  authors[0].buddies.add([authors[1], authors[3], authors[4]]);
   authors[0].buddies.add([authors[1], authors[3], authors[4]]);
   authors[1].buddies.add([authors[0]]);
   authors[2].buddies.add([authors[3]]);
