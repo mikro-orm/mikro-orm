@@ -1669,7 +1669,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Hint extends string = never,
     Fields extends string = never,
-  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint>[] | false, options: EntityLoaderOptions<Entity, Fields> = {}): Promise<Loaded<Entity, Hint, Fields>[]> {
+  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint, '*'>[] | false, options: EntityLoaderOptions<Entity, Fields> = {}): Promise<Loaded<Entity, Hint, Fields>[]> {
     entities = Utils.asArray(entities);
 
     if (entities.length === 0) {
