@@ -5,7 +5,6 @@ import type {
   EntityData,
   EntityDTO,
   EntityKey,
-  EntityMetadata,
   EntityValue,
   FilterKey,
   FilterQuery,
@@ -20,7 +19,7 @@ import { ValidationError } from '../errors';
 import { type LockMode, type QueryOrderMap, ReferenceKind, Dataloader } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
-import type { FindOptions } from '../drivers/IDatabaseDriver';
+import type { FindOptions, CountOptions } from '../drivers/IDatabaseDriver';
 import { helper } from './wrap';
 import type { LoggingOptions } from '../logging/Logger';
 
@@ -83,8 +82,9 @@ export class Collection<T extends object, O extends object = object> extends Arr
    */
   override async loadCount(options: LoadCountOptions<T> | boolean = {}): Promise<number> {
     options = typeof options === 'boolean' ? { refresh: options } : options;
+    const { refresh, where, ...countOptions } = options;
 
-    if (!options.refresh && !options.where && Utils.isDefined(this._count)) {
+    if (!refresh && !where && Utils.isDefined(this._count)) {
       return this._count!;
     }
 
@@ -94,11 +94,10 @@ export class Collection<T extends object, O extends object = object> extends Arr
       return this._count = this.length;
     }
 
-    const pivotMeta = em.getMetadata().find(this.property.pivotEntity)!;
-    const where = this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta);
-    const count = await em.count(this.property.type, where);
+    const cond = this.createLoadCountCondition(where ?? {} as FilterQuery<T>);
+    const count = await em.count(this.property.type, cond, countOptions);
 
-    if (!options.where) {
+    if (!where) {
       this._count = count;
     }
 
@@ -316,16 +315,18 @@ export class Collection<T extends object, O extends object = object> extends Arr
       const order = [...this.items]; // copy order of references
       const customOrder = !!options.orderBy;
       const items: TT[] = await this.getEntityManager().colLoader.load(this);
+
       if (!customOrder) {
         this.reorderItems(items, order);
       }
 
       this.items.clear();
       let i = 0;
-      items.forEach(item => {
+
+      for (const item of items) {
         this.items.add(item);
         this[i++] = item;
-      });
+      }
 
       this.initialized = true;
       this.dirty = false;
@@ -426,7 +427,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     }
   }
 
-  private createLoadCountCondition(cond: FilterQuery<T>, pivotMeta?: EntityMetadata) {
+  private createLoadCountCondition(cond: FilterQuery<T>) {
     const wrapped = helper(this.owner);
     const val = wrapped.__meta.compositePK ? { $in: wrapped.__primaryKeys } : wrapped.getPrimaryKey();
     const dict = cond as Dictionary;
@@ -526,7 +527,7 @@ export interface InitOptions<T, P extends string = never> {
   logging?: LoggingOptions;
 }
 
-export interface LoadCountOptions<T> {
+export interface LoadCountOptions<T extends object> extends CountOptions<T, '*'> {
   refresh?: boolean;
   where?: FilterQuery<T>;
 }

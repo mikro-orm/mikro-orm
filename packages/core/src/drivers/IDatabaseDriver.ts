@@ -98,6 +98,8 @@ export interface FindAllOptions<T, P extends string = never, F extends string = 
   where?: FilterQuery<T>;
 }
 
+export type FilterOptions = Dictionary<boolean | Dictionary> | string[] | boolean;
+
 export interface FindOptions<T, P extends string = never, F extends string = never> {
   where?: FilterQuery<T>;
   populate?: Populate<T, P>;
@@ -129,7 +131,7 @@ export interface FindOptions<T, P extends string = never, F extends string = nev
   /** sql only */
   strategy?: LoadStrategy | `${LoadStrategy}`;
   flushMode?: FlushMode | `${FlushMode}`;
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
   /** sql only */
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   /** sql only */
@@ -183,7 +185,7 @@ export interface UpsertManyOptions<Entity> extends UpsertOptions<Entity> {
 }
 
 export interface CountOptions<T extends object, P extends string = never>  {
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
   schema?: string;
   groupBy?: string | readonly string[];
   having?: QBFilterQuery<T>;
@@ -200,17 +202,17 @@ export interface CountOptions<T extends object, P extends string = never>  {
 }
 
 export interface UpdateOptions<T> {
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
   schema?: string;
   ctx?: Transaction;
 }
 
 export interface DeleteOptions<T> extends DriverMethodOptions {
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
 }
 
 export interface NativeDeleteOptions<T> extends DriverMethodOptions {
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
 }
 
 export interface LockOptions extends DriverMethodOptions {
