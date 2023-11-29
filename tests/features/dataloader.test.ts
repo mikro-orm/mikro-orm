@@ -274,17 +274,17 @@ describe('Dataloader', () => {
 
   afterAll(async () => orm.close(true));
 
-  test('groupPrimaryKeysByEntity', () => {
-    const map = DataloaderUtils.groupPrimaryKeysByEntity([
-      orm.em.getReference(Author, 1, { wrapped: true }),
-      orm.em.getReference(Author, 2, { wrapped: true }),
-      orm.em.getReference(Book, 3, { wrapped: true }),
-    ] as Ref<any>[]);
+  test('groupPrimaryKeysByEntityAndOpts', () => {
+    const map = DataloaderUtils.groupPrimaryKeysByEntityAndOpts([
+      [orm.em.getReference(Author, 1, { wrapped: true })],
+      [orm.em.getReference(Author, 2, { wrapped: true })],
+      [orm.em.getReference(Book, 3, { wrapped: true })],
+    ] as [Ref<any>][]);
     expect(Array.from(map.keys()).length).toBe(2);
-    expect(map.has(orm.em.getMetadata().get('Author'))).toBe(true);
-    expect(map.has(orm.em.getMetadata().get('Book'))).toBe(true);
-    const authorIds = Array.from(map.get(orm.em.getMetadata().get('Author'))!.values());
-    const bookIds = Array.from(map.get(orm.em.getMetadata().get('Book'))!.values());
+    expect(map.has('Author|{}')).toBe(true);
+    expect(map.has('Book|{}')).toBe(true);
+    const authorIds = Array.from(map.get('Author|{}')!.values());
+    const bookIds = Array.from(map.get('Book|{}')!.values());
     expect(authorIds.length).toBe(2);
     expect(bookIds.length).toBe(1);
     expect(authorIds.includes(1)).toBe(true);
@@ -295,7 +295,7 @@ describe('Dataloader', () => {
   test('getRefBatchLoadFn', async () => {
     const refBatchLoadFn = DataloaderUtils.getRefBatchLoadFn(orm.em);
     const mock = mockLogger(orm);
-    const res = await refBatchLoadFn(getReferences(orm.em));
+    const res = await refBatchLoadFn(getReferences(orm.em).map(ref => [ref]));
     await orm.em.flush();
     expect(mock.mock.calls).toMatchSnapshot();
     expect(res.length).toBe(8);
@@ -320,6 +320,24 @@ describe('Dataloader', () => {
     await orm.em.flush();
     expect(mock.mock.calls).toMatchSnapshot();
     expect(serialize(refsA)).toEqual(serialize(refsB));
+  });
+
+  test('Reference.load with prop', async () => {
+    const refsA = getReferences(orm.em).slice(0, 2);
+    const refsB = getReferences(orm.em).slice(0, 2);
+    const resA = await Promise.all(refsA.map(ref => ref.load('age')));
+    const resB = await Promise.all(refsB.map(ref => ref.load('age', true)));
+    await orm.em.flush();
+    expect(resA).toEqual(resB);
+  });
+
+  test('Reference.load with populate', async () => {
+    const refsA = getReferences(orm.em).slice(0, 2);
+    const refsB = getReferences(orm.em).slice(0, 2);
+    const resA = await Promise.all(refsA.map(ref => ref.load({ populate: 'books' })));
+    const resB = await Promise.all(refsB.map(ref => ref.load({ populate: 'books', dataloader: true })));
+    await orm.em.flush();
+    expect(serialize(resA)).toEqual(serialize(resB));
   });
 
   test('Dataloader can be globally enabled for References with true, Dataloader.ALL, Dataloader.REFERENCE', async () => {

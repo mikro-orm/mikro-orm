@@ -7,7 +7,8 @@ import { Collection } from '../entity/Collection';
 import { helper } from '../entity/wrap';
 import { type EntityManager } from '../EntityManager';
 import type DataLoader from 'dataloader';
-import { Dataloader } from '..';
+import { Dataloader } from '../enums';
+import { type LoadReferenceOptions } from '../entity/Reference';
 
 export class DataloaderUtils {
 
@@ -15,17 +16,29 @@ export class DataloaderUtils {
    * Groups identified references by entity and returns a Map with the
    * class name as the index and the corresponging primary keys as the value.
    */
-  static groupPrimaryKeysByEntity(
-    refs: readonly Ref<any>[],
-  ): Map<EntityMetadata<any>, Set<Primary<any>>> {
-    const map = new Map<EntityMetadata<any>, Set<Primary<any>>>();
-    for (const ref of refs) {
-      // We use EntityMetadata objects as the key instead of __meta.className because it will be more performant
-      const meta = helper(ref).__meta;
-      let primaryKeysSet = map.get(meta);
+  static groupPrimaryKeysByEntityAndOpts(
+    refsWithOpts: readonly [Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?][],
+  ): Map<string, Set<Primary<any>>> {
+    const map = new Map<string, Set<Primary<any>>>();
+    for (const [ref, opts] of refsWithOpts) {
+      /* The key is a combination of the className and a stringified version if the load options because we want
+         to map each combination of entities/options into separate find queries in order to return accurate results.
+         This could be further optimized finding the "lowest common denominator" among the different options
+         for each Entity and firing a single query for each Entity instead of Entity+options combination.
+         The former is the approach taken by the out-of-tree "find" dataloader: https://github.com/darkbasic/mikro-orm-dataloaders
+         In real-world scenarios (GraphQL) most of the time you will end up batching the same sets of options anyway,
+         so we end up getting most of the benefits with the much simpler implementation.
+         Also there are scenarios where the single query per entity implementation may end up being slower, for example
+         if the vast majority of the refereces batched for a certain entity  don't have populate options while a few ones have
+         a wildcard populate so you end up doing the additional joins for all the entities.
+         Thus such approach should probably be configurable, if not opt-in.
+         NOTE: meta + opts multi maps (https://github.com/martian17/ds-js) might be a more elegant way
+         to implement this but not necessarily faster.  */
+      const key = `${helper(ref).__meta.className}|${JSON.stringify(opts ?? {})}`;
+      let primaryKeysSet = map.get(key);
       if (primaryKeysSet == null) {
         primaryKeysSet = new Set();
-        map.set(meta, primaryKeysSet);
+        map.set(key, primaryKeysSet);
       }
       primaryKeysSet.add(helper(ref).getPrimaryKey() as Primary<any>);
     }
@@ -36,12 +49,15 @@ export class DataloaderUtils {
    * Returns the reference dataloader batchLoadFn, which aggregates references by entity,
    * makes one query per entity and maps each input reference to the corresponging result.
    */
-  static getRefBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<Ref<any>, any> {
-    return async (refs: readonly Ref<any>[]): Promise<ArrayLike<any | Error>> => {
-      const groupedIdsMap = DataloaderUtils.groupPrimaryKeysByEntity(refs);
+  static getRefBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?], any> {
+    return async (refsWithOpts: readonly [Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?][]): Promise<ArrayLike<any | Error>> => {
+      const groupedIdsMap = DataloaderUtils.groupPrimaryKeysByEntityAndOpts(refsWithOpts);
       const promises = Array.from(groupedIdsMap).map(
-        ([{ className }, idsSet]) =>
-          em.find(className, Array.from(idsSet)),
+        ([key, idsSet]) => {
+          const className = key.substring(0, key.indexOf('|'));
+          const opts: Omit<LoadReferenceOptions<any, any>, 'dataloader'> = JSON.parse(key.substring(key.indexOf('|') + 1));
+          return em.find(className, Array.from(idsSet), opts);
+        },
       );
       await Promise.all(promises);
       /* Instead of assigning each find result to the original reference we use a shortcut
@@ -49,7 +65,7 @@ export class DataloaderUtils {
         when it calls ref.unwrap it will automatically retrieve the entity
         from the cache (it will hit the cache because of the previous find query).
         This trick won't be possible for collections where we will be forced to map the results. */
-      return refs.map(ref => ref.unwrap());
+      return refsWithOpts.map(([ref]) => ref.unwrap());
     };
   }
 
