@@ -1,6 +1,6 @@
 import {
   Cascade, Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey,
-  PrimaryKeyType, Property, ValidationError, wrap, LoadStrategy,
+  Property, ValidationError, wrap, LoadStrategy, PrimaryKeyProp, Dictionary,
 } from '@mikro-orm/core';
 import { AbstractSqlConnection, SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
@@ -50,7 +50,7 @@ export class FooParam2 {
   @Property({ version: true })
   version!: Date;
 
-  [PrimaryKeyType]?: [number, number];
+  [PrimaryKeyProp]?: ['bar', 'baz'];
 
   constructor(bar: FooBar2, baz: FooBaz2, value: string) {
     this.bar = bar;
@@ -100,7 +100,7 @@ export class Test2 {
   }
 
   getConfiguration(): Record<string, string> {
-    return this.config.getItems().reduce((c, v) => { c[v.property] = v.value; return c; }, {});
+    return this.config.getItems().reduce((c, v) => { c[v.property] = v.value; return c; }, {} as Dictionary);
   }
 
 }
@@ -154,7 +154,7 @@ export class Car2 {
   @ManyToMany('User2', 'cars')
   users = new Collection<User2>(this);
 
-  [PrimaryKeyType]?: [string, number];
+  [PrimaryKeyProp]?: ['name', 'year'];
 
   constructor(name: string, year: number, price: number) {
     this.name = name;
@@ -185,7 +185,7 @@ export class User2 {
   @OneToOne({ entity: () => Car2, nullable: true })
   favouriteCar?: Car2;
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['firstName', 'lastName'];
 
   constructor(firstName: string, lastName: string) {
     this.firstName = firstName;
@@ -290,7 +290,7 @@ describe('composite keys in sqlite', () => {
     orm.em.clear();
 
     // test populating a PK
-    const p1 = await orm.em.findOneOrFail(FooParam2, [param.bar.id, param.baz.id], { populate: ['bar'] });
+    const p1 = await orm.em.findOneOrFail(FooParam2, [param.bar.id, param.baz.id] as const, { populate: ['bar'] });
     expect(wrap(p1).toJSON().bar).toMatchObject(wrap(p1.bar).toJSON());
     expect(wrap(p1).toJSON().baz).toBe(p1.baz.id);
 
@@ -402,7 +402,7 @@ describe('composite keys in sqlite', () => {
     const connMock = jest.spyOn(AbstractSqlConnection.prototype, 'execute');
     const cc = await orm.em.findOneOrFail(Car2, car11, { populate: ['users'], strategy: LoadStrategy.JOINED });
     expect(cc.users[0].foo).toBe(42);
-    expect(connMock).toBeCalledTimes(1);
+    expect(connMock).toHaveBeenCalledTimes(1);
   });
 
   test('composite entity in m:1 relationship (multi update)', async () => {
@@ -468,7 +468,6 @@ describe('composite keys in sqlite', () => {
     expect(c1).toBe(u2.cars[0]);
 
     await orm.em.remove(u2).flush();
-    expect(u2.cars[0]).toBeUndefined();
     const o3 = await orm.em.findOne(User2, u1);
     expect(o3).toBeNull();
     const c2 = await orm.em.findOneOrFail(Car2, car1);
@@ -494,7 +493,7 @@ describe('composite keys in sqlite', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('delete from `user2_sandwiches` where (`sandwich_id`) in ( values (2), (3)) and `user2_first_name` = \'Henry\' and `user2_last_name` = \'Doe 2\'');
+    expect(mock.mock.calls[1][0]).toMatch('delete from `user2_sandwiches` where (`sandwich_id` = 2 and `user2_first_name` = \'Henry\' and `user2_last_name` = \'Doe 2\') or (`sandwich_id` = 3 and `user2_first_name` = \'Henry\' and `user2_last_name` = \'Doe 2\')');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -550,12 +549,12 @@ describe('composite keys in sqlite', () => {
     const ref = orm.em.getReference(Car2, ['n', 1], { wrapped: true });
     expect(ref.unwrap()).toBeInstanceOf(Car2);
     expect(wrap(ref, true).__primaryKeys).toEqual(['n', 1]);
-    expect(() => orm.em.getReference(Car2, 1 as any)).toThrowError('Composite key required for entity Car2.');
+    expect(() => orm.em.getReference(Car2, 1 as any)).toThrow('Composite key required for entity Car2.');
     expect(wrap(ref).toJSON()).toEqual({ name: 'n', year: 1 });
   });
 
   test('composite key in em.create()', async () => {
-    await orm.em.nativeInsert(Car2, { name: 'n4', year: 2000, price: 456 });
+    await orm.em.insert(Car2, { name: 'n4', year: 2000, price: 456 });
 
     const c1 = new Car2('n1', 2000, 1);
     const c2 = { name: 'n3', year: 2000, price: 123 };
@@ -574,7 +573,7 @@ describe('composite keys in sqlite', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `car2` (`name`, `year`, `price`) values (?, ?, ?), (?, ?, ?)'); // c1, c2
     expect(mock.mock.calls[2][0]).toMatch('insert into `user2` (`first_name`, `last_name`) values (?, ?)'); // u1
-    expect(mock.mock.calls[3][0]).toMatch('insert into `user2_cars` (`user2_first_name`, `user2_last_name`, `car2_name`, `car2_year`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('insert into `user2_cars` (`car2_name`, `car2_year`, `user2_first_name`, `user2_last_name`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
     expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 

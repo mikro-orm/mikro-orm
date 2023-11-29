@@ -21,7 +21,7 @@ The first approach is to use the implicit transaction handling provided by the M
 ```ts
 const user = new User(...);
 user.name = 'George';
-await orm.em.persistAndFlush(user);
+await orm.em.persist(user).flush();
 ```
 
 Since we do not do any custom transaction demarcation in the above code, `em.flush()` will begin and commit/rollback a transaction. This behavior is made possible by the aggregation of the DML operations by the MikroORM and is sufficient if all the data manipulation that is part of a unit of work happens through the domain model and thus the ORM.
@@ -253,21 +253,19 @@ You can use pessimistic locks in three different scenarios:
 
 Optionally we can also pass list of table aliases we want to lock via `lockTableAliases` option:
 
-> The root entity is always aliased as `e0` when using `em.find()` or `em.findOne()`.
-
 ```ts
 const res = await em.find(User, { name: 'Jon' }, {
   populate: ['identities'],
   strategy: LoadStrategy.JOINED,
   lockMode: LockMode.PESSIMISTIC_READ,
-  lockTableAliases: ['e0'],
+  lockTableAliases: ['u0'],
 });
 
 // select ...
-//   from "user" as "e0"
-//   left join "identity" as "i1" on "e0"."id" = "i1"."user_id"
-//   where "e0"."name" = 'Jon'
-//   for update of "e0" skip locked
+//   from "user" as "u0"
+//   left join "identity" as "i1" on "u0"."id" = "i1"."user_id"
+//   where "u0"."name" = 'Jon'
+//   for update of "u0" skip locked
 ```
 
 ## Isolation levels

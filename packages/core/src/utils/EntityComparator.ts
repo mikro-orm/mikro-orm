@@ -3,12 +3,13 @@ import type {
   Dictionary,
   EntityData,
   EntityDictionary,
+  EntityKey,
   EntityMetadata,
   EntityProperty,
   IMetadataStorage,
   Primary,
 } from '../typings';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import type { Platform } from '../platforms';
 import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals, parseJsonSafe, Utils } from './Utils';
 import { JsonType } from '../types/JsonType';
@@ -57,9 +58,9 @@ export class EntityComparator {
   /**
    * Maps database columns to properties.
    */
-  mapResult<T>(entityName: string, result: EntityDictionary<T>): EntityData<T> | null {
+  mapResult<T>(entityName: string, result: EntityDictionary<T>): EntityData<T> {
     const mapper = this.getResultMapper<T>(entityName);
-    return Utils.callCompiledFunction(mapper, result);
+    return Utils.callCompiledFunction(mapper, result)!;
   }
 
   /**
@@ -79,7 +80,7 @@ export class EntityComparator {
     if (meta.primaryKeys.length > 1) {
       lines.push(`  const cond = {`);
       meta.primaryKeys.forEach(pk => {
-        if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+        if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
           lines.push(`    ${pk}: (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getPrimaryKey() : entity${this.wrap(pk)},`);
         } else {
           lines.push(`    ${pk}: entity${this.wrap(pk)},`);
@@ -91,7 +92,7 @@ export class EntityComparator {
     } else {
       const pk = meta.primaryKeys[0];
 
-      if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+      if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
         lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getPrimaryKey();`);
       }
 
@@ -123,7 +124,7 @@ export class EntityComparator {
     if (meta.primaryKeys.length > 1) {
       lines.push(`  const cond = {`);
       meta.primaryKeys.forEach(pk => {
-        if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+        if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
           lines.push(`    ${pk}: (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getPrimaryKey(true) : entity${this.wrap(pk)},`);
         } else {
           if (meta.properties[pk].customType) {
@@ -141,7 +142,7 @@ export class EntityComparator {
     } else {
       const pk = meta.primaryKeys[0];
 
-      if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+      if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
         lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getPrimaryKey(true);`);
       }
 
@@ -180,7 +181,7 @@ export class EntityComparator {
     if (meta.primaryKeys.length > 1) {
       lines.push(`  const pks = entity.__helper.__pk ? getCompositeKeyValue(entity.__helper.__pk) : [`);
       meta.primaryKeys.forEach(pk => {
-        if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+        if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
           lines.push(`    (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey() : entity${this.wrap(pk)},`);
         } else {
           lines.push(`    entity${this.wrap(pk)},`);
@@ -191,7 +192,7 @@ export class EntityComparator {
     } else {
       const pk = meta.primaryKeys[0];
 
-      if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+      if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
         lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey();`);
       }
 
@@ -232,13 +233,13 @@ export class EntityComparator {
       lines.push(`  ret${this.wrap(meta.root.discriminatorColumn!)} = '${meta.discriminatorValue}'`);
     }
 
-    const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
+    const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop;
 
     // copy all comparable props, ignore collections and references, process custom types
     meta.comparableProps
       .filter(prop => {
         const root = getRootProperty(prop);
-        return prop === root || root.reference !== ReferenceType.EMBEDDED;
+        return prop === root || root.kind !== ReferenceKind.EMBEDDED;
       })
       .forEach(prop => lines.push(this.getPropertySnapshot(meta, prop, context, this.wrap(prop.name), this.wrap(prop.name), [prop.name])));
 
@@ -284,6 +285,24 @@ export class EntityComparator {
       return '[' + parts.join(', ') + ']';
     };
 
+    const tz = this.platform.getTimezone();
+    const parseDate = (key: string, value: string, padding = '') => {
+      lines.push(`${padding}    if (${value} == null || ${value} instanceof Date) {`);
+      lines.push(`${padding}      ${key} = ${value};`);
+
+      if (!tz || tz === 'local') {
+        lines.push(`${padding}    } else {`);
+        lines.push(`${padding}      ${key} = new Date(${value});`);
+      } else {
+        lines.push(`${padding}    } else if (typeof ${value} === 'number' || ${value}.includes('+')) {`);
+        lines.push(`${padding}      ${key} = new Date(${value});`);
+        lines.push(`${padding}    } else {`);
+        lines.push(`${padding}      ${key} = new Date(${value} + '${tz}');`);
+      }
+
+      lines.push(`${padding}    }`);
+    };
+
     lines.push(`  const mapped = {};`);
     meta.props.forEach(prop => {
       if (!prop.fieldNames) {
@@ -300,28 +319,33 @@ export class EntityComparator {
         return;
       }
 
-      if (prop.type === 'boolean') {
+      if (prop.embedded && (meta.embeddable || meta.properties[prop.embedded[0]].object)) {
+        return;
+      }
+
+      if (prop.runtimeType === 'boolean') {
         lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
         lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])};`);
         lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
-      } else if (prop.type.toLowerCase() === 'date') {
-        if (prop.embedded && meta.properties[prop.embedded[0]].object) {
-          const entityKey = 'ret.' + prop.fieldNames[0];
-          const entityKeyOptional = entityKey.replace(/\./g, '?.');
-          lines.push(`  if (typeof ${entityKeyOptional} !== 'undefined') {`);
-          lines.push(`    ${entityKey} = ${entityKey} == null ? ${entityKey} : new Date(${entityKey});`);
-          lines.push(`  }`);
-        } else {
-          lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
-          lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? null : new Date(${propName(prop.fieldNames[0])});`);
-          lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
-          lines.push(`  }`);
-        }
-      } else if (prop.reference === ReferenceType.EMBEDDED && prop.object && !this.platform.convertsJsonAutomatically()) {
-        context.set('parseJsonSafe', parseJsonSafe);
+      } else if (prop.runtimeType === 'Date') {
         lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
-        lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : parseJsonSafe(${propName(prop.fieldNames[0])});`);
+        parseDate('ret' + this.wrap(prop.name), propName(prop.fieldNames[0]));
+        lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
+        lines.push(`  }`);
+      } else if (prop.kind === ReferenceKind.EMBEDDED && (prop.object || meta.embeddable)) {
+        const idx = this.tmpIndex++;
+        context.set(`mapEmbeddedResult_${idx}`, (data: Dictionary) => {
+          const item = parseJsonSafe(data);
+
+          if (Array.isArray(item)) {
+            return item.map(row => row == null ? row : this.getResultMapper(prop.type)(row));
+          }
+
+          return item == null ? item : this.getResultMapper(prop.type)(item);
+        });
+        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
+        lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : mapEmbeddedResult_${idx}(${propName(prop.fieldNames[0])});`);
         lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
       } else {
@@ -335,13 +359,13 @@ export class EntityComparator {
 
     const code = `// compiled mapper for entity ${meta.className}\n`
       + `return function(result) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
-    const snapshotGenerator = Utils.createFunction(context, code);
-    this.mappers.set(entityName, snapshotGenerator);
+    const resultMapper = Utils.createFunction(context, code);
+    this.mappers.set(entityName, resultMapper);
 
-    return snapshotGenerator;
+    return resultMapper;
   }
 
-  private getPropertyCondition<T>(prop: EntityProperty<T>, entityKey: string, path: string[]): string {
+  private getPropertyCondition(path: string[]): string {
     const parts = path.slice(); // copy first
 
     if (parts.length > 1) {
@@ -349,7 +373,8 @@ export class EntityComparator {
     }
 
     let tail = '';
-    const ret = parts
+
+    return parts
       .map(k => {
         if (k.match(/^\[idx_\d+]$/)) {
           tail += k;
@@ -363,8 +388,6 @@ export class EntityComparator {
       })
       .filter(k => k)
       .join(' && ');
-
-    return ret;
   }
 
   private getEmbeddedArrayPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[], dataKey: string): string {
@@ -430,15 +453,15 @@ export class EntityComparator {
     }
 
     ret += meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
-      const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
+      const childDataKey = meta.embeddable || prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
       const childEntityKey = [...path, childProp.embedded![1]].map(k => this.wrap(k)).join('');
       const childCond = `typeof entity${childEntityKey} !== 'undefined'`;
 
-      if (childProp.reference === ReferenceType.EMBEDDED) {
+      if (childProp.kind === ReferenceKind.EMBEDDED) {
         return this.getPropertySnapshot(meta, childProp, context, childDataKey, childEntityKey, [...path, childProp.embedded![1]], level + 1, prop.object);
       }
 
-      if (childProp.reference !== ReferenceType.SCALAR) {
+      if (childProp.kind !== ReferenceKind.SCALAR) {
         return this.getPropertySnapshot(meta, childProp, context, childDataKey, childEntityKey, [...path, childProp.embedded![1]], level, prop.object)
           .split('\n').map(l => padding + l).join('\n');
       }
@@ -447,7 +470,7 @@ export class EntityComparator {
         const convertorKey = this.safeKey(childProp.name);
         context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
-        if (['number', 'string', 'boolean'].includes(childProp.customType.compareAsType().toLowerCase())) {
+        if (['number', 'string', 'boolean', 'bigint'].includes(childProp.customType.compareAsType().toLowerCase())) {
           return `${padding}  if (${childCond}) ret${childDataKey} = convertToDatabaseValue_${convertorKey}(entity${childEntityKey});`;
         }
 
@@ -466,13 +489,14 @@ export class EntityComparator {
 
   private getPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, dataKey: string, entityKey: string, path: string[], level = 1, object?: boolean): string {
     const convertorKey = this.safeKey(prop.name);
-    let ret = `  if (${this.getPropertyCondition(prop, entityKey, path)}) {\n`;
+    const unwrap = prop.ref ? '?.unwrap()' : '';
+    let ret = `  if (${this.getPropertyCondition(path)}) {\n`;
 
     if (['number', 'string', 'boolean'].includes(prop.type.toLowerCase())) {
-      return ret + `    ret${dataKey} = entity${entityKey};\n  }\n`;
+      return ret + `    ret${dataKey} = entity${entityKey}${unwrap};\n  }\n`;
     }
 
-    if (prop.reference === ReferenceType.EMBEDDED) {
+    if (prop.kind === ReferenceKind.EMBEDDED) {
       if (prop.array) {
         return this.getEmbeddedArrayPropertySnapshot(meta, prop, context, level, path, dataKey) + '\n';
       }
@@ -480,7 +504,7 @@ export class EntityComparator {
       return this.getEmbeddedPropertySnapshot(meta, prop, context, level, path, dataKey, object) + '\n';
     }
 
-    if (prop.reference === ReferenceType.ONE_TO_ONE || prop.reference === ReferenceType.MANY_TO_ONE) {
+    if (prop.kind === ReferenceKind.ONE_TO_ONE || prop.kind === ReferenceKind.MANY_TO_ONE) {
       if (prop.mapToPk) {
         if (prop.customType) {
           context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
@@ -511,19 +535,19 @@ export class EntityComparator {
     if (prop.customType) {
       context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
-      if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
-        return ret + `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(entity${entityKey});\n  }\n`;
+      if (['number', 'string', 'boolean', 'bigint'].includes(prop.customType.compareAsType().toLowerCase())) {
+        return ret + `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(entity${entityKey}${unwrap});\n  }\n`;
       }
 
-      return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${convertorKey}(entity${entityKey}));\n  }\n`;
+      return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${convertorKey}(entity${entityKey}${unwrap}));\n  }\n`;
     }
 
-    if (prop.type.toLowerCase() === 'date') {
+    if (prop.runtimeType === 'Date') {
       context.set('processDateProperty', this.platform.processDateProperty.bind(this.platform));
-      return ret + `    ret${dataKey} = clone(processDateProperty(entity${entityKey}));\n  }\n`;
+      return ret + `    ret${dataKey} = clone(processDateProperty(entity${entityKey}${unwrap}));\n  }\n`;
     }
 
-    return ret + `    ret${dataKey} = clone(entity${entityKey});\n  }\n`;
+    return ret + `    ret${dataKey} = clone(entity${entityKey}${unwrap});\n  }\n`;
   }
 
   /**
@@ -546,7 +570,7 @@ export class EntityComparator {
     context.set('equals', equals);
 
     meta.comparableProps.forEach(prop => {
-      lines.push(this.getPropertyComparator(prop));
+      lines.push(this.getPropertyComparator(prop, context));
     });
 
     const code = `// compiled comparator for entity ${meta.className}\n`
@@ -566,10 +590,10 @@ export class EntityComparator {
       `  }\n`;
   }
 
-  private getPropertyComparator<T>(prop: EntityProperty<T>): string {
+  private getPropertyComparator<T>(prop: EntityProperty<T>, context: Map<string, any>): string {
     let type = prop.type.toLowerCase();
 
-    if (prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED) {
+    if (prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED) {
       const meta2 = this.metadata.find(prop.type)!;
 
       if (meta2.primaryKeys.length > 1) {
@@ -580,6 +604,12 @@ export class EntityComparator {
     }
 
     if (prop.customType) {
+      if (prop.customType.compareValues) {
+        const idx = this.tmpIndex++;
+        context.set(`compareValues_${idx}`, (a: unknown, b: unknown) => prop.customType.compareValues!(a, b));
+        return this.getGenericComparator(this.wrap(prop.name), `!compareValues_${idx}(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
+      }
+
       type = prop.customType.compareAsType().toLowerCase();
     }
 
@@ -587,7 +617,7 @@ export class EntityComparator {
       type = 'array';
     }
 
-    if (['string', 'number'].includes(type)) {
+    if (['string', 'number', 'bigint'].includes(type)) {
       return this.getGenericComparator(this.wrap(prop.name), `last${this.wrap(prop.name)} !== current${this.wrap(prop.name)}`);
     }
 
@@ -615,7 +645,7 @@ export class EntityComparator {
       return this.getGenericComparator(this.wrap(prop.name), cond);
     }
 
-    return `  if (!equals(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})) diff${this.wrap(prop.name)} = current${this.wrap(prop.name)};`;
+    return this.getGenericComparator(this.wrap(prop.name), `!equals(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
   }
 
   private wrap(key: string): string {
@@ -627,7 +657,7 @@ export class EntityComparator {
   }
 
   private safeKey(key: string): string {
-    return key.replace(/[^\w]/g, '_');
+    return key.replace(/\W/g, '_');
   }
 
   /**
@@ -635,9 +665,9 @@ export class EntityComparator {
    */
   static isComparable<T>(prop: EntityProperty<T>, root: EntityMetadata) {
     const virtual = prop.persist === false;
-    const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
+    const inverse = prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
     const discriminator = prop.name === root.discriminatorColumn;
-    const collection = prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY;
+    const collection = prop.kind === ReferenceKind.ONE_TO_MANY || prop.kind === ReferenceKind.MANY_TO_MANY;
 
     return !virtual && !collection && !inverse && !discriminator && !prop.version;
   }

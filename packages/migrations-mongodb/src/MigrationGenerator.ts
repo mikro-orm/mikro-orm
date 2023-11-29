@@ -1,6 +1,5 @@
 import { ensureDir, writeFile } from 'fs-extra';
-import type { IMigrationGenerator, MigrationsOptions, NamingStrategy } from '@mikro-orm/core';
-import { Utils } from '@mikro-orm/core';
+import { Utils, type IMigrationGenerator, type MigrationsOptions, type NamingStrategy } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 
 /* istanbul ignore next */

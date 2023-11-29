@@ -1,12 +1,11 @@
-import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
 class User {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @OneToMany('UserOrganization', 'user')
   organizations = new Collection<UserOrganization>(this);
@@ -16,8 +15,8 @@ class User {
 @Entity()
 class UserOrganization {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @ManyToOne(() => User, { nullable: true })
   user?: User;
@@ -34,13 +33,12 @@ class UserOrganization {
 
 describe('GH issue 940, 1117', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, UserOrganization],
       dbName: `:memory:`,
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

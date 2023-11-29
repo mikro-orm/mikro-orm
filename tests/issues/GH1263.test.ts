@@ -1,18 +1,17 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
 import { parse, stringify, v4 as uuid } from 'uuid';
 
 class UUID extends Type<string, Buffer> {
 
-  convertToJSValue(value: Buffer) {
+  override convertToJSValue(value: Buffer) {
     return stringify(value);
   }
 
-  convertToDatabaseValue(value: string) {
+  override convertToDatabaseValue(value: string) {
     return Buffer.from(parse(value));
   }
 
-  getColumnType() {
+  override getColumnType() {
     return 'binary(16)';
   }
 
@@ -32,13 +31,12 @@ class User {
 
 describe('GH issue 1263', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

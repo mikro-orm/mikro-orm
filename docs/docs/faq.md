@@ -32,12 +32,12 @@ const em = orm.em as EntityManager;
 const qb = await em.createQueryBuilder(...);
 ```
 
-To have the `orm.em` variable properly typed, we can use generic type parameter of `MikroORM.init()`:
+To have the `orm.em` variable properly typed, you have to import the `MikroORM` from your driver package:
 
 ```ts
-import { MySqlDriver } from '@mikro-orm/mysql'; // or any other SQL driver package
+import { MikroORM } from '@mikro-orm/mysql'; // or any other SQL driver package
 
-const orm = await MikroORM.init<MySqlDriver>({
+const orm = await MikroORM.init({
   // ...
 });
 console.log(orm.em); // access EntityManager via `em` property
@@ -56,7 +56,7 @@ const ret = await em.aggregate(...);
 
 ### How can I add columns to pivot table (M:N relation)
 
-You should model your M:N relation transparently, via 1:m and m:1 properties. More about this can be found in [Composite Keys section](./composite-keys.md/#use-case-3-join-table-with-metadata).
+You should model your M:N relation transparently, via 1:m and m:1 properties. More about this can be found in [Composite Keys section](./composite-keys.md#use-case-3-join-table-with-metadata).
 
 ### You cannot call `em.flush()` from inside lifecycle hook handlers
 
@@ -73,7 +73,7 @@ foo = 'abc';
 
 There are two ways around this:
 
-- Use [TsMorphMetadataProvider](./metadata-providers.md/#tsmorphmetadataprovider)
+- Use [TsMorphMetadataProvider](./metadata-providers.md#tsmorphmetadataprovider)
 - Specify the type explicitly:
 
 ```ts
@@ -133,4 +133,17 @@ To fix this, disable the [`useDefineForClassFields`](https://www.typescriptlang.
     "useDefineForClassFields": false
   }
 }
+```
+
+### How can I check if database connection works?
+
+There are two methods you can use to check the database status, they live on the `Connection` class and both have a shortcut on the `MikroORM` class too:
+
+```ts
+// boolean
+const isConnected = await orm.isConnected();
+// object with `ok`, `reason` and `error` keys
+const check = await orm.checkConnection();
+
+console.log(check.ok, check.reason);
 ```

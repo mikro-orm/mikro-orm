@@ -1,4 +1,4 @@
-import type { Highlighter } from '../typings';
+import type { Dictionary, Highlighter } from '../typings';
 
 export interface Logger {
 
@@ -27,18 +27,22 @@ export interface Logger {
    */
   setDebugMode(debugMode: boolean | LoggerNamespace[]): void;
 
-  isEnabled(namespace: LoggerNamespace): boolean;
+  isEnabled(namespace: LoggerNamespace, context?: LogContext): boolean;
 
 }
 
 export type LoggerNamespace = 'query' | 'query-params' | 'schema' | 'discovery' | 'info';
 
-export interface LogContext {
+export interface LogContext extends Dictionary {
   query?: string;
+  label?: string;
   params?: unknown[];
   took?: number;
   results?: number;
+  affected?: number;
   level?: 'info' | 'warning' | 'error';
+  enabled?: boolean;
+  debugMode?: LoggerNamespace[];
   connection?: {
     type?: string;
     name?: string;
@@ -51,3 +55,14 @@ export interface LoggerOptions {
   highlighter?: Highlighter;
   usesReplicas?: boolean;
 }
+
+/**
+ * Logger options to modify format output and overrides, including a label and additional properties that can be accessed by custom loggers
+ *
+ * Differs from {@link LoggerOptions} in terms of how they are used; this type is primarily a public type meant to be used within methods like `EntityManager.Find`
+ *
+ * @example
+ * await em.findOne(User, 1, { loggerContext: { label: 'user middleware' } };
+ * // [query] (user middleware) select * from user where id = 1;
+ */
+export type LoggingOptions = Pick<LogContext, 'label' | 'enabled' | 'debugMode'> & Dictionary;

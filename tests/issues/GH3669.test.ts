@@ -1,5 +1,14 @@
-import { Entity, ManyToOne, OneToOne, PrimaryKey, PrimaryKeyType, Property, Rel, SimpleLogger } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/postgresql';
+import {
+  Entity,
+  MikroORM,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  Rel,
+  SimpleLogger,
+  PrimaryKeyProp,
+} from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -16,7 +25,7 @@ class Vendor {
 @Entity()
 class TechnicianManager {
 
-  [PrimaryKeyType]?: [number, number];
+  [PrimaryKeyProp]?: ['vendor', 'user'];
 
   @ManyToOne({ entity: () => Vendor, primary: true })
   vendor!: Vendor;

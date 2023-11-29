@@ -25,7 +25,7 @@ export type TimestampTypeOptions = {
 
 export class DateTimeType extends Type<Maybe<DateTime>, Maybe<Date>> {
 
-  convertToDatabaseValue(value: unknown): Maybe<Date> {
+  override convertToDatabaseValue(value: unknown): Maybe<Date> {
     if (value === undefined || value === null || value instanceof Date) {
       return value;
     }
@@ -37,7 +37,7 @@ export class DateTimeType extends Type<Maybe<DateTime>, Maybe<Date>> {
     throw ValidationError.invalidType(DateTimeType, value, 'JS');
   }
 
-  convertToJSValue(value: unknown): Maybe<DateTime> {
+  override convertToJSValue(value: unknown): Maybe<DateTime> {
     if (value === undefined || value === null) {
       return value;
     }
@@ -49,7 +49,7 @@ export class DateTimeType extends Type<Maybe<DateTime>, Maybe<Date>> {
     throw ValidationError.invalidType(DateTimeType, value, 'database');
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'timestamptz';
   }
 
@@ -154,7 +154,7 @@ describe('GH issue 725', () => {
 
     const test = new Test2();
     const err = `Trying to persist not discovered entity of type Test2. Entity with this name was discovered, but not the prototype you are passing to the ORM. If using EntitySchema, be sure to point to the implementation via \`class\`.`;
-    expect(() => orm.em.persist(test)).toThrowError(err);
+    expect(() => orm.em.persist(test)).toThrow(err);
     await orm.close();
   });
 

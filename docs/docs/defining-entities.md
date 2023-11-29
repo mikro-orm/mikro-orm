@@ -95,9 +95,9 @@ export const Book = new EntitySchema<IBook, CustomBaseEntity>({
   extends: 'CustomBaseEntity',
   properties: {
     title: { type: 'string' },
-    author: { reference: 'm:1', entity: 'Author' },
-    publisher: { reference: 'm:1', entity: 'Publisher', ref: true, nullable: true },
-    tags: { reference: 'm:n', entity: 'BookTag', fixedOrder: true },
+    author: { kind: 'm:1', entity: 'Author' },
+    publisher: { kind: 'm:1', entity: 'Publisher', ref: true, nullable: true },
+    tags: { kind: 'm:n', entity: 'BookTag', fixedOrder: true },
   },
 });
 ```
@@ -131,10 +131,10 @@ export class Author {
   id!: string;
 
   @Property()
-  createdAt: Date = new Date();
+  createdAt = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt: Date = new Date();
+  updatedAt = new Date();
 
   @Property()
   name!: string;
@@ -272,9 +272,9 @@ export const AuthorSchema = new EntitySchema<Author>({
     termsAccepted: { type: Boolean }
     identities: { type: 'string[]', nullable: true }
     born: { type: Date, nullable: true }
-    books: { reference: '1:m', entity: () => Book, mappedBy: book => book.author }
-    friends: { reference: 'm:n', entity: () => Author }
-    favouriteBook: { reference: 'm:1', entity: () => Book, nullable: true };
+    books: { kind: '1:m', entity: () => Book, mappedBy: book => book.author }
+    friends: { kind: 'm:n', entity: () => Author }
+    favouriteBook: { kind: 'm:1', entity: () => Book, nullable: true };
     version: { type: Number, version: true };
   },
 });
@@ -320,7 +320,7 @@ favouriteBook?: Book;
 
 ```ts title="./entities/Author.ts"
 properties: {
-  favouriteBook: { reference: 'm:1', entity: () => Book, nullable: true },
+  favouriteBook: { kind: 'm:1', entity: () => Book, nullable: true },
 },
 ```
 
@@ -346,13 +346,13 @@ values={[
 
 ```ts title="./entities/Author.ts"
 @Property()
-foo: number = 1;
+foo = 1;
 
 @Property()
-bar: string = 'abc';
+bar = 'abc';
 
 @Property()
-baz: Date = new Date();
+baz = new Date();
 ```
 
   </TabItem>
@@ -550,6 +550,74 @@ properties: {
   </TabItem>
 </Tabs>
 
+### PostgreSQL native enums
+
+By default, the PostgreSQL driver, represents enums as a text columns with check constraints. Since v6, you can opt-in for a native enums by setting the `nativeEnumName` option.
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="reflect-metadata">
+
+```ts title="./entities/Author.ts"
+@Entity()
+export class User {
+
+  @Enum({ items: () => UserRole, nativeEnumName: 'user_role' })
+  role!: UserRole;
+
+}
+
+export enum UserRole {
+  ADMIN = 'admin',
+  MODERATOR = 'moderator',
+  USER = 'user',
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/Author.ts"
+@Entity()
+export class User {
+
+  @Enum({ items: () => UserRole, nativeEnumName: 'user_role' })
+  role!: UserRole;
+
+}
+
+export enum UserRole {
+  ADMIN = 'admin',
+  MODERATOR = 'moderator',
+  USER = 'user',
+}
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/Author.ts"
+export enum UserRole {
+  ADMIN = 'admin',
+  MODERATOR = 'moderator',
+  USER = 'user',
+}
+
+properties: {
+  role: { enum: true, nativeEnumName: 'user_role', items: () => UserRole },
+},
+```
+
+  </TabItem>
+</Tabs>
+
 ## Enum arrays
 
 We can also use array of values for enum, in that case, `EnumArrayType` type will be used automatically, that will validate items on flush.
@@ -572,7 +640,7 @@ enum Role {
 }
 
 @Enum({ items: () => Role, array: true, default: [Role.User] })
-roles: Role[] = [Role.User];
+roles = [Role.User];
 ```
 
   </TabItem>
@@ -682,7 +750,6 @@ properties: {
 
   </TabItem>
 </Tabs>
-```
 
 ## Formulas
 
@@ -723,7 +790,6 @@ properties: {
 
   </TabItem>
 </Tabs>
-```
 
 Formulas will be added to the select clause automatically. In case you are facing problems with `NonUniqueFieldNameException`, you can define the formula as a callback that will receive the entity alias in the parameter:
 
@@ -1030,6 +1096,22 @@ const b2 = await em.find(Book, 1, { populate: ['text'] }); // this will load the
 
 > If the entity is already loaded and you need to populate a lazy scalar property, you might need to pass `refresh: true` in the `FindOptions`.
 
+### `ScalarReference` wrapper
+
+Similarly to the `Reference` wrapper, we can also wrap lazy scalars with `Ref` into a `ScalarReference` object.
+
+```ts
+@Property({ lazy: true, ref: true })
+passwordHash!: Ref<string>;
+```
+
+The `Ref` type automatically resolves to `ScalarReference` for non-object types. You can use it explicitly if you want to wrap an object scalar property (e.g. JSON value).
+
+```ts
+const user = await em.findOne(User, 1);
+const passwordHash = await user.passwordHash.load();
+```
+
 ## Virtual Properties
 
 We can define our properties as virtual, either as a method, or via JavaScript `get/set`.
@@ -1052,6 +1134,8 @@ values={[
 ```ts title="./entities/User.ts"
 @Entity()
 export class User {
+
+  [HiddenProps]?: 'firstName' | 'lastName';
 
   @Property({ hidden: true })
   firstName!: string;
@@ -1079,6 +1163,8 @@ export class User {
 @Entity()
 export class User {
 
+  [HiddenProps]?: 'firstName' | 'lastName';
+
   @Property({ hidden: true })
   firstName!: string;
 
@@ -1103,6 +1189,9 @@ export class User {
 
 ```ts title="./entities/User.ts"
 export class User {
+
+  [HiddenProps]?: 'firstName' | 'lastName';
+
   firstName!: string;
   lastName!: string;
 
@@ -1164,13 +1253,13 @@ import { v4 } from 'uuid';
 export abstract class CustomBaseEntity {
 
   @PrimaryKey()
-  uuid: string = v4();
+  uuid = v4();
 
   @Property()
-  createdAt: Date = new Date();
+  createdAt = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt: Date = new Date();
+  updatedAt = new Date();
 
 }
 ```
@@ -1232,7 +1321,7 @@ export abstract class CustomBaseEntity {
 
 ## SQL Generated columns
 
-Knex currently does not support generated columns, so the schema generator cannot properly diff them. To work around this, we can set `ignoreSchemaChanges` on a property to avoid a perpetual diff from the schema generator
+To use generated columns, you can either use the `generated` option, or specify it as part of the `columnType`:
 
 <Tabs
 groupId="entity-def"
@@ -1245,18 +1334,24 @@ values={[
 }>
 <TabItem value="reflect-metadata">
 
-```ts title="./entities/Book.ts"
-@Entity
-export class Book {
+```ts title="./entities/User.ts"
+@Entity()
+export class User {
 
-  @Property()
-  title!: string;
+  @PrimaryKey()
+  id!: number;
 
-  @Property({
-    columnType: 'VARCHAR GENERATED ALWAYS AS (LOWER(`title`)) VIRTUAL',
-    ignoreSchemaChanges: ['type', 'extra'],
-  })
-  titleLower!: string;
+  @Property({ length: 50 })
+  firstName!: string;
+
+  @Property({ length: 50 })
+  lastName!: string;
+
+  @Property<User>({ length: 100, generated: cols => `(concat(${cols.firstName}, ' ', ${cols.lastName})) stored` })
+  fullName!: string & Opt;
+
+  @Property({ columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual` })
+  fullName2!: string & Opt;
 
 }
 ```
@@ -1265,17 +1360,23 @@ export class Book {
   <TabItem value="ts-morph">
 
 ```ts title="./entities/Book.ts"
-@Entity
-export class Book {
+@Entity()
+export class User {
 
-  @Property()
-  title!: string;
+  @PrimaryKey()
+  id!: number;
 
-  @Property({
-    columnType: 'VARCHAR GENERATED ALWAYS AS (LOWER(`title`)) VIRTUAL',
-    ignoreSchemaChanges: ['type', 'extra'],
-  })
-  titleLower!: string;
+  @Property({ length: 50 })
+  firstName!: string;
+
+  @Property({ length: 50 })
+  lastName!: string;
+
+  @Property<User>({ length: 100, generated: cols => `(concat(${cols.firstName}, ' ', ${cols.lastName})) stored` })
+  fullName!: string & Opt;
+
+  @Property({ columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual` })
+  fullName2!: string & Opt;
 
 }
 ```
@@ -1283,17 +1384,87 @@ export class Book {
   </TabItem>
   <TabItem value="entity-schema">
 
-```ts title="./entities/Book.ts"
-export interface IBook {
-  title: string;
-  titleLower: string;
+```ts title="./entities/User.ts"
+export interface IUser {
+  id: number;
+  firstName: string;
+  lastName: string;
+  fullName: string & Opt;
+  fullName2: string & Opt;
 }
 
-export const Book = new EntitySchema<IBook>({
-  name: 'Book',
+export const User = new EntitySchema<IUser>({
+  name: 'User',
   properties: {
-    title: { type: String },
-    titleLower: { type: String, columnType: 'VARCHAR GENERATED ALWAYS AS (LOWER(`title`)) VIRTUAL', ignoreSchemaChanges: ['type', 'extra'] },
+    id: { type: 'number', primary: true },
+    firstName: { type: 'string', length: 50 },
+    lastName: { type: 'string', length: 50 },
+    fullName: { 
+      type: 'string',
+      length: 100, 
+      generated: cols => `(concat(${cols.firstName}, ' ', ${cols.lastName})) stored`,
+    },
+    fullName2: { 
+      type: 'string', 
+      columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual`,
+    },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+To use a generated identity column in PostgreSQL, set the `generated` option to `identity`:
+
+> To allow providing the value explicitly, use `generated: 'by default as identity'`.
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="reflect-metadata">
+
+```ts title="./entities/User.ts"
+@Entity()
+export class User {
+
+  @PrimaryKey({ generated: 'identity' })
+  id!: number;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/Book.ts"
+@Entity()
+export class User {
+
+  @PrimaryKey({ generated: 'identity' })
+  id!: number;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/User.ts"
+export interface IUser {
+  id: number;
+}
+
+export const User = new EntitySchema<IUser>({
+  name: 'User',
+  properties: {
+    id: { type: 'number', primary: true, generated: 'identity' },
   },
 });
 ```
@@ -1372,8 +1543,8 @@ export const BookSchema = new EntitySchema<Book>({
   properties: {
     id: { type: Number, primary: true },
     title: { type: String },
-    author: { reference: 'm:1', entity: 'Author' },
-    publisher: { reference: 'm:1', entity: 'Publisher', ref: true, nullable: true },
+    author: { kind: 'm:1', entity: 'Author' },
+    publisher: { kind: 'm:1', entity: 'Publisher', ref: true, nullable: true },
   },
 });
 ```
@@ -1401,7 +1572,7 @@ import { v4 } from 'uuid';
 export class Book {
 
   @PrimaryKey()
-  uuid: string = v4();
+  uuid = v4();
 
   @Property()
   title!: string;
@@ -1448,7 +1619,7 @@ export const Book = new EntitySchema<IBook>({
   properties: {
     uuid: { type: 'uuid', onCreate: () => v4(), primary: true },
     title: { type: 'string' },
-    author: { entity: () => Author, reference: 'm:1' },
+    author: { entity: () => Author, kind: 'm:1' },
   },
 });
 ```
@@ -1519,7 +1690,7 @@ export const BookSchema = new EntitySchema<Book>({
   properties: {
     uuid: { type: 'uuid', defaultRaw: 'uuid_generate_v4()', primary: true },
     title: { type: 'string' },
-    author: { entity: () => Author, reference: 'm:1' },
+    author: { entity: () => Author, kind: 'm:1' },
   },
 });
 ```
@@ -1529,7 +1700,27 @@ export const BookSchema = new EntitySchema<Book>({
 
 ### Using BigInt as primary key (MySQL and PostgreSQL)
 
-We can use `BigIntType` to support `bigint`s. By default, it will represent the value as a `string`.
+Since v6, `bigint`s are represented by the native `BigInt` type, and as such, they don't require explicit type in the decorator options:
+
+```ts
+@PrimaryKey()
+id: bigint;
+```
+
+You can also specify the target type you want your bigints to be mapped to:
+
+```ts
+@PrimaryKey({ type: new BigIntType('bigint') })
+id1: bigint;
+
+@PrimaryKey({ type: new BigIntType('string') })
+id2: string;
+
+@PrimaryKey({ type: new BigIntType('number') })
+id3: number;
+```
+
+> JavaScript cannot represent all the possible values of a `bigint` when mapping to the `number` type - only values up to `Number.MAX_SAFE_INTEGER` (2^53 - 1) are safely supported.
 
 <Tabs
 groupId="entity-def"
@@ -1546,8 +1737,8 @@ values={[
 @Entity()
 export class Book {
 
-  @PrimaryKey({ type: BigIntType })
-  id: string;
+  @PrimaryKey()
+  id: bigint;
 
 }
 ```
@@ -1559,8 +1750,8 @@ export class Book {
 @Entity()
 export class Book {
 
-  @PrimaryKey({ type: BigIntType })
-  id: string;
+  @PrimaryKey()
+  id: bigint;
 
 }
 ```
@@ -1570,7 +1761,7 @@ export class Book {
 
 ```ts title="./entities/CustomBaseEntity.ts"
 properties: {
-  id: { type: BigIntType },
+  id: { type: 'bigint' },
 },
 ```
 
@@ -1667,7 +1858,7 @@ From v4 `BaseEntity` class is provided with `init`, `isInitialized`, `assign` an
 import { BaseEntity } from '@mikro-orm/core';
 
 @Entity()
-export class Book extends BaseEntity<Book, 'id'> {
+export class Book extends BaseEntity {
 
   @PrimaryKey()
   id!: number;

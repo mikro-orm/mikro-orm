@@ -1,5 +1,4 @@
-import { Entity, LoadStrategy, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, LoadStrategy, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Image {
@@ -72,7 +71,6 @@ describe('GH issue 2777', () => {
     orm = await MikroORM.init({
       entities: [Customer, Comment, Product, Image],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });
@@ -85,16 +83,18 @@ describe('GH issue 2777', () => {
     const c = new Customer();
     c.comment = new Comment();
     c.comment.title = 'c';
+    c.comment.customer = c;
     c.product = new Product();
     c.product.title = 't';
     c.product.image = new Image();
+    c.product.customer = c;
     c.product.image.customer = c;
     c.name = 'f';
     await orm.em.fork().persistAndFlush(c);
     const ret = await orm.em.find(Customer, {});
     expect(ret[0]).toBe(ret[0].product.image!.customer);
     expect(wrap(ret[0].product).isInitialized()).toBe(true);
-    expect(wrap(ret[0].product.image).isInitialized()).toBe(true);
+    expect(wrap(ret[0].product.image!).isInitialized()).toBe(true);
     expect(wrap(ret[0].product.image!.customer).isInitialized()).toBe(true);
   });
 

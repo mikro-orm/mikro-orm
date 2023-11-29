@@ -1,5 +1,5 @@
 import type { EntityData, MikroORM } from '@mikro-orm/core';
-import { assign, expr, wrap } from '@mikro-orm/core';
+import { assign, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { Author, Book, BookTag } from '../../entities';
@@ -19,7 +19,8 @@ describe('EntityAssignerMongo', () => {
     await orm.em.persistAndFlush(book);
     expect(book.title).toBe('Book2');
     expect(book.author).toBe(jon);
-    book.assign({ title: 'Better Book2 1', author: god, [expr('notExisting')]: true });
+    // @ts-expect-error unknown property
+    book.assign({ title: 'Better Book2 1', author: god, notExisting: true });
     expect(book.author).toBe(god);
     expect((book as any).notExisting).toBe(true);
     await orm.em.persistAndFlush(god);
@@ -53,8 +54,8 @@ describe('EntityAssignerMongo', () => {
     assign(book, { tags: [wrap(tag2).toObject()] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
     expect(book.tags.isDirty()).toBe(true);
-    expect(() => assign(book, { tags: [false] } as any)).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [ false ]`);
-    expect(() => assign(book, { publisher: [{ foo: 'bar' }] } as EntityData<Book>)).toThrowError(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
+    expect(() => assign(book, { tags: [false] } as any)).toThrow(`Invalid collection values provided for 'Book.tags' in Book.assign(): [ false ]`);
+    expect(() => assign(book, { publisher: [{ foo: 'bar' }] } as EntityData<Book>)).toThrow(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
   });
 
   test('#assign() should ignore undefined properties', async () => {
@@ -63,12 +64,25 @@ describe('EntityAssignerMongo', () => {
     expect((jon as any).unknown).toBeUndefined();
   });
 
+  test('#assign() should ignore undefined properties in nullability validation (#4566)', async () => {
+    const jon = new Author('Jon Snow', 'snow@wall.st');
+    assign<any>(jon, { name: 'test', emptyUnknown1: null, emptyUnknown2: undefined }, { onlyProperties: true });
+    expect('emptyUnknown1' in jon).toBe(false);
+    expect('emptyUnknown2' in jon).toBe(false);
+
+    assign<any>(jon, { name: 'test', emptyUnknown1: null, emptyUnknown2: undefined });
+    expect('emptyUnknown1' in jon).toBe(true);
+    expect('emptyUnknown2' in jon).toBe(true);
+    expect((jon as any).emptyUnknown1).toBeNull();
+    expect((jon as any).emptyUnknown2).toBeUndefined();
+  });
+
   test('#assign() should merge references', async () => {
     const jon = new Author('Jon Snow', 'snow@wall.st');
     orm.em.assign(jon, { favouriteBook: { _id: ObjectId.createFromTime(1), title: 'b1' } }, { merge: false });
-    expect(wrap(jon.favouriteBook, true).__em).toBeUndefined();
+    expect(wrap(jon.favouriteBook!, true).__em).toBeUndefined();
     orm.em.assign(jon, { favouriteBook: { _id: ObjectId.createFromTime(1), title: 'b1' } }, { merge: true });
-    expect(wrap(jon.favouriteBook, true).__em).not.toBeUndefined();
+    expect(wrap(jon.favouriteBook!, true).__em).not.toBeUndefined();
   });
 
   test('#assign() should merge collection items', async () => {

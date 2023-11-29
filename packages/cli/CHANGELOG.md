@@ -3,6 +3,149 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.2](https://github.com/mikro-orm/mikro-orm/compare/v5.9.1...v5.9.2) (2023-11-02)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.9.1](https://github.com/mikro-orm/mikro-orm/compare/v5.9.0...v5.9.1) (2023-10-31)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+# [5.9.0](https://github.com/mikro-orm/mikro-orm/compare/v5.8.10...v5.9.0) (2023-10-24)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.8.10](https://github.com/mikro-orm/mikro-orm/compare/v5.8.9...v5.8.10) (2023-10-18)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.8.9](https://github.com/mikro-orm/mikro-orm/compare/v5.8.8...v5.8.9) (2023-10-15)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.8.8](https://github.com/mikro-orm/mikro-orm/compare/v5.8.7...v5.8.8) (2023-10-11)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.8.7](https://github.com/mikro-orm/mikro-orm/compare/v5.8.6...v5.8.7) (2023-10-05)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.8.6](https://github.com/mikro-orm/mikro-orm/compare/v5.8.5...v5.8.6) (2023-10-02)
+
+
+### Bug Fixes
+
+* **migrations:** allow running migrations outside of main transaction ([e0dfb0c](https://github.com/mikro-orm/mikro-orm/commit/e0dfb0c07f4cad5dc428132cdcf65f6570caad1a)), closes [#4775](https://github.com/mikro-orm/mikro-orm/issues/4775)
+
+
+
+
+
+## [5.8.5](https://github.com/mikro-orm/mikro-orm/compare/v5.8.4...v5.8.5) (2023-09-30)
+
+
+### Bug Fixes
+
+* **core:** pin all internal dependencies ([f4868ed](https://github.com/mikro-orm/mikro-orm/commit/f4868edec97457e7c4548d887fb3ba23cf266c59)), closes [#4764](https://github.com/mikro-orm/mikro-orm/issues/4764)
+
+
+
+
+
+## [5.8.4](https://github.com/mikro-orm/mikro-orm/compare/v5.8.3...v5.8.4) (2023-09-27)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.8.3](https://github.com/mikro-orm/mikro-orm/compare/v5.8.2...v5.8.3) (2023-09-24)
+
+
+### Bug Fixes
+
+* **mongo-migrations:** fix logging of executed migrations ([8ae7eeb](https://github.com/mikro-orm/mikro-orm/commit/8ae7eebe9b04f1514e881c004b31f55a03bd4eab)), closes [#4698](https://github.com/mikro-orm/mikro-orm/issues/4698)
+
+
+
+
+
+## [5.8.2](https://github.com/mikro-orm/mikro-orm/compare/v5.8.1...v5.8.2) (2023-09-20)
+
+
+### Bug Fixes
+
+* **mongo-migrations:** fix logging of executed migrations ([2d9fc86](https://github.com/mikro-orm/mikro-orm/commit/2d9fc86ccdbcf31efffff4a05df0e31a21e9534f)), closes [#4698](https://github.com/mikro-orm/mikro-orm/issues/4698)
+
+
+
+
+
+## [5.8.1](https://github.com/mikro-orm/mikro-orm/compare/v5.8.0...v5.8.1) (2023-09-12)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+# [5.8.0](https://github.com/mikro-orm/mikro-orm/compare/v5.7.14...v5.8.0) (2023-09-10)
+
+
+### Features
+
+* **cli:** add `--drop-db` flag to `migration:fresh` and `schema:fresh` ([cf1db80](https://github.com/mikro-orm/mikro-orm/commit/cf1db80b26a2f4e9f6fd917ee78a0925bebc215d)), closes [#4569](https://github.com/mikro-orm/mikro-orm/issues/4569)
+
+
+
+
+
+## [5.7.14](https://github.com/mikro-orm/mikro-orm/compare/v5.7.13...v5.7.14) (2023-07-27)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.7.13](https://github.com/mikro-orm/mikro-orm/compare/v5.7.12...v5.7.13) (2023-07-16)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
 ## [5.7.12](https://github.com/mikro-orm/mikro-orm/compare/v5.7.11...v5.7.12) (2023-06-10)
 
 **Note:** Version bump only for package @mikro-orm/cli

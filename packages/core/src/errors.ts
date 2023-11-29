@@ -103,7 +103,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   static cannotRemoveFromCollectionWithoutOrphanRemoval(owner: AnyEntity, property: EntityProperty): ValidationError {
     const options = [
       ' - add `orphanRemoval: true` to the collection options',
-      ' - add `onDelete: \'cascade\'` to the owning side options',
+      ' - add `deleteRule: \'cascade\'` to the owning side options',
       ' - add `nullable: true` to the owning side options',
     ].join('\n');
     return new ValidationError(`Removing items from collection ${owner.constructor.name}.${property.name} without \`orphanRemoval: true\` would break non-null constraint on the owning side. You have several options: \n${options}`, owner);
@@ -182,8 +182,8 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`Both ${meta.className}.${prop.name} and ${prop.type}.${prop[key]} are defined as ${type} sides, use '${other}' on one of them`);
   }
 
-  static fromWrongReferenceType(meta: EntityMetadata, owner: EntityProperty, prop: EntityProperty): MetadataError {
-    return new MetadataError(`${meta.className}.${prop.name} is of type ${prop.reference} which is incompatible with its owning side ${prop.type}.${owner.name} of type ${owner.reference}`);
+  static fromWrongReferenceKind(meta: EntityMetadata, owner: EntityProperty, prop: EntityProperty): MetadataError {
+    return new MetadataError(`${meta.className}.${prop.name} is of type ${prop.kind} which is incompatible with its owning side ${prop.type}.${owner.name} of type ${owner.kind}`);
   }
 
   static fromInversideSidePrimary(meta: EntityMetadata, owner: EntityProperty, prop: EntityProperty): MetadataError {
@@ -224,6 +224,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`Duplicate ${subject} are not allowed: ${paths.join(', ')}`);
   }
 
+  static duplicateFieldName(className: string, names: [string, string][]): MetadataError {
+    return new MetadataError(`Duplicate fieldNames are not allowed: ${names.map(n => `${className}.${n[0]} (fieldName: '${n[0]}')`).join(', ')}`);
+  }
+
   static multipleDecorators(entityName: string, propertyName: string): MetadataError {
     return new MetadataError(`Multiple property decorators used on '${entityName}.${propertyName}' property`);
   }
@@ -244,6 +248,20 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     const p1 = `${meta1.className}.${prop1.name}`;
     const p2 = `${meta2.className}.${prop2.name}`;
     return new MetadataError(`${p1} and ${p2} use the same 'pivotEntity', but don't form a bidirectional relation. Specify 'inversedBy' or 'mappedBy' to link them.`);
+  }
+
+  static targetIsAbstract(meta: EntityMetadata, prop: EntityProperty) {
+    return this.fromMessage(meta, prop, `targets abstract entity ${prop.type}. Maybe you forgot to put @Entity() decorator on the ${prop.type} class?`);
+  }
+
+  static propertyTargetsEntityType(meta: EntityMetadata, prop: EntityProperty, target: EntityMetadata) {
+    /* istanbul ignore next */
+    const suggestion = target.embeddable ? 'Embedded' : 'ManyToOne';
+    return this.fromMessage(meta, prop, `is defined as scalar @Property(), but its type is a discovered entity ${target.className}. Maybe you want to use @${suggestion}() decorator instead?`);
+  }
+
+  static fromMissingOption(meta: EntityMetadata, prop: EntityProperty, option: string) {
+    return this.fromMessage(meta, prop, `is missing '${option}' option`);
   }
 
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {

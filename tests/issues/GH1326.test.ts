@@ -1,5 +1,4 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mysql';
+import { Collection, Entity, Ref, MikroORM, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -39,11 +38,11 @@ export class License {
   @Property()
   expiresAt!: Date;
 
-  @ManyToOne(() => Driver, { inversedBy: 'licenses', wrappedReference: true })
-  driver!: IdentifiedReference<Driver>;
+  @ManyToOne(() => Driver, { inversedBy: 'licenses', ref: true })
+  driver!: Ref<Driver>;
 
-  @ManyToOne('LicenseType', { inversedBy: 'licenses', wrappedReference: true })
-  licenseType!: IdentifiedReference<LicenseType>;
+  @ManyToOne('LicenseType', { inversedBy: 'licenses', ref: true })
+  licenseType!: Ref<LicenseType>;
 
 }
 

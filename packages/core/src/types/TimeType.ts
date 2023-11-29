@@ -5,7 +5,7 @@ import { ValidationError } from '../errors';
 
 export class TimeType extends Type {
 
-  convertToDatabaseValue(value: any, platform: Platform): string {
+  override convertToDatabaseValue(value: any, platform: Platform): string {
     if (value && !value.toString().match(/^\d{2,}:(?:[0-5]\d):(?:[0-5]\d)$/)) {
       throw ValidationError.invalidType(TimeType, value, 'JS');
     }
@@ -13,15 +13,15 @@ export class TimeType extends Type {
     return super.convertToDatabaseValue(value, platform);
   }
 
-  compareAsType(): string {
+  override compareAsType(): string {
     return 'string';
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 
-  getColumnType(prop: EntityProperty, platform: Platform) {
+  override getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getTimeTypeDeclarationSQL(prop.length);
   }
 

@@ -4,15 +4,15 @@ import type { EntityProperty } from '../typings';
 
 export class EnumType extends Type<string | null | undefined> {
 
-  getColumnType(prop: EntityProperty, platform: Platform) {
-    return platform.getEnumTypeDeclarationSQL(prop);
+  override getColumnType(prop: EntityProperty, platform: Platform) {
+    return prop.columnTypes?.[0] ?? platform.getEnumTypeDeclarationSQL(prop);
   }
 
-  compareAsType(): string {
+  override compareAsType(): string {
     return 'string';
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 

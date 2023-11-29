@@ -23,7 +23,7 @@ exports[`Migrator - with explicit migrations runner: migrator-migrations-list 1`
   "select 1 - 1 (via write connection '127.0.0.1')",
   "set foreign_key_checks = 1; (via write connection '127.0.0.1')",
   "release savepointtrx_xx (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
 ]
 `;
@@ -61,9 +61,9 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);');
     this.addSql('alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);');
 
-    this.addSql('create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum(\\'local\\', \\'global\\') not null, \`type2\` enum(\\'LOCAL\\', \\'GLOBAL\\') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum(\\'a\\', \\'b\\', \\'c\\') null, \`enum5\` enum(\\'a\\') null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default \\'asd\\', \`type\` enum(\\'local\\', \\'global\\') not null default \\'local\\', \`type2\` enum(\\'LOCAL\\', \\'GLOBAL\\') not null default \\'LOCAL\\', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum(\\'a\\', \\'b\\', \\'c\\') null, \`enum5\` enum(\\'a\\') null) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);');
     this.addSql('alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);');
     this.addSql('alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);');
@@ -208,9 +208,9 @@ export class Migration20191013214813 extends Migration {
       "alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);",
       "alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);",
       "",
-      "create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum('local', 'global') not null, \`type2\` enum('LOCAL', 'GLOBAL') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;",
+      "create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local', 'global') not null default 'local', \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;",
       "",
-      "create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;",
+      "create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);",
       "alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);",
       "alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);",
@@ -339,11 +339,11 @@ class Migration20191013214813 extends Migration {
   async up() {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
-    this.addSql('alter table \`book2\` drop \`foo\`;');
+    this.addSql('alter table \`book2\` drop column \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
-    this.addSql('alter table \`test2\` drop \`foo___bar\`;');
-    this.addSql('alter table \`test2\` drop \`foo___baz\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___bar\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___baz\`;');
   }
 
   async down() {
@@ -368,11 +368,11 @@ exports.Migration20191013214813 = Migration20191013214813;
     "up": [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
       "",
-      "alter table \`book2\` drop \`foo\`;",
+      "alter table \`book2\` drop column \`foo\`;",
       "",
       "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
-      "alter table \`test2\` drop \`foo___bar\`;",
-      "alter table \`test2\` drop \`foo___baz\`;",
+      "alter table \`test2\` drop column \`foo___bar\`;",
+      "alter table \`test2\` drop column \`foo___baz\`;",
     ],
   },
   "fileName": "Migration20191013214813.cjs",
@@ -390,11 +390,11 @@ class Migration20191013214813 extends Migration {
   async up() {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
-    this.addSql('alter table \`book2\` drop \`foo\`;');
+    this.addSql('alter table \`book2\` drop column \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
-    this.addSql('alter table \`test2\` drop \`foo___bar\`;');
-    this.addSql('alter table \`test2\` drop \`foo___baz\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___bar\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___baz\`;');
   }
 
   async down() {
@@ -419,11 +419,11 @@ exports.Migration20191013214813 = Migration20191013214813;
     "up": [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
       "",
-      "alter table \`book2\` drop \`foo\`;",
+      "alter table \`book2\` drop column \`foo\`;",
       "",
       "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
-      "alter table \`test2\` drop \`foo___bar\`;",
-      "alter table \`test2\` drop \`foo___baz\`;",
+      "alter table \`test2\` drop column \`foo___bar\`;",
+      "alter table \`test2\` drop column \`foo___baz\`;",
     ],
   },
   "fileName": "Migration20191013214813.js",
@@ -439,11 +439,11 @@ export class Migration20191013214813 extends Migration {
   async up(): Promise<void> {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
-    this.addSql('alter table \`book2\` drop \`foo\`;');
+    this.addSql('alter table \`book2\` drop column \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
-    this.addSql('alter table \`test2\` drop \`foo___bar\`;');
-    this.addSql('alter table \`test2\` drop \`foo___baz\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___bar\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___baz\`;');
   }
 
   async down(): Promise<void> {
@@ -467,11 +467,11 @@ export class Migration20191013214813 extends Migration {
     "up": [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
       "",
-      "alter table \`book2\` drop \`foo\`;",
+      "alter table \`book2\` drop column \`foo\`;",
       "",
       "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
-      "alter table \`test2\` drop \`foo___bar\`;",
-      "alter table \`test2\` drop \`foo___baz\`;",
+      "alter table \`test2\` drop column \`foo___bar\`;",
+      "alter table \`test2\` drop column \`foo___baz\`;",
     ],
   },
   "fileName": "migration-20191013214813.ts",
@@ -487,11 +487,11 @@ export class Migration20191013214813 extends Migration {
   async up(): Promise<void> {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
-    this.addSql('alter table \`book2\` drop \`foo\`;');
+    this.addSql('alter table \`book2\` drop column \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
-    this.addSql('alter table \`test2\` drop \`foo___bar\`;');
-    this.addSql('alter table \`test2\` drop \`foo___baz\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___bar\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___baz\`;');
   }
 
   async down(): Promise<void> {
@@ -515,11 +515,11 @@ export class Migration20191013214813 extends Migration {
     "up": [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
       "",
-      "alter table \`book2\` drop \`foo\`;",
+      "alter table \`book2\` drop column \`foo\`;",
       "",
       "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
-      "alter table \`test2\` drop \`foo___bar\`;",
-      "alter table \`test2\` drop \`foo___baz\`;",
+      "alter table \`test2\` drop column \`foo___bar\`;",
+      "alter table \`test2\` drop column \`foo___baz\`;",
     ],
   },
   "fileName": "Migration20191013214813.ts",
@@ -559,9 +559,9 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);');
     this.addSql('alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);');
 
-    this.addSql('create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum(\\'local\\', \\'global\\') not null, \`type2\` enum(\\'LOCAL\\', \\'GLOBAL\\') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum(\\'a\\', \\'b\\', \\'c\\') null, \`enum5\` enum(\\'a\\') null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default \\'asd\\', \`type\` enum(\\'local\\', \\'global\\') not null default \\'local\\', \`type2\` enum(\\'LOCAL\\', \\'GLOBAL\\') not null default \\'LOCAL\\', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum(\\'a\\', \\'b\\', \\'c\\') null, \`enum5\` enum(\\'a\\') null) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);');
     this.addSql('alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);');
     this.addSql('alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);');
@@ -706,9 +706,9 @@ export class Migration20191013214813 extends Migration {
       "alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);",
       "alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);",
       "",
-      "create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum('local', 'global') not null, \`type2\` enum('LOCAL', 'GLOBAL') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;",
+      "create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local', 'global') not null default 'local', \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;",
       "",
-      "create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;",
+      "create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);",
       "alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);",
       "alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);",
@@ -840,7 +840,7 @@ exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disab
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
@@ -851,7 +851,7 @@ exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disab
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
@@ -864,7 +864,7 @@ exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disab
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
 ]
 `;
 
@@ -885,7 +885,7 @@ exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = 
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx\\d+ (via write connection '127.0.0.1')",
   "release savepointtrx\\d+ (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
@@ -900,7 +900,7 @@ exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = 
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx\\d+ (via write connection '127.0.0.1')",
   "release savepointtrx\\d+ (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
@@ -919,7 +919,7 @@ exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = 
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx\\d+ (via write connection '127.0.0.1')",
   "release savepointtrx\\d+ (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
 ]
 `;
@@ -943,12 +943,12 @@ exports[`Migrator up/down with explicit transaction: explicit-tx 1`] = `
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx_xx (via write connection '127.0.0.1')",
   "release savepointtrx_xx (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx_xx (via write connection '127.0.0.1')",
   "release savepointtrx_xx (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?) (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",

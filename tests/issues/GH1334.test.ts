@@ -1,5 +1,4 @@
-import { Collection, Entity, IdentifiedReference, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, Ref, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, QueryOrder } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -14,8 +13,8 @@ export class RadioOption {
   @Property()
   order!: number;
 
-  @ManyToOne('Radio', { wrappedReference: true })
-  radio!: IdentifiedReference<Radio>;
+  @ManyToOne('Radio', { ref: true })
+  radio!: Ref<Radio>;
 
 }
 
@@ -31,8 +30,8 @@ export class Radio {
   @Property()
   question: string = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10);
 
-  @ManyToOne('Project', { wrappedReference: true })
-  project!: IdentifiedReference<Project>;
+  @ManyToOne('Project', { ref: true })
+  project!: Ref<Project>;
 
   @OneToMany(
     () => RadioOption,
@@ -77,11 +76,10 @@ export class Project {
 
 describe('GH issue 1334', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Project, Radio, RadioOption],
       loadStrategy: LoadStrategy.JOINED,

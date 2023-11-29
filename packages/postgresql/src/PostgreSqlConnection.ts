@@ -1,29 +1,24 @@
 import TypeOverrides from 'pg/lib/type-overrides';
 import type { Dictionary } from '@mikro-orm/core';
-import type { Knex } from '@mikro-orm/knex';
-import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
+import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
 
-  async connect(): Promise<void> {
+  override createKnex() {
     this.patchKnex();
     this.client = this.createKnexClient('pg');
+    this.connected = true;
   }
 
   getDefaultClientUrl(): string {
     return 'postgresql://postgres@127.0.0.1:5432';
   }
 
-  getConnectionOptions(): Knex.PgConnectionConfig {
+  override getConnectionOptions(): Knex.PgConnectionConfig {
     const ret = super.getConnectionOptions() as Knex.PgConnectionConfig;
     const types = new TypeOverrides();
-    [1082].forEach(oid => types.setTypeParser(oid, str => str)); // date type
+    [1082, 1114, 1184].forEach(oid => types.setTypeParser(oid, str => str)); // date, timestamp, timestamptz type
     ret.types = types as any;
-
-    if (this.config.get('forceUtcTimezone')) {
-      [1114].forEach(oid => types.setTypeParser(oid, str => new Date(str + 'Z'))); // timestamp w/o TZ type
-      ret.parseInputDatesAsUTC = true;
-    }
 
     return ret;
   }
@@ -71,19 +66,29 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     const type = col.getColumnType();
     const colName = this.client.wrapIdentifier(col.getColumnName(), col.columnBuilder.queryContext());
     const constraintName = `${this.tableNameRaw.replace(/^.*\.(.*)$/, '$1')}_${col.getColumnName()}_check`;
-    that.dropColumnDefault.call(this, col, colName);
+    const useNative = col.args?.[2]?.useNative;
+    const alterType = col.columnBuilder.alterType;
+    const alterNullable = col.columnBuilder.alterNullable;
+    const defaultTo = col.modified.defaultTo;
 
-    if (col.type === 'enu') {
-      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type text using (${colName}::text)`, bindings: [] });
+    if (defaultTo != null) {
+      that.dropColumnDefault.call(this, col, colName);
+    }
+
+    if (col.type === 'enu' && !useNative) {
+      if (alterType) {
+        this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type text using (${colName}::text)`, bindings: [] });
+      }
+
       /* istanbul ignore else */
-      if (options.createForeignKeyConstraints) {
+      if (options.createForeignKeyConstraints && alterNullable) {
         this.pushQuery({ sql: `alter table ${quotedTableName} add constraint "${constraintName}" ${type.replace(/^text /, '')}`, bindings: [] });
       }
     } else if (type === 'uuid') {
       // we need to drop the default as it would be invalid
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} drop default`, bindings: [] });
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type ${type} using (${colName}::text::uuid)`, bindings: [] });
-    } else {
+    } else if (alterType) {
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type ${type} using (${colName}::${type})`, bindings: [] });
     }
 
@@ -124,11 +129,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     const quotedTableName = this.tableName();
     const defaultTo = col.modified.defaultTo;
 
-    if (!defaultTo) {
-      return;
-    }
-
-    if (defaultTo[0] === null) {
+    if (defaultTo?.[0] == null) {
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} drop default`, bindings: [] });
     }
   }

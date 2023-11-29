@@ -21,6 +21,10 @@ describe('SchemaGenerator', () => {
     await orm.schema.createSchema();
     collections = await driver.getConnection().listCollections();
     expect(collections).toContain('foo-bar');
+    expect(collections).toContain('mikro_orm_migrations');
+    await orm.schema.dropSchema({ dropMigrationsTable: true });
+    collections = await driver.getConnection().listCollections();
+    expect(collections).toHaveLength(0);
   });
 
   test('refresh collections', async () => {
@@ -32,13 +36,13 @@ describe('SchemaGenerator', () => {
 
     await orm.schema.refreshDatabase();
 
-    expect(dropCollections).toBeCalledTimes(1);
-    expect(createCollection).toBeCalledTimes(1);
+    expect(dropCollections).toHaveBeenCalledTimes(1);
+    expect(createCollection).toHaveBeenCalledTimes(1);
 
     await orm.schema.refreshDatabase({ ensureIndexes: false });
 
-    expect(dropCollections).toBeCalledTimes(2);
-    expect(createCollection).toBeCalledTimes(2);
+    expect(dropCollections).toHaveBeenCalledTimes(2);
+    expect(createCollection).toHaveBeenCalledTimes(2);
 
     createCollection.mockRestore();
     dropCollections.mockRestore();
@@ -48,7 +52,7 @@ describe('SchemaGenerator', () => {
     const spy = jest.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
     spy.mockImplementation();
     await orm.schema.updateSchema();
-    expect(spy).toBeCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(1);
     spy.mockRestore();
   });
 
@@ -61,42 +65,14 @@ describe('SchemaGenerator', () => {
     meta.properties.name.nullable = true;
     await orm.schema.ensureIndexes();
 
-    expect(dropIndexesSpy).toBeCalledWith(
+    expect(dropIndexesSpy).toHaveBeenCalledWith(
       expect.objectContaining({
       collectionsWithFailedIndexes: ['foo-baz'],
     }));
 
-    expect(ensureIndexesSpy).toBeCalledTimes(3);
+    expect(ensureIndexesSpy).toHaveBeenCalledTimes(3);
 
     dropIndexesSpy.mockRestore();
-    ensureIndexesSpy.mockRestore();
-  });
-
-  test('deprecated driver methods that are now in MongoSchemaGenerator', async () => {
-    const driver = orm.em.getDriver();
-    const createSchemaSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
-    const dropSchemaSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'dropSchema');
-    const refreshDatabaseSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'refreshDatabase');
-    const ensureIndexesSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'ensureIndexes');
-    createSchemaSpy.mockImplementation();
-    dropSchemaSpy.mockImplementation();
-    refreshDatabaseSpy.mockImplementation();
-
-    await driver.createCollections();
-    expect(createSchemaSpy).toBeCalledTimes(1);
-
-    await driver.dropCollections();
-    expect(dropSchemaSpy).toBeCalledTimes(1);
-
-    await driver.refreshCollections();
-    expect(refreshDatabaseSpy).toBeCalledTimes(1);
-
-    await driver.ensureIndexes();
-    expect(ensureIndexesSpy).toBeCalledTimes(1);
-
-    createSchemaSpy.mockRestore();
-    dropSchemaSpy.mockRestore();
-    refreshDatabaseSpy.mockRestore();
     ensureIndexesSpy.mockRestore();
   });
 

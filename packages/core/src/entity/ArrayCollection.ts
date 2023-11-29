@@ -1,9 +1,9 @@
 import { inspect } from 'util';
-import type { EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
+import type { Dictionary, EntityDTO, EntityKey, EntityProperty, EntityValue, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
 import { helper, wrap } from './wrap';
-import { ReferenceType } from '../enums';
 import { MetadataError, ValidationError } from '../errors';
+import { ReferenceKind } from '../enums';
 import { Utils } from '../utils/Utils';
 
 export class ArrayCollection<T extends object, O extends object> {
@@ -31,7 +31,7 @@ export class ArrayCollection<T extends object, O extends object> {
     return [...this.items];
   }
 
-  toArray(): EntityDTO<T>[] {
+  toArray<TT extends T>(): EntityDTO<TT>[] {
     if (this.items.size === 0) {
       return [];
     }
@@ -39,7 +39,7 @@ export class ArrayCollection<T extends object, O extends object> {
     const meta = this.property.targetMeta!;
     const args = [...meta.toJsonParams.map(() => undefined)];
 
-    return this.getItems().map(item => wrap(item).toJSON(...args));
+    return this.map(item => wrap(item as TT).toJSON(...args));
   }
 
   toJSON(): EntityDTO<T>[] {
@@ -57,14 +57,14 @@ export class ArrayCollection<T extends object, O extends object> {
 
     return items.map(i => {
       if (Utils.isEntity(i[field as keyof T], true)) {
-        return wrap(i[field as keyof T], true).getPrimaryKey();
+        return wrap(i[field as keyof T]!, true).getPrimaryKey();
       }
 
       return i[field as keyof T];
     }) as unknown as U[];
   }
 
-  add(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
+  add(entity: T | Reference<T> | Iterable<T | Reference<T>>, ...entities: (T | Reference<T>)[]): void {
     entities = Utils.asArray(entity).concat(entities);
 
     for (const item of entities) {
@@ -79,12 +79,12 @@ export class ArrayCollection<T extends object, O extends object> {
     }
   }
 
-  set(items: (T | Reference<T>)[]): void {
-    if (this.compare(items.map(item => Reference.unwrapReference(item)))) {
+  set(items: Iterable<T | Reference<T>>): void {
+    if (this.compare(Utils.asArray(items).map(item => Reference.unwrapReference(item)))) {
       return;
     }
 
-    this.removeAll();
+    this.remove(this.items);
     this.add(items);
   }
 
@@ -123,7 +123,7 @@ export class ArrayCollection<T extends object, O extends object> {
    * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
-  remove(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
+  remove(entity: T | Reference<T> | Iterable<T | Reference<T>>, ...entities: (T | Reference<T>)[]): void {
     entities = Utils.asArray(entity).concat(entities);
     let modified = false;
 
@@ -177,6 +177,124 @@ export class ArrayCollection<T extends object, O extends object> {
     return this.items.has(entity);
   }
 
+  /**
+   * Extracts a slice of the collection items starting at position start to end (exclusive) of the collection.
+   * If end is null it returns all elements from start to the end of the collection.
+   */
+  slice(start = 0, end?: number): T[] {
+    let index = 0;
+    end ??= this.items.size;
+    const items: T[] = [];
+
+    for (const item of this.items) {
+      if (index === end) {
+        break;
+      }
+
+      if (index >= start && index < end) {
+        items.push(item);
+      }
+
+      index++;
+    }
+
+    return items;
+  }
+
+  /**
+   * Tests for the existence of an element that satisfies the given predicate.
+   */
+  exists(cb: (item: T) => boolean): boolean {
+    for (const item of this.items) {
+      if (cb(item)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns the first element of this collection that satisfies the predicate.
+   */
+  find(cb: (item: T, index: number) => boolean): T | undefined {
+    let index = 0;
+
+    for (const item of this.items) {
+      if (cb(item, index++)) {
+        return item;
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Extracts a subset of the collection items.
+   */
+  filter(cb: (item: T, index: number) => boolean): T[] {
+    const items: T[] = [];
+    let index = 0;
+
+    for (const item of this.items) {
+      if (cb(item, index++)) {
+        items.push(item);
+      }
+    }
+
+    return items;
+  }
+
+  /**
+   * Maps the collection items based on your provided mapper function.
+   */
+  map<R>(mapper: (item: T, index: number) => R): R[] {
+    const items: R[] = [];
+    let index = 0;
+
+    for (const item of this.items) {
+      items.push(mapper(item, index++));
+    }
+
+    return items;
+  }
+
+  /**
+   * Maps the collection items based on your provided mapper function to a single object.
+   */
+  reduce<R>(cb: (obj: R, item: T, index: number) => R, initial = {} as R): R {
+    let index = 0;
+
+    for (const item of this.items) {
+      initial = cb(initial, item, index++);
+    }
+
+    return initial;
+  }
+
+  /**
+   * Maps the collection items to a dictionary, indexed by the key you specify.
+   * If there are more items with the same key, only the first one will be present.
+   */
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1): Record<T[K1] & PropertyKey, T>;
+
+  /**
+   * Maps the collection items to a dictionary, indexed by the key you specify.
+   * If there are more items with the same key, only the first one will be present.
+   */
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey: K2): Record<T[K1] & PropertyKey, T[K2]>;
+
+  /**
+   * Maps the collection items to a dictionary, indexed by the key you specify.
+   * If there are more items with the same key, only the first one will be present.
+   */
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey?: K2): Record<T[K1] & PropertyKey, T> | Record<T[K1] & PropertyKey, T[K2]> {
+    return this.reduce((obj, item) => {
+      obj[item[key] as string] ??= valueKey ? item[valueKey] : item;
+      return obj;
+    }, {} as any);
+  }
+
   count(): number {
     return this.items.size;
   }
@@ -199,6 +317,10 @@ export class ArrayCollection<T extends object, O extends object> {
     return this.dirty;
   }
 
+  isEmpty(): boolean {
+    return this.count() === 0;
+  }
+
   setDirty(dirty = true): void {
     this.dirty = dirty;
   }
@@ -208,7 +330,7 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   * [Symbol.iterator](): IterableIterator<T> {
-    for (const item of this.items) {
+    for (const item of this.getItems()) {
       yield item;
     }
   }
@@ -216,13 +338,13 @@ export class ArrayCollection<T extends object, O extends object> {
   /**
    * @internal
    */
-  get property(): EntityProperty<O> {
+  get property(): EntityProperty { // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
     if (!this._property) {
       const meta = helper(this.owner).__meta;
 
       /* istanbul ignore if */
       if (!meta) {
-        throw MetadataError.fromUnknownEntity((this.owner as object).constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
+        throw MetadataError.fromUnknownEntity(this.owner.constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
       }
 
       this._property = meta.relations.find(prop => this.owner[prop.name] === this)!;
@@ -234,7 +356,7 @@ export class ArrayCollection<T extends object, O extends object> {
   /**
    * @internal
    */
-  set property(prop: EntityProperty<O>) {
+  set property(prop: EntityProperty) { // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
     this._property = prop;
   }
 
@@ -247,22 +369,23 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   protected propagateToInverseSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
-    const collection = item[this.property.inversedBy as keyof T] as unknown as ArrayCollection<O, T>;
+    const collection = item[this.property.inversedBy as keyof T] as ArrayCollection<O, T>;
 
     if (this.shouldPropagateToCollection(collection, method)) {
-      collection[method](this.owner);
+      collection[method as 'add'](this.owner);
     }
   }
 
   protected propagateToOwningSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
-    const collection = item[this.property.mappedBy as keyof T] as unknown as ArrayCollection<O, T>;
+    const mappedBy = this.property.mappedBy as EntityKey<T>;
+    const collection = item[mappedBy] as ArrayCollection<O, T>;
 
-    if (this.property.reference === ReferenceType.MANY_TO_MANY) {
+    if (this.property.kind === ReferenceKind.MANY_TO_MANY) {
       if (this.shouldPropagateToCollection(collection, method)) {
-        collection[method](this.owner);
+        collection[method as 'add'](this.owner);
       }
-    } else if (this.property.reference === ReferenceType.ONE_TO_MANY && method !== 'takeSnapshot') {
-      const prop2 = this.property.targetMeta!.properties[this.property.mappedBy];
+    } else if (this.property.kind === ReferenceKind.ONE_TO_MANY && method !== 'takeSnapshot') {
+      const prop2 = this.property.targetMeta!.properties[mappedBy];
       const owner = prop2.mapToPk ? helper(this.owner).getPrimaryKey() : this.owner;
       const value = method === 'add' ? owner : null;
 
@@ -271,7 +394,7 @@ export class ArrayCollection<T extends object, O extends object> {
         helper(item).__pk = helper(item).getPrimaryKey()!;
       }
 
-      if (!prop2.nullable && prop2.onDelete !== 'cascade' && method === 'remove') {
+      if (!prop2.nullable && prop2.updateRule !== 'cascade' && method === 'remove') {
         if (!this.property.orphanRemoval) {
           throw ValidationError.cannotRemoveFromCollectionWithoutOrphanRemoval(this.owner, this.property);
         }
@@ -280,8 +403,8 @@ export class ArrayCollection<T extends object, O extends object> {
       }
 
       // skip if already propagated
-      if (Reference.unwrapReference(item[this.property.mappedBy]) !== value) {
-        item[this.property.mappedBy] = value;
+      if (Reference.unwrapReference(item[mappedBy] as object) !== value) {
+        item[mappedBy] = value as EntityValue<T>;
       }
     }
   }
@@ -302,17 +425,18 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   protected incrementCount(value: number) {
-    if (typeof this._count === 'number') {
+    if (typeof this._count === 'number' && this.initialized) {
       this._count += value;
     }
   }
 
+  /** @ignore */
   [inspect.custom](depth: number) {
-    const object = { ...this };
-    const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized'];
+    const object = { ...this } as Dictionary;
+    const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized', '_em', 'readonly'];
     hidden.forEach(k => delete object[k]);
     const ret = inspect(object, { depth });
-    const name = `${this.constructor.name}<${this.property.type}>`;
+    const name = `${this.constructor.name}<${this.property?.type ?? 'unknown'}>`;
 
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }

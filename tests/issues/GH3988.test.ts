@@ -89,8 +89,6 @@ afterAll(async () => {
 });
 
 it('should create and persist entity along with child entity', async () => {
-  const parentRepository = orm.em.fork().getRepository(ParentEntity);
-
   // Create parent
   const parent = new ParentEntity();
   parent.id = new Id(1);
@@ -104,11 +102,11 @@ it('should create and persist entity along with child entity', async () => {
   parent.children.add(child);
 
   const mock = mockLogger(orm);
-  await parentRepository.persistAndFlush(parent);
+  await orm.em.persistAndFlush(parent);
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ['[query] insert into `parent_entity` (`id`, `id2`) values (1, 2) returning `id`, `id2`'],
-    ['[query] insert into `child_entity` (`id`, `parent_id`, `parent_id2`) values (1, 1, 2) returning `id`'],
+    ['[query] insert into `parent_entity` (`id`, `id2`) values (1, 2)'],
+    ['[query] insert into `child_entity` (`id`, `parent_id`, `parent_id2`) values (1, 1, 2)'],
     ['[query] commit'],
   ]);
 });

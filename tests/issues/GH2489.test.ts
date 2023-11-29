@@ -1,13 +1,12 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/postgresql';
 
-export class IntegerArrayType extends Type<number[], string> {
+class IntegerArrayType extends Type<number[], string> {
 
   constructor(private readonly length?: number) {
     super();
   }
 
-  convertToDatabaseValue(value: number[]): string {
+  override convertToDatabaseValue(value: number[]): string {
     if (this.length && value.length !== this.length) {
       throw new Error('...');
     }
@@ -15,7 +14,7 @@ export class IntegerArrayType extends Type<number[], string> {
     return `{${value.join(',')}}`;
   }
 
-  convertToJSValue(value: number[]): number[] {
+  override convertToJSValue(value: string): number[] {
     if (!Array.isArray(value)) {
       throw new Error('...');
     }
@@ -27,18 +26,18 @@ export class IntegerArrayType extends Type<number[], string> {
     return value;
   }
 
-  compareAsType(): string {
+  override compareAsType(): string {
     return 'array';
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'int4[]';
   }
 
 }
 
 @Entity()
-export class Test {
+class Test {
 
   @PrimaryKey()
   id!: number;
@@ -56,8 +55,7 @@ describe('GH issue 2489', () => {
     orm = await MikroORM.init({
       entities: [Test],
       dbName: 'mikro_orm_test_2489',
-      driver: PostgreSqlDriver,
-      cache: { enabled: true },
+      metadataCache: { enabled: true },
     });
     await orm.schema.refreshDatabase();
   });

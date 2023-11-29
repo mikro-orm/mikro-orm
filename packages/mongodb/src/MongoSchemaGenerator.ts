@@ -1,17 +1,17 @@
-import type { Dictionary, EntityMetadata, EntityProperty, MikroORM } from '@mikro-orm/core';
-import { AbstractSchemaGenerator, Utils } from '@mikro-orm/core';
+import { AbstractSchemaGenerator, Utils, type Dictionary, type EntityMetadata, type EntityProperty, type MikroORM } from '@mikro-orm/core';
 import type { MongoDriver } from './MongoDriver';
 
 export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
 
   static register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/schema-generator', new MongoSchemaGenerator(orm.em));
+    orm.config.registerExtension('@mikro-orm/schema-generator', () => new MongoSchemaGenerator(orm.em));
   }
 
-  async createSchema(options: CreateSchemaOptions = {}): Promise<void> {
+  override async createSchema(options: CreateSchemaOptions = {}): Promise<void> {
     options.ensureIndexes ??= true;
     const existing = await this.connection.listCollections();
     const metadata = this.getOrderedMetadata();
+    metadata.push({ collection: this.config.get('migrations').tableName } as any);
 
     /* istanbul ignore next */
     const promises = metadata
@@ -32,11 +32,16 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await Promise.all(promises);
   }
 
-  async dropSchema(): Promise<void> {
+  override async dropSchema(options: { dropMigrationsTable?: boolean } = {}): Promise<void> {
     const db = this.connection.getDb();
     const collections = await db.listCollections().toArray();
     const existing = collections.map(c => c.name);
     const metadata = this.getOrderedMetadata();
+
+    if (options.dropMigrationsTable) {
+      metadata.push({ collection: this.config.get('migrations').tableName } as any);
+    }
+
     const promises = metadata
       .filter(meta => existing.includes(meta.collection))
       .map(meta => this.connection.dropCollection(meta.collection));
@@ -44,15 +49,15 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await Promise.all(promises);
   }
 
-  async updateSchema(options: CreateSchemaOptions = {}): Promise<void> {
+  override async updateSchema(options: CreateSchemaOptions = {}): Promise<void> {
     await this.createSchema(options);
   }
 
-  async ensureDatabase(): Promise<boolean> {
+  override async ensureDatabase(): Promise<boolean> {
     return false;
   }
 
-  async refreshDatabase(options: CreateSchemaOptions = {}): Promise<void> {
+  override async refreshDatabase(options: CreateSchemaOptions = {}): Promise<void> {
     await this.ensureDatabase();
     await this.dropSchema();
     await this.createSchema(options);
@@ -83,7 +88,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await Promise.all(promises);
   }
 
-  async ensureIndexes(options: EnsureIndexesOptions = {}): Promise<void> {
+  override async ensureIndexes(options: EnsureIndexesOptions = {}): Promise<void> {
     options.ensureCollections ??= true;
     options.retryLimit ??= 3;
 
@@ -93,7 +98,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
 
     const promises: [string, Promise<string>][] = [];
 
-    for (const meta of Object.values(this.metadata.getAll())) {
+    for (const meta of this.getOrderedMetadata()) {
       if (Array.isArray(options?.retry) && !options.retry.includes(meta.collection)) {
         continue;
       }
@@ -144,14 +149,16 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     meta.indexes.forEach(index => {
       let fieldOrSpec: string | Dictionary;
       const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-      const collection = this.connection.getCollection(meta.name!);
+      const collection = this.connection.getCollection(meta.className);
 
       if (Array.isArray(index.options) && index.options.length === 2 && properties.length === 0) {
-        return res.push([collection.collectionName, collection.createIndex(index.options[0], index.options[1])]);
+        res.push([collection.collectionName, collection.createIndex(index.options[0], index.options[1])]);
+        return;
       }
 
       if (index.options && properties.length === 0) {
-        return res.push([collection.collectionName, collection.createIndex(index.options)]);
+        res.push([collection.collectionName, collection.createIndex(index.options)]);
+        return;
       }
 
       if (index.type) {
@@ -163,7 +170,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         properties.forEach(prop => spec[prop] = index.type!);
         fieldOrSpec = spec;
       } else {
-        fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {});
+        fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
       }
 
       res.push([collection.collectionName, collection.createIndex(fieldOrSpec, {
@@ -180,8 +187,8 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     const res: [string, Promise<string>][] = [];
     meta.uniques.forEach(index => {
       const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-      const fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {});
-      const collection = this.connection.getCollection(meta.name!);
+      const fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
+      const collection = this.connection.getCollection(meta.className);
       res.push([collection.collectionName, collection.createIndex(fieldOrSpec, {
         name: index.name,
         unique: true,
@@ -197,8 +204,10 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       return [];
     }
 
-    const collection = this.connection.getCollection(meta.name!);
-    const fieldOrSpec = prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {});
+    const collection = this.connection.getCollection(meta.className);
+    const fieldOrSpec = prop.embeddedPath
+      ? prop.embeddedPath.join('.')
+      : prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
 
     return [[collection.collectionName, collection.createIndex(fieldOrSpec, {
       name: (Utils.isString(prop[type]) ? prop[type] : undefined) as string,

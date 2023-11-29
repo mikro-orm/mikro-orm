@@ -1,15 +1,15 @@
-import type { Knex } from '@mikro-orm/knex';
-import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
+import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
 
 export class MySqlConnection extends AbstractSqlConnection {
 
-  async connect(): Promise<void> {
+  override createKnex() {
     this.patchKnex();
     this.client = this.createKnexClient('mysql2');
+    this.connected = true;
   }
 
   private patchKnex() {
-    const { MySqlColumnCompiler } = MonkeyPatchable;
+    const { MySqlColumnCompiler, MySqlQueryCompiler } = MonkeyPatchable;
 
     // we need the old behaviour to be able to add auto_increment to a column that is already PK
     MySqlColumnCompiler.prototype.increments = function (options = { primaryKey: true }) {
@@ -20,13 +20,17 @@ export class MySqlConnection extends AbstractSqlConnection {
     MySqlColumnCompiler.prototype.bigincrements = function (options = { primaryKey: true }) {
       return 'bigint unsigned not null auto_increment' + (this.tableCompiler._canBeAddPrimaryKey(options) ? ' primary key' : '');
     };
+
+    // mysql dialect disallows query non scalar params, but we dont use it to execute the query, it always goes through the `platform.formatQuery()`
+    delete MySqlQueryCompiler.prototype.whereBasic;
+    delete MySqlQueryCompiler.prototype.whereRaw;
   }
 
   getDefaultClientUrl(): string {
     return 'mysql://root@127.0.0.1:3306';
   }
 
-  getConnectionOptions(): Knex.MySqlConnectionConfig {
+  override getConnectionOptions(): Knex.MySqlConnectionConfig {
     const ret = super.getConnectionOptions() as Knex.MySqlConnectionConfig;
 
     if (this.config.get('multipleStatements')) {
@@ -42,7 +46,7 @@ export class MySqlConnection extends AbstractSqlConnection {
     }
 
     ret.supportBigNumbers = true;
-    ret.dateStrings = ['DATE'] as any;
+    ret.dateStrings = true;
 
     return ret;
   }

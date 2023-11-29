@@ -1,7 +1,5 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Reference } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class Node {
@@ -14,10 +12,9 @@ class Node {
 @Entity()
 class A {
 
-  [PrimaryKeyType]?: number;
   [PrimaryKeyProp]?: 'node';
-  @OneToOne({ entity: () => Node, wrappedReference: true, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
-  node!: IdentifiedReference<Node>;
+  @OneToOne({ entity: () => Node, ref: true, primary: true, deleteRule: 'cascade', updateRule: 'cascade' })
+  node!: Ref<Node>;
 
   @OneToMany('B', 'a', { eager: true, orphanRemoval: true })
   bs = new Collection<B>(this);
@@ -44,15 +41,14 @@ class B {
 
 describe('GH issue 1111', () => {
 
-  let orm: MikroORM<AbstractSqlDriver>;
+  let orm: MikroORM;
   const log = jest.fn();
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Node, A, B],
       dbName: `mikro_orm_test_gh_1111`,
-      driver: PostgreSqlDriver,
-      cache: { enabled: false },
+      metadataCache: { enabled: false },
     });
     mockLogger(orm, ['query', 'query-params'], log);
     await orm.schema.ensureDatabase();
@@ -66,7 +62,7 @@ describe('GH issue 1111', () => {
 
   afterAll(() => orm.close(true));
 
-  test('FK as PK with IdentifiedReference - single insert', async () => {
+  test('FK as PK with Ref - single insert', async () => {
     const a1 = new A();
     a1.name = 'test';
     a1.node = Reference.create(new Node());
@@ -86,7 +82,7 @@ describe('GH issue 1111', () => {
     expect(a2.bs.count()).toBe(1);
   });
 
-  test('FK as PK with IdentifiedReference - multiple inserts', async () => {
+  test('FK as PK with Ref - multiple inserts', async () => {
     const a1 = new A();
     a1.name = 'test';
     a1.node = Reference.create(new Node());

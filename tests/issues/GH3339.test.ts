@@ -1,6 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 
 @Entity({
@@ -49,15 +47,10 @@ describe('GH issue 3339', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       dbName: `mikro_orm_test_gh_3339`,
-      driver: PostgreSqlDriver,
       schema: 'gh3339',
       entities: [ Customer1 ],
     });
-    const generator = orm.schema;
-    await generator.ensureDatabase();
-    await generator.dropSchema();
-    await generator.createSchema();
-    await generator.refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

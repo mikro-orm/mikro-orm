@@ -2,12 +2,13 @@ import {
   Collection,
   Entity,
   LoadStrategy,
+  MikroORM,
   ManyToOne,
-  OneToMany, OptionalProps,
+  OneToMany,
+  OptionalProps,
   PrimaryKey,
   Property,
-} from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/postgresql';
+} from '@mikro-orm/sqlite';
 import { randomUUID } from 'crypto';
 
 @Entity()
@@ -32,7 +33,7 @@ export class Question {
 @Entity()
 export class Answer {
 
-  [OptionalProps]?: 'createdAt';
+  [OptionalProps]?: 'createdAt' | 'question';
 
   @PrimaryKey({ type: 'uuid' })
   id: string = randomUUID();
@@ -54,7 +55,6 @@ describe('GH issue 3738', () => {
     orm = await MikroORM.init({
       entities: [Answer, Question],
       dbName: ':memory:',
-      type: 'sqlite',
       loadStrategy: LoadStrategy.JOINED,
     });
     await orm.schema.createSchema();

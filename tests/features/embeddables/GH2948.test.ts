@@ -71,19 +71,19 @@ function removeUnderscorePrefix(value: string): string {
 
 export class CustomNamingStrategy extends UnderscoreNamingStrategy {
 
-  joinColumnName(propertyName: string): string {
+  override joinColumnName(propertyName: string): string {
     return removeUnderscorePrefix(super.joinColumnName(propertyName));
   }
 
-  joinKeyColumnName(entityName: string, referencedColumnName?: string): string {
+  override joinKeyColumnName(entityName: string, referencedColumnName?: string): string {
     return removeUnderscorePrefix(super.joinKeyColumnName(entityName, referencedColumnName));
   }
 
-  propertyToColumnName(propertyName: string): string {
+  override propertyToColumnName(propertyName: string): string {
     return removeUnderscorePrefix(super.propertyToColumnName(propertyName));
   }
 
-  referenceColumnName(): string {
+  override referenceColumnName(): string {
     return removeUnderscorePrefix(super.referenceColumnName());
   }
 
@@ -120,7 +120,7 @@ describe('GH issue 2948', () => {
     ]);
     await orm.em.fork().persist(foo).flush();
 
-    const [foo2] = await orm.em.find(FooEntity, {}, { populate: true });
+    const [foo2] = await orm.em.find(FooEntity, {}, { populate: ['*'] });
     expect(foo2._bar[0]._fiz[0]._baz.name).toBeDefined();
     expect(foo2._bar[0]._fiz[1]._baz.name).toBeDefined();
     expect(foo2._bar[1]._fiz[0]._baz.name).toBeDefined();

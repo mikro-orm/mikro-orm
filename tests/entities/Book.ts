@@ -1,5 +1,20 @@
-import { ObjectId } from 'bson';
-import { EntityDTO, IdentifiedReference, Dictionary, Collection, Cascade, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap, Filter, OptionalProps } from '@mikro-orm/core';
+import {
+  EntityDTO,
+  Ref,
+  Dictionary,
+  Collection,
+  Cascade,
+  Entity,
+  Index,
+  ManyToMany,
+  ManyToOne,
+  Property,
+  Unique,
+  wrap,
+  Filter,
+  OptionalProps,
+  EntityKey,
+} from '@mikro-orm/core';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
@@ -11,12 +26,9 @@ import { BookRepository } from '../repositories/BookRepository';
 @Index({ properties: 'title', type: 'fulltext' })
 @Index({ options: { point: '2dsphere', title: -1 } })
 @Filter({ name: 'writtenBy', cond: args => ({ author: args.author }) })
-export class Book extends BaseEntity3<Book> {
+export class Book extends BaseEntity3 {
 
   [OptionalProps]?: 'createdAt';
-
-  @PrimaryKey()
-  _id!: ObjectId;
 
   @Property()
   createdAt: Date = new Date();
@@ -30,11 +42,11 @@ export class Book extends BaseEntity3<Book> {
   @ManyToOne(() => Author)
   author: Author;
 
-  @ManyToOne(() => Publisher, { wrappedReference: true, cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true })
+  @ManyToOne(() => Publisher, { ref: true, cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true })
   @Index({ name: 'publisher_idx' })
-  publisher!: IdentifiedReference<Publisher, '_id' | 'id'> | null;
+  publisher!: Ref<Publisher> | null;
 
-  @ManyToMany(() => BookTag)
+  @ManyToMany(() => BookTag, undefined, { orderBy: { title: 'asc' } })
   tags = new Collection<BookTag>(this);
 
   @Property({ type: 'json', nullable: true })
@@ -59,14 +71,12 @@ export class Book extends BaseEntity3<Book> {
     this.author = author!;
   }
 
-  toJSON(strict = true, strip = ['metaObject', 'metaArray', 'metaArrayOfStrings'], ...args: any[]): EntityDTO<this> {
-    const o = wrap(this).toObject(...args);
-
+  toJSON<Ignored extends EntityKey<this>>(strict = true, strip: Ignored[] = ['metaObject', 'metaArray', 'metaArrayOfStrings'] as Ignored[]): Omit<EntityDTO<this>, Ignored> {
     if (strict) {
-      strip.forEach(k => delete o[k]);
+      return wrap(this).toObject(strip);
     }
 
-    return o;
+    return wrap(this).toObject();
   }
 
 }

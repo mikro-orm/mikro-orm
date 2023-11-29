@@ -1,16 +1,14 @@
 import {
   BigIntType,
   Entity,
-  DefaultLogger,
   MikroORM,
   PrimaryKey,
   Property,
-} from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+} from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 export class NativeBigIntType extends BigIntType {
 
-  convertToJSValue(value: any): any {
+  override convertToJSValue(value: any): any {
     if (!value) {
       return value;
     }
@@ -40,13 +38,12 @@ export class Author {
 }
 
 describe('GH issue 1626', () => {
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Author],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

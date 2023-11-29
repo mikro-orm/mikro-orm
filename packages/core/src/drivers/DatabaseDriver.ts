@@ -1,18 +1,40 @@
-import type { CountOptions, LockOptions, DeleteOptions, FindOneOptions, FindOptions, IDatabaseDriver, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions, DriverMethodOptions } from './IDatabaseDriver';
-import { EntityManagerType } from './IDatabaseDriver';
-import type { ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
+import {
+  EntityManagerType,
+  type CountOptions,
+  type LockOptions,
+  type DeleteOptions,
+  type FindOneOptions,
+  type FindOptions,
+  type IDatabaseDriver,
+  type NativeInsertUpdateManyOptions,
+  type NativeInsertUpdateOptions,
+  type DriverMethodOptions,
+  type OrderDefinition,
+} from './IDatabaseDriver';
+import type {
+  ConnectionType,
+  Dictionary,
+  EntityData,
+  EntityDictionary,
+  EntityKey,
+  EntityMetadata,
+  EntityProperty,
+  FilterObject,
+  FilterQuery,
+  PopulateOptions,
+  Primary,
+} from '../typings';
 import type { MetadataStorage } from '../metadata';
 import type { Connection, QueryResult, Transaction } from '../connections';
-import type { Configuration, ConnectionOptions } from '../utils';
-import { EntityComparator, Utils } from '../utils';
-import type { QueryOrderMap } from '../enums';
-import { QueryOrder, ReferenceType } from '../enums';
+import { EntityComparator, Utils, type Configuration, type ConnectionOptions, Cursor, raw } from '../utils';
+import { type QueryOrder, ReferenceKind, type QueryOrderKeys, QueryOrderNumeric } from '../enums';
 import type { Platform } from '../platforms';
 import type { Collection } from '../entity/Collection';
 import { EntityManager } from '../EntityManager';
 import { ValidationError } from '../errors';
 import { DriverException } from '../exceptions';
 import { helper } from '../entity/wrap';
+import type { Logger } from '../logging/Logger';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
@@ -21,20 +43,18 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected readonly connection!: C;
   protected readonly replicas: C[] = [];
   protected readonly platform!: Platform;
-  protected readonly logger = this.config.getLogger();
+  protected readonly logger: Logger;
   protected comparator!: EntityComparator;
   protected metadata!: MetadataStorage;
 
   protected constructor(readonly config: Configuration,
-                        protected readonly dependencies: string[]) { }
-
-  async init(): Promise<void> {
-    // do nothing on this level
+                        protected readonly dependencies: string[]) {
+    this.logger = this.config.getLogger();
   }
 
-  abstract find<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<EntityData<T>[]>;
+  abstract find<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F>): Promise<EntityData<T>[]>;
 
-  abstract findOne<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<EntityData<T> | null>;
+  abstract findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F>): Promise<EntityData<T> | null>;
 
   abstract nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
@@ -55,12 +75,12 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   /* istanbul ignore next */
-  async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]> {
+  async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<EntityData<T>[]> {
     throw new Error(`Virtual entities are not supported by ${this.constructor.name} driver.`);
   }
 
   /* istanbul ignore next */
-  async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T>): Promise<number> {
+  async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T, any>): Promise<number> {
     throw new Error(`Counting virtual entities is not supported by ${this.constructor.name} driver.`);
   }
 
@@ -68,14 +88,27 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<any>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T, any>): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>, pivotJoin?: boolean): Promise<Dictionary<T[]>> {
     throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
-  async syncCollection<T extends object, O extends object>(coll: Collection<T, O>, options?: DriverMethodOptions): Promise<void> {
-    const pk = coll.property.targetMeta!.primaryKeys[0];
-    const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
-    await this.nativeUpdate<T>(coll.owner.constructor.name, helper(coll.owner).getPrimaryKey() as FilterQuery<T>, data, options);
+  async syncCollections<T extends object, O extends object>(collections: Iterable<Collection<T, O>>, options?: DriverMethodOptions): Promise<void> {
+    for (const coll of collections) {
+      if (!coll.property.owner) {
+        if (coll.getSnapshot() === undefined) {
+          throw ValidationError.cannotModifyInverseCollection(coll.owner, coll.property);
+        }
+
+        continue;
+      }
+
+      /* istanbul ignore next */
+      {
+        const pk = coll.property.targetMeta!.primaryKeys[0];
+        const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
+        await this.nativeUpdate<T>(coll.owner.constructor.name, helper(coll.owner).getPrimaryKey() as FilterQuery<T>, data, options);
+      }
+    }
   }
 
   mapResult<T extends object>(result: EntityDictionary<T>, meta?: EntityMetadata<T>, populate: PopulateOptions<T>[] = []): EntityData<T> | null {
@@ -96,7 +129,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   async reconnect(): Promise<C> {
     await this.close(true);
     await this.connect();
-    await this.init();
 
     return this.connection;
   }
@@ -114,14 +146,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   async close(force?: boolean): Promise<void> {
     await Promise.all(this.replicas.map(replica => replica.close(force)));
     await this.connection.close(force);
-
-    if (this.config.getCacheAdapter()?.close) {
-      await this.config.getCacheAdapter().close!();
-    }
-
-    if (this.config.getResultCacheAdapter()?.close) {
-      await this.config.getResultCacheAdapter().close!();
-    }
   }
 
   getPlatform(): Platform {
@@ -147,23 +171,185 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.dependencies;
   }
 
-  async ensureIndexes(): Promise<void> {
-    throw new Error(`${this.constructor.name} does not use ensureIndexes`);
+  protected processCursorOptions<T extends object, P extends string>(meta: EntityMetadata<T>, options: FindOptions<T, P, any>, orderBy: OrderDefinition<T>): { orderBy: OrderDefinition<T>[]; where: FilterQuery<T> } {
+    const { first, last, before, after, overfetch } = options;
+    const limit = first || last;
+    const isLast = !first && !!last;
+    const definition = Cursor.getDefinition(meta, orderBy);
+    const $and: FilterQuery<T>[] = [];
+
+    // allow POJO as well, we care only about the correct key being present
+    const isCursor = (val: unknown, key: 'startCursor' | 'endCursor'): val is Cursor<T, any> => {
+      return !!val && typeof val === 'object' && key in val;
+    };
+    const createCursor = (val: unknown, key: 'startCursor' | 'endCursor', inverse = false) => {
+      let def = isCursor(val, key) ? val[key] : val;
+
+      if (Utils.isPlainObject<FilterObject<T>>(def)) {
+        def = Cursor.for<T>(meta, def, orderBy);
+      }
+
+      const offsets = def ? Cursor.decode(def as string) as Dictionary[] : [];
+
+      if (definition.length === offsets.length) {
+        return this.createCursorCondition<T>(definition, offsets, inverse);
+      }
+
+      return {} as FilterQuery<T>;
+    };
+
+    if (after) {
+      $and.push(createCursor(after, 'endCursor'));
+    }
+
+    if (before) {
+      $and.push(createCursor(before, 'startCursor', true));
+    }
+
+    if (limit) {
+      options.limit = limit + (overfetch ? 1 : 0);
+    }
+
+    const createOrderBy = (prop: string, direction: QueryOrderKeys<T>): OrderDefinition<T> => {
+      if (Utils.isPlainObject(direction)) {
+        const value = Utils.keys(direction).reduce((o, key) => {
+          Object.assign(o, createOrderBy(key as string, direction[key] as QueryOrderKeys<T>));
+          return o;
+        }, {});
+        return ({ [prop]: value }) as OrderDefinition<T>;
+      }
+
+      const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
+      const dir = Utils.xor(desc, isLast) ? 'desc' : 'asc';
+      return ({ [prop]: dir }) as OrderDefinition<T>;
+    };
+
+    return {
+      orderBy: definition.map(([prop, direction]) => createOrderBy(prop, direction)),
+      where: ($and.length > 1 ? { $and } : { ...$and[0] }) as FilterQuery<T>,
+    };
   }
 
-  protected inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
-    Object.keys(data as Dictionary).forEach(k => {
-      if (Utils.isOperator(k)) {
-        Utils.asArray(data[k]).forEach(payload => this.inlineEmbeddables(meta, payload, where));
+  protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse = false): FilterQuery<T> {
+    const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
+      if (Utils.isPlainObject(direction)) {
+        const value = Utils.keys(direction).reduce((o, key) => {
+          Object.assign(o, createCondition(key as string, direction[key] as QueryOrderKeys<T>, offset[prop][key], eq));
+          return o;
+        }, {});
+        return ({ [prop]: value });
+      }
+
+      const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
+      const operator = Utils.xor(desc, inverse) ? '$lt' : '$gt';
+
+      return { [prop]: { [operator + (eq ? 'e' : '')]: offset } } as FilterQuery<T>;
+    };
+
+    const [order, ...otherOrders] = definition;
+    const [offset, ...otherOffsets] = offsets;
+    const [prop, direction] = order;
+
+    if (!otherOrders.length) {
+      return createCondition(prop, direction, offset) as FilterQuery<T>;
+    }
+
+    return {
+      ...createCondition(prop, direction, offset, true),
+      $or: [
+        createCondition(prop, direction, offset),
+        this.createCursorCondition(otherOrders, otherOffsets, inverse),
+      ],
+    } as FilterQuery<T>;
+  }
+
+  /** @internal */
+  mapDataToFieldNames(data: Dictionary, stringifyJsonArrays: boolean, properties?: Record<string, EntityProperty>, convertCustomTypes?: boolean, object?: boolean) {
+    if (!properties || data == null) {
+      return data;
+    }
+
+    data = Object.assign({}, data); // copy first
+
+    Object.keys(data).forEach(k => {
+      const prop = properties[k];
+
+      if (!prop) {
+        return;
+      }
+
+      if (prop.embeddedProps && !prop.object && !object) {
+        const copy = data[k];
+        delete data[k];
+        Object.assign(data, this.mapDataToFieldNames(copy, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes));
+
+        return;
+      }
+
+      if (prop.embeddedProps && (prop.object || object)) {
+        const copy = data[k];
+        delete data[k];
+
+        if (prop.array) {
+          data[prop.fieldNames[0]] = copy.map((item: Dictionary) => this.mapDataToFieldNames(item, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes, true));
+        } else {
+          data[prop.fieldNames[0]] = this.mapDataToFieldNames(copy, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes, true);
+        }
+
+        if (stringifyJsonArrays && prop.array) {
+          data[prop.fieldNames[0]] = this.platform.convertJsonToDatabaseValue(data[prop.fieldNames[0]]);
+        }
+
+        return;
+      }
+
+      if (prop.joinColumns && Array.isArray(data[k])) {
+        const copy = Utils.flatten(data[k]);
+        delete data[k];
+        prop.joinColumns.forEach((joinColumn, idx) => data[joinColumn] = copy[idx]);
+
+        return;
+      }
+
+      if (prop.customType && convertCustomTypes && !this.platform.isRaw(data[k])) {
+        data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, { fromQuery: true, key: k, mode: 'query-data' });
+      }
+
+      if (prop.hasConvertToDatabaseValueSQL && !this.platform.isRaw(data[k])) {
+        const quoted = this.platform.quoteValue(data[k]);
+        const sql = prop.customType.convertToDatabaseValueSQL!(quoted, this.platform);
+        data[k] = raw(sql.replace(/\?/g, '\\?'));
+      }
+
+      if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
+        data[k] = JSON.stringify(data[k]);
+      }
+
+      if (prop.fieldNames) {
+        Utils.renameKey(data, k, prop.fieldNames[0]);
+      }
+    });
+
+    return data;
+  }
+
+  protected inlineEmbeddables<T extends object>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
+    if (data == null) {
+      return;
+    }
+
+    Utils.keys(data).forEach(k => {
+      if (Utils.isOperator(k as string)) {
+        Utils.asArray(data[k]).forEach(payload => this.inlineEmbeddables(meta, payload as T, where));
       }
     });
 
     meta.props.forEach(prop => {
-      if (prop.reference === ReferenceType.EMBEDDED && prop.object && !where && Utils.isObject(data[prop.name])) {
+      if (prop.kind === ReferenceKind.EMBEDDED && prop.object && !where && Utils.isObject(data[prop.name])) {
         return;
       }
 
-      if (prop.reference === ReferenceType.EMBEDDED && Utils.isObject(data[prop.name])) {
+      if (prop.kind === ReferenceKind.EMBEDDED && Utils.isObject(data[prop.name])) {
         const props = prop.embeddedProps;
         let unknownProp = false;
 
@@ -177,7 +363,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
           if (prop.object && where) {
             const inline: (payload: any, sub: EntityProperty, path: string[]) => void = (payload: any, sub: EntityProperty, path: string[]) => {
-              if (sub.reference === ReferenceType.EMBEDDED && Utils.isObject(payload[sub.embedded![1]])) {
+              if (sub.kind === ReferenceKind.EMBEDDED && Utils.isObject(payload[sub.embedded![1]])) {
                 return Object.keys(payload[sub.embedded![1]]).forEach(kkk => {
                   if (!sub.embeddedProps[kkk]) {
                     throw ValidationError.invalidEmbeddableQuery(meta.className, kkk, sub.type);
@@ -187,17 +373,21 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
                 });
               }
 
-              data[`${path.join('.')}.${sub.embedded![1]}`] = payload[sub.embedded![1]];
+              data[`${path.join('.')}.${sub.embedded![1]}` as EntityKey<T>] = payload[sub.embedded![1]];
             };
+
+            const parentPropName = kk.substring(0, kk.indexOf('.'));
 
             // we might be using some native JSON operator, e.g. with mongodb's `$geoWithin` or `$exists`
             if (props[kk]) {
-              inline(data[prop.name], props[kk], [prop.name]);
+              inline(data[prop.name], props[kk] || props[parentPropName], [prop.name]);
+            } else if (props[parentPropName]) {
+              data[`${prop.name}.${kk}` as keyof T] = (data[prop.name] as Dictionary)[kk];
             } else {
               unknownProp = true;
             }
           } else if (props[kk]) {
-            data[props[kk].name] = data[prop.name][props[kk].embedded![1]];
+            data[props[kk].name as EntityKey<T>] = data[prop.name][props[kk].embedded![1] as EntityKey<T>] as T[EntityKey<T>];
           } else {
             throw ValidationError.invalidEmbeddableQuery(meta.className, kk, prop.type);
           }
@@ -210,35 +400,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     });
   }
 
-  protected getPivotOrderBy<T>(prop: EntityProperty<T>, orderBy?: QueryOrderMap<T>[]): QueryOrderMap<T>[] {
-    if (!Utils.isEmpty(orderBy)) {
-      return orderBy!;
-    }
-
-    if (!Utils.isEmpty(prop.orderBy)) {
-      return Utils.asArray(prop.orderBy);
-    }
-
-    if (prop.fixedOrder) {
-      return [{ [`${prop.pivotEntity}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>];
-    }
-
-    return [];
-  }
-
   protected getPrimaryKeyFields(entityName: string): string[] {
     const meta = this.metadata.find(entityName);
     return meta ? Utils.flatten(meta.getPrimaryProps().map(pk => pk.fieldNames)) : [this.config.getNamingStrategy().referenceColumnName()];
-  }
-
-  protected getPivotInverseProperty(prop: EntityProperty): EntityProperty {
-    const pivotMeta = this.metadata.find(prop.pivotEntity)!;
-
-    if (prop.owner) {
-      return pivotMeta.relations[0];
-    }
-
-    return pivotMeta.relations[1];
   }
 
   protected createReplicas(cb: (c: ConnectionOptions) => C): C[] {
@@ -254,7 +418,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return ret;
   }
 
-  async lockPessimistic<T>(entity: T, options: LockOptions): Promise<void> {
+  async lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
     throw new Error(`Pessimistic locks are not supported by ${this.constructor.name} driver`);
   }
 

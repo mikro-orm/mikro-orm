@@ -1,5 +1,4 @@
-import { Entity, Enum, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, Enum, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Person {
@@ -49,19 +48,15 @@ export class User {
 
 describe('GH issue 1150', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, Person],
       dbName: `mikro_orm_test_gh_1150`,
-      driver: PostgreSqlDriver,
     });
 
-    const generator = orm.schema;
-    await generator.ensureDatabase();
-    await generator.dropSchema();
-    await generator.createSchema();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {
@@ -85,8 +80,7 @@ describe('GH issue 1150', () => {
   });
 
   it('numeric enum diffing (GH issue #1096)', async () => {
-    const generator = orm.schema;
-    await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });
 
 });

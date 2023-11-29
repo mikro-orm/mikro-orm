@@ -1,5 +1,5 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { FlushMode, wrap } from '@mikro-orm/core';
+import { FlushMode, ref, wrap } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 import { initORMPostgreSql, mockLogger } from '../bootstrap';
@@ -26,15 +26,15 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     god.age = 999;
     god.identities = ['a', 'b', 'c'];
     const b1 = new Book2('Bible 1', god);
-    b1.perex = 'b1 perex';
+    b1.perex = ref('b1 perex');
     b1.price = 123;
     const b2 = new Book2('Bible 2', god);
-    b2.perex = 'b2 perex';
+    b2.perex = ref('b2 perex');
     b2.price = 456;
     const b3 = new Book2('Bible 3', god);
-    b3.perex = 'b3 perex';
+    b3.perex = ref('b3 perex');
     b3.price = 789;
-    await orm.em.fork().persistAndFlush(god);
+    await orm.em.fork().persistAndFlush([b1, b2, b3]);
 
     return { god };
   }
@@ -47,7 +47,7 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     const a1 = new Author2('A1', 'a1@example.com');
     orm.em.persist(a1);
     const r1 = await orm.em.find(Author2, {});
-    expect(mock).toBeCalledTimes(4);
+    expect(mock).toHaveBeenCalledTimes(4);
     expect(r1).toHaveLength(3);
     mock.mockReset();
 
@@ -55,20 +55,26 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     const b4 = new Book2('b4', a1, 444);
     orm.em.persist(b4);
     const r2 = await orm.em.find(Author2, {});
-    expect(mock).toBeCalledTimes(1);
+    expect(mock).toHaveBeenCalledTimes(1);
     expect(r2).toHaveLength(3);
     mock.mockReset();
 
     // but querying for book will trigger auto-flush
     const r3 = await orm.em.find(Book2, {});
-    expect(mock).toBeCalledTimes(4);
+    expect(mock).toHaveBeenCalledTimes(4);
     expect(r3).toHaveLength(4);
   });
 
   test('em.find() triggers auto-flush for newly flushed entities too', async () => {
-    const god = new Author2('God', 'hello@heaven.god');
-    god.favouriteAuthor = new Author2('God 2', 'hello2@heaven.god');
-    god.favouriteAuthor.age = 21;
+    const god = orm.em.create(Author2, {
+      name: 'God',
+      email: 'hello@heaven.god',
+      favouriteAuthor: {
+        name: 'God 2',
+        email: 'hello2@heaven.god',
+      },
+    });
+    god.favouriteAuthor!.age = 21;
     god.age = 999;
 
     expect(wrap(god, true).__touched).toBe(true);
@@ -207,15 +213,15 @@ describe('automatic flushing when querying for overlapping entities via em.find/
       god.age = 999;
       god.identities = ['a', 'b', 'c'];
       const b1 = new Book2(`Bible 1-${i}`, god);
-      b1.perex = `b1-${i} perex`;
+      b1.perex = ref(`b1-${i} perex`);
       b1.price = 123;
       const b2 = new Book2(`Bible 2-${i}`, god);
-      b2.perex = `b2-${i} perex`;
+      b2.perex = ref(`b2-${i} perex`);
       b2.price = 456;
       const b3 = new Book2(`Bible 3-${i}`, god);
-      b3.perex = `b3-${i} perex`;
+      b3.perex = ref(`b3-${i} perex`);
       b3.price = 789;
-      fork.persist(god);
+      fork.persist([b1, b2, b3]);
     }
 
     await fork.flush();

@@ -48,7 +48,7 @@ const book = await orm.em.findOne(Book, 'id', { populate: ['author', 'tags'] });
 book.author.name = 'Foo Bar';
 book.tags[0].name = 'new name 1';
 book.tags[1].name = 'new name 2';
-await orm.em.persistAndFlush(book); // all book tags and author will be persisted too
+await orm.em.persist(book).flush(); // all book tags and author will be persisted too
 ```
 
 > When cascade persisting collections, keep in mind only fully initialized collections will be cascade persisted.
@@ -96,7 +96,7 @@ With simple `Cascade.REMOVE`, you would need to remove the `Author` entity to ca
 ```ts
 await author.books.set([book1, book2]); // replace whole collection
 await author.books.remove(book1); // remove book from collection
-await orm.em.persistAndFlush(author); // book1 will be removed, as well as all original items (before we called `set()`)
+await orm.em.persist(author).flush(); // book1 will be removed, as well as all original items (before we called `set()`)
 ```
 
 In this example, no `Book` would be removed with simple `Cascade.REMOVE` as no remove operation was executed.
@@ -107,13 +107,13 @@ In this example, no `Book` would be removed with simple `Cascade.REMOVE` as no r
 
 As opposed to the application level cascading controlled by the `cascade` option, we can also define database level referential integrity actions: `on update` and `on delete`.
 
-Their values are automatically inferred from the `cascade` option value. You can also control the value manually via `onUpdateIntegrity` and `onDelete` options.
+Their values are automatically inferred from the `cascade` option value. You can also control the value manually via `updateRule` and `deleteRule` options. 
 
 ```ts
 @Entity()
 export class Book {
 
-  @ManyToOne({ onUpdateIntegrity: 'set null', onDelete: 'cascade' })
+  @ManyToOne({ updateRule: 'set null', deleteRule: 'cascade' })
   author?: Author;
 
 }

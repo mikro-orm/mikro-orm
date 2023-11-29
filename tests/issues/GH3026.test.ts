@@ -1,6 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/better-sqlite';
 import { mockLogger } from '../helpers';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 @Entity()
 export class Ingredient {
@@ -53,7 +52,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Ingredient, Recipe, RecipeIngredient],
     dbName: ':memory:',
-    driver: BetterSqliteDriver,
   });
   await orm.schema.createSchema();
 });
@@ -107,7 +105,7 @@ test(`GH issue 3026`, async () => {
 
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock).toBeCalledTimes(3);
+  expect(mock).toHaveBeenCalledTimes(3);
   expect(mock.mock.calls[1][0]).toMatch('update `recipe_ingredient` set `quantity` = 2, `ingredient_id` = 2 where `id` = 1');
 
   const reloadedRecipe = await orm.em.fork().findOneOrFail(Recipe, 1);

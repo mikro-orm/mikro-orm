@@ -1,6 +1,9 @@
 ---
-title: Smart Query Conditions
+title: Query Conditions
 ---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 When you want to make complex queries, we can easily end up with a lot of boilerplate code full of curly brackets:
 
@@ -59,12 +62,12 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$ne`        | not equal        | Matches all values that are not equal to a specified value.                                 |
 | `$nin`       | not contains     | Matches none of the values specified in an array.                                           |
 | `$like`      | like             | Uses LIKE operator                                                                          |
-| `$re`        | regexp           | Uses REGEXP operator                                                                        |
+| `$re`        | regexp           | Uses REGEXP operator. See info [below](#regular-expressions)                                |
 | `$fulltext`  | full text        | A driver specific full text search function. See requirements [below](#full-text-searching) |
 | `$ilike`     | ilike            | (postgres only)                                                                             |
 | `$overlap`   | &&               | (postgres only)                                                                             |
 | `$contains`  | @>               | (postgres only)                                                                             |
-| `$contained` | <@               | (postgres only)                                                                             |
+| `$contained` | \<@              | (postgres only)                                                                             |
 
 ### Logical
 
@@ -74,6 +77,59 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$not`   | Inverts the effect of a query expression and returns documents that do not match the query expression.  |
 | `$or`    | Joins query clauses with a logical OR returns all documents that match the conditions of either clause. |
 
+### Collection
+
+In addition to the regular operators that translate to a real SQL operator expression (e.g. `>=`), you can also use the following collection operators:
+
+| operator | description                                                     |
+|----------|-----------------------------------------------------------------|
+| `$some`  | Finds collections that have some record matching the condition. |
+| `$none`  | Finds collections that have no records matching the condition.  |
+| `$every`  | Finds collections where every record is matching the condition. |
+
+This will be resolved as a subquery condition:
+
+```ts
+// finds all authors that have some book called `Foo`
+const res1 = await em.find(Author, {
+  books: { $some: { title: 'Foo' } },
+});
+
+// finds all authors that have no books called `Foo`
+const res2 = await em.find(Author, {
+  books: { $none: { title: 'Foo' } },
+});
+
+// finds all authors that have every book called `Foo`
+const res3 = await em.find(Author, {
+  books: { $every: { title: 'Foo' } },
+});
+```
+
+The condition object can be also empty:
+
+```ts
+// finds all authors that have at least one book
+const res1 = await em.find(Author, {
+  books: { $some: {} },
+});
+
+// finds all authors that have no books
+const res2 = await em.find(Author, {
+  books: { $none: {} },
+});
+```
+
+## Regular Expressions
+
+The `$re` operator takes a string as input value, and by default uses the case-sensitive operator. If you would like to use a `RegExp` object, i.e. to be able to set flags, then search directly on the field name without using the operator:
+
+```ts
+const res = await em.find(Painter, {
+  lastName: /m[oa]net/i, // or `new RegExp('m[oa]net', 'i')`
+});
+```
+
 ## Full text searching
 
 Full-text search refers to searching some text inside extensive text data stored and returning results that contain some or all of the words from the query. In contrast, traditional search would return exact matches.
@@ -82,22 +138,22 @@ The implementation and requirements differs per driver so it's important that fi
 
 ### PostgreSQL
 
-PosgreSQL allows to execute queries (pg-query) on the type pg-vector. The pg-vector type can be a column (more performant) or be created in the query (no excess columns in the database).
+PosgreSQL allows to execute queries (pg-query) on the type pg-vector. The pg-vector type can be a column (more performant) or be created in the query (no excess columns in the database).  When using a column, advanced functionality such as [a custom `regconfig` or `setweight`](https://www.postgresql.org/docs/current/textsearch-controls.html) (the default `regconfig` is `simple`) is also supported.
 
 Refer to the [PostgreSQL documentation](https://www.postgresql.org/docs/current/functions-textsearch.html) for possible queries.
 
 <Tabs
-groupId="entity-def"
+groupId="postgres-full-text"
 defaultValue="as-column"
 values={[
-{label: 'reflect-metadata', value: 'as-column'},
-{label: 'ts-morph', value: 'in-query'},
+{label: 'Using a column', value: 'as-column'},
+{label: 'Using an index', value: 'in-query'},
 ]
 }>
-<TabItem value="as-column">
+  <TabItem value="as-column">
 
 ```ts title="./entities/Book.ts"
-import { FullTextType } from '@mikro-orm/postgresql';
+import { FullTextType, WeightedFullTextValue } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Book {
@@ -105,14 +161,24 @@ export class Book {
   @Property()
   title!: string;
 
+  // example when using default settings
   @Index({ type: 'fulltext' })
   @Property({ type: FullTextType, onUpdate: (book) => book.title })
   searchableTitle!: string;
 
+  // example when using a custom regconfig
+  @Index({ type: 'fulltext' })
+  @Property({ type: new FullTextType('english'), onUpdate: (book) => book.title })
+  searchableTitle!: string;
+
+  // example when using weights
+  @Index({ type: 'fulltext' })
+  @Property({ type: FullTextType, onUpdate: (book) => ({ A: book.title, B: book.description }) })
+  searchableTitle!: WeightedFullTextValue;
 }
 ```
 
-And to find results: `repository.findOne({ searchableTitle: { $fulltext: 'query' } })`
+And to find results: `repository.findOne({ searchableTitle: { $fulltext: 'query' } })`.
 
   </TabItem>
   <TabItem value="in-query">

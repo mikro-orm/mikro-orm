@@ -1,31 +1,28 @@
 import { createRequire } from 'module';
-import type { GlobbyOptions } from 'globby';
-import globby from 'globby';
+import globby, { type GlobbyOptions } from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
 import { platform } from 'os';
-import type { URL } from 'url';
-import { fileURLToPath, pathToFileURL } from 'url';
+import { fileURLToPath, pathToFileURL, type URL } from 'url';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
-// @ts-ignore
-import { parse } from 'acorn-loose';
-import { simple as walk } from 'acorn-walk';
+import { tokenize } from 'esprima';
 import { clone } from './clone';
 import type {
   Dictionary,
-  EntityClass,
   EntityData,
   EntityDictionary,
+  EntityKey,
   EntityMetadata,
   EntityName,
   EntityProperty,
   IMetadataStorage,
   Primary,
 } from '../typings';
-import { GroupOperator, PlainObject, QueryOperator, ReferenceType } from '../enums';
+import { ARRAY_OPERATORS, GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
 import type { Collection } from '../entity/Collection';
 import type { Platform } from '../platforms';
 import { helper } from '../entity/wrap';
+import type { ScalarReference } from '../entity/Reference';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
@@ -112,15 +109,15 @@ export function compareBooleans(a: unknown, b: unknown): boolean {
   return a === b;
 }
 
-export function compareBuffers(a: ArrayBufferView, b: ArrayBufferView): boolean {
-  const length = a.byteLength;
+export function compareBuffers(a: Uint8Array, b: Uint8Array): boolean {
+  const length = a.length;
 
-  if (length !== b.byteLength) {
+  if (length !== b.length) {
     return false;
   }
 
   for (let i = length; i-- !== 0;) {
-    if (a[i] !== b[i]) {
+    if ((a as unknown as unknown[])[i] !== (b as unknown as unknown[])[i]) {
       return false;
     }
   }
@@ -142,7 +139,7 @@ export function equals(a: any, b: any): boolean {
     }
 
     if (ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
-      return compareBuffers(a, b);
+      return compareBuffers(a as Uint8Array, b as Uint8Array);
     }
 
     return compareObjects(a, b);
@@ -228,14 +225,16 @@ export class Utils {
   /**
    * Removes `undefined` properties (recursively) so they are not saved as nulls
    */
-  static dropUndefinedProperties<T = Dictionary | unknown[]>(o: any, value?: undefined | null): void {
+  static dropUndefinedProperties<T = Dictionary | unknown[]>(o: any, value?: undefined | null, visited = new Set()): void {
     if (Array.isArray(o)) {
-      return o.forEach((item: unknown) => Utils.dropUndefinedProperties(item, value));
+      return o.forEach((item: unknown) => Utils.dropUndefinedProperties(item, value, visited));
     }
 
-    if (!Utils.isObject(o)) {
+    if (!Utils.isPlainObject(o) || visited.has(o)) {
       return;
     }
+
+    visited.add(o);
 
     Object.keys(o).forEach(key => {
       if (o[key] === value) {
@@ -243,7 +242,7 @@ export class Utils {
         return;
       }
 
-      Utils.dropUndefinedProperties(o[key], value);
+      Utils.dropUndefinedProperties(o[key], value, visited);
     });
   }
 
@@ -343,6 +342,7 @@ export class Utils {
             return;
           }
 
+          /* istanbul ignore next */
           if (!(key in target)) {
             Object.assign(target, { [key]: {} });
           }
@@ -358,7 +358,7 @@ export class Utils {
   }
 
   static getRootEntity(metadata: IMetadataStorage, meta: EntityMetadata): EntityMetadata {
-    const base = meta.extends && metadata.find(meta.extends);
+    const base = meta.extends && metadata.find(Utils.className(meta.extends));
 
     if (!base || base === meta) { // make sure we do not fall into infinite loop
       return meta;
@@ -400,16 +400,27 @@ export class Utils {
   /**
    * Normalize the argument to always be an array.
    */
-  static asArray<T>(data?: T | readonly T[], strict = false): T[] {
+  static asArray<T>(data?: T | readonly T[] | Iterable<T>, strict = false): T[] {
     if (typeof data === 'undefined' && !strict) {
       return [];
     }
 
-    if (data instanceof Set) {
+    if (this.isIterable(data)) {
       return Array.from(data);
     }
 
-    return Array.isArray(data!) ? data : [data as T];
+    return [data as T];
+  }
+
+  /**
+   * Checks if the value is iterable, but considers strings and buffers as not iterable.
+   */
+  static isIterable<T>(value: unknown): value is Iterable<T> {
+    if (value == null || typeof value === 'string' || ArrayBuffer.isView(value)) {
+      return false;
+    }
+
+    return typeof Object(value)[Symbol.iterator] === 'function';
   }
 
   /**
@@ -426,38 +437,57 @@ export class Utils {
   }
 
   /**
-   * Returns array of functions argument names. Uses `escaya` for source code analysis.
+   * Returns array of functions argument names. Uses `esprima` for source code analysis.
    */
-  static getParamNames(func: { toString(): string } | string, methodName?: string): string[] {
-    const ret: string[] = [];
-    const parsed = parse(func.toString(), { ecmaVersion: 2022 });
+  static tokenize(func: { toString(): string } | string | { type: string; value: string }[]): { type: string; value: string }[] {
+    if (Array.isArray(func)) {
+      return func;
+    }
 
-    const checkNode = (node: any, methodName?: string) => {
-      if (methodName && !(node.key && (node.key as any).name === methodName)) {
-        return;
+    try {
+      return tokenize(func.toString(), { tolerant: true });
+    } catch {
+      /* istanbul ignore next */
+      return [];
+    }
+  }
+
+  /**
+   * Returns array of functions argument names. Uses `esprima` for source code analysis.
+   */
+  static getParamNames(func: { toString(): string } | string | { type: string; value: string }[], methodName?: string): string[] {
+    const ret: string[] = [];
+    const tokens = this.tokenize(func);
+
+    let inside = 0;
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+
+      if (token.type === 'Identifier' && token.value === methodName) {
+        inside = 1;
+        continue;
       }
 
-      const params = node.value ? node.value.params : node.params;
-      ret.push(...params.map((p: any) => {
-        switch (p.type) {
-          case 'AssignmentPattern':
-            if (p.left.type === 'ObjectPattern') {
-              return ObjectBindingPattern;
-            }
+      if (inside === 1 && token.type === 'Punctuator' && token.value === '(') {
+        inside = 2;
+        continue;
+      }
 
-            return p.left.name;
-          case 'RestElement':
-            return '...' + p.argument.name;
-          default:
-            return p.name;
-        }
-      }));
-    };
+      if (inside === 2 && token.type === 'Punctuator' && token.value === ')') {
+        break;
+      }
 
-    walk(parsed, {
-      MethodDefinition: (node: any) => checkNode(node, methodName),
-      FunctionDeclaration: (node: any) => checkNode(node, methodName),
-    });
+      if (inside === 2 && token.type === 'Punctuator' && token.value === '{') {
+        ret.push(ObjectBindingPattern as unknown as string);
+        i += 2;
+        continue;
+      }
+
+      if (inside === 2 && token.type === 'Identifier') {
+        ret.push(token.value);
+      }
+    }
 
     return ret;
   }
@@ -480,13 +510,13 @@ export class Utils {
   /**
    * Extracts primary key from `data`. Accepts objects or primary keys directly.
    */
-  static extractPK<T>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | string | null {
+  static extractPK<T extends object>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | string | null {
     if (Utils.isPrimaryKey(data)) {
       return data as Primary<T>;
     }
 
     if (Utils.isEntity<T>(data, true)) {
-      return helper(data).getPrimaryKey();
+      return helper(data).getPrimaryKey() as string;
     }
 
     if (strict && meta && Utils.getObjectKeysSize(data) !== meta.primaryKeys.length) {
@@ -511,7 +541,7 @@ export class Utils {
     platform?: Platform,
   ): Primary<T> {
     return meta.primaryKeys.map((pk, idx) => {
-      const value = Array.isArray(data) ? data[idx] : data[pk as string];
+      const value = Array.isArray(data) ? data[idx] : data[pk as EntityKey<T>];
       const prop = meta.properties[pk];
 
       if (prop.targetMeta && Utils.isPlainObject(value)) {
@@ -541,11 +571,12 @@ export class Utils {
     return pks.map(pk => Buffer.isBuffer(pk) ? pk.toString('hex') : pk).join(this.PK_SEPARATOR);
   }
 
-  static splitPrimaryKeys(key: string): string[] {
-    return key.split(this.PK_SEPARATOR);
+  static splitPrimaryKeys<T extends object>(key: string): EntityKey<T>[] {
+    return key.split(this.PK_SEPARATOR) as EntityKey<T>[];
   }
 
   static getPrimaryKeyValues<T>(entity: T, primaryKeys: string[], allowScalar = false, convertCustomTypes = false) {
+    /* istanbul ignore next */
     if (entity == null) {
       return entity;
     }
@@ -577,7 +608,7 @@ export class Utils {
     return [pk];
   }
 
-  static getPrimaryKeyCond<T>(entity: T, primaryKeys: string[]): Record<string, Primary<T>> | null {
+  static getPrimaryKeyCond<T>(entity: T, primaryKeys: EntityKey<T>[]): Record<string, Primary<T>> | null {
     const cond = primaryKeys.reduce((o, pk) => {
       o[pk] = Utils.extractPK(entity[pk]);
       return o;
@@ -590,7 +621,29 @@ export class Utils {
     return cond;
   }
 
-  static getPrimaryKeyCondFromArray<T>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
+  /**
+   * Maps nested FKs from `[1, 2, 3]` to `[1, [2, 3]]`.
+   */
+  static mapFlatCompositePrimaryKey(fk: Primary<any>[], prop: EntityProperty, fieldNames = prop.fieldNames, idx = 0): Primary<any> | Primary<any>[] {
+    if (!prop.targetMeta) {
+      return fk[idx++];
+    }
+
+    const parts: Primary<any>[] = [];
+
+    for (const pk of prop.targetMeta.getPrimaryProps()) {
+      parts.push(this.mapFlatCompositePrimaryKey(fk, pk, fieldNames, idx));
+      idx += pk.fieldNames.length;
+    }
+
+    if (parts.length < 2) {
+      return parts[0];
+    }
+
+    return parts;
+  }
+
+  static getPrimaryKeyCondFromArray<T extends object>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
     return meta.getPrimaryProps().reduce((o, pk, idx) => {
       if (Array.isArray(pks[idx]) && pk.targetMeta) {
         o[pk.name] = pks[idx];
@@ -609,7 +662,7 @@ export class Utils {
       // `data` can be a composite PK in form of array of PKs, or a DTO
       let value = Array.isArray(data) ? data[idx] : (data[pk] ?? data);
 
-      if (prop.reference !== ReferenceType.SCALAR && prop.targetMeta) {
+      if (prop.kind !== ReferenceKind.SCALAR && prop.targetMeta) {
         const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta);
         value = value2.length > 1 ? value2 : value2[0];
       }
@@ -625,7 +678,7 @@ export class Utils {
   /**
    * Checks whether given object is an entity instance.
    */
-  static isEntity<T = unknown>(data: any, allowReference = false): data is T {
+  static isEntity<T = unknown>(data: any, allowReference = false): data is T & {} {
     if (!Utils.isObject(data)) {
       return false;
     }
@@ -638,18 +691,10 @@ export class Utils {
   }
 
   /**
-   * Checks whether given object is an entity instance.
+   * Checks whether given object is a scalar reference.
    */
-  static isEntityClass<T = unknown>(data: any, allowReference = false): data is EntityClass<T> {
-    if (!('prototype' in data)) {
-      return false;
-    }
-
-    if (allowReference && !!data.prototype.__reference) {
-      return true;
-    }
-
-    return !!data.prototype.__entity;
+  static isScalarReference<T = unknown>(data: any, allowReference = false): data is ScalarReference<any> & {} {
+    return typeof data === 'object' && data?.__scalarReference;
   }
 
   /**
@@ -691,8 +736,10 @@ export class Utils {
   static detectTsNode(): boolean {
     /* istanbul ignore next */
     return process.argv[0].endsWith('ts-node') // running via ts-node directly
+      // @ts-ignore
       || !!process[Symbol.for('ts-node.register.instance')] // check if internal ts-node symbol exists
       || !!process.env.TS_JEST // check if ts-jest is used (works only with v27.0.4+)
+      || !!process.env.VITEST // check if vitest is used
       || process.argv.slice(1).some(arg => arg.includes('ts-node')) // registering ts-node runner
       || (require.extensions && !!require.extensions['.ts']); // check if the extension is registered
   }
@@ -733,14 +780,26 @@ export class Utils {
    * Gets the type of the argument.
    */
   static getObjectType(value: any): string {
+    const simple = typeof value;
+
+    if (['string', 'number', 'boolean', 'bigint'].includes(simple)) {
+      return simple;
+    }
+
     const objectType = Object.prototype.toString.call(value);
-    return objectType.match(/\[object (\w+)]/)![1].toLowerCase();
+    const type = objectType.match(/\[object (\w+)]/)![1];
+
+    if (type === 'Uint8Array') {
+      return 'Buffer';
+    }
+
+    return ['Date', 'Buffer', 'RegExp'].includes(type) ? type : type.toLowerCase();
   }
 
   /**
    * Checks whether the value is POJO (e.g. `{ foo: 'bar' }`, and not instance of `Foo`)
    */
-  static isPlainObject(value: any): value is Dictionary {
+  static isPlainObject<T extends Dictionary>(value: any): value is T {
     return (
       value !== null
       && typeof value === 'object'
@@ -864,6 +923,19 @@ export class Utils {
     }, [] as T[]);
   }
 
+  static removeDuplicates<T>(items: T[]): T[] {
+    const ret: T[] = [];
+    const contains = (arr: unknown[], val: unknown) => !!arr.find(v => equals(val, v));
+
+    for (const item of items) {
+      if (!contains(ret, item)) {
+        ret.push(item);
+      }
+    }
+
+    return ret;
+  }
+
   static randomInt(min: number, max: number): number {
     return Math.round(Math.random() * (max - min)) + min;
   }
@@ -900,16 +972,20 @@ export class Utils {
     return ([] as T[]).concat.apply([], arrays);
   }
 
-  static isOperator(key: string, includeGroupOperators = true): boolean {
+  static isOperator(key: PropertyKey, includeGroupOperators = true): boolean {
     if (!includeGroupOperators) {
-      return !!QueryOperator[key];
+      return key in QueryOperator;
     }
 
-    return !!GroupOperator[key] || !!QueryOperator[key];
+    return key in GroupOperator || key in QueryOperator;
   }
 
-  static isGroupOperator(key: string): boolean {
-    return !!GroupOperator[key];
+  static isGroupOperator(key: PropertyKey): boolean {
+    return key in GroupOperator;
+  }
+
+  static isArrayOperator(key: PropertyKey): boolean {
+    return ARRAY_OPERATORS.includes(key as string);
   }
 
   static hasNestedKey(object: unknown, key: string): boolean {
@@ -929,10 +1005,10 @@ export class Utils {
   }
 
   static getGlobalStorage(namespace: string): Dictionary {
-    const key = `mikro-orm-${namespace}`;
-    global[key] = global[key] || {};
+    const key = `mikro-orm-${namespace}` as keyof typeof globalThis;
+    (globalThis as Dictionary)[key] = globalThis[key] || {};
 
-    return global[key];
+    return globalThis[key];
   }
 
   /**
@@ -1043,7 +1119,7 @@ export class Utils {
     const path: string[] = [];
 
     function isObjectProperty(prop: EntityProperty): boolean {
-      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0]]) : prop.object || !!prop.array;
+      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop.object || !!prop.array;
     }
 
     if (!isObjectProperty(prop) && !prop.embedded) {
@@ -1087,9 +1163,9 @@ export class Utils {
     return ret;
   }
 
-  static setPayloadProperty<T>(entity: EntityDictionary<T>, meta: EntityMetadata<T>, prop: EntityProperty<T>, value: unknown, idx: number[] = []): void {
+  static setPayloadProperty<T>(entity: EntityDictionary<T>, meta: EntityMetadata<T>, prop: EntityProperty<T>, value: unknown, idx: number[]): void {
     function isObjectProperty(prop: EntityProperty): boolean {
-      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0]]) : prop.object || !!prop.array;
+      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop.object || !!prop.array;
     }
 
     if (!isObjectProperty(prop)) {
@@ -1148,6 +1224,68 @@ export class Utils {
       throw err;
     }
 
+  }
+
+  static stripRelativePath(str: string): string {
+    return str.replace(/^(?:\.\.\/|\.\/)+/, '/');
+  }
+
+  /**
+   * simple process.argv parser, supports only properties with long names, prefixed with `--`
+   */
+  static parseArgs<T extends Dictionary = Dictionary>(): T {
+    let lastKey: string | undefined;
+
+    return process.argv.slice(2).reduce((args, arg) => {
+      if (arg.includes('=')) {
+        const [key, value] = arg.split('=');
+        args[key.substring(2)] = value;
+      } else if (lastKey) {
+        args[lastKey] = arg;
+        lastKey = undefined;
+      } else if (arg.startsWith('--')) {
+        lastKey = arg.substring(2);
+      }
+
+      return args;
+    }, {} as Dictionary) as T;
+  }
+
+  static xor(a: boolean, b: boolean): boolean {
+    return (a || b) && !(a && b);
+  }
+
+  static keys<T extends object>(obj: T) {
+    return Object.keys(obj) as (keyof T)[];
+  }
+
+  static values<T extends object>(obj: T) {
+    return Object.values(obj) as T[keyof T][];
+  }
+
+  static entries<T extends object>(obj: T) {
+    return Object.entries(obj) as [keyof T, T[keyof T]][];
+  }
+
+  static isRawSql(value: unknown): value is { sql: string; params: unknown[]; use: () => void } {
+    return typeof value === 'object' && !!value && '__raw' in value;
+  }
+
+  static primaryKeyToObject<T>(meta: EntityMetadata<T>, primaryKey: Primary<T> | T) {
+    const pks = meta.compositePK && Utils.isPlainObject(primaryKey) ? Object.values(primaryKey) : Utils.asArray(primaryKey);
+    const pkProps = meta.getPrimaryProps();
+
+    return meta.primaryKeys.reduce((o, pk, idx) => {
+      const pkProp = pkProps[idx];
+
+      if (Utils.isPlainObject(pks[idx]) && pkProp.targetMeta) {
+        o[pk] = Utils.getOrderedPrimaryKeys(pks[idx], pkProp.targetMeta) as any;
+        return o;
+      }
+
+      o[pk] = pks[idx] as any;
+      return o;
+    }, {} as T);
   }
 
 }

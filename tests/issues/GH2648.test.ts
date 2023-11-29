@@ -1,5 +1,4 @@
-import { Entity, IdentifiedReference, JsonType, ManyToOne, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, Ref, JsonType, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -15,9 +14,8 @@ export class A {
 @Entity()
 export class B1 {
 
-  [PrimaryKeyType]?: number;
-  @ManyToOne({ entity: () => A, primary: true, wrappedReference: true })
-  a!: IdentifiedReference<A>;
+  @ManyToOne({ entity: () => A, primary: true, ref: true })
+  a!: Ref<A>;
 
 }
 
@@ -27,18 +25,16 @@ export class B2 {
   @PrimaryKey()
   id!: number;
 
-  [PrimaryKeyType]?: number;
-  @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
-  a!: IdentifiedReference<A>;
+  @OneToOne({ entity: () => A, primary: true, ref: true })
+  a!: Ref<A>;
 
 }
 
 @Entity()
 export class B3 {
 
-  [PrimaryKeyType]?: number;
-  @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
-  a!: IdentifiedReference<A>;
+  @OneToOne({ entity: () => A, primary: true, ref: true })
+  a!: Ref<A>;
 
 }
 
@@ -48,9 +44,8 @@ export class B4 {
   @PrimaryKey()
   id!: number;
 
-  [PrimaryKeyType]?: number;
-  @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
-  a!: IdentifiedReference<A>;
+  @OneToOne({ entity: () => A, primary: true, ref: true })
+  a!: Ref<A>;
 
 }
 
@@ -60,17 +55,17 @@ export class C {
   @PrimaryKey({ type: Number })
   id!: number;
 
-  @ManyToOne({ entity: () => B1, wrappedReference: true })
-  b1!: IdentifiedReference<B1>;
+  @ManyToOne({ entity: () => B1, ref: true })
+  b1!: Ref<B1>;
 
-  @ManyToOne({ entity: () => B2, wrappedReference: true })
-  b2!: IdentifiedReference<B2>;
+  @ManyToOne({ entity: () => B2, ref: true })
+  b2!: Ref<B2>;
 
-  @ManyToOne({ entity: () => B3, wrappedReference: true })
-  b3!: IdentifiedReference<B3>;
+  @ManyToOne({ entity: () => B3, ref: true })
+  b3!: Ref<B3>;
 
-  @ManyToOne({ entity: () => B4, wrappedReference: true })
-  b4!: IdentifiedReference<B4>;
+  @ManyToOne({ entity: () => B4, ref: true })
+  b4!: Ref<B4>;
 
 }
 
@@ -89,13 +84,12 @@ export class D {
 
 describe('GH issue 2648', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B1, B2, B3, B4, C, D],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

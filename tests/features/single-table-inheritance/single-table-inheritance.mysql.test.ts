@@ -1,5 +1,5 @@
 import type { Dictionary } from '@mikro-orm/core';
-import { Entity, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
+import { Entity, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceKind, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from '../../entities-sql';
 import { initORMMySql, mockLogger } from '../../bootstrap';
@@ -126,10 +126,10 @@ describe('single table inheritance in mysql', () => {
       favouriteManager: users[2],
       type: Type.Owner,
     });
-    expect(Object.keys(users[0])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
-    expect(Object.keys(users[1])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
-    expect(Object.keys(users[2])).toEqual(['id', 'firstName', 'lastName', 'type', 'managerProp']);
-    expect(Object.keys(users[3])).toEqual(['id', 'firstName', 'lastName', 'type', 'ownerProp', 'favouriteEmployee', 'favouriteManager', 'managerProp']);
+    expect(Object.keys(users[0])).toEqual(['firstName', 'lastName', 'type', 'employeeProp', 'id']);
+    expect(Object.keys(users[1])).toEqual(['firstName', 'lastName', 'type', 'employeeProp', 'id']);
+    expect(Object.keys(users[2])).toEqual(['firstName', 'lastName', 'type', 'managerProp', 'id']);
+    expect(Object.keys(users[3])).toEqual(['firstName', 'lastName', 'type', 'managerProp', 'ownerProp', 'favouriteEmployee', 'favouriteManager', 'id']);
 
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual(['BaseUser2-4', 'BaseUser2-1', 'BaseUser2-2', 'BaseUser2-3']);
 
@@ -162,13 +162,13 @@ describe('single table inheritance in mysql', () => {
     const owner = await orm.em.findOneOrFail(CompanyOwner2, { firstName: 'Bruce' });
     expect(owner).toBeInstanceOf(CompanyOwner2);
     expect(owner.favouriteEmployee).toBeInstanceOf(Employee2);
-    expect(wrap(owner.favouriteEmployee).isInitialized()).toBe(false);
-    await wrap(owner.favouriteEmployee).init();
-    expect(wrap(owner.favouriteEmployee).isInitialized()).toBe(true);
+    expect(wrap(owner.favouriteEmployee!).isInitialized()).toBe(false);
+    await wrap(owner.favouriteEmployee!).init();
+    expect(wrap(owner.favouriteEmployee!).isInitialized()).toBe(true);
     expect(owner.favouriteManager).toBeInstanceOf(Manager2);
-    expect(wrap(owner.favouriteManager).isInitialized()).toBe(false);
-    await wrap(owner.favouriteManager).init();
-    expect(wrap(owner.favouriteManager).isInitialized()).toBe(true);
+    expect(wrap(owner.favouriteManager!).isInitialized()).toBe(false);
+    await wrap(owner.favouriteManager!).init();
+    expect(wrap(owner.favouriteManager!).isInitialized()).toBe(true);
   });
 
   test('loading base type with discriminator condition', async () => {
@@ -181,9 +181,9 @@ describe('single table inheritance in mysql', () => {
 
   test('generated discriminator map', async () => {
     const storage = new MetadataStorage({
-      A: { name: 'A', className: 'A', primaryKeys: ['id'], discriminatorColumn: 'type', properties: { id: { name: 'id', type: 'string', reference: ReferenceType.SCALAR } } },
-      B: { name: 'B', className: 'B', primaryKeys: ['id'], extends: 'A', properties: { id: { name: 'id', type: 'string', reference: ReferenceType.SCALAR } } },
-      C: { name: 'C', className: 'C', primaryKeys: ['id'], extends: 'A', properties: { id: { name: 'id', type: 'string', reference: ReferenceType.SCALAR } } },
+      A: { name: 'A', className: 'A', primaryKeys: ['id'], discriminatorColumn: 'type', properties: { id: { name: 'id', type: 'string', kind: ReferenceKind.SCALAR } } },
+      B: { name: 'B', className: 'B', primaryKeys: ['id'], extends: 'A', properties: { id: { name: 'id', type: 'string', kind: ReferenceKind.SCALAR } } },
+      C: { name: 'C', className: 'C', primaryKeys: ['id'], extends: 'A', properties: { id: { name: 'id', type: 'string', kind: ReferenceKind.SCALAR } } },
     } as Dictionary);
     class A {
 

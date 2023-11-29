@@ -29,9 +29,9 @@ export interface UniqueOptions<T> {
   name?: string;
   properties?: keyof T | (keyof T)[];
   options?: Dictionary;
+  expression?: string;
 }
 
 export interface IndexOptions<T> extends UniqueOptions<T> {
   type?: string;
-  expression?: string;
 }

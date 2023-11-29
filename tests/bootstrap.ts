@@ -1,18 +1,38 @@
 import 'reflect-metadata';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import type { Options } from '@mikro-orm/core';
-import { JavaScriptMetadataProvider, LoadStrategy, MikroORM, ReflectMetadataProvider, Utils } from '@mikro-orm/core';
+import { LoadStrategy, MikroORM, ReflectMetadataProvider, Utils, SimpleLogger } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MongoDriver } from '@mikro-orm/mongodb';
+import { Migrator } from '@mikro-orm/migrations';
+import { Migrator as MongoMigrator } from '@mikro-orm/migrations-mongodb';
+import { SeedManager } from '@mikro-orm/seeder';
+import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 import {
-  Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
+  Author2,
+  Book2,
+  BookTag2,
+  FooBar2,
+  FooBaz2,
+  Publisher2,
+  Test2,
+  Label2,
+  Configuration2,
+  Address2,
+  FooParam2,
+  User2,
+  CompanyOwner2,
+  BaseUser2,
+  Manager2,
+  Employee2,
+  CarOwner2,
 } from './entities-sql';
 import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, IdentitySchema } from './entities-schema';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
@@ -21,8 +41,18 @@ import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 import { FlushSubscriber } from './subscribers/FlushSubscriber';
 import { BASE_DIR } from './helpers';
 import { Book5 } from './entities-5';
+import { Dummy2 } from './entities-sql/Dummy2';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js/index');
+
+export const PLATFORMS = {
+  'mongo': MongoDriver,
+  'mysql': MySqlDriver,
+  'mariadb': MariaDbDriver,
+  'postgresql': PostgreSqlDriver,
+  'sqlite': SqliteDriver,
+  'better-sqlite': BetterSqliteDriver,
+};
 
 let ensureIndexes = true; // ensuring indexes is slow, and it is enough to make it once
 
@@ -51,7 +81,7 @@ export async function closeReplSets(): Promise<void> {
 }
 
 export async function initORMMongo(replicaSet = false) {
-  const dbName = `mikro-orm-test-${(Math.random() + 1).toString(36).substring(7)}`;
+  const dbName = `mikro-orm-test-${(Math.random() + 1).toString(36).substring(2)}`;
   const clientUrl = replicaSet
     ? await initMongoReplSet(dbName)
     : `mongodb://localhost:27017/${dbName}`;
@@ -69,6 +99,8 @@ export async function initORMMongo(replicaSet = false) {
     filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
     pool: { min: 1, max: 3 },
     migrations: { path: BASE_DIR + '/../temp/migrations-mongo' },
+    ignoreUndefinedInQuery: true,
+    extensions: [MongoMigrator, SeedManager, EntityGenerator],
   });
 
   ensureIndexes = false;
@@ -77,10 +109,9 @@ export async function initORMMongo(replicaSet = false) {
 }
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}, simple?: boolean) {
-  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(7)}`;
-  let orm = await MikroORM.init<AbstractSqlDriver>(Utils.merge({
-    entities: ['entities-sql/**/*.js', '!**/Label2.js'],
-    entitiesTs: ['entities-sql/**/*.ts', '!**/Label2.ts'],
+  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
+  let orm = MikroORM.initSync<AbstractSqlDriver>(Utils.merge({
+    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2, User2, CarOwner2, CompanyOwner2, Employee2, Manager2, BaseUser2, Dummy2],
     clientUrl: `mysql://root@127.0.0.1:3306/${dbName}`,
     port: type === 'mysql' ? 3308 : 3309,
     baseDir: BASE_DIR,
@@ -94,6 +125,8 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     driver: type === 'mysql' ? MySqlDriver : MariaDbDriver,
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
+    extensions: [Migrator, SeedManager, EntityGenerator],
+    subscribers: [new Test2Subscriber()],
   }, additionalOptions));
 
   await orm.schema.ensureDatabase();
@@ -107,7 +140,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     await connection.loadFile(__dirname + '/mysql-schema.sql');
     await orm.close(true);
     orm.config.set('dbName', dbName);
-    orm = await MikroORM.init(orm.config);
+    orm = MikroORM.initSync(orm.config.getAll());
   }
 
   Author2Subscriber.log.length = 0;
@@ -119,8 +152,8 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 }
 
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = []) {
-  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(7)}`;
-  const orm = await MikroORM.init({
+  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
+  const orm = MikroORM.initSync({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, ...entities],
     dbName,
     baseDir: BASE_DIR,
@@ -129,10 +162,12 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
     logger: i => i,
-    cache: { enabled: true },
+    metadataCache: { enabled: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     forceEntityConstructor: [FooBar2],
     loadStrategy,
+    subscribers: [Test2Subscriber],
+    extensions: [Migrator, SeedManager, EntityGenerator],
   });
 
   await orm.schema.ensureDatabase();
@@ -155,9 +190,11 @@ export async function initORMSqlite() {
     debug: ['query'],
     forceUtcTimezone: true,
     logger: i => i,
-    metadataProvider: JavaScriptMetadataProvider,
-    cache: { enabled: true, pretty: true },
+    metadataCache: { enabled: true, pretty: true },
+    loggerFactory: options => new SimpleLogger(options),
     persistOnCreate: false,
+    ignoreUndefinedInQuery: true,
+    extensions: [Migrator, SeedManager, EntityGenerator],
   });
 
   const connection = orm.em.getConnection();
@@ -167,17 +204,16 @@ export async function initORMSqlite() {
 }
 
 export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite') {
-  const orm = await MikroORM.init<any>({
-    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, IdentitySchema],
+  const orm = MikroORM.initSync<any>({
+    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, IdentitySchema],
     dbName: ':memory:',
     baseDir: BASE_DIR,
     driver: type === 'sqlite' ? SqliteDriver : BetterSqliteDriver,
     debug: ['query'],
-    propagateToOneOwner: false,
     forceUndefined: true,
     logger: i => i,
-    cache: { pretty: true },
-    migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
+    migrations: { path: BASE_DIR + '/../temp/migrations-3', snapshot: false },
+    extensions: [Migrator, SeedManager, EntityGenerator],
   });
   await orm.schema.refreshDatabase();
 
@@ -194,7 +230,8 @@ export async function initORMSqlite3() {
     forceUtcTimezone: true,
     logger: i => i,
     metadataProvider: ReflectMetadataProvider,
-    cache: { enabled: true, pretty: true },
+    metadataCache: { enabled: true, pretty: true },
+    extensions: [Migrator, SeedManager, EntityGenerator],
   });
 
   const connection = orm.em.getConnection();

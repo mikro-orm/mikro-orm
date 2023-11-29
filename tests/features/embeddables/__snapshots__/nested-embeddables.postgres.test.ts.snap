@@ -123,6 +123,16 @@ exports[`embedded entities in postgres diffing 1`] = `
 
 exports[`embedded entities in postgres schema: nested embeddables 1 1`] = `
 "create table "user" ("id" serial primary key, "name" varchar(255) not null, "profile1_username" varchar(255) not null, "profile1_identity_email" varchar(255) not null, "profile1_identity_meta_foo" varchar(255) null, "profile1_identity_links" jsonb not null, "profile1_identity_meta_bar" varchar(255) null, "profile2" jsonb not null);
+create index "user_profile1_identity_meta_bar_index" on "user" ("profile1_identity_meta_bar");
+create index "user_profile1_identity_links_meta_bar_index" on "user" (("profile1_identity_links"->'meta'->>'bar'));
+create index "user_profile1_identity_links_metas_bar_index" on "user" (("profile1_identity_links"->'metas'->>'bar'));
+create index "user_profile2_identity_meta_bar_index" on "user" (("profile2"->'identity'->'meta'->>'bar'));
+create index "user_profile2_identity_links_meta_bar_index" on "user" (("profile2"->'identity'->'links'->'meta'->>'bar'));
+create index "user_profile2_identity_links_metas_bar_index" on "user" (("profile2"->'identity'->'links'->'metas'->>'bar'));
+alter table "user" add constraint "user_profile1_identity_email_unique" unique ("profile1_identity_email");
+alter table "user" add constraint "user_profile1_username_unique" unique ("profile1_username");
+create unique index "user_profile2_identity_email_unique" on "user" (("profile2"->'identity'->>'email'));
+create unique index "user_profile2_username_unique" on "user" (("profile2"->>'username'));
 
 "
 `;

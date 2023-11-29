@@ -1,7 +1,8 @@
-import type { Collection , OptionalProps } from '@mikro-orm/core';
+import type { Collection, OptionalProps } from '@mikro-orm/core';
 import { EntitySchema } from '@mikro-orm/core';
 import type { IBaseEntity5 } from './BaseEntity5';
 import type { IBook4 } from './Book4';
+import { BaseEntity5 } from './BaseEntity5';
 
 export interface IBookTag4 extends Omit<IBaseEntity5, typeof OptionalProps> {
   [OptionalProps]?: 'version' | IBaseEntity5[typeof OptionalProps];
@@ -12,10 +13,10 @@ export interface IBookTag4 extends Omit<IBaseEntity5, typeof OptionalProps> {
 
 export const BookTag4 = new EntitySchema<IBookTag4, IBaseEntity5>({
   name: 'BookTag4',
-  extends: 'BaseEntity5',
+  extends: BaseEntity5,
   properties: {
     name: { type: 'string' },
-    books: { reference: 'm:n', entity: 'Book4', mappedBy: 'tags' },
+    books: { kind: 'm:n', entity: 'Book4', mappedBy: 'tags' },
     version: { type: 'Date', version: true },
   },
 });

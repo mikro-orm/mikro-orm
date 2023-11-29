@@ -1,5 +1,4 @@
-import { Entity, OptionalProps, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/postgresql';
+import { MikroORM, Entity, OptionalProps, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -46,7 +45,7 @@ test('3810', async () => {
 
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ["[query] insert into \"user\" (\"options\") values ('{\"foo,\"}') returning \"id\", \"options\""],
+    ["[query] insert into \"user\" (\"options\") values ('{\"foo,\"}') returning \"id\""],
     ['[query] commit'],
     ['[query] begin'],
     ["[query] update \"user\" set \"options\" = '{\"foo,\",\"asd,\",bar,\",baz\"}' where \"id\" = 1"],

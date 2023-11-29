@@ -28,21 +28,21 @@ jobs:
       fail-fast: true
       matrix:
         os: [ ubuntu-latest ]
-        node-version: [ 14, 16, 18 ]
+        node-version: [ 18, 20 ]
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Cancel Workflow Action
-        uses: styfle/cancel-workflow-action@0.11.0
+        uses: styfle/cancel-workflow-action@0.12.0
         with:
           access_token: ${{ github.token }}
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'yarn'
@@ -56,7 +56,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: yarn
 
@@ -80,15 +80,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
-      - name: Use Node.js 18
-        uses: actions/setup-node@v3
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'yarn'
           cache-dependency-path: 'yarn.lock'
 
@@ -99,7 +99,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: yarn
 
@@ -135,12 +135,12 @@ jobs:
           GIT_USER: "banan23@gmail.com:${{ secrets.GH_TOKEN }}"
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Use tilde in internal dependencies
+      - name: Pin versions in internal dependencies and update lockfile
         run: |
-          yarn release:tilde
+          yarn release:pin-versions
           yarn install --no-immutable
           git add .
-          git commit -m 'chore(release): update internal dependencies to use tilde [skip ci]'
+          git diff-index --quiet HEAD || git commit -m 'chore(release): update internal dependencies [skip ci]'
           git push
 
       - name: Publish packages

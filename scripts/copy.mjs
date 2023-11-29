@@ -2,7 +2,7 @@ import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'module';
+import { createRequire } from 'node:module';
 
 // as we publish only the dist folder, we need to copy some meta files inside (readme/license/package.json)
 // also changes paths inside the copied `package.json` (`dist/index.js` -> `index.js`)
@@ -34,7 +34,7 @@ function rewrite(path, replacer) {
 
 let rootVersion;
 
-async function getRootVersion(increment = true) {
+async function getRootVersion(bump = true) {
   if (rootVersion) {
     return rootVersion;
   }
@@ -42,9 +42,28 @@ async function getRootVersion(increment = true) {
   const pkg = require(resolve(root, './lerna.json'));
   rootVersion = pkg.version.replace(/^(\d+\.\d+\.\d+)-?.*$/, '$1');
 
-  const parts = rootVersion.split('.');
-  parts[2] = `${+parts[2] + (increment ? 1 : 0)}`;
-  rootVersion = parts.join('.');
+  if (bump) {
+    const parts = rootVersion.split('.');
+    const inc = bump ? 1 : 0;
+
+    switch (options.canary?.toLowerCase()) {
+      case 'major': {
+        parts[0] = `${+parts[0] + inc}`;
+        parts[1] = 0;
+        parts[2] = 0;
+        break;
+      }
+      case 'minor': {
+        parts[1] = `${+parts[0] + inc}`;
+        parts[2] = 0;
+        break;
+      }
+      case 'patch':
+      default: parts[2] = `${+parts[2] + inc}`;
+    }
+
+    rootVersion = parts.join('.');
+  }
 
   return rootVersion;
 }
@@ -88,14 +107,14 @@ if (options.canary) {
 
   for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
     if (dep.startsWith('@mikro-orm/') || dep === 'mikro-orm') {
-      const prefix = pkgJson.dependencies[dep].startsWith('^') ? '^' : (pkgJson.dependencies[dep].startsWith('~') ? '~' : '');
+      const prefix = pkgJson.dependencies[dep].startsWith('^') ? '^' : '';
       pkgJson.dependencies[dep] = prefix + nextVersion;
     }
   }
 
   for (const dep of Object.keys(pkgJson.peerDependencies ?? {})) {
     if (dep.startsWith('@mikro-orm/') || dep === 'mikro-orm') {
-      pkgJson.peerDependencies[dep] = '~' + nextVersion;
+      pkgJson.peerDependencies[dep] = nextVersion;
     }
   }
 
@@ -105,18 +124,18 @@ if (options.canary) {
   writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
 }
 
-if (options.tilde) {
+if (options['pin-versions']) {
   const pkgJson = require(pkgPath);
   const version = await getRootVersion(false);
 
   for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
-    if (dep.startsWith('@mikro-orm/') || dep === 'mikro-orm' && pkgJson.dependencies[dep].startsWith('^')) {
-      pkgJson.dependencies[dep] = '~' + version;
+    if (dep.startsWith('@mikro-orm/') || dep === 'mikro-orm') {
+      pkgJson.dependencies[dep] = version;
     }
   }
 
   // eslint-disable-next-line no-console
-  console.info(`tilde: changing ^ to ~ in dependencies for version ${version}`, pkgJson.dependencies);
+  console.info(`pin-versions: version ${version}`, pkgJson.dependencies);
 
   writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
 }
@@ -124,6 +143,11 @@ if (options.tilde) {
 copy('README.md', root, target);
 copy('LICENSE',  root, target);
 copy('package.json', process.cwd(), target);
+
+if (resolve(process.cwd()) === resolve(root, 'packages/cli')) {
+  copy('esm.cmd', resolve(process.cwd(), 'src'), target);
+}
+
 rewrite(resolve(target, 'package.json'), pkg => {
   return pkg.replace(/dist\//g, '').replace(/src\/(.*)\.ts/g, '$1.js');
 });

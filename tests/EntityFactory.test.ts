@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import type { MikroORM, EntityFactory } from '@mikro-orm/core';
-import { Collection, ReferenceType, wrap } from '@mikro-orm/core';
+import { Collection, ReferenceKind, wrap } from '@mikro-orm/core';
 import { Book, Author, Publisher, Test, BookTag } from './entities';
 import { initORMMongo, mockLogger } from './bootstrap';
 import { AuthorRepository } from './repositories/AuthorRepository';
@@ -29,14 +29,14 @@ describe('EntityFactory', () => {
     expect(metadata[Author.name].toJsonParams).toEqual(['strict', 'strip']);
     expect(metadata[Author.name].properties).toBeInstanceOf(Object);
     expect(metadata[Author.name].properties.books.type).toBe(Book.name);
-    expect(metadata[Author.name].properties.books.reference).toBe(ReferenceType.ONE_TO_MANY);
+    expect(metadata[Author.name].properties.books.kind).toBe(ReferenceKind.ONE_TO_MANY);
     expect(metadata[Author.name].properties.foo.type).toBe('string');
     expect(metadata[Author.name].properties.age.type).toBe('number');
     expect(metadata[Author.name].properties.age.nullable).toBe(true); // nullable is sniffed via ts-morph too
-    expect(metadata[Author.name].customRepository()).toBe(AuthorRepository);
+    expect(metadata[Author.name].repository()).toBe(AuthorRepository);
     expect(metadata[Book.name].properties.author.type).toBe(Author.name);
-    expect(metadata[Book.name].properties.author.reference).toBe(ReferenceType.MANY_TO_ONE);
-    expect(metadata[Book.name].customRepository()).toBe(BookRepository);
+    expect(metadata[Book.name].properties.author.kind).toBe(ReferenceKind.MANY_TO_ONE);
+    expect(metadata[Book.name].repository()).toBe(BookRepository);
     expect(metadata[Publisher.name].properties.tests.owner).toBe(true);
   });
 
@@ -209,7 +209,7 @@ describe('EntityFactory', () => {
     expect(a1.books[0].title).toBe('B1');
     expect(a1.books[0].author).toBe(a1); // propagation to owning side
     expect(a1.books[0].publisher!.id).toBe('5b0d19b28b21c648c2c8a600');
-    expect(wrap(a1.books[0].publisher).isInitialized()).toBe(false);
+    expect(wrap(a1.books[0].publisher!).isInitialized()).toBe(false);
     expect(a1.books[0].tags.isInitialized()).toBe(true);
     expect(a1.books[0].tags.isDirty()).toBe(true); // owning side
     expect(a1.books[0].tags[0].name).toBe('t1');
@@ -240,7 +240,7 @@ describe('EntityFactory', () => {
     expect(a2.books[0].title).toBe('B1');
     expect(a2.books[0].author).toBe(a2); // propagation to owning side
     expect(a2.books[0].publisher!.id).toBe('5b0d19b28b21c648c2c8a600');
-    expect(wrap(a2.books[0].publisher).isInitialized()).toBe(false);
+    expect(wrap(a2.books[0].publisher!).isInitialized()).toBe(false);
     expect(a2.books[0].tags.isInitialized()).toBe(true);
     expect(a2.books[0].tags.isDirty()).toBe(true); // owning side
     expect(a2.books[0].tags[0].name).toBe('t1');

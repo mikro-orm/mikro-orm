@@ -1,17 +1,24 @@
 import type { Transaction } from './connections';
-import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrderMap } from './enums';
-import { ReferenceType } from './enums';
-import type {
-  AssignOptions,
-  Collection,
-  EntityFactory,
-  EntityIdentifier,
-  EntityLoaderOptions,
-  EntityRepository,
-  IdentifiedReference,
+import {
+  type Cascade,
+  type EventType,
+  type LoadStrategy,
+  type LockMode,
+  type QueryOrderMap,
+  ReferenceKind,
+} from './enums';
+import {
+  type AssignOptions,
+  type Collection,
+  type EntityFactory,
+  EntityHelper,
+  type EntityIdentifier,
+  type EntityLoaderOptions,
+  type EntityRepository,
+  Reference,
+  type ScalarReference,
 } from './entity';
-import { EntityHelper, Reference } from './entity';
-import type { SerializationContext } from './serialization';
+import type { SerializationContext, SerializeOptions } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
 import type { Type, types } from './types';
 import type { Platform } from './platforms';
@@ -24,12 +31,18 @@ import type { FindOneOptions, FindOptions } from './drivers';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
+export type EntityKey<T = unknown> = string & keyof { [K in keyof T as ExcludeFunctions<T, K>]?: unknown };
+export type EntityValue<T> = T[EntityKey<T>];
+export type FilterKey<T> = keyof FilterQuery<T>;
 export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
-// eslint-disable-next-line @typescript-eslint/ban-types
+export type Compute<T> = { [K in keyof T]: T[K] } & {};
 export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol ? never : K);
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
+export type IsAny<T> = 0 extends (1 & T) ? true : false;
+export type IsNever<T, True = true, False = false> = [T] extends [never] ? True : False;
 export type NoInfer<T> = [T][T extends any ? 0 : never];
+export type MaybePromise<T> = T | Promise<T>;
 
 export type DeepPartial<T> = T & {
   [P in keyof T]?: T[P] extends (infer U)[]
@@ -40,19 +53,32 @@ export type DeepPartial<T> = T & {
 };
 
 export const EntityRepositoryType = Symbol('EntityRepositoryType');
-export const PrimaryKeyType = Symbol('PrimaryKeyType');
 export const PrimaryKeyProp = Symbol('PrimaryKeyProp');
 export const OptionalProps = Symbol('OptionalProps');
+export const EagerProps = Symbol('EagerProps');
+export const HiddenProps = Symbol('HiddenProps');
+
+export type Opt<T = unknown> = T & { __optional?: 1 };
+
+export type UnwrapPrimary<T> = T extends Scalar
+  ? T
+  : T extends Reference<infer U>
+    ? Primary<U>
+    : Primary<T>;
+
+type PrimaryPropToType<T, Keys extends (keyof T)[]> = {
+  [Index in keyof Keys]: UnwrapPrimary<T[Keys[Index]]>;
+};
 
 type ReadonlyPrimary<T> = T extends any[] ? Readonly<T> : T;
-export type Primary<T> = T extends { [PrimaryKeyType]?: infer PK }
-  ? ReadonlyPrimary<PK> : T extends { _id?: infer PK }
+export type Primary<T> = T extends { [PrimaryKeyProp]?: infer PK }
+  ? (PK extends keyof T ? ReadonlyPrimary<UnwrapPrimary<T[PK]>> : (PK extends (keyof T)[] ? ReadonlyPrimary<PrimaryPropToType<T, PK>> : PK)) : T extends { _id?: infer PK }
   ? ReadonlyPrimary<PK> | string : T extends { uuid?: infer PK }
   ? ReadonlyPrimary<PK> : T extends { id?: infer PK }
-  ? ReadonlyPrimary<PK> : never;
+  ? ReadonlyPrimary<PK> : T;
 export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
-  ? PK : T extends { _id?: any }
-  ? '_id' | string : T extends { uuid?: any }
+  ? (PK extends keyof T ? PK : (PK extends any[] ? PK[number] : never)) : T extends { _id?: any }
+  ? (T extends { id?: any } ? 'id' | '_id' : '_id') : T extends { uuid?: any }
   ? 'uuid' : T extends { id?: any }
   ? 'id' : never;
 export type IPrimaryKeyValue = number | string | bigint | Date | { toHexString(): string };
@@ -64,16 +90,21 @@ export type ExpandScalar<T> = null | (T extends string
   ? T | RegExp
   : T extends Date
     ? Date | string
-    : T);
+    : T extends bigint
+      ? bigint | string | number
+      : T);
 
 export type OperatorMap<T> = {
-  $and?: Query<T>[];
-  $or?: Query<T>[];
+  $and?: ExpandQuery<T>[];
+  $or?: ExpandQuery<T>[];
   $eq?: ExpandScalar<T> | ExpandScalar<T>[];
   $ne?: ExpandScalar<T>;
   $in?: ExpandScalar<T>[];
   $nin?: ExpandScalar<T>[];
-  $not?: Query<T>;
+  $not?: ExpandQuery<T>;
+  $none?: ExpandQuery<T>;
+  $some?: ExpandQuery<T>;
+  $every?: ExpandQuery<T>;
   $gt?: ExpandScalar<T>;
   $gte?: ExpandScalar<T>;
   $lt?: ExpandScalar<T>;
@@ -82,73 +113,73 @@ export type OperatorMap<T> = {
   $re?: string;
   $ilike?: string;
   $fulltext?: string;
-  $overlap?: string[];
-  $contains?: string[];
-  $contained?: string[];
+  $overlap?: string[] | object;
+  $contains?: string[] | object;
+  $contained?: string[] | object;
   $exists?: boolean;
 };
 
-export type FilterValue2<T> = T | ExpandScalar<T> | Primary<T>;
-export type FilterValue<T> = OperatorMap<FilterValue2<T>> | FilterValue2<T> | FilterValue2<T>[] | null;
-type ExpandObject<T> = T extends object
+export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T>;
+export type FilterValue<T> = OperatorMap<FilterItemValue<T>> | FilterItemValue<T> | FilterItemValue<T>[] | null;
+export type FilterObject<T> = { -readonly [K in EntityKey<T>]?: ExpandQuery<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null };
+export type ExpandObject<T> = T extends object
   ? T extends Scalar
     ? never
-    : { -readonly [K in keyof T as ExcludeFunctions<T, K>]?: Query<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null }
+    : FilterObject<T>
   : never;
 
-export type Query<T> = T extends object
+export type ExpandQuery<T> = T extends object
   ? T extends Scalar
     ? never
     : FilterQuery<T>
   : FilterValue<T>;
 
-export type EntityProps<T> = { -readonly [K in keyof T as ExcludeFunctions<T, K>]?: T[K] };
-export type ObjectQuery<T> = ExpandObject<T> & OperatorMap<T>;
+export type EntityProps<T> = { -readonly [K in EntityKey<T>]?: T[K] };
+export type ObjectQuery<T> = OperatorMap<T> & ExpandObject<T>;
 export type FilterQuery<T> =
   | ObjectQuery<T>
   | NonNullable<ExpandScalar<Primary<T>>>
   | NonNullable<EntityProps<T> & OperatorMap<T>>
   | FilterQuery<T>[];
-export type QBFilterQuery<T = any> = FilterQuery<T> | Dictionary;
+export type QBFilterQuery<T = any> = ObjectQuery<T> | Dictionary;
 
-export interface IWrappedEntity<
-  T,
-  PK extends keyof T | unknown = PrimaryProperty<T>,
-  P extends string = string,
-> {
+export interface IWrappedEntity<Entity> {
   isInitialized(): boolean;
   isTouched(): boolean;
   populated(populated?: boolean): void;
-  populate<Hint extends string = never>(populate: AutoPath<T, Hint>[] | boolean, options?: EntityLoaderOptions<T, Hint>): Promise<Loaded<T, Hint>>;
-  init<P extends string = never>(populated?: boolean, populate?: Populate<T, P>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<T, P>>;
-  toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends string = string>(): IdentifiedReference<T, PK2> & LoadedReference<T>;
-  toObject(ignoreFields?: string[]): EntityDTO<T>;
-  toJSON(...args: any[]): EntityDTO<T>;
-  toPOJO(): EntityDTO<T>;
-  assign(data: EntityData<T> | Partial<EntityDTO<T>>, options?: AssignOptions | boolean): T;
+  populate<Hint extends string = never>(populate: AutoPath<Entity, Hint>[] | false, options?: EntityLoaderOptions<Entity>): Promise<Loaded<Entity, Hint>>;
+  init<Hint extends string = never>(populated?: boolean, populate?: Populate<Entity, Hint>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<Entity, Hint>>;
+  toReference(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
+  toObject(): EntityDTO<Entity>;
+  toObject(ignoreFields: never[]): EntityDTO<Entity>;
+  toObject<Ignored extends EntityKey<Entity>>(ignoreFields: Ignored[]): Omit<EntityDTO<Entity>, Ignored>;
+  toJSON(...args: any[]): EntityDTO<Entity>;
+  toPOJO(): EntityDTO<Entity>;
+  serialize<Hint extends string = never, Exclude extends string = never>(options?: SerializeOptions<Entity, Hint, Exclude>): EntityDTO<Loaded<Entity, Hint>>;
+  assign<
+    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
+    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
+  >(data: Data & IsSubset<EntityData<Naked>, Data>, options?: AssignOptions): MergeSelected<Entity, Naked, keyof Data & string>;
   getSchema(): string | undefined;
   setSchema(schema?: string): void;
 }
 
-export interface IWrappedEntityInternal<
-  T,
-  PK extends keyof T | unknown = PrimaryProperty<T>,
-  P extends string = string,
-> extends IWrappedEntity<T, PK, P> {
+export interface IWrappedEntityInternal<Entity> extends IWrappedEntity<Entity> {
   hasPrimaryKey(): boolean;
-  getPrimaryKey(convertCustomTypes?: boolean): Primary<T> | null;
-  getPrimaryKeys(convertCustomTypes?: boolean): Primary<T>[] | null;
-  setPrimaryKey(val: Primary<T>): void;
-  getSerializedPrimaryKey(): string & keyof T;
-  __meta: EntityMetadata<T>;
+  getPrimaryKey(convertCustomTypes?: boolean): Primary<Entity> | null;
+  getPrimaryKeys(convertCustomTypes?: boolean): Primary<Entity>[] | null;
+  setPrimaryKey(val: Primary<Entity>): void;
+  getSerializedPrimaryKey(): string & keyof Entity;
+  __meta: EntityMetadata<Entity>;
   __data: Dictionary;
   __em?: any; // we cannot have `EntityManager` here as that causes a cycle
   __platform: Platform;
+  __config: Configuration;
   __factory: EntityFactory; // internal factory instance that has its own global fork
   __hydrator: IHydrator;
   __initialized: boolean;
   __touched: boolean;
-  __originalEntityData?: EntityData<T>;
+  __originalEntityData?: EntityData<Entity>;
   __loadedProperties: Set<string>;
   __identifier?: EntityIdentifier;
   __managed: boolean;
@@ -156,27 +187,34 @@ export interface IWrappedEntityInternal<
   __schema?: string;
   __populated: boolean;
   __onLoadFired: boolean;
-  __reference?: Reference<T>;
-  __lazyInitialized: boolean;
-  __pk?: Primary<T>;
-  __primaryKeys: Primary<T>[];
-  __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] };
+  __reference?: Ref<Entity>;
+  __pk?: Primary<Entity>;
+  __primaryKeys: Primary<Entity>[];
+  __serializationContext: { root?: SerializationContext<Entity>; populate?: PopulateOptions<Entity>[]; fields?: string[] };
 }
 
 export type AnyEntity<T = any> = Partial<T>;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type EntityClass<T> = Function & { prototype: T };
 export type EntityClassGroup<T> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
-export type EntityName<T> = string | EntityClass<T> | EntitySchema<T, any>;
+export type EntityName<T> = string | EntityClass<T> | EntitySchema<T, any> | { name: string };
 
 // we need to restrict the type in the generic argument, otherwise inference don't work, so we use two types here
 export type GetRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = Entity[typeof EntityRepositoryType] extends EntityRepository<Entity> | undefined ? NonNullable<Entity[typeof EntityRepositoryType]> : Fallback;
 
 export type EntityDataPropValue<T> = T | Primary<T>;
 type ExpandEntityProp<T> = T extends Record<string, any>
-  ? { [K in keyof T]?: EntityDataProp<ExpandProperty<T[K]>> | EntityDataPropValue<ExpandProperty<T[K]>> | null } | EntityDataPropValue<ExpandProperty<T>>
+  ? { [K in keyof T as ExcludeFunctions<T, K>]?: EntityDataProp<ExpandProperty<T[K]>> | EntityDataPropValue<ExpandProperty<T[K]>> | null } | EntityDataPropValue<ExpandProperty<T>>
   : T;
+type ExpandRequiredEntityProp<T, I> = T extends Record<string, any>
+  ? ExpandRequiredEntityPropObject<T, I> | EntityDataPropValue<ExpandProperty<T>>
+  : T;
+
+type ExpandRequiredEntityPropObject<T, I = never> = {
+  [K in keyof T as RequiredKeys<T, K, I>]: RequiredEntityDataProp<ExpandProperty<T[K]>, T> | EntityDataPropValue<ExpandProperty<T[K]>>;
+} & {
+  [K in keyof T as OptionalKeys<T, K, I>]?: RequiredEntityDataProp<ExpandProperty<T[K]>, T> | EntityDataPropValue<ExpandProperty<T[K]>> | null | undefined;
+};
 
 export type EntityDataProp<T> = T extends Date
   ? string | Date
@@ -184,11 +222,27 @@ export type EntityDataProp<T> = T extends Date
     ? T
     : T extends Reference<infer U>
       ? EntityDataNested<U>
-      : T extends Collection<infer U, any>
-          ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
+      : T extends ScalarReference<infer U>
+        ? EntityDataProp<U>
+        : T extends Collection<infer U, any>
+            ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
+            : T extends readonly (infer U)[]
+                ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
+                : EntityDataNested<T>;
+
+export type RequiredEntityDataProp<T, O> = T extends Date
+  ? string | Date
+  : T extends Scalar
+    ? T
+    : T extends Reference<infer U>
+      ? RequiredEntityDataNested<U, O>
+      : T extends ScalarReference<infer U>
+        ? RequiredEntityDataProp<U, O>
+        : T extends Collection<infer U, any>
+          ? U | U[] | RequiredEntityDataNested<U, O> | RequiredEntityDataNested<U, O>[]
           : T extends readonly (infer U)[]
-              ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
-              : EntityDataNested<T>;
+            ? U | U[] | RequiredEntityDataNested<U, O> | RequiredEntityDataNested<U, O>[]
+            : RequiredEntityDataNested<T, O>;
 
 export type EntityDataNested<T> = T extends undefined
   ? never
@@ -197,53 +251,78 @@ export type EntityDataNested<T> = T extends undefined
     : EntityData<T> | ExpandEntityProp<T>;
 type EntityDataItem<T> = T | EntityDataProp<T> | null;
 
-type ExplicitlyOptionalProps<T> = T extends { [OptionalProps]?: infer PK } ? PK : never;
+export type RequiredEntityDataNested<T, O> = T extends any[]
+    ? Readonly<T>
+    : RequiredEntityData<T, O> | ExpandRequiredEntityProp<T, O>;
+
+type ExplicitlyOptionalProps<T> = (T extends { [OptionalProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Opt ? K : never }[keyof T] & {});
 type NullableKeys<T> = { [K in keyof T]: null extends T[K] ? K : never }[keyof T];
 type ProbablyOptionalProps<T> = ExplicitlyOptionalProps<T> | 'id' | '_id' | 'uuid' | Defined<NullableKeys<T>>;
 
-type IsOptional<T, K extends keyof T> = T[K] extends Collection<any, any>
+type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
   ? true
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  : T[K] extends Function
+  : ExtractType<T[K]> extends I
     ? true
-    : K extends symbol
+    : K extends ProbablyOptionalProps<T>
       ? true
-      : K extends ProbablyOptionalProps<T>
-        ? true
-        : false;
-type RequiredKeys<T, K extends keyof T> = IsOptional<T, K> extends false ? K : never;
-export type EntityData<T> = { [K in keyof T as ExcludeFunctions<T, K>]?: EntityDataItem<T[K]> };
-export type RequiredEntityData<T> = EntityData<T> & { [K in keyof T as RequiredKeys<T, K>]: T[K] | EntityDataProp<T[K]> };
-export type EntityDictionary<T> = EntityData<T> & Dictionary;
+      : false;
+type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? ExcludeFunctions<T, K> : never;
+type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : ExcludeFunctions<T, K>;
+export type EntityData<T> = { [K in EntityKey<T>]?: EntityDataItem<T[K]> };
+export type RequiredEntityData<T, I = never> = {
+  [K in keyof T as RequiredKeys<T, K, I>]: T[K] | RequiredEntityDataProp<T[K], T> | Primary<T[K]>
+} & {
+  [K in keyof T as OptionalKeys<T, K, I>]?: T[K] | RequiredEntityDataProp<T[K], T> | Primary<T[K]> | null
+};
+export type EntityDictionary<T> = EntityData<T> & Record<any, any>;
+
+type ExtractEagerProps<T> = T extends { [EagerProps]?: infer PK } ? PK : never;
 
 type Relation<T> = {
   [P in keyof T as T[P] extends unknown[] | Record<string | number | symbol, unknown> ? P : never]?: T[P]
 };
 
-/** Identity type that can be used to get around issues with cycles in bidirectional relations. */
+/** Identity type that can be used to get around issues with cycles in bidirectional relations. It will disable reflect-metadata inference. */
 export type Rel<T> = T;
 
-/** Shortcut for `IdentifiedReference`. */
-export type Ref<T, PK extends keyof T | unknown = PrimaryProperty<T>> = IdentifiedReference<T, PK>;
+/** Alias for `ScalarReference` (see {@apilink Ref}). */
+export type ScalarRef<T> = ScalarReference<T>;
 
+/** Alias for `Reference<T> & { id: number }` (see {@apilink Ref}). */
+export type EntityRef<T> = true extends IsUnknown<PrimaryProperty<T>>
+  ? Reference<T>
+  : ({ [K in PrimaryProperty<T> & keyof T]: T[K] } & Reference<T>);
+
+/**
+ * Ref type represents a `Reference` instance, and adds the primary keys to its prototype automatically, so you can do
+ * `ref.id` instead of `ref.unwrap().id`. It resolves to either `ScalarRef` or `EntityRef`, based on the type argument.
+ */
+export type Ref<T> = T extends Scalar ? ScalarReference<T> : EntityRef<T>;
+
+type EntityDTONested<T> = T extends undefined | null ? T : EntityDTO<T>;
 export type EntityDTOProp<T> = T extends Scalar
   ? T
   : T extends LoadedReference<infer U>
-    ? EntityDTO<U>
+    ? EntityDTONested<U>
     : T extends Reference<infer U>
       ? Primary<U>
-      : T extends { getItems(check?: boolean): infer U }
-        ? (U extends readonly (infer V)[] ? EntityDTO<V>[] : EntityDTO<U>)
-        : T extends { $: infer U }
-          ? (U extends readonly (infer V)[] ? EntityDTO<V>[] : EntityDTO<U>)
-          : T extends readonly (infer U)[]
-            ? (T extends readonly [infer U, ...infer V] ? T : U[])
-            : T extends Relation<T>
-              ? EntityDTO<T>
-              : T;
-export type EntityDTO<T> = { [K in keyof T as ExcludeFunctions<T, K>]: EntityDTOProp<T[K]> };
+      : T extends ScalarReference<infer U>
+        ? U
+        : T extends { getItems(check?: boolean): infer U }
+          ? (U extends readonly (infer V)[] ? EntityDTONested<V>[] : EntityDTONested<U>)
+          : T extends { $: infer U }
+            ? (U extends readonly (infer V)[] ? EntityDTONested<V>[] : EntityDTONested<U>)
+            : T extends readonly (infer U)[]
+              ? (T extends readonly [infer U, ...infer V] ? T : U[])
+              : T extends Relation<T>
+                ? EntityDTONested<T>
+                : T;
+type ExtractHiddenProps<T> = T extends { [HiddenProps]?: infer Prop } ? Prop : never;
+type ExcludeHidden<T, K extends keyof T> = K extends ExtractHiddenProps<T> ? never : K;
+export type EntityDTO<T> = { [K in EntityKey<T> as ExcludeHidden<T, K>]: EntityDTOProp<T[K]> };
 
 export type CheckCallback<T> = (columns: Record<keyof T, string>) => string;
+export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;
 
 export interface CheckConstraint<T = any> {
   name?: string;
@@ -251,16 +330,18 @@ export interface CheckConstraint<T = any> {
   expression: string | CheckCallback<T>;
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type AnyString = string & {};
 
-export interface EntityProperty<T = any> {
-  name: string & keyof T;
-  entity: () => EntityName<T>;
+export interface EntityProperty<Owner = any, Target = any> {
+  name: EntityKey<Owner>;
+  entity: () => EntityName<Owner>;
   type: keyof typeof types | AnyString;
-  targetMeta?: EntityMetadata;
+  runtimeType: 'number' | 'string' | 'boolean' | 'bigint' | 'Buffer' | 'Date';
+  targetMeta?: EntityMetadata<Target>;
   columnTypes: string[];
+  generated?: string | GeneratedColumnCallback<Owner>;
   customType: Type<any>;
+  customTypes: Type<any>[];
   hasConvertToJSValueSQL: boolean;
   hasConvertToDatabaseValueSQL: boolean;
   autoincrement?: boolean;
@@ -272,17 +353,17 @@ export interface EntityProperty<T = any> {
   length?: number;
   precision?: number;
   scale?: number;
-  reference: ReferenceType;
-  /** @deprecated use `ref` instead, `wrappedReference` option will be removed in v6 */
-  wrappedReference?: boolean;
+  kind: ReferenceKind;
+  ref?: boolean;
   fieldNames: string[];
   fieldNameRaw?: string;
   default?: string | number | boolean | null;
   defaultRaw?: string;
   formula?: (alias: string) => string;
   prefix?: string | boolean;
-  embedded?: [string, string];
-  embeddable: Constructor<T>;
+  embedded?: [EntityKey<Owner>, EntityKey<Owner>];
+  embeddedPath?: string[];
+  embeddable: Constructor<Owner>;
   embeddedProps: Dictionary<EntityProperty>;
   discriminatorColumn?: string; // only for poly embeddables currently
   object?: boolean;
@@ -298,23 +379,24 @@ export interface EntityProperty<T = any> {
   hidden?: boolean;
   enum?: boolean;
   items?: (number | string)[];
+  nativeEnumName?: string; // for postgres, by default it uses text column with check constraint
   version?: boolean;
   concurrencyCheck?: boolean;
   eager?: boolean;
   setter?: boolean;
   getter?: boolean;
-  getterName?: keyof T;
+  getterName?: keyof Owner;
   cascade: Cascade[];
   orphanRemoval?: boolean;
-  onCreate?: (entity: T) => any;
-  onUpdate?: (entity: T) => any;
-  onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
-  onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  onCreate?: (entity: Owner) => any;
+  onUpdate?: (entity: Owner) => any;
+  deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
   strategy?: LoadStrategy;
   owner: boolean;
-  inversedBy: string;
-  mappedBy: string;
-  orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
+  inversedBy: EntityKey<Target>;
+  mappedBy: EntityKey<Target>;
+  orderBy?: QueryOrderMap<Owner> | QueryOrderMap<Owner>[];
   customOrder?: string[] | number[] | boolean[];
   fixedOrder?: boolean;
   fixedOrderColumn?: string;
@@ -324,7 +406,7 @@ export interface EntityProperty<T = any> {
   inverseJoinColumns: string[];
   referencedColumnNames: string[];
   referencedTableName: string;
-  referencedPKs: string[];
+  referencedPKs: EntityKey<Owner>[];
   serializer?: (value: any) => any;
   serializedName?: string;
   comment?: string;
@@ -337,6 +419,8 @@ export interface EntityProperty<T = any> {
 
 export class EntityMetadata<T = any> {
 
+  private static counter = 0;
+  readonly _id = 1000 * EntityMetadata.counter++; // keep the id >= 1000 to allow computing cache keys by simple addition
   readonly propertyOrder = new Map<string, number>();
 
   constructor(meta: Partial<EntityMetadata> = {}) {
@@ -348,17 +432,18 @@ export class EntityMetadata<T = any> {
     this.indexes = [];
     this.uniques = [];
     this.checks = [];
+    this.referencingProperties = [];
     this.concurrencyCheckKeys = new Set();
     Object.assign(this, meta);
   }
 
-  addProperty(prop: EntityProperty<T>, sync = true) {
+  addProperty(prop: Partial<EntityProperty<T>>, sync = true) {
     if (prop.pivotTable && !prop.pivotEntity) {
       prop.pivotEntity = prop.pivotTable;
     }
 
-    this.properties[prop.name] = prop;
-    this.propertyOrder.set(prop.name, this.props.length);
+    this.properties[prop.name!] = prop as EntityProperty<T>;
+    this.propertyOrder.set(prop.name!, this.props.length);
 
     /* istanbul ignore next */
     if (sync) {
@@ -367,7 +452,7 @@ export class EntityMetadata<T = any> {
   }
 
   removeProperty(name: string, sync = true) {
-    delete this.properties[name];
+    delete this.properties[name as EntityKey<T>];
     this.propertyOrder.delete(name);
 
     /* istanbul ignore next */
@@ -388,28 +473,35 @@ export class EntityMetadata<T = any> {
     this.collection = name;
   }
 
-  set repository(repo: () => Constructor<EntityRepository<any>>) {
-    this.customRepository = repo;
-  }
-
   sync(initIndexes = false) {
     this.root ??= this;
     const props = Object.values<EntityProperty<T>>(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
     this.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
-    this.relations = this.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
+    this.relations = this.props.filter(prop => prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED);
     this.bidirectionalRelations = this.relations.filter(prop => prop.mappedBy || prop.inversedBy);
     this.uniqueProps = this.props.filter(prop => prop.unique);
-    this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this.root));
+    this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this));
     this.hydrateProps = this.props.filter(prop => {
       // `prop.userDefined` is either `undefined` or `false`
       const discriminator = this.root.discriminatorColumn === prop.name && prop.userDefined === false;
       // even if we don't have a setter, do not ignore value from database!
-      const onlyGetter = prop.getter && !prop.setter && prop.persist === false;
+      const onlyGetter = prop.getter && !prop.setter;
       return !prop.inherited && prop.hydrate !== false && !discriminator && !prop.embedded && !onlyGetter;
     });
+    this.trackingProps = this.hydrateProps
+      .filter(prop => !prop.getter && !prop.setter)
+      .filter(prop => ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind))
+      .filter(prop => !prop.serializedPrimaryKey);
     this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.type));
     this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
     this.virtual = !!this.expression;
+    this.checks = Utils.removeDuplicates(this.checks);
+    this.indexes = Utils.removeDuplicates(this.indexes);
+    this.uniques = Utils.removeDuplicates(this.uniques);
+
+    for (const hook of Utils.keys(this.hooks)) {
+      this.hooks[hook] = Utils.removeDuplicates(this.hooks[hook] as any);
+    }
 
     if (this.virtual) {
       this.readonly = true;
@@ -419,9 +511,9 @@ export class EntityMetadata<T = any> {
       this.props.forEach(prop => this.initIndexes(prop));
     }
 
-    this.definedProperties = this.props.reduce((o, prop) => {
-      const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
-      const isReference = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
+    this.definedProperties = this.trackingProps.reduce((o, prop) => {
+      const isCollection = [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind);
+      const isReference = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
       if (isReference) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -460,6 +552,10 @@ export class EntityMetadata<T = any> {
           return this.__helper.__data[prop.name];
         },
         set(val: unknown) {
+          if (typeof val === 'object' && !!val && '__raw' in val) {
+            (val as Dictionary).use();
+          }
+
           this.__helper.__data[prop.name] = val;
           this.__helper.__touched = true;
         },
@@ -474,7 +570,7 @@ export class EntityMetadata<T = any> {
   private initIndexes(prop: EntityProperty<T>): void {
     const simpleIndex = this.indexes.find(index => index.properties === prop.name && !index.options && !index.type && !index.expression);
     const simpleUnique = this.uniques.find(index => index.properties === prop.name && !index.options);
-    const owner = prop.reference === ReferenceType.MANY_TO_ONE;
+    const owner = prop.kind === ReferenceKind.MANY_TO_ONE;
 
     if (!prop.index && simpleIndex) {
       Utils.defaultValue(simpleIndex, 'name', true);
@@ -521,34 +617,36 @@ export interface EntityMetadata<T = any> {
   virtual?: boolean;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
-  expression?: string | ((em: any, where: FilterQuery<T>, options: FindOptions<T, any>) => object);
-  discriminatorColumn?: string;
+  expression?: string | ((em: any, where: FilterQuery<T>, options: FindOptions<T, any, any>) => object | string);
+  discriminatorColumn?: EntityKey<T>;
   discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<string>;
   embeddable: boolean;
-  constructorParams: string[];
+  constructorParams: EntityKey<T>[];
   forceConstructor: boolean;
   toJsonParams: string[];
   extends: string;
   collection: string;
   path: string;
-  primaryKeys: (keyof T & string)[];
+  primaryKeys: EntityKey<T>[];
   simplePK: boolean; // whether the PK can be compared via `===`, e.g. simple scalar without a custom mapped type
   compositePK: boolean;
-  versionProperty: keyof T & string;
-  concurrencyCheckKeys: Set<keyof T & string>;
-  serializedPrimaryKey: keyof T & string;
-  properties: { [K in keyof T & string]: EntityProperty<T> };
+  versionProperty: EntityKey<T>;
+  concurrencyCheckKeys: Set<EntityKey<T>>;
+  serializedPrimaryKey: EntityKey<T>;
+  properties: { [K in EntityKey<T>]: EntityProperty<T> };
   props: EntityProperty<T>[];
   relations: EntityProperty<T>[];
   bidirectionalRelations: EntityProperty<T>[];
+  referencingProperties: { meta: EntityMetadata<T>; prop: EntityProperty<T> }[];
   comparableProps: EntityProperty<T>[]; // for EntityComparator
+  trackingProps: EntityProperty<T>[]; // for change-tracking and propagation
   hydrateProps: EntityProperty<T>[]; // for Hydrator
   uniqueProps: EntityProperty<T>[];
-  indexes: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
-  uniques: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; options?: Dictionary }[];
+  indexes: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
+  uniques: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string }[];
   checks: CheckConstraint<T>[];
-  customRepository: () => Constructor<EntityRepository<any>>;
+  repository: () => Constructor<EntityRepository<any>>;
   hooks: { [K in EventType]?: (keyof T | EventSubscriber<T>[EventType])[] };
   prototype: T;
   class: Constructor<T>;
@@ -562,11 +660,11 @@ export interface EntityMetadata<T = any> {
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<T>;
   definedProperties: Dictionary;
+  /** @internal can be used for computed numeric cache keys */
+  readonly _id: number;
 }
 
 export interface ISchemaGenerator {
-  /** @deprecated use `dropSchema` and `createSchema` commands respectively */
-  generate(): Promise<string>;
   createSchema(options?: { wrap?: boolean; schema?: string }): Promise<void>;
   ensureDatabase(): Promise<boolean>;
   getCreateSchemaSQL(options?: { wrap?: boolean; schema?: string }): Promise<string>;
@@ -579,18 +677,32 @@ export interface ISchemaGenerator {
   dropDatabase(name?: string): Promise<void>;
   execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
   ensureIndexes(): Promise<void>;
-  refreshDatabase(): Promise<void>;
+  refreshDatabase(options?: { ensureIndexes?: boolean }): Promise<void>;
   clearDatabase(options?: { schema?: string }): Promise<void>;
 }
 
-export interface IEntityGenerator {
-  generate(options?: { baseDir?: string; save?: boolean; schema?: string }): Promise<string[]>;
+export interface GenerateOptions {
+  path?: string;
+  save?: boolean;
+  schema?: string;
+  skipTables?: string[];
+  skipColumns?: Record<string, string[]>;
+  bidirectionalRelations?: boolean;
+  identifiedReferences?: boolean;
+  entitySchema?: boolean;
+  esmImport?: boolean;
+  scalarTypeInDecorator?: boolean;
+  scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
 }
 
-type UmzugMigration = { name: string; path?: string };
-type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };
-type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
-type MigrationRow = { name: string; executed_at: Date };
+export interface IEntityGenerator {
+  generate(options?: GenerateOptions): Promise<string[]>;
+}
+
+export type UmzugMigration = { name: string; path?: string };
+export type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };
+export type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
+export type MigrationRow = { name: string; executed_at: Date };
 
 /**
  * @internal
@@ -686,49 +798,68 @@ export interface MigrationObject {
 
 export type FilterDef = {
   name: string;
-  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<any, any> | FindOneOptions<any, any>) => Dictionary | Promise<Dictionary>);
+  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<any, any, any> | FindOneOptions<any, any, any>) => Dictionary | Promise<Dictionary>);
   default?: boolean;
   entity?: string[];
   args?: boolean;
 };
 
-export type Populate<T, P extends string = never> = AutoPath<T, P>[] | boolean;
+export type Populate<T, P extends string = never> = readonly AutoPath<T, P, '*' | '$infer'>[] | false;
 
 export type PopulateOptions<T> = {
-  field: string;
+  field: EntityKey<T>;
   strategy?: LoadStrategy;
   all?: boolean;
   children?: PopulateOptions<T[keyof T]>[];
 };
 
-type Loadable<T extends object> = Collection<T, any> | Reference<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
+type Loadable<T extends object> = Collection<T, any> | Reference<T> | Ref<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
 type ExtractType<T> = T extends Loadable<infer U> ? U : T;
 
+type ExtractStringKeys<T> = { [K in keyof T]: ExcludeFunctions<T, K> }[keyof T] & {};
 type StringKeys<T, E extends string = never> = T extends Collection<any, any>
-  ? `${Exclude<keyof ExtractType<T> | E, symbol>}`
+  ? ExtractStringKeys<ExtractType<T>> | E
   : T extends Reference<any>
-    ? `${Exclude<keyof ExtractType<T> | E, symbol>}`
+    ? ExtractStringKeys<ExtractType<T>> | E
     : T extends object
-      ? `${Exclude<keyof ExtractType<T> | E, symbol>}`
+      ? ExtractStringKeys<ExtractType<T>> | E
       : never;
 type GetStringKey<T, K extends StringKeys<T, string>, E extends string> = K extends keyof T ? ExtractType<T[K]> : (K extends E ? keyof T : never);
 
 // limit depth of the recursion to 5 (inspired by https://www.angularfix.com/2022/01/why-am-i-getting-instantiation-is.html)
 type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-export type AutoPath<O, P extends string, E extends string = never, D extends Prev[number] = 5> =
-  [D] extends [never] ? string :
-  P extends any ?
-    (P & `${string}.` extends never ? P : P & `${string}.`) extends infer Q
-      ? Q extends `${infer A}.${infer B}`
-        ? A extends StringKeys<O, E>
-          ? `${A}.${AutoPath<Defined<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
-          : never
-        : Q extends StringKeys<O, E>
-          ? (Defined<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<Defined<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q}.`)
-          : StringKeys<O, E>
+// for pivot joining via populate hint, e.g. `tags:ref`
+type CollectionKeys<T> = T extends object
+  ? {
+    [K in keyof T]: T[K] extends Collection<any>
+      ? IsAny<T[K]> extends true
+        ? never
+        : K & string
       : never
-    : never;
+  }[keyof T] & {}
+  : never;
+
+export type AutoPath<O, P extends string | boolean, E extends string = never, D extends Prev[number] = 9> =
+  P extends boolean
+    ? P
+    : [D] extends [never]
+      ? any
+      : P extends any
+        ? P extends string
+          ? (P & `${string}.` extends never ? P : P & `${string}.`) extends infer Q
+            ? Q extends `${infer A}.${infer B}`
+              ? A extends StringKeys<O, E>
+                ? `${A}.${AutoPath<Defined<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
+                : never
+              : Q extends StringKeys<O, E>
+                ? (Defined<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<Defined<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q}.`)
+                : StringKeys<O, E> | `${CollectionKeys<O>}:ref`
+              : never
+            : never
+          : never;
+
+export type ArrayElement<ArrayType extends unknown[]> = ArrayType extends (infer ElementType)[] ? ElementType : never;
 
 export type ExpandProperty<T> = T extends Reference<infer U>
   ? NonNullable<U>
@@ -738,27 +869,92 @@ export type ExpandProperty<T> = T extends Reference<infer U>
       ? NonNullable<U>
       : NonNullable<T>;
 
-type LoadedLoadable<T, E extends object> = T extends Collection<any, any>
-  ? T & LoadedCollection<E>
-  : (T extends Reference<any> ? T & LoadedReference<E> : T & E);
+type LoadedLoadable<T, E extends object> =
+  T extends Collection<any, any>
+  ? LoadedCollection<E>
+  : T extends Reference<any>
+    ? LoadedReference<E>
+    : T extends ScalarReference<infer U>
+      ? LoadedScalarReference<U>
+      : T extends Scalar | Scalar[]
+          ? T
+          : E;
 
-type Prefix<K> = K extends `${infer S}.${string}` ? S : K;
-type IsPrefixed<K, L extends string> = K extends Prefix<L> ? K : never;
-type Suffix<K> = K extends `${string}.${infer S}` ? S : never;
-type Defined<T> = Exclude<T, null | undefined>;
+type IsTrue<T> = IsNever<T> extends true
+  ? false
+  : T extends boolean
+    ? T extends true
+      ? true
+      : false
+    : false;
+type StringLiteral<T> = T extends string ? string extends T ? never : T : never;
+type Prefix<T, K> = K extends `${infer S}.${string}` ? S : (K extends '*' ? keyof T : K);
+export type IsPrefixed<T, K extends keyof T, L extends string> = K extends symbol
+  ? never
+  : IsTrue<L> extends true
+    ? (T[K] & {} extends Loadable<any> ? K : never)
+    : IsNever<StringLiteral<L>> extends true
+      ? never
+      : K extends Prefix<T, L>
+        ? K
+        : K extends PrimaryProperty<T>
+          ? K
+          : never;
 
-// For each property on T check if it is included in prefix of keys to load L:
-//   1. It yes, mark the collection or reference loaded and resolve its inner type recursively (passing suffix).
-//   2. If no, just return it as-is (scalars will be included, loadables too but not loaded).
-export type Loaded<T, L extends string = never> = T & {
-  // this feels more correct, but breaks serialization methods on base entity, see #3865
-  // [K in keyof T as IsPrefixed<K, L>]: LoadedLoadable<T[K], Loaded<ExtractType<T[K]>, Suffix<L>>>;
-  [K in keyof T]: K extends Prefix<L>
-    ? LoadedLoadable<T[K], Loaded<ExtractType<T[K]>, Suffix<L>>>
-    : T[K]
-};
+// filter by prefix and map to suffix
+type Suffix<Key, Hint extends string, All = true | '*'> = Hint extends `${infer Pref}.${infer Suf}`
+  ? (Pref extends Key ? Suf : never)
+  : Hint extends All
+    ? Hint
+    : never;
+
+type Defined<T> = T & {};
+
+export type IsSubset<T, U> = keyof U extends keyof T
+  ? {}
+  : Dictionary extends U
+    ? {}
+    : { [K in keyof U as K extends keyof T ? never : ExcludeFunctions<U, K>]: never; };
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __selectedType: unique symbol;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __loadedType: unique symbol;
+
+export type MergeSelected<T, U, F extends string> =
+  T extends { [__selectedType]?: [U, infer P, infer FF] } // Selected<U, infer P, infer FF>
+    ? string extends FF
+      ? T
+      : string extends P
+        ? Selected<U, never, F | (FF & string)>
+        : Selected<U, P & string, F | (FF & string)>
+    : T;
+
+type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
+type LoadedProp<T, L extends string = never, F extends string = '*'> = LoadedLoadable<T, Loaded<ExtractType<T>, L, F>>;
+export type AddEager<T> = ExtractEagerProps<T> & string;
+
+export type Selected<T, L extends string = never, F extends string = '*'> = {
+  [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
+} & { [__selectedType]?: [T, L, F] };
+
+export type EntityType<T> = T | { [__loadedType]?: T } | { [__selectedType]?: [T, any, any] };
+export type FromEntityType<T> = T extends EntityType<infer U> ? U : T;
+
+/**
+ * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
+ */
+export type Loaded<T, L extends string = never, F extends string = '*'> = ([F] extends ['*'] ? (T & {
+  [K in keyof T as IsPrefixed<T, K, L | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L>> | AddOptional<T[K]>;
+}) : Selected<T, L, F>) & { [__loadedType]?: T };
 
 export interface LoadedReference<T> extends Reference<Defined<T>> {
+  $: Defined<T>;
+  get(): Defined<T>;
+}
+
+export interface LoadedScalarReference<T> extends ScalarReference<Defined<T>> {
   $: Defined<T>;
   get(): Defined<T>;
 }
@@ -822,9 +1018,7 @@ export interface ISeedManager {
 }
 
 export interface Seeder<T extends Dictionary = Dictionary> {
-  run(em: EntityManager, context?: T): Promise<void>;
+  run(em: EntityManager, context?: T): void | Promise<void>;
 }
-
-export type MaybePromise<T> = T | Promise<T>;
 
 export type ConnectionType = 'read' | 'write';

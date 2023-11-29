@@ -20,7 +20,7 @@ describe('GH issue 4313', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A],
-      clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
+      clientUrl: 'mongodb://localhost:27017/mikro-orm-test-4313',
       driver: MongoDriver,
       namingStrategy: UnderscoreNamingStrategy,
     });

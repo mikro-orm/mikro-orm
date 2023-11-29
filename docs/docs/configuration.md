@@ -27,7 +27,7 @@ MikroORM.init({
 
 > Be careful when overriding the `baseDir` with dynamic values like `__dirname`, as you can end up with valid paths from `ts-node`, but invalid paths from `node`. Ideally you should keep the default of `process.cwd()` there to always have the same base path regardless of how you run the app.
 
-By default, `ReflectMetadataProvider` is used that leverages the `reflect-metadata`. You can also use `TsMorphMetadataProvider` by installing `@mikro-orm/reflection`. This provider will analyse your entity source files (or `.d.ts` type definition files). If you aim to use plain JavaScript instead of TypeScript, use `EntitySchema` or the `JavaScriptMetadataProvider`.
+By default, `ReflectMetadataProvider` is used that leverages the `reflect-metadata`. You can also use `TsMorphMetadataProvider` by installing `@mikro-orm/reflection`. This provider will analyse your entity source files (or `.d.ts` type definition files). If you aim to use plain JavaScript instead of TypeScript, use `EntitySchema`.
 
 > You can also implement your own metadata provider and use it instead. To do so, extend the `MetadataProvider` class.
 
@@ -56,25 +56,7 @@ MikroORM.init({
 
 Read more about this in [Metadata Providers](metadata-providers.md) sections.
 
-## Extensions
-
-Since v5.6, the ORM extensions like `SchemaGenerator`, `Migrator` or `EntityGenerator` can be registered via the `extensions` config option. This will be the only supported way to have the shortcuts like `orm.migrator` available in v6, so we no longer need to dynamically require those dependencies or specify them as optional peer dependencies (both of those things cause issues with various bundling tools like Webpack, or those used in Remix or Next.js).
-
-```ts
-import { defineConfig } from '@mikro-orm/postgresql';
-import { Migrator } from '@mikro-orm/migrations';
-import { EntityGenerator } from '@mikro-orm/entity-generator';
-import { SeedManager } from '@mikro-orm/seeder';
-
-export default defineConfig({
-  dbName: 'test',
-  extensions: [Migrator, EntityGenerator, SeedManager],
-});
-```
-
-> The `SchemaGenerator` (as well as `MongoSchemaGenerator`) is registered automatically as it does not require any 3rd party dependencies to be installed.
-
-## Adjusting default type mapping
+### Adjusting default type mapping
 
 Since v5.2 we can alter how the ORM picks the default mapped type representation based on the inferred type of a property. One example is a mapping of `foo: string` to `varchar(255)`. If we wanted to change this default to a `text` type in postgres, we can use the `discover.getMappedType` callback:
 
@@ -94,6 +76,62 @@ const orm = await MikroORM.init({
   },
 });
 ```
+
+### `onMetadata` hook
+
+Sometimes you might want to alter some behavior of the ORM on metadata level. You can use the `onMetadata` hook to modify the metadata. Let's say you want to use your entities with different drivers, and you want to use some driver specific feature. Using the `onMetadata` hook, you can modify the metadata dynamically to fit the drivers requirements.
+
+The hook will be executed before the internal process of filling defaults, so you can think of it as modifying the property options in your entity definitions, they will be respected e.g. when inferring the column type.
+
+> The hook can be async, but it will be awaited only if you use the async `MikroORM.init()` method, not with the `MikroORM.initSync()`.
+
+```ts
+import { EntityMetadata, MikroORM, Platform } from '@mikro-orm/sqlite';
+
+const orm = await MikroORM.init({
+  // ...
+  discovery: {
+    onMetadata(meta: EntityMetadata, platform: Platform) {
+      // sqlite driver does not support schemas
+      delete meta.schema;
+    },
+  },
+});
+```
+
+Alternatively, you can also use the `afterDiscovered` hook, which is fired after the discovery process ends. You can access all the metadata there, and add or remove them as you wish.
+
+```ts
+import { EntityMetadata, MikroORM, Platform } from '@mikro-orm/sqlite';
+
+const orm = await MikroORM.init({
+  // ...
+  discovery: {
+    afterDiscovered(storage: MetadataStorage) {
+      // ignore FooBar entity in schema generator
+      storage.reset('FooBar');
+    },
+  },
+});
+```
+
+## Extensions
+
+Since v5.6, the ORM extensions like `SchemaGenerator`, `Migrator` or `EntityGenerator` can be registered via the `extensions` config option. This will be the only supported way to have the shortcuts like `orm.migrator` available in v6, so we no longer need to dynamically require those dependencies or specify them as optional peer dependencies (both of those things cause issues with various bundling tools like Webpack, or those used in Remix or Next.js).
+
+```ts
+import { defineConfig } from '@mikro-orm/postgresql';
+import { Migrator } from '@mikro-orm/migrations';
+import { EntityGenerator } from '@mikro-orm/entity-generator';
+import { SeedManager } from '@mikro-orm/seeder';
+
+export default defineConfig({
+  dbName: 'test',
+  extensions: [Migrator, EntityGenerator, SeedManager],
+});
+```
+
+> The `SchemaGenerator` (as well as `MongoSchemaGenerator`) is registered automatically as it does not require any 3rd party dependencies to be installed.
 
 ## Driver
 
@@ -124,7 +162,6 @@ MikroORM.init({
 >
 > ```ts
 > MikroORM.init({
->   type: 'mysql',
 >   timezone: '+02:00',
 > });
 > ```
@@ -168,7 +205,6 @@ To set up read replicas, you can use `replicas` option. You can provide only tho
 
 ```ts
 MikroORM.init({
-  type: 'mysql',
   dbName: 'my_db_name',
   user: 'write-user',
   host: 'master.db.example.com',
@@ -181,7 +217,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Installation](installation.md) and [Read Connections](read-connections.md) sections.
+Read more about this in [Installation](quick-start.md) and [Read Connections](read-connections.md) sections.
 
 ### Using short-lived tokens
 
@@ -189,7 +225,6 @@ Many cloud providers include alternative methods for connecting to database inst
 
 ```ts
 MikroORM.init({
-  type: 'mysql',
   dbName: 'my_db_name',
   password: async () => someCallToGetTheToken(),
 });
@@ -199,7 +234,6 @@ The password callback value will be cached, to invalidate this cache we can spec
 
 ```ts
 MikroORM.init({
-  type: 'mysql',
   dbName: 'my_db_name',
   password: async () => {
     const { token, tokenExpiration } = await someCallToGetTheToken();
@@ -236,25 +270,6 @@ MikroORM.init({
 });
 ```
 
-## Propagation of 1:1 and m:1 owners
-
-MikroORM defines getter and setter for every owning side of m:1 and 1:1 relation. This is then used for propagation of changes to the inverse side of bi-directional relations.
-
-```ts
-const author = new Author('n', 'e');
-const book = new Book('t');
-book.author = author;
-console.log(author.books.contains(book)); // true
-```
-
-You can disable this behaviour via `propagateToOneOwner` option.
-
-```ts
-MikroORM.init({
-  propagateToOneOwner: false,
-});
-```
-
 ## Forcing UTC Timezone
 
 Use `forceUtcTimezone` option to force the `Date`s to be saved in UTC in datetime columns without timezone. It works for MySQL (`datetime` type) and PostgreSQL (`timestamp` type). SQLite does this by default.
@@ -273,6 +288,19 @@ By default `null` values from nullable database columns are hydrated as `null`. 
 MikroORM.init({
   forceUndefined: true,
 });
+```
+
+## Ignoring `undefined` values in Find Queries
+
+The ORM will treat explicitly defined `undefined` values in your `em.find()` queries as `null`s. If you want to ignore them instead, use `ignoreUndefinedInQuery` option:
+
+```ts
+MikroORM.init({
+  ignoreUndefinedInQuery: true,
+});
+
+// resolves to `em.find(User, {})`
+await em.find(User, { email: undefined, { profiles: { foo: undefined } } });
 ```
 
 ## Serialization of new entities
@@ -326,7 +354,7 @@ MikroORM.init({
 
 ## Custom Repository
 
-You can also register custom base repository (for all entities where you do not specify `customRepository`) globally:
+You can also register custom base repository (for all entities where you do not specify `repository` option) globally:
 
 > You can still use entity specific repositories in combination with global base repository.
 
@@ -448,7 +476,7 @@ By default, metadata discovery results are cached. You can either disable cachin
 
 ```ts
 MikroORM.init({
-  cache: {
+  metadataCache: {
     enabled: true,
     pretty: false, // allows to pretty print the JSON cache
     adapter: FileCacheAdapter, // you can provide your own implementation here, e.g. with redis

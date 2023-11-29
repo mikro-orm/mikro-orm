@@ -1,4 +1,15 @@
-import { Entity, PrimaryKey, MikroORM, ManyToOne, PrimaryKeyType, Property, wrap, OneToMany, Collection, ManyToMany } from '@mikro-orm/core';
+import {
+  Entity,
+  PrimaryKey,
+  MikroORM,
+  ManyToOne,
+  Property,
+  wrap,
+  OneToMany,
+  Collection,
+  ManyToMany,
+  PrimaryKeyProp,
+} from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -58,7 +69,7 @@ export class OrderItem {
   @Property({ default: 0 })
   offeredPrice: number;
 
-  [PrimaryKeyType]?: [number, number];
+  [PrimaryKeyProp]?: ['order', 'product'];
 
   constructor(order: Order, product: Product) {
     this.order = order;
@@ -116,7 +127,7 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     const item33 = new OrderItem(order3, product5);
     item33.offeredPrice = 5123;
 
-    await orm.em.fork().persistAndFlush([order1, order2, order3]);
+    await orm.em.fork().persistAndFlush([item11, item12, item21, item22, item23, item31, item32, item33]);
     return { order1, order2, product1, product2, product3, product4, product5 };
   }
 
@@ -124,7 +135,7 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     const { product1, product2, product3, product4, product5 } = await createEntities();
     const productRepository = orm.em.getRepository(Product);
 
-    const orders = await orm.em.find(Order, {}, { populate: true });
+    const orders = await orm.em.find(Order, {}, { populate: ['*'] });
     expect(orders).toHaveLength(3);
 
     // test M:N lazy load
@@ -156,6 +167,12 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
     expect(order.products.count()).toBe(3);
 
+
+    // slice
+    expect(order.products.slice().length).toBe(3);
+    expect(order.products.slice(0, 3).length).toBe(3);
+    expect(order.products.slice(0, 1)).toEqual([order.products[0]]);
+
     // contains
     expect(order.products.contains(productRepository.getReference(product1.id))).toBe(true);
     expect(order.products.contains(productRepository.getReference(product2.id))).toBe(true);
@@ -170,6 +187,7 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     orm.em.clear();
     order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
     expect(order.products.count()).toBe(0);
+    expect(order.products.isEmpty()).toBe(true);
   });
 
   test(`search by m:n property and loadCount() works`, async () => {

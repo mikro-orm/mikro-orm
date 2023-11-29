@@ -31,14 +31,14 @@ describe('CreateSeederCommand', () => {
     const mockDemand = jest.fn();
     const args = { positional: mockPositional, demandOption: mockDemand };
     cmd.builder(args as any);
-    expect(mockPositional).toBeCalledWith('seeder', {
+    expect(mockPositional).toHaveBeenCalledWith('seeder', {
       describe: 'Name for the seeder class. (e.g. "test" will generate "TestSeeder" or "TestSeeder" will generate "TestSeeder")',
     });
-    expect(mockDemand).toBeCalledWith('seeder');
+    expect(mockDemand).toHaveBeenCalledWith('seeder');
 
     await expect(cmd.handler({ seeder: 'DatabaseSeeder' } as any)).resolves.toBeUndefined();
-    expect(createSeederMock).toBeCalledTimes(1);
-    expect(closeSpy).toBeCalledTimes(1);
+    expect(createSeederMock).toHaveBeenCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
   });
 
   test('should generate seeder class with all kind of names', async () => {

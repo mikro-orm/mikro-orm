@@ -57,18 +57,17 @@ test('updating versioned reference (4121)', async () => {
   const refetchedBook1 = await orm.em.findOneOrFail(Book, { id: 'book1' });
   refetchedBook1.title = 'updatedBook1';
   refetchedBook1.sequel!.unwrap().title = 'updatedBook2';
-  await expect(orm.em.flush()).resolves.not.toThrow();
+  await orm.em.flush();
 });
 
 test('extra updates (4121)', async () => {
   const refetchedBook1 = await orm.em.findOneOrFail(Book, { id: 'book1' });
   refetchedBook1.title = 'updatedBook1';
   const mock = mockLogger(orm);
-  await expect(orm.em.flush()).resolves.not.toThrow();
+  await orm.em.flush();
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ["[query] update `book` set `title` = 'updatedBook1', `version` = `version` + 1 where `id` = 'book1' and `version` = 1"],
-    ["[query] select `b0`.`id`, `b0`.`version` from `book` as `b0` where `b0`.`id` in ('book1')"],
+    ["[query] update `book` set `title` = 'updatedBook1', `version` = `version` + 1 where `id` = 'book1' and `version` = 1 returning `version`"],
     ['[query] commit'],
   ]);
 });
@@ -77,7 +76,7 @@ test('4122', async () => {
   const qb = orm.em.createQueryBuilder(Book);
   await qb.update({ title: 'updatedTitle' }).where({ sequel: null });
 
-  const [book1, book2] = await orm.em.find(Book, {});
+  const [book1, book2] = await orm.em.find(Book, {}, { orderBy: { title: 1 } });
   expect(book1.title).toEqual('book1');
   expect(book2.title).toEqual('updatedTitle');
 });

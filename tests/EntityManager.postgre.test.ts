@@ -1,12 +1,46 @@
 import { v4 } from 'uuid';
-import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, FilterQuery } from '@mikro-orm/core';
+import type { AnyEntity, ChangeSet, EventSubscriber, FilterQuery, FlushEventArgs } from '@mikro-orm/core';
 import {
-  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, ChangeSetType, wrap, expr,
-  UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel, PopulateHint, ref,
+  ChangeSetType,
+  Collection,
+  Configuration,
+  EntityManager,
+  ForeignKeyConstraintViolationException,
+  InvalidFieldNameException,
+  IsolationLevel,
+  LoadStrategy,
+  LockMode,
+  MikroORM,
+  NonUniqueFieldNameException,
+  NotNullConstraintViolationException,
+  PopulateHint,
+  QueryFlag,
+  QueryOrder,
+  raw,
+  ref,
+  sql,
+  Reference,
+  SyntaxErrorException,
+  TableExistsException,
+  TableNotFoundException,
+  UniqueConstraintViolationException,
+  ValidationError,
+  wrap,
 } from '@mikro-orm/core';
-import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
-import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
+import { PostgreSqlConnection, PostgreSqlDriver } from '@mikro-orm/postgresql';
+import {
+  Address2,
+  Author2,
+  Book2,
+  BookTag2,
+  FooBar2,
+  FooBaz2,
+  Label2,
+  Publisher2,
+  PublisherType,
+  PublisherType2,
+  Test2,
+} from './entities-sql';
 import { initORMPostgreSql, mockLogger } from './bootstrap';
 import { performance } from 'perf_hooks';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
@@ -44,11 +78,23 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('isConnected()', async () => {
-    await expect(orm.isConnected()).resolves.toBe(true);
+    expect(await orm.isConnected()).toBe(true);
+    expect(await orm.checkConnection()).toEqual({
+      ok: true,
+    });
     await orm.close(true);
-    await expect(orm.isConnected()).resolves.toBe(false);
+    expect(await orm.isConnected()).toBe(false);
+    const check = await orm.checkConnection();
+    expect(check).toMatchObject({
+      ok: false,
+      error: expect.any(Error),
+      reason: 'Unable to acquire a connection',
+    });
     await orm.connect();
-    await expect(orm.isConnected()).resolves.toBe(true);
+    expect(await orm.isConnected()).toBe(true);
+    expect(await orm.checkConnection()).toEqual({
+      ok: true,
+    });
   });
 
   test('getConnectionOptions()', async () => {
@@ -117,6 +163,7 @@ describe('EntityManagerPostgre', () => {
     await expect(driver.find(BookTag2.name, { books: { $in: [uuid1] } })).resolves.not.toBeNull();
     expect(driver.getPlatform().formatQuery('CREATE USER ?? WITH PASSWORD ?', ['foo', 'bar'])).toBe(`CREATE USER "foo" WITH PASSWORD 'bar'`);
     expect(driver.getPlatform().formatQuery('select \\?, ?, ?', ['foo', 'bar'])).toBe(`select ?, 'foo', 'bar'`);
+    expect(driver.getPlatform().formatQuery('? = ??', ['foo', 'bar'])).toBe(`'foo' = "bar"`);
 
     // multi inserts
     await driver.nativeInsert(Test2.name, { id: 1, name: 't1' });
@@ -134,9 +181,9 @@ describe('EntityManagerPostgre', () => {
     ]);
 
     expect(mock.mock.calls[0][0]).toMatch('insert into "publisher2" ("name", "type", "type2") values ($1, $2, $3), ($4, $5, $6), ($7, $8, $9) returning "id"');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "publisher2_tests" ("publisher2_id", "test2_id") values ($1, $2), ($3, $4), ($5, $6)');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "publisher2_tests" ("publisher2_id", "test2_id") values ($1, $2), ($3, $4)');
-    expect(mock.mock.calls[3][0]).toMatch('insert into "publisher2_tests" ("publisher2_id", "test2_id") values ($1, $2), ($3, $4), ($5, $6)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "publisher2_tests" ("test2_id", "publisher2_id") values ($1, $2), ($3, $4), ($5, $6)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "publisher2_tests" ("test2_id", "publisher2_id") values ($1, $2), ($3, $4)');
+    expect(mock.mock.calls[3][0]).toMatch('insert into "publisher2_tests" ("test2_id", "publisher2_id") values ($1, $2), ($3, $4), ($5, $6)');
 
     // postgres returns all the ids based on returning clause
     expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [ { id: 1 }, { id: 2 }, { id: 3 } ] });
@@ -158,9 +205,9 @@ describe('EntityManagerPostgre', () => {
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
     const err1 = `insert into "not_existing" ("foo") values ('bar') - relation "not_existing" does not exist`;
-    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
+    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
     const err2 = `delete from "not_existing" - relation "not_existing" does not exist`;
-    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
+    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
   });
 
   test('connection returns correct URL', async () => {
@@ -181,7 +228,7 @@ describe('EntityManagerPostgre', () => {
     const author = new Author2('name', 'email');
     author.termsAccepted = true;
     author.favouriteAuthor = author;
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     const a = await repo.findOne(author);
     const authors = await repo.find({ favouriteAuthor: author });
     expect(a).toBe(author);
@@ -237,8 +284,21 @@ describe('EntityManagerPostgre', () => {
       }, { isolationLevel: IsolationLevel.READ_UNCOMMITTED });
     } catch { }
 
-    expect(mock.mock.calls[0][0]).toMatch('begin isolation level read uncommitted');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(mock.mock.calls[0][0]).toMatch('begin transaction isolation level read uncommitted');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "age"');
+    expect(mock.mock.calls[2][0]).toMatch('rollback');
+  });
+
+  test('read-only transactions', async () => {
+    const mock = mockLogger(orm, ['query']);
+
+    const god1 = new Author2('God1', 'hello@heaven1.god');
+    await expect(orm.em.transactional(async em => {
+      await em.persistAndFlush(god1);
+    }, { readOnly: true, isolationLevel: IsolationLevel.READ_COMMITTED })).rejects.toThrow(/cannot execute INSERT in a read-only transaction/);
+
+    expect(mock.mock.calls[0][0]).toMatch('begin transaction isolation level read committed read only');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "age"');
     expect(mock.mock.calls[2][0]).toMatch('rollback');
   });
 
@@ -297,7 +357,7 @@ describe('EntityManagerPostgre', () => {
   test('collection loads items after savepoint should not fail', async () => {
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
     const book = new Book2('My Life on The Wall, part 1', new Author2('name', 'email'));
-    book.publisher = wrap(publisher).toReference();
+    book.publisher = ref(publisher);
 
     const author = new Author2('Bartleby', 'bartelby@writer.org');
     author.books.add(book);
@@ -316,22 +376,27 @@ describe('EntityManagerPostgre', () => {
       //
     });
 
-    const books = await publisher2.books.loadItems({ lockMode: LockMode.PESSIMISTIC_WRITE });
+    expect(publisher2.books.isInitialized(true)).toBe(false);
+    const books1 = await publisher2.books.load({ lockMode: LockMode.PESSIMISTIC_WRITE });
+    const books2 = await publisher2.books.load({ lockMode: LockMode.PESSIMISTIC_WRITE });
+    expect(books1).toBeInstanceOf(Collection);
+    expect(books1.isInitialized(true)).toBe(true);
+    expect(books1).toBe(books2);
     await em.commit();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
     expect(mock.mock.calls[1][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."uuid_pk" = $1 limit $2`);
     expect(mock.mock.calls[2][0]).toMatch(`select "p0".* from "publisher2" as "p0" where "p0"."id" = $1 limit $2 for update`);
-    expect(mock.mock.calls[3][0]).toMatch(`select "t0".*, "p1"."test2_id" as "fk__test2_id", "p1"."publisher2_id" as "fk__publisher2_id" from "test2" as "t0" left join "publisher2_tests" as "p1" on "t0"."id" = "p1"."test2_id" where "p1"."publisher2_id" in ($1) order by "p1"."id" asc for update`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "t1".*, "p0"."test2_id" as "fk__test2_id", "p0"."publisher2_id" as "fk__publisher2_id" from "publisher2_tests" as "p0" inner join "public"."test2" as "t1" on "p0"."test2_id" = "t1"."id" where "p0"."publisher2_id" in ($1) order by "p0"."id" asc for update`);
     expect(mock.mock.calls[4][0]).toMatch(`savepoint trx`);
     expect(mock.mock.calls[5][0]).toMatch(`release savepoint trx`);
-    expect(mock.mock.calls[6][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."publisher_id" = $1 order by "b0"."uuid_pk" asc for update`);
+    expect(mock.mock.calls[6][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."publisher_id" in ($1) for update`);
     expect(mock.mock.calls[7][0]).toMatch(`commit`);
   });
 
   test('em.commit/rollback validation', async () => {
-    await expect(orm.em.commit()).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.rollback()).rejects.toThrowError('An open transaction is required for this operation');
+    await expect(orm.em.commit()).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.rollback()).rejects.toThrow('An open transaction is required for this operation');
   });
 
   test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates]', async () => {
@@ -372,23 +437,22 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush(bible);
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
-    author.born = new Date('1990-03-23');
+    author.born = '1990-03-23';
     author.favouriteBook = bible;
 
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
 
     const book1 = new Book2('My Life on The Wall, part 1', author);
-    book1.publisher = wrap(publisher).toReference();
+    book1.publisher = ref(publisher);
     const book2 = new Book2('My Life on The Wall, part 2', author);
-    book2.publisher = wrap(publisher).toReference();
+    book2.publisher = ref(publisher);
     const book3 = new Book2('My Life on The Wall, part 3', author);
-    book3.publisher = wrap(publisher).toReference();
+    book3.publisher = ref(publisher);
 
-    const repo = orm.em.getRepository(Book2);
-    repo.persist(book1);
-    repo.persist(book2);
-    repo.persist(book3);
-    await repo.flush();
+    orm.em.persist(book1);
+    orm.em.persist(book2);
+    orm.em.persist(book3);
+    await orm.em.flush();
     orm.em.clear();
 
     const publisher7k = (await orm.em.getRepository(Publisher2).findOne({ name: '7K publisher' }))!;
@@ -490,7 +554,7 @@ describe('EntityManagerPostgre', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
     expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
-    await orm.em.getRepository(Book2).remove(lastBook[0]).flush();
+    await orm.em.remove(lastBook[0]).flush();
   });
 
   test('json properties', async () => {
@@ -524,20 +588,20 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('order by json properties', async () => {
-    await orm.em.nativeInsert(Author2, { name: 'n', email: 'e', id: 1 });
+    await orm.em.insert(Author2, { name: 'n', email: 'e', id: 1 });
     await orm.em.insertMany(Book2, [
-      { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { nested: { foo: '3', deep: { str: 'c', baz: 3 } } } },
-      { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { nested: { foo: '2', deep: { str: 'b', baz: 1 } } } },
-      { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { nested: { foo: '1', deep: { str: 'a', baz: 2 } } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { nested: { foo: '3', deep: { str: 'c', qux: false, baz: 3 } } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { nested: { foo: '2', deep: { str: 'b', qux: false, baz: 1 } } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { nested: { foo: '1', deep: { str: 'a', qux: false, baz: 2 } } } },
     ]);
 
-    const res14 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { nested: { foo: 'asc' } } } });
+    const res14 = await orm.em.fork().findAll(Book2, { orderBy: { meta: { nested: { foo: 'asc' } } } });
     expect(res14.map(r => r.title)).toEqual(['t3', 't2', 't1']);
 
-    const res15 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { nested: { deep: { str: 'asc' } } } } });
+    const res15 = await orm.em.fork().findAll(Book2, { orderBy: { meta: { nested: { deep: { str: 'asc' } } } } });
     expect(res15.map(r => r.title)).toEqual(['t3', 't2', 't1']);
 
-    const res16 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { nested: { deep: { baz: QueryOrder.DESC } } } } });
+    const res16 = await orm.em.fork().findAll(Book2, { orderBy: { meta: { nested: { deep: { baz: QueryOrder.DESC } } } } });
     expect(res16.map(r => r.title)).toEqual(['t1', 't3', 't2']);
   });
 
@@ -715,7 +779,7 @@ describe('EntityManagerPostgre', () => {
   test('findOne supports optimistic locking [unversioned entity]', async () => {
     const author = new Author2('name', 'email');
     await orm.em.persistAndFlush(author);
-    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrowError('Cannot obtain optimistic lock on unversioned entity Author2');
+    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrow('Cannot obtain optimistic lock on unversioned entity Author2');
   });
 
   test('findOne supports optimistic locking [versioned entity]', async () => {
@@ -729,13 +793,13 @@ describe('EntityManagerPostgre', () => {
     const test = new Test2();
     test.name = 'test';
     await orm.em.persistAndFlush(test);
-    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrowError('The optimistic lock failed, version 2 was expected, but is actually 1');
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrow('The optimistic lock failed, version 2 was expected, but is actually 1');
   });
 
   test('findOne supports optimistic locking [testLockUnmanagedEntityThrowsException]', async () => {
     const test = new Test2();
     test.name = 'test';
-    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrowError('Entity Test2 is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrow('Entity Test2 is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
   });
 
   test('batch updates increments version field (optimistic locking)', async () => {
@@ -754,10 +818,10 @@ describe('EntityManagerPostgre', () => {
   test('pessimistic locking requires active transaction', async () => {
     const test = Test2.create('Lock test');
     await orm.em.persistAndFlush(test);
-    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_WRITE)).rejects.toThrowError('An open transaction is required for this operation');
+    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_WRITE)).rejects.toThrow('An open transaction is required for this operation');
   });
 
   test('findOne supports pessimistic locking [pessimistic write]', async () => {
@@ -810,7 +874,7 @@ describe('EntityManagerPostgre', () => {
 
     mock.mock.calls.length = 0;
     await orm.em.transactional(async em => {
-      await em.find(Book2, {}, {
+      await em.findAll(Book2, {
         lockMode: LockMode.PESSIMISTIC_PARTIAL_WRITE,
         lockTableAliases: ['b0'],
         populate: ['author'],
@@ -819,7 +883,7 @@ describe('EntityManagerPostgre', () => {
     });
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0".price * 1.19 as "price_taxed", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id" from "book2" as "b0" left join "author2" as "a1" on "b0"."author_id" = "a1"."id" where "b0"."author_id" is not null for update of "b0" skip locked');
+    expect(mock.mock.calls[1][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed", "a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity" from "book2" as "b0" left join "author2" as "a1" on "b0"."author_id" = "a1"."id" where "b0"."author_id" is not null for update of "b0" skip locked');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -828,7 +892,7 @@ describe('EntityManagerPostgre', () => {
     const mock = mockLogger(orm, ['query']);
 
     await orm.em.transactional(async em => {
-      await em.find(Book2, {}, {
+      await em.findAll(Book2, {
         lockMode: LockMode.PESSIMISTIC_PARTIAL_WRITE,
         populate: ['author', 'tags'],
         populateWhere: PopulateHint.INFER,
@@ -838,8 +902,8 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls.length).toBe(5);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null for update skip locked`);
-    expect(mock.mock.calls[2][0]).toMatch(`select "a0".* from "author2" as "a0" where "a0"."id" in ($1) and "a0"."id" is not null order by "a0"."id" asc for update skip locked`);
-    expect(mock.mock.calls[3][0]).toMatch(`select "b0".*, "b1"."book_tag2_id" as "fk__book_tag2_id", "b1"."book2_uuid_pk" as "fk__book2_uuid_pk" from "book_tag2" as "b0" left join "book2_tags" as "b1" on "b0"."id" = "b1"."book_tag2_id" where "b1"."book2_uuid_pk" in ($1, $2, $3) order by "b1"."order" asc for update skip locked`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "a0".* from "author2" as "a0" where "a0"."id" in ($1) and "a0"."id" is not null for update skip locked`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "b1".*, "b0"."book_tag2_id" as "fk__book_tag2_id", "b0"."book2_uuid_pk" as "fk__book2_uuid_pk" from "book2_tags" as "b0" inner join "public"."book_tag2" as "b1" on "b0"."book_tag2_id" = "b1"."id" where "b0"."book2_uuid_pk" in ($1, $2, $3) order by "b0"."order" asc for update skip locked`);
     expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 
@@ -893,18 +957,20 @@ describe('EntityManagerPostgre', () => {
     god.books.add(new Book2('Bible', god));
     await orm.em.fork().persistAndFlush(god);
 
+    // when populating collections, the owner is selected automatically (here book.author)
     const newGod = await orm.em.findOneOrFail(Author2, god.id, {
       populate: ['books'],
-      fields: [{ books: ['title'] }],
+      fields: ['books.title'],
     });
     const json = wrap(newGod).toJSON();
-    expect(json.books[0].author).toBe(newGod.id);
+    // @ts-expect-error since v6, automatically selected FKs are no longer part of the serialized entity
+    expect(json.books[0].author).toBeUndefined();
   });
 
   test('findOne by id', async () => {
     const authorRepository = orm.em.getRepository(Author2);
     const jon = new Author2('Jon Snow', 'snow@wall.st');
-    await authorRepository.persistAndFlush(jon);
+    await orm.em.persistAndFlush(jon);
 
     orm.em.clear();
     let author = (await authorRepository.findOne(jon.id))!;
@@ -922,11 +988,11 @@ describe('EntityManagerPostgre', () => {
     const publisher = new Publisher2('Publisher');
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
-    bible.publisher = wrap(publisher).toReference();
+    bible.publisher = ref(publisher);
     await orm.em.persistAndFlush(bible);
 
     let jon = new Author2('Jon Snow', 'snow@wall.st');
-    jon.born = new Date('1990-03-23');
+    jon.born = '1990-03-23';
     jon.favouriteBook = bible;
     await orm.em.persistAndFlush(jon);
     orm.em.clear();
@@ -934,19 +1000,19 @@ describe('EntityManagerPostgre', () => {
     jon = (await authorRepository.findOne(jon.id))!;
     expect(jon).not.toBeNull();
     expect(jon.name).toBe('Jon Snow');
-    expect(jon.born).toEqual(new Date('1990-03-23'));
+    expect(jon.born).toEqual('1990-03-23');
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
-    expect(wrap(jon.favouriteBook).isInitialized()).toBe(false);
+    expect(wrap(jon.favouriteBook!).isInitialized()).toBe(false);
 
-    await wrap(jon.favouriteBook).init();
+    await wrap(jon.favouriteBook!).init();
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
-    expect(wrap(jon.favouriteBook).isInitialized()).toBe(true);
+    expect(wrap(jon.favouriteBook!).isInitialized()).toBe(true);
     expect(jon.favouriteBook!.title).toBe('Bible');
 
     const em2 = orm.em.fork();
     const bible2 = await em2.findOneOrFail(Book2, { uuid: bible.uuid });
     expect(wrap(bible2, true).__em!.id).toBe(em2.id);
-    expect(wrap(bible2.publisher, true).__em!.id).toBe(em2.id);
+    expect(wrap(bible2.publisher!, true).__em!.id).toBe(em2.id);
     const publisher2 = await bible2.publisher!.load();
     expect(wrap(publisher2, true).__em!.id).toBe(em2.id);
   });
@@ -996,7 +1062,7 @@ describe('EntityManagerPostgre', () => {
 
     const b1 = await orm.em.findOneOrFail(FooBaz2, { id: baz.id }, { populate: ['bar'] });
     expect(mock.mock.calls[1][0]).toMatch('select "f0".*, "f1"."id" as "bar_id" from "foo_baz2" as "f0" left join "foo_bar2" as "f1" on "f0"."id" = "f1"."baz_id" where "f0"."id" = $1 limit $2');
-    expect(mock.mock.calls[2][0]).toMatch('select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where "f0"."baz_id" in ($1) order by "f0"."baz_id" asc');
+    expect(mock.mock.calls[2][0]).toMatch('select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where "f0"."baz_id" in ($1)');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
     expect(wrap(b1).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
@@ -1004,7 +1070,7 @@ describe('EntityManagerPostgre', () => {
 
     const b2 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, { populate: ['bar'] });
     expect(mock.mock.calls[3][0]).toMatch('select "f0".*, "f1"."id" as "bar_id" from "foo_baz2" as "f0" left join "foo_bar2" as "f1" on "f0"."id" = "f1"."baz_id" where "f1"."id" = $1 limit $2');
-    expect(mock.mock.calls[4][0]).toMatch('select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where "f0"."baz_id" in ($1) order by "f0"."baz_id" asc');
+    expect(mock.mock.calls[4][0]).toMatch('select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where "f0"."baz_id" in ($1)');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
@@ -1036,11 +1102,9 @@ describe('EntityManagerPostgre', () => {
 
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = current_timestamp(0) where "id" = $2 and "version" = $3');
-    expect(mock.mock.calls[2][0]).toMatch('select "f0"."id", "f0"."version" from "foo_bar2" as "f0" where "f0"."id" in ($1)');
-    expect(mock.mock.calls[3][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = current_timestamp(0) where "id" = $2 and "version" = $3');
-    expect(mock.mock.calls[4][0]).toMatch('select "f0"."id", "f0"."version" from "foo_bar2" as "f0" where "f0"."id" in ($1)');
-    expect(mock.mock.calls[5][0]).toMatch('commit');
+    expect(mock.mock.calls[1][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = current_timestamp(0) where "id" = $2 and "version" = $3 returning "version"');
+    expect(mock.mock.calls[2][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = current_timestamp(0) where "id" = $2 and "version" = $3 returning "version"');
+    expect(mock.mock.calls[3][0]).toMatch('commit');
   });
 
   test('many to many relation', async () => {
@@ -1061,11 +1125,11 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persist(book2);
     await orm.em.persistAndFlush(book3);
 
-    expect(typeof tag1.id).toBe('string');
-    expect(typeof tag2.id).toBe('string');
-    expect(typeof tag3.id).toBe('string');
-    expect(typeof tag4.id).toBe('string');
-    expect(typeof tag5.id).toBe('string');
+    expect(typeof tag1.id).toBe('bigint');
+    expect(typeof tag2.id).toBe('bigint');
+    expect(typeof tag3.id).toBe('bigint');
+    expect(typeof tag4.id).toBe('bigint');
+    expect(typeof tag5.id).toBe('bigint');
 
     // test inverse side
     const tagRepository = orm.em.getRepository(BookTag2);
@@ -1084,10 +1148,9 @@ describe('EntityManagerPostgre', () => {
     tags = await orm.em.find(BookTag2, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
-    expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
-    expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
-    expect(() => tags[0].books.removeAll()).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
-    expect(() => tags[0].books.contains(book1)).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
+    expect(() => tags[0].books.getItems()).toThrow(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
+    expect(() => tags[0].books.remove(book1, book2)).toThrow(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
+    expect(() => tags[0].books.contains(book1)).toThrow(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
 
     // test M:N lazy load
     orm.em.clear();
@@ -1134,6 +1197,25 @@ describe('EntityManagerPostgre', () => {
     book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(3);
 
+    // slice
+    expect(book.tags.slice().length).toBe(3);
+    expect(book.tags.slice(0, 1)).toEqual([book.tags[0]]);
+
+    // exists
+    expect(book.tags.exists(tag => tag === tagRepository.getReference(tag1.id))).toBe(true);
+    expect(book.tags.exists(tag => tag === tagRepository.getReference(tag2.id))).toBe(false);
+
+    // find
+    expect(book.tags.find(tag => tag === tagRepository.getReference(tag1.id))).toEqual(tagRepository.getReference(tag1.id));
+    expect(book.tags.find(() => false)).toBeUndefined();
+
+    // filter
+    expect(book.tags.filter(tag => tag === tagRepository.getReference(tag1.id))).toEqual([tagRepository.getReference(tag1.id)]);
+    expect(book.tags.filter(() => false)).toEqual([]);
+
+    // map
+    expect(book.tags.map(tag => tag.name)).toEqual([tag3.name, tag1.name, 'fresh']);
+
     // contains
     expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);
     expect(book.tags.contains(tagRepository.getReference(tag2.id))).toBe(false);
@@ -1147,17 +1229,18 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(0);
+    expect(book.tags.isEmpty()).toBe(true);
   });
 
   test('bigint support', async () => {
     const t = new BookTag2('test');
-    t.id = '9223372036854775807';
+    t.id = 9223372036854775807n;
     await orm.em.persistAndFlush(t);
-    expect(t.id).toBe('9223372036854775807');
+    expect(t.id).toBe(9223372036854775807n);
     orm.em.clear();
 
     const t2 = await orm.em.findOneOrFail(BookTag2, t.id);
-    expect(t2.id).toBe('9223372036854775807');
+    expect(t2.id).toBe(9223372036854775807n);
   });
 
   test('populating many to many relation', async () => {
@@ -1169,19 +1252,111 @@ describe('EntityManagerPostgre', () => {
     const p2 = new Publisher2('bar');
     p2.tests.add(new Test2(), new Test2());
     await orm.em.persistAndFlush([p1, p2]);
-    const repo = orm.em.getRepository(Publisher2);
-
     orm.em.clear();
-    const publishers = await repo.findAll({ populate: ['tests'] });
+
+    const publishers = await orm.em.findAll(Publisher2, {
+      populate: ['tests'],
+      orderBy: { id: 1 },
+    });
     expect(publishers).toBeInstanceOf(Array);
     expect(publishers.length).toBe(2);
     expect(publishers[0]).toBeInstanceOf(Publisher2);
     expect(publishers[0].tests).toBeInstanceOf(Collection);
-    expect(publishers[0].tests.isInitialized()).toBe(true);
+    expect(publishers[0].tests.isInitialized(true)).toBe(true);
     expect(publishers[0].tests.isDirty()).toBe(false);
     expect(publishers[0].tests.count()).toBe(0);
     await publishers[0].tests.init(); // empty many to many on owning side should not make db calls
     expect(wrap(publishers[1].tests.getItems()[0]).isInitialized()).toBe(true);
+
+    orm.em.clear();
+    const publishers2 = await orm.em.findAll(Publisher2, {
+      populate: ['tests:ref'],
+      orderBy: { id: 1 },
+    });
+    expect(publishers2).toBeInstanceOf(Array);
+    expect(publishers2.length).toBe(2);
+    expect(publishers2[0]).toBeInstanceOf(Publisher2);
+    expect(publishers2[0].tests).toBeInstanceOf(Collection);
+    expect(publishers2[0].tests.isInitialized()).toBe(true);
+    expect(publishers2[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers2[0].tests.isDirty()).toBe(false);
+    expect(publishers2[0].tests.count()).toBe(0);
+    expect(publishers2[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers2[1].tests[0]).isInitialized()).toBe(false);
+
+    orm.em.clear();
+
+    const publishers3 = await orm.em.findAll(Publisher2, {
+      populate: ['tests:ref'],
+      strategy: 'joined',
+      orderBy: { id: 1 },
+    });
+    expect(publishers3).toBeInstanceOf(Array);
+    expect(publishers3.length).toBe(2);
+    expect(publishers3[0]).toBeInstanceOf(Publisher2);
+    expect(publishers3[0].tests).toBeInstanceOf(Collection);
+    expect(publishers3[0].tests.isInitialized()).toBe(true);
+    expect(publishers3[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers3[0].tests.isDirty()).toBe(false);
+    expect(publishers3[0].tests.count()).toBe(0);
+    expect(publishers3[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers3[1].tests[0]).isInitialized()).toBe(false);
+
+    orm.em.clear();
+    const publishers4 = await orm.em.findAll(Publisher2, {
+      orderBy: { id: 1 },
+    });
+    await orm.em.populate(publishers4, ['tests:ref']);
+    expect(publishers4).toBeInstanceOf(Array);
+    expect(publishers4.length).toBe(2);
+    expect(publishers4[0]).toBeInstanceOf(Publisher2);
+    expect(publishers4[0].tests).toBeInstanceOf(Collection);
+    expect(publishers4[0].tests.isInitialized()).toBe(true);
+    expect(publishers4[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers4[0].tests.isDirty()).toBe(false);
+    expect(publishers4[0].tests.count()).toBe(0);
+    expect(publishers4[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers4[1].tests[0]).isInitialized()).toBe(false);
+
+    orm.em.clear();
+    const publishers5 = await orm.em.findAll(Publisher2, {
+      orderBy: { id: 1 },
+    });
+    await publishers5[0].tests.init({ ref: true });
+    await publishers5[1].tests.init({ ref: true });
+    expect(publishers5).toBeInstanceOf(Array);
+    expect(publishers5.length).toBe(2);
+    expect(publishers5[0]).toBeInstanceOf(Publisher2);
+    expect(publishers5[0].tests).toBeInstanceOf(Collection);
+    expect(publishers5[0].tests.isInitialized()).toBe(true);
+    expect(publishers5[0].tests.isInitialized(true)).toBe(true); // empty collection
+    expect(publishers5[0].tests.isDirty()).toBe(false);
+    expect(publishers5[0].tests.count()).toBe(0);
+    expect(publishers5[1].tests.isInitialized(true)).toBe(false); // collection with references only
+    expect(wrap(publishers5[1].tests[0]).isInitialized()).toBe(false);
+  });
+
+  test('many to many relation (ref: true)', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    const tag1 = new BookTag2('silly');
+    const tag2 = new BookTag2('funny');
+    const tag3 = new BookTag2('sick');
+    const tag4 = new BookTag2('strange');
+    const tag5 = new BookTag2('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+
+    await orm.em.persistAndFlush([book1, book2, book3]);
+    orm.em.clear();
+
+    const bt1 = await orm.em.findOneOrFail(BookTag2, tag1.id, { populate: ['books:ref'] });
+    expect(bt1.books.isInitialized()).toBe(true);
+    expect(bt1.books.isInitialized(true)).toBe(false);
+    expect(wrap(bt1.books[0]).isInitialized()).toBe(false);
   });
 
   test('populating many to many relation with explicit schema name', async () => {
@@ -1256,9 +1431,9 @@ describe('EntityManagerPostgre', () => {
       'new book',
     ]);
 
-    expect(mock.mock.calls[0][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" = $1 order by "b0"."title" asc`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" in ($1) order by "b0"."title" asc`);
     expect(mock.mock.calls[1][0]).toMatch(`begin`);
-    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5)`);
     expect(mock.mock.calls[3][0]).toMatch(`commit`);
   });
 
@@ -1296,14 +1471,14 @@ describe('EntityManagerPostgre', () => {
     expect(tags[0].books[0].author.name).toBe('Jon Snow');
     expect(tags[0].books[0].publisher).toBeInstanceOf(Reference);
     expect(tags[0].books[0].publisher!.unwrap()).toBeInstanceOf(Publisher2);
-    expect(wrap(tags[0].books[0].publisher).isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0].publisher!).isInitialized()).toBe(true);
     expect(tags[0].books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
     expect(tags[0].books[0].publisher!.unwrap().tests.count()).toBe(2);
     expect(tags[0].books[0].publisher!.unwrap().tests[0].name).toBe('t11');
     expect(tags[0].books[0].publisher!.unwrap().tests[1].name).toBe('t12');
 
     orm.em.clear();
-    const books = await orm.em.find(Book2, {}, {
+    const books = await orm.em.findAll(Book2, {
       populate: ['publisher.tests', 'author'],
       orderBy: { title: QueryOrder.ASC },
     });
@@ -1332,25 +1507,25 @@ describe('EntityManagerPostgre', () => {
     expect(author.versionAsString).toBeUndefined();
     expect(author.code).toBe('snow@wall.st - Jon Snow');
 
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.id).toBeDefined();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
 
     author.name = 'John Snow';
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.version).toBe(2);
     expect(author.versionAsString).toBe('v2');
 
     expect(Author2.beforeDestroyCalled).toBe(0);
     expect(Author2.afterDestroyCalled).toBe(0);
-    await repo.removeAndFlush(author);
+    await orm.em.removeAndFlush(author);
     expect(Author2.beforeDestroyCalled).toBe(1);
     expect(Author2.afterDestroyCalled).toBe(1);
 
     const author2 = new Author2('Johny Cash', 'johny@cash.com');
-    await repo.persistAndFlush(author2);
-    await repo.removeAndFlush(author2);
+    await orm.em.persistAndFlush(author2);
+    await orm.em.removeAndFlush(author2);
     expect(Author2.beforeDestroyCalled).toBe(2);
     expect(Author2.afterDestroyCalled).toBe(2);
   });
@@ -1364,7 +1539,10 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
-    const res = await orm.em.find(Author2, { books: { title: { $in: ['b1', 'b2'] } } }, { populate: ['books.perex'] });
+    const res = await orm.em.findAll(Author2, {
+      where: { books: { title: { $in: ['b1', 'b2'] } } },
+      populate: ['books.perex'],
+    });
     expect(res).toHaveLength(1);
     expect(res[0].books.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('select "a0".* from "author2" as "a0" left join "book2" as "b1" on "a0"."id" = "b1"."author_id" where "b1"."title" in ($1, $2)');
@@ -1374,11 +1552,11 @@ describe('EntityManagerPostgre', () => {
   test('trying to populate non-existing or non-reference property will throw', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('Johny Cash', 'johny@cash.com');
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author2' does not have property 'tests'`);
-    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author2' does not have property 'tests'`);
+    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author2' does not have property 'tests'`);
+    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author2' does not have property 'tests'`);
   });
 
   test('many to many collection does have fixed order', async () => {
@@ -1389,7 +1567,7 @@ describe('EntityManagerPostgre', () => {
     const t3 = Test2.create('t3');
     await orm.em.persistAndFlush([t1, t2, t3]);
     publisher.tests.add(t2, t1, t3);
-    await repo.persistAndFlush(publisher);
+    await orm.em.persistAndFlush(publisher);
     orm.em.clear();
 
     const ent = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
@@ -1407,10 +1585,10 @@ describe('EntityManagerPostgre', () => {
     await expect(author.updatedAt).toBeDefined();
     // allow 1 ms difference as updated time is recalculated when persisting
     await expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
 
     author.name = 'name1';
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     await expect(author.createdAt).toBeDefined();
     await expect(author.updatedAt).toBeDefined();
     await expect(author.updatedAt).not.toEqual(author.createdAt);
@@ -1426,7 +1604,7 @@ describe('EntityManagerPostgre', () => {
 
   test('EM supports native insert/update/delete', async () => {
     orm.config.getLogger().setDebugMode(false);
-    const res1 = await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
+    const res1 = await orm.em.insert(Author2, { name: 'native name 1', email: 'native1@email.com' });
     expect(typeof res1).toBe('number');
 
     const res2 = await orm.em.nativeUpdate(Author2, { name: 'native name 1' }, { name: 'new native name' });
@@ -1435,7 +1613,7 @@ describe('EntityManagerPostgre', () => {
     const res3 = await orm.em.nativeDelete(Author2, { name: 'new native name' });
     expect(res3).toBe(1);
 
-    const res4 = await orm.em.nativeInsert(Author2, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2', email: 'native2@email.com' });
+    const res4 = await orm.em.insert(Author2, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2', email: 'native2@email.com' });
     expect(typeof res4).toBe('number');
 
     const res5 = await orm.em.nativeUpdate(Author2, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
@@ -1448,7 +1626,7 @@ describe('EntityManagerPostgre', () => {
     expect(b.createdAt).toBeInstanceOf(Date);
 
     const mock = mockLogger(orm, ['query', 'query-params']);
-    await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
+    await orm.em.insert(Author2, { name: 'native name 1', email: 'native1@email.com' });
     expect(mock.mock.calls[0][0]).toMatch('insert into "author2" ("email", "name") values (\'native1@email.com\', \'native name 1\') returning "id", "created_at", "updated_at"');
     orm.config.set('debug', ['query']);
   });
@@ -1495,30 +1673,6 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[5][0]).toMatch('select "a0".* from "author2" as "a0" where "a0"."id" = $1');
   });
 
-  test('EM supports smart search conditions', async () => {
-    const author = new Author2('name', 'email');
-    const b1 = new Book2('b1', author);
-    const b2 = new Book2('b2', author);
-    const b3 = new Book2('b3', author);
-    await orm.em.persistAndFlush([b1, b2, b3]);
-    orm.em.clear();
-
-    const a1 = (await orm.em.findOne(Author2, { 'id:ne': 10 } as any))!;
-    expect(a1).not.toBeNull();
-    expect(a1.id).toBe(author.id);
-    const a2 = (await orm.em.findOne(Author2, { 'id>=': 1 } as any))!;
-    expect(a2).not.toBeNull();
-    expect(a2.id).toBe(author.id);
-    const a3 = (await orm.em.findOne(Author2, { 'id:nin': [2, 3, 4] } as any))!;
-    expect(a3).not.toBeNull();
-    expect(a3.id).toBe(author.id);
-    const a4 = (await orm.em.findOne(Author2, { 'id:in': [] } as any))!;
-    expect(a4).toBeNull();
-    const a5 = (await orm.em.findOne(Author2, { 'id:nin': [] } as any))!;
-    expect(a5).not.toBeNull();
-    expect(a5.id).toBe(author.id);
-  });
-
   test('allow assigning PK to undefined/null', async () => {
     const test = new Test2({ name: 'name' });
     await orm.em.persistAndFlush(test);
@@ -1537,9 +1691,9 @@ describe('EntityManagerPostgre', () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
 
     const books1 = await orm.em.find(Book2, {
-      [expr('upper(title)')]: ['B1', 'B2'],
+      [raw('upper(title)')]: ['B1', 'B2'],
       author: {
-        [expr('age::text')]: { $ilike: '%2%' },
+        [raw(a => `${a}.age::text`)]: { $ilike: '%2%' },
       },
     }, { populate: ['perex'] });
     expect(books1).toHaveLength(2);
@@ -1547,10 +1701,88 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
 
     const books2 = await orm.em.find(Book2, {
-      [expr('upper(title)')]: orm.em.getKnex().raw('upper(?)', ['b2']),
+      [raw('upper(title)')]: raw('upper(?)', ['b2']),
     }, { populate: ['perex'] });
     expect(books2).toHaveLength(1);
     expect(mock.mock.calls[1][0]).toMatch(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and upper(title) = upper('b2')`);
+  });
+
+  test('custom expressions require raw helper', async () => {
+    await orm.em.insertMany(Author2, [
+      { name: 'n1', email: 'e1' },
+      { name: 'n2', email: 'e2' },
+      { name: 'n3', email: 'e3' },
+    ]);
+    const mock = mockLogger(orm, ['query', 'query-params']);
+    const res = await orm.em.find(Author2, {
+      [sql`1 = 1 union select * from author2; --`]: 1,
+    });
+    expect(res).toHaveLength(3);
+
+    expect(mock.mock.calls[0][0]).toMatch('select "a0".* from "author2" as "a0" where 1 = 1 union select * from author2; --');
+
+    await expect(orm.em.find(Author2, {
+      // @ts-expect-error
+      ['1 = 1 union select * from author2; --']: 1,
+    })).rejects.toThrow('Trying to query by not existing property Author2.1 = 1 union select * from author2; --');
+  });
+
+  test('insert with raw sql fragment', async () => {
+    const author = orm.em.create(Author2, { id: 1, name: 'name', email: 'email', age: raw('100 + 20 + 3') });
+    const mock = mockLogger(orm, ['query', 'query-params']);
+    expect(() => author.age!++).toThrow();
+    expect(() => JSON.stringify(author)).toThrow();
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch(/insert into "author2" \("id", "created_at", "updated_at", "name", "email", "age", "terms_accepted"\) values \(1, '.*', '.*', 'name', 'email', 100 \+ 20 \+ 3, false\) returning "age"/);
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    expect(author.age).toBe(123);
+  });
+
+  test('update with raw sql fragment', async () => {
+    await orm.em.insertMany(Author2, [
+      { id: 1, name: 'name', email: 'email1', age: 123 },
+      { id: 2, name: 'name', email: 'email2', age: 1 },
+    ]);
+    const ref1 = await orm.em.findOneOrFail(Author2, 1);
+    const ref2 = await orm.em.findOneOrFail(Author2, 2);
+
+    const mock = mockLogger(orm, ['query', 'query-params']);
+    ref1.age = raw(`age * 2`);
+    expect(() => ref1.age!++).toThrow();
+    expect(() => ref2.age = ref1.age).toThrow();
+    expect(() => JSON.stringify(ref1)).toThrow();
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "age" = age \* 2, "updated_at" = '.*' where "id" = 1 returning "age"/);
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    expect(ref1.age).toBe(246);
+  });
+
+  test('update with raw sql fragment (batch)', async () => {
+    await orm.em.insertMany(Author2, [
+      { id: 1, name: 'name 1', email: 'email 1', age: 123 },
+      { id: 2, name: 'name 2', email: 'email 2', age: 222 },
+    ]);
+    const mock = mockLogger(orm, ['query', 'query-params']);
+
+    const ref1 = orm.em.getReference(Author2, 1);
+    const ref2 = orm.em.getReference(Author2, 2);
+    ref1.age = raw(`age * 2`);
+    ref2.age = raw(`age / 2`);
+
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "age" = case when \("id" = 1\) then age \* 2 when \("id" = 2\) then age \/ 2 else "age" end, "updated_at" = case when \("id" = 1\) then '.*' when \("id" = 2\) then '.*' else "updated_at" end where "id" in \(1, 2\) returning "age"/);
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    expect(ref1.age).toBe(246);
+    expect(ref2.age).toBe(111);
   });
 
   test('find by joined property', async () => {
@@ -1615,13 +1847,95 @@ describe('EntityManagerPostgre', () => {
       'where "b0"."author_id" is not null and "a3"."name" = $1');
   });
 
+  test('populate: $infer', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    book1.perex = ref('asd 1');
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    book2.perex = ref('asd 2');
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    book3.perex = ref('asd 3');
+    const t1 = Test2.create('t1');
+    t1.book = book1;
+    const t2 = Test2.create('t2');
+    t2.book = book2;
+    const t3 = Test2.create('t3');
+    t3.book = book3;
+    author.books.add(book1, book2, book3);
+    await orm.em.persistAndFlush([author, t1, t2, t3]);
+    author.favouriteBook = book3;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+    const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } }, { populate: ['perex', '$infer'] });
+    expect(res2).toHaveLength(3);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(wrap(res2[0]).toObject()).toMatchObject({
+      title: 'My Life on The Wall, part 1',
+      perex: 'asd 1',
+      author: {
+        id: 1,
+        name: 'Jon Snow',
+        email: 'snow@wall.st',
+        favouriteBook: {
+          title: 'My Life on The Wall, part 3',
+          perex: 'asd 3',
+          author: {
+            name: 'Jon Snow',
+            email: 'snow@wall.st',
+          },
+        },
+      },
+    });
+    expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed", ' +
+      '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity", ' +
+      '"b2"."uuid_pk" as "b2__uuid_pk", "b2"."created_at" as "b2__created_at", "b2"."title" as "b2__title", "b2"."price" as "b2__price", "b2".price * 1.19 as "b2__price_taxed", "b2"."double" as "b2__double", "b2"."meta" as "b2__meta", "b2"."author_id" as "b2__author_id", "b2"."publisher_id" as "b2__publisher_id", ' +
+      '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", "a3"."identity" as "a3__identity" ' +
+      'from "book2" as "b0" ' +
+      'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
+      'left join "book2" as "b2" on "a1"."favourite_book_uuid_pk" = "b2"."uuid_pk" ' +
+      'left join "author2" as "a3" on "b2"."author_id" = "a3"."id" ' +
+      'where "b0"."author_id" is not null and "a3"."name" = $1');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const res4 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } }, { populate: ['$infer'] });
+    expect(res4).toHaveLength(3);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed", ' +
+      '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity", ' +
+      '"b2"."uuid_pk" as "b2__uuid_pk", "b2"."created_at" as "b2__created_at", "b2"."title" as "b2__title", "b2"."price" as "b2__price", "b2".price * 1.19 as "b2__price_taxed", "b2"."double" as "b2__double", "b2"."meta" as "b2__meta", "b2"."author_id" as "b2__author_id", "b2"."publisher_id" as "b2__publisher_id", ' +
+      '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", "a3"."identity" as "a3__identity" ' +
+      'from "book2" as "b0" ' +
+      'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
+      'left join "book2" as "b2" on "a1"."favourite_book_uuid_pk" = "b2"."uuid_pk" ' +
+      'left join "author2" as "a3" on "b2"."author_id" = "a3"."id" ' +
+      'where "b0"."author_id" is not null and "a3"."name" = $1');
+    expect(wrap(res4[0]).toObject()).toMatchObject({
+      title: 'My Life on The Wall, part 1',
+      author: {
+        id: 1,
+        name: 'Jon Snow',
+        email: 'snow@wall.st',
+        favouriteBook: {
+          title: 'My Life on The Wall, part 3',
+          author: {
+            name: 'Jon Snow',
+            email: 'snow@wall.st',
+          },
+        },
+      },
+    });
+  });
+
   test('datetime is stored in correct timezone', async () => {
     const author = new Author2('n', 'e');
     author.createdAt = new Date('2000-01-01T00:00:00Z');
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const res = await orm.em.getConnection().execute<{ created_at: string }[]>(`select to_char(created_at, 'YYYY-MM-DD HH24:MI:SS.US') as created_at from author2 where id = ${author.id}`);
+    const res = await orm.em.getConnection().execute<{ created_at: string }[]>(`select to_char(created_at at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') as created_at from author2 where id = ${author.id}`);
     expect(res[0].created_at).toBe('2000-01-01 00:00:00.000000');
     const a = await orm.em.findOneOrFail(Author2, author.id);
     expect(+a.createdAt!).toBe(+author.createdAt);
@@ -1666,10 +1980,10 @@ describe('EntityManagerPostgre', () => {
     for (let i = 1; i <= 10; i++) {
       const num = `${i}`.padStart(2, '0');
       const god = new Author2(`God ${num}`, `hello${num}@heaven.god`);
-      new Book2(`Bible ${num}.1`, god);
-      new Book2(`Bible ${num}.2`, god);
-      new Book2(`Bible ${num}.3`, god);
-      orm.em.persist(god);
+      const b1 = new Book2(`Bible ${num}.1`, god);
+      const b2 = new Book2(`Bible ${num}.2`, god);
+      const b3 = new Book2(`Bible ${num}.3`, god);
+      orm.em.persist([b1, b2, b3]);
     }
 
     await orm.em.flush();
@@ -1710,8 +2024,8 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('custom types', async () => {
-    await orm.em.nativeInsert(FooBar2, { id: 123, name: 'n1', array: [1, 2, 3] });
-    await orm.em.nativeInsert(FooBar2, { id: 456, name: 'n2', array: [] });
+    await orm.em.insert(FooBar2, { id: 123, name: 'n1', array: [1, 2, 3] });
+    await orm.em.insert(FooBar2, { id: 456, name: 'n2', array: [] });
 
     const bar = FooBar2.create('b1 "b" \'1\'');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
@@ -1766,7 +2080,7 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
 
     await expect(orm.em.findOneOrFail(Author2, { identities: { $contains: ['2'] } })).resolves.toBeTruthy();
-    await expect(orm.em.findOneOrFail(Author2, { identities: { $contains: ['4'] } })).rejects.toThrowError();
+    await expect(orm.em.findOneOrFail(Author2, { identities: { $contains: ['4'] } })).rejects.toThrow();
   });
 
   test(`toObject uses serializedName on PKs`, async () => {
@@ -1789,6 +2103,8 @@ describe('EntityManagerPostgre', () => {
   test('exceptions', async () => {
     const driver = orm.em.getDriver();
     await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
+    await expect(orm.em.upsert(Author2, { name: 'author', email: 'email', favouriteAuthor: 123 })).rejects.toThrow(ForeignKeyConstraintViolationException);
+    await expect(orm.em.upsertMany(Author2, [{ name: 'author', email: 'email', favouriteAuthor: 123 }])).rejects.toThrow(ForeignKeyConstraintViolationException);
     await expect(driver.nativeInsert(Author2.name, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
     await expect(driver.nativeInsert(Author2.name, {})).rejects.toThrow(NotNullConstraintViolationException);
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
@@ -1858,7 +2174,7 @@ describe('EntityManagerPostgre', () => {
     em.getEventManager().registerSubscriber(new Subscriber());
 
     const a = new Author2('1stA', 'e1');
-    a.born = new Date();
+    a.born = '2023-03-23';
     const b = new Book2('1stB', a);
 
     await em.persistAndFlush(b);
@@ -1868,7 +2184,7 @@ describe('EntityManagerPostgre', () => {
     await em.findOneOrFail(Book2, { title: '1stB' }, { populate: ['author'] });
 
     const newA = new Author2('2ndA', 'e2');
-    a.born = new Date();
+    newA.born = '2023-03-23';
     const newB = new Book2('2ndB', newA);
     newB.author = newA;
     await em.persistAndFlush(newB);
@@ -1955,7 +2271,7 @@ describe('EntityManagerPostgre', () => {
     }
 
     console.time('perf: one to many via em.create()');
-    const author = orm.em.create(Author2,{
+    const author = orm.em.create(Author2, {
       name: 'Jon Snow',
       email: 'snow@wall.st',
       books,
@@ -1984,34 +2300,38 @@ describe('EntityManagerPostgre', () => {
     orm.config.set('allowGlobalContext', false);
 
     const err = 'Using global EntityManager instance methods for context specific actions is disallowed. If you need to work with the global instance\'s identity map, use `allowGlobalContext` configuration option or `fork()` instead.';
-    expect(() => orm.em.create(Author2, { name: 'a1', email: 'e1' })).toThrowError(err);
+    expect(() => orm.em.create(Author2, { name: 'a1', email: 'e1' })).toThrow(err);
     const author = new Author2('a', 'e');
-    expect(() => orm.em.persist(author)).toThrowError(err);
-    expect(() => orm.em.assign(author, { name: 'b' })).toThrowError(err);
-    expect(() => orm.em.assign(author, { books: ['1', '2', '3'] })).toThrowError(err);
-    await expect(orm.em.flush()).rejects.toThrowError(err);
+    expect(() => orm.em.persist(author)).toThrow(err);
+    expect(() => orm.em.assign(author, { name: 'b' })).toThrow(err);
+    expect(() => orm.em.assign(author, { books: ['1', '2', '3'] })).toThrow(err);
+    await expect(orm.em.flush()).rejects.toThrow(err);
 
     const fork = orm.em.fork();
-    await expect(fork.flush()).resolves.not.toThrowError();
-    expect(() => fork.create(Author2, { name: 'a1', email: 'e1' })).not.toThrowError();
-    expect(() => fork.persist(author)).not.toThrowError();
-    expect(() => fork.assign(author, { name: 'b' })).not.toThrowError();
-    expect(() => fork.assign(author, { books: ['1', '2', '3'] })).not.toThrowError();
+    await expect(fork.flush()).resolves.not.toThrow();
+    expect(() => fork.create(Author2, { name: 'a1', email: 'e1' })).not.toThrow();
+    expect(() => fork.persist(author)).not.toThrow();
+    expect(() => fork.assign(author, { name: 'b' })).not.toThrow();
+    expect(() => fork.assign(author, { books: ['1', '2', '3'] })).not.toThrow();
 
     orm.config.set('allowGlobalContext', true);
   });
 
   test('working with global identity map will not throw if disableIdentityMap is used', async () => {
     orm.config.set('allowGlobalContext', false);
+    orm.config.set('disableIdentityMap', true);
 
-    await orm.em.nativeInsert(FooBar2, { name: 'bar 1' });
-    const res1 = await orm.em.getRepository(FooBar2).find({}, { disableIdentityMap: true });
+    await orm.em.insert(FooBar2, { name: 'bar 1' });
+    const res1 = await orm.em.getRepository(FooBar2).find({});
     expect(res1).toHaveLength(1);
 
     const res2 = await orm.em.find(FooBar2, {}, { disableIdentityMap: true });
     expect(res2).toHaveLength(1);
 
+    await expect(orm.em.find(FooBar2, {}, { disableIdentityMap: false })).rejects.toThrow(/Using global EntityManager instance methods for context specific actions is disallowed/);
+
     orm.config.set('allowGlobalContext', true);
+    orm.config.set('disableIdentityMap', false);
   });
 
   test('Collection.init() returns Loaded type', async () => {
@@ -2022,7 +2342,7 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('creating unmanaged entity reference', async () => {
-    await orm.em.getDriver().nativeInsertMany(Publisher2.name, [
+    await orm.em.insertMany(Publisher2, [
       { id: 1, name: 'p 1', type: PublisherType.LOCAL, type2: PublisherType2.LOCAL },
       { id: 2, name: 'p 2', type: PublisherType.GLOBAL, type2: PublisherType2.GLOBAL },
     ]);
@@ -2034,7 +2354,7 @@ describe('EntityManagerPostgre', () => {
 
     // not managed reference
     expect(wrap(b.publisher, true).__em).toBeUndefined();
-    await orm.em.persistAndFlush(a);
+    await orm.em.persistAndFlush(b);
     // after flush it will become managed
     expect(wrap(b.publisher, true).__em).toBe(orm.em);
 
@@ -2048,8 +2368,8 @@ describe('EntityManagerPostgre', () => {
     expect(b.publisher.unwrap()).toBe(ref2);
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id", "publisher_id") values ($1, $2, $3, $4, $5, $6) returning "uuid_pk", "created_at", "title"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "age"');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id", "publisher_id") values ($1, $2, $3, $4, $5, $6)');
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch('begin');
     expect(mock.mock.calls[5][0]).toMatch('update "book2" set "publisher_id" = $1 where "uuid_pk" = $2');
@@ -2087,8 +2407,8 @@ describe('EntityManagerPostgre', () => {
 
     // flushing things at the same tick will even batch the queries
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10), ($11, $12, $13, $14, $15) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10), ($11, $12, $13, $14, $15) returning "uuid_pk", "created_at", "title"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10), ($11, $12, $13, $14, $15) returning "id", "age"');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10), ($11, $12, $13, $14, $15)');
     expect(mock.mock.calls[3][0]).toMatch('commit');
 
     expect(ret.map(b => b.author.id)).toEqual([1, 2, 3]);
@@ -2125,16 +2445,16 @@ describe('EntityManagerPostgre', () => {
 
     // flushing things at different time will create multiple transactions
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
-    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "age"`);
+    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5)`);
     expect(mock.mock.calls[3][0]).toMatch(`commit`);
     expect(mock.mock.calls[4][0]).toMatch(`begin`);
-    expect(mock.mock.calls[5][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
-    expect(mock.mock.calls[6][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[5][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "age"`);
+    expect(mock.mock.calls[6][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5)`);
     expect(mock.mock.calls[7][0]).toMatch(`commit`);
     expect(mock.mock.calls[8][0]).toMatch(`begin`);
-    expect(mock.mock.calls[9][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
-    expect(mock.mock.calls[10][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[9][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "age"`);
+    expect(mock.mock.calls[10][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5)`);
     expect(mock.mock.calls[11][0]).toMatch(`commit`);
 
     mock.mockRestore();
@@ -2190,9 +2510,8 @@ describe('EntityManagerPostgre', () => {
 
     const mock = mockLogger(orm);
     await orm.em.flush();
-    expect(mock).toBeCalledTimes(4);
+    expect(mock).toHaveBeenCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch(`update "foo_bar2" set "id" = 321, "version" = current_timestamp(0) where "id" = 1 and "version" = `);
-    expect(mock.mock.calls[2][0]).toMatch(`select "f0"."id", "f0"."version" from "foo_bar2" as "f0" where "f0"."id" in (321)`);
 
     const c = await orm.em.fork().findOne(FooBar2, bar);
     expect(c).toBeDefined();
@@ -2218,10 +2537,9 @@ describe('EntityManagerPostgre', () => {
 
     const mock = mockLogger(orm, ['query']);
     await orm.em.flush();
-    expect(mock).toBeCalledTimes(5);
+    expect(mock).toHaveBeenCalledTimes(4);
     expect(mock.mock.calls[1][0]).toMatch('select "f0"."id" from "foo_bar2" as "f0" where (("f0"."id" = $1 and "f0"."version" = $2) or ("f0"."id" = $3 and "f0"."version" = $4))');
     expect(mock.mock.calls[2][0]).toMatch('update "foo_bar2" set "id" = case when ("id" = $1) then $2 when ("id" = $3) then $4 else "id" end, "version" = current_timestamp(0) where "id" in ($5, $6)');
-    expect(mock.mock.calls[3][0]).toMatch('select "f0"."id", "f0"."version" from "foo_bar2" as "f0" where "f0"."id" in ($1, $2)');
 
     const c1 = await orm.em.fork().findOne(FooBar2, bars[0]);
     expect(c1).toBeDefined();

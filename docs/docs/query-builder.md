@@ -1,5 +1,6 @@
 ---
 title: Using Query Builder
+sidebar_label: Query Builder
 ---
 
 :::info
@@ -157,7 +158,7 @@ console.log(qb.getQuery());
 // order by `e1`.`tags` asc
 ```
 
-This is currently available only for filtering (`where`) and sorting (`orderBy`), only the root entity will be selected. To populate its relationships, you can use [`em.populate()`](nested-populate.md). If your populated references are _not_ wrapped (methods like `.unwrap()` are `undefined`, make sure that property was defined with `{ wrappedEntity: true }` as described in [Defining Entities](defining-entities.md).
+This is currently available only for filtering (`where`) and sorting (`orderBy`), only the root entity will be selected. To populate its relationships, you can use [`em.populate()`](populating-relations.md).
 
 ## Explicit Joining
 
@@ -192,19 +193,55 @@ const res = await em.createQueryBuilder(Author, 'a')
   .getResultList();
 ```
 
+## Joining sub-queries
+
+Sometimes you might want to join a relation, but want to have more control over the query. The ORM allows you to override the join target with a sub-query, while keeping the original metadata for hydration:
+
+```ts
+// subquery can be a knex query builder as well
+const subquery = await em.createQueryBuilder(Book, 'b')
+  .where({ ... })
+  .orderBy({ title: 'asc' }).limit(1);
+
+const authors = await em.createQueryBuilder(Author, 'a')
+  .select('*')
+  // pass in both the property path and the subquery into the first argument as a tuple
+  .leftJoinAndSelect(['a.books', subquery], 'b')
+  // you can join more relations on top of the subquery join
+  .leftJoinAndSelect('b.tags', 't')
+  .getResultList();
+```
+
+This will produce query similar to the following:
+
+```sql
+select `a`.*,
+  `b`.`id` as `b__id`, `b`.`title` as `b__title`, `b`.`author_id` as `b__author_id`, `b`.`publisher_id` as `b__publisher_id`,
+  `t`.`id` as `t__id`, `t`.`name` as `t__name`
+  from `author` as `a`
+  left join (
+    select `b`.*, `b`.price * 1.19 as `price_taxed`
+    from `book` as `b`
+    order by `b`.`title` asc
+    limit 1
+  ) as `b` on `b`.`author_id` = `a`.`id` 
+  left join `book_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book_uuid_pk` 
+  left join `book_tag` as `t` on `e1`.`book_tag_id` = `t`.`id`
+```
+
 ## Complex Where Conditions
 
 There are multiple ways to construct complex query conditions. You can either write parts of SQL manually, use `andWhere()`/`orWhere()`, or provide condition object:
 
 ### Using custom SQL fragments
 
-It is possible to use any SQL fragment in your `WHERE` query or `ORDER BY` clause:
+Any SQL fragment in your `WHERE` query or `ORDER BY` clause need to be wrapped with `raw()` or `sql`:
 
 ```ts
 const users = em.createQueryBuilder(User)
   .select('*')
-  .where({ 'lower(email)': 'foo@bar.baz' })
-  .orderBy({ [`(point(loc_latitude, loc_longitude) <@> point(0, 0))`]: 'ASC' })
+  .where({ [sql`lower(email)`]: 'foo@bar.baz' }) // sql tagged template function
+  .orderBy({ [raw(`(point(loc_latitude, loc_longitude) <@> point(0, 0))`)]: 'ASC' }) // raw helper
   .getResultList();
 ```
 
@@ -216,6 +253,8 @@ from `user` as `e0`
 where lower(email) = 'foo@bar.baz'
 order by (point(loc_latitude, loc_longitude) <@> point(0, 0)) asc
 ```
+
+Read more about this in [Using raw SQL query fragments](./raw-queries.md) section.
 
 ### Custom SQL in where
 
@@ -403,11 +442,11 @@ console.log(qb4.getQuery());
 
 ## Referring to column in update queries
 
-You can use `qb.raw()` to insert raw SQL snippets like this:
+You can use static `raw()` helper to insert raw SQL snippets like this:
 
 ```ts
 const qb = em.createQueryBuilder(Book);
-qb.update({ price: qb.raw('price + 1') }).where({ uuid: '123' });
+qb.update({ price: raw('price + 1') }).where({ uuid: '123' });
 
 console.log(qb.getQuery());
 // update `book` set `price` = price + 1 where `uuid_pk` = ?

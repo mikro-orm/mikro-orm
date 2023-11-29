@@ -30,7 +30,7 @@ describe('CreateDatabaseCommand', () => {
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
 
     expect(ensureDatabase).toHaveBeenCalled();
-    expect(closeSpy).toBeCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
   });
 
 });

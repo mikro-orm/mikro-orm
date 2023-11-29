@@ -1,5 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Reference, IdentifiedReference } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Reference, Ref } from '@mikro-orm/postgresql';
 
 @Entity()
 export class User {
@@ -15,16 +14,14 @@ export class User {
 @Entity()
 export class Chat {
 
-  @ManyToOne(() => User, { primary: true, wrappedReference: true })
-  owner: IdentifiedReference<User>;
+  @ManyToOne(() => User, { primary: true, ref: true })
+  owner: Ref<User>;
 
-  @ManyToOne(() => User, { primary: true, wrappedReference: true })
-  recipient: IdentifiedReference<User>;
+  @ManyToOne(() => User, { primary: true, ref: true })
+  recipient: Ref<User>;
 
   @ManyToOne(() => User, { nullable: true })
   User?: User;
-
-  [PrimaryKeyType]?: [number, number];
 
   constructor(owner: User, recipient: User) {
     this.owner = Reference.create(owner);
@@ -35,13 +32,12 @@ export class Chat {
 
 describe('GH issue 589', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, Chat],
       dbName: `mikro_orm_test_gh_589`,
-      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

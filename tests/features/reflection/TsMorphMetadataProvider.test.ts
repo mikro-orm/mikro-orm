@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/mongodb';
-import type { Options, PrimaryProperty, Cast, IsUnknown, EntityMetadata } from '@mikro-orm/core';
-import { Collection as Collection_, Reference as Reference_, ReferenceType, EnumArrayType } from '@mikro-orm/core';
+import type { Options, PrimaryProperty, EntityMetadata } from '@mikro-orm/core';
+import { Collection as Collection_, Reference as Reference_, ReferenceKind, EnumArrayType } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz } from './entities';
 import FooBar from './entities/FooBar';
@@ -8,7 +8,7 @@ import FooBar from './entities/FooBar';
 // we need to define those to get around typescript issues with reflection (ts-morph would return `any` for the type otherwise)
 export class Collection<T extends object> extends Collection_<T> { }
 export class Reference<T extends object> extends Reference_<T> { }
-export type IdentifiedReference<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]?: T[K] } & Reference<T>);
+export type Ref<T extends object> = ({ [K in PrimaryProperty<T> & keyof T]?: T[K] } & Reference<T>);
 
 describe('TsMorphMetadataProvider', () => {
 
@@ -17,7 +17,7 @@ describe('TsMorphMetadataProvider', () => {
       entities: [Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz, FooBar],
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      cache: { enabled: false },
+      metadataCache: { enabled: false },
       discovery: { alwaysAnalyseProperties: false },
       metadataProvider: TsMorphMetadataProvider,
     });
@@ -32,7 +32,7 @@ describe('TsMorphMetadataProvider', () => {
       tsNode: false,
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      cache: { enabled: false },
+      metadataCache: { enabled: false },
       discovery: { alwaysAnalyseProperties: false },
       metadataProvider: TsMorphMetadataProvider,
     });
@@ -48,11 +48,12 @@ describe('TsMorphMetadataProvider', () => {
       tsNode: false,
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      cache: { enabled: false },
+      metadataCache: { enabled: false },
       metadataProvider: TsMorphMetadataProvider,
+      connect: false,
     };
     const error = `Source file './entities-compiled-error/FooBar.ts' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`;
-    await expect(MikroORM.init(options, false)).rejects.toThrowError(error);
+    await expect(MikroORM.init(options)).rejects.toThrow(error);
   });
 
   test('should load entities', async () => {
@@ -60,7 +61,7 @@ describe('TsMorphMetadataProvider', () => {
       entities: ['entities'],
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      cache: { pretty: true },
+      metadataCache: { pretty: true },
       metadataProvider: TsMorphMetadataProvider,
     });
 
@@ -70,7 +71,7 @@ describe('TsMorphMetadataProvider', () => {
     expect(metadata[Author.name].path).toBe('./entities/Author.ts');
     expect(metadata[Author.name].properties).toBeInstanceOf(Object);
     expect(metadata[Author.name].properties.books.type).toBe(Book.name);
-    expect(metadata[Author.name].properties.books.reference).toBe(ReferenceType.ONE_TO_MANY);
+    expect(metadata[Author.name].properties.books.kind).toBe(ReferenceKind.ONE_TO_MANY);
     expect(metadata[Author.name].properties.identities.array).toBe(true);
     expect(metadata[Author.name].properties.identities.type).toBe('string[]');
     expect(metadata[Author.name].properties.foo.type).toBe('string');
@@ -78,7 +79,7 @@ describe('TsMorphMetadataProvider', () => {
     expect(metadata[Author.name].properties.age.optional).toBe(true);
     expect(metadata[Author.name].properties.age.nullable).toBe(true); // nullable is sniffed via ts-morph too
     expect(metadata[Book.name].properties.author.type).toBe(Author.name);
-    expect(metadata[Book.name].properties.author.reference).toBe(ReferenceType.MANY_TO_ONE);
+    expect(metadata[Book.name].properties.author.kind).toBe(ReferenceKind.MANY_TO_ONE);
     expect(metadata[Book.name].properties.metaArray.type).toBe('any[]');
     expect(metadata[Book.name].properties.metaArray.array).toBe(true);
     expect(metadata[Book.name].properties.metaArrayOfStrings.type).toBe('string[]');
@@ -89,8 +90,8 @@ describe('TsMorphMetadataProvider', () => {
 
     // customType should be re-hydrated when loading metadata from cache
     const provider = new TsMorphMetadataProvider(orm.config);
-    const cacheAdapter = orm.config.getCacheAdapter();
-    const cache = await cacheAdapter.get('Publisher.ts');
+    const cacheAdapter = orm.config.getMetadataCacheAdapter();
+    const cache = cacheAdapter.get('Publisher.ts');
     const meta = { properties: {
       types: { name: 'types', customType: new EnumArrayType('Publisher.types') },
       types2: { name: 'types2', customType: new EnumArrayType('Publisher.types2') },
@@ -109,15 +110,15 @@ describe('TsMorphMetadataProvider', () => {
   test('should ignore entity without path', async () => {
     const provider = new TsMorphMetadataProvider({} as any);
     const initProperties = jest.spyOn(TsMorphMetadataProvider.prototype, 'initProperties' as any);
-    expect(initProperties).toBeCalledTimes(0);
-    await provider.loadEntityMetadata({} as any, 'name');
-    expect(initProperties).toBeCalledTimes(0);
+    expect(initProperties).toHaveBeenCalledTimes(0);
+    provider.loadEntityMetadata({} as any, 'name');
+    expect(initProperties).toHaveBeenCalledTimes(0);
   });
 
   test('should throw when source file not found', async () => {
     const provider = new TsMorphMetadataProvider({} as any);
     const error = `Source file './path/to/entity.ts' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`;
-    await expect(provider.getExistingSourceFile('./path/to/entity.js')).rejects.toThrowError(error);
+    expect(() => provider.getExistingSourceFile('./path/to/entity.js')).toThrow(error);
   });
 
 });

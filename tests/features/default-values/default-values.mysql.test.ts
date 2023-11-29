@@ -53,7 +53,7 @@ describe('default values in mysql', () => {
     await orm.em.persistAndFlush(a);
 
     // mysql needs to reload via separate select query (inside tx, so 4 in total)
-    expect(mock).toBeCalledTimes(4);
+    expect(mock).toHaveBeenCalledTimes(4);
     expect(a.foo1).toBe(50);
     expect(a.foo2).toBe(50);
     expect(a.foo3).toBe(50);

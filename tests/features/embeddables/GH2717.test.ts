@@ -1,4 +1,4 @@
-import { Collection, Embeddable, Embedded, Entity, IdentifiedReference, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Embeddable, Embedded, Entity, Ref, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -7,8 +7,8 @@ export class Cat {
   @PrimaryKey()
   name!: string;
 
-  @ManyToOne(() => User, { wrappedReference: true })
-  user!: IdentifiedReference<User>;
+  @ManyToOne(() => User, { ref: true })
+  user!: Ref<User>;
 
 }
 

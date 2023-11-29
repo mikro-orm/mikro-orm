@@ -22,7 +22,7 @@ We can disable metadata caching via:
 
 ```ts
 await MikroORM.init({
-  cache: { enabled: false },
+  metadataCache: { enabled: false },
   // ...
 });
 ```
@@ -33,7 +33,7 @@ By default, cached metadata will be one line JSON string. You can force pretty p
 
 ```ts
 await MikroORM.init({
-  cache: { pretty: true },
+  metadataCache: { pretty: true },
   // ...
 });
 ```
@@ -45,7 +45,7 @@ We can set the cache directory via:
 ```ts
 await MikroORM.init({
   // defaults to `./temp`
-  cache: { options: { cacheDir: '...' } },
+  metadataCache: { options: { cacheDir: '...' } },
   // ...
 });
 ```
@@ -88,7 +88,7 @@ And provide the implementation in `cache.adapter` option:
 
 ```ts
 await MikroORM.init({
-  cache: { adapter: RedisCacheAdapter, options: { ... } },
+  metadataCache: { adapter: RedisCacheAdapter, options: { ... } },
   // ...
 });
 ```

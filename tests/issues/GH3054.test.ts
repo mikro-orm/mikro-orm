@@ -1,5 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
@@ -12,13 +11,12 @@ class User {
 
 }
 
-let orm: MikroORM<SqliteDriver>;
+let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [User],
     dbName: ':memory:',
-    driver: SqliteDriver,
   });
   await orm.schema.createSchema();
 });
@@ -28,7 +26,7 @@ afterAll(async () => {
 });
 
 test(`GH issue 3054`, async () => {
-  await orm.em.nativeInsert(User, { id: '123', data: { id: 'test' } });
+  await orm.em.insert(User, { id: '123', data: { id: 'test' } });
   const r = await orm.em.findOneOrFail(User, {
     data: {
       id: 'test',

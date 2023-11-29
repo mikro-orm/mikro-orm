@@ -1,5 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 export class User {
@@ -10,7 +9,7 @@ export class User {
   @Property()
   name!: string;
 
-  @Property()
+  @Property({ persist: false })
   get lowerName() {
     return this.name.toLowerCase();
   }
@@ -30,7 +29,6 @@ describe('GH issue 2760', () => {
     orm = await MikroORM.init({
       entities: [User],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

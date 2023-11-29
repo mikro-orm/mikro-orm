@@ -1,5 +1,4 @@
-import type { Argv } from 'yargs';
-import yargs from 'yargs';
+import yargs, { type Argv } from 'yargs';
 
 import { ConfigurationLoader, Utils } from '@mikro-orm/core';
 import { ClearCacheCommand } from './commands/ClearCacheCommand';
@@ -37,6 +36,10 @@ export class CLIConfigurator {
       .version(version)
       .usage('Usage: $0 <command> [options]')
       .example('$0 schema:update --run', 'Runs schema synchronization')
+      .option('config', {
+        type: 'string',
+        desc: `Set path to the ORM configuration file`,
+      })
       .alias('v', 'version')
       .alias('h', 'help')
       .command(new ClearCacheCommand())

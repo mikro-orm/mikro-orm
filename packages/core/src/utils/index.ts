@@ -1,5 +1,7 @@
 export * from './Configuration';
 export * from './ConfigurationLoader';
+export * from './Cursor';
+export * from './DataloaderUtils';
 export * from './Utils';
 export * from './RequestContext';
 export * from './TransactionContext';
@@ -7,3 +9,5 @@ export * from './QueryHelper';
 export * from './NullHighlighter';
 export * from './EntityComparator';
 export * from './AbstractSchemaGenerator';
+export * from './RawQueryFragment';
+export * from './upsert-utils';

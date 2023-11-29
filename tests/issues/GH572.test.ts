@@ -1,6 +1,5 @@
-import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
+import { Entity, Ref, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
-import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -8,8 +7,8 @@ export class A {
   @PrimaryKey()
   id!: number;
 
-  @OneToOne('B', 'a', { wrappedReference: true })
-  b!: IdentifiedReference<B>;
+  @OneToOne('B', 'a', { ref: true })
+  b!: Ref<B>;
 
 }
 
@@ -22,22 +21,20 @@ export class B {
   @Property()
   camelCaseField?: string;
 
-  @OneToOne('A', 'b', { owner: true, wrappedReference: true })
-  a!: IdentifiedReference<A>;
+  @OneToOne('A', 'b', { owner: true, ref: true })
+  a!: Ref<A>;
 
 }
 
 describe('GH issue 572', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
-    await orm.schema.dropSchema();
     await orm.schema.createSchema();
   });
 
@@ -49,7 +46,7 @@ describe('GH issue 572', () => {
       orderBy: { b: { camelCaseField: QueryOrder.ASC } },
       populate: ['b'],
     });
-    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `b1`.`id` as `b_id` from `a` as `a0` left join `b` as `b1` on `a0`.`id` = `b1`.`a_id` order by `b1`.`camel_case_field` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `b1`.`id` as `b1__id`, `b1`.`camel_case_field` as `b1__camel_case_field`, `b1`.`a_id` as `b1__a_id`, `b1`.`id` as `b_id` from `a` as `a0` left join `b` as `b1` on `a0`.`id` = `b1`.`a_id` order by `b1`.`camel_case_field` asc');
     expect(res1).toHaveLength(0);
     const qb1 = orm.em.createQueryBuilder(A, 'a').select('a.*').orderBy({ b: { camelCaseField: QueryOrder.ASC } });
     expect(qb1.getQuery()).toMatch('select `a`.* from `a` as `a` left join `b` as `b1` on `a`.`id` = `b1`.`a_id` order by `b1`.`camel_case_field` asc');

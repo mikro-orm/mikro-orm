@@ -1,4 +1,4 @@
-import { Entity, IdentifiedReference, Index, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Entity, Ref, Index, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
@@ -18,11 +18,11 @@ export class Book1 {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
-  author1!: IdentifiedReference<Author>;
+  @ManyToOne(() => Author, { ref: true })
+  author1!: Ref<Author>;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
-  author2!: IdentifiedReference<Author>;
+  @ManyToOne(() => Author, { ref: true })
+  author2!: Ref<Author>;
 
   @ManyToOne(() => Author)
   author3!: Author;
@@ -39,23 +39,28 @@ export class Book1 {
   @Property({ unique: true })
   isbn!: string;
 
+  @Property({ type: 'json' })
+  metaData: any;
+
 }
 
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3' })
+@Index({ properties: 'metaData.foo.bar.baz' })
+@Unique({ properties: 'metaData.fooBar.email' })
 @Index({ name: 'custom_index_expr123', expression: 'create  index  "custom_index_expr123" on "book" ("isbn")' })
 export class Book2 {
 
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
-  author1!: IdentifiedReference<Author>;
+  @ManyToOne(() => Author, { ref: true })
+  author1!: Ref<Author>;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   @Index()
-  author2!: IdentifiedReference<Author>;
+  author2!: Ref<Author>;
 
   @ManyToOne(() => Author)
   author3!: Author;
@@ -74,24 +79,29 @@ export class Book2 {
   @Property({ unique: 'isbn_unique_constr' })
   isbn!: string;
 
+  @Property({ type: 'json' })
+  metaData: any;
+
 }
 
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3', name: 'lol31' })
 @Index({ properties: 'author3', name: 'lol41' })
+@Index({ properties: ['metaData.foo', 'metaData.foo.bar3'] })
+@Unique({ properties: ['metaData.fooBar.bazBaz', 'metaData.fooBar.lol123'] })
 @Index({ name: 'custom_index_expr123', expression: 'create  index  "custom_index_expr123" on "book" ("isbn")' })
 export class Book3 {
 
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
-  author1!: IdentifiedReference<Author>;
+  @ManyToOne(() => Author, { ref: true })
+  author1!: Ref<Author>;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   @Index()
-  author2!: IdentifiedReference<Author>;
+  author2!: Ref<Author>;
 
   @ManyToOne(() => Author)
   author3!: Author;
@@ -111,6 +121,9 @@ export class Book3 {
   @Unique()
   isbn!: string;
 
+  @Property({ type: 'json' })
+  metaData: any;
+
 }
 
 @Entity({ tableName: 'book' })
@@ -122,12 +135,12 @@ export class Book4 {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
-  author1!: IdentifiedReference<Author>;
+  @ManyToOne(() => Author, { ref: true })
+  author1!: Ref<Author>;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   @Index()
-  author2!: IdentifiedReference<Author>;
+  author2!: Ref<Author>;
 
   @ManyToOne(() => Author)
   author3!: Author;
@@ -146,6 +159,9 @@ export class Book4 {
   @Unique()
   isbn!: string;
 
+  @Property({ type: 'json' })
+  metaData: any;
+
 }
 
 describe('indexes on FKs in postgres (GH 1518)', () => {
@@ -158,6 +174,7 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
       dbName: `mikro_orm_test_gh_1518`,
       driver: PostgreSqlDriver,
     });
+
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists author cascade');
     await orm.schema.execute('drop table if exists book cascade');

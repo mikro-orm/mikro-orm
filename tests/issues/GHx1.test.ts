@@ -80,7 +80,7 @@ test(`default value for relation property (postgres/returning)`, async () => {
   const orm = await MikroORM.init({
     entities: [Task, Status],
     driver: PostgreSqlDriver,
-    dbName: 'mikro_orm_test_tmp',
+    dbName: 'mikro_orm_test_x1',
   });
   await orm.schema.refreshDatabase();
 

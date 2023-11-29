@@ -1,20 +1,26 @@
 import type { Logger, LoggerNamespace, LogContext, LoggerOptions } from './Logger';
 import { colors } from './colors';
+import type { Highlighter } from '../typings';
 
 export class DefaultLogger implements Logger {
 
-  public debugMode = this.options.debugMode ?? false;
-  readonly writer = this.options.writer;
-  private readonly usesReplicas = this.options.usesReplicas;
-  private readonly highlighter = this.options.highlighter;
+  debugMode: boolean | LoggerNamespace[];
+  readonly writer: (message: string) => void;
+  private readonly usesReplicas?: boolean;
+  private readonly highlighter?: Highlighter;
 
-  constructor(private readonly options: LoggerOptions) {}
+  constructor(private readonly options: LoggerOptions) {
+    this.debugMode = this.options.debugMode ?? false;
+    this.writer = this.options.writer;
+    this.usesReplicas = this.options.usesReplicas;
+    this.highlighter = this.options.highlighter;
+  }
 
   /**
    * @inheritDoc
    */
   log(namespace: LoggerNamespace, message: string, context?: LogContext): void {
-    if (!this.isEnabled(namespace)) {
+    if (!this.isEnabled(namespace, context)) {
       return;
     }
 
@@ -31,7 +37,11 @@ export class DefaultLogger implements Logger {
       message = colors.yellow(message);
     }
 
-    this.writer(colors.grey(`[${namespace}] `) + message);
+    const label = context?.label
+      ? colors.cyan(`(${context.label}) `)
+      : '';
+
+    this.writer(colors.grey(`[${namespace}] `) + label + message);
   }
 
   /**
@@ -55,15 +65,18 @@ export class DefaultLogger implements Logger {
     this.debugMode = debugMode;
   }
 
-  isEnabled(namespace: LoggerNamespace): boolean {
-    return !!this.debugMode && (!Array.isArray(this.debugMode) || this.debugMode.includes(namespace));
+  isEnabled(namespace: LoggerNamespace, context?: LogContext) {
+    if (context?.enabled !== undefined) { return context.enabled; }
+    const debugMode = context?.debugMode ?? this.debugMode;
+
+    return !!debugMode && (!Array.isArray(debugMode) || debugMode.includes(namespace));
   }
 
   /**
    * @inheritDoc
    */
   logQuery(context: { query: string } & LogContext): void {
-    if (!this.isEnabled('query')) {
+    if (!this.isEnabled('query', context)) {
       return;
     }
 
@@ -71,11 +84,17 @@ export class DefaultLogger implements Logger {
     let msg = this.highlighter?.highlight(context.query) ?? context.query;
 
     if (context.took != null) {
+      const meta = [`took ${context.took} ms`];
+
       if (context.results != null) {
-        msg += colors.grey(` [took ${context.took} ms, ${context.results} result${context.results > 1 ? 's' : ''}]`);
-      } else {
-        msg += colors.grey(` [took ${context.took} ms]`);
+        meta.push(`${context.results} result${context.results === 0 || context.results > 1 ? 's' : ''}`);
       }
+
+      if (context.affected != null) {
+        meta.push(`${context.affected} row${context.affected === 0 || context.affected > 1 ? 's' : ''} affected`);
+      }
+
+      msg += colors.grey(` [${meta.join(', ')}]`);
     }
 
     if (this.usesReplicas && context.connection) {

@@ -1,5 +1,4 @@
-import { MikroORM } from '@mikro-orm/sqlite';
-import { Entity, OneToOne, OptionalProps, PrimaryKey, Property, Rel } from '@mikro-orm/core';
+import { MikroORM, Entity, OneToOne, OptionalProps, PrimaryKey, Property, Rel } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -20,7 +19,7 @@ class Blog {
 @Entity()
 class User {
 
-  [OptionalProps]!: 'name' | 'balance';
+  [OptionalProps]?: 'name' | 'balance';
 
   @PrimaryKey()
   id!: number;
@@ -72,5 +71,5 @@ test('extra updates caused by property initializers with forceEntityConstructor 
 
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock).not.toBeCalled();
+  expect(mock).not.toHaveBeenCalled();
 });

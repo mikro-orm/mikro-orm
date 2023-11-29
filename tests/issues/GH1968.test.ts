@@ -1,11 +1,10 @@
-import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {
 
-  @PrimaryKey({ type: BigIntType })
-  id?: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property()
   name!: string;
@@ -18,8 +17,8 @@ class Author {
 @Entity()
 class Book {
 
-  @PrimaryKey({ type: BigIntType })
-  id?: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property()
   name!: string;
@@ -29,31 +28,29 @@ class Book {
 
 }
 
-describe('GH issue 1968', () => {
-  let orm: MikroORM;
+let orm: MikroORM;
 
-  beforeEach(async () => {
-    orm = await MikroORM.init({
-      entities: [Author, Book],
-      dbName: ':memory:',
-      driver: SqliteDriver,
-    });
-
-    await orm.schema.createSchema();
-    const author = orm.em.create(Author, {
-      name: 'Stephen King',
-      books: [{ name: 'b1' }, { name: 'b1' }, { name: 'b1' }],
-    });
-    await orm.em.fork().persistAndFlush(author);
+beforeEach(async () => {
+  orm = await MikroORM.init({
+    entities: [Author, Book],
+    dbName: ':memory:',
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-  });
+  await orm.schema.createSchema();
+});
 
-  test('serialize object graph with bigints', async () => {
-    const stephenKing = await orm.em.findOne(Author, { name: 'Stephen King' }, { populate: ['books'] });
-    expect(JSON.stringify(stephenKing)).toBe('{"id":"1","name":"Stephen King","books":[{"id":"1","name":"b1","author":"1"},{"id":"2","name":"b1","author":"1"},{"id":"3","name":"b1","author":"1"}]}');
-  });
+afterAll(async () => {
+  await orm.close(true);
+});
 
+test('serialize object graph with bigints (GH #1968)', async () => {
+  orm.em.create(Author, {
+    name: 'Stephen King',
+    books: [{ name: 'b1' }, { name: 'b1' }, { name: 'b1' }],
+  });
+  await orm.em.flush();
+  orm.em.clear();
+
+  const stephenKing = await orm.em.findOneOrFail(Author, { name: 'Stephen King' }, { populate: ['books'] });
+  expect(JSON.stringify(stephenKing)).toBe('{"id":"1","name":"Stephen King","books":[{"id":"1","name":"b1","author":"1"},{"id":"2","name":"b1","author":"1"},{"id":"3","name":"b1","author":"1"}]}');
 });

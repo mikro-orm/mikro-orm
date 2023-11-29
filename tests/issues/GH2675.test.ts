@@ -1,5 +1,4 @@
-import { Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, wrap } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, wrap } from '@mikro-orm/postgresql';
 
 @Entity()
 export class A {
@@ -15,20 +14,19 @@ export class B {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => A, onDelete: 'cascade' })
+  @ManyToOne({ entity: () => A, deleteRule: 'cascade' })
   a!: A;
 
 }
 
 describe('GH issue 2675', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: 'mikro_orm_test_gh_2675',
-      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
 

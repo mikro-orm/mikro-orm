@@ -1,5 +1,7 @@
 import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
+import { rm } from 'fs-extra';
 
 @Entity()
 @Check<FooEntity>({ expression: columns => `${columns.price} >= 0` })
@@ -36,6 +38,70 @@ describe('check constraint [mysql8]', () => {
     await orm.close();
   });
 
+  test('GH #4505', async () => {
+    await rm(`${__dirname}/temp`, { recursive: true, force: true });
+
+    const orm0 = await MikroORM.init({
+      entities: [FooEntity],
+      dbName: `mikro_orm_test_checks`,
+      driver: MySqlDriver,
+      port: 3308,
+      metadataProvider: TsMorphMetadataProvider,
+      metadataCache: { options: { cacheDir: `${__dirname}/temp` } },
+    });
+    const meta0 = orm0.getMetadata().get(FooEntity.name);
+    expect(meta0.checks).toEqual([
+      {
+        expression: 'price2 >= 0',
+        property: 'price2',
+        name: 'foo_entity_price2_check',
+      },
+      {
+        property: 'price3',
+        expression: 'price3 >= 0',
+        name: 'foo_entity_price3_check',
+      },
+      {
+        expression: 'price >= 0',
+        property: undefined,
+        name: 'foo_entity_check',
+      },
+    ]);
+    await orm0.close(true);
+
+    const orm = await MikroORM.init({
+      entities: [FooEntity],
+      dbName: `mikro_orm_test_checks`,
+      driver: MySqlDriver,
+      port: 3308,
+      metadataProvider: TsMorphMetadataProvider,
+      metadataCache: { options: { cacheDir: `${__dirname}/temp` } },
+    });
+    const meta = orm.getMetadata().get(FooEntity.name);
+    expect(meta.checks).toEqual([
+      {
+        expression: 'price2 >= 0',
+        property: 'price2',
+        name: 'foo_entity_price2_check',
+      },
+      {
+        property: 'price3',
+        expression: 'price3 >= 0',
+        name: 'foo_entity_price3_check',
+      },
+      {
+        expression: 'price >= 0',
+        property: undefined,
+        name: 'foo_entity_check',
+      },
+    ]);
+
+    const diff = await orm.schema.getCreateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('mysql8-check-constraint-decorator');
+
+    await orm.close();
+  });
+
   test('check constraint diff [mysql8]', async () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
@@ -45,9 +111,8 @@ describe('check constraint [mysql8]', () => {
     });
 
     const meta = orm.getMetadata();
-    const generator = orm.schema;
-    await generator.refreshDatabase();
-    await generator.execute('drop table if exists new_table');
+    await orm.schema.refreshDatabase();
+    await orm.schema.execute('drop table if exists new_table');
 
     const newTableMeta = new EntitySchema({
       properties: {
@@ -75,30 +140,30 @@ describe('check constraint [mysql8]', () => {
 
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-diff-1');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // Update a check expression
     newTableMeta.checks = [{ name: 'foo', expression: 'priceColumn > 0' }];
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-diff-2');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // Remove a check constraint
     newTableMeta.checks = [];
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-diff-3');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // Add new check
     newTableMeta.checks = [{ name: 'bar', expression: 'priceColumn > 0' }];
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-diff-4');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // Skip existing check
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-diff-5');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     await orm.close();
   });

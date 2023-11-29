@@ -18,10 +18,22 @@ describe('EntityManagerMariaDb', () => {
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
+    expect(await orm.checkConnection()).toEqual({
+      ok: true,
+    });
     await orm.close(true);
     expect(await orm.isConnected()).toBe(false);
+    const check = await orm.checkConnection();
+    expect(check).toMatchObject({
+      ok: false,
+      error: expect.any(Error),
+      reason: 'Unable to acquire a connection',
+    });
     await orm.connect();
     expect(await orm.isConnected()).toBe(true);
+    expect(await orm.checkConnection()).toEqual({
+      ok: true,
+    });
   });
 
   test('getConnectionOptions()', async () => {
@@ -96,9 +108,9 @@ describe('EntityManagerMariaDb', () => {
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
     const err1 = /insert into `not_existing` \(`foo`\) values \('bar'\) - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test_\w+\.not_existing' doesn't exist/;
-    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
+    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
     const err2 = /delete from `not_existing` - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test_\w+\.not_existing' doesn't exist/;
-    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
+    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
   });
 
   test('should load entities', async () => {
@@ -110,7 +122,7 @@ describe('EntityManagerMariaDb', () => {
     await orm.em.persistAndFlush(bible);
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
-    author.born = new Date('1990-03-23');
+    author.born = '1990-03-23';
     author.favouriteBook = bible;
 
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
@@ -126,11 +138,10 @@ describe('EntityManagerMariaDb', () => {
     book3.createdAt = new Date(Date.now() + 3);
     book3.publisher = wrap(publisher).toReference();
 
-    const repo = orm.em.getRepository(Book2);
-    repo.persist(book1);
-    repo.persist(book2);
-    repo.persist(book3);
-    await repo.flush();
+    orm.em.persist(book1);
+    orm.em.persist(book2);
+    orm.em.persist(book3);
+    await orm.em.flush();
     orm.em.clear();
 
     const publisher7k = (await orm.em.getRepository(Publisher2).findOne({ name: '7K publisher' }))!;
@@ -228,7 +239,7 @@ describe('EntityManagerMariaDb', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
     expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
-    await orm.em.getRepository(Book2).remove(lastBook[0]).flush();
+    await orm.em.remove(lastBook[0]).flush();
   });
 
 });

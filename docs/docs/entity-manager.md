@@ -40,7 +40,7 @@ const book3 = new Book('My Life on The Wall, part 3', author);
 book3.publisher = publisher;
 
 // just persist books, author and publisher will be automatically cascade persisted
-await em.persistAndFlush([book1, book2, book3]);
+await em.persist([book1, book2, book3]).flush();
 
 // or one by one
 em.persist(book1);
@@ -110,7 +110,7 @@ await em.remove(book1).flush();
 
 ## Fetching Entities with EntityManager
 
-To fetch entities from database we can use `find()` and `findOne()`:
+To fetch entities from database we can use `em.find()` and `em.findOne()`:
 
 ```ts
 const author = await em.findOne(Author, 123);
@@ -132,10 +132,22 @@ for (const author of authors) {
 }
 ```
 
+Alternatively, there is also `em.findAll()`, which does not have the second `where` parameter and defaults to returning all entities. You can still use the `where` option of this method though:
+
+```ts
+const books = await em.findAll(Book, {
+  where: { publisher: { $ne: null } }, // optional
+});
+```
+
 To populate entity relations, we can use `populate` parameter.
 
 ```ts
-const books = await em.find(Book, { foo: 1 }, { populate: ['author.friends'] });
+const books = await em.findAll(Book, {
+  where: { publisher: { $ne: null } },
+  // highlight-next-line
+  populate: ['author.friends'],
+});
 ```
 
 You can also use `em.populate()` helper to populate relations (or to ensure they are fully populated) on already loaded entities. This is also handy when loading entities via `QueryBuilder`:
@@ -284,6 +296,61 @@ console.log(authors.length); // based on limit parameter, e.g. 10
 console.log(count); // total count, e.g. 1327
 ```
 
+### Cursor-based pagination
+
+As an alternative to the offset based pagination with `limit` and `offset`, we can paginate based on a cursor. A cursor is an opaque string that defines specific place in ordered entity graph. You can use `em.findByCursor()` to access those options. Under the hood, it will call `em.find()` and `em.count()` just like the `em.findAndCount()` method, but will use the cursor options instead.
+
+Supports `before`, `after`, `first` and `last` options while disallowing `limit` and `offset`. Explicit `orderBy` option is required.
+
+Use `first` and `after` for forward pagination, or `last` and `before` for backward pagination.
+
+- `first` and `last` are numbers and serve as an alternative to `offset`, those options are mutually exclusive, use only one at a time
+- `before` and `after` specify the previous cursor value, it can be one of the:
+    - `Cursor` instance
+    - opaque string provided by `startCursor/endCursor` properties
+    - POJO/entity instance
+
+```ts
+const currentCursor = await em.findByCursor(User, {}, {
+  first: 10,
+  after: previousCursor, // cursor instance
+  orderBy: { id: 'desc' },
+});
+
+// to fetch next page
+const nextCursor = await em.findByCursor(User, {}, {
+  first: 10,
+  after: currentCursor.endCursor, // opaque string
+  orderBy: { id: 'desc' },
+});
+
+// to fetch next page
+const nextCursor2 = await em.findByCursor(User, {}, {
+  first: 10,
+  after: { id: lastSeenId }, // entity-like POJO
+  orderBy: { id: 'desc' },
+});
+```
+
+The `Cursor` object provides following interface:
+
+```ts
+Cursor<User> {
+  items: [
+    User { ... },
+    User { ... },
+    User { ... },
+    ...
+  ],
+  totalCount: 50,
+  length: 10,
+  startCursor: 'WzRd',
+  endCursor: 'WzZd',
+  hasPrevPage: true,
+  hasNextPage: true,
+}
+```
+
 ### Handling Not Found Entities
 
 When we call `em.findOne()` and no entity is found based on our criteria, `null` will be returned. If we rather have an `Error` instance thrown, we can use `em.findOneOrFail()`:
@@ -314,13 +381,11 @@ try {
 
 ### Using custom SQL fragments
 
-It is possible to use any SQL fragment in our `WHERE` query or `ORDER BY` clause:
-
-> The `expr()` helper is an identity function - all it does is to return its parameter. We can use it to bypass the strict type checks in `FilterQuery`.
+Any SQL fragment in your `WHERE` query or `ORDER BY` clause need to be wrapped with `raw()` or `sql`:
 
 ```ts
-const users = await em.find(User, { [expr('lower(email)')]: 'foo@bar.baz' }, {
-  orderBy: { [`(point(loc_latitude, loc_longitude) <@> point(0, 0))`]: 'ASC' },
+const users = await em.find(User, { [sql`lower(email)`]: 'foo@bar.baz' }, {
+  orderBy: { [sql`(point(loc_latitude, loc_longitude) <@> point(0, 0))`]: 'ASC' },
 });
 ```
 
@@ -332,6 +397,8 @@ from `user` as `e0`
 where lower(email) = 'foo@bar.baz'
 order by (point(loc_latitude, loc_longitude) <@> point(0, 0)) asc
 ```
+
+Read more about this in [Using raw SQL query fragments](./raw-queries.md) section.
 
 ## Updating references (not loaded entities)
 
@@ -345,6 +412,26 @@ await em.flush();
 ```
 
 This is a rough equivalent to calling `em.nativeUpdate()`, with one significant difference - we use the flush operation which handles event execution, so all life cycle hooks as well as flush events will be fired.
+
+## Atomic updates via `raw()` helper
+
+When you want to issue an atomic update query via flush, you can use the static `raw()` helper:
+
+```ts
+const ref = em.getReference(Author, 123);
+ref.age = raw(`age * 2`);
+
+await em.flush();
+console.log(ref.age); // real value is available after flush
+```
+
+The `raw()` helper returns special raw query fragment object. It disallows serialization (via `toJSON`) as well as working with the value (via [`valueOf()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/valueOf)). Only single use of this value is allowed, if you try to reassign it to another entity, an error will be thrown to protect you from mistakes like this:
+
+```ts
+order.number = raw(`(select max(num) + 1 from orders)`);
+user.lastOrderNumber = order.number; // throws, it could resolve to a different value
+JSON.stringify(order); // throws, raw value cannot be serialized
+```
 
 ## Upsert
 
@@ -382,6 +469,37 @@ const [author1, author2, author3] = await em.upsertMany(Author, [
   { email: 'a2', age: 42 },
   { email: 'a3', age: 43 },
 ]);
+```
+
+By default, the EntityManager will prefer using the primary key, and fallback to the first unique property with a value. Sometimes this might not be the wanted behaviour, one example is when you generate the primary key via property initializer, e.g. with `uuid.v4()`. For those advanced cases, you can control how the underlying upserting logic works via the following options:
+
+- `onConflictFields?: (keyof T)[]` to control the conflict clause
+- `onConflictAction?: 'ignore' | 'merge'` used ignore and merge as that is how the QB methods are called
+- `onConflictMergeFields?: (keyof T)[]` to control the merge clause
+- `onConflictExcludeFields?: (keyof T)[]` to omit fields from the merge clause
+
+```ts
+const [author1, author2, author3] = await em.upsertMany(Author, [{ ... }, { ... }, { ... }], {
+  onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause
+  onConflictAction: 'merge',
+  onConflictExcludeFields: ['id'],
+});
+```
+
+This will generate query similar to the following:
+
+```sql
+insert into "author" 
+  ("id", "current_age", "email", "foo")
+  values
+    (1, 41, 'a1', true),
+    (2, 42, 'a2', true),
+    (5, 43, 'a3', true)
+  on conflict ("email") 
+  do update set
+    "current_age" = excluded."current_age",
+    "foo" = excluded."foo" 
+  returning "_id", "current_age", "foo", "bar"
 ```
 
 ## Refreshing entity state
@@ -464,21 +582,9 @@ await em.flush(); // calling flush have no effect, as the entity is not managed
 
 > Keep in mind that this can also have [negative effect on the performance](https://stackoverflow.com/questions/9259480/entity-framework-mergeoption-notracking-bad-performance).
 
-## Type of Fetched Entities
-
-Both `em.find` and `em.findOne()` methods have generic return types. All of following examples are equal and will let typescript correctly infer the entity type:
-
-```ts
-const author1 = await em.findOne<Author>(Author.name, 123);
-const author2 = await em.findOne<Author>('Author', 123);
-const author3 = await em.findOne(Author, 123);
-```
-
-As the last one is the least verbose, it should be preferred.
-
 ## Entity Repositories
 
-Although we can use `EntityManager` directly, much more convenient way is to use [`EntityRepository` instead](https://mikro-orm.io/repositories/). You can register our repositories in dependency injection container like [InversifyJS](http://inversify.io/) so we do not need to get them from `EntityManager` each time.
+Although we can use `EntityManager` directly, a more convenient way is to use [`EntityRepository` instead](https://mikro-orm.io/repositories/). You can register your repositories in dependency injection container like [InversifyJS](http://inversify.io/) so we do not need to get them from `EntityManager` each time.
 
 For more examples, take a look at [`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts) or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mysql.test.ts).
 
@@ -487,7 +593,12 @@ For more examples, take a look at [`tests/EntityManager.mongo.test.ts`](https://
 Entity properties provide some support for custom ordering via the `customOrder` attribute. This is useful for values that have a natural order that doesn't align with their underlying data representation. Consider the code below, the natural sorting order would be `high`, `low`, `medium`. However we can provide the `customOrder` to indicate how the enum values should be sorted.
 
 ```ts
-enum Priority { Low = 'low', Medium = 'medium', High = 'high' }
+enum Priority {
+  Low = 'low',
+  Medium = 'medium',
+  High = 'high',
+}
+
 @Entity()
 class Task {
   @PrimaryKey()
@@ -505,11 +616,10 @@ class Task {
 
 // ...
 
-await em.persistAndFlush([
-  em.create(Task, { label: 'A', priority: Priority.Low }),
-  em.create(Task, { label: 'B', priority: Priority.Medium }),
-  em.create(Task, { label: 'C', priority: Priority.High })
-]);
+em.create(Task, { label: 'A', priority: Priority.Low }),
+em.create(Task, { label: 'B', priority: Priority.Medium }),
+em.create(Task, { label: 'C', priority: Priority.High })
+await em.flush();
 
 const tasks = await em.find(Task, {}, { orderBy: { priority: QueryOrder.ASC } });
 for (const t of tasks) {

@@ -1,12 +1,5 @@
-import type {
-  EntityManager } from '@mikro-orm/core';
-import {
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { EntityManager } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 import { v4 as uuid } from 'uuid';
 
 @Entity({ tableName: 'users' })
@@ -24,18 +17,17 @@ class User {
 
 }
 
-async function getOrmInstance(): Promise<MikroORM<PostgreSqlDriver>> {
+async function getOrmInstance(): Promise<MikroORM> {
   const orm = await MikroORM.init({
     entities: [User],
     dbName: 'mikro_orm_test_gh_1176',
-    driver: PostgreSqlDriver,
   });
 
-  return orm as MikroORM<PostgreSqlDriver>;
+  return orm as MikroORM;
 }
 
 describe('GH issue 1176', () => {
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
   let em: EntityManager;
 
   beforeAll(async () => {
@@ -79,7 +71,7 @@ describe('GH issue 1176', () => {
         const user = new User(username);
         em.persist(user);
 
-        await expect(em.flush()).rejects.toThrowError(
+        await expect(em.flush()).rejects.toThrow(
           /^insert.+duplicate key value/,
         );
       });
@@ -102,7 +94,7 @@ describe('GH issue 1176', () => {
           em.persist(user);
         });
 
-        await expect(work).rejects.toThrowError(/^insert.+duplicate key value/);
+        await expect(work).rejects.toThrow(/^insert.+duplicate key value/);
       });
     });
 
@@ -129,7 +121,7 @@ describe('GH issue 1176', () => {
           }
         };
 
-        await expect(work).rejects.toThrowError(/^insert.+duplicate key value/);
+        await expect(work).rejects.toThrow(/^insert.+duplicate key value/);
       });
     });
   });
@@ -162,7 +154,7 @@ describe('GH issue 1176', () => {
         const user = new User(username);
         em.persist(user);
 
-        await expect(em.flush()).rejects.toThrowError(
+        await expect(em.flush()).rejects.toThrow(
           /^COMMIT.+duplicate key value/,
         );
       });
@@ -187,7 +179,7 @@ describe('GH issue 1176', () => {
           });
         };
 
-        await expect(work).rejects.toThrowError(/^COMMIT.+duplicate key value/);
+        await expect(work).rejects.toThrow(/^COMMIT.+duplicate key value/);
       });
     });
 
@@ -214,7 +206,7 @@ describe('GH issue 1176', () => {
           }
         };
 
-        await expect(work).rejects.toThrowError(/^COMMIT.+duplicate key value/);
+        await expect(work).rejects.toThrow(/^COMMIT.+duplicate key value/);
       });
     });
   });

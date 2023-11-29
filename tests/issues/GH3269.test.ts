@@ -1,5 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property, ManyToOne, PrimaryKeyType } from '@mikro-orm/core';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { Entity, MikroORM, PrimaryKey, Property, ManyToOne } from '@mikro-orm/better-sqlite';
 
 @Entity()
 class Main {
@@ -9,8 +8,6 @@ class Main {
 
   @Property({ primary: true })
   pk_two!: string;
-
-  [PrimaryKeyType]?: [string, string];
 
   @Property()
   type!: string;
@@ -26,8 +23,6 @@ class Dependent {
   @PrimaryKey()
   id!: string;
 
-  [PrimaryKeyType]?: [string, string, string];
-
   @Property()
   bar!: string;
 
@@ -39,7 +34,7 @@ class LogEntry {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Dependent, { onDelete: 'cascade' })
+  @ManyToOne(() => Dependent, { deleteRule: 'cascade' })
   dependent!: Dependent;
 
   @Property()
@@ -51,7 +46,6 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    driver: BetterSqliteDriver,
     dbName: ':memory:',
     entities: [LogEntry],
   });

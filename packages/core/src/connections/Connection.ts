@@ -1,6 +1,6 @@
 import { URL } from 'url';
-import type { Configuration, ConnectionOptions, DynamicPassword } from '../utils';
-import type { LogContext } from '../logging';
+import { type Configuration, type ConnectionOptions, type DynamicPassword, Utils } from '../utils';
+import type { LogContext, Logger } from '../logging';
 import type { MetadataStorage } from '../metadata';
 import type { ConnectionType, Dictionary, MaybePromise, Primary } from '../typings';
 import type { Platform } from '../platforms/Platform';
@@ -12,12 +12,14 @@ export abstract class Connection {
   protected metadata!: MetadataStorage;
   protected platform!: Platform;
   protected readonly options: ConnectionOptions;
-  protected abstract client: unknown;
-  protected readonly logger = this.config.getLogger();
+  protected readonly logger: Logger;
+  protected connected = false;
 
   constructor(protected readonly config: Configuration,
               options?: ConnectionOptions,
               protected readonly type: ConnectionType = 'write') {
+    this.logger = this.config.getLogger();
+
     if (options) {
       this.options = options;
     } else {
@@ -32,7 +34,7 @@ export abstract class Connection {
   /**
    * Establishes connection to database
    */
-  abstract connect(): Promise<void>;
+  abstract connect(): void | Promise<void>;
 
   /**
    * Are we connected to the database
@@ -40,12 +42,26 @@ export abstract class Connection {
   abstract isConnected(): Promise<boolean>;
 
   /**
+   * Are we connected to the database
+   */
+  abstract checkConnection(): Promise<{ ok: boolean; reason?: string; error?: Error }>;
+
+  /**
    * Closes the database connection (aka disconnect)
    */
   async close(force?: boolean): Promise<void> {
     Object.keys(this.options)
       .filter(k => k !== 'name')
-      .forEach(k => delete this.options[k]);
+      .forEach(k => delete this.options[k as keyof ConnectionOptions]);
+  }
+
+  /**
+   * Ensure the connection exists, this is used to support lazy connect when using `MikroORM.initSync()`
+   */
+  async ensureConnection(): Promise<void> {
+    if (!this.connected) {
+      await this.connect();
+    }
   }
 
   /**
@@ -53,11 +69,11 @@ export abstract class Connection {
    */
   abstract getDefaultClientUrl(): string;
 
-  async transactional<T>(cb: (trx: Transaction) => Promise<T>, options?: { isolationLevel?: IsolationLevel; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<T> {
+  async transactional<T>(cb: (trx: Transaction) => Promise<T>, options?: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<T> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async begin(options?: { isolationLevel?: IsolationLevel; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<Transaction> {
+  async begin(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<Transaction> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
@@ -73,12 +89,22 @@ export abstract class Connection {
 
   getConnectionOptions(): ConnectionConfig {
     const ret: ConnectionConfig = {};
-    const url = new URL(this.options.clientUrl ?? this.config.getClientUrl());
-    this.options.host = ret.host = this.options.host ?? this.config.get('host', decodeURIComponent(url.hostname));
-    this.options.port = ret.port = this.options.port ?? this.config.get('port', +url.port);
-    this.options.user = ret.user = this.options.user ?? this.config.get('user', decodeURIComponent(url.username));
-    this.options.password = ret.password = this.options.password ?? this.config.get('password', decodeURIComponent(url.password));
-    this.options.dbName = ret.database = this.options.dbName ?? this.config.get('dbName', decodeURIComponent(url.pathname).replace(/^\//, ''));
+
+    if (this.options.clientUrl) {
+      const url = new URL(this.options.clientUrl);
+      this.options.host = ret.host = this.options.host ?? decodeURIComponent(url.hostname);
+      this.options.port = ret.port = this.options.port ?? +url.port;
+      this.options.user = ret.user = this.options.user ?? decodeURIComponent(url.username);
+      this.options.password = ret.password = this.options.password ?? decodeURIComponent(url.password);
+      this.options.dbName = ret.database = this.options.dbName ?? decodeURIComponent(url.pathname).replace(/^\//, '');
+    } else {
+      const url = new URL(this.config.getClientUrl());
+      this.options.host = ret.host = this.options.host ?? this.config.get('host', decodeURIComponent(url.hostname));
+      this.options.port = ret.port = this.options.port ?? this.config.get('port', +url.port);
+      this.options.user = ret.user = this.options.user ?? this.config.get('user', decodeURIComponent(url.username));
+      this.options.password = ret.password = this.options.password ?? this.config.get('password', decodeURIComponent(url.password));
+      this.options.dbName = ret.database = this.options.dbName ?? this.config.get('dbName', decodeURIComponent(url.pathname).replace(/^\//, ''));
+    }
 
     return ret;
   }
@@ -107,7 +133,12 @@ export abstract class Connection {
 
     try {
       const res = await cb();
-      this.logQuery(query, { ...context, took: Date.now() - now, results: Array.isArray(res) ? res.length : undefined });
+      this.logQuery(query, {
+        ...context,
+        took: Date.now() - now,
+        results: Array.isArray(res) ? res.length : undefined,
+        affected: Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined,
+      });
 
       return res;
     } catch (e) {

@@ -1,8 +1,7 @@
-import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
   DeadlockException, ExceptionConverter, ForeignKeyConstraintViolationException, InvalidFieldNameException,
   NonUniqueFieldNameException, NotNullConstraintViolationException, SyntaxErrorException, TableExistsException,
-  TableNotFoundException, UniqueConstraintViolationException, CheckConstraintViolationException,
+  TableNotFoundException, UniqueConstraintViolationException, CheckConstraintViolationException, type Dictionary, type DriverException,
 } from '@mikro-orm/core';
 
 export class PostgreSqlExceptionConverter extends ExceptionConverter {
@@ -12,7 +11,7 @@ export class PostgreSqlExceptionConverter extends ExceptionConverter {
    * @link http://www.postgresql.org/docs/9.4/static/errcodes-appendix.html
    * @link https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractPostgreSQLDriver.php
    */
-  convertException(exception: Error & Dictionary): DriverException {
+  override convertException(exception: Error & Dictionary): DriverException {
     switch (exception.code) {
       case '40001':
       case '40P01':

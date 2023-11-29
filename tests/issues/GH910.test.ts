@@ -1,7 +1,6 @@
-import type { Platform } from '@mikro-orm/core';
-import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, Type } from '@mikro-orm/core';
+import type { Platform } from '@mikro-orm/sqlite';
+import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
-import { SqliteDriver } from '@mikro-orm/sqlite';
 
 export class Sku {
 
@@ -19,11 +18,11 @@ export class Sku {
 
 export class SkuType extends Type<Sku, string> {
 
-  convertToDatabaseValue(value: Sku | string, platform: Platform, fromQuery?: boolean): string {
+  override convertToDatabaseValue(value: Sku | string, platform: Platform): string {
     return value.toString();
   }
 
-  convertToJSValue(value: Sku | string, platform: Platform): Sku {
+  override convertToJSValue(value: Sku | string, platform: Platform): Sku {
     if (value instanceof Sku) {
       return value;
     }
@@ -66,8 +65,6 @@ export class CartItem {
   @PrimaryKey({ type: SkuType })
   readonly sku: Sku;
 
-  [PrimaryKeyType]?: [string, string];
-
   @Property()
   quantity: number;
 
@@ -87,7 +84,6 @@ describe('GH issue 910', () => {
   test(`composite keys with custom type PK that uses object value`, async () => {
     const orm = await MikroORM.init({
       entities: [Cart, CartItem],
-      driver: SqliteDriver,
       dbName: ':memory:',
     });
     await orm.schema.createSchema();
@@ -111,7 +107,7 @@ describe('GH issue 910', () => {
     expect(mock.mock.calls[2][0]).toMatch('insert into `cart_item` (`cart_id`, `sku`, `quantity`) values (\'123\', \'sku1\', 10), (\'123\', \'sku2\', 10)');
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch('begin');
-    expect(mock.mock.calls[5][0]).toMatch('update `cart_item` set `quantity` = 33 where (`cart_id`, `sku`) in ((\'123\', \'sku2\'))');
+    expect(mock.mock.calls[5][0]).toMatch('update `cart_item` set `quantity` = 33 where `cart_id` = \'123\' and `sku` = \'sku2\'');
     expect(mock.mock.calls[6][0]).toMatch('commit');
     await orm.close();
   });

@@ -32,12 +32,15 @@ level?: number = 1;
 Or use `OptionalProps` symbol, specially designed to help with this use case. It should be defined as optional property on the entity and its type needs to be a union of all the properties you want to mark as optional.
 
 ```ts
-import { OptionalProps } from '@mikro-orm/core';
+import { OptionalProps, Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 class User {
 
-  [OptionalProps]?: 'foo' | 'bar';
+  // highlight-start
+  // getters will have the same problem
+  [OptionalProps]?: 'foo' | 'bar' | 'fooBar';
+  // highlight-end
 
   @PrimaryKey()
   id!: number;
@@ -47,6 +50,77 @@ class User {
 
   @Property({ default: 2 })
   bar: number = 2;
+
+  @Property({ persist: false })
+  get fooBar() {
+    return foo + bar;
+  }
+  
+}
+```
+
+When you want to define some optional properties in your own base entity class, use generics, so you can add more properties from the extending classes:
+
+```ts
+@Entity()
+// highlight-next-line
+class MyBaseEntity<Entity extends object, Optional extends keyof Entity = never> {
+
+  // highlight-next-line
+  [OptionalProps]?: 'foo' | 'bar' | Optional;
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ default: 1 })
+  foo: number = 1;
+
+  @Property({ default: 2 })
+  bar: number = 2;
+
+}
+
+@Entity()
+// highlight-next-line
+class User extends MyBaseEntity<User, 'baz'> {
+
+  @Property({ default: 3 })
+  baz: number = 3;
+
+}
+```
+
+An alternative approach is using the `Opt` type, which can be used in two ways:
+
+- with generics: `middleName: Opt<string> = '';`
+- with intersections: `middleName: string & Opt = '';`
+
+Both will work the same, and can be combined with the `OptionalProps` symbol approach.
+
+```ts
+import { Opt, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+class User {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  firstName!: string;
+
+  @Property()
+  // highlight-next-line
+  middleName: string & Opt = '';
+
+  @Property()
+  lastName!: string;
+
+  @Property({ persist: false })
+  // highlight-next-line
+  get fullName(): Opt<string> {
+    return `${this.firstName} ${this.middleName} ${this.lastName}`;
+  }
 
 }
 ```
@@ -71,37 +145,37 @@ When we define our entities, we need to be careful about optional properties. Wi
 // number instead of string will throw
 const author = new Author('test', 'test');
 wrap(author).assign({ name: 111, email: 222 });
-await orm.em.persistAndFlush(author); // throws "Validation error: trying to set Author.name of type 'string' to '111' of type 'number'"
+await orm.em.persist(author).flush(); // throws "Validation error: trying to set Author.name of type 'string' to '111' of type 'number'"
 
 // string date with unknown format will throw
 wrap(author).assign(author, { name: '333', email: '444', born: 'asd' });
-await orm.em.persistAndFlush(author); // throws "Validation error: trying to set Author.born of type 'date' to 'asd' of type 'string'"
+await orm.em.persist(author).flush(); // throws "Validation error: trying to set Author.born of type 'date' to 'asd' of type 'string'"
 
 // string date with correct format will be auto-corrected
 wrap(author).assign({ name: '333', email: '444', born: '2018-01-01' });
-await orm.em.persistAndFlush(author);
+await orm.em.persist(author).flush();
 console.log(author.born).toBe(true); // instance of Date
 
 // Date object will be ok
 wrap(author).assign({ born: new Date() });
-await orm.em.persistAndFlush(author);
+await orm.em.persist(author).flush();
 console.log(author.born).toBe(true); // instance of Date
 
 // null will be ok
 wrap(author).assign({ born: null });
-await orm.em.persistAndFlush(author);
+await orm.em.persist(author).flush();
 console.log(author.born); // null
 
 // string number with correct format will be auto-corrected
 wrap(author).assign({ age: '21' });
-await orm.em.persistAndFlush(author);
+await orm.em.persist(author).flush();
 console.log(author.age); // number 21
 
 // string instead of number with will throw
 wrap(author).assign({ age: 'asd' });
-await orm.em.persistAndFlush(author); // throws "Validation error: trying to set Author.age of type 'number' to 'asd' of type 'string'"
+await orm.em.persist(author).flush(); // throws "Validation error: trying to set Author.age of type 'number' to 'asd' of type 'string'"
 wrap(author).assign({ age: new Date() });
-await orm.em.persistAndFlush(author); // throws "Validation error: trying to set Author.age of type 'number' to '2019-01-17T21:14:23.875Z' of type 'date'"
+await orm.em.persist(author).flush(); // throws "Validation error: trying to set Author.age of type 'number' to '2019-01-17T21:14:23.875Z' of type 'date'"
 wrap(author).assign({ age: false });
-await orm.em.persistAndFlush(author); // throws "Validation error: trying to set Author.age of type 'number' to 'false' of type 'boolean'"
+await orm.em.persist(author).flush(); // throws "Validation error: trying to set Author.age of type 'number' to 'false' of type 'boolean'"
 ```

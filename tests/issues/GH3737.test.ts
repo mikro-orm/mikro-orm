@@ -9,8 +9,7 @@ import {
   OneToMany,
   PrimaryKey,
   Property,
-} from '@mikro-orm/core';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+} from '@mikro-orm/better-sqlite';
 
 @Entity()
 class Project {
@@ -76,7 +75,7 @@ class ProjectUsersSubscriber implements EventSubscriber<ProjectUser> {
       .getChangeSets()
       .filter(cs => cs.entity instanceof ProjectUser);
     for (const cs of changeSets) {
-      const pk = cs.getPrimaryKey(true) as Record<string, unknown>;
+      const pk = cs.getPrimaryKey(true)! as Record<string, unknown>;
       expect(pk).toBeInstanceOf(Object);
       expect(Array.isArray(pk)).toBe(false);
       expect(Object.keys(pk)).toMatchObject(['project', 'user']);
@@ -94,7 +93,6 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Project, User],
-    driver: BetterSqliteDriver,
     dbName: ':memory:',
     subscribers: [new ProjectUsersSubscriber()],
   });

@@ -1,7 +1,5 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Reference } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class Node {
@@ -26,10 +24,9 @@ class B {
 @Entity()
 class A {
 
-  [PrimaryKeyType]?: number;
   [PrimaryKeyProp]?: 'node';
-  @OneToOne({ entity: 'Node', wrappedReference: true, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
-  node!: IdentifiedReference<Node>;
+  @OneToOne({ entity: 'Node', ref: true, primary: true, deleteRule: 'cascade', updateRule: 'cascade' })
+  node!: Ref<Node>;
 
   @Property()
   name!: string;
@@ -41,15 +38,14 @@ class A {
 
 describe('GH issue 1224', () => {
 
-  let orm: MikroORM<AbstractSqlDriver>;
+  let orm: MikroORM;
   const log = jest.fn();
 
   beforeAll(async () => {
-    orm = await MikroORM.init({
+    orm = MikroORM.initSync({
       entities: [Node, A, B],
       dbName: `mikro_orm_test_gh_1224`,
-      driver: PostgreSqlDriver,
-      cache: { enabled: false },
+      metadataCache: { enabled: false },
     });
     mockLogger(orm, ['query', 'query-params'], log);
     await orm.schema.ensureDatabase();

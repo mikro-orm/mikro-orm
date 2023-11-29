@@ -22,7 +22,7 @@ class MigrationTest2 extends Migration {
     await this.driver.nativeDelete('Book', { foo: false }, { ctx: this.ctx });
   }
 
-  isTransactional(): boolean {
+  override isTransactional(): boolean {
     return false;
   }
 
@@ -34,9 +34,7 @@ describe('Migrator (mongo)', () => {
 
   beforeAll(async () => {
     orm = await initORMMongo(true);
-
-    const schemaGenerator = orm.schema;
-    await schemaGenerator.refreshDatabase();
+    await orm.schema.refreshDatabase();
     await remove(process.cwd() + '/temp/migrations-mongo');
   });
 
@@ -52,8 +50,7 @@ describe('Migrator (mongo)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, emit: 'js' }); // Set migration type to js
-    const migrator = orm.migrator;
-    const migration = await migrator.createMigration();
+    const migration = await orm.migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     await remove(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
@@ -121,7 +118,7 @@ describe('Migrator (mongo)', () => {
     const spy = jest.spyOn(Migrator.prototype, 'createMigration');
     spy.mockImplementation();
     await migrator.createInitialMigration('abc');
-    expect(spy).toBeCalledWith('abc');
+    expect(spy).toHaveBeenCalledWith('abc');
     spy.mockRestore();
   });
 
@@ -132,13 +129,13 @@ describe('Migrator (mongo)', () => {
     downMock.mockImplementationOnce(() => void 0 as any);
     const migrator = orm.migrator;
     await migrator.up();
-    expect(upMock).toBeCalledTimes(1);
-    expect(downMock).toBeCalledTimes(0);
+    expect(upMock).toHaveBeenCalledTimes(1);
+    expect(downMock).toHaveBeenCalledTimes(0);
     await orm.em.begin();
     await migrator.down({ transaction: orm.em.getTransactionContext() });
     await orm.em.commit();
-    expect(upMock).toBeCalledTimes(1);
-    expect(downMock).toBeCalledTimes(1);
+    expect(upMock).toHaveBeenCalledTimes(1);
+    expect(downMock).toHaveBeenCalledTimes(1);
     upMock.mockRestore();
   });
 
@@ -173,7 +170,7 @@ describe('Migrator (mongo)', () => {
     const spy1 = jest.spyOn(Migration.prototype, 'getCollection');
     mock.mock.calls.length = 0;
     await runner.run(migration1, 'up');
-    expect(spy1).toBeCalledWith('Book');
+    expect(spy1).toHaveBeenCalledWith('Book');
     // no logging for collection methods, only for driver ones
     expect(mock.mock.calls).toHaveLength(3);
     expect(mock.mock.calls[0][0]).toMatch('db.begin()');
@@ -181,7 +178,7 @@ describe('Migrator (mongo)', () => {
     expect(mock.mock.calls[2][0]).toMatch('db.commit()');
     mock.mock.calls.length = 0;
 
-    await expect(runner.run(migration1, 'down')).rejects.toThrowError('This migration cannot be reverted');
+    await expect(runner.run(migration1, 'down')).rejects.toThrow('This migration cannot be reverted');
     const executed = await migrator.getExecutedMigrations();
     expect(executed).toEqual([]);
 

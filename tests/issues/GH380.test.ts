@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -17,24 +16,20 @@ class A {
 
 describe('GH issue 380', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A],
       dbName: `mikro_orm_test_gh_380`,
-      driver: PostgreSqlDriver,
     });
-    await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));
 
   test(`schema updates respect default values`, async () => {
-    const generator = orm.schema;
-    const dump = await generator.getUpdateSchemaSQL({ wrap: false });
+    const dump = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(dump).toBe('');
   });
 

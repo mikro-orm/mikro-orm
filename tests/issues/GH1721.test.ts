@@ -1,11 +1,10 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
 import { Guid } from 'guid-typescript';
 import { mockLogger } from '../helpers';
 
 export class GuidType extends Type<Guid | undefined, string | undefined> {
 
-  convertToDatabaseValue(value: Guid | undefined): string | undefined {
+  override convertToDatabaseValue(value: Guid | undefined): string | undefined {
     if (!value) {
       return value;
     }
@@ -13,7 +12,7 @@ export class GuidType extends Type<Guid | undefined, string | undefined> {
     return value.toString();
   }
 
-  convertToJSValue(value: string | undefined): Guid | undefined {
+  override convertToJSValue(value: string | undefined): Guid | undefined {
     if (!value) {
       return undefined;
     }
@@ -21,7 +20,7 @@ export class GuidType extends Type<Guid | undefined, string | undefined> {
     return Guid.parse(value);
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'text';
   }
 
@@ -43,13 +42,12 @@ export class Couch {
 
 describe('GH issue 1721', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Couch],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

@@ -1,5 +1,4 @@
-import { Entity, IdentifiedReference, Index, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, Ref, Index, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -19,11 +18,11 @@ export class Book1 {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
-  author1!: IdentifiedReference<Author>;
+  @ManyToOne(() => Author, { ref: true })
+  author1!: Ref<Author>;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
-  author2!: IdentifiedReference<Author>;
+  @ManyToOne(() => Author, { ref: true })
+  author2!: Ref<Author>;
 
   @ManyToOne(() => Author)
   author3!: Author;
@@ -34,22 +33,33 @@ export class Book1 {
   @ManyToOne(() => Author)
   author5!: Author;
 
+  @Property()
+  title!: string;
+
+  @Property({ unique: true })
+  isbn!: string;
+
+  @Property({ type: 'json' })
+  metaData: any;
+
 }
 
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3' })
+@Index({ properties: 'metaData.foo.bar.baz', options: { returning: 'char(200)' } })
+@Unique({ properties: 'metaData.fooBar.email' })
 export class Book2 {
 
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
-  author1!: IdentifiedReference<Author>;
+  @ManyToOne(() => Author, { ref: true })
+  author1!: Ref<Author>;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   @Index()
-  author2!: IdentifiedReference<Author>;
+  author2!: Ref<Author>;
 
   @ManyToOne(() => Author)
   author3!: Author;
@@ -61,23 +71,34 @@ export class Book2 {
   @ManyToOne(() => Author, { index: true })
   author5!: Author;
 
+  @Property()
+  title!: string;
+
+  @Property({ unique: 'isbn_unique_constr' })
+  isbn!: string;
+
+  @Property({ type: 'json' })
+  metaData: any;
+
 }
 
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3', name: 'lol31' })
 @Index({ properties: 'author3', name: 'lol41' })
+@Index({ properties: ['metaData.foo.bar2', 'metaData.foo.bar3'] })
+@Unique({ properties: ['metaData.fooBar.bazBaz', 'metaData.fooBar.lol123'] })
 export class Book3 {
 
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
-  author1!: IdentifiedReference<Author>;
+  @ManyToOne(() => Author, { ref: true })
+  author1!: Ref<Author>;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   @Index()
-  author2!: IdentifiedReference<Author>;
+  author2!: Ref<Author>;
 
   @ManyToOne(() => Author)
   author3!: Author;
@@ -88,6 +109,16 @@ export class Book3 {
 
   @ManyToOne(() => Author, { index: 'auth_idx5' })
   author5!: Author;
+
+  @Property()
+  title!: string;
+
+  @Property()
+  @Unique()
+  isbn!: string;
+
+  @Property({ type: 'json' })
+  metaData: any;
 
 }
 
@@ -100,12 +131,12 @@ export class Book4 {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
-  author1!: IdentifiedReference<Author>;
+  @ManyToOne(() => Author, { ref: true })
+  author1!: Ref<Author>;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   @Index()
-  author2!: IdentifiedReference<Author>;
+  author2!: Ref<Author>;
 
   @ManyToOne(() => Author)
   author3!: Author;
@@ -116,6 +147,16 @@ export class Book4 {
 
   @ManyToOne(() => Author, { index: 'auth_idx5' })
   author5!: Author;
+
+  @Property()
+  title!: string;
+
+  @Property()
+  @Unique()
+  isbn!: string;
+
+  @Property({ type: 'json' })
+  metaData: any;
 
 }
 

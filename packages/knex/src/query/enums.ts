@@ -6,3 +6,11 @@ export enum QueryType {
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',
 }
+
+export enum JoinType {
+  leftJoin = 'left join',
+  innerJoin = 'inner join',
+  pivotJoin = 'pivot join',
+  innerJoinLateral = 'inner join lateral',
+  leftJoinLateral = 'left join lateral',
+}

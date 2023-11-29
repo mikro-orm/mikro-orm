@@ -151,23 +151,30 @@ describe('Utils', () => {
     expect(c.inner.p).toBeInstanceOf(Promise);
   });
 
+  describe('stripRelativePath', () => {
+    test('Remove single leading dot (./)', () => {
+      const path = './my/path';
+      expect(Utils.stripRelativePath(path)).toEqual('/my/path');
+    });
+    test('Remove multiple leading dots (../)', () => {
+      const path = '../my/path';
+      expect(Utils.stripRelativePath(path)).toEqual('/my/path');
+    });
+
+    test('Remove multiple leading dots and slashes (../../)', () => {
+      const path = '../../my/path';
+      expect(Utils.stripRelativePath(path)).toEqual('/my/path');
+    });
+
+  });
   /**
    * regression test for running code coverage with nyc, mocha and ts-node and entity has default constructor value as enum parameter
    */
   test('getParamNames', () => {
     expect(Utils.getParamNames(Test, 'constructor')).toEqual([]);
     expect(Utils.getParamNames(FooBar, 'constructor')).toEqual([]);
-    expect(Utils.getParamNames(Author, 'toJSON')).toEqual(['strict', 'strip', '...args']);
+    expect(Utils.getParamNames(Author, 'toJSON')).toEqual(['strict', 'strip']);
     expect(Utils.getParamNames('')).toEqual([]);
-
-    const func = `function (email, organization, role=(cov_1a0rd1emyt.b[13][0]++, Test.TEST)) {}`;
-    expect(Utils.getParamNames(func)).toEqual([ 'email', 'organization', 'role' ]);
-
-    const func2 = `function toJSON(strict = true, strip = ['id', 'email'], a =1) {}`;
-    expect(Utils.getParamNames(func2)).toEqual([ 'strict', 'strip', 'a' ]);
-
-    const func3 = `function toJSON(strict = true, strip = { test: ['id', 'email'] }, a = 1) {}`;
-    expect(Utils.getParamNames(func3)).toEqual([ 'strict', 'strip', 'a' ]);
   });
 
   test('defaultValue', () => {
@@ -517,13 +524,13 @@ describe('Utils', () => {
     warnSpy.mockImplementationOnce(i => i);
     const ret = Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found' });
     expect(ret).toBeUndefined();
-    expect(warnSpy).toBeCalledWith('not found');
+    expect(warnSpy).toHaveBeenCalledWith('not found');
 
     const requireFromSpy = jest.spyOn(Utils, 'requireFrom');
     requireFromSpy.mockImplementationOnce(() => { throw new Error('some other issue'); });
     expect(() => {
       return Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found', allowError: 'Cannot find module' });
-    }).toThrowError('some other issue');
+    }).toThrow('some other issue');
   });
 
   test('getPrimaryKeyCond', () => {
@@ -546,6 +553,11 @@ describe('Utils', () => {
     expect(Utils.hasObjectKeys({  __proto__: null })).toEqual(false);
     expect(Utils.hasObjectKeys({ a: 'a' })).toEqual(true);
     expect(Utils.hasObjectKeys({ a: 'a', __proto__: null })).toEqual(true);
+  });
+
+  test('removeDuplicates', () => {
+    expect(Utils.removeDuplicates(['foo', 'bar', 'foo', 'bar2'])).toEqual(['foo', 'bar', 'bar2']);
+    expect(Utils.removeDuplicates([{ v: 'foo' }, { v: 'bar' }, { v: 'foo' }, { v: 'bar2' }])).toEqual([{ v: 'foo' }, { v: 'bar' }, { v: 'bar2' }]);
   });
 
   afterAll(async () => orm.close(true));

@@ -1,6 +1,15 @@
 import type { Knex } from 'knex';
-import type { AnyEntity, ConnectionType, Dictionary, EntityData, EntityName, EntityRepository, GetRepository, QueryResult } from '@mikro-orm/core';
-import { EntityManager } from '@mikro-orm/core';
+import {
+  EntityManager,
+  type AnyEntity,
+  type ConnectionType,
+  type EntityData,
+  type EntityName,
+  type EntityRepository,
+  type GetRepository,
+  type QueryResult,
+  type FilterQuery,
+} from '@mikro-orm/core';
 import type { AbstractSqlDriver } from './AbstractSqlDriver';
 import { QueryBuilder } from './query';
 import type { SqlEntityRepository } from './SqlEntityRepository';
@@ -27,16 +36,6 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
   }
 
   /**
-   * Creates raw SQL query that won't be escaped when used as a parameter.
-   */
-  raw<R = Knex.Raw>(sql: string, bindings: Knex.RawBinding[] | Knex.ValueDict = []): R {
-    const raw = this.getKnex().raw(sql, bindings);
-    (raw as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
-
-    return raw as unknown as R;
-  }
-
-  /**
    * Returns configured knex instance.
    */
   getKnex(type?: ConnectionType) {
@@ -47,8 +46,13 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
     return this.getDriver().execute(queryOrKnex, params, method, this.getContext(false).getTransactionContext());
   }
 
-  getRepository<T extends object, U extends EntityRepository<T> = SqlEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
+  override getRepository<T extends object, U extends EntityRepository<T> = SqlEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
     return super.getRepository<T, U>(entityName);
+  }
+
+  protected override applyDiscriminatorCondition<Entity extends object>(entityName: string, where: FilterQuery<Entity>): FilterQuery<Entity> {
+    // this is handled in QueryBuilder now for SQL drivers
+    return where;
   }
 
 }

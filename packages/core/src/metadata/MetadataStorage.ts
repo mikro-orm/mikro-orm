@@ -1,15 +1,12 @@
-import type { Dictionary, EntityData } from '../typings';
-import { EntityMetadata } from '../typings';
+import { EntityMetadata, type Dictionary, type EntityData, type EntityName } from '../typings';
 import { Utils } from '../utils/Utils';
 import { MetadataError } from '../errors';
 import type { EntityManager } from '../EntityManager';
 import { EntityHelper } from '../entity/EntityHelper';
-import type { EventSubscriber } from '../events';
 
 export class MetadataStorage {
 
   private static readonly metadata: Dictionary<EntityMetadata> = Utils.getGlobalStorage('metadata');
-  private static readonly subscribers: Dictionary<EventSubscriber> = Utils.getGlobalStorage('subscribers');
   private readonly metadata: Dictionary<EntityMetadata>;
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
@@ -44,17 +41,12 @@ export class MetadataStorage {
     return meta;
   }
 
-  static getSubscriberMetadata(): Dictionary<EventSubscriber> {
-    return MetadataStorage.subscribers;
-  }
-
   static init(): MetadataStorage {
     return new MetadataStorage(MetadataStorage.metadata);
   }
 
   static clear(): void {
     Object.keys(this.metadata).forEach(k => delete this.metadata[k]);
-    Object.keys(this.subscribers).forEach(k => delete this.subscribers[k]);
   }
 
   getAll(): Dictionary<EntityMetadata> {
@@ -68,25 +60,32 @@ export class MetadataStorage {
       return undefined;
     }
 
-    const type = meta.root.discriminatorMap![value];
+    const type = meta.root.discriminatorMap![value as string];
 
     return this.metadata[type];
   }
 
-  get<T = any>(entity: string, init = false, validate = true): EntityMetadata<T> {
-    if (validate && !init && !this.has(entity)) {
-      throw MetadataError.missingMetadata(entity);
+  get<T = any>(entityName: EntityName<T>, init = false, validate = true): EntityMetadata<T> {
+    entityName = Utils.className(entityName);
+
+    if (validate && !init && !this.has(entityName)) {
+      throw MetadataError.missingMetadata(entityName);
     }
 
-    if (init && !this.has(entity)) {
-      this.metadata[entity] = new EntityMetadata();
+    if (init && !this.has(entityName)) {
+      this.metadata[entityName] = new EntityMetadata();
     }
 
-    return this.metadata[entity];
+    return this.metadata[entityName];
   }
 
-  find<T = any>(entity: string): EntityMetadata<T> | undefined {
-    return this.metadata[entity];
+  find<T = any>(entityName: EntityName<T>): EntityMetadata<T> | undefined {
+    if (!entityName) {
+      return;
+    }
+
+    entityName = Utils.className(entityName);
+    return this.metadata[entityName];
   }
 
   has(entity: string): boolean {
@@ -103,8 +102,14 @@ export class MetadataStorage {
 
   decorate(em: EntityManager): void {
     Object.values(this.metadata)
-      .filter(meta => meta.prototype && !meta.prototype.__meta)
+      .filter(meta => meta.prototype)
       .forEach(meta => EntityHelper.decorate(meta, em));
+  }
+
+  * [Symbol.iterator](): IterableIterator<EntityMetadata> {
+    for (const meta of Object.values(this.metadata)) {
+      yield meta;
+    }
   }
 
 }

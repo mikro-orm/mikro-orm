@@ -1,48 +1,42 @@
 import { ObjectId } from 'bson';
-import type {
-  IPrimaryKey, Primary, NamingStrategy, Constructor, EntityRepository, EntityProperty,
-  PopulateOptions, EntityMetadata, IDatabaseDriver, EntityManager, Configuration, MikroORM,
-} from '@mikro-orm/core';
-import { Platform, MongoNamingStrategy, Utils, ReferenceType, MetadataError } from '@mikro-orm/core';
+import {
+ Platform, MongoNamingStrategy, Utils, ReferenceKind, MetadataError, type
+  IPrimaryKey, type Primary, type NamingStrategy, type Constructor, type EntityRepository, type EntityProperty, type
+  PopulateOptions, type EntityMetadata, type IDatabaseDriver, type EntityManager, type Configuration, type MikroORM } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
 import { MongoEntityRepository } from './MongoEntityRepository';
 import { MongoSchemaGenerator } from './MongoSchemaGenerator';
 
 export class MongoPlatform extends Platform {
 
-  protected readonly exceptionConverter = new MongoExceptionConverter();
+  protected override readonly exceptionConverter = new MongoExceptionConverter();
 
-  setConfig(config: Configuration) {
+  override setConfig(config: Configuration) {
     config.set('autoJoinOneToOneOwner', false);
+    config.set('loadStrategy', 'select-in');
+    config.get('discovery').inferDefaultValues = false;
     super.setConfig(config);
   }
 
-  getNamingStrategy(): { new(): NamingStrategy} {
+  override getNamingStrategy(): { new(): NamingStrategy} {
     return MongoNamingStrategy;
   }
 
-  getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
-    return MongoEntityRepository as Constructor<EntityRepository<T>>;
+  override getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
+    return MongoEntityRepository as unknown as Constructor<EntityRepository<T>>;
   }
 
   /** @inheritDoc */
-  lookupExtensions(orm: MikroORM): void {
+  override lookupExtensions(orm: MikroORM): void {
     MongoSchemaGenerator.register(orm);
   }
 
-  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
-  getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
+  /* istanbul ignore next: kept for type inference only */
+  override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
     return new MongoSchemaGenerator(em ?? driver as any);
   }
 
-  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
-  getMigrator(em: EntityManager) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { Migrator } = require('@mikro-orm/migrations-mongodb');
-    return this.config.getCachedService(Migrator, em);
-  }
-
-  normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
+  override normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
     if (data instanceof ObjectId) {
       return data.toHexString() as T;
     }
@@ -50,54 +44,54 @@ export class MongoPlatform extends Platform {
     return data as T;
   }
 
-  denormalizePrimaryKey(data: number | string): IPrimaryKey {
+  override denormalizePrimaryKey(data: number | string): IPrimaryKey {
     return new ObjectId(data);
   }
 
-  getSerializedPrimaryKeyField(field: string): string {
+  override getSerializedPrimaryKeyField(field: string): string {
     return 'id';
   }
 
-  usesDifferentSerializedPrimaryKey(): boolean {
+  override usesDifferentSerializedPrimaryKey(): boolean {
     return true;
   }
 
-  usesImplicitTransactions(): boolean {
+  override usesImplicitTransactions(): boolean {
     return false;
   }
 
-  convertsJsonAutomatically(marshall = false): boolean {
+  override convertsJsonAutomatically(): boolean {
     return true;
   }
 
-  convertJsonToDatabaseValue(value: unknown): unknown {
+  override convertJsonToDatabaseValue(value: unknown): unknown {
     return value;
   }
 
-  convertJsonToJSValue(value: unknown): unknown {
+  override convertJsonToJSValue(value: unknown): unknown {
     return value;
   }
 
-  marshallArray(values: string[]): string {
+  override marshallArray(values: string[]): string {
     return values as unknown as string;
   }
 
-  cloneEmbeddable<T>(data: T): T {
+  override cloneEmbeddable<T>(data: T): T {
     const ret = super.cloneEmbeddable(data);
     Utils.dropUndefinedProperties(ret);
 
     return ret;
   }
 
-  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
+  override shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
     if (super.shouldHaveColumn(prop, populate)) {
       return true;
     }
 
-    return prop.reference === ReferenceType.MANY_TO_MANY && prop.owner;
+    return prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner;
   }
 
-  validateMetadata(meta: EntityMetadata): void {
+  override validateMetadata(meta: EntityMetadata): void {
     const pk = meta.getPrimaryProps()[0];
 
     if (pk && pk.fieldNames?.[0] !== '_id') {
@@ -105,7 +99,7 @@ export class MongoPlatform extends Platform {
     }
   }
 
-  isAllowedTopLevelOperator(operator: string) {
+  override isAllowedTopLevelOperator(operator: string) {
     return ['$not', '$fulltext'].includes(operator);
   }
 

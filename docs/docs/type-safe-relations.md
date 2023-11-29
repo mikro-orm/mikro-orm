@@ -15,7 +15,7 @@ author!: Author; // the value is always instance of the `Author` entity
 You can check whether an entity is initialized via `wrap(entity).isInitialized()`, and use `await wrap(entity).init()` to initialize it. This will trigger database call and populate the entity, keeping the same reference in identity map.
 
 ```ts
-const author = em.getReference(123);
+const author = em.getReference(Author, 123);
 console.log(author.id); // accessing the id will not trigger any db call
 console.log(wrap(author).isInitialized()); // false
 console.log(author.name); // undefined
@@ -137,7 +137,6 @@ book1.author; // Ref<Author> (instance of `Reference` class)
 book1.author.name; // type error, there is no `name` property
 book1.author.unwrap().name; // unsafe sync access, undefined as author is not loaded
 book1.author.isInitialized(); // false
-(await book1.author.load()).name; // async safe access
 
 const book2 = await em.findOne(Book, 1, { populate: ['author'] });
 book2.author; // LoadedReference<Author> (instance of `Reference` class)
@@ -158,11 +157,41 @@ console.log(book.author.getProperty('name')); // ok, author already loaded
 
 If you use different metadata provider than `TsMorphMetadataProvider` (e.g. `ReflectMetadataProvider`), you will also need to explicitly set `ref` parameter:
 
-> The `ref` option is an alias for `wrappedReference`, and `Ref` is an alias for `IdentifiedReference` type, both added in v5.5.
-
 ```ts
 @ManyToOne(() => Author, { ref: true })
 author!: Ref<Author>;
+```
+
+### Using `Reference.load()`
+
+After retrieving a reference, you can load the full entity by utilizing the asynchronous `Reference.load()` method.
+
+```ts
+const book1 = await em.findOne(Book, 1);
+(await book1.author.load()).name; // async safe access
+
+const book2 = await em.findOne(Book, 2);
+const author = await book2.author.load();
+author.name;
+await book2.author.load(); // no additional query, already loaded
+```
+
+> As opposed to `wrap(e).init()` which always refreshes the entity, `Reference.load()` method will query the database only if the entity is not already loaded in Identity Map.
+
+### `ScalarReference` wrapper
+
+Similarly to the `Reference` wrapper, we can also wrap scalars with `Ref` into a `ScalarReference` object. This is handy for lazy scalar properties.
+
+```ts
+@Property({ lazy: true, ref: true })
+passwordHash!: Ref<string>;
+```
+
+The `Ref` type automatically resolves to `ScalarReference` for non-object types. You can use it explicitly if you want to wrap an object scalar property (e.g. JSON value).
+
+```ts
+const user = await em.findOne(User, 1);
+const passwordHash = await user.passwordHash.load();
 ```
 
 ## `Loaded` type
@@ -281,6 +310,8 @@ await em.flush();
 Since v5 we can also create entity references without access to `EntityManager`. This can be handy if you want to create a reference from inside entity constructor:
 
 ```ts
+import { Entity, ManyToOne, Rel, rel } from '@mikro-orm/core';
+
 @Entity()
 export class Book {
 
@@ -288,7 +319,7 @@ export class Book {
   author!: Ref<Author>;
 
   constructor(authorId: number) {
-    this.author = Reference.createFromPK(Author, authorId);
+    this.author = rel(Author, authorId);
   }
 
 }
@@ -405,5 +436,3 @@ const book = await em.findOne(Book, 1);
 console.log(book.author.id); // ok, returns string PK
 console.log(book.author._id); // ok, returns ObjectId PK
 ```
-
-> As opposed to `wrap(e).init()` which always refreshes the entity, `Reference.load()` method will query the database only if the entity is not already loaded in Identity Map.

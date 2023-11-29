@@ -1,5 +1,4 @@
-import { Collection, Entity, IdentifiedReference, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, Ref, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Manager {
@@ -10,8 +9,8 @@ export class Manager {
   @Property()
   name!: string;
 
-  @ManyToOne('Project', { wrappedReference: true })
-  project!: IdentifiedReference<Project>;
+  @ManyToOne('Project', { ref: true })
+  project!: Ref<Project>;
 
   constructor(name: string) {
     this.name = name;
@@ -28,8 +27,8 @@ export class Owner {
   @Property()
   name!: string;
 
-  @ManyToOne('Risk', { wrappedReference: true })
-  risk!: IdentifiedReference<Risk>;
+  @ManyToOne('Risk', { ref: true })
+  risk!: Ref<Risk>;
 
   constructor(name: string) {
     this.name = name;
@@ -49,8 +48,8 @@ export class Risk {
   @OneToMany(() => Owner, owner => owner.risk)
   owners = new Collection<Owner>(this);
 
-  @ManyToOne('Project', { wrappedReference: true })
-  project!: IdentifiedReference<Project>;
+  @ManyToOne('Project', { ref: true })
+  project!: Ref<Project>;
 
   constructor(value: string) {
     this.value = value;
@@ -81,11 +80,10 @@ export class Project {
 
 describe('GH issue 1352', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Project, Owner, Risk, Manager],
       loadStrategy: LoadStrategy.JOINED,

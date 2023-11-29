@@ -1,5 +1,4 @@
-import { EntitySchema } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+import { MikroORM, EntitySchema } from '@mikro-orm/sqlite';
 
 interface MyEntity {
   _id: number;
@@ -10,6 +9,7 @@ const schema1 = new EntitySchema<MyEntity>({
   name: 'MyEntity',
   properties: {
     _id: { primary: true, type: 'number' },
+    // @ts-expect-error
     otherCount: { formula: 'COUNT(other)' },
   },
 });
@@ -34,7 +34,7 @@ test('formula property in EntitySchema', async () => {
   await expect(MikroORM.init({
     entities: [schema1],
     dbName: ':memory:',
-  })).rejects.toThrowError(`Please provide either 'type' or 'entity' attribute in MyEntity.otherCount. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`);
+  })).rejects.toThrow(`Please provide either 'type' or 'entity' attribute in MyEntity.otherCount. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`);
 
   const orm1 = await MikroORM.init({
     entities: [schema2],

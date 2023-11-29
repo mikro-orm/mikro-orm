@@ -3,6 +3,141 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.2](https://github.com/mikro-orm/mikro-orm/compare/v5.9.1...v5.9.2) (2023-11-02)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [5.9.1](https://github.com/mikro-orm/mikro-orm/compare/v5.9.0...v5.9.1) (2023-10-31)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+# [5.9.0](https://github.com/mikro-orm/mikro-orm/compare/v5.8.10...v5.9.0) (2023-10-24)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [5.8.10](https://github.com/mikro-orm/mikro-orm/compare/v5.8.9...v5.8.10) (2023-10-18)
+
+
+### Bug Fixes
+
+* **reflection:** ensure complete stripping of relative paths with multiple leading slashes ([#4844](https://github.com/mikro-orm/mikro-orm/issues/4844)) ([8a635c7](https://github.com/mikro-orm/mikro-orm/commit/8a635c79d8939251545f02f3e569a0589c64f33a))
+
+
+
+
+
+## [5.8.9](https://github.com/mikro-orm/mikro-orm/compare/v5.8.8...v5.8.9) (2023-10-15)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [5.8.8](https://github.com/mikro-orm/mikro-orm/compare/v5.8.7...v5.8.8) (2023-10-11)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [5.8.7](https://github.com/mikro-orm/mikro-orm/compare/v5.8.6...v5.8.7) (2023-10-05)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [5.8.6](https://github.com/mikro-orm/mikro-orm/compare/v5.8.5...v5.8.6) (2023-10-02)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [5.8.5](https://github.com/mikro-orm/mikro-orm/compare/v5.8.4...v5.8.5) (2023-09-30)
+
+
+### Bug Fixes
+
+* **core:** pin all internal dependencies ([f4868ed](https://github.com/mikro-orm/mikro-orm/commit/f4868edec97457e7c4548d887fb3ba23cf266c59)), closes [#4764](https://github.com/mikro-orm/mikro-orm/issues/4764)
+* **reflection:** detect JSON properties defined with `Record` or `Dictionary` types ([62740d1](https://github.com/mikro-orm/mikro-orm/commit/62740d187e16c2d22140ec5649c19af6964951f8)), closes [#4755](https://github.com/mikro-orm/mikro-orm/issues/4755)
+
+
+
+
+
+## [5.8.4](https://github.com/mikro-orm/mikro-orm/compare/v5.8.3...v5.8.4) (2023-09-27)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [5.8.3](https://github.com/mikro-orm/mikro-orm/compare/v5.8.2...v5.8.3) (2023-09-24)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [5.8.2](https://github.com/mikro-orm/mikro-orm/compare/v5.8.1...v5.8.2) (2023-09-20)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [5.8.1](https://github.com/mikro-orm/mikro-orm/compare/v5.8.0...v5.8.1) (2023-09-12)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+# [5.8.0](https://github.com/mikro-orm/mikro-orm/compare/v5.7.14...v5.8.0) (2023-09-10)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [5.7.14](https://github.com/mikro-orm/mikro-orm/compare/v5.7.13...v5.7.14) (2023-07-27)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [5.7.13](https://github.com/mikro-orm/mikro-orm/compare/v5.7.12...v5.7.13) (2023-07-16)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
 ## [5.7.12](https://github.com/mikro-orm/mikro-orm/compare/v5.7.11...v5.7.12) (2023-06-10)
 
 **Note:** Version bump only for package @mikro-orm/reflection

@@ -1,5 +1,4 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { MikroORM, SqliteDriver } from '@mikro-orm/sqlite';
+import { MikroORM, Collection, Entity, Ref, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 class Part {
@@ -11,17 +10,17 @@ class Part {
   value!: string;
 
   @ManyToOne(() => Car, {
-    wrappedReference: true,
+    ref: true,
     nullable: true,
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
   })
-  car?: IdentifiedReference<Car>;
+  car?: Ref<Car>;
 
   @ManyToOne(() => Part, {
-    wrappedReference: true,
+    ref: true,
     nullable: true,
   })
-  part?: IdentifiedReference<Part>;
+  part?: Ref<Part>;
 
   @OneToMany(() => Part, fV => fV.part, {
     orphanRemoval: true,
@@ -54,7 +53,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Car, Part],
     dbName: ':memory:',
-    driver: SqliteDriver,
   });
   await orm.getSchemaGenerator().createSchema();
 });
@@ -90,7 +88,7 @@ describe(`GH issue 3564`, () => {
     car.parts[0].parts.add(electrolyte); // add part 'Electrolyte' to part 'Battery'
     await orm.em.flush();
 
-    await orm.em.refresh(car, { populate: true });
+    await orm.em.refresh(car, { populate: ['*'] });
 
     expect(car.parts.count()).toBe(1); // should be one, since we removed the 'Electrolyte'
     expect(car.parts[0].parts.count()).toBe(2); // the part 'Battery' has 2 parts now
@@ -105,7 +103,7 @@ describe(`GH issue 3564`, () => {
     battery.parts.set([electrolyte, electrode]); // add part 'Electrolyte' to part 'Battery'
     await orm.em.flush();
 
-    await orm.em.refresh(car, { populate: true });
+    await orm.em.refresh(car, { populate: ['*'] });
 
     expect(car.parts.count()).toBe(1); // should be one, since we removed the 'Electrolyte'
     expect(car.parts[0].parts.count()).toBe(2); // the part 'Battery' has 2 parts now
@@ -132,7 +130,7 @@ describe(`GH issue 3564`, () => {
       }],
     });
     await orm.em.flush();
-    await orm.em.refresh(car, { populate: true });
+    await orm.em.refresh(car, { populate: ['*'] });
 
     expect(car.parts.count()).toBe(1); // should be one, since we removed the 'Electrolyte'
     expect(car.parts[0].parts.count()).toBe(2); // the part 'Battery' has 2 parts now

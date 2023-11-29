@@ -114,7 +114,7 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687)', () => 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [City, User, Country, State],
-      dbName: `mikro_orm_test_gh_1687`,
+      dbName: `mikro_orm_test_composite_fks`,
       driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();

@@ -1,5 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Customer {
@@ -70,8 +69,6 @@ export class OrderItem {
   @Property()
   offeredPrice: number;
 
-  [PrimaryKeyType]?: [number, number]; // this is needed for proper type checks in `FilterQuery`
-
   constructor(order: Order, product: Product, amount = 1) {
     this.order = order;
     this.product = product;
@@ -83,13 +80,12 @@ export class OrderItem {
 
 describe('GH issue 529', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Customer, Order, OrderItem, Product],
       dbName: `mikro_orm_test_gh_529`,
-      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

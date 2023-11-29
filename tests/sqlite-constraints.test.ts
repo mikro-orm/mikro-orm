@@ -1,4 +1,4 @@
-import { Entity, type EntityManager, ManyToOne, MikroORM, PrimaryKey, Property, IdentifiedReference, Reference, ForeignKeyConstraintViolationException } from '@mikro-orm/core';
+import { Entity, type EntityManager, ManyToOne, MikroORM, PrimaryKey, Property, Ref, Reference, ForeignKeyConstraintViolationException } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
@@ -24,8 +24,8 @@ export class Book {
   @Property({ type: 'string' })
   name!: string;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
-  author!: IdentifiedReference<Author>;
+  @ManyToOne(() => Author, { ref: true })
+  author!: Ref<Author>;
 
 }
 

@@ -1,5 +1,4 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity({ forceConstructor: true })
 export class Parent {
@@ -18,20 +17,19 @@ export class Child {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Parent, wrappedReference: true })
-  parent!: IdentifiedReference<Parent>;
+  @ManyToOne({ entity: () => Parent, ref: true })
+  parent!: Ref<Parent>;
 
 }
 
 describe('GH issue 2406', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Parent, Child],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

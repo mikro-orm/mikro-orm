@@ -38,19 +38,19 @@ describe('MigrateDownCommand', () => {
 
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(down.mock.calls.length).toBe(1);
-    expect(closeSpy).toBeCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
     await expect(cmd.handler({ only: '1,2' } as any)).resolves.toBeUndefined();
     expect(down.mock.calls.length).toBe(2);
-    expect(closeSpy).toBeCalledTimes(2);
+    expect(closeSpy).toHaveBeenCalledTimes(2);
     await expect(cmd.handler({ from: '1', to: '2' } as any)).resolves.toBeUndefined();
     expect(down.mock.calls.length).toBe(3);
-    expect(closeSpy).toBeCalledTimes(3);
+    expect(closeSpy).toHaveBeenCalledTimes(3);
     await expect(cmd.handler({ from: '0', to: '0' } as any)).resolves.toBeUndefined();
     expect(down.mock.calls.length).toBe(4);
-    expect(closeSpy).toBeCalledTimes(4);
+    expect(closeSpy).toHaveBeenCalledTimes(4);
     await expect(cmd.handler('test' as any)).resolves.toBeUndefined();
     expect(down.mock.calls.length).toBe(5);
-    expect(closeSpy).toBeCalledTimes(5);
+    expect(closeSpy).toHaveBeenCalledTimes(5);
   });
 
 });

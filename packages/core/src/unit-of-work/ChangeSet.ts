@@ -1,9 +1,9 @@
 import { inspect } from 'util';
-import type { EntityData, EntityMetadata, EntityDictionary, Primary } from '../typings';
+import type { EntityData, EntityMetadata, EntityDictionary, Primary, Dictionary } from '../typings';
 import { helper } from '../entity/wrap';
 import { Utils } from '../utils/Utils';
 
-export class ChangeSet<T> {
+export class ChangeSet<T extends object> {
 
   private primaryKey?: Primary<T> | null;
   private serializedPrimaryKey?: string;
@@ -28,12 +28,7 @@ export class ChangeSet<T> {
     }
 
     if (object && this.primaryKey != null) {
-      const pks = this.meta.compositePK && Utils.isPlainObject(this.primaryKey) ? Object.values(this.primaryKey) : Utils.asArray(this.primaryKey);
-      const ret = this.meta.primaryKeys.reduce((o, pk, idx) => {
-        o[pk] = pks[idx] as any;
-        return o;
-      }, {} as T);
-      return ret as any;
+      return Utils.primaryKeyToObject(this.meta, this.primaryKey) as any;
     }
 
     return this.primaryKey ?? null;
@@ -44,8 +39,9 @@ export class ChangeSet<T> {
     return this.serializedPrimaryKey;
   }
 
+  /** @ignore */
   [inspect.custom](depth: number) {
-    const object = { ...this };
+    const object = { ...this } as Dictionary;
     const hidden = ['meta', 'serializedPrimaryKey'];
     hidden.forEach(k => delete object[k]);
     const ret = inspect(object, { depth });

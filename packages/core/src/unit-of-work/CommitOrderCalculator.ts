@@ -1,5 +1,5 @@
 import type { Dictionary, EntityProperty } from '../typings';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 
 export const enum NodeState {
   NOT_VISITED = 0,
@@ -59,8 +59,8 @@ export class CommitOrderCalculator {
   }
 
   discoverProperty(prop: EntityProperty, entityName: string): void {
-    const toOneOwner = (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE;
-    const toManyOwner = prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && !prop.pivotEntity;
+    const toOneOwner = (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner) || prop.kind === ReferenceKind.MANY_TO_ONE;
+    const toManyOwner = prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && !prop.pivotEntity;
 
     if (!toOneOwner && !toManyOwner) {
       return;
@@ -72,7 +72,7 @@ export class CommitOrderCalculator {
       return;
     }
 
-    this.addDependency(propertyType, entityName, prop.nullable ? 0 : 1);
+    this.addDependency(propertyType, entityName, prop.nullable || prop.persist === false ? 0 : 1);
   }
 
   /**

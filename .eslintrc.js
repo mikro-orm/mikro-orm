@@ -10,7 +10,7 @@ module.exports = {
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
   ],
-  ignorePatterns: ['node_modules', 'dist', 'coverage', '**/*.js', '**/*.d.ts'],
+  ignorePatterns: ['node_modules', '**/dist', 'coverage', '**/*.js', '**/*.d.ts'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     'project': 'tsconfig.json',
@@ -18,14 +18,16 @@ module.exports = {
   },
   plugins: [
     '@typescript-eslint',
+    'import',
   ],
   rules: {
     '@typescript-eslint/consistent-type-imports': 'error',
-    '@typescript-eslint/no-duplicate-imports': 'error',
     '@typescript-eslint/prefer-optional-chain': 'error',
     '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-unsafe-declaration-merging': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/naming-convention': [
@@ -42,7 +44,7 @@ module.exports = {
     '@typescript-eslint/no-empty-function': 'error',
     '@typescript-eslint/no-inferrable-types': 'error',
     '@typescript-eslint/no-misused-new': 'error',
-    '@typescript-eslint/no-namespace': 'error',
+    '@typescript-eslint/no-namespace': ['error', { allowDeclarations: true }],
     '@typescript-eslint/no-this-alias': 'error',
     '@typescript-eslint/no-use-before-define': 'error',
     '@typescript-eslint/no-var-requires': 'error',
@@ -65,7 +67,9 @@ module.exports = {
       asyncArrow: 'always',
     }],
     "@typescript-eslint/space-infix-ops": "error",
+    '@typescript-eslint/comma-spacing': 'error',
     'arrow-parens': ['error', 'as-needed'],
+    'arrow-spacing': 'error',
     "space-infix-ops": "off",
     'no-var': 'error',
     'prefer-const': 'error',
@@ -74,6 +78,7 @@ module.exports = {
     'constructor-super': 'error',
     'for-direction': 'error',
     'getter-return': 'error',
+    "import/no-duplicates": ["error", { "prefer-inline": true }],
     'no-async-promise-executor': 'error',
     'no-case-declarations': 'error',
     'no-class-assign': 'error',
@@ -146,7 +151,7 @@ module.exports = {
     'space-before-blocks': ['error', 'always'],
     'brace-style': ['error', '1tbs', { allowSingleLine: true }],
     'keyword-spacing': ['error', { before: true, after: true }],
-    'space-in-parens': ['error', 'never']
+    'space-in-parens': ['error', 'never'],
   },
   'settings': {}
 };

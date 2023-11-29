@@ -29,6 +29,8 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
       return `${tableName}_pkey`;
     }
 
+    columns = columns.map(col => col.replace(/\./g, '_'));
+
     if (type === 'sequence') {
       return `${tableName}_${columns.join('_')}_seq`;
     }
@@ -57,7 +59,7 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
 
   abstract joinTableName(sourceEntity: string, targetEntity: string, propertyName?: string): string;
 
-  abstract propertyToColumnName(propertyName: string): string;
+  abstract propertyToColumnName(propertyName: string, object?: boolean): string;
 
   abstract referenceColumnName(): string;
 

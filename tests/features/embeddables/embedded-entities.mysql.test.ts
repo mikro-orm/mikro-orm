@@ -1,4 +1,4 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, ReferenceKind, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers';
 
@@ -116,33 +116,33 @@ describe('embedded entities in mysql', () => {
     });
     expect(orm.getMetadata().get('User').properties.address1).toMatchObject({
       name: 'address1',
-      reference: ReferenceType.EMBEDDED,
+      kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
     expect(orm.getMetadata().get('User').properties.address1_street).toMatchObject({
       name: 'address1_street',
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       type: 'string',
     });
     expect(orm.getMetadata().get('User').properties.address2).toMatchObject({
       name: 'address2',
-      reference: ReferenceType.EMBEDDED,
+      kind: ReferenceKind.EMBEDDED,
       type: 'Address2',
     });
     expect(orm.getMetadata().get('User').properties.addr_street).toMatchObject({
       name: 'addr_street',
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       type: 'string',
       nullable: true,
     });
     expect(orm.getMetadata().get('User').properties.address3).toMatchObject({
       name: 'address3',
-      reference: ReferenceType.EMBEDDED,
+      kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
     expect(orm.getMetadata().get('User').properties.street).toMatchObject({
       name: 'street',
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       type: 'string',
     });
   });
@@ -221,10 +221,10 @@ describe('embedded entities in mysql', () => {
     expect(u3.address1.postalCode).toBe('123');
     expect(u3).toBe(u1);
     const err = `Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { '$or': [ [Object], [Object] ] } })`;
-    await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
+    await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrow(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
-    expect(mock.mock.calls[10][0]).toMatch('select `u0`.* from `user` as `u0` where json_extract(`u0`.`address4`, \'$.postalCode\') = ? limit ?');
+    expect(mock.mock.calls[10][0]).toMatch('select `u0`.* from `user` as `u0` where json_extract(`u0`.`address4`, \'$.postal_code\') = ? limit ?');
   });
 
   test('GH issue 3063', async () => {

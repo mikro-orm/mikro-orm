@@ -1,0 +1,99 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`4911 1`] = `
+[
+  "import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+@Unique({ name: 'dcim_device_unique_rack_position_face', properties: ['rackId', 'position', 'face'] })
+@Unique({ name: 'dcim_device_unique_virtual_chassis_vc_position', properties: ['virtualChassisId', 'vcPosition'] })
+export class DcimDevice {
+
+  @Property({ columnType: 'timestamptz', nullable: true })
+  created?: unknown;
+
+  @PrimaryKey({ columnType: 'int8' })
+  id!: unknown;
+
+  @Property({ nullable: true })
+  name?: string;
+
+  @Property({ nullable: true })
+  _name?: string;
+
+  @Index({ name: 'dcim_device_asset_tag_8dac1079_like' })
+  @Unique({ name: 'dcim_device_asset_tag_key' })
+  @Property({ nullable: true })
+  assetTag?: string;
+
+  @Property({ columnType: 'numeric(10,0)', nullable: true })
+  position?: string;
+
+  @Property()
+  face!: string;
+
+  @Property({ columnType: 'int2', nullable: true })
+  vcPosition?: unknown;
+
+  @Property({ columnType: 'int2', nullable: true })
+  vcPriority?: unknown;
+
+  @Index({ name: 'dcim_device_cluster_id_cf852f78' })
+  @Property({ columnType: 'int8', nullable: true })
+  clusterId?: unknown;
+
+  @Index({ name: 'dcim_device_device_role_id_682e8188' })
+  @Property({ columnType: 'int8' })
+  roleId!: unknown;
+
+  @Index({ name: 'dcim_device_device_type_id_d61b4086' })
+  @Property({ columnType: 'int8' })
+  deviceTypeId!: unknown;
+
+  @Index({ name: 'dcim_device_location_id_11a7bedb' })
+  @Property({ columnType: 'int8', nullable: true })
+  locationId?: unknown;
+
+  @Index({ name: 'dcim_device_platform_id_468138f1' })
+  @Property({ columnType: 'int8', nullable: true })
+  platformId?: unknown;
+
+  @Unique({ name: 'dcim_device_primary_ip4_id_key' })
+  @Property({ fieldName: 'primary_ip4_id', columnType: 'int8', nullable: true })
+  primaryIp4Id?: unknown;
+
+  @Unique({ name: 'dcim_device_primary_ip6_id_key' })
+  @Property({ fieldName: 'primary_ip6_id', columnType: 'int8', nullable: true })
+  primaryIp6Id?: unknown;
+
+  @Index({ name: 'dcim_device_rack_id_23bde71f' })
+  @Property({ columnType: 'int8', nullable: true })
+  rackId?: unknown;
+
+  @Index({ name: 'dcim_device_site_id_ff897cf6' })
+  @Property({ columnType: 'int8' })
+  siteId!: unknown;
+
+  @Index({ name: 'dcim_device_tenant_id_dcea7969' })
+  @Property({ columnType: 'int8', nullable: true })
+  tenantId?: unknown;
+
+  @Index({ name: 'dcim_device_virtual_chassis_id_aed51693' })
+  @Property({ columnType: 'int8', nullable: true })
+  virtualChassisId?: unknown;
+
+  @Property()
+  airflow!: string;
+
+  @Index({ name: 'dcim_device_config_template_id_316328c4' })
+  @Property({ columnType: 'int8', nullable: true })
+  configTemplateId?: unknown;
+
+  @Index({ name: 'dcim_device_oob_ip_id_key' })
+  @Property({ columnType: 'int8', nullable: true })
+  oobIpId?: unknown;
+
+}
+",
+]
+`;

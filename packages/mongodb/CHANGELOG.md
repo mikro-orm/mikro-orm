@@ -3,6 +3,147 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.2](https://github.com/mikro-orm/mikro-orm/compare/v5.9.1...v5.9.2) (2023-11-02)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.9.1](https://github.com/mikro-orm/mikro-orm/compare/v5.9.0...v5.9.1) (2023-10-31)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+# [5.9.0](https://github.com/mikro-orm/mikro-orm/compare/v5.8.10...v5.9.0) (2023-10-24)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.8.10](https://github.com/mikro-orm/mikro-orm/compare/v5.8.9...v5.8.10) (2023-10-18)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.8.9](https://github.com/mikro-orm/mikro-orm/compare/v5.8.8...v5.8.9) (2023-10-15)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.8.8](https://github.com/mikro-orm/mikro-orm/compare/v5.8.7...v5.8.8) (2023-10-11)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.8.7](https://github.com/mikro-orm/mikro-orm/compare/v5.8.6...v5.8.7) (2023-10-05)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.8.6](https://github.com/mikro-orm/mikro-orm/compare/v5.8.5...v5.8.6) (2023-10-02)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.8.5](https://github.com/mikro-orm/mikro-orm/compare/v5.8.4...v5.8.5) (2023-09-30)
+
+
+### Bug Fixes
+
+* **core:** pin all internal dependencies ([f4868ed](https://github.com/mikro-orm/mikro-orm/commit/f4868edec97457e7c4548d887fb3ba23cf266c59)), closes [#4764](https://github.com/mikro-orm/mikro-orm/issues/4764)
+
+
+
+
+
+## [5.8.4](https://github.com/mikro-orm/mikro-orm/compare/v5.8.3...v5.8.4) (2023-09-27)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.8.3](https://github.com/mikro-orm/mikro-orm/compare/v5.8.2...v5.8.3) (2023-09-24)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.8.2](https://github.com/mikro-orm/mikro-orm/compare/v5.8.1...v5.8.2) (2023-09-20)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.8.1](https://github.com/mikro-orm/mikro-orm/compare/v5.8.0...v5.8.1) (2023-09-12)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+# [5.8.0](https://github.com/mikro-orm/mikro-orm/compare/v5.7.14...v5.8.0) (2023-09-10)
+
+
+### Features
+
+* **core:** allow fine-grained control over `em.upsert()` ([#4669](https://github.com/mikro-orm/mikro-orm/issues/4669)) ([ab0ddee](https://github.com/mikro-orm/mikro-orm/commit/ab0ddee271149dd201e5661fa38f6d7b1b9054ef)), closes [#4325](https://github.com/mikro-orm/mikro-orm/issues/4325) [#4602](https://github.com/mikro-orm/mikro-orm/issues/4602)
+* **mongo:** support indexes on embedded properties ([040896e](https://github.com/mikro-orm/mikro-orm/commit/040896e43664507d010692649d6b331567150e23)), closes [#2129](https://github.com/mikro-orm/mikro-orm/issues/2129)
+
+
+
+
+
+## [5.7.14](https://github.com/mikro-orm/mikro-orm/compare/v5.7.13...v5.7.14) (2023-07-27)
+
+
+### Bug Fixes
+
+* **mongo:** do not create collections for embeddable entities ([0759df0](https://github.com/mikro-orm/mikro-orm/commit/0759df0f463a575940d3f8514291c59c8482b4d9)), closes [#4495](https://github.com/mikro-orm/mikro-orm/issues/4495)
+
+
+
+
+
+## [5.7.13](https://github.com/mikro-orm/mikro-orm/compare/v5.7.12...v5.7.13) (2023-07-16)
+
+
+### Bug Fixes
+
+* **mongo:** drop migrations table when requested ([278ba3a](https://github.com/mikro-orm/mikro-orm/commit/278ba3a36b087fc1e8a65a1b9114a7a21c8da76c)), closes [#4513](https://github.com/mikro-orm/mikro-orm/issues/4513)
+
+
+
+
+
 ## [5.7.12](https://github.com/mikro-orm/mikro-orm/compare/v5.7.11...v5.7.12) (2023-06-10)
 
 

@@ -1,9 +1,6 @@
-import { inspect } from 'util';
 import { pathExistsSync } from 'fs-extra';
-
 import type { NamingStrategy } from '../naming-strategy';
-import type { CacheAdapter } from '../cache';
-import { FileCacheAdapter, NullCacheAdapter } from '../cache';
+import { FileCacheAdapter, NullCacheAdapter, type SyncCacheAdapter, type CacheAdapter } from '../cache';
 import type { EntityRepository } from '../entity/EntityRepository';
 import type {
   AnyEntity,
@@ -19,31 +16,32 @@ import type {
   IPrimaryKey,
   MaybePromise,
   MigrationObject,
+  EntityMetadata,
 } from '../typings';
 import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
-import type { Logger, LoggerNamespace, LoggerOptions } from '../logging';
-import { DefaultLogger, colors } from '../logging';
+import { DefaultLogger, colors, type Logger, type LoggerNamespace, type LoggerOptions } from '../logging';
 import { Utils } from '../utils/Utils';
 import type { EntityManager } from '../EntityManager';
 import type { Platform } from '../platforms';
 import type { EntitySchema } from '../metadata/EntitySchema';
 import type { MetadataProvider } from '../metadata/MetadataProvider';
-import { MetadataStorage } from '../metadata/MetadataStorage';
+import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider';
 import type { EventSubscriber } from '../events';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
-import { FlushMode, LoadStrategy, PopulateHint } from '../enums';
+import { Dataloader, FlushMode, LoadStrategy, PopulateHint } from '../enums';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
 import { EntityComparator } from './EntityComparator';
 import type { Type } from '../types/Type';
 import type { MikroORM } from '../MikroORM';
 
+
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
-  static readonly DEFAULTS: MikroORMOptions = {
+  static readonly DEFAULTS = {
     pool: {},
     entities: [],
     entitiesTs: [],
@@ -54,8 +52,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       warnWhenNoEntities: true,
       requireEntitiesArray: false,
       checkDuplicateTableNames: true,
+      checkDuplicateFieldNames: true,
       alwaysAnalyseProperties: true,
       disableDynamicFileAccess: false,
+      checkDuplicateEntities: true,
+      inferDefaultValues: true,
     },
     strict: false,
     validate: false,
@@ -70,12 +71,17 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     baseDir: process.cwd(),
     hydrator: ObjectHydrator,
     flushMode: FlushMode.AUTO,
-    loadStrategy: LoadStrategy.SELECT_IN,
+    loadStrategy: LoadStrategy.JOINED,
+    dataloader: Dataloader.OFF,
     populateWhere: PopulateHint.ALL,
     connect: true,
+    ignoreUndefinedInQuery: false,
     autoJoinOneToOneOwner: true,
-    propagateToOneOwner: true,
+    propagationOnPrototype: true,
     populateAfterFlush: true,
+    serialization: {
+      includePrimaryKeys: true,
+    },
     persistOnCreate: true,
     forceEntityConstructor: false,
     forceUndefined: false,
@@ -108,8 +114,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     entityGenerator: {
       bidirectionalRelations: false,
       identifiedReferences: false,
+      scalarTypeInDecorator: false,
+      scalarPropertiesForRelations: 'never',
     },
-    cache: {
+    metadataCache: {
       pretty: false,
       adapter: FileCacheAdapter,
       options: { cacheDir: process.cwd() + '/temp' },
@@ -130,24 +138,14 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     },
     preferReadReplicas: true,
     dynamicImportProvider: /* istanbul ignore next */ (id: string) => import(id),
-  };
-
-  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
-  static readonly PLATFORMS = {
-    'mongo': { className: 'MongoDriver', module: () => require('@mikro-orm/mongodb') },
-    'mysql': { className: 'MySqlDriver', module: () => require('@mikro-orm/mysql') },
-    'mariadb': { className: 'MariaDbDriver', module: () => require('@mikro-orm/mariadb') },
-    'postgresql': { className: 'PostgreSqlDriver', module: () => require('@mikro-orm/postgresql') },
-    'sqlite': { className: 'SqliteDriver', module: () => require('@mikro-orm/sqlite') },
-    'better-sqlite': { className: 'BetterSqliteDriver', module: () => require('@mikro-orm/better-sqlite') },
-  };
+  } satisfies MikroORMOptions;
 
   private readonly options: MikroORMOptions<D>;
   private readonly logger: Logger;
   private readonly driver: D;
   private readonly platform: Platform;
   private readonly cache = new Map<string, any>();
-  private readonly extensions = new Map<string, unknown>();
+  private readonly extensions = new Map<string, () => unknown>();
 
   constructor(options: Options, validate = true) {
     if (options.dynamicImportProvider) {
@@ -168,7 +166,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       highlighter: this.options.highlighter,
       writer: this.options.logger,
     });
-    this.driver = this.initDriver();
+    this.driver = new this.options.driver!(this);
     this.platform = this.driver.getPlatform();
     this.platform.setConfig(this);
     this.detectSourceFolder(options);
@@ -201,7 +199,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Resets the configuration to its default value
    */
   reset<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T): void {
-    this.options[key] = Configuration.DEFAULTS[key as string];
+    this.options[key] = (Configuration.DEFAULTS as MikroORMOptions<D>)[key];
   }
 
   /**
@@ -229,12 +227,23 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.driver;
   }
 
-  registerExtension(name: string, instance: unknown): void {
-    this.extensions.set(name, instance);
+  registerExtension(name: string, cb: () => unknown): void {
+    this.extensions.set(name, cb);
   }
 
   getExtension<T>(name: string): T | undefined {
-    return this.extensions.get(name) as T;
+    if (this.cache.has(name)) {
+      return this.cache.get(name);
+    }
+
+    const ext = this.extensions.get(name);
+
+    if (ext) {
+      this.cache.set(name, ext());
+      return this.cache.get(name);
+    }
+
+    return undefined;
   }
 
   /**
@@ -266,10 +275,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Gets instance of CacheAdapter. (cached)
+   * Gets instance of metadata CacheAdapter. (cached)
    */
-  getCacheAdapter(): CacheAdapter {
-    return this.getCachedService(this.options.cache.adapter!, this.options.cache.options, this.options.baseDir, this.options.cache.pretty);
+  getMetadataCacheAdapter(): SyncCacheAdapter {
+    return this.getCachedService(this.options.metadataCache.adapter!, this.options.metadataCache.options, this.options.baseDir, this.options.metadataCache.pretty);
   }
 
   /**
@@ -282,9 +291,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets EntityRepository class to be instantiated.
    */
-  getRepositoryClass(customRepository: () => Constructor<EntityRepository<AnyEntity>>): MikroORMOptions<D>['entityRepository'] {
-    if (customRepository) {
-      return customRepository();
+  getRepositoryClass(repository: () => Constructor<EntityRepository<AnyEntity>>): MikroORMOptions<D>['entityRepository'] {
+    if (repository) {
+      return repository();
     }
 
     if (this.options.entityRepository) {
@@ -312,11 +321,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
   private init(): void {
     if (!this.getMetadataProvider().useCache()) {
-      this.options.cache.adapter = NullCacheAdapter;
+      this.options.metadataCache.adapter = NullCacheAdapter;
     }
 
-    if (!('enabled' in this.options.cache)) {
-      this.options.cache.enabled = this.getMetadataProvider().useCache();
+    if (!('enabled' in this.options.metadataCache)) {
+      this.options.metadataCache.enabled = this.getMetadataProvider().useCache();
     }
 
     if (!this.options.clientUrl) {
@@ -341,8 +350,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       this.options.filters[key].default ??= true;
     });
 
-    const subscribers = Object.values(MetadataStorage.getSubscriberMetadata());
-    this.options.subscribers = [...new Set([...this.options.subscribers, ...subscribers])];
+    this.options.subscribers = Utils.unique(this.options.subscribers).map(subscriber => {
+      return subscriber.constructor.name === 'Function' ? new (subscriber as Constructor)() : subscriber;
+    }) as EventSubscriber[];
 
     if (!colors.enabled()) {
       this.options.highlighter = new NullHighlighter();
@@ -383,12 +393,12 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   private validateOptions(): void {
-    if (!this.options.type && !this.options.driver) {
-      throw new Error('No platform type specified, please fill in `type` or provide custom driver class in `driver` option. Available platforms types: ' + inspect(Object.keys(Configuration.PLATFORMS)));
+    if ('type' in this.options) {
+      throw new Error('The `type` option has been removed in v6, please fill in the `driver` option instead or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from \'@mikro-orm/mysql\'; export default defineConfig({ ... })`).');
     }
 
-    if (this.options.type && !(this.options.type in Configuration.PLATFORMS)) {
-      throw new Error(`Invalid platform type specified: '${this.options.type}', please fill in valid \`type\` or provide custom driver class in \`driver\` option. Available platforms types: ${inspect(Object.keys(Configuration.PLATFORMS))}`);
+    if (!this.options.driver) {
+      throw new Error('No driver specified, please fill in the `driver` option or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from \'@mikro-orm/mysql\'; export defineConfig({ ... })`).');
     }
 
     if (!this.options.dbName && !this.options.clientUrl) {
@@ -398,15 +408,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     if (this.options.entities.length === 0 && this.options.discovery.warnWhenNoEntities) {
       throw new Error('No entities found, please use `entities` option');
     }
-  }
-
-  private initDriver(): D {
-    if (!this.options.driver) {
-      const { className, module } = Configuration.PLATFORMS[this.options.type!];
-      this.options.driver = module()[className];
-    }
-
-    return new this.options.driver!(this);
   }
 
 }
@@ -490,22 +491,27 @@ export interface PoolConfig {
   Promise?: any;
 }
 
+export interface MetadataDiscoveryOptions {
+  warnWhenNoEntities?: boolean;
+  requireEntitiesArray?: boolean;
+  checkDuplicateTableNames?: boolean;
+  checkDuplicateFieldNames?: boolean;
+  alwaysAnalyseProperties?: boolean;
+  disableDynamicFileAccess?: boolean;
+  inferDefaultValues?: boolean;
+  getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
+  checkDuplicateEntities?: boolean;
+  onMetadata?: (meta: EntityMetadata, platform: Platform) => MaybePromise<void>;
+  afterDiscovered?: (storage: MetadataStorage, platform: Platform) => MaybePromise<void>;
+}
+
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {
   entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
   entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
   extensions: { register: (orm: MikroORM) => void }[];
-  subscribers: EventSubscriber[];
+  subscribers: (EventSubscriber | Constructor<EventSubscriber>)[];
   filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
-  discovery: {
-    warnWhenNoEntities?: boolean;
-    requireEntitiesArray?: boolean;
-    checkDuplicateTableNames?: boolean;
-    alwaysAnalyseProperties?: boolean;
-    disableDynamicFileAccess?: boolean;
-    getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
-  };
-  /** @deprecated type option will be removed in v6, use `defineConfig` exported from the driver package to define your ORM config */
-  type?: keyof typeof Configuration.PLATFORMS;
+  discovery: MetadataDiscoveryOptions;
   driver?: { new(config: Configuration): D };
   driverOptions: Dictionary;
   namingStrategy?: { new(): NamingStrategy };
@@ -513,9 +519,15 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   disableTransactions?: boolean;
   connect: boolean;
   verbose: boolean;
+  ignoreUndefinedInQuery?: boolean;
   autoJoinOneToOneOwner: boolean;
-  propagateToOneOwner: boolean;
+  propagationOnPrototype: boolean;
   populateAfterFlush: boolean;
+  serialization: {
+    includePrimaryKeys?: boolean;
+    /** Enforce unpopulated references to be returned as objects, e.g. `{ author: { id: 1 } }` instead of `{ author: 1 }`. */
+    forceObject?: boolean;
+  };
   persistOnCreate: boolean;
   forceEntityConstructor: boolean | (Constructor<AnyEntity> | string)[];
   forceUndefined: boolean;
@@ -527,9 +539,10 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   useBatchUpdates?: boolean;
   batchSize: number;
   hydrator: HydratorConstructor;
-  loadStrategy: LoadStrategy;
+  loadStrategy: LoadStrategy | 'select-in' | 'joined';
+  dataloader: Dataloader | boolean;
   populateWhere: PopulateHint;
-  flushMode: FlushMode;
+  flushMode: FlushMode | 'commit' | 'auto' | 'always';
   entityRepository?: Constructor;
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
@@ -538,6 +551,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   context: (name: string) => EntityManager | undefined;
   contextName: string;
   allowGlobalContext: boolean;
+  disableIdentityMap?: boolean;
   logger: (message: string) => void;
   loggerFactory?: (options: LoggerOptions) => Logger;
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
@@ -554,21 +568,30 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     managementDbName?: string;
   };
   entityGenerator: {
+    baseDir?: string;
+    save?: boolean;
+    schema?: string;
+    skipTables?: string[];
+    skipColumns?: Record<string, string[]>;
     bidirectionalRelations?: boolean;
     identifiedReferences?: boolean;
     entitySchema?: boolean;
     esmImport?: boolean;
+    scalarTypeInDecorator?: boolean;
+    scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
   };
-  cache: {
+  metadataCache: {
     enabled?: boolean;
+    combined?: boolean | string;
     pretty?: boolean;
-    adapter?: { new(...params: any[]): CacheAdapter };
+    adapter?: { new(...params: any[]): SyncCacheAdapter };
     options?: Dictionary;
   };
   resultCache: {
     expiration?: number;
     adapter?: { new(...params: any[]): CacheAdapter };
     options?: Dictionary;
+    global?: boolean | number | [string, number];
   };
   metadataProvider: { new(config: Configuration): MetadataProvider };
   seeder: SeederOptions;

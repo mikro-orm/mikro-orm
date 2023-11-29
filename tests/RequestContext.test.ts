@@ -29,7 +29,7 @@ describe('RequestContext', () => {
 
   test('create new context (async)', async () => {
     expect(RequestContext.getEntityManager()).toBeUndefined();
-    const ret = await RequestContext.createAsync(orm.em, async () => {
+    const ret = await RequestContext.create(orm.em, async () => {
       const em = RequestContext.getEntityManager()!;
       expect(em).not.toBe(orm.em);
       // @ts-expect-error access UoW via property so we do not get the one from request context automatically
@@ -54,7 +54,7 @@ describe('RequestContext', () => {
         const em = RequestContext.getEntityManager()!;
         const jon = await em.findOne(Author, author.id, { populate: ['favouriteBook'] });
         expect(jon!.favouriteBook).toBeInstanceOf(Book);
-        expect(wrap(jon!.favouriteBook).isInitialized()).toBe(true);
+        expect(wrap(jon!.favouriteBook!).isInitialized()).toBe(true);
         expect(jon!.favouriteBook!.title).toBe('Bible');
         resolve();
       });
@@ -112,7 +112,7 @@ describe('MultiRequestContext', () => {
   test('create new context (async)', async () => {
     expect(RequestContext.getEntityManager(orm1.em.name)).toBeUndefined();
     expect(RequestContext.getEntityManager(orm2.em.name)).toBeUndefined();
-    await RequestContext.createAsync([orm1.em, orm2.em], async () => {
+    await RequestContext.create([orm1.em, orm2.em], async () => {
       const em1 = orm1.em.getContext();
       expect(em1).not.toBe(orm1.em);
       // access UoW via property so we do not get the one from request context automatically

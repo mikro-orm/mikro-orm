@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers';
 
 @Entity()
-export class Recipe {
+class Recipe {
 
   @PrimaryKey({ type: t.uuid })
   id: string = v4();
@@ -21,7 +21,7 @@ export class Recipe {
 }
 
 @Entity()
-export class Ingredient {
+class Ingredient {
 
   @PrimaryKey({ type: t.uuid })
   id: string = v4();
@@ -35,7 +35,7 @@ export class Ingredient {
 }
 
 @Entity()
-export class User {
+class User {
 
   @PrimaryKey({ type: t.uuid })
   id: string = v4();
@@ -188,8 +188,8 @@ describe('GH issue 1811', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `user` (`id`, `name`) values (?, ?)');
     expect(mock.mock.calls[2][0]).toMatch('update `user` set `name` = ? where `id` = ?');
-    expect(mock.mock.calls[3][0]).toMatch('delete from `recipe_authors` where (`user_id`) in ( values (?)) and `recipe_id` = ?');
-    expect(mock.mock.calls[4][0]).toMatch('insert into `recipe_authors` (`recipe_id`, `user_id`) values (?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('delete from `recipe_authors` where (`user_id` = ? and `recipe_id` = ?)');
+    expect(mock.mock.calls[4][0]).toMatch('insert into `recipe_authors` (`user_id`, `recipe_id`) values (?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
 
     const r1 = await orm.em.fork().findOneOrFail(Recipe, recipe, { populate: ['authors'], orderBy: { authors: { name: 'asc' } } });

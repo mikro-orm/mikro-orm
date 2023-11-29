@@ -1,5 +1,4 @@
-import { Collection, EntitySchema, OptionalProps } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mysql';
+import { Collection, EntitySchema, MikroORM, OptionalProps } from '@mikro-orm/mysql';
 import { v4 } from 'uuid';
 
 class TaskProps {
@@ -35,7 +34,7 @@ const TaskSchema = new EntitySchema<TaskProps>({
     },
     projects: {
       entity: () => ProjectProps,
-      reference: 'm:n',
+      kind: 'm:n',
       inversedBy: 'tasks',
     },
   },
@@ -56,7 +55,7 @@ const ProjectSchema = new EntitySchema<ProjectProps>({
     tasks: {
       entity: () => TaskProps,
       mappedBy: 'projects',
-      reference: 'm:n',
+      kind: 'm:n',
     },
   },
 });

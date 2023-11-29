@@ -1,5 +1,17 @@
-import { MikroORM, Entity, PrimaryKey, PrimaryKeyType, Unique, Collection, ManyToOne, OneToMany, Property, Filter, LoadStrategy, OptionalProps } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import {
+  MikroORM,
+  Entity,
+  PrimaryKey,
+  Unique,
+  Collection,
+  ManyToOne,
+  OneToMany,
+  Property,
+  Filter,
+  LoadStrategy,
+  OptionalProps,
+  PrimaryKeyProp,
+} from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'users' })
 export class UserEntity {
@@ -53,7 +65,7 @@ class UserTenantEntity {
   @ManyToOne({ primary: true, entity: () => TenantEntity, fieldName: 'tenantId', cascade: [] })
   tenant!: TenantEntity;
 
-  [PrimaryKeyType]?: [number, number];
+  [PrimaryKeyProp]?: ['user', 'tenant'];
   [OptionalProps]?: 'isActive';
 
   @Property({ type: 'boolean', fieldName: 'isActive' })
@@ -63,13 +75,12 @@ class UserTenantEntity {
 
 describe('GH issue 1902', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [UserEntity, TenantEntity, UserTenantEntity],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });
@@ -79,21 +90,19 @@ describe('GH issue 1902', () => {
   });
 
   test(`GH issue 1902`, async () => {
-    const repoUser = orm.em.getRepository(UserEntity);
     const user = orm.em.create(UserEntity, { name: 'user one', email: 'one@email' });
-    await repoUser.persistAndFlush(user);
+    await orm.em.flush();
 
-    const repoTenant = orm.em.getRepository(TenantEntity);
     const tenant1 = orm.em.create(TenantEntity, { name: 'tenant one', schema: 'tenant_one' });
-    await repoTenant.persistAndFlush(tenant1);
+    await orm.em.flush();
     const tenant2 = orm.em.create(TenantEntity, { name: 'tenant two', schema: 'tenant_two' });
-    await repoTenant.persistAndFlush(tenant2);
+    await orm.em.flush();
 
     const repoUserTenant = orm.em.getRepository(UserTenantEntity);
-    const ut1 = orm.em.create(UserTenantEntity, { user, tenant: tenant1, isActive: true });
-    await repoTenant.persistAndFlush(ut1);
-    const ut2 = orm.em.create(UserTenantEntity, { user, tenant: tenant2, isActive: false });
-    await repoTenant.persistAndFlush(ut2);
+    orm.em.create(UserTenantEntity, { user, tenant: tenant1, isActive: true });
+    await orm.em.flush();
+    orm.em.create(UserTenantEntity, { user, tenant: tenant2, isActive: false });
+    await orm.em.flush();
     orm.em.clear();
 
     const findOpts = {

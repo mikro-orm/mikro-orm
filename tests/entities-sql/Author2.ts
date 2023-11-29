@@ -1,11 +1,58 @@
 import {
-  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, Collection, Entity, OneToMany, Property, ManyToOne,
-  QueryOrder, OnInit, ManyToMany, Index, Unique, OneToOne, Cascade, LoadStrategy, EventArgs, t, OnLoad, OptionalProps,
+  AfterCreate,
+  AfterDelete,
+  AfterUpdate,
+  BeforeCreate,
+  BeforeDelete,
+  BeforeUpdate,
+  Collection,
+  Entity,
+  OneToMany,
+  Property,
+  ManyToOne,
+  QueryOrder,
+  OnInit,
+  ManyToMany,
+  Index,
+  Unique,
+  OneToOne,
+  Cascade,
+  LoadStrategy,
+  EventArgs,
+  t,
+  OnLoad,
+  Opt,
+  HiddenProps,
+  Embeddable,
+  Embedded,
 } from '@mikro-orm/core';
 
 import { Book2 } from './Book2';
 import { BaseEntity2 } from './BaseEntity2';
 import { Address2 } from './Address2';
+
+@Embeddable()
+export class Identity {
+
+  [HiddenProps]?: 'foo' | 'bar';
+
+  @Property({ hidden: true })
+  foo: string;
+
+  @Property({ hidden: true })
+  bar: number;
+
+  constructor(foo: string, bar: number) {
+    this.foo = foo;
+    this.bar = bar;
+  }
+
+  @Property({ persist: false })
+  get fooBar() {
+    return this.foo + ' ' + this.bar;
+  }
+
+}
 
 @Entity()
 @Index({ properties: ['name', 'age'] })
@@ -13,16 +60,14 @@ import { Address2 } from './Address2';
 @Unique({ properties: ['name', 'email'] })
 export class Author2 extends BaseEntity2 {
 
-  [OptionalProps]?: 'createdAt' | 'updatedAt' | 'termsAccepted' | 'version' | 'versionAsString' | 'code' | 'code2' | 'booksTotal' | 'hookParams' | 'hookTest' | 'onLoadCalled';
-
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
 
   @Property({ length: 3, defaultRaw: 'current_timestamp(3)' })
-  createdAt: Date = new Date();
+  createdAt: Opt<Date> = new Date();
 
   @Property({ onUpdate: () => new Date(), length: 3, defaultRaw: 'current_timestamp(3)' })
-  updatedAt: Date = new Date();
+  updatedAt: Opt<Date> = new Date();
 
   @Property()
   name: string;
@@ -35,8 +80,8 @@ export class Author2 extends BaseEntity2 {
   age?: number;
 
   @Index()
-  @Property({ default: false })
-  termsAccepted: boolean = false;
+  @Property()
+  termsAccepted: Opt<boolean> = false;
 
   @Property({ nullable: true })
   optional?: boolean;
@@ -44,17 +89,17 @@ export class Author2 extends BaseEntity2 {
   @Property({ nullable: true })
   identities?: string[];
 
-  @Property({ type: t.date, index: true, nullable: true })
-  born?: Date;
+  @Property({ type: 'date', index: true, nullable: true })
+  born?: string;
 
   @Property({ type: t.time, index: 'born_time_idx', nullable: true })
   bornTime?: string;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
-  books!: Collection<Book2>;
+  books = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author', strategy: LoadStrategy.JOINED, orderBy: { title: QueryOrder.ASC } })
-  books2!: Collection<Book2>;
+  books2 = new Collection<Book2>(this);
 
   @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL] })
   address?: Address2;
@@ -68,25 +113,28 @@ export class Author2 extends BaseEntity2 {
   @ManyToMany(() => Author2, a => a.following)
   followers = new Collection<Author2>(this);
 
-  @ManyToOne({ nullable: true, onUpdateIntegrity: 'no action', onDelete: 'cascade' })
+  @ManyToOne({ nullable: true, updateRule: 'no action', deleteRule: 'cascade' })
   favouriteBook?: Book2;
 
   @ManyToOne({ nullable: true })
   favouriteAuthor?: Author2;
 
-  @Property({ persist: false })
-  version!: number;
+  @Embedded(() => Identity, { nullable: true, object: true })
+  identity?: Identity;
 
   @Property({ persist: false })
-  versionAsString!: string;
+  version!: number & Opt;
 
   @Property({ persist: false })
-  code!: string;
+  versionAsString!: string & Opt;
 
   @Property({ persist: false })
-  booksTotal!: number;
+  code!: string & Opt;
 
-  hookParams: any[] = [];
+  @Property({ persist: false })
+  booksTotal!: number & Opt;
+
+  hookParams: any[] & Opt = [];
   onLoadCalled?: number;
 
   constructor(name: string, email: string) {
@@ -141,12 +189,12 @@ export class Author2 extends BaseEntity2 {
   }
 
   @Property({ name: 'code' })
-  getCode() {
+  getCode(): string & Opt {
     return `${this.email} - ${this.name}`;
   }
 
   @Property({ persist: false })
-  get code2() {
+  get code2(): string & Opt {
     return `${this.email} - ${this.name}`;
   }
 

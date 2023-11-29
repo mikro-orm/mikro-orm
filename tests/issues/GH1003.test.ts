@@ -1,9 +1,8 @@
-import type { IdentifiedReference } from '@mikro-orm/core';
-import { BaseEntity, Collection, Entity, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+import { BaseEntity, Collection, MikroORM, Entity, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
+import type { Ref } from '@mikro-orm/sqlite';
 
 @Entity()
-export class Parent extends BaseEntity<Parent, 'id'> {
+export class Parent extends BaseEntity {
 
   @PrimaryKey()
   id!: string;
@@ -14,18 +13,18 @@ export class Parent extends BaseEntity<Parent, 'id'> {
 }
 
 @Entity()
-export class Child extends BaseEntity<Parent, 'id'> {
+export class Child extends BaseEntity {
 
   @PrimaryKey()
   id!: string;
 
   @ManyToOne({
     entity: () => Parent,
-    wrappedReference: true,
+    ref: true,
     index: true,
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
   })
-  parent!: IdentifiedReference<Parent>;
+  parent!: Ref<Parent>;
 
 }
 

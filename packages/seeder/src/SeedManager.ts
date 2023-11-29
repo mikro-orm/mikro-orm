@@ -1,16 +1,25 @@
 import globby from 'globby';
-import type { Constructor, EntityManager, ISeedManager , MikroORM } from '@mikro-orm/core';
-import { Utils } from '@mikro-orm/core';
+import {
+  Utils,
+  type Constructor,
+  type EntityManager,
+  type ISeedManager,
+  type MikroORM,
+  type Configuration,
+  type SeederOptions,
+} from '@mikro-orm/core';
 import type { Seeder } from './Seeder';
 import { ensureDir, writeFile } from 'fs-extra';
 
 export class SeedManager implements ISeedManager {
 
-  private readonly config = this.em.config;
-  private readonly options = this.config.get('seeder');
+  private readonly config: Configuration;
+  private readonly options: SeederOptions;
   private readonly absolutePath: string;
 
   constructor(private readonly em: EntityManager) {
+    this.config = this.em.config;
+    this.options = this.config.get('seeder');
     this.em = this.em.fork();
     this.config.set('persistOnCreate', true);
     /* istanbul ignore next */
@@ -19,7 +28,7 @@ export class SeedManager implements ISeedManager {
   }
 
   static register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/seeder', new SeedManager(orm.em));
+    orm.config.registerExtension('@mikro-orm/seeder', () => new SeedManager(orm.em));
   }
 
   async seed(...classNames: Constructor<Seeder>[]): Promise<void> {

@@ -1,12 +1,11 @@
-import type { IdentifiedReference } from './Reference';
-import { Reference } from './Reference';
-import type { AutoPath, EntityData, EntityDTO, Loaded } from '../typings';
-import type { AssignOptions } from './EntityAssigner';
-import { EntityAssigner } from './EntityAssigner';
+import { Reference, type Ref } from './Reference';
+import type { AutoPath, EntityData, EntityDTO, Loaded, LoadedReference, AddEager, EntityKey, FromEntityType, IsSubset, MergeSelected } from '../typings';
+import { EntityAssigner, type AssignOptions } from './EntityAssigner';
 import type { EntityLoaderOptions } from './EntityLoader';
+import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer';
 import { helper } from './wrap';
 
-export abstract class BaseEntity<Entity extends object, Primary extends keyof Entity, Populate extends string = string> {
+export abstract class BaseEntity {
 
   isInitialized(): boolean {
     return helper(this).__initialized;
@@ -20,36 +19,42 @@ export abstract class BaseEntity<Entity extends object, Primary extends keyof En
     helper(this).populated(populated);
   }
 
-  async populate<This extends this, Hint extends string = never>(
-    populate: AutoPath<This, Hint>[] | boolean,
-    options: EntityLoaderOptions<This, Hint> = {},
-  ): Promise<Loaded<This, Hint>> {
-    return helper(this as This).populate(populate, options);
+  async populate<Entity extends this = this, Hint extends string = never>(
+    populate: AutoPath<Entity, Hint>[] | false,
+    options: EntityLoaderOptions<Entity> = {},
+  ): Promise<Loaded<Entity, Hint>> {
+    return helper(this as Entity).populate(populate, options);
   }
 
-  toReference(): IdentifiedReference<Entity, Primary> {
-    return Reference.create(this as unknown as Entity);
+  toReference<Entity extends this = this>(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>> {
+    return Reference.create(this) as unknown as Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
   }
 
-  toObject(ignoreFields: string[] = []): EntityDTO<this> {
-    return helper(this).toObject(ignoreFields);
+  toObject<Entity extends this = this>(): EntityDTO<Entity>;
+  toObject<Entity extends this = this>(ignoreFields: never[]): EntityDTO<Entity>;
+  toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(ignoreFields: Ignored[]): Omit<EntityDTO<Entity>, Ignored>;
+  toObject<Entity extends this = this, Ignored extends EntityKey<Entity> = never>(ignoreFields?: Ignored[]): Omit<EntityDTO<Entity>, Ignored> {
+    return helper(this as Entity).toObject(ignoreFields!);
   }
 
-  toJSON(...args: any[]): EntityDTO<this> {
-    return this.toObject(...args);
+  toPOJO<Entity extends this = this>(): EntityDTO<Entity> {
+    return helper(this as Entity).toPOJO();
   }
 
-  toPOJO(): EntityDTO<this> {
-    return helper(this).toPOJO();
+  serialize<Entity extends this = this, Hint extends string = never, Exclude extends string = never>(options?: SerializeOptions<Entity, Hint, Exclude>): EntityDTO<Loaded<Entity, Hint>> {
+    return EntitySerializer.serialize(this as Entity, options);
   }
 
-  assign(data: EntityData<Entity>, options?: AssignOptions): Entity {
-    return EntityAssigner.assign(this as object, data, options) as Entity;
+  assign<
+    Entity extends this,
+    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
+    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
+  >(data: Data & IsSubset<EntityData<Naked>, Data>, options: AssignOptions = {}): MergeSelected<Entity, Naked, keyof Data & string> {
+    return EntityAssigner.assign(this as Entity, data as any, options) as any;
   }
 
-  init<Populate extends string = never>(populated = true): Promise<Loaded<Entity, Populate>> {
-    // using `Loaded<this>` results in issues with assignability unfortunately
-    return helper(this as unknown as Entity).init<Populate>(populated);
+  init<Entity extends this = this, Populate extends string = never>(populated = true): Promise<Loaded<Entity, Populate>> {
+    return helper(this as Entity).init<Populate>(populated);
   }
 
   getSchema(): string | undefined {

@@ -3,7 +3,7 @@ import {
   PrimaryKey,
   MikroORM,
   ManyToOne,
-  PrimaryKeyType,
+  PrimaryKeyProp,
   Property,
   wrap,
   Collection,
@@ -71,7 +71,7 @@ export class OrderItem {
   @Property({ default: 0 })
   offeredPrice: number;
 
-  [PrimaryKeyType]?: [number, number];
+  [PrimaryKeyProp]?: ['order', 'product'];
 
   constructor(order: Order, product: Product) {
     this.order = order;
@@ -130,7 +130,7 @@ describe('custom pivot entity for m:n with additional properties (auto-discovere
   test(`should work`, async () => {
     const { order1, order2, product1, product2, product3, product4, product5 } = await createEntities();
 
-    const orders = await orm.em.find(Order, {}, { populate: true });
+    const orders = await orm.em.find(Order, {}, { populate: ['*'] });
     expect(orders).toHaveLength(3);
 
     // test inverse side
@@ -150,10 +150,9 @@ describe('custom pivot entity for m:n with additional properties (auto-discovere
     products = await orm.em.find(Product, {});
     expect(products[0].orders.isInitialized()).toBe(false);
     expect(products[0].orders.isDirty()).toBe(false);
-    expect(() => products[0].orders.getItems()).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
-    expect(() => products[0].orders.remove(order1, order2)).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
-    expect(() => products[0].orders.removeAll()).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
-    expect(() => products[0].orders.contains(order1)).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
+    expect(() => products[0].orders.getItems()).toThrow(/Collection<Order> of entity Product\[\d+] not initialized/);
+    expect(() => products[0].orders.remove(order1, order2)).toThrow(/Collection<Order> of entity Product\[\d+] not initialized/);
+    expect(() => products[0].orders.contains(order1)).toThrow(/Collection<Order> of entity Product\[\d+] not initialized/);
 
     // test M:N lazy load
     orm.em.clear();
@@ -201,6 +200,11 @@ describe('custom pivot entity for m:n with additional properties (auto-discovere
     order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
     expect(order.products.count()).toBe(3);
 
+    // slice
+    expect(order.products.slice().length).toBe(3);
+    expect(order.products.slice(0, 3).length).toBe(3);
+    expect(order.products.slice(0, 1)).toEqual([order.products[0]]);
+
     // contains
     expect(order.products.contains(productRepository.getReference(product1.id))).toBe(true);
     expect(order.products.contains(productRepository.getReference(product2.id))).toBe(true);
@@ -215,6 +219,7 @@ describe('custom pivot entity for m:n with additional properties (auto-discovere
     orm.em.clear();
     order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
     expect(order.products.count()).toBe(0);
+    expect(order.products.isEmpty()).toBe(true);
   });
 
   test(`search by m:n property and loadCount() works`, async () => {

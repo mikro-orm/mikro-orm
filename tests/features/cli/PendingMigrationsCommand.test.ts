@@ -38,7 +38,7 @@ describe('PendingMigrationsCommand', () => {
 
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(getPendingMigrations.mock.calls.length).toBe(1);
-    expect(closeSpy).toBeCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
   });
 
 });

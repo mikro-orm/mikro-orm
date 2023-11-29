@@ -1,5 +1,4 @@
-import { Cascade, Collection, Entity, EntityData, ManyToOne, OneToMany, PrimaryKey, PrimaryKeyType, Property, Ref, SimpleLogger } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mysql';
+import { MikroORM, Cascade, Collection, Entity, EntityData, ManyToOne, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Ref, SimpleLogger } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -31,7 +30,7 @@ class Article {
   })
   category!: Ref<Category>;
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['id', 'category'];
 
   @OneToMany(() => ArticleAttribute, attr => attr.article, {
     cascade: [Cascade.ALL],
@@ -59,9 +58,9 @@ class ArticleAttribute {
     primary: true,
     ref: true,
   })
-  article!: Ref<Article, 'id' | 'category'>;
+  article!: Ref<Article>;
 
-  [PrimaryKeyType]?: [string, [string, string]];
+  [PrimaryKeyProp]?: ['id', ['id', 'category']];
 
   @Property({
     defaultRaw: 'CURRENT_TIMESTAMP',
@@ -73,7 +72,7 @@ class ArticleAttribute {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({
+  orm = MikroORM.initSync({
     entities: [Category],
     dbName: `mikro_orm_4062`,
     port: 3308,
@@ -131,8 +130,11 @@ test('4062', async () => {
   const loaded = await orm.em.findOneOrFail(
     Category,
     { id: category.id },
-    { populate: true },
+    { populate: ['*'] },
   );
+  // type-safe populate: ['*']
+  const a = loaded.articles.$[0].category.$.articles.$[0].category.$.articles.$[0].category.$.articles.$[0].category.$;
+  expect(a).toBe(loaded);
 
   orm.em.assign(loaded, plainUpdate);
 
@@ -144,7 +146,7 @@ test('4062', async () => {
     ["[query] select `a0`.`id`, `a0`.`category_id`, `a0`.`created_at` from `article` as `a0` where (`a0`.`id`, `a0`.`category_id`) in (('article2', 'category1'))"],
     ["[query] insert into `article_attribute` (`id`, `article_id`, `article_category_id`, `name`) values ('articleAttribute2', 'article1', 'category1', 'secondNameAfterUpdate')"],
     ["[query] select `a0`.`id`, `a0`.`article_id`, `a0`.`article_category_id`, `a0`.`created_at` from `article_attribute` as `a0` where (`a0`.`id`, `a0`.`article_id`, `a0`.`article_category_id`) in (('articleAttribute2', 'article1', 'category1'))"],
-    ["[query] update `article_attribute` set `name` = 'nameAfterUpdate' where (`id`, `article_id`, `article_category_id`) in (('articleAttribute1', 'article1', 'category1'))"],
+    ["[query] update `article_attribute` set `name` = 'nameAfterUpdate' where `id` = 'articleAttribute1' and (`article_id`, `article_category_id`) = ('article1', 'category1')"],
     ['[query] commit'],
   ]);
 });

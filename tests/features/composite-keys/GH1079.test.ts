@@ -1,4 +1,15 @@
-import { Entity, PrimaryKey, MikroORM, ManyToOne, Enum, PrimaryKeyType, Property, BigIntType, wrap, OptionalProps } from '@mikro-orm/core';
+import {
+  Entity,
+  PrimaryKey,
+  MikroORM,
+  ManyToOne,
+  Enum,
+  Property,
+  BigIntType,
+  wrap,
+  Opt,
+  PrimaryKeyProp,
+} from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers';
@@ -14,7 +25,7 @@ class User {
 @Entity()
 class Wallet {
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['currencyRef', 'owner'];
 
   @PrimaryKey()
   currencyRef!: string;
@@ -27,9 +38,7 @@ class Wallet {
 
 }
 
-class AbstractDeposit<Optional> {
-
-  [OptionalProps]?: 'createdAt' | 'updatedAt' | Optional;
+class AbstractDeposit {
 
   @Property({ type: String, nullable: false })
   amount!: string;
@@ -38,10 +47,10 @@ class AbstractDeposit<Optional> {
   gatewayKey!: string;
 
   @Property()
-  createdAt: Date = new Date();
+  createdAt: Opt & Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt: Date = new Date();
+  updatedAt: Opt & Date = new Date();
 
 }
 
@@ -54,9 +63,9 @@ enum DepositStatus {
 
 
 @Entity()
-export class Deposit extends AbstractDeposit<'status'> {
+export class Deposit extends AbstractDeposit {
 
-  [PrimaryKeyType]?: [string, string, string];
+  [PrimaryKeyProp]?: ['txRef', 'wallet'];
 
   @PrimaryKey()
   txRef!: string;
@@ -68,7 +77,7 @@ export class Deposit extends AbstractDeposit<'status'> {
     nullable: false,
     items: () => DepositStatus,
   })
-  status: DepositStatus = DepositStatus.UNPAID;
+  status: Opt & DepositStatus = DepositStatus.UNPAID;
 
 }
 
@@ -121,7 +130,7 @@ describe('GH issue 1079', () => {
 
     const queries: string[] = mock.mock.calls.map(c => c[0]);
     expect(queries[0]).toMatch(`begin`);
-    expect(queries[1]).toMatch(`insert into "user" ("_id") values ($1) returning "_id"`);
+    expect(queries[1]).toMatch(`insert into "user" ("_id") values ($1)`);
     expect(queries[2]).toMatch(`insert into "wallet" ("currency_ref", "owner__id", "main_balance") values ($1, $2, $3)`);
     expect(queries[3]).toMatch(`insert into "deposit" ("tx_ref", "wallet_currency_ref", "wallet_owner__id", "amount", "gateway_key", "created_at", "updated_at", "status") values ($1, $2, $3, $4, $5, $6, $7, $8)`);
     expect(queries[4]).toMatch(`commit`);

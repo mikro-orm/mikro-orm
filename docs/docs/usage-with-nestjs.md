@@ -34,7 +34,6 @@ Once the installation process is completed, we can import the `MikroOrmModule` i
       entities: ['./dist/entities'],
       entitiesTs: ['./src/entities'],
       dbName: 'my-db-name.sqlite3',
-      type: 'sqlite',
     }),
   ],
   controllers: [AppController],
@@ -45,7 +44,7 @@ export class AppModule {}
 
 The `forRoot()` method accepts the same configuration object as `init()` from the MikroORM package. Check [this page](configuration.md) for the complete configuration documentation.
 
-Alternatively we can [configure the CLI](installation.md#setting-up-the-commandline-tool) by creating a configuration file `mikro-orm.config.ts` and then call the `forRoot()` without any arguments. This won't work when you use a build tools that use tree shaking.
+Alternatively we can [configure the CLI](quick-start.md#setting-up-the-commandline-tool) by creating a configuration file `mikro-orm.config.ts` and then call the `forRoot()` without any arguments. This won't work when you use a build tools that use tree shaking.
 
 ```ts
 @Module({
@@ -131,7 +130,7 @@ In other words, as long as we name the repository same was as the entity is call
 `**./author.entity.ts**`
 
 ```ts
-@Entity({ customRepository: () => AuthorRepository })
+@Entity({ repository: () => AuthorRepository })
 export class Author {
 
   // to allow inference in `em.getRepository()`
@@ -191,25 +190,25 @@ With that option specified, every entity registered through the `forFeature()` m
 
 ## Request scoped handlers in queues
 
-> `@UseRequestContext()` decorator was added in v4.1.0
+> `@CreateRequestContext()` decorator is available in `@mikro-orm/core` package.
 
-> Since v5, `@UseRequestContext()` decorator is available in the `@mikro-orm/core` package. It is valid approach not just for nestjs projects.
+> Before v6, `@CreateRequestContext()` was called `@UseRequestContext()`. 
 
 As mentioned in the [docs](identity-map.md), we need a clean state for each request. That is handled automatically thanks to the `RequestContext` helper registered via middleware.
 
 But middlewares are executed only for regular HTTP request handles, what if we need a request scoped method outside of that? One example of that is queue handlers or scheduled tasks.
 
-We can use the `@UseRequestContext()` decorator. It requires you to first inject the `MikroORM` instance to current context, it will be then used to create the context for you. Under the hood, the decorator will register new request context for your method and execute it inside the context.
+We can use the `@CreateRequestContext()` decorator. It requires you to first inject the `MikroORM` instance to current context, it will be then used to create the context for you. Under the hood, the decorator will register new request context for your method and execute it inside the context.
 
-Keep in mind, that all handlers that are decorated with @UseRequestContext(), should NOT return anything.
+> `@CreateRequestContext()` should be used only on the top level methods. It should not be nested - a method decorated with it should not call another method that is also decorated with it.
 
 ```ts
-@Injectable()
+@Controller()
 export class MyService {
 
   constructor(private readonly orm: MikroORM) { }
 
-  @UseRequestContext()
+  @CreateRequestContext()
   async doSomething() {
     // this will be executed in a separate context
   }
@@ -217,14 +216,14 @@ export class MyService {
 }
 ```
 
-Alternatively we can provide a callback that will return the `MikroORM` instance.
+Alternatively you can provide a callback that will return the `MikroORM` instance.
 
 ```ts
 import { DI } from '..';
 
 export class MyService {
 
-  @UseRequestContext(() => DI.orm)
+  @CreateRequestContext(() => DI.orm)
   async doSomething() {
     // this will be executed in a separate context
   }
@@ -246,14 +245,18 @@ export class MyConsumer {
     await this.doSomethingWithMikro();
   }
 
-  @UseRequestContext()
+  @CreateRequestContext()
   async doSomethingWithMikro() {
     // this will be executed in a separate context
   }
 }
 ```
 
-As in this case, the `@Process()` decorator expects to receive an executable function, but if we add `@UseRequestContext()` to the handler as well, if `@UseRequestContext()` is executed before `@Process()`, the later will receive `void`.
+As in this case, the `@Process()` decorator expects to receive an executable function, but if we add `@CreateRequestContext()` to the handler as well, if `@CreateRequestContext()` is executed before `@Process()`, the later will receive `void`.
+
+## `@EnsureRequestContext()` decorator
+
+Sometimes you may prefer to just ensure the method is executed inside a request context, and reuse the existing context if available. You can use the `@EnsureRequestContext()` decorator here, it behaves exactly like the `@CreateRequestContext`, but only creates new context if necessary, reusing the existing one if possible.
 
 ## Request scoping when using GraphQL
 

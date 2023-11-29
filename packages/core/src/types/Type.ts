@@ -19,15 +19,15 @@ export abstract class Type<JSType = string, DBType = JSType> {
   /**
    * Converts a value from its JS representation to its database representation of this type.
    */
-  convertToDatabaseValue(value: JSType | DBType, platform: Platform, context?: TransformContext | boolean): DBType {
-    return value as DBType;
+  convertToDatabaseValue(value: JSType, platform: Platform, context?: TransformContext): DBType {
+    return value as unknown as DBType;
   }
 
   /**
    * Converts a value from its database representation to its JS representation of this type.
    */
-  convertToJSValue(value: JSType | DBType, platform: Platform): JSType {
-    return value as JSType;
+  convertToJSValue(value: DBType, platform: Platform): JSType {
+    return value as unknown as JSType;
   }
 
   /**
@@ -46,6 +46,20 @@ export abstract class Type<JSType = string, DBType = JSType> {
    */
   compareAsType(): string {
     return 'any';
+  }
+
+  /**
+   * Allows to override the internal comparison logic.
+   */
+  compareValues?(a: DBType, b: DBType): boolean;
+
+  get runtimeType(): string {
+    const compareType = this.compareAsType();
+    return compareType === 'any' ? 'string' : compareType;
+  }
+
+  get name(): string {
+    return this.constructor.name;
   }
 
   /**
@@ -96,9 +110,10 @@ export abstract class Type<JSType = string, DBType = JSType> {
     return false;
   }
 
+  /** @ignore */
   [inspect.custom](depth: number) {
     const object = { ...this };
-    const hidden = ['prop', 'platform', 'meta'];
+    const hidden = ['prop', 'platform', 'meta'] as const;
     hidden.forEach(k => delete object[k]);
     const ret = inspect(object, { depth });
     const name = (this as object).constructor.name;

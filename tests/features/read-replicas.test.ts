@@ -1,6 +1,6 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Book2 } from '../entities-sql';
+import { MySqlDriver, wrap } from '@mikro-orm/mysql';
+import { Author2, Book2, Publisher2 } from '../entities-sql';
 import { initORMMySql, mockLogger } from '../bootstrap';
 import { Author2Subscriber } from '../subscribers/Author2Subscriber';
 import { EverythingSubscriber } from '../subscribers/EverythingSubscriber';
@@ -30,7 +30,7 @@ describe('read-replicas', () => {
       const mock = mockLogger(orm, ['query']);
 
       let author = new Author2('Jon Snow', 'snow@wall.st');
-      author.born = new Date('1990-03-23');
+      author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
       await orm.em.persistAndFlush(author);
       expect(mock.mock.calls[0][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
@@ -72,7 +72,7 @@ describe('read-replicas', () => {
     test('can explicitly set connection type for find operations', async () => {
       const mock = mockLogger(orm, ['query']);
       const author = new Author2('Jon Snow', 'snow@wall.st');
-      author.born = new Date('1990-03-23');
+      author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
       await orm.em.persistAndFlush(author);
 
@@ -81,7 +81,7 @@ describe('read-replicas', () => {
       expect(mock.mock.calls[4][0]).toMatch(/via read connection 'read-.*'/);
 
       // explicitly set to read
-      await orm.em.findOne(Author2, author, { connectionType: 'read',refresh: true });
+      await orm.em.findOne(Author2, author, { connectionType: 'read', refresh: true });
       expect(mock.mock.calls[5][0]).toMatch(/via read connection 'read-.*'/);
 
       // explicitly set to write
@@ -100,7 +100,7 @@ describe('read-replicas', () => {
     test('can explicitly set connection type for count operations', async () => {
       const mock = mockLogger(orm, ['query']);
       const author = new Author2('Jon Snow', 'snow@wall.st');
-      author.born = new Date('1990-03-23');
+      author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
       await orm.em.persistAndFlush(author);
 
@@ -109,19 +109,33 @@ describe('read-replicas', () => {
       expect(mock.mock.calls[4][0]).toMatch(/via read connection 'read-.*'/);
 
       // explicitly set to read
-      await orm.em.count(Author2, {},{ connectionType: 'read' });
+      await orm.em.count(Author2, {}, { connectionType: 'read' });
       expect(mock.mock.calls[5][0]).toMatch(/via read connection 'read-.*'/);
 
       // explicitly set to write
-      await orm.em.count(Author2, {},{ connectionType: 'write' });
+      await orm.em.count(Author2, {}, { connectionType: 'write' });
       expect(mock.mock.calls[6][0]).toMatch(/via write connection '127\.0\.0\.1'/);
 
       // when running in a transaction will always use a write connection
       await orm.em.transactional(async em => {
-        return em.count(Author2, {},{ connectionType: 'read' });
+        return em.count(Author2, {}, { connectionType: 'read' });
       });
       expect(mock.mock.calls[7][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[8][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);
+    });
+
+    test('use write connection for fetching data after upsert/upsertMany', async () => {
+      const mock = mockLogger(orm, ['query']);
+      await orm.em.upsert(Author2, { name: 'Jon Snow', email: 'snow@wall.st', born: '1990-03-23' });
+      expect(mock.mock.calls[0][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[1][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+
+      await orm.em.upsertMany(Author2, [
+        { name: 'Daenerys Stormborn', email: 'dany@dragonstone.ts', born: '1990-03-23' },
+        { name: 'Jaime Lannister', email: 'jaime@casterlyrock.ts', born: '1980-03-23' },
+      ]);
+      expect(mock.mock.calls[2][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[3][0]).toMatch(/via write connection '127\.0\.0\.1'/);
     });
   });
 
@@ -132,7 +146,7 @@ describe('read-replicas', () => {
       const mock = mockLogger(orm, ['query']);
 
       let author = new Author2('Jon Snow', 'snow@wall.st');
-      author.born = new Date('1990-03-23');
+      author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
       await orm.em.persistAndFlush(author);
       expect(mock.mock.calls[0][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
@@ -143,10 +157,10 @@ describe('read-replicas', () => {
       orm.em.clear();
       author = (await orm.em.findOne(Author2, author))!;
       await orm.em.findOne(Author2, author, { refresh: true });
-      await orm.em.findOne(Author2, author, { refresh: true });
+      await orm.em.qb(Author2).where({ id: author.id }).limit(1).execute();
       expect(mock.mock.calls[4][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[5][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
-      expect(mock.mock.calls[6][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[6][0]).toMatch(/select `a0`\.\* from `author2` as `a0` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
 
       author.name = 'Jon Blow';
       await orm.em.flush();
@@ -176,7 +190,7 @@ describe('read-replicas', () => {
 
       const mock = mockLogger(orm, ['query']);
       const author = new Author2('Jon Snow', 'snow@wall.st');
-      author.born = new Date('1990-03-23');
+      author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
       await orm.em.persistAndFlush(author);
 
@@ -185,7 +199,7 @@ describe('read-replicas', () => {
       expect(mock.mock.calls[4][0]).toMatch(/via write connection '127\.0\.0\.1'/);
 
       // explicitly set to read
-      await orm.em.findOne(Author2, author, { connectionType: 'read',refresh: true });
+      await orm.em.findOne(Author2, author, { connectionType: 'read', refresh: true });
       expect(mock.mock.calls[5][0]).toMatch(/via read connection 'read-.*'/);
 
       // explicitly set to write
@@ -206,7 +220,7 @@ describe('read-replicas', () => {
 
       const mock = mockLogger(orm, ['query']);
       const author = new Author2('Jon Snow', 'snow@wall.st');
-      author.born = new Date('1990-03-23');
+      author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
       await orm.em.persistAndFlush(author);
 
@@ -215,20 +229,53 @@ describe('read-replicas', () => {
       expect(mock.mock.calls[4][0]).toMatch(/via write connection '127\.0\.0\.1'/);
 
       // explicitly set to read
-      await orm.em.count(Author2, {},{ connectionType: 'read' });
+      await orm.em.count(Author2, {}, { connectionType: 'read' });
       expect(mock.mock.calls[5][0]).toMatch(/via read connection 'read-.*'/);
 
       // explicitly set to write
-      await orm.em.count(Author2, {},{ connectionType: 'write' });
+      await orm.em.count(Author2, {}, { connectionType: 'write' });
       expect(mock.mock.calls[6][0]).toMatch(/via write connection '127\.0\.0\.1'/);
 
       // when running in a transaction will always use a write connection
       await orm.em.transactional(async em => {
-        return em.count(Author2, {},{ connectionType: 'read' });
+        return em.count(Author2, {}, { connectionType: 'read' });
       });
       expect(mock.mock.calls[7][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[8][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);
     });
+
+    test('use write connection for fetching data after upsert/upsertMany', async () => {
+      const mock = mockLogger(orm, ['query']);
+      await orm.em.upsert(Author2, { name: 'Jon Snow', email: 'snow@wall.st', born: '1990-03-23' });
+      expect(mock.mock.calls[0][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[1][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+
+      await orm.em.upsertMany(Author2, [
+        { name: 'Daenerys Stormborn', email: 'dany@dragonstone.ts', born: '1990-03-23' },
+        { name: 'Jaime Lannister', email: 'jaime@casterlyrock.ts', born: '1980-03-23' },
+      ]);
+      expect(mock.mock.calls[2][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[3][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+    });
+  });
+
+  test('find with different schema', async () => {
+    const author = new Author2('n', 'e');
+    const book1 = new Book2('b1', author);
+    book1.publisher = wrap(new Publisher2('p')).toReference();
+    const book2 = new Book2('b2', author);
+    await orm.em.persistAndFlush([book1, book2]);
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+
+    const schema = `${orm.config.get('dbName')}_schema_2`;
+    const res1 = await orm.em.find(Book2, { publisher: { $ne: null } }, { schema, populate: ['perex'] });
+    const res2 = await orm.em.find(Book2, { publisher: { $ne: null } }, { populate: ['perex'] });
+    expect(mock.mock.calls[0][0]).toMatch(`select \`b0\`.*, \`b0\`.price * 1.19 as \`price_taxed\`, \`t1\`.\`id\` as \`test_id\` from \`${schema}\`.\`book2\` as \`b0\` left join \`${schema}\`.\`test2\` as \`t1\` on \`b0\`.\`uuid_pk\` = \`t1\`.\`book_uuid_pk\` where \`b0\`.\`author_id\` is not null and \`b0\`.\`publisher_id\` is not null`);
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` from `book2` as `b0` left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`publisher_id` is not null');
+    expect(res1.length).toBe(0);
+    expect(res2.length).toBe(1);
   });
 
 });

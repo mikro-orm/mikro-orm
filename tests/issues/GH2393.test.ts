@@ -1,5 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -32,8 +31,8 @@ describe('GH issue 2393', () => {
     await expect(MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      driver: SqliteDriver,
-    }, false)).rejects.toThrowError('A.coll has unknown \'mappedBy\' reference: B.undefined');
+      connect: false,
+    })).rejects.toThrow('A.coll has unknown \'mappedBy\' reference: B.undefined');
   });
 
 });

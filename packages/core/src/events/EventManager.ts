@@ -1,13 +1,13 @@
-import type { AnyEntity, AsyncFunction, EntityMetadata } from '../typings';
+import type { AnyEntity, AsyncFunction, EntityKey, EntityMetadata } from '../typings';
 import type { EventArgs, EventSubscriber, FlushEventArgs, TransactionEventArgs } from './EventSubscriber';
 import { Utils } from '../utils';
-import type { TransactionEventType } from '../enums';
-import { EventType } from '../enums';
+import { EventType, EventTypeMap, type TransactionEventType } from '../enums';
 
 export class EventManager {
 
   private readonly listeners: { [K in EventType]?: EventSubscriber[] } = {};
   private readonly entities: Map<EventSubscriber, string[]> = new Map();
+  private readonly cache: Map<number, boolean> = new Map();
   private readonly subscribers: EventSubscriber[] = [];
 
   constructor(subscribers: EventSubscriber[]) {
@@ -17,18 +17,19 @@ export class EventManager {
   registerSubscriber(subscriber: EventSubscriber): void {
     this.subscribers.push(subscriber);
     this.entities.set(subscriber, this.getSubscribedEntities(subscriber));
-    Object.keys(EventType)
+    this.cache.clear();
+    Utils.keys(EventType)
       .filter(event => event in subscriber)
       .forEach(event => {
-        this.listeners[event] = this.listeners[event] || [];
-        this.listeners[event].push(subscriber);
+        this.listeners[event] ??= [];
+        this.listeners[event]!.push(subscriber);
       });
   }
 
-  dispatchEvent<T>(event: TransactionEventType, args: TransactionEventArgs, meta?: EntityMetadata<T>): unknown;
-  dispatchEvent<T>(event: EventType.onInit, args: Partial<EventArgs<T>>, meta?: EntityMetadata<T>): unknown;
-  dispatchEvent<T>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs>, meta?: EntityMetadata<T>): Promise<unknown>;
-  dispatchEvent<T>(event: EventType, args: Partial<AnyEventArgs<T>>, meta?: EntityMetadata<T>): Promise<unknown> | unknown {
+  dispatchEvent<T extends object>(event: TransactionEventType, args: TransactionEventArgs, meta?: EntityMetadata<T>): unknown;
+  dispatchEvent<T extends object>(event: EventType.onInit, args: Partial<EventArgs<T>>, meta?: EntityMetadata<T>): unknown;
+  dispatchEvent<T extends object>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs>, meta?: EntityMetadata<T>): Promise<unknown>;
+  dispatchEvent<T extends object>(event: EventType, args: Partial<AnyEventArgs<T>>, meta?: EntityMetadata<T>): Promise<unknown> | unknown {
     const listeners: AsyncFunction[] = [];
     const entity = (args as EventArgs<T>).entity;
 
@@ -36,7 +37,8 @@ export class EventManager {
     meta ??= (entity as AnyEntity)?.__meta;
     const hooks = (meta?.hooks[event] || []) as AsyncFunction[];
     listeners.push(...hooks.map(hook => {
-      const handler = typeof hook === 'function' ? hook : entity[hook!] as AsyncFunction;
+      const prototypeHook = meta?.prototype[hook as unknown as EntityKey<T>];
+      const handler = typeof hook === 'function' ? hook : entity[hook!] ?? prototypeHook as AsyncFunction;
       return handler!.bind(entity);
     }));
 
@@ -56,9 +58,16 @@ export class EventManager {
   }
 
   hasListeners<T>(event: EventType, meta: EntityMetadata<T>): boolean {
+    const cacheKey = meta._id + EventTypeMap[event];
+
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey)!;
+    }
+
     const hasHooks = meta.hooks[event]?.length;
 
     if (hasHooks) {
+      this.cache.set(cacheKey, true);
       return true;
     }
 
@@ -66,10 +75,12 @@ export class EventManager {
       const entities = this.entities.get(listener)!;
 
       if (entities.length === 0 || entities.includes(meta.className)) {
+        this.cache.set(cacheKey, true);
         return true;
       }
     }
 
+    this.cache.set(cacheKey, false);
     return false;
   }
 
@@ -87,4 +98,4 @@ export class EventManager {
 
 }
 
-type AnyEventArgs<T> = EventArgs<T> | FlushEventArgs | TransactionEventArgs;
+type AnyEventArgs<T extends object> = EventArgs<T> | FlushEventArgs | TransactionEventArgs;

@@ -1,19 +1,25 @@
 import { CriteriaNode } from './CriteriaNode';
-import type { IQueryBuilder } from '../typings';
+import type { IQueryBuilder, ICriteriaNodeProcessOptions } from '../typings';
 
 /**
  * @internal
  */
-export class ArrayCriteriaNode extends CriteriaNode {
+export class ArrayCriteriaNode<T extends object> extends CriteriaNode<T> {
 
-  process<T>(qb: IQueryBuilder<T>, alias?: string): any {
-    return this.payload.map((node: CriteriaNode) => {
-      return node.process(qb, alias);
+  override process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
+    return this.payload.map((node: CriteriaNode<T>) => {
+      return node.process(qb, options);
     });
   }
 
-  willAutoJoin<T>(qb: IQueryBuilder<T>, alias?: string) {
-    return this.payload.some((node: CriteriaNode) => {
+  override unwrap(): any {
+    return this.payload.map((node: CriteriaNode<T>) => {
+      return node.unwrap();
+    });
+  }
+
+  override willAutoJoin(qb: IQueryBuilder<T>, alias?: string) {
+    return this.payload.some((node: CriteriaNode<T>) => {
       return node.willAutoJoin(qb, alias);
     });
   }

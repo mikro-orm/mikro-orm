@@ -1,5 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/better-sqlite';
 
 @Entity()
 class Author {
@@ -15,10 +14,9 @@ class Author {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({
+  orm = MikroORM.initSync({
     entities: [Author],
     dbName: ':memory:',
-    driver: BetterSqliteDriver,
   });
   await orm.schema.createSchema();
 });

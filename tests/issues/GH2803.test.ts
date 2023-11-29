@@ -1,5 +1,4 @@
-import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -33,11 +32,10 @@ export class Tag {
 
 describe('GH issue 2803', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Book, Tag],
     });
@@ -58,7 +56,7 @@ describe('GH issue 2803', () => {
     const mock = mockLogger(orm, ['query']);
     const ret = await orm.em.find(Book, {}, { populate: ['tags'] });
     expect(ret[0].tags).toHaveLength(3);
-    expect(mock).toBeCalledTimes(1);
+    expect(mock).toHaveBeenCalledTimes(1);
   });
 
 });

@@ -1,4 +1,3 @@
-import type { AnyEntity } from '@mikro-orm/core';
 import { Configuration, QueryOrder } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/knex';
 import { EntityRepository } from '@mikro-orm/knex';
@@ -8,9 +7,6 @@ import { MongoDriver, MongoEntityRepository } from '@mikro-orm/mongodb';
 
 const methods = {
   getReference: jest.fn(),
-  persist: jest.fn(),
-  persistAndFlush: jest.fn(),
-  persistLater: jest.fn(),
   createQueryBuilder: jest.fn(),
   qb: jest.fn(),
   findOne: jest.fn(),
@@ -19,16 +15,13 @@ const methods = {
   upsertMany: jest.fn(),
   find: jest.fn(),
   findAndCount: jest.fn(),
-  remove: jest.fn(),
-  removeAndFlush: jest.fn(),
-  removeLater: jest.fn(),
-  flush: jest.fn(),
+  findByCursor: jest.fn(),
   canPopulate: jest.fn(),
   populate: jest.fn(),
   count: jest.fn(),
   create: jest.fn(),
   assign: jest.fn(),
-  nativeInsert: jest.fn(),
+  insert: jest.fn(),
   nativeUpdate: jest.fn(),
   nativeDelete: jest.fn(),
   aggregate: jest.fn(),
@@ -50,16 +43,12 @@ describe('EntityRepository', () => {
     repo.getReference('bar');
     expect(methods.getReference.mock.calls[0]).toEqual([Publisher, 'bar', undefined]);
     const e = Object.create(Publisher.prototype);
-    repo.persist(e);
-    expect(methods.persist.mock.calls[0]).toEqual([e]);
-    await repo.persistAndFlush(e);
-    expect(methods.persistAndFlush.mock.calls[0]).toEqual([e]);
-    repo.persistLater(e);
-    expect(methods.persistLater.mock.calls[0]).toEqual([e]);
     await repo.find({ name: 'bar' });
     expect(methods.find.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
     await repo.findAndCount({ name: 'bar' });
     expect(methods.findAndCount.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
+    await repo.findByCursor({ name: 'bar' }, { first: 10, after: '...' });
+    expect(methods.findByCursor.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, { first: 10, after: '...' }]);
     await repo.findOne('bar');
     expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', undefined]);
     await repo.findOneOrFail('bar');
@@ -72,13 +61,6 @@ describe('EntityRepository', () => {
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
     await repo.qb();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
-    repo.remove(e);
-    expect(methods.remove.mock.calls[0]).toEqual([e]);
-    const entity = {} as AnyEntity;
-    await repo.removeAndFlush(entity);
-    expect(methods.removeAndFlush.mock.calls[0]).toEqual([entity]);
-    repo.removeLater(entity);
-    expect(methods.removeLater.mock.calls[0]).toEqual([entity]);
     await repo.create({ name: 'bar' });
     expect(methods.create.mock.calls[0]).toEqual([Publisher, { name: 'bar' }]);
     await repo.assign(e, { name: 'bar' });
@@ -86,8 +68,8 @@ describe('EntityRepository', () => {
     await repo.populate([] as Publisher[], ['books']);
     expect(methods.populate.mock.calls[0]).toEqual([[], ['books'], undefined]);
 
-    await repo.nativeInsert({ name: 'bar' });
-    expect(methods.nativeInsert.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
+    await repo.insert({ name: 'bar' });
+    expect(methods.insert.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
     await repo.nativeUpdate({ name: 'bar' }, { name: 'baz' });
     expect(methods.nativeUpdate.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, { name: 'baz' }, undefined]);
     await repo.nativeDelete({ name: 'bar' });
@@ -131,8 +113,12 @@ describe('EntityRepository', () => {
 
   test('assign() and populate() validates entity type', async () => {
     const e = Object.create(Author.prototype, {});
-    await expect(repo.populate(e, [])).rejects.toThrowError(`Trying to use EntityRepository.populate() with 'Author' entity while the repository is of type 'Publisher'`);
-    expect(() => repo.assign(e, {})).toThrowError(`Trying to use EntityRepository.assign() with 'Author' entity while the repository is of type 'Publisher'`);
+    await expect(repo.populate(e, [])).rejects.toThrow(`Trying to use EntityRepository.populate() with 'Author' entity while the repository is of type 'Publisher'`);
+    expect(() => repo.assign(e, {})).toThrow(`Trying to use EntityRepository.assign() with 'Author' entity while the repository is of type 'Publisher'`);
+  });
+
+  test('getEntityName() returns the correct value', async () => {
+    expect(repoMongo.getEntityName()).toEqual(Publisher.name);
   });
 
 });

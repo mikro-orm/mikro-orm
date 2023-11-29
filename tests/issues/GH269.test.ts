@@ -1,5 +1,4 @@
-import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, Property, wrap, Reference } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, Ref, MikroORM, OneToOne, PrimaryKey, Property, wrap, Reference } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -7,8 +6,8 @@ export class A {
   @PrimaryKey({ type: 'number' })
   id!: number;
 
-  @OneToOne({ entity: () => B, inversedBy: 'a', wrappedReference: true, nullable: true })
-  b?: IdentifiedReference<B>;
+  @OneToOne({ entity: () => B, inversedBy: 'a', ref: true, nullable: true })
+  b?: Ref<B>;
 
   @Property()
   name!: string;
@@ -21,8 +20,8 @@ export class B {
   @PrimaryKey({ type: 'number' })
   id!: number;
 
-  @OneToOne({ entity: () => A, mappedBy: 'b', wrappedReference: true, nullable: true })
-  a?: IdentifiedReference<A>;
+  @OneToOne({ entity: () => A, mappedBy: 'b', ref: true, nullable: true })
+  a?: Ref<A>;
 
   @Property()
   name!: string;
@@ -31,13 +30,12 @@ export class B {
 
 describe('GH issue 269', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      driver: SqliteDriver,
       autoJoinOneToOneOwner: false,
     });
     await orm.schema.dropSchema();

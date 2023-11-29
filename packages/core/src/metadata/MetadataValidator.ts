@@ -1,7 +1,7 @@
-import type { EntityName, EntityMetadata, EntityProperty } from '../typings';
-import { Utils } from '../utils';
+import type { EntityMetadata, EntityName, EntityProperty } from '../typings';
+import { type MetadataDiscoveryOptions, Utils } from '../utils';
 import { MetadataError } from '../errors';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import type { MetadataStorage } from './MetadataStorage';
 
 /**
@@ -14,19 +14,19 @@ export class MetadataValidator {
    * on the same property. One should use only `@ManyToOne()` in such case.
    * We allow the existence of the property in metadata if the reference type is the same, this should allow things like HMR to work.
    */
-  static validateSingleDecorator(meta: EntityMetadata, propertyName: string, reference: ReferenceType): void {
-    if (meta.properties[propertyName] && meta.properties[propertyName].reference !== reference) {
+  static validateSingleDecorator(meta: EntityMetadata, propertyName: string, reference: ReferenceKind): void {
+    if (meta.properties[propertyName] && meta.properties[propertyName].kind !== reference) {
       throw MetadataError.multipleDecorators(meta.className, propertyName);
     }
   }
 
-  validateEntityDefinition(metadata: MetadataStorage, name: string): void {
-    const meta = metadata.get(name);
+  validateEntityDefinition<T>(metadata: MetadataStorage, name: string, options: MetadataDiscoveryOptions): void {
+    const meta = metadata.get<T>(name);
 
     if (meta.virtual || meta.expression) {
-      for (const prop of Object.values(meta.properties)) {
-        if (![ReferenceType.SCALAR, ReferenceType.EMBEDDED].includes(prop.reference)) {
-          throw new MetadataError(`Only scalar and embedded properties are allowed inside virtual entity. Found '${prop.reference}' in ${meta.className}.${prop.name}`);
+      for (const prop of Utils.values(meta.properties)) {
+        if (![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED, ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+          throw new MetadataError(`Only scalars, embedded properties and to-many relations are allowed inside virtual entity. Found '${prop.kind}' in ${meta.className}.${prop.name}`);
         }
 
         if (prop.primary) {
@@ -43,24 +43,28 @@ export class MetadataValidator {
     }
 
     this.validateVersionField(meta);
+    this.validateDuplicateFieldNames(meta, options);
     this.validateIndexes(meta, meta.indexes ?? [], 'index');
     this.validateIndexes(meta, meta.uniques ?? [], 'unique');
-    const references = Object.values(meta.properties).filter(prop => prop.reference !== ReferenceType.SCALAR);
 
-    for (const prop of references) {
-      this.validateReference(meta, prop, metadata);
-      this.validateBidirectional(meta, prop, metadata);
+    for (const prop of Utils.values(meta.properties)) {
+      if (prop.kind !== ReferenceKind.SCALAR) {
+        this.validateReference(meta, prop, metadata);
+        this.validateBidirectional(meta, prop, metadata);
+      } else if (metadata.has(prop.type)) {
+        throw MetadataError.propertyTargetsEntityType(meta, prop, metadata.get(prop.type));
+      }
     }
   }
 
-  validateDiscovered(discovered: EntityMetadata[], warnWhenNoEntities?: boolean, checkDuplicateTableNames?: boolean): void {
-    if (discovered.length === 0 && warnWhenNoEntities) {
+  validateDiscovered(discovered: EntityMetadata[], options: MetadataDiscoveryOptions): void {
+    if (discovered.length === 0 && options.warnWhenNoEntities) {
       throw MetadataError.noEntityDiscovered();
     }
 
     const duplicates = Utils.findDuplicates(discovered.map(meta => meta.className));
 
-    if (duplicates.length > 0) {
+    if (duplicates.length > 0 && options.checkDuplicateEntities) {
       throw MetadataError.duplicateEntityDiscovered(duplicates);
     }
 
@@ -70,12 +74,12 @@ export class MetadataValidator {
       return (meta.schema ? '.' + meta.schema : '') + tableName;
     }));
 
-    if (duplicateTableNames.length > 0 && checkDuplicateTableNames) {
+    if (duplicateTableNames.length > 0 && options.checkDuplicateTableNames && options.checkDuplicateEntities) {
       throw MetadataError.duplicateEntityDiscovered(duplicateTableNames, 'table names');
     }
 
     // validate we found at least one entity (not just abstract/base entities)
-    if (discovered.filter(meta => meta.name).length === 0 && warnWhenNoEntities) {
+    if (discovered.filter(meta => meta.name).length === 0 && options.warnWhenNoEntities) {
       throw MetadataError.onlyAbstractEntitiesDiscovered();
     }
 
@@ -96,7 +100,7 @@ export class MetadataValidator {
 
     // check for not discovered entities
     discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
-      if (prop.reference !== ReferenceType.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => discovered.find(m => m.className === type))) {
+      if (prop.kind !== ReferenceKind.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => discovered.find(m => m.className === type))) {
         throw MetadataError.fromUnknownEntity(prop.type, `${meta.className}.${prop.name}`);
       }
 
@@ -125,6 +129,10 @@ export class MetadataValidator {
     if (!metadata.find(prop.type)) {
       throw MetadataError.fromWrongTypeDefinition(meta, prop);
     }
+
+    if (metadata.find(prop.type)!.abstract && !metadata.find(prop.type)!.discriminatorColumn) {
+      throw MetadataError.targetIsAbstract(meta, prop);
+    }
   }
 
   private validateBidirectional(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {
@@ -134,6 +142,11 @@ export class MetadataValidator {
     } else if (prop.mappedBy) {
       const inverse = metadata.get(prop.type).properties[prop.mappedBy];
       this.validateInverseSide(meta, prop, inverse, metadata);
+    } else {
+      // 1:m property has `mappedBy`
+      if (prop.kind === ReferenceKind.ONE_TO_MANY && !prop.mappedBy) {
+        throw MetadataError.fromMissingOption(meta, prop, 'mappedBy');
+      }
     }
   }
 
@@ -174,13 +187,13 @@ export class MetadataValidator {
 
     // owning side is not defined as inverse
     const valid = [
-      { owner: ReferenceType.MANY_TO_ONE, inverse: ReferenceType.ONE_TO_MANY },
-      { owner: ReferenceType.MANY_TO_MANY, inverse: ReferenceType.MANY_TO_MANY },
-      { owner: ReferenceType.ONE_TO_ONE, inverse: ReferenceType.ONE_TO_ONE },
+      { owner: ReferenceKind.MANY_TO_ONE, inverse: ReferenceKind.ONE_TO_MANY },
+      { owner: ReferenceKind.MANY_TO_MANY, inverse: ReferenceKind.MANY_TO_MANY },
+      { owner: ReferenceKind.ONE_TO_ONE, inverse: ReferenceKind.ONE_TO_ONE },
     ];
 
-    if (!valid.find(spec => spec.owner === owner.reference && spec.inverse === prop.reference)) {
-      throw MetadataError.fromWrongReferenceType(meta, owner, prop);
+    if (!valid.find(spec => spec.owner === owner.kind && spec.inverse === prop.kind)) {
+      throw MetadataError.fromWrongReferenceKind(meta, owner, prop);
     }
 
     if (prop.primary) {
@@ -191,10 +204,27 @@ export class MetadataValidator {
   private validateIndexes(meta: EntityMetadata, indexes: { properties: string | string[] }[], type: 'index' | 'unique'): void {
     for (const index of indexes) {
       for (const prop of Utils.asArray(index.properties)) {
-        if (!(prop in meta.properties)) {
+        if (!meta.properties[prop] && !Object.values(meta.properties).some(p => prop.startsWith(p.name + '.'))) {
           throw MetadataError.unknownIndexProperty(meta, prop, type);
         }
       }
+    }
+  }
+
+  private validateDuplicateFieldNames(meta: EntityMetadata, options: MetadataDiscoveryOptions): void {
+    const candidates = Object.values(meta.properties)
+      .filter(prop => prop.persist !== false && !prop.inherited && prop.fieldNames?.length === 1)
+      .map(prop => prop.fieldNames[0]);
+    const duplicates = Utils.findDuplicates(candidates);
+
+    if (duplicates.length > 0 && options.checkDuplicateFieldNames) {
+      const pairs = duplicates.flatMap(name => {
+        return Object.values(meta.properties)
+          .filter(p => p.fieldNames[0] === name)
+          .map(prop => [prop.name, prop.fieldNames[0]] as [string, string]);
+      });
+
+      throw MetadataError.duplicateFieldName(meta.className, pairs);
     }
   }
 
@@ -210,9 +240,9 @@ export class MetadataValidator {
     }
 
     const prop = meta.properties[meta.versionProperty];
-    const type = prop.type.toLowerCase();
+    const type = prop.runtimeType ?? prop.columnTypes?.[0] ?? prop.type;
 
-    if (type !== 'number' && type !== 'date' && !type.startsWith('timestamp') && !type.startsWith('datetime')) {
+    if (type !== 'number' && type !== 'Date' && !type.startsWith('timestamp') && !type.startsWith('datetime')) {
       throw MetadataError.invalidVersionFieldType(meta);
     }
   }

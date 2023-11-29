@@ -1,11 +1,10 @@
-import { EntitySchema, EnumType, MikroORM, ReferenceType, Type, Utils } from '@mikro-orm/core';
+import { EntitySchema, EnumType, MikroORM, ReferenceKind, Type, Utils } from '@mikro-orm/core';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import { BASE_DIR, initORMMySql } from '../../bootstrap';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { MariaDbDriver } from '@mikro-orm/mariadb';
 
 describe('SchemaGenerator', () => {
 
@@ -42,46 +41,9 @@ describe('SchemaGenerator', () => {
     await orm.isConnected();
   });
 
-  test('create/drop database [mariadb]', async () => {
-    const dbName = `mikro_orm_test_${Date.now()}`;
-    const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
-      dbName,
-      port: 3308,
-      baseDir: BASE_DIR,
-      driver: MariaDbDriver,
-      multipleStatements: true,
-    });
-
-    await orm.schema.ensureDatabase();
-    await orm.schema.dropDatabase(dbName);
-    await orm.close(true);
-    await expect(orm.schema.ensureDatabase()).rejects.toThrow('Unable to acquire a connection');
-  });
-
-  test('create schema also creates the database if not exists [mariadb]', async () => {
-    const dbName = `mikro_orm_test_${Date.now()}`;
-    const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
-      dbName,
-      port: 3308,
-      baseDir: BASE_DIR,
-      driver: MariaDbDriver,
-      migrations: { path: BASE_DIR + '/../temp/migrations' },
-      multipleStatements: true,
-    });
-
-    await orm.schema.createSchema();
-    await orm.schema.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
-    await orm.close(true);
-    await expect(orm.schema.ensureDatabase()).rejects.toThrow('Unable to acquire a connection');
-  });
-
   test('generate schema from metadata [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
     await orm.schema.ensureDatabase();
-    const dump = await orm.schema.generate();
-    expect(dump).toMatchSnapshot('mysql-schema-dump');
 
     const dropDump = await orm.schema.getDropSchemaSQL();
     expect(dropDump).toMatchSnapshot('mysql-drop-schema-dump');
@@ -96,25 +58,6 @@ describe('SchemaGenerator', () => {
     await orm.close(true);
   });
 
-  test('generate schema from metadata [mariadb]', async () => {
-    const orm = await initORMMySql('mariadb', {}, true);
-    await orm.schema.ensureDatabase();
-    const dump = await orm.schema.generate();
-    // expect(dump).toMatchSnapshot('mariadb-schema-dump');
-
-    const dropDump = await orm.schema.getDropSchemaSQL();
-    expect(dropDump).toMatchSnapshot('mariadb-drop-schema-dump');
-
-    const createDump = await orm.schema.getCreateSchemaSQL();
-    // expect(createDump).toMatchSnapshot('mariadb-create-schema-dump');
-
-    const updateDump = await orm.schema.getUpdateSchemaSQL();
-    expect(updateDump).toMatchSnapshot('mariadb-update-schema-dump');
-
-    await orm.schema.dropDatabase();
-    await orm.close(true);
-  });
-
   test('update schema [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
     const meta = orm.getMetadata();
@@ -122,7 +65,7 @@ describe('SchemaGenerator', () => {
     const newTableMeta = EntitySchema.fromMetadata({
       properties: {
         id: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           primary: true,
           name: 'id',
           type: 'number',
@@ -131,7 +74,7 @@ describe('SchemaGenerator', () => {
           autoincrement: true,
         },
         createdAt: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           length: 3,
           defaultRaw: 'current_timestamp(3)',
           name: 'createdAt',
@@ -140,7 +83,7 @@ describe('SchemaGenerator', () => {
           columnTypes: ['datetime(3)'],
         },
         updatedAt: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           length: 3,
           defaultRaw: 'current_timestamp(3)',
           name: 'updatedAt',
@@ -149,7 +92,7 @@ describe('SchemaGenerator', () => {
           columnTypes: ['datetime(3)'],
         },
         name: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           name: 'name',
           type: 'string',
           fieldNames: ['name'],
@@ -234,10 +177,10 @@ describe('SchemaGenerator', () => {
     await orm.schema.execute(diff);
 
     // clean up old references manually (they would not be valid if we did a full meta sync)
-    meta.get('author2_following').props.forEach(prop => prop.reference = ReferenceType.SCALAR);
-    meta.get('author_to_friend').props.forEach(prop => prop.reference = ReferenceType.SCALAR);
-    meta.get('Book2').properties.author.reference = ReferenceType.SCALAR;
-    meta.get('Address2').properties.author.reference = ReferenceType.SCALAR;
+    meta.get('author2_following').props.forEach(prop => prop.kind = ReferenceKind.SCALAR);
+    meta.get('author_to_friend').props.forEach(prop => prop.kind = ReferenceKind.SCALAR);
+    meta.get('Book2').properties.author.kind = ReferenceKind.SCALAR;
+    meta.get('Address2').properties.author.kind = ReferenceKind.SCALAR;
     meta.get('Address2').properties.author.autoincrement = false;
 
     // remove 1:1 relation
@@ -313,6 +256,7 @@ describe('SchemaGenerator', () => {
     await orm.schema.execute(diff);
 
     newTableMeta.properties.enumTest.items = ['a', 'b', 'c'];
+    delete newTableMeta.properties.enumTest.columnTypes[0];
     newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql-update-schema-enums-3');
@@ -346,8 +290,8 @@ describe('SchemaGenerator', () => {
 
     await orm.schema.refreshDatabase();
 
-    expect(dropSchema).toBeCalledTimes(1);
-    expect(createSchema).toBeCalledTimes(1);
+    expect(dropSchema).toHaveBeenCalledTimes(1);
+    expect(createSchema).toHaveBeenCalledTimes(1);
 
     dropSchema.mockRestore();
     createSchema.mockRestore();

@@ -27,7 +27,7 @@ class MigrationTest2 extends Migration {
     expect(res).toEqual([{ count1: 2 }]);
   }
 
-  isTransactional(): boolean {
+  override isTransactional(): boolean {
     return false;
   }
 
@@ -39,7 +39,7 @@ describe('Migrator (sqlite)', () => {
 
   beforeAll(async () => {
     orm = await initORMSqlite2();
-    await remove(process.cwd() + '/temp/migrations');
+    await remove(process.cwd() + '/temp/migrations-3');
   });
   afterAll(async () => orm.close(true));
 
@@ -52,7 +52,7 @@ describe('Migrator (sqlite)', () => {
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-3/' + migration.fileName);
   });
 
   test('generate migration with custom name', async () => {
@@ -74,7 +74,7 @@ describe('Migrator (sqlite)', () => {
     await migrator.up();
     await migrator.down(migration.fileName.replace('migration-', '').replace('.ts', ''));
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-3/' + migration.fileName);
     upMock.mockRestore();
     downMock.mockRestore();
   });
@@ -85,7 +85,7 @@ describe('Migrator (sqlite)', () => {
     const migrator = new Migrator(orm.em);
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
-    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-3/' + migration.fileName);
   });
 
   test('generate migration with snapshot', async () => {
@@ -97,7 +97,7 @@ describe('Migrator (sqlite)', () => {
     const migrator = new Migrator(orm.em);
     const migration1 = await migrator.createMigration();
     expect(migration1).toMatchSnapshot('migration-snapshot-dump-1');
-    await remove(process.cwd() + '/temp/migrations/' + migration1.fileName);
+    await remove(process.cwd() + '/temp/migrations-3/' + migration1.fileName);
 
     // will use the snapshot, so should be empty
     const migration2 = await migrator.createMigration();
@@ -114,7 +114,7 @@ describe('Migrator (sqlite)', () => {
     getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
     const migrator = new Migrator(orm.em);
     const err = 'Initial migration cannot be created, as some migrations already exist';
-    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrowError(err);
+    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrow(err);
 
     getExecutedMigrationsMock.mockResolvedValueOnce([]);
     const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
@@ -127,24 +127,26 @@ describe('Migrator (sqlite)', () => {
     schemaMock.mockReturnValueOnce([{ name: 'author4' } as DatabaseTable, { name: 'book4' } as DatabaseTable]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: author4, book4`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err2);
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err2);
 
     metadataMock.mockReturnValueOnce({});
     const err3 = `No entities found`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err3);
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err3);
 
     schemaMock.mockReturnValueOnce([]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const migration1 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).not.toBeCalledWith('Migration20191013214813.ts');
+    expect(logMigrationMock).not.toHaveBeenCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
-    await remove(process.cwd() + '/temp/migrations/' + migration1.fileName);
+    const outOfSync = await migrator.checkMigrationNeeded();
+    expect(outOfSync).toBe(false);
+    await remove(process.cwd() + '/temp/migrations-3/' + migration1.fileName);
 
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration2 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).toBeCalledWith({ name: 'Migration20191013214813.ts', context: null });
+    expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
-    await remove(process.cwd() + '/temp/migrations/' + migration2.fileName);
+    await remove(process.cwd() + '/temp/migrations-3/' + migration2.fileName);
   });
 
   test('migration storage getter', async () => {
@@ -167,17 +169,17 @@ describe('Migrator (sqlite)', () => {
     downMock.mockImplementationOnce(() => void 0 as any);
     const migrator = new Migrator(orm.em);
     await migrator.up();
-    expect(upMock).toBeCalledTimes(1);
-    expect(downMock).toBeCalledTimes(0);
+    expect(upMock).toHaveBeenCalledTimes(1);
+    expect(downMock).toHaveBeenCalledTimes(0);
     await migrator.down();
-    expect(upMock).toBeCalledTimes(1);
-    expect(downMock).toBeCalledTimes(1);
+    expect(upMock).toHaveBeenCalledTimes(1);
+    expect(downMock).toHaveBeenCalledTimes(1);
     upMock.mockRestore();
     downMock.mockRestore();
   });
 
   test('run schema migration without existing migrations folder (GH #907)', async () => {
-    await remove(process.cwd() + '/temp/migrations');
+    await remove(process.cwd() + '/temp/migrations-3');
     const migrator = new Migrator(orm.em);
     await migrator.up();
   });
@@ -215,7 +217,7 @@ describe('Migrator (sqlite)', () => {
     const spy1 = jest.spyOn(Migration.prototype, 'addSql');
     mock.mock.calls.length = 0;
     await runner.run(migration1, 'up');
-    expect(spy1).toBeCalledWith('select 1 + 1');
+    expect(spy1).toHaveBeenCalledWith('select 1 + 1');
     expect(mock.mock.calls).toHaveLength(5);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('pragma foreign_keys = off;');
@@ -224,7 +226,7 @@ describe('Migrator (sqlite)', () => {
     expect(mock.mock.calls[4][0]).toMatch('commit');
     mock.mock.calls.length = 0;
 
-    await expect(runner.run(migration1, 'down')).rejects.toThrowError('This migration cannot be reverted');
+    await expect(runner.run(migration1, 'down')).rejects.toThrow('This migration cannot be reverted');
     const executed = await migrator.getExecutedMigrations();
     expect(executed).toEqual([]);
 
@@ -245,7 +247,7 @@ describe('Migrator (sqlite)', () => {
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
-    const path = process.cwd() + '/temp/migrations';
+    const path = process.cwd() + '/temp/migrations-3';
 
     const migration = await migrator.createMigration(path, true);
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
@@ -278,7 +280,7 @@ describe('Migrator (sqlite)', () => {
     migrator.options.disableForeignKeys = false;
     // @ts-ignore
     migrator.options.allOrNothing = false;
-    const path = process.cwd() + '/temp/migrations';
+    const path = process.cwd() + '/temp/migrations-3';
 
     const migration = await migrator.createMigration(path, true);
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
@@ -310,6 +312,7 @@ describe('Migrator (sqlite)', () => {
       entities: [FooBar4, FooBaz4, BaseEntity5],
       dbName: TEMP_DIR + '/test.db',
       baseDir: TEMP_DIR,
+      extensions: [Migrator],
     });
     await expect(orm.migrator.createMigration()).resolves.not.toThrow();
     await orm.close();

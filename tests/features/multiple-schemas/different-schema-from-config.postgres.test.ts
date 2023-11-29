@@ -42,7 +42,7 @@ describe('different schema from config', () => {
     orm = await MikroORM.init({
       driver: PostgreSqlDriver,
       entities: [Book, BookTag],
-      dbName: 'mikro_orm_test_gh_2740',
+      dbName: 'mikro_orm_test_gh_2740_2',
       schema: 'privateschema',
     });
     await orm.schema.refreshDatabase();
@@ -68,7 +68,7 @@ describe('different schema from config', () => {
 
     const e = await orm.em.findOne(Book, entity);
     expect(e).not.toBeNull();
-    expect(wrap(e).getSchema()).toBe('privateschema');
+    expect(wrap(e!).getSchema()).toBe('privateschema');
     e!.tags.set([new BookTag('t2')]);
     await orm.em.flush();
   });

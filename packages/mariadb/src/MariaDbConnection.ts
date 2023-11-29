@@ -1,11 +1,11 @@
 import type { Connection } from 'mariadb';
-import type { Knex } from '@mikro-orm/knex';
-import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
+import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
 
 export class MariaDbConnection extends AbstractSqlConnection {
 
-  async connect(): Promise<void> {
+  override createKnex(): void {
     this.client = this.createKnexClient(this.getPatchedDialect());
+    this.connected = true;
   }
 
   private getPatchedDialect() {
@@ -21,7 +21,7 @@ export class MariaDbConnection extends AbstractSqlConnection {
     return 'mysql://root@127.0.0.1:3306';
   }
 
-  getConnectionOptions(): Knex.MySqlConnectionConfig {
+  override getConnectionOptions(): Knex.MySqlConnectionConfig {
     const ret = super.getConnectionOptions() as Knex.MySqlConnectionConfig;
 
     if (this.config.get('multipleStatements')) {
@@ -38,6 +38,7 @@ export class MariaDbConnection extends AbstractSqlConnection {
 
     ret.bigNumberStrings = true;
     ret.supportBigNumbers = true;
+    ret.dateStrings = true;
     // @ts-ignore
     ret.checkDuplicate = false;
 

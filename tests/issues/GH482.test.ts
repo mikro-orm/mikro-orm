@@ -1,6 +1,5 @@
-import { Entity, PrimaryKey, BigIntType, OneToMany, Collection, Enum, ManyToOne, Property } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, BigIntType, OneToMany, Collection, Enum, ManyToOne, Property } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
-import { MikroORM } from '@mikro-orm/postgresql';
 
 export enum LevelType {
   A = 'a',
@@ -15,11 +14,11 @@ export enum NumLevelType {
 @Entity()
 class Job {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ type: BigIntType, nullable: true })
-  optional?: string | null; // GH issue 631
+  optional?: bigint | null; // GH issue 631
 
   @OneToMany('Level', 'job', { orphanRemoval: true })
   levels = new Collection<Level>(this);
@@ -63,7 +62,7 @@ describe('GH issue 482', () => {
 
   test(`orphan removal with composite keys`, async () => {
     const job = new Job();
-    job.id = '1';
+    job.id = 1n;
     job.levels.add(new Level(LevelType.A));
     job.levels.add(new Level(LevelType.B));
     await orm.em.persistAndFlush(job);
@@ -85,13 +84,13 @@ describe('GH issue 482', () => {
     orm.config.set('debug', ['query', 'query-params']);
 
     const job = new Job();
-    job.id = '2';
+    job.id = 2n;
     orm.em.persist(job);
-    job.optional = '1';
+    job.optional = 1n;
     await orm.em.flush();
     job.optional = null;
     await orm.em.flush();
-    job.optional = '1';
+    job.optional = 1n;
     await orm.em.flush();
     job.optional = undefined;
     await orm.em.flush();
@@ -100,7 +99,7 @@ describe('GH issue 482', () => {
     expect(j.optional).toBeNull();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "job" ("id", "optional") values ('2', '1') returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "job" ("id", "optional") values ('2', '1')`);
     expect(mock.mock.calls[2][0]).toMatch('commit');
     expect(mock.mock.calls[3][0]).toMatch('begin');
     expect(mock.mock.calls[4][0]).toMatch(`update "job" set "optional" = NULL where "id" = '2'`);
@@ -116,7 +115,7 @@ describe('GH issue 482', () => {
   test(`GH issue 476 - enum arrays`, async () => {
     const a = new Level(LevelType.A);
     a.job = new Job();
-    a.job.id = '3';
+    a.job.id = 3n;
     await orm.em.persistAndFlush(a);
     expect(a.types).toEqual([LevelType.A]);
     expect(a.numTypes).toEqual([NumLevelType.A]);
@@ -143,12 +142,12 @@ describe('GH issue 482', () => {
     expect(a2.numTypes).toEqual([NumLevelType.B, NumLevelType.A]);
 
     a2.types = ['c' as any];
-    await expect(orm.em.flush()).rejects.toThrowError(`Invalid enum array items provided in Level.types: [ 'c' ]`);
+    await expect(orm.em.flush()).rejects.toThrow(`Invalid enum array items provided in Level.types: [ 'c' ]`);
 
     a2.types = [];
     // @ts-ignore
     a2.numTypes = [NumLevelType.B, 3];
-    await expect(orm.em.flush()).rejects.toThrowError(`Invalid enum array items provided in Level.numTypes: [ 3 ]`);
+    await expect(orm.em.flush()).rejects.toThrow(`Invalid enum array items provided in Level.numTypes: [ 3 ]`);
   });
 
 });

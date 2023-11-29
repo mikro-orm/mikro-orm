@@ -1,11 +1,10 @@
-import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Author {
 
-  @PrimaryKey({ type: BigIntType, comment: 'PK' })
-  id!: string;
+  @PrimaryKey({ comment: 'PK' })
+  id!: bigint;
 
   @Property({ nullable: true })
   name!: string;
@@ -23,8 +22,8 @@ export class Author {
 @Entity()
 export class Post {
 
-  @PrimaryKey({ type: BigIntType, comment: 'PK' })
-  id!: string;
+  @PrimaryKey({ comment: 'PK' })
+  id!: bigint;
 
   @Property({ nullable: true })
   title!: string;
@@ -39,13 +38,12 @@ export class Post {
 
 describe('GH issue 1538', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Author, Post],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

@@ -1,5 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'brands' })
 export class Brand {
@@ -73,17 +72,15 @@ export class Site {
 
 describe('GH issue 1009', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init({
+    orm = MikroORM.initSync({
       entities: [BrandSiteRestriction, Site, Brand, Publisher, Placement],
       dbName: `:memory:`,
-      driver: SqliteDriver,
     });
 
-    const generator = orm.schema;
-    await generator.createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

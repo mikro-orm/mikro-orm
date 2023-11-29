@@ -1,15 +1,23 @@
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import type { Cascade, LoadStrategy } from '../enums';
-import { ReferenceType } from '../enums';
-import type { EntityName, EntityProperty, Constructor, CheckCallback, Dictionary, AnyString, AnyEntity } from '../typings';
+import { ReferenceKind, type Cascade, type LoadStrategy } from '../enums';
+import type {
+  EntityName,
+  EntityProperty,
+  Constructor,
+  CheckCallback,
+  GeneratedColumnCallback,
+  AnyString,
+  AnyEntity,
+  EntityKey,
+} from '../typings';
 import type { Type, types } from '../types';
 
-export function Property<T>(options: PropertyOptions<T> = {}) {
+export function Property<T extends object>(options: PropertyOptions<T> = {}) {
   return function (target: any, propertyName: string) {
-    const meta = MetadataStorage.getMetadataFromDecorator<T>(target.constructor as T & Dictionary);
+    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
-    MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceType.SCALAR);
+    MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceKind.SCALAR);
     const name = options.name || propertyName;
 
     if (propertyName !== name && !(desc.value instanceof Function)) {
@@ -18,7 +26,7 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
 
     options.name = propertyName;
     const { check, ...opts } = options;
-    const prop = { reference: ReferenceType.SCALAR, ...opts } as EntityProperty;
+    const prop = { kind: ReferenceKind.SCALAR, ...opts } as EntityProperty<T>;
     prop.getter = !!desc.get;
     prop.setter = !!desc.set;
 
@@ -26,8 +34,8 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
       prop.getter = true;
       prop.persist = false;
       prop.type = 'method';
-      prop.getterName = propertyName;
-      prop.name = name;
+      prop.getterName = propertyName as EntityKey<T>;
+      prop.name = name as EntityKey<T>;
     }
 
     if (check) {
@@ -40,7 +48,7 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
   };
 }
 
-export type PropertyOptions<T> = {
+export type PropertyOptions<Owner> = {
   /**
    * Alias for `fieldName`.
    */
@@ -58,12 +66,6 @@ export type PropertyOptions<T> = {
    * @see https://mikro-orm.io/docs/naming-strategy
    */
   fieldNames?: string[];
-  /**
-   * Explicitly specify the mapped type instance for this property.
-   *
-   * @see https://mikro-orm.io/docs/custom-types
-   */
-  customType?: Type<any>;
   /**
    * Specify exact database column type for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
    */
@@ -99,12 +101,12 @@ export type PropertyOptions<T> = {
    * Automatically set the property value when entity gets created, executed during flush operation.
    * @param entity
    */
-  onCreate?: (entity: T) => any;
+  onCreate?: (entity: Owner) => any;
   /**
    * Automatically update the property value every time entity gets updated, executed during flush operation.
    * @param entity
    */
-  onUpdate?: (entity: T) => any;
+  onUpdate?: (entity: Owner) => any;
   /**
    * Specify default column value for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
    * This is a runtime value, assignable to the entity property. (SQL only)
@@ -118,9 +120,13 @@ export type PropertyOptions<T> = {
   /**
    * Set to map some SQL snippet for the entity.
    *
-   * @see https://mikro-orm.io/docs/defining-entities#formulas Formulas}
+   * @see https://mikro-orm.io/docs/defining-entities#formulas Formulas
    */
   formula?: string | ((alias: string) => string);
+  /**
+   * For generated columns. This will be appended to the column type after the `generated always` clause.
+   */
+  generated?: string | GeneratedColumnCallback<Owner>;
   /**
    * Set column as nullable for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
    */
@@ -137,6 +143,10 @@ export type PropertyOptions<T> = {
    * Set false to disable hydration of this property. Useful for persisted getters.
    */
   hydrate?: boolean;
+  /**
+   * Enable `ScalarReference` wrapper for lazy values. Use this in combination with `lazy: true` to have a type-safe accessor object in place of the value.
+   */
+  ref?: boolean;
   /**
    * Set false to disable change tracking on a property level.
    *
@@ -168,7 +178,7 @@ export type PropertyOptions<T> = {
    *
    * @see https://mikro-orm.io/docs/defining-entities#check-constraints
    */
-  check?: string | CheckCallback<T>;
+  check?: string | CheckCallback<Owner>;
   /**
    * Set to omit the property from the select clause for lazy loading.
    *
@@ -241,8 +251,8 @@ export type PropertyOptions<T> = {
   ignoreSchemaChanges?: ('type' | 'extra')[];
 };
 
-export interface ReferenceOptions<T, O> extends PropertyOptions<O> {
-  entity?: string | (() => EntityName<T>);
+export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> {
+  entity?: string | (() => EntityName<Target>);
   cascade?: Cascade[];
   eager?: boolean;
   strategy?: LoadStrategy;

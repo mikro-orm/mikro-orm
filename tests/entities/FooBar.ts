@@ -3,11 +3,12 @@ import {
   ArrayType,
   Entity,
   Index,
+  EagerProps,
   JsonType,
   OneToOne,
   PrimaryKey,
   Property,
-  SerializedPrimaryKey,
+  SerializedPrimaryKey, OptionalProps,
 } from '@mikro-orm/core';
 import { FooBaz } from './FooBaz';
 
@@ -17,6 +18,9 @@ import { FooBaz } from './FooBaz';
   { weights: { name: 10, str: 5 } },
 ] })
 export default class FooBar {
+
+  [EagerProps]?: 'baz';
+  [OptionalProps]?: 'meta';
 
   @PrimaryKey()
   _id!: ObjectId;
@@ -56,6 +60,9 @@ export default class FooBar {
 
   @Property({ onCreate: (bar: FooBar) => bar.meta.onUpdateCalled = true })
   onUpdateTest?: boolean;
+
+  @Property({ nullable: true })
+  tenant?: number;
 
   readonly meta = { onCreateCalled: false, onUpdateCalled: false };
 

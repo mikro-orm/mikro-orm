@@ -4,15 +4,15 @@ import type { EntityProperty } from '../typings';
 
 export class BooleanType extends Type<number | null | undefined, number | null | undefined> {
 
-  getColumnType(prop: EntityProperty, platform: Platform) {
+  override getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getBooleanTypeDeclarationSQL();
   }
 
-  compareAsType(): string {
+  override compareAsType(): string {
     return 'boolean';
   }
 
-  ensureComparable(): boolean {
+  override ensureComparable(): boolean {
     return false;
   }
 

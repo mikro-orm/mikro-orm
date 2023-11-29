@@ -21,18 +21,10 @@ export class RequestContext {
 
   /**
    * Creates new RequestContext instance and runs the code inside its domain.
+   * If the handler is async, the return value needs to be awaited.
    */
-  static create(em: EntityManager | EntityManager[], next: (...args: any[]) => void): void {
-    const ctx = this.createContext(em);
-    this.storage.run(ctx, next);
-  }
-
-  /**
-   * Creates new RequestContext instance and runs the code inside its domain.
-   * Async variant, when the `next` handler needs to be awaited (like in Koa).
-   */
-  static async createAsync<T>(em: EntityManager | EntityManager[], next: (...args: any[]) => Promise<T>): Promise<T> {
-    const ctx = this.createContext(em);
+  static create<T>(em: EntityManager | EntityManager[], next: (...args: any[]) => T, options: CreateContextOptions = {}): T {
+    const ctx = this.createContext(em, options);
     return this.storage.run(ctx, next);
   }
 
@@ -51,16 +43,20 @@ export class RequestContext {
     return context ? context.map.get(name) : undefined;
   }
 
-  private static createContext(em: EntityManager | EntityManager[]): RequestContext {
+  private static createContext(em: EntityManager | EntityManager[], options: CreateContextOptions = {}): RequestContext {
     const forks = new Map<string, EntityManager>();
 
     if (Array.isArray(em)) {
-      em.forEach(em => forks.set(em.name, em.fork({ useContext: true })));
+      em.forEach(em => forks.set(em.name, em.fork({ useContext: true, schema: options.schema })));
     } else {
-      forks.set(em.name, em.fork({ useContext: true }));
+      forks.set(em.name, em.fork({ useContext: true, schema: options.schema }));
     }
 
     return new RequestContext(forks);
   }
 
+}
+
+export interface CreateContextOptions {
+  schema?: string;
 }

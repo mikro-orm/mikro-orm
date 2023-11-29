@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mariadb';
+import { MikroORM, Entity, PrimaryKey, Property } from '@mikro-orm/mariadb';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -19,7 +18,7 @@ export class Test {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({
+  orm = MikroORM.initSync({
     dbName: `mikro_orm_test_3847`,
     port: 3309,
     entities: [Test],
@@ -32,7 +31,7 @@ afterAll(async () => {
 });
 
 test(`3847`, async () => {
-  const r = await orm.em.nativeInsert(Test, { name: 'n', born: new Date() });
+  const r = await orm.em.insert(Test, { name: 'n', born: new Date() });
 
   await orm.em.findOne(Test, { id: r });
   await orm.em.findOne(Test, { name: 'n' });

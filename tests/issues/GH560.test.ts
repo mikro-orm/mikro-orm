@@ -1,5 +1,4 @@
-import { EntitySchema, MikroORM } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { EntitySchema, MikroORM } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 class Base {
@@ -38,7 +37,7 @@ const ASchema = new EntitySchema<A, Base>({
     },
     childrenA: {
       entity: () => A,
-      reference: 'm:1',
+      kind: 'm:1',
       nullable: true,
     },
   },
@@ -46,14 +45,13 @@ const ASchema = new EntitySchema<A, Base>({
 
 describe('GH issue 560', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [ASchema, BaseSchema],
       dbName: `mikro_orm_test_gh_560`,
-      driver: PostgreSqlDriver,
-      cache: { enabled: false },
+      metadataCache: { enabled: false },
     });
     await orm.schema.refreshDatabase();
   });
@@ -70,7 +68,7 @@ describe('GH issue 560', () => {
     await expect(orm.em.flush()).resolves.not.toThrow();
     orm.em.clear();
 
-    const fetchedParent = await orm.em.findOneOrFail(A, { type: 'parent' }, { populate: true });
+    const fetchedParent = await orm.em.findOneOrFail(A, { type: 'parent' }, { populate: ['*'] });
     expect(fetchedParent.childrenA).toBeTruthy();
   });
 });

@@ -1,6 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity()
 export class B {
@@ -26,13 +24,12 @@ export class A {
 
 describe('GH issue 1128', () => {
 
-  let orm: MikroORM<AbstractSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });
@@ -49,7 +46,7 @@ describe('GH issue 1128', () => {
     });
     orm.em.clear();
 
-    const entity = await orm.em.findOneOrFail(A, { id: 1 }, { populate: true });
+    const entity = await orm.em.findOneOrFail(A, { id: 1 }, { populate: ['*'] });
     expect(entity.entities).toHaveLength(2);
     expect(entity.entities[0].entity).toBe(entity.id);
     expect(entity.entities[1].entity).toBe(entity.id);

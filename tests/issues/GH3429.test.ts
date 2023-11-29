@@ -1,8 +1,10 @@
-import { SqliteDriver } from '@mikro-orm/sqlite';
-import { MikroORM, Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM, Embeddable, Embedded, Entity, PrimaryKey, Property, HiddenProps, OptionalProps, wrap } from '@mikro-orm/sqlite';
 
 @Embeddable()
 class Address {
+
+  [HiddenProps]?: 'addressLine1' | 'addressLine2';
+  [OptionalProps]?: 'address';
 
   @Property({ hidden: true })
   addressLine1!: string;
@@ -34,11 +36,10 @@ export class Organization {
 
 }
 
-let orm: MikroORM<SqliteDriver>;
+let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    driver: SqliteDriver,
     dbName: ':memory:',
     entities: [Organization],
   });
@@ -62,4 +63,9 @@ test('embeddable serialization flags', async () => {
 
   expect(JSON.stringify(org)).toBe(`{"id":1,"address":{"city":"city 1","country":"country 1","address":"l1 l2"}}`);
   expect(JSON.stringify([org])).toBe(`[{"id":1,"address":{"city":"city 1","country":"country 1","address":"l1 l2"}}]`);
+
+  // @ts-expect-error
+  expect(wrap(org).toObject().address.addressLine1).toBeUndefined();
+  // @ts-expect-error
+  expect(wrap(org).toObject().address.addressLine2).toBeUndefined();
 });

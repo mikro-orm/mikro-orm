@@ -1,4 +1,4 @@
-import { ArrayType, BigIntType, Embeddable, Embedded, Entity, Enum, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { ArrayType, Embeddable, Embedded, Entity, Enum, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 export enum RestrictionMode {
@@ -20,8 +20,8 @@ export class RestrictionItem {
 @Embeddable()
 export class Restriction {
 
-  @Property({ type: BigIntType })
-  permissions!: string;
+  @Property()
+  permissions!: bigint;
 
   @Embedded(() => RestrictionItem)
   role!: RestrictionItem;
@@ -34,8 +34,8 @@ export class Restriction {
 @Entity({ abstract: true })
 export class PluginSettings {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Embedded(() => Restriction, { nullable: true })
   restriction?: Restriction;
@@ -59,12 +59,12 @@ describe('GH issue 2242', () => {
     await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
-      id: '771309736129200140',
+      id: 771309736129200140n,
       enabled: true,
     });
 
     expect(item).toBeInstanceOf(PluginTestSettings);
-    expect(item.id).toBe('771309736129200140');
+    expect(item.id).toBe(771309736129200140n);
     expect(item.enabled).toBe(true);
     await orm.close();
   });
@@ -78,12 +78,12 @@ describe('GH issue 2242', () => {
     await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
-      id: '771309736129200140',
+      id: 771309736129200140n,
       enabled: true,
     });
 
     expect(item).toBeInstanceOf(PluginTestSettings);
-    expect(item.id).toBe('771309736129200140');
+    expect(item.id).toBe(771309736129200140n);
     expect(item.enabled).toBe(true);
     await orm.close();
   });
@@ -97,12 +97,12 @@ describe('GH issue 2242', () => {
     await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
-      id: '771309736129200140',
+      id: 771309736129200140n,
       enabled: true,
     });
 
     expect(item).toBeInstanceOf(PluginTestSettings);
-    expect(item.id).toBe('771309736129200140');
+    expect(item.id).toBe(771309736129200140n);
     expect(item.enabled).toBe(true);
     await orm.close();
   });
@@ -116,12 +116,12 @@ describe('GH issue 2242', () => {
     await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
-      id: '771309736129200140',
+      id: 771309736129200140n,
       enabled: true,
     });
 
     expect(item).toBeInstanceOf(PluginTestSettings);
-    expect(item.id).toBe('771309736129200140');
+    expect(item.id).toBe(771309736129200140n);
     expect(item.enabled).toBe(true);
     await orm.close();
   });
@@ -135,12 +135,12 @@ describe('GH issue 2242', () => {
     await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
-      id: '771309736129200140',
+      id: 771309736129200140n,
       enabled: true,
     });
 
     expect(item).toBeInstanceOf(PluginTestSettings);
-    expect(item.id).toBe('771309736129200140');
+    expect(item.id).toBe(771309736129200140n);
     expect(item.enabled).toBe(true);
     await orm.close();
   });
@@ -154,12 +154,12 @@ describe('GH issue 2242', () => {
     await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
-      id: '771309736129200140',
+      id: 771309736129200140n,
       enabled: true,
     });
 
     expect(item).toBeInstanceOf(PluginTestSettings);
-    expect(item.id).toBe('771309736129200140');
+    expect(item.id).toBe(771309736129200140n);
     expect(item.enabled).toBe(true);
     await orm.close();
   });
@@ -173,12 +173,12 @@ describe('GH issue 2242', () => {
     await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
-      id: '771309736129200140',
+      id: 771309736129200140n,
       enabled: true,
     });
 
     expect(item).toBeInstanceOf(PluginTestSettings);
-    expect(item.id).toBe('771309736129200140');
+    expect(item.id).toBe(771309736129200140n);
     expect(item.enabled).toBe(true);
     await orm.close();
   });
@@ -192,12 +192,12 @@ describe('GH issue 2242', () => {
     await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
-      id: '771309736129200140',
+      id: 771309736129200140n,
       enabled: true,
     });
 
     expect(item).toBeInstanceOf(PluginTestSettings);
-    expect(item.id).toBe('771309736129200140');
+    expect(item.id).toBe(771309736129200140n);
     expect(item.enabled).toBe(true);
     await orm.close();
   });
@@ -211,12 +211,12 @@ describe('GH issue 2242', () => {
     await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
-      id: '771309736129200140',
+      id: 771309736129200140n,
       enabled: true,
     });
 
     expect(item).toBeInstanceOf(PluginTestSettings);
-    expect(item.id).toBe('771309736129200140');
+    expect(item.id).toBe(771309736129200140n);
     expect(item.enabled).toBe(true);
     await orm.close();
   });
@@ -230,12 +230,12 @@ describe('GH issue 2242', () => {
     await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
-      id: '771309736129200140',
+      id: 771309736129200140n,
       enabled: true,
     });
 
     expect(item).toBeInstanceOf(PluginTestSettings);
-    expect(item.id).toBe('771309736129200140');
+    expect(item.id).toBe(771309736129200140n);
     expect(item.enabled).toBe(true);
     await orm.close();
   });

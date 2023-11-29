@@ -1,19 +1,30 @@
 import { v4, parse, stringify } from 'uuid';
-import { Entity, LoadStrategy, ManyToOne, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType, Property, Type, wrap } from '@mikro-orm/core';
+import {
+  Entity,
+  LoadStrategy,
+  ManyToOne,
+  MikroORM,
+  OneToOne,
+  PrimaryKey,
+  PrimaryKeyProp,
+  Property,
+  Type,
+  wrap,
+} from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers';
 
 export class UuidBinaryType extends Type<string, Buffer> {
 
-  convertToDatabaseValue(value: string): Buffer {
+  override convertToDatabaseValue(value: string): Buffer {
     return Buffer.from(parse(value));
   }
 
-  convertToJSValue(value: Buffer): string {
+  override convertToJSValue(value: Buffer): string {
     return stringify(value);
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'binary(16)';
   }
 
@@ -36,6 +47,8 @@ class B {
   @OneToOne({ primary: true })
   a!: A;
 
+  [PrimaryKeyProp]?: 'a';
+
 }
 
 @Entity()
@@ -44,7 +57,7 @@ class C {
   @OneToOne({ primary: true })
   b!: B;
 
-  [PrimaryKeyType]?: B | A | string;
+  [PrimaryKeyProp]?: 'b';
 
 }
 
@@ -54,7 +67,7 @@ class D {
   @PrimaryKey({ type: UuidBinaryType })
   id: string = v4();
 
-  @ManyToOne({ onDelete: 'cascade' })
+  @ManyToOne({ deleteRule: 'cascade' })
   a!: A;
 
 }
@@ -95,7 +108,7 @@ describe('GH issue 446', () => {
     const c1 = await orm.em.findOneOrFail(C, c.b.a.id, { populate: ['b.a'] });
     const mock = mockLogger(orm);
     const c23 = await orm.em.findOneOrFail(C, c.b.a.id);
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
     expect(c1).toBe(c23);
     expect(c1).toBeInstanceOf(C);
     expect(c1.b).toBeInstanceOf(B);
@@ -139,7 +152,7 @@ describe('GH issue 446', () => {
 
   test(`assign with custom types`, async () => {
     const d = new D();
-    orm.em.assign<any>(d, { id: Buffer.from(parse(v4())) as any, a: Buffer.from(parse(v4())) }, { convertCustomTypes: true });
+    orm.em.assign(d, { id: Buffer.from(parse(v4())) as any, a: Buffer.from(parse(v4())) as any }, { convertCustomTypes: true });
     expect(typeof d.id).toBe('string');
     expect(typeof d.a.id).toBe('string');
     orm.em.assign(d, { id: v4(), a: v4() });

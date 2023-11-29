@@ -1,5 +1,4 @@
-import { defineConfig, MikroORM } from '@mikro-orm/core';
-import type { Options, Configuration, IDatabaseDriver } from '@mikro-orm/core';
+import { defineConfig, MikroORM, type Options, type IDatabaseDriver } from '@mikro-orm/core';
 import { MongoDriver } from './MongoDriver';
 
 /**
@@ -12,8 +11,15 @@ export class MongoMikroORM extends MikroORM<MongoDriver> {
   /**
    * @inheritDoc
    */
-  static async init<D extends IDatabaseDriver = MongoDriver>(options?: Options<D> | Configuration<D>, connect = true): Promise<MikroORM<D>> {
-    return super.init(options, connect);
+  static override async init<D extends IDatabaseDriver = MongoDriver>(options?: Options<D>): Promise<MikroORM<D>> {
+    return super.init(options);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  static override initSync<D extends IDatabaseDriver = MongoDriver>(options: Options<D>): MikroORM<D> {
+    return super.initSync(options);
   }
 
 }

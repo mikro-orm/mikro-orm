@@ -1,30 +1,51 @@
-import type { Dictionary, EntityProperty } from '@mikro-orm/core';
-import { ReferenceType, Utils } from '@mikro-orm/core';
+import { ReferenceKind, Utils, type Dictionary, type EntityProperty } from '@mikro-orm/core';
 import { SourceFile } from './SourceFile';
 
 export class EntitySchemaSourceFile extends SourceFile {
 
-  generate(): string {
+  override generate(): string {
     this.coreImports.add('EntitySchema');
-    let ret = `export class ${this.meta.className} {`;
+    let ret = `export class ${this.meta.className} {\n`;
     const enumDefinitions: string[] = [];
+    const optionalProperties: EntityProperty<any>[] = [];
+    const primaryProps: EntityProperty<any>[] = [];
+    const props: string[] = [];
 
     for (const prop of Object.values(this.meta.properties)) {
-      const definition = this.getPropertyDefinition(prop, 2);
-
-      if (!ret.endsWith('\n')) {
-        ret += '\n';
-      }
-
-      ret += definition;
+      props.push(this.getPropertyDefinition(prop, 2));
 
       if (prop.enum) {
         const enumClassName = this.namingStrategy.getClassName(this.meta.collection + '_' + prop.fieldNames[0], '_');
         enumDefinitions.push(this.getEnumClassDefinition(enumClassName, prop.items as string[], 2));
       }
+
+      if (!prop.nullable && typeof prop.default !== 'undefined') {
+        optionalProperties.push(prop);
+      }
+
+      if (prop.primary && (!['id', '_id', 'uuid'].includes(prop.name) || this.meta.compositePK)) {
+        primaryProps.push(prop);
+      }
     }
 
-    ret += '}\n';
+    if (primaryProps.length > 0) {
+      this.coreImports.add('PrimaryKeyProp');
+      const primaryPropNames = primaryProps.map(prop => `'${prop.name}'`);
+
+      if (primaryProps.length > 1) {
+        ret += `${' '.repeat(2)}[PrimaryKeyProp]?: [${primaryPropNames.join(', ')}];\n`;
+      } else {
+        ret += `${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames[0]};\n`;
+      }
+    }
+
+    if (optionalProperties.length > 0) {
+      this.coreImports.add('OptionalProps');
+      const optionalPropertyNames = optionalProperties.map(prop => `'${prop.name}'`).sort();
+      ret += `${' '.repeat(2)}[OptionalProps]?: ${optionalPropertyNames.join(' | ')};\n`;
+    }
+
+    ret += `${props.join('')}}\n`;
 
     const imports = [`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`];
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
@@ -53,15 +74,23 @@ export class EntitySchemaSourceFile extends SourceFile {
     if (this.meta.indexes.length > 0) {
       ret += `  indexes: [\n`;
       this.meta.indexes.forEach(index => {
+        if (index.expression) {
+          ret += `    { name: '${index.name}', expression: ${this.quote(index.expression)} },\n`;
+          return;
+        }
         const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
         ret += `    { name: '${index.name}', properties: [${properties.join(', ')}] },\n`;
       });
       ret += `  ],\n`;
     }
 
-    if (this.meta.indexes.length > 0) {
+    if (this.meta.uniques.length > 0) {
       ret += `  uniques: [\n`;
       this.meta.uniques.forEach(index => {
+        if (index.expression) {
+          ret += `    { name: '${index.name}', expression: ${this.quote(index.expression)} },\n`;
+          return;
+        }
         const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
         ret += `    { name: '${index.name}', properties: [${properties.join(', ')}] },\n`;
       });
@@ -71,10 +100,10 @@ export class EntitySchemaSourceFile extends SourceFile {
     ret += `  properties: {\n`;
     Object.values(this.meta.properties).forEach(prop => {
       const options = this.getPropertyOptions(prop);
-      let def = '{ ' + Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ') + ' }';
+      let def = '{ ' + Object.entries(options).map(([opt, val]) => `${opt}: ${Array.isArray(val) ? `[${val.join(', ')}]` : val}`).join(', ') + ' }';
 
       if (def.length > 80) {
-        def = '{\n' + Object.entries(options).map(([opt, val]) => `      ${opt}: ${val}`).join(',\n') + ',\n    }';
+        def = '{\n' + Object.entries(options).map(([opt, val]) => `      ${opt}: ${Array.isArray(val) ? `[\n        ${val.join(',\n        ')}\n      ]` : val}`).join(',\n') + ',\n    }';
       }
       //
       ret += `    ${prop.name}: ${def},\n`;
@@ -85,7 +114,7 @@ export class EntitySchemaSourceFile extends SourceFile {
     return ret;
   }
 
-  getBaseName() {
+  override getBaseName() {
     return this.meta.className + '.ts';
   }
 
@@ -96,15 +125,15 @@ export class EntitySchemaSourceFile extends SourceFile {
       options.primary = true;
     }
 
-    if (prop.reference !== ReferenceType.SCALAR) {
-      options.reference = this.quote(prop.reference);
+    if (prop.kind !== ReferenceKind.SCALAR) {
+      options.kind = this.quote(prop.kind);
     }
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY) {
+    if (prop.kind === ReferenceKind.MANY_TO_MANY) {
       this.getManyToManyDecoratorOptions(options, prop);
-    } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
+    } else if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this.getOneToManyDecoratorOptions(options, prop);
-    } else if (prop.reference !== ReferenceType.SCALAR) {
+    } else if (prop.kind !== ReferenceKind.SCALAR) {
       this.getForeignKeyDecoratorOptions(options, prop);
     } else {
       this.getScalarPropertyDecoratorOptions(options, prop);
@@ -122,7 +151,7 @@ export class EntitySchemaSourceFile extends SourceFile {
   }
 
   protected getPropertyIndexesOptions(prop: EntityProperty, options: Dictionary): void {
-    if (prop.reference === ReferenceType.SCALAR) {
+    if (prop.kind === ReferenceKind.SCALAR) {
       if (prop.index) {
         options.index = this.quote(prop.index as string);
       }
@@ -144,7 +173,7 @@ export class EntitySchemaSourceFile extends SourceFile {
       options[type] = defaultName === prop[type] ? 'true' : `'${prop[type]}'`;
       const expected = {
         index: this.platform.indexForeignKeys(),
-        unique: prop.reference === ReferenceType.ONE_TO_ONE,
+        unique: prop.kind === ReferenceKind.ONE_TO_ONE,
       };
 
       if (expected[type] && options[type] === 'true') {
@@ -157,7 +186,7 @@ export class EntitySchemaSourceFile extends SourceFile {
   }
 
   protected override getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
-    if (prop.reference === ReferenceType.SCALAR && !prop.enum) {
+    if (prop.kind === ReferenceKind.SCALAR && !prop.enum) {
       options.type = this.quote(prop.type);
     }
 

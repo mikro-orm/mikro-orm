@@ -19,12 +19,12 @@ export const schema = new EntitySchema<Book, CustomBaseEntity>({
   name: 'Book',
   // if we use actual class, we need this instead:
   // class: Book,
-  extends: 'CustomBaseEntity', // only if we extend custom base entity
+  extends: CustomBaseEntitySchema, // only if we extend custom base entity
   properties: {
     title: { type: 'string' },
-    author: { reference: 'm:1', entity: 'Author', inversedBy: 'books' },
-    publisher: { reference: 'm:1', entity: 'Publisher', inversedBy: 'books' },
-    tags: { reference: 'm:n', entity: 'BookTag', inversedBy: 'books', fixedOrder: true },
+    author: { kind: 'm:1', entity: 'Author', inversedBy: 'books' },
+    publisher: { kind: 'm:1', entity: 'Publisher', inversedBy: 'books' },
+    tags: { kind: 'm:n', entity: 'BookTag', inversedBy: 'books', fixedOrder: true },
   },
 });
 ```
@@ -32,9 +32,9 @@ export const schema = new EntitySchema<Book, CustomBaseEntity>({
 When creating new entity instances, you will need to use `em.create()` method that will create instance of internally created class.
 
 ```ts
-const repo = em.getRepository<Author>('Author');
-const author = repo.create('Author', { name: 'name', email: 'email' }); // instance of internal Author class
-await repo.persistAndFlush(author);
+// instance of internal Author class
+const author = em.create<Author>('Author', { name: 'name', email: 'email' });
+await em.flush();
 ```
 
 > Using this approach, metadata caching is automatically disabled as it is not needed.
@@ -64,7 +64,7 @@ export class Author extends CustomBaseEntity {
 
 export const schema = new EntitySchema<Author, CustomBaseEntity>({
   class: Author,
-  extends: 'CustomBaseEntity',
+  extends: CustomBaseEntitySchema,
   properties: {
     name: { type: 'string' },
     email: { type: 'string', unique: true },
@@ -72,8 +72,8 @@ export const schema = new EntitySchema<Author, CustomBaseEntity>({
     termsAccepted: { type: 'boolean', default: 0, onCreate: () => false },
     identities: { type: 'string[]', nullable: true },
     born: { type: DateType, nullable: true, length: 3 },
-    books: { reference: '1:m', entity: () => 'Book', mappedBy: book => book.author },
-    favouriteBook: { reference: 'm:1', type: 'Book' },
+    books: { kind: '1:m', entity: () => 'Book', mappedBy: book => book.author },
+    favouriteBook: { kind: 'm:1', type: 'Book' },
     version: { type: 'number', persist: false },
   },
 });
@@ -82,9 +82,8 @@ export const schema = new EntitySchema<Author, CustomBaseEntity>({
 Then you can use the entity class as usual:
 
 ```ts
-const repo = em.getRepository(Author);
 const author = new Author('name', 'email');
-await repo.persistAndFlush(author);
+await em.persist(author).flush();
 ```
 
 ## Using custom base entity
@@ -121,12 +120,12 @@ tableName: string; // alias for `collection: string`
 properties: { [K in keyof T & string]: EntityProperty<T[K]> };
 indexes: { properties: string | string[]; name?: string; type?: string }[];
 uniques: { properties: string | string[]; name?: string }[];
-customRepository: () => Constructor<EntityRepository<T>>;
+repository: () => Constructor<EntityRepository<T>>;
 hooks: Partial<Record<keyof typeof EventType, ((string & keyof T) | NonNullable<EventSubscriber[keyof EventSubscriber]>)[]>>;
 abstract: boolean;
 ```
 
-Every property then needs to contain a type specification - one of `type`/`customType`/`entity`. Here are some examples of various property types:
+Every property then needs to contain a type specification - one of `type` or `entity` options. Here are some examples of various property types:
 
 ```ts
 export enum MyEnum {
@@ -139,15 +138,15 @@ export const schema = new EntitySchema<FooBar>({
   tableName: 'tbl_foo_bar',
   indexes: [{ name: 'idx1', properties: 'name' }],
   uniques: [{ name: 'unq1', properties: ['name', 'email'] }],
-  customRepository: () => FooBarRepository,
+  repository: () => FooBarRepository,
   properties: {
     id: { type: 'number', primary: true },
     name: { type: 'string' },
-    baz: { reference: '1:1', entity: 'FooBaz', orphanRemoval: true, nullable: true },
-    fooBar: { reference: '1:1', entity: 'FooBar', nullable: true },
-    publisher: { reference: 'm:1', entity: 'Publisher', inversedBy: 'books' },
-    books: { reference: '1:m', entity: () => 'Book', mappedBy: book => book.author },
-    tags: { reference: 'm:n', entity: 'BookTag', inversedBy: 'books', fixedOrder: true },
+    baz: { kind: '1:1', entity: 'FooBaz', orphanRemoval: true, nullable: true },
+    fooBar: { kind: '1:1', entity: 'FooBar', nullable: true },
+    publisher: { kind: 'm:1', entity: 'Publisher', inversedBy: 'books' },
+    books: { kind: '1:m', entity: () => 'Book', mappedBy: book => book.author },
+    tags: { kind: 'm:n', entity: 'BookTag', inversedBy: 'books', fixedOrder: true },
     version: { type: 'Date', version: true, length: 0 },
     type: { enum: true, items: () => MyEnum, default: MyEnum.LOCAL },
   },
@@ -176,7 +175,7 @@ export const schema = new EntitySchema<BookTag>({
     _id: { type: 'ObjectId', primary: true },
     id: { type: 'string', serializedPrimaryKey: true },
     name: { type: 'string' },
-    books: { reference: 'm:n', entity: () => Book, mappedBy: book => book.tags },
+    books: { kind: 'm:n', entity: () => Book, mappedBy: book => book.tags },
   },
 });
 ```
@@ -224,7 +223,7 @@ export const schema = new EntitySchema({
     _id: { type: 'ObjectId', primary: true },
     id: { type: 'string', serializedPrimaryKey: true },
     name: { type: 'string' },
-    books: { reference: 'm:n', entity: () => Book, mappedBy: book => book.tags },
+    books: { kind: 'm:n', entity: () => Book, mappedBy: book => book.tags },
   },
 });
 ```

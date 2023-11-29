@@ -1,5 +1,4 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, helper, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -43,13 +42,12 @@ export class Employee {
 
 describe('GH issue 811', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Contact, Employee, Address],
       dbName: 'mikro_orm_test_gh811',
-      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });
@@ -84,13 +82,13 @@ describe('GH issue 811', () => {
     contact.address = address;
 
     // Find my previously created employee
-    expect(orm.em.getUnitOfWork().getOriginalEntityData()).toEqual([
+    expect(orm.em.getUnitOfWork().getIdentityMap().values().map(e => helper(e).__originalEntityData)).toEqual([
       { id: contact.id, name: 'My Contact', address: null },
     ]);
     const employee = await orm.em.findOneOrFail(Employee, employeeCreate.id);
 
     // previously the `Employee.contact.address` was accidentally cascade merged
-    expect(orm.em.getUnitOfWork().getOriginalEntityData()).toEqual([
+    expect(orm.em.getUnitOfWork().getIdentityMap().values().map(e => helper(e).__originalEntityData).filter(Boolean)).toEqual([
       { id: contact.id, name: 'My Contact', address: null },
       { id: employee.id, contact: contact.id, name: 'My Employee' },
     ]);

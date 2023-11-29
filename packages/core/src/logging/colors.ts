@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 const enabled = () => !process.env.NO_COLOR && !process.env.MIKRO_ORM_NO_COLOR && process.env.FORCE_COLOR !== '0';
 const wrap = (fn: (text: string) => string) => (text: string) => enabled() ? fn(text) : text;
 

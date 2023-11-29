@@ -1,26 +1,23 @@
-import { ReferenceType } from '../enums';
-import type { OneToManyOptions } from './OneToMany';
-import { createOneToDecorator } from './OneToMany';
-import type { AnyString, EntityName } from '../typings';
+import { ReferenceKind } from '../enums';
+import { createOneToDecorator, type OneToManyOptions } from './OneToMany';
+import type { AnyString, Dictionary, EntityName } from '../typings';
 
-export function OneToOne<T, O>(
-  entity?: OneToOneOptions<T, O> | string | ((e?: any) => EntityName<T>),
-  mappedByOrOptions?: (string & keyof T) | ((e: T) => any) | Partial<OneToOneOptions<T, O>>,
-  options: Partial<OneToOneOptions<T, O>> = {},
+export function OneToOne<Target, Owner>(
+  entity?: OneToOneOptions<Owner, Target> | string | ((e: Owner) => EntityName<Target>),
+  mappedByOrOptions?: (string & keyof Target) | ((e: Target) => any) | Partial<OneToOneOptions<Owner, Target>>,
+  options: Partial<OneToOneOptions<Owner, Target>> = {},
 ) {
   const mappedBy = typeof mappedByOrOptions === 'object' ? mappedByOrOptions.mappedBy : mappedByOrOptions;
   options = typeof mappedByOrOptions === 'object' ? { ...mappedByOrOptions, ...options } : options;
-  return createOneToDecorator<T, O>(entity as string, mappedBy, options, ReferenceType.ONE_TO_ONE);
+  return createOneToDecorator<Target, Owner>(entity as string, mappedBy, options, ReferenceKind.ONE_TO_ONE);
 }
 
-export interface OneToOneOptions<T, O> extends Partial<Omit<OneToManyOptions<T, O>, 'orderBy'>> {
+export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOptions<Owner, Target>, 'orderBy'>> {
   owner?: boolean;
-  inversedBy?: (string & keyof T) | ((e: T) => any);
-  /** @deprecated use `ref` instead, `wrappedReference` option will be removed in v6 */
-  wrappedReference?: boolean;
+  inversedBy?: (string & keyof Target) | ((e: Target) => any);
   ref?: boolean;
   primary?: boolean;
   mapToPk?: boolean;
-  onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
-  onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
 }

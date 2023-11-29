@@ -1,5 +1,4 @@
-import { Entity, IdentifiedReference, ManyToOne, MikroORM, PrimaryKey, Reference } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, Ref, ManyToOne, MikroORM, PrimaryKey, Reference } from '@mikro-orm/postgresql';
 
 @Entity()
 export class First {
@@ -20,11 +19,11 @@ export class Second {
 @Entity()
 export class Third {
 
-  @ManyToOne({ primary: true, entity: () => First, wrappedReference: true })
-  first: IdentifiedReference<First>;
+  @ManyToOne({ primary: true, entity: () => First, ref: true })
+  first: Ref<First>;
 
-  @ManyToOne({ primary: true, entity: () => Second, wrappedReference: true })
-  second: IdentifiedReference<Second>;
+  @ManyToOne({ primary: true, entity: () => Second, ref: true })
+  second: Ref<Second>;
 
   constructor(first: First, second: Second) {
     this.first = Reference.create(first);
@@ -35,13 +34,12 @@ export class Third {
 
 describe('GH issue 2148', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [First, Second, Third],
       dbName: 'mikro_orm_test_2148',
-      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

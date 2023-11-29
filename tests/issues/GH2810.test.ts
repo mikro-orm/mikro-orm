@@ -1,5 +1,4 @@
-import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/sqlite';
 
 @Entity()
 export class NodeEntity {
@@ -7,7 +6,7 @@ export class NodeEntity {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => NodeEntity, onDelete: 'cascade', onUpdateIntegrity: 'cascade', nullable: true })
+  @ManyToOne({ entity: () => NodeEntity, deleteRule: 'cascade', updateRule: 'cascade', nullable: true })
   parent?: NodeEntity | null;
 
 }
@@ -15,10 +14,9 @@ export class NodeEntity {
 @Entity()
 export class ElementEntity {
 
-  [PrimaryKeyType]?: number;
   [PrimaryKeyProp]?: 'node';
 
-  @OneToOne({ entity: () => NodeEntity, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
+  @OneToOne({ entity: () => NodeEntity, primary: true, deleteRule: 'cascade', updateRule: 'cascade' })
   node!: NodeEntity;
 
   @OneToMany({ entity: () => DependentEntity, mappedBy: 'element', cascade: [Cascade.ALL] })
@@ -32,7 +30,7 @@ export class DependentEntity {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => ElementEntity, { onDelete: 'cascade' })
+  @ManyToOne(() => ElementEntity, { deleteRule: 'cascade' })
   element!: ElementEntity;
 
 }
@@ -45,7 +43,6 @@ describe('GH issue 2810', () => {
     orm = await MikroORM.init({
       entities: [ElementEntity, DependentEntity, NodeEntity],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

@@ -1,11 +1,10 @@
-import { BigIntType, Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity({ abstract: true })
 abstract class BaseEntity {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ onUpdate: () => new Date() })
   modifiedAt: Date = new Date();
@@ -57,13 +56,12 @@ class PositionBookmark extends BaseEntity {
 
 describe('GH issue 1038', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [BaseEntity, User, Position, PositionBookmark],
       dbName: `:memory:`,
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

@@ -4,8 +4,7 @@ import { isAbsolute, join } from 'path';
 import { platform } from 'os';
 import { fileURLToPath } from 'url';
 import type { IDatabaseDriver } from '../drivers';
-import type { Options } from './Configuration';
-import { Configuration } from './Configuration';
+import { Configuration, type Options } from './Configuration';
 import { Utils } from './Utils';
 import type { Dictionary } from '../typings';
 import { colors } from '../logging/colors';
@@ -77,6 +76,7 @@ export class ConfigurationLoader {
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
     settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
+    settings.alwaysAllowTs = process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS != null ? bool(process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS) : settings.alwaysAllowTs;
 
     if (process.env.MIKRO_ORM_CLI?.endsWith('.ts')) {
       settings.useTsNode = true;
@@ -86,6 +86,12 @@ export class ConfigurationLoader {
   }
 
   static async getConfigPaths(): Promise<string[]> {
+    const options = Utils.parseArgs();
+
+    if (options.config) {
+      return [options.config];
+    }
+
     const paths: string[] = [];
     const settings = await ConfigurationLoader.getSettings();
 
@@ -95,7 +101,7 @@ export class ConfigurationLoader {
 
     paths.push(...(settings.configPaths || []));
 
-    if (settings.useTsNode) {
+    if (settings.useTsNode || settings.alwaysAllowTs) {
       paths.push('./src/mikro-orm.config.ts');
       paths.push('./mikro-orm.config.ts');
     }
@@ -108,7 +114,7 @@ export class ConfigurationLoader {
     paths.push('./mikro-orm.config.js');
     const tsNode = Utils.detectTsNode();
 
-    return Utils.unique(paths).filter(p => p.endsWith('.js') || tsNode);
+    return Utils.unique(paths).filter(p => p.endsWith('.js') || tsNode || settings.alwaysAllowTs);
   }
 
   static async isESM(): Promise<boolean> {
@@ -142,7 +148,7 @@ export class ConfigurationLoader {
 
     if (Object.entries(options?.paths ?? {}).length > 0) {
       Utils.requireFrom('tsconfig-paths', tsConfigPath).register({
-        baseUrl: options.baseUrl,
+        baseUrl: options.baseUrl ?? '.',
         paths: options.paths,
       });
     }
@@ -158,9 +164,21 @@ export class ConfigurationLoader {
 
   static loadEnvironmentVars<D extends IDatabaseDriver>(): Partial<Options<D>> {
     const ret: Dictionary = {};
+
+    // only to keep some sort of back compatibility with those using env vars only, to support `MIKRO_ORM_TYPE`
+    const PLATFORMS = {
+      'mongo': { className: 'MongoDriver', module: '@mikro-orm/mongodb' },
+      'mysql': { className: 'MySqlDriver', module: '@mikro-orm/mysql' },
+      'mariadb': { className: 'MariaDbDriver', module: '@mikro-orm/mariadb' },
+      'postgresql': { className: 'PostgreSqlDriver', module: '@mikro-orm/postgresql' },
+      'sqlite': { className: 'SqliteDriver', module: '@mikro-orm/sqlite' },
+      'better-sqlite': { className: 'BetterSqliteDriver', module: '@mikro-orm/better-sqlite' },
+    } as Dictionary;
+
     const array = (v: string) => v.split(',').map(vv => vv.trim());
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
     const num = (v: string) => +v;
+    const driver = (v: string) => Utils.requireFrom(PLATFORMS[v].module)[PLATFORMS[v].className];
     const read = (o: Dictionary, envKey: string, key: string, mapper: (v: string) => unknown = v => v) => {
       if (!(envKey in process.env)) {
         return;
@@ -172,7 +190,7 @@ export class ConfigurationLoader {
     const cleanup = (o: Dictionary, k: string) => Utils.hasObjectKeys(o[k]) ? {} : delete o[k];
 
     read(ret, 'MIKRO_ORM_BASE_DIR', 'baseDir');
-    read(ret, 'MIKRO_ORM_TYPE', 'type');
+    read(ret, 'MIKRO_ORM_TYPE', 'driver', driver);
     read(ret, 'MIKRO_ORM_ENTITIES', 'entities', array);
     read(ret, 'MIKRO_ORM_ENTITIES_TS', 'entitiesTs', array);
     read(ret, 'MIKRO_ORM_CLIENT_URL', 'clientUrl');
@@ -190,7 +208,6 @@ export class ConfigurationLoader {
     read(ret, 'MIKRO_ORM_VALIDATE', 'validate', bool);
     read(ret, 'MIKRO_ORM_ALLOW_GLOBAL_CONTEXT', 'allowGlobalContext', bool);
     read(ret, 'MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER', 'autoJoinOneToOneOwner', bool);
-    read(ret, 'MIKRO_ORM_PROPAGATE_TO_ONE_OWNER', 'propagateToOneOwner', bool);
     read(ret, 'MIKRO_ORM_POPULATE_AFTER_FLUSH', 'populateAfterFlush', bool);
     read(ret, 'MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR', 'forceEntityConstructor', bool);
     read(ret, 'MIKRO_ORM_FORCE_UNDEFINED', 'forceUndefined', bool);
@@ -308,6 +325,7 @@ export class ConfigurationLoader {
 }
 
 export interface Settings {
+  alwaysAllowTs?: boolean;
   useTsNode?: boolean;
   tsConfigPath?: string;
   configPaths?: string[];

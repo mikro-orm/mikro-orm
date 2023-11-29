@@ -1,11 +1,10 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/sqlite';
 
 @Entity()
 class Category {
 
   @PrimaryKey()
-  id!: number;
+  id!: bigint;
 
   @Property()
   name: string;
@@ -25,13 +24,12 @@ class Category {
 
 describe('GH issue 2059', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Category],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });
@@ -49,7 +47,7 @@ describe('GH issue 2059', () => {
     const b = new Category('B');
     const b1 = new Category('B1', b);
     const b2 = new Category('B2', b);
-    await orm.em.fork().persistAndFlush([a, b]);
+    await orm.em.fork().persistAndFlush([a, a1, a11, a111, a2, b, b1, b2]);
 
     /* Current tree structure is:
         - CAT A
@@ -72,7 +70,7 @@ describe('GH issue 2059', () => {
     expect(categories[0].children[0].children[0].name).toBe('A11');
     await categories[0].children[0].children[0].children.init();
     expect(categories[0].children[0].children[0].children[0].name).toBe('A111');
-    expect(wrap(categories[0]).toObject().children[0].children[0].children).toEqual([5]);
+    expect(wrap(categories[0]).toObject().children[0].children[0].children).toEqual(['4']);
     expect(wrap(categories[0]).toObject()).toMatchObject({
       name: 'A',
       children: [

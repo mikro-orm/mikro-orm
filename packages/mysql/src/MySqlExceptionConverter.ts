@@ -1,8 +1,7 @@
-import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
   DeadlockException, LockWaitTimeoutException, TableExistsException, TableNotFoundException,
   ForeignKeyConstraintViolationException, UniqueConstraintViolationException, InvalidFieldNameException, NonUniqueFieldNameException,
-  SyntaxErrorException, ConnectionException, NotNullConstraintViolationException, ExceptionConverter, CheckConstraintViolationException,
+  SyntaxErrorException, ConnectionException, NotNullConstraintViolationException, ExceptionConverter, CheckConstraintViolationException, type Dictionary, type DriverException,
 } from '@mikro-orm/core';
 
 export class MySqlExceptionConverter extends ExceptionConverter {
@@ -13,7 +12,7 @@ export class MySqlExceptionConverter extends ExceptionConverter {
    * @link http://dev.mysql.com/doc/refman/5.7/en/error-messages-server.html
    * @link https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractMySQLDriver.php
    */
-  convertException(exception: Error & Dictionary): DriverException {
+  override convertException(exception: Error & Dictionary): DriverException {
     switch (exception.errno) {
       case 1213:
         return new DeadlockException(exception);

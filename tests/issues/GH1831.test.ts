@@ -1,15 +1,14 @@
 import {
   Collection,
   Entity,
-  IdentifiedReference,
+  Ref,
   ManyToOne,
   MikroORM,
   OneToMany,
   PrimaryKey,
   Property,
   PlainObject,
-} from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+} from '@mikro-orm/sqlite';
 
 @Entity()
 export class FilterValue {
@@ -20,8 +19,8 @@ export class FilterValue {
   @Property()
   name!: string;
 
-  @ManyToOne('Filter', { wrappedReference: true })
-  filter!: IdentifiedReference<Filter>;
+  @ManyToOne('Filter', { ref: true })
+  filter!: Ref<Filter>;
 
 }
 
@@ -34,8 +33,8 @@ export class Filter {
   @Property()
   name!: string;
 
-  @ManyToOne('Project', { wrappedReference: true })
-  project!: IdentifiedReference<Project>;
+  @ManyToOne('Project', { ref: true })
+  project!: Ref<Project>;
 
   @OneToMany('FilterValue', 'filter')
   values = new Collection<FilterValue>(this);
@@ -80,11 +79,10 @@ export class ProjectDto extends PlainObject {
 
 describe('GH issue 1831', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Project, Filter, FilterValue],
     });

@@ -1,29 +1,31 @@
 import globby from 'globby';
-import { ensureDir, pathExists, readFile, readJSON, unlink, writeJSON } from 'fs-extra';
+import { ensureDirSync, pathExistsSync, readFileSync, readJSONSync, unlinkSync, writeJSONSync } from 'fs-extra';
 
-import type { CacheAdapter } from './CacheAdapter';
+import type { SyncCacheAdapter } from './CacheAdapter';
 import { Utils } from '../utils/Utils';
+import type { Dictionary } from '../typings';
 
-export class FileCacheAdapter implements CacheAdapter {
+export class FileCacheAdapter implements SyncCacheAdapter {
 
   private readonly VERSION = Utils.getORMVersion();
+  private cache: Dictionary = {};
 
-  constructor(private readonly options: { cacheDir: string },
+  constructor(private readonly options: { cacheDir: string; combined?: boolean | string },
               private readonly baseDir: string,
               private readonly pretty = false) { }
 
   /**
    * @inheritDoc
    */
-  async get(name: string): Promise<any> {
-    const path = await this.path(name);
+  get(name: string): any {
+    const path = this.path(name);
 
-    if (!await pathExists(path)) {
+    if (!pathExistsSync(path)) {
       return null;
     }
 
-    const payload = await readJSON(path);
-    const hash = await this.getHash(payload.origin);
+    const payload = readJSONSync(path);
+    const hash = this.getHash(payload.origin);
 
     if (!hash || payload.hash !== hash) {
       return null;
@@ -35,46 +37,64 @@ export class FileCacheAdapter implements CacheAdapter {
   /**
    * @inheritDoc
    */
-  async set(name: string, data: any, origin: string): Promise<void> {
-    const [path, hash] = await Promise.all([
-      this.path(name),
-      this.getHash(origin),
-    ]);
+  set(name: string, data: any, origin: string): void {
+    if (this.options.combined) {
+      this.cache[name.replace(/\.[jt]s$/, '')] = data;
+      return;
+    }
 
+    const path = this.path(name);
+    const hash = this.getHash(origin);
     const opts = this.pretty ? { spaces: 2 } : {};
-    await writeJSON(path!, { data, origin, hash, version: this.VERSION }, opts);
+    writeJSONSync(path!, { data, origin, hash, version: this.VERSION }, opts);
   }
 
   /**
    * @inheritDoc
    */
-  async remove(name: string): Promise<void> {
-    const path = await this.path(name);
-    await unlink(path);
+  remove(name: string): void {
+    const path = this.path(name);
+    unlinkSync(path);
   }
 
   /**
    * @inheritDoc
    */
-  async clear(): Promise<void> {
-    const path = await this.path('*');
-    const files = await globby(path);
-    await Promise.all(files.map(file => unlink(file)));
+  clear(): void {
+    const path = this.path('*');
+    const files = globby.sync(path);
+    files.forEach(file => unlinkSync(file));
+    this.cache = {};
   }
 
-  private async path(name: string): Promise<string> {
-    await ensureDir(this.options.cacheDir);
+  combine(): string | void {
+    if (!this.options.combined) {
+      return;
+    }
+
+    let path = typeof this.options.combined === 'string'
+      ? this.options.combined
+      : './metadata.json';
+    path = Utils.normalizePath(this.options.cacheDir, path);
+    this.options.combined = path; // override in the options, so we can log it from the CLI in `cache:generate` command
+    writeJSONSync(path, this.cache, { spaces: this.pretty ? 2 : undefined });
+
+    return path;
+  }
+
+  private path(name: string): string {
+    ensureDirSync(this.options.cacheDir);
     return `${this.options.cacheDir}/${name}.json`;
   }
 
-  private async getHash(origin: string): Promise<string | null> {
+  private getHash(origin: string): string | null {
     origin = Utils.absolutePath(origin, this.baseDir);
 
-    if (!await pathExists(origin)) {
+    if (!pathExistsSync(origin)) {
       return null;
     }
 
-    const contents = await readFile(origin);
+    const contents = readFileSync(origin);
 
     return Utils.hash(contents.toString() + this.VERSION);
   }

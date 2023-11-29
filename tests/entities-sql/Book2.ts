@@ -5,7 +5,7 @@ import {
   Entity,
   Filter,
   Formula,
-  IdentifiedReference,
+  Ref,
   Index,
   ManyToMany,
   ManyToOne,
@@ -17,6 +17,7 @@ import {
   ref,
   rel,
   t,
+  sql,
 } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
@@ -25,7 +26,7 @@ import { Test2 } from './Test2';
 
 @Entity()
 @Filter({ name: 'expensive', cond: { price: { $gt: 1000 } } })
-@Filter({ name: 'long', cond: { 'length(perex)': { $gt: 10000 } } })
+@Filter({ name: 'long', cond: () => ({ [sql`length(perex)`]: { $gt: 10000 } }) })
 @Filter({ name: 'hasAuthor', cond: { author: { $ne: null } }, default: true })
 @Filter({ name: 'writtenBy', cond: args => ({ author: { name: args.name } }) })
 export class Book2 {
@@ -36,14 +37,14 @@ export class Book2 {
   uuid = v4();
 
   @Property({ defaultRaw: 'current_timestamp(3)', length: 3 })
-  createdAt: Date = new Date();
+  createdAt = new Date();
 
   @Index({ type: 'fulltext' })
   @Property({ nullable: true, default: '' })
   title?: string;
 
-  @Property({ type: t.text, nullable: true, lazy: true })
-  perex?: string;
+  @Property({ type: t.text, nullable: true, lazy: true, ref: true })
+  perex?: Ref<string>;
 
   @Property({ type: t.decimal, precision: 8, scale: 2, nullable: true })
   price?: number;
@@ -60,8 +61,8 @@ export class Book2 {
   @ManyToOne({ entity: 'Author2', cascade: [] })
   author: Author2;
 
-  @ManyToOne(() => Publisher2, { cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, wrappedReference: true })
-  publisher?: IdentifiedReference<Publisher2>;
+  @ManyToOne(() => Publisher2, { cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, ref: true })
+  publisher?: Ref<Publisher2>;
 
   @OneToOne({ cascade: [], mappedBy: 'book', nullable: true })
   test?: Test2;
@@ -85,8 +86,8 @@ export class Book2 {
 }
 
 export interface Book2Meta {
-  category: string;
-  items: number;
+  category?: string;
+  items?: number;
   valid?: boolean;
   nested?: {
     foo: string;

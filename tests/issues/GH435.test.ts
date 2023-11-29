@@ -1,17 +1,16 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
 
 class MyType extends Type<string, number> {
 
-  convertToDatabaseValue(jsValue: string): number {
+  override convertToDatabaseValue(jsValue: string): number {
     return Number.parseInt(jsValue);
   }
 
-  convertToJSValue(dbValue: number): string {
+  override convertToJSValue(dbValue: number): string {
     return dbValue.toString();
   }
 
-  getColumnType() {
+  override getColumnType() {
     return 'integer';
   }
 
@@ -30,13 +29,12 @@ class A {
 
 describe('GH issue 435', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.dropSchema();
@@ -52,14 +50,14 @@ describe('GH issue 435', () => {
     const a1 = new A();
     a1.prop = '123';
 
-    expect(convertToDatabaseValueSpy).toBeCalledTimes(0);
-    expect(convertToJSValueSpy).toBeCalledTimes(0);
+    expect(convertToDatabaseValueSpy).toHaveBeenCalledTimes(0);
+    expect(convertToJSValueSpy).toHaveBeenCalledTimes(0);
 
     await orm.em.persistAndFlush(a1);
     orm.em.clear();
 
     expect(convertToDatabaseValueSpy.mock.calls[0][0]).toBe('123');
-    expect(convertToJSValueSpy).toBeCalledTimes(0); // so far nothing fetched from db
+    expect(convertToJSValueSpy).toHaveBeenCalledTimes(0); // so far nothing fetched from db
 
     const a2 = await orm.em.findOneOrFail(A, a1.id);
     expect(a2.prop).toBe('123');

@@ -1,11 +1,20 @@
 import { ObjectId } from 'bson';
-import { BeforeCreate, PrimaryKey, Property, SerializedPrimaryKey, BaseEntity as MikroBaseEntity, OptionalProps } from '@mikro-orm/core';
+import {
+  BeforeCreate,
+  PrimaryKey,
+  Property,
+  SerializedPrimaryKey,
+  BaseEntity as MikroBaseEntity,
+  OptionalProps,
+  PrimaryKeyProp,
+} from '@mikro-orm/core';
 
 export type BaseEntityOptional = 'updatedAt' | 'hookTest';
 
-export abstract class BaseEntity<T extends { id: unknown; _id: unknown }, Optional extends keyof T = never> extends MikroBaseEntity<T, 'id' | '_id'> {
+export abstract class BaseEntity<T extends object, Optional extends keyof T = never> extends MikroBaseEntity {
 
   [OptionalProps]?: BaseEntityOptional | Optional;
+  [PrimaryKeyProp]?: 'id' | '_id';
 
   @PrimaryKey()
   _id!: ObjectId;
@@ -14,16 +23,16 @@ export abstract class BaseEntity<T extends { id: unknown; _id: unknown }, Option
   id!: string;
 
   @Property()
-  createdAt?: Date = new Date();
+  createdAt? = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt: Date = new Date();
+  updatedAt = new Date();
 
   @Property()
   foo?: string;
 
   @Property({ persist: false })
-  hookTest: boolean = false;
+  hookTest = false;
 
   @BeforeCreate()
   baseBeforeCreate() {

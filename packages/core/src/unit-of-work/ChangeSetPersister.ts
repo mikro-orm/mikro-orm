@@ -1,26 +1,28 @@
 import type { MetadataStorage } from '../metadata';
-import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
-import type { EntityFactory, EntityValidator, Collection } from '../entity';
-import { EntityIdentifier, helper } from '../entity';
-import type { ChangeSet } from './ChangeSet';
-import { ChangeSetType } from './ChangeSet';
+import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, EntityKey, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
+import { EntityIdentifier, helper, type EntityFactory, type EntityValidator, type Collection } from '../entity';
+import { ChangeSetType, type ChangeSet } from './ChangeSet';
 import type { QueryResult } from '../connections';
-import type { Configuration } from '../utils';
-import { Utils } from '../utils';
+import { Utils, type Configuration, type EntityComparator } from '../utils';
 import type { DriverMethodOptions, IDatabaseDriver } from '../drivers';
 import { OptimisticLockError } from '../errors';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
+import type { Platform } from '../platforms/Platform';
 
 export class ChangeSetPersister {
 
-  private readonly platform = this.driver.getPlatform();
+  private readonly platform: Platform;
+  private readonly comparator: EntityComparator;
 
   constructor(private readonly driver: IDatabaseDriver,
               private readonly metadata: MetadataStorage,
               private readonly hydrator: IHydrator,
               private readonly factory: EntityFactory,
               private readonly validator: EntityValidator,
-              private readonly config: Configuration) { }
+              private readonly config: Configuration) {
+    this.platform = this.driver.getPlatform();
+    this.comparator = this.config.getComparator(this.metadata);
+  }
 
   async executeInserts<T extends object>(changeSets: ChangeSet<T>[], options?: DriverMethodOptions, withSchema?: boolean): Promise<void> {
     if (!withSchema) {
@@ -73,7 +75,12 @@ export class ChangeSetPersister {
     }
   }
 
-  private async runForEachSchema<T extends object>(changeSets: ChangeSet<T>[], method: string, options?: DriverMethodOptions, ...args: unknown[]): Promise<void> {
+  private async runForEachSchema<T extends object>(
+    changeSets: ChangeSet<T>[],
+    method: 'executeInserts' | 'executeUpdates' | 'executeDeletes',
+    options?: DriverMethodOptions,
+    ...args: unknown[]
+  ): Promise<void> {
     const groups = new Map<string, ChangeSet<T>[]>();
     changeSets.forEach(cs => {
       const group = groups.get(cs.schema!) ?? [];
@@ -83,6 +90,7 @@ export class ChangeSetPersister {
 
     for (const [key, group] of groups.entries()) {
       options = { ...options, schema: key };
+      // @ts-ignore
       await this[method](group, ...args, options, true);
     }
   }
@@ -90,7 +98,7 @@ export class ChangeSetPersister {
   private processProperties<T extends object>(changeSet: ChangeSet<T>): void {
     const meta = this.metadata.find(changeSet.name)!;
 
-    for (const prop of meta.props) {
+    for (const prop of meta.relations) {
       this.processProperty(changeSet, prop);
     }
 
@@ -159,7 +167,9 @@ export class ChangeSetPersister {
         this.mapPrimaryKey(meta, res.rows![i][field], changeSet);
       }
 
-      this.mapReturnedValues(changeSet.entity, changeSet.payload, res.rows![i], meta);
+      if (res.rows) {
+        this.mapReturnedValues(changeSet.entity, changeSet.payload, res.rows[i], meta);
+      }
       this.markAsPopulated(changeSet, meta);
       wrapped.__initialized = true;
       wrapped.__managed = true;
@@ -171,6 +181,7 @@ export class ChangeSetPersister {
     const meta = this.metadata.find(changeSet.name)!;
     const res = await this.updateEntity(meta, changeSet, options);
     this.checkOptimisticLock(meta, changeSet, res);
+    this.mapReturnedValues(changeSet.entity, changeSet.payload, res.row, meta);
     await this.reloadVersionValues(meta, [changeSet], options);
     changeSet.persisted = true;
   }
@@ -190,7 +201,7 @@ export class ChangeSetPersister {
     cond = Utils.isPlainObject(cond) ? cond : { [meta.primaryKeys[0]]: cond };
 
     for (const key of meta.concurrencyCheckKeys) {
-      cond[key as string] = changeSet.originalEntity![key as string];
+      cond[key] = changeSet.originalEntity![key];
 
       if (changeSet.payload[key]) {
         tmp.push(key);
@@ -214,8 +225,15 @@ export class ChangeSetPersister {
       this.checkConcurrencyKeys(meta, changeSet, cond[idx]);
     });
 
-    await this.driver.nativeUpdateMany(meta.className, cond, changeSets.map(cs => cs.payload), options);
-    changeSets.forEach(cs => cs.persisted = true);
+    const res = await this.driver.nativeUpdateMany(meta.className, cond, changeSets.map(cs => cs.payload), options);
+
+    changeSets.forEach((changeSet, idx) => {
+      if (res.rows) {
+        this.mapReturnedValues(changeSet.entity, changeSet.payload, res.rows[idx], meta);
+      }
+
+      changeSet.persisted = true;
+    });
   }
 
   private mapPrimaryKey<T extends object>(meta: EntityMetadata<T>, value: IPrimaryKey, changeSet: ChangeSet<T>): void {
@@ -258,15 +276,14 @@ export class ChangeSetPersister {
   }
 
   private async updateEntity<T extends object>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, options?: DriverMethodOptions): Promise<QueryResult<T>> {
+    const cond = changeSet.getPrimaryKey(true) as Dictionary;
     options = this.propagateSchemaFromMetadata(meta, options, {
       convertCustomTypes: false,
     });
 
     if (meta.concurrencyCheckKeys.size === 0 && (!meta.versionProperty || changeSet.entity[meta.versionProperty] == null)) {
-      return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as FilterQuery<T>, changeSet.payload, options);
+      return this.driver.nativeUpdate(changeSet.name, cond as FilterQuery<T>, changeSet.payload, options);
     }
-
-    const cond = changeSet.getPrimaryKey(true) as Dictionary;
 
     if (meta.versionProperty) {
       cond[meta.versionProperty] = this.platform.quoteVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);
@@ -289,7 +306,8 @@ export class ChangeSetPersister {
       const cond = Utils.getPrimaryKeyCond<T>(cs.originalEntity as T, meta.primaryKeys.concat(...meta.concurrencyCheckKeys)) as FilterQuery<T>;
 
       if (meta.versionProperty) {
-        cond[meta.versionProperty as string] = this.platform.quoteVersionValue(cs.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);
+        // @ts-ignore
+        cond[meta.versionProperty] = this.platform.quoteVersionValue(cs.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);
       }
 
       return cond;
@@ -317,15 +335,36 @@ export class ChangeSetPersister {
   }
 
   /**
-   * This method also handles reloading of database default values for inserts, so we use
-   * a single query in case of both versioning and default values is used.
+   * This method also handles reloading of database default values for inserts and raw property updates,
+   * so we use a single query in case of both versioning and default values is used.
    */
   private async reloadVersionValues<T extends object>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], options?: DriverMethodOptions) {
-    const reloadProps = meta.versionProperty ? [meta.properties[meta.versionProperty]] : [];
+    const reloadProps = meta.versionProperty && !this.platform.usesReturningStatement() ? [meta.properties[meta.versionProperty]] : [];
 
     if (changeSets[0].type === ChangeSetType.CREATE) {
       // do not reload things that already had a runtime value
-      reloadProps.push(...meta.props.filter(prop => prop.defaultRaw && prop.defaultRaw.toLowerCase() !== 'null' && changeSets[0].entity[prop.name] == null));
+      meta.props
+        .filter(prop => prop.persist !== false && (prop.autoincrement || prop.generated || prop.defaultRaw))
+        .filter(prop => (changeSets[0].entity[prop.name] == null && prop.defaultRaw !== 'null') || Utils.isRawSql(changeSets[0].entity[prop.name]))
+        .forEach(prop => reloadProps.push(prop));
+    }
+
+    if (changeSets[0].type === ChangeSetType.UPDATE) {
+      const returning = new Set<EntityProperty<T>>();
+      changeSets.forEach(cs => {
+        Utils.keys(cs.payload).forEach(k => {
+          if (Utils.isRawSql(cs.payload[k]) && Utils.isRawSql(cs.entity[k as EntityKey<T>])) {
+            returning.add(meta.properties[k as EntityKey<T>]);
+          }
+        });
+      });
+      // reload generated columns
+      if (!this.platform.usesReturningStatement()) {
+        meta.props
+          .filter(prop => prop.generated && !prop.primary)
+          .forEach(prop => reloadProps.push(prop));
+        reloadProps.push(...returning);
+      }
     }
 
     if (reloadProps.length === 0) {
@@ -353,21 +392,29 @@ export class ChangeSetPersister {
     for (const changeSet of changeSets) {
       const data = map.get(helper(changeSet.entity).getSerializedPrimaryKey());
       this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, this.factory, 'full', false, true);
+      Object.assign(changeSet.payload, data); // merge to the changeset payload, so it gets saved to the entity snapshot
     }
   }
 
   private processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
     const meta = this.metadata.find(changeSet.name)!;
-    const values = Utils.unwrapProperty(changeSet.payload, meta, prop, true); // for object embeddables
     const value = changeSet.payload[prop.name] as unknown; // for inline embeddables
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY && Array.isArray(value)) {
-      changeSet.payload[prop.name] = value.map(val => val instanceof EntityIdentifier ? val.getValue() : val);
+    if (value instanceof EntityIdentifier) {
+      changeSet.payload[prop.name] = value.getValue();
+      return;
     }
 
-    if (value instanceof EntityIdentifier) {
-      Utils.setPayloadProperty<T>(changeSet.payload, meta, prop, value.getValue());
+    if (prop.kind === ReferenceKind.MANY_TO_MANY && Array.isArray(value)) {
+      changeSet.payload[prop.name] = value.map(val => val instanceof EntityIdentifier ? val.getValue() : val);
+      return;
     }
+
+    if (prop.name in changeSet.payload) {
+      return;
+    }
+
+    const values = Utils.unwrapProperty(changeSet.payload, meta, prop, true); // for object embeddables
 
     values.forEach(([value, indexes]) => {
       if (value instanceof EntityIdentifier) {
@@ -383,18 +430,9 @@ export class ChangeSetPersister {
    */
   mapReturnedValues<T extends object>(entity: T, payload: EntityDictionary<T>, row: Dictionary | undefined, meta: EntityMetadata<T>): void {
     if (this.platform.usesReturningStatement() && row && Utils.hasObjectKeys(row)) {
-      const data = meta.props.reduce((ret, prop) => {
-        if (prop.fieldNames && row[prop.fieldNames[0]] != null && entity[prop.name] == null) {
-          ret[prop.name] = row[prop.fieldNames[0]];
-        }
-
-        return ret;
-      }, {} as Dictionary);
-
-      if (Utils.hasObjectKeys(data)) {
-        this.hydrator.hydrate(entity, meta, data as EntityData<T>, this.factory, 'full', false, true);
-        Object.assign(payload, data); // merge to the changeset payload, so it gets saved to the entity snapshot
-      }
+      const mapped = this.comparator.mapResult<T>(meta.className, row as EntityDictionary<T>);
+      this.hydrator.hydrate(entity, meta, mapped, this.factory, 'full', false, true);
+      Object.assign(payload, mapped); // merge to the changeset payload, so it gets saved to the entity snapshot
     }
   }
 

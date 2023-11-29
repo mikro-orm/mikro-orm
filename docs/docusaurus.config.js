@@ -46,12 +46,18 @@ module.exports = {
         '<a target="_blank" rel="noopener noreferrer" href="https://github.com/mikro-orm/mikro-orm">GitHub</a> ' +
         'and consider <a target="_blank" rel="noopener noreferrer" href="https://github.com/sponsors/B4nan">sponsoring</a> its development! ⭐️',
     },
+    colorMode: {
+      defaultMode: 'light',
+      disableSwitch: false,
+      respectPrefersColorScheme: true,
+    },
     prism: {
-      theme: require('prism-react-renderer/themes/github'),
-      darkTheme: require('prism-react-renderer/themes/dracula'),
+      defaultLanguage: 'typescript',
+      theme: require('prism-react-renderer').themes.github,
+      darkTheme: require('prism-react-renderer').themes.dracula,
+      additionalLanguages: ['docker', 'log', 'bash', 'diff', 'json'],
     },
     navbar: {
-      hideOnScroll: true,
       title: '',
       logo: {
         alt: 'MikroORM',
@@ -96,6 +102,7 @@ module.exports = {
         },
       ],
     },
+    image: 'https://opengraph.githubassets.com/8b51ab16e00d8f8480da64948bd38ff0c5e57b3aa55ef8702d49e0ab4ad02f1f/mikro-orm/mikro-orm',
     footer: {
       style: 'dark',
       links: [
@@ -103,9 +110,9 @@ module.exports = {
           title: 'Docs',
           items: [
             { label: 'Installation & Usage', to: 'docs/installation' },
-            { label: 'Quick Start', href: 'https://github.com/mikro-orm/mikro-orm#-quick-start' },
-            { label: 'Migration from v4 to v5', to: 'docs/upgrading-v4-to-v5' },
-            { label: 'Version 4.5 docs', to: 'docs/4.5/installation' },
+            { label: 'Quick Start', to: 'docs/quick-start' },
+            { label: 'Migration from v5 to v6', to: 'docs/next/upgrading-v5-to-v6' },
+            { label: 'Version 6.0 docs', to: 'docs/next/guide' },
           ],
         },
         {
@@ -125,8 +132,8 @@ module.exports = {
           title: 'Social',
           items: [
             { label: 'Blog', to: 'blog' },
-            { label: 'Twitter', to: 'https://twitter.com/MikroOrm' },
-            { label: 'GitHub Stars', to: 'https://github.com/mikro-orm/mikro-orm' },
+            { label: 'Twitter', to: 'https://twitter.com/MikroORM' },
+            { label: 'GitHub', to: 'https://github.com/mikro-orm/mikro-orm' },
             { label: 'GitHub Sponsors', to: 'https://github.com/sponsors/B4nan' },
           ],
         },
@@ -135,7 +142,7 @@ module.exports = {
         alt: 'MikroORM',
         src: 'img/logo-header.svg',
       },
-      copyright: `Copyright © 2018-${new Date().getFullYear()} Martin Adámek. Built with Docusaurus. `,
+      copyright: `Copyright © 2018-${new Date().getFullYear()} Martin Adámek. Built with Docusaurus.`,
     },
   },
   presets: [
@@ -147,6 +154,14 @@ module.exports = {
           editUrl: 'https://github.com/mikro-orm/mikro-orm/edit/master/docs/',
           showLastUpdateAuthor: true,
           showLastUpdateTime: true,
+          versions: {
+            current: {
+              label: '6.0 (next)',
+            },
+          },
+          remarkPlugins: [
+            [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
+          ],
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -184,7 +199,11 @@ module.exports = {
           },
           {
             from: '/docs/next',
-            to: '/docs/next/installation',
+            to: '/docs/next/guide',
+          },
+          {
+            from: '/docs/next/installation',
+            to: '/docs/next/quick-start',
           },
           {
             from: '/docs/lifecycle-hooks',

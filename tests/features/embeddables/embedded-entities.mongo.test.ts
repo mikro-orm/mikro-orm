@@ -1,5 +1,5 @@
 import type { Dictionary, Platform } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, EntitySchema, expr, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, EntitySchema, PrimaryKey, Property, ReferenceKind, SerializedPrimaryKey, Type } from '@mikro-orm/core';
 import { MikroORM, ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../helpers';
 
@@ -103,17 +103,17 @@ class User {
 
 class NumericType extends Type<number, string> {
 
-  convertToDatabaseValue(value: number, platform: Platform): string {
+  override convertToDatabaseValue(value: number, platform: Platform): string {
     this.validatePlatformSupport(platform);
     return value.toString();
   }
 
-  convertToJSValue(value: string, platform: Platform): number {
+  override convertToJSValue(value: string, platform: Platform): number {
     this.validatePlatformSupport(platform);
     return Number(value);
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'double';
   }
 
@@ -174,7 +174,7 @@ const parentSchema = new EntitySchema({
   properties: {
     _id: { primary: true, type: 'number' },
     foo: { type: 'number' },
-    child: { type: 'Child', reference: 'embedded' },
+    child: { type: 'Child', kind: 'embedded' },
   },
 });
 
@@ -217,33 +217,33 @@ describe('embedded entities in mongo', () => {
     });
     expect(orm.getMetadata().get('User').properties.address1).toMatchObject({
       name: 'address1',
-      reference: ReferenceType.EMBEDDED,
+      kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
     expect(orm.getMetadata().get('User').properties.address1_street).toMatchObject({
       name: 'address1_street',
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       type: 'string',
     });
     expect(orm.getMetadata().get('User').properties.address2).toMatchObject({
       name: 'address2',
-      reference: ReferenceType.EMBEDDED,
+      kind: ReferenceKind.EMBEDDED,
       type: 'Address2',
     });
     expect(orm.getMetadata().get('User').properties.addr_street).toMatchObject({
       name: 'addr_street',
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       type: 'string',
       nullable: true,
     });
     expect(orm.getMetadata().get('User').properties.address3).toMatchObject({
       name: 'address3',
-      reference: ReferenceType.EMBEDDED,
+      kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
     expect(orm.getMetadata().get('User').properties.street).toMatchObject({
       name: 'street',
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       type: 'string',
     });
   });
@@ -252,7 +252,7 @@ describe('embedded entities in mongo', () => {
     const createCollection = jest.spyOn(MongoConnection.prototype, 'createCollection');
     createCollection.mockResolvedValue({} as any);
     await orm.schema.createSchema();
-    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['custom-user', 'parent', 'user']);
+    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['custom-user', 'parent', 'user', 'mikro_orm_migrations']);
     createCollection.mockRestore();
   });
 
@@ -322,12 +322,12 @@ describe('embedded entities in mongo', () => {
     expect(mock.mock.calls[6][0]).toMatch(/db\.getCollection\('user'\)\.find\({ '\$or': \[ { address1_city: 'London 1' }, { address1_city: 'Berlin' } ] }, {}\)\.limit\(1\).toArray\(\);/);
     expect(u3).toBe(u1);
     const err = `Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { '$or': [ [Object], [Object] ] } })`;
-    await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
+    await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrow(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
     const u5 = await orm.em.findOneOrFail(User, {
       address4: {
-        [expr('$exists')]: true,
+        $exists: true,
       },
     });
     expect(u5).toBe(u1);
@@ -337,7 +337,7 @@ describe('embedded entities in mongo', () => {
   test('validation of object embeddables (GH issue #466)', async () => {
     const user = new User();
     user.address4.postalCode = 123 as any;
-    await expect(orm.em.persistAndFlush(user)).rejects.toThrowError(`Trying to set User.address4_postalCode of type 'string' to '123' of type 'number'`);
+    await expect(orm.em.persistAndFlush(user)).rejects.toThrow(`Trying to set User.address4_postalCode of type 'string' to '123' of type 'number'`);
   });
 
   test('#assign() works with embeddables', async () => {

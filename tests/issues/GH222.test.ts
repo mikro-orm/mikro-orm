@@ -1,5 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -48,15 +47,13 @@ export class B {
 
 describe('GH issue 222', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B, C],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
-    await orm.schema.dropSchema();
     await orm.schema.createSchema();
   });
 
@@ -96,7 +93,7 @@ describe('GH issue 222', () => {
     await orm.em.persistAndFlush(c);
     orm.em.clear();
 
-    const cc = await orm.em.findOneOrFail(C, c.id);
+    const cc = await orm.em.findOneOrFail(C, c.id, { populate: ['a'] });
     expect(cc.bCollection.count()).toBe(1);
     expect(cc.a.prop).toEqual(cc.bCollection[0].a.prop);
     const ccJson = wrap(cc).toJSON();

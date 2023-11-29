@@ -1,4 +1,4 @@
-import { Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, Index, PrimaryKey, Property, Unique, wrap } from '@mikro-orm/core';
 import { MikroORM, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
@@ -9,6 +9,7 @@ class IdentityMeta {
   foo?: string;
 
   @Property()
+  @Index()
   bar?: string;
 
   constructor(foo?: string, bar?: string) {
@@ -47,6 +48,7 @@ class IdentityLink {
 class Identity {
 
   @Property()
+  @Unique()
   email: string;
 
   @Embedded(() => IdentityMeta, { nullable: true })
@@ -65,6 +67,7 @@ class Identity {
 @Embeddable()
 class Profile {
 
+  @Unique()
   @Property()
   username: string;
 
@@ -106,6 +109,10 @@ describe('embedded entities in postgres', () => {
       dbName: `mikro_orm_test_nested_embedddables`,
     });
     await orm.schema.refreshDatabase();
+  });
+
+  beforeEach(async () => {
+    await orm.schema.clearDatabase();
   });
 
   afterAll(async () => {
@@ -194,6 +201,7 @@ describe('embedded entities in postgres', () => {
             { bar: 'b4', foo: 'f4' },
           ] },
         ],
+        meta: null,
       },
     });
     expect(u2.profile2).toBeInstanceOf(Profile);
@@ -260,10 +268,10 @@ describe('embedded entities in postgres', () => {
     expect(u5.id).toEqual(u1.id);
 
     const err1 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
-    await expect(orm.em.findOneOrFail(User, { profile1: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err1);
+    await expect(orm.em.findOneOrFail(User, { profile1: { identity: { city: 'London 1' } as any } })).rejects.toThrow(err1);
 
     const err2 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
-    await expect(orm.em.findOneOrFail(User, { profile2: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err2);
+    await expect(orm.em.findOneOrFail(User, { profile2: { identity: { city: 'London 1' } as any } })).rejects.toThrow(err2);
   });
 
   test('partial loading', async () => {
@@ -297,9 +305,15 @@ describe('embedded entities in postgres', () => {
     await orm.em.fork().find(User, {}, { fields: ['profile2.identity.email'] });
 
     await orm.em.fork().find(User, {}, { fields: ['profile1.identity.meta.foo'] });
-    await orm.em.fork().find(User, {}, { fields: ['profile2.identity.meta.foo'] });
 
+    // partial loading works also for object mode embeddables, including nesting (GH #4199)
+    const u = await orm.em.fork().find(User, {}, { fields: ['profile2.identity.meta.foo'] });
+    expect(wrap(u[0]).toObject()).toEqual({ id: 1, profile2: { identity: { meta: { foo: 'f2' } } } });
+    expect(wrap(u[1]).toObject()).toEqual({ id: 2, profile2: { identity: { meta: { foo: 'f4' } } } });
+
+    // @ts-expect-error old syntax is still technically supported, but not on type level
     await orm.em.fork().find(User, {}, { fields: [{ profile1: ['identity'] }] });
+    // @ts-expect-error old syntax is still technically supported, but not on type level
     await orm.em.fork().find(User, {}, { fields: [{ profile2: ['identity'] }] });
 
     expect(mock.mock.calls[0][0]).toMatch('select "u0"."id", "u0"."profile1_username", "u0"."profile1_identity_email", "u0"."profile1_identity_meta_foo", "u0"."profile1_identity_meta_bar", "u0"."profile1_identity_links" from "user" as "u0"');
@@ -342,7 +356,7 @@ describe('embedded entities in postgres', () => {
     expect(jon.profile1.identity.meta!.foo).toBe('f');
     expect(jon.profile1.identity.meta).toBeInstanceOf(IdentityMeta);
 
-    orm.em.assign(jon, { profile1: { identity: { email: 'e4' } } }, { mergeObjects: false });
+    orm.em.assign(jon, { profile1: { identity: { email: 'e4' } } }, { mergeObjectProperties: false });
     expect(jon.profile1.username).toBeUndefined();
     expect(jon.profile1.identity.email).toBe('e4');
     expect(jon.profile1.identity.meta).toBeUndefined();
@@ -404,6 +418,20 @@ describe('embedded entities in postgres', () => {
 
     await orm.em.fork().findOne(User, { profile2: { identity: { links: { url: 'foo@bar.baz' } } } }, { fields: ['profile2.identity.links'] });
     expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->'links'->>'url' = $1 limit $2`);
+  });
+
+  test('unique constraints', async () => {
+    const user1 = new User();
+    user1.name = 'Uwe';
+    user1.profile1 = new Profile('u1', new Identity('e1', new IdentityMeta('f1', 'b1')));
+    user1.profile2 = new Profile('u2', new Identity('e2', new IdentityMeta('f2', 'b2')));
+
+    const user2 = new User();
+    user2.name = 'Uschi';
+    user2.profile1 = new Profile('u1', new Identity('e3'));
+    user2.profile2 = new Profile('u4', new Identity('e4', new IdentityMeta('f4')));
+
+    await expect(orm.em.persistAndFlush([user1, user2])).rejects.toThrow(/duplicate key value violates unique constraint "user_profile1_username_unique"/);
   });
 
 });

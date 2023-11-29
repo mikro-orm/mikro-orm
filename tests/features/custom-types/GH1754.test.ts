@@ -16,15 +16,15 @@ const prefix = 'foo';
 
 class CustomType extends Type<string, string> {
 
-  convertToDatabaseValue(value: string): string {
+  override convertToDatabaseValue(value: string): string {
     return prefix + value;
   }
 
-  convertToJSValue(value: string): string {
+  override convertToJSValue(value: string): string {
     return value.substring(prefix.length);
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'text';
   }
 
@@ -36,7 +36,7 @@ export class OrderItem {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Order, { onDelete: 'cascade' })
+  @ManyToOne(() => Order, { deleteRule: 'cascade' })
   order!: Order;
 
   @Property({ type: CustomType })

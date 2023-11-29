@@ -1,18 +1,16 @@
 {
   "compilerOptions": {
     "module": "Node16",
-    "target": "es2020",
-    "lib": ["es2020"],
-    "moduleResolution": "Node16",
+    "target": "es2022",
+    "lib": ["es2022"],
     "declaration": true,
     "sourceMap": false,
     "strict": true,
-    "suppressImplicitAnyIndexErrors": true,
     "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "preserveConstEnums": true,
-    "ignoreDeprecations": "5.0"
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true
   },
   "exclude": [
     "**/node_modules",

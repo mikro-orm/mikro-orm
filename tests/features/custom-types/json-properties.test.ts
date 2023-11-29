@@ -1,5 +1,16 @@
-import { MikroORM, Entity, PrimaryKey, Property, SimpleLogger, wrap } from '@mikro-orm/core';
+import {
+  MikroORM,
+  Entity,
+  PrimaryKey,
+  Property,
+  SimpleLogger,
+  Utils,
+  IDatabaseDriver,
+  sql,
+  wrap,
+} from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
+import { PLATFORMS } from '../../bootstrap';
 
 @Entity()
 export class User {
@@ -23,13 +34,13 @@ const options = {
   'mongo': { dbName: 'mikro_orm_json_props' },
 };
 
-describe.each(Object.keys(options))('JSON properties [%s]',  type => {
+describe.each(Utils.keys(options))('JSON properties [%s]',  type => {
   let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init({
+    orm = await MikroORM.init<IDatabaseDriver>({
       entities: [User],
-      type,
+      driver: PLATFORMS[type],
       loggerFactory: options => new SimpleLogger(options),
       ...options[type],
     });
@@ -52,10 +63,10 @@ describe.each(Object.keys(options))('JSON properties [%s]',  type => {
     const res2 = await orm.em.findOneOrFail(User, { value: true });
     expect(res2.value).toBe(true);
 
-    // this should work in v6, once the `raw()` helper refactor will be merged
-    // await orm.em.insert(User, { value: [1, 2, 3] });
-    // const res3 = await orm.em.findOneOrFail(User, { value: { $eq: [1, 2, 3] } });
-    // expect(res3.value).toEqual([1, 2, 3]);
+    await orm.em.insert(User, { value: [1, 2, 3] });
+    const val = type === 'mysql' ? sql`json_array(1, 2, 3)` : [1, 2, 3];
+    const res3 = await orm.em.findOneOrFail(User, { value: { $eq: val } });
+    expect(res3.value).toEqual([1, 2, 3]);
   });
 
   test('em.insert() with object value', async () => {
@@ -80,7 +91,7 @@ describe.each(Object.keys(options))('JSON properties [%s]',  type => {
 
     const mock = mockLogger(orm);
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
   });
 
   test('em.flush() with various JSON values', async () => {
@@ -93,42 +104,42 @@ describe.each(Object.keys(options))('JSON properties [%s]',  type => {
 
     const mock = mockLogger(orm);
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     res.value = 'bar';
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     res.value = 123;
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     res.value = [1, 2, 3];
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     res.value = false;
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     wrap(res).assign({ value: { lol: true } });
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
   });
 
   test('find with special characters in JSON property key', async () => {

@@ -1,18 +1,18 @@
-import type { Dictionary, ExcludeFunctions, ExpandProperty } from './typings';
+import type { Dictionary, EntityKey, ExpandProperty } from './typings';
 import type { Transaction } from './connections';
 
 export enum FlushMode {
-  /** The `EntityManager` tries to delay the flush until the current Transaction is committed, although it might flush prematurely too. */
-  COMMIT,
+  /** The `EntityManager` delays the flush until the current Transaction is committed. */
+  COMMIT = 'commit',
   /** This is the default mode, and it flushes the `EntityManager` only if necessary. */
-  AUTO,
+  AUTO = 'auto',
   /** Flushes the `EntityManager` before every query. */
-  ALWAYS,
+  ALWAYS = 'always',
 }
 
 export enum PopulateHint {
-  INFER,
-  ALL,
+  INFER = 'infer',
+  ALL = 'all',
 }
 
 export enum GroupOperator {
@@ -38,6 +38,9 @@ export enum QueryOperator {
   $overlap = '&&', // postgres only
   $contains = '@>', // postgres only
   $contained = '<@', // postgres only
+  $none = 'none', // collection operators, sql only
+  $some = 'some', // collection operators, sql only
+  $every = 'every', // collection operators, sql only
 }
 
 export const ARRAY_OPERATORS = [
@@ -76,7 +79,7 @@ export type QueryOrderKeysFlat = QueryOrder | QueryOrderNumeric | keyof typeof Q
 export type QueryOrderKeys<T> = QueryOrderKeysFlat | QueryOrderMap<T>;
 
 export type QueryOrderMap<T> = {
-  [K in keyof T as ExcludeFunctions<T, K>]?: QueryOrderKeys<ExpandProperty<T[K]>>;
+  [K in EntityKey<T>]?: QueryOrderKeys<ExpandProperty<T[K]>>;
 };
 
 export type QBQueryOrderMap<T> = QueryOrderMap<T> | Dictionary;
@@ -94,11 +97,12 @@ export enum QueryFlag {
   CONVERT_CUSTOM_TYPES = 'CONVERT_CUSTOM_TYPES',
   INCLUDE_LAZY_FORMULAS = 'INCLUDE_LAZY_FORMULAS',
   AUTO_JOIN_ONE_TO_ONE_OWNER = 'AUTO_JOIN_ONE_TO_ONE_OWNER',
+  INFER_POPULATE = 'INFER_POPULATE',
 }
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];
 
-export enum ReferenceType {
+export enum ReferenceKind {
   SCALAR = 'scalar',
   ONE_TO_ONE = '1:1',
   ONE_TO_MANY = '1:m',
@@ -122,6 +126,13 @@ export enum Cascade {
 export enum LoadStrategy {
   SELECT_IN = 'select-in',
   JOINED = 'joined'
+}
+
+export enum Dataloader {
+  OFF = 0,
+  REFERENCE = 1,
+  COLLECTION = 2,
+  ALL = 3,
 }
 
 export enum LockMode {
@@ -165,11 +176,18 @@ export enum EventType {
   afterTransactionRollback = 'afterTransactionRollback',
 }
 
+export const EventTypeMap = Object.keys(EventType).reduce((a, b, i) => {
+  a[b as EventType] = i;
+  return a;
+}, {} as Record<EventType, number>);
+
 export type TransactionEventType = EventType.beforeTransactionStart | EventType.afterTransactionStart | EventType.beforeTransactionCommit | EventType.afterTransactionCommit | EventType.beforeTransactionRollback | EventType.afterTransactionRollback;
 
 export interface TransactionOptions {
   ctx?: Transaction;
   isolationLevel?: IsolationLevel;
+  readOnly?: boolean;
+  clear?: boolean;
   flushMode?: FlushMode;
   ignoreNestedTransactions?: boolean;
 }

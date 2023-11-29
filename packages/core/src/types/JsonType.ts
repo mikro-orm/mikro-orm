@@ -1,37 +1,43 @@
-import type { TransformContext } from './Type';
-import { Type } from './Type';
+import { Type, type TransformContext } from './Type';
 import type { Platform } from '../platforms';
 import type { EntityMetadata, EntityProperty } from '../typings';
 
 export class JsonType extends Type<unknown, string | null> {
 
-  // TODO v6: remove the boolean variant
-  convertToDatabaseValue(value: unknown, platform: Platform, context?: TransformContext | boolean): string | null {
+  override convertToDatabaseValue(value: unknown, platform: Platform, context?: TransformContext): string | null {
     if (value == null) {
       return value as null;
     }
 
-    return platform.convertJsonToDatabaseValue(value, typeof context === 'boolean' ? { fromQuery: context } : context) as string;
+    return platform.convertJsonToDatabaseValue(value, context) as string;
   }
 
-  convertToJSValueSQL(key: string, platform: Platform): string {
+  override convertToJSValueSQL(key: string, platform: Platform): string {
     return key + platform.castJsonValue(this.prop);
   }
 
-  convertToDatabaseValueSQL(key: string, platform: Platform): string {
+  override convertToDatabaseValueSQL(key: string, platform: Platform): string {
     return key + platform.castColumn(this.prop);
   }
 
-  convertToJSValue(value: string | unknown, platform: Platform): unknown {
+  override convertToJSValue(value: string | unknown, platform: Platform): unknown {
     return platform.convertJsonToJSValue(value);
   }
 
-  getColumnType(prop: EntityProperty, platform: Platform): string {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getJsonDeclarationSQL();
   }
 
-  ensureComparable<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T>): boolean {
+  override ensureComparable<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T>): boolean {
     return !prop.embedded || !meta.properties[prop.embedded[0]].object;
+  }
+
+  override compareAsType(): string {
+    return 'any';
+  }
+
+  override get runtimeType(): string {
+    return 'object';
   }
 
 }

@@ -1,9 +1,16 @@
-import type { Dictionary, EntityMetadata, MetadataStorage } from '@mikro-orm/core';
-import { ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
+import {
+  type Dictionary,
+  type EntityKey,
+  type EntityMetadata,
+  type MetadataStorage,
+  RawQueryFragment,
+  ReferenceKind,
+  Utils,
+  ValidationError,
+} from '@mikro-orm/core';
 import { ObjectCriteriaNode } from './ObjectCriteriaNode';
 import { ArrayCriteriaNode } from './ArrayCriteriaNode';
 import { ScalarCriteriaNode } from './ScalarCriteriaNode';
-import { CriteriaNode } from './CriteriaNode';
 import type { ICriteriaNode } from '../typings';
 
 /**
@@ -11,9 +18,9 @@ import type { ICriteriaNode } from '../typings';
  */
 export class CriteriaNodeFactory {
 
-  static createNode(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode, key?: string): ICriteriaNode {
-    const customExpression = CriteriaNode.isCustomExpression(key || '');
-    const scalar = Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
+  static createNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
+    const customExpression = RawQueryFragment.isKnownFragment(key || '');
+    const scalar = Utils.isPrimaryKey(payload) || Utils.isRawSql(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
 
     if (Array.isArray(payload) && !scalar) {
       return this.createArrayNode(metadata, entityName, payload, parent, key);
@@ -26,18 +33,22 @@ export class CriteriaNodeFactory {
     return this.createScalarNode(metadata, entityName, payload, parent, key);
   }
 
-  static createScalarNode(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode, key?: string): ICriteriaNode {
-    const node = new ScalarCriteriaNode(metadata, entityName, parent, key);
+  static createScalarNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
+    const node = new ScalarCriteriaNode<T>(metadata, entityName, parent, key);
     node.payload = payload;
 
     return node;
   }
 
-  static createArrayNode(metadata: MetadataStorage, entityName: string, payload: any[], parent?: ICriteriaNode, key?: string): ICriteriaNode {
-    const node = new ArrayCriteriaNode(metadata, entityName, parent, key);
+  static createArrayNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any[], parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
+    const node = new ArrayCriteriaNode<T>(metadata, entityName, parent, key);
     node.payload = payload.map((item, index) => {
       const n = this.createNode(metadata, entityName, item, node);
-      n.index = key === '$and' ? index : undefined; // we care about branching only for $and
+
+      // we care about branching only for $and
+      if (key === '$and' && payload.length > 1) {
+        n.index = index;
+      }
 
       return n;
     });
@@ -45,42 +56,60 @@ export class CriteriaNodeFactory {
     return node;
   }
 
-  static createObjectNode(metadata: MetadataStorage, entityName: string, payload: Dictionary, parent?: ICriteriaNode, key?: string): ICriteriaNode {
+  static createObjectNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: Dictionary, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
     const meta = metadata.find(entityName);
 
     const node = new ObjectCriteriaNode(metadata, entityName, parent, key);
     node.payload = Object.keys(payload).reduce((o, item) => {
       o[item] = this.createObjectItemNode(metadata, entityName, node, payload, item, meta);
       return o;
-    }, {});
+    }, {} as Dictionary);
 
     return node;
   }
 
-  static createObjectItemNode(metadata: MetadataStorage, entityName: string, node: ICriteriaNode, payload: Dictionary, item: string, meta?: EntityMetadata) {
-    const prop = meta?.properties[item];
+  static createObjectItemNode<T extends object>(metadata: MetadataStorage, entityName: string, node: ICriteriaNode<T>, payload: Dictionary, key: EntityKey<T>, meta?: EntityMetadata<T>) {
+    const prop = meta?.properties[key];
+    const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? prop.type : entityName;
 
-    if (prop?.reference !== ReferenceType.EMBEDDED) {
-      const childEntity = prop && prop.reference !== ReferenceType.SCALAR ? prop.type : entityName;
-      return this.createNode(metadata, childEntity, payload[item], node, item);
+    if (prop?.kind !== ReferenceKind.EMBEDDED) {
+      return this.createNode(metadata, childEntity, payload[key], node, key);
     }
 
-    const operator = Object.keys(payload[item]).some(f => Utils.isOperator(f));
+    if (payload[key] == null) {
+      const map = Object.keys(prop.embeddedProps).reduce((oo, k) => {
+        oo[prop.embeddedProps[k].name] = null;
+        return oo;
+      }, {} as Dictionary);
+
+      return this.createNode(metadata, entityName, map, node, key);
+    }
+
+    // array operators can be used on embedded properties
+    const allowedOperators = ['$contains', '$contained', '$overlap'];
+    const operator = Object.keys(payload[key]).some(f => Utils.isOperator(f) && !allowedOperators.includes(f));
 
     if (operator) {
       throw ValidationError.cannotUseOperatorsInsideEmbeddables(entityName, prop.name, payload);
     }
 
-    const map = Object.keys(payload[item]).reduce((oo, k) => {
-      if (!prop.embeddedProps[k]) {
+    const map = Object.keys(payload[key]).reduce((oo, k) => {
+      if (!prop.embeddedProps[k] && !allowedOperators.includes(k)) {
         throw ValidationError.invalidEmbeddableQuery(entityName, k, prop.type);
       }
 
-      oo[prop.embeddedProps[k].name] = payload[item][k];
-      return oo;
-    }, {});
+      if (prop.embeddedProps[k]) {
+        oo[prop.embeddedProps[k].name] = payload[key][k];
+      } else if (typeof payload[key][k] === 'object') {
+        oo[k] = JSON.stringify(payload[key][k]);
+      } else {
+        oo[k] = payload[key][k];
+      }
 
-    return this.createNode(metadata, entityName, map, node, item);
+      return oo;
+    }, {} as Dictionary);
+
+    return this.createNode(metadata, entityName, map, node, key);
   }
 
 }

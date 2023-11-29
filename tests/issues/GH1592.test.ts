@@ -1,8 +1,9 @@
-import { Entity, MikroORM, PrimaryKey, Property, IdentifiedReference, LoadStrategy, OneToOne } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, PrimaryKey, Property, Ref, LoadStrategy, OneToOne, OptionalProps } from '@mikro-orm/sqlite';
 
 @Entity()
 export class RadioOption {
+
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey()
   id!: number;
@@ -13,8 +14,8 @@ export class RadioOption {
   @Property()
   createdAt: Date = new Date();
 
-  @OneToOne({ entity: 'Radio', wrappedReference: true, mappedBy: 'option' })
-  radio!: IdentifiedReference<Radio>;
+  @OneToOne({ entity: 'Radio', ref: true, mappedBy: 'option' })
+  radio!: Ref<Radio>;
 
   constructor(enabled: boolean) {
     this.enabled = enabled;
@@ -31,19 +32,18 @@ export class Radio {
   @Property()
   question: string = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10);
 
-  @OneToOne({ entity: () => RadioOption, wrappedReference: true, eager: true })
-  option!: IdentifiedReference<RadioOption>;
+  @OneToOne({ entity: () => RadioOption, ref: true, eager: true })
+  option!: Ref<RadioOption>;
 
 }
 
 describe('GH issue 1592', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       dbName: `:memory:`,
-      driver: SqliteDriver,
       entities: [Radio, RadioOption],
       loadStrategy: LoadStrategy.JOINED,
     });

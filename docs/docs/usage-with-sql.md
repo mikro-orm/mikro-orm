@@ -25,7 +25,7 @@ npm i -s @mikro-orm/core @mikro-orm/sqlite      # for sqlite
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
-> To access driver specific methods like `em.createQueryBuilder()` we need to specify the driver type when calling `MikroORM.init<D>()`. Alternatively we can cast the `orm.em` to `EntityManager` exported from the driver package:
+> To access driver specific methods like `em.createQueryBuilder()` you need to import the `MikroORM`/`EntityManager`/`EntityRepository` class from the driver package. Alternatively you can cast the `orm.em` to `EntityManager` exported from the driver package:
 >
 > ```ts
 > import { EntityManager } from '@mikro-orm/postgresql';
@@ -34,12 +34,11 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 > ```
 
 ```ts
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql'; // or any other SQL driver package
+import { MikroORM } from '@mikro-orm/postgresql'; // or any other SQL driver package
 
-const orm = await MikroORM.init<PostgreSqlDriver>({
+const orm = await MikroORM.init({
   entities: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
   dbName: 'my-db-name',
-  type: 'postgresql',
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```
@@ -51,7 +50,7 @@ If you want to use database that is not currently supported, you can implement y
 ```ts
 import { MyCustomDriver } from './MyCustomDriver.ts';
 
-const orm = await MikroORM.init<MyCustomDriver>({
+const orm = await MikroORM.init({
   entities: [Author, Book, ...],
   dbName: 'my-db-name',
   driver: MyCustomDriver, // provide the class, not just its name
@@ -60,7 +59,7 @@ const orm = await MikroORM.init<MyCustomDriver>({
 
 ## Schema
 
-Currently you will need to maintain the database schema yourself. For initial dump, you can use [`SchemaGenerator` helper](schema-generator.md).
+Currently, you will need to maintain the database schema yourself. For initial dump, you can use [`SchemaGenerator` helper](schema-generator.md).
 
 ## ManyToMany collections with pivot tables
 
@@ -144,7 +143,7 @@ When you need to explicitly handle the transaction, you can use `em.transactiona
 // if an error occurs inside the callback, all db queries from inside the callback will be rolled back
 await orm.em.transactional(async (em: EntityManager) => {
   const god = new Author('God', 'hello@heaven.god');
-  await em.persistAndFlush(god);
+  await em.persist(god).flush();
 });
 ```
 
@@ -156,7 +155,8 @@ SQL supports LIKE queries via native JS regular expressions:
 const author1 = new Author2('Author 1', 'a1@example.com');
 const author2 = new Author2('Author 2', 'a2@example.com');
 const author3 = new Author2('Author 3', 'a3@example.com');
-await orm.em.persistAndFlush([author1, author2, author3]);
+
+await orm.em.persist([author1, author2, author3]).flush();
 
 // finds authors with email like '%exa%le.c_m'
 const authors = await orm.em.find(Author2, { email: /exa.*le\.c.m$/ });
@@ -165,10 +165,10 @@ console.log(authors); // all 3 authors found
 
 ## Native Collection Methods
 
-Sometimes you need to perform some bulk operation, or you just want to populate your database with initial fixtures. Using ORM for such operations can bring unnecessary boilerplate code. In this case, you can use one of `nativeInsert/nativeUpdate/nativeDelete` methods:
+Sometimes you need to perform some bulk operation, or you just want to populate your database with initial fixtures. Using ORM for such operations can bring unnecessary boilerplate code. In this case, you can use one of `insert/nativeUpdate/nativeDelete` methods:
 
 ```ts
-em.nativeInsert<T extends AnyEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
+em.insert<T extends AnyEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
 em.nativeUpdate<T extends AnyEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<number>;
 em.nativeDelete<T extends AnyEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
 ```
@@ -178,7 +178,7 @@ Those methods execute native SQL queries generated via `QueryBuilder` based on e
 They are also available as `EntityRepository` shortcuts:
 
 ```ts
-EntityRepository.nativeInsert(data: any): Promise<IPrimaryKey>;
+EntityRepository.insert(data: any): Promise<IPrimaryKey>;
 EntityRepository.nativeUpdate(where: FilterQuery<T>, data: any): Promise<number>;
 EntityRepository.nativeDelete(where: FilterQuery<T> | any): Promise<number>;
 ```
@@ -190,4 +190,22 @@ const qb = em.createQueryBuilder('Author');
 qb.select('*').where({ id: { $in: [...] } });
 const res = await em.getDriver().execute(qb);
 console.log(res); // unprocessed result of underlying database driver
+```
+
+## Using SQLite extensions
+
+SQLite extensions like [sqlean](https://github.com/nalgeon/sqlean) can add many useful features that are notably missing by default (e.g. regexp).
+
+Once you've downloaded the binaries for the extensions you wish to use, they can be added by providing a `pool.afterCreate` handler in the SQLite initialization options. The handler should call `loadExtension` on the underlying database connection, passing the path to the extension binary:
+
+```ts
+const orm = await MikroORM.init({
+  // ...
+  pool: {
+    afterCreate: (conn: any, done: any) => {
+      conn.loadExtension('/.../sqlean-macos-arm64/sqlean');
+      done(null, conn);
+    },
+  },
+});
 ```

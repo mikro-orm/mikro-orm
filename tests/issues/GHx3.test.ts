@@ -73,8 +73,8 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('json property hydration', async () => {
-  await orm.em.find(Course, {}, { populate: true });
+  await orm.em.find(Course, {}, { populate: ['*'] });
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock).not.toBeCalled();
+  expect(mock).not.toHaveBeenCalled();
 });

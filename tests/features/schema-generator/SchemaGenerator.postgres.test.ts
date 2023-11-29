@@ -1,4 +1,4 @@
-import { EntitySchema, ReferenceType, Utils, MikroORM, Type, EnumType } from '@mikro-orm/core';
+import { EntitySchema, ReferenceKind, Utils, MikroORM, Type, EnumType } from '@mikro-orm/core';
 import { FullTextType, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { BASE_DIR, initORMPostgreSql } from '../../bootstrap';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
@@ -87,6 +87,7 @@ describe('SchemaGenerator [postgres]', () => {
 
     // change enum items
     newTableMeta.properties.enumTest.items = ['a', 'b', 'c'];
+    delete newTableMeta.properties.enumTest.columnTypes[0];
     newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-3');
@@ -143,8 +144,6 @@ describe('SchemaGenerator [postgres]', () => {
   test('generate schema from metadata [postgres]', async () => {
     const orm = await initORMPostgreSql();
     orm.em.getConnection().execute('drop table if exists new_table cascade');
-    const dump = await orm.schema.generate();
-    expect(dump).toMatchSnapshot('postgres-schema-dump');
 
     const dropDump = await orm.schema.getDropSchemaSQL();
     expect(dropDump).toMatchSnapshot('postgres-drop-schema-dump');
@@ -170,7 +169,7 @@ describe('SchemaGenerator [postgres]', () => {
     const newTableMeta = EntitySchema.fromMetadata({
       properties: {
         id: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           primary: true,
           name: 'id',
           type: 'number',
@@ -179,7 +178,7 @@ describe('SchemaGenerator [postgres]', () => {
           autoincrement: true,
         },
         createdAt: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           length: 3,
           defaultRaw: 'current_timestamp(3)',
           name: 'createdAt',
@@ -188,7 +187,7 @@ describe('SchemaGenerator [postgres]', () => {
           columnTypes: ['timestamp(3)'],
         },
         updatedAt: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           length: 3,
           defaultRaw: 'current_timestamp(3)',
           name: 'updatedAt',
@@ -197,7 +196,7 @@ describe('SchemaGenerator [postgres]', () => {
           columnTypes: ['timestamp(3)'],
         },
         name: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           name: 'name',
           type: 'string',
           fieldNames: ['name'],

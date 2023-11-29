@@ -1,4 +1,13 @@
-import { Entity, PrimaryKey, MikroORM, ManyToOne, PrimaryKeyType, Property, Collection, ManyToMany } from '@mikro-orm/core';
+import {
+  Entity,
+  PrimaryKey,
+  MikroORM,
+  ManyToOne,
+  Property,
+  Collection,
+  ManyToMany,
+  PrimaryKeyProp,
+} from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -35,7 +44,7 @@ export class OrderItem {
   @Property({ default: 1 })
   amount!: number;
 
-  [PrimaryKeyType]?: [number, number];
+  [PrimaryKeyProp]?: ['order', 'product'];
 
   constructor(order: Order, product: Product) {
     this.order = order;
@@ -51,5 +60,5 @@ test(`validation of bidirectional M:N with pivotEntity`, async () => {
     dbName: ':memory:',
     driver: SqliteDriver,
     connect: false,
-  })).rejects.toThrowError(err);
+  })).rejects.toThrow(err);
 });

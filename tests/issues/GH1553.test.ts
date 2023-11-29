@@ -4,12 +4,11 @@ import {
   PrimaryKey,
   Property,
   ManyToOne,
-  IdentifiedReference,
+  Ref,
   OneToMany,
   Collection,
   LoadStrategy,
-} from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+} from '@mikro-orm/sqlite';
 
 @Entity()
 export class Owner {
@@ -20,8 +19,8 @@ export class Owner {
   @Property()
   name!: string;
 
-  @ManyToOne('Radio', { wrappedReference: true })
-  radio!: IdentifiedReference<Radio>;
+  @ManyToOne('Radio', { ref: true })
+  radio!: Ref<Radio>;
 
   constructor(name: string) {
     this.name = name;
@@ -38,8 +37,8 @@ export class RadioOption {
   @Property()
   enabled!: boolean;
 
-  @ManyToOne('Radio', { wrappedReference: true })
-  radio!: IdentifiedReference<Radio>;
+  @ManyToOne('Radio', { ref: true })
+  radio!: Ref<Radio>;
 
 
   constructor(enabled: boolean) {
@@ -79,11 +78,10 @@ export class Radio {
 
 describe('GH issue 1553', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Radio, RadioOption, Owner],
       loadStrategy: LoadStrategy.JOINED,

@@ -5,11 +5,13 @@ title: Virtual Entities
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-Virtual entities don't represent any database table. Instead, they dynamically resolve to an SQL query (or an aggregation in mongo), allowing to map any kind of results onto an entity. Such entities are mean for read purposes, they don't have a primary key and therefore cannot be tracked for changes. In a sense they are similar to (currently unsupported) database views.
+Virtual entities don't represent any database table. Instead, they dynamically resolve to an SQL query (or an aggregation in MongoDB), allowing to map any kind of results onto an entity. Such entities are meant for read purposes, they don't have a primary key and therefore cannot be tracked for changes. In a way they are similar to (currently unsupported) database views, and you can use them to proxy your native views already.
+
+> Virtual entities can contain scalar properties as well as to-one relations (M:1 and 1:1 owners). Such relations are always populated via `select-in` strategy.
 
 To define a virtual entity, provide an `expression`, either as a string (SQL query):
 
-> We need to use the virtual column names based on current naming strategy. Note the `authorName` property being represented as `author_name` column.
+> You need to use the virtual column names based on current naming strategy. Note the `authorName` property being represented as `author_name` column.
 
 <Tabs
   groupId="entity-def"
@@ -200,7 +202,7 @@ export const BookWithAuthor = new EntitySchema<IBookWithAuthor>({
   </TabItem>
 </Tabs>
 
-In MongoDB, we can use aggregations, although it is not very ergonomic due to their nature. Following example is a rough equivalent of the previous SQL ones.
+In MongoDB, you can use aggregations, although it is not very ergonomic due to their nature. Following example is a rough equivalent of the previous SQL ones.
 
 > The `where` query as well as the options like `orderBy`, `limit` and `offset` needs to be explicitly handled in your pipeline.
 

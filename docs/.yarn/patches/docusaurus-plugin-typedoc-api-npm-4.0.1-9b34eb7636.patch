@@ -1,0 +1,12 @@
+diff --git a/lib/utils/helpers.js b/lib/utils/helpers.js
+index d4a64466c98d807e75c93604abca053d244a5428..22582a933ee009ee270bff26d68394a96a669247 100644
+--- a/lib/utils/helpers.js
++++ b/lib/utils/helpers.js
+@@ -1,6 +1,6 @@
+ 'use strict';
+ 
+-function escapeMdx(value) {
++function escapeMdx(value = '') {
+   // New values are unicode!
+   return value.replace('<', '＜').replace('>', '＞');
+ }

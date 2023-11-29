@@ -1,9 +1,19 @@
-import { OptionalProps, Ref, wrap } from '@mikro-orm/core';
-import type { BaseEntity, IdentifiedReference, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
+import { EntityRepository, OptionalProps, ref, wrap } from '@mikro-orm/core';
+import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
-import type { EntityData, EntityDTO, FilterQuery, FilterValue, Loaded, OperatorMap, Primary, PrimaryKeyType, Query } from '../packages/core/src/typings';
+import type {
+  EntityData,
+  EntityDTO,
+  FilterQuery,
+  FilterValue,
+  Loaded,
+  OperatorMap,
+  Primary,
+  PrimaryKeyProp,
+  ExpandQuery,
+} from '../packages/core/src/typings';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql';
 import type { Author, Book } from './entities';
 
@@ -18,8 +28,8 @@ describe('check typings', () => {
     assert<IsExact<Primary<{ id?: number }>, number>>(true);
     assert<IsExact<Primary<Author2>, string>>(false);
 
-    // PrimaryKeyType symbol has priority
-    type Test = { _id: ObjectId; id: string; uuid: number; [PrimaryKeyType]?: Date };
+    // PrimaryKeyProp symbol has priority
+    type Test = { _id: ObjectId; id: string; uuid: number; foo: Date; [PrimaryKeyProp]?: 'foo' };
     assert<IsExact<Primary<Test>, Date>>(true);
     assert<IsExact<Primary<Test>, ObjectId>>(false);
     assert<IsExact<Primary<Test>, string>>(false);
@@ -30,7 +40,7 @@ describe('check typings', () => {
     assert<IsExact<Primary<Author>, number>>(false);
 
     // bigint support
-    assert<IsExact<Primary<BookTag2>, string>>(true);
+    assert<IsExact<Primary<BookTag2>, bigint>>(true);
     assert<IsExact<Primary<BookTag2>, number>>(false);
   });
 
@@ -44,7 +54,7 @@ describe('check typings', () => {
     b = { publisher: null };
     b = { publisher: { name: 'p' } };
     b = { publisher: {} as Publisher2 };
-    b = { publisher: {} as IdentifiedReference<Publisher2> };
+    b = { publisher: {} as Ref<Publisher2> };
 
     // @ts-expect-error
     b = { name: 'a' };
@@ -63,6 +73,7 @@ describe('check typings', () => {
     c = { name: 'n', price: 123, year: 2021, users: [{ firstName: 'f', lastName: 'l' }] };
     c = { name: 'n', price: 123, year: 2021, users: [{} as User2] };
     c = { name: 'n', price: 123, year: 2021, users: [['f', 'l']] };
+    type T = Primary<User2>;
 
     // @ts-expect-error
     c = { name: 'n', price: 123, year: '2021' };
@@ -145,64 +156,66 @@ describe('check typings', () => {
     assert<Has<FilterValue<Author2>, number>>(true);
 
     // date requires date
-    assert<Has<FilterValue<Author['born']>, Date>>(true);
+    assert<Has<FilterValue<Author['born']>, Date>>(false);
     assert<Has<FilterValue<Author['born']>, number>>(false);
     assert<Has<FilterValue<Author['born']>, string>>(true);
   });
 
   test('Query', async () => {
     // assert<Has<FilterQuery<Author['born']>, Date>>(true);
-    assert<Has<Query<Author['born']>, number>>(false);
+    assert<Has<ExpandQuery<Author['born']>, number>>(false);
     // assert<Has<Query<Author['born']>, string>>(true);
-    assert<Has<Query<Author>, { born?: Date }>>(true);
-    assert<Has<Query<Author>, { born?: number }>>(false);
-    assert<Has<Query<Author>, { born?: string }>>(false);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: string }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: null }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: number }>>(false);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: number } }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: null } }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: string } }>>(false);
+    assert<Has<ExpandQuery<Author>, { born?: Date }>>(false);
+    assert<Has<ExpandQuery<Author>, { born?: number }>>(false);
+    assert<Has<ExpandQuery<Author>, { born?: string }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: string }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: null }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: number }>>(false);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: { author: number } }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: { author: null } }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: { author: string } }>>(false);
     // assert<Has<Query<Author2>, Author2>>(true);
-    assert<Has<Query<Author2>, number>>(true);
-    assert<Has<Query<Author2>, string>>(false);
-    assert<Has<Query<Author2>, { books: { author: { born?: string } }; favouriteBook: null }>>(false);
-    assert<Has<Query<Author2>, { books: { author: { born?: number } }; favouriteBook: null }>>(false);
+    assert<Has<ExpandQuery<Author2>, number>>(true);
+    assert<Has<ExpandQuery<Author2>, string>>(false);
+    assert<Has<ExpandQuery<Author2>, { books: { author: { born?: string } }; favouriteBook: null }>>(false);
+    assert<Has<ExpandQuery<Author2>, { books: { author: { born?: number } }; favouriteBook: null }>>(false);
     // assert<Has<Query<Book2>, { author: { born?: Date } }>>(true);
-    assert<Has<Query<Book2>, { author: { born?: string } }>>(false);
-    assert<Has<Query<Book2>, { author: { born?: number } }>>(false);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: { born: Date } } }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: { author: { books: string[] } } }>>(true);
-    assert<IsAssignable<Query<Book2>, { author: { books: string[] } }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } } }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: null } } }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: null }>>(true);
-    assert<IsAssignable<Query<Author2>, { favouriteBook: string }>>(true);
-    assert<Has<Query<Author2>, { favouriteBook: number }>>(false);
-    assert<Has<Query<Book2>, { author: { born?: Date }; favouriteBook: string }>>(false); // favouriteBook does not exist on Book2
-    assert<IsAssignable<Query<Book2>, { author: { books: { publisher: number } } }>>(true);
-    assert<IsAssignable<Query<Book2>, { author: { books: { publisher: null } } }>>(true);
-    assert<Has<Query<Author2>, { favouriteBook?: Query<Book2> }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: FilterValue<Book2> }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: string }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: string[] }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: Book2 }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: Book2[] }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: null }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: Author2 }; favouriteBook: Book2 }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } }; favouriteBook: null }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } }; favouriteBook: Book2 }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } }; favouriteBook: null }>>(true);
-    assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } }; favouriteBook: { title: null } }>>(true);
+    assert<Has<ExpandQuery<Book2>, { author: { born?: string } }>>(false);
+    assert<Has<ExpandQuery<Book2>, { author: { born?: number } }>>(false);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: { author: { born: Date } } }>>(false);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: { author: { born: string } } }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: { author: { books: string[] } } }>>(true);
+    assert<IsAssignable<ExpandQuery<Book2>, { author: { books: string[] } }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } } }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: Date } } }>>(false);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: null } } }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: null }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { favouriteBook: string }>>(true);
+    assert<Has<ExpandQuery<Author2>, { favouriteBook: number }>>(false);
+    assert<Has<ExpandQuery<Book2>, { author: { born?: Date }; favouriteBook: string }>>(false); // favouriteBook does not exist on Book2
+    assert<IsAssignable<ExpandQuery<Book2>, { author: { books: { publisher: number } } }>>(true);
+    assert<IsAssignable<ExpandQuery<Book2>, { author: { books: { publisher: null } } }>>(true);
+    assert<Has<ExpandQuery<Author2>, { favouriteBook?: ExpandQuery<Book2> }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: FilterValue<Book2> }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: string }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: string[] }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: Book2 }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: Book2[] }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: null }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: Author2 }; favouriteBook: Book2 }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } }; favouriteBook: null }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } }; favouriteBook: Book2 }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } }; favouriteBook: null }>>(true);
+    assert<IsAssignable<ExpandQuery<Author2>, { books: { author: { born: string } }; favouriteBook: { title: null } }>>(true);
 
-    let t1: Query<Book2>;
+    let t1: ExpandQuery<Book2>;
     t1 = { author: { books: { publisher: 1 } } }; // ok
     // @ts-expect-error
     t1 = { author: { books: { publisher: '1' } } }; // should fail
-    let t2: Query<Author2>;
+    let t2: ExpandQuery<Author2>;
     t2 = { age: { $gte: 1 } };
     t2 = { born: '1' };
-    t2 = { books: { author: { born: new Date() } }, favouriteBook: null }; // accepts Date
+    t2 = { books: { author: { born: '2020-11-11' } }, favouriteBook: null }; // accepts string date
     // @ts-expect-error
     t2 = { books: { author: { born: 1 } }, favouriteBook: null };
     t2 = { books: { author: { born: '1' } }, favouriteBook: null }; // accepts string date
@@ -223,7 +236,7 @@ describe('check typings', () => {
     // assert<IsAssignable<FilterQueryOrPrimary<Author2>, { books: { title: 123 }; favouriteBook: null }>>(false); // hard to test failures
     // assert<IsAssignable<FilterQueryOrPrimary<Author2>, { books: { title: Date }; favouriteBook: null }>>(false); // hard to test failures
 
-    assert<IsAssignable<FilterQuery<Author2>, { born: Date }>>(true);
+    assert<IsAssignable<FilterQuery<Author2>, { born: string }>>(true);
     // assert<IsAssignable<FilterQueryOrPrimary<Author2>, { born: number }>>(false); // hard to test failures
     // assert<IsAssignable<FilterQueryOrPrimary<Author2>, { born: string }>>(false); // hard to test failures
 
@@ -232,14 +245,14 @@ describe('check typings', () => {
     // assert<IsAssignable<FilterQueryOrPrimary<Author2>, { age: { $gta: ['1'] } }>>(false); // hard to test failures
 
     assert<IsAssignable<FilterQuery<Author2>, { age: { $gte: number } }>>(true);
-    assert<IsAssignable<FilterQuery<Author2>, { age: { $gte: number }; born: { $lt: Date }; $and: [{ name: { $ne: 'John' } }, { name: { $in: ['Ben', 'Paul'] } }] }>>(true);
+    assert<IsAssignable<FilterQuery<Author2>, { age: { $gte: number }; born: { $lt: string }; $and: [{ name: { $ne: 'John' } }, { name: { $in: ['Ben', 'Paul'] } }] }>>(true);
     assert<Has<FilterQuery<Author2>, { favouriteBook?: Book2 }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: Book2 }, { name: string }] }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: { title: string } }, { name: string }] }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: string }, { name: string }] }>>(true);
     // assert<Has<FilterQuery<Author2>, Author2>>(true);
     assert<Has<FilterQuery<Author2>, number>>(true);
-    assert<Has<FilterQuery<Author2>, { favouriteBook?: Query<Book2> }>>(true);
+    assert<Has<FilterQuery<Author2>, { favouriteBook?: ExpandQuery<Book2> }>>(true);
     // assert<Has<FilterQuery<Book2>, { author: { favouriteBook?: Query<Book2> } }>>(true);
     // assert<Has<FilterQuery<Book2>, { author: { favouriteBook?: { title?: string } } }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: FilterValue<BookTag2> } } }>>(true);
@@ -247,7 +260,10 @@ describe('check typings', () => {
     assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: string[] } } }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { tags: string[] }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { tags: string }>>(true);
-    assert<IsAssignable<FilterQuery<Author2>, { books: { tags: bigint[] } }>>(false);
+    assert<IsAssignable<FilterQuery<Author2>, { books: { tags: number[] } }>>(true);
+    assert<IsAssignable<FilterQuery<Author2>, { books: { tags: bigint[] } }>>(true);
+    assert<IsAssignable<FilterQuery<Author2>, { books: { tags: string[] } }>>(true);
+    assert<IsAssignable<FilterQuery<Author2>, { books: { tags: boolean[] } }>>(false);
   });
 
   test('assignment to naked relation, generic reference and identified reference', async () => {
@@ -260,7 +276,7 @@ describe('check typings', () => {
       name: string;
       publisher?: Publisher;
       publisherRef?: Reference<Publisher>;
-      publisherIdRef?: IdentifiedReference<Publisher, 'id'>;
+      publisherIdRef?: Ref<Publisher>;
     }
 
     // simulate usage of ORM base entity so `wrap` will return its parameter
@@ -270,24 +286,20 @@ describe('check typings', () => {
     book.publisher = publisher;
     // @ts-expect-error
     book.publisher = wrap(publisher).toReference();
-    // @ts-expect-error
-    book.publisher = wrap(publisher).toReference<'id'>();
 
     const id = book.publisherIdRef?.id;
 
     // @ts-expect-error
     book.publisherRef = publisher;
     book.publisherRef = wrap(publisher).toReference();
-    book.publisherRef = wrap(publisher).toReference<'id'>();
 
     // @ts-expect-error
     book.publisherIdRef = publisher;
     book.publisherIdRef = wrap(publisher).toReference();
-    book.publisherIdRef = wrap(publisher).toReference<'id'>();
 
     // composite keys
     const compositePks: Primary<FooParam2> = [1, 2];
-    const compositeRef = {} as IdentifiedReference<FooParam2>;
+    const compositeRef = {} as Ref<FooParam2>;
     const bar = compositeRef.bar;
     const baz = compositeRef.baz;
   });
@@ -304,7 +316,7 @@ describe('check typings', () => {
       readonly born?: Date;
       readonly rel?: Publisher;
       readonly relRef?: Reference<Publisher>;
-      readonly relIdRef?: IdentifiedReference<Publisher, 'id'>;
+      readonly relIdRef?: Ref<Publisher>;
       readonly rels?: Collection<Publisher>;
     }
 
@@ -418,19 +430,21 @@ describe('check typings', () => {
   test('FilterQuery ok assignments', async () => {
     let ok01: FilterQuery<Author2>;
     ok01 = {};
-    ok01 = { born: new Date() };
-    ok01 = { born: { $gte: new Date() } };
+    ok01 = { born: '2020-01-01' };
+    ok01 = { born: { $gte: '2020-01-01' } };
     ok01 = { age: { $gte: 1 } };
     ok01 = { age: 1 };
     ok01 = { favouriteBook: '1' };
     ok01 = { favouriteBook: ['1', '2'] };
     ok01 = { favouriteBook: null };
-    ok01 = { books: { author: { born: new Date() } }, favouriteBook: null };
-    ok01 = { books: { author: { born: new Date() } } };
-    ok01 = { books: { author: { born: new Date() } }, favouriteBook: {} as Book2 };
+    ok01 = { books: { author: { born: '2020-01-01' } }, favouriteBook: null };
+    ok01 = { books: { author: { born: '2020-01-01' } } };
+    ok01 = { books: { author: { born: '2020-01-01' } }, favouriteBook: {} as Book2 };
     ok01 = { books: { author: { born: '2020-01-01' } }, favouriteBook: {} as Book2 };
     ok01 = { books: { tags: { name: 'asd' } } };
     ok01 = { books: { tags: '1' } };
+    ok01 = { books: { tags: 1 } };
+    ok01 = { books: { tags: 1n } };
     ok01 = { books: { tags: { books: { title: 'asd' } } } };
     ok01 = { name: 'asd' };
     ok01 = { $or: [{ name: 'asd' }, { age: 18 }] };
@@ -541,7 +555,9 @@ describe('check typings', () => {
   test('Loaded type with EntityDTO (with ORM base entities)', async () => {
     const b1 = createEntity<Loaded<Book>>();
     const o11 = wrap(b1).toObject();
-    const o12 = b1.toObject();
+    const o12 = b1.toObject(['id']);
+    // @ts-expect-error
+    const id10 = o12.id;
     // @ts-expect-error o11.publisher is now just number, as it's not populated
     const id11 = o11.publisher?.id;
     // @ts-expect-error o12.publisher is now just number, as it's not populated
@@ -556,12 +572,12 @@ describe('check typings', () => {
   });
 
   test('Loaded type and assignability with extending the ORM BaseEntity (#3865)', async () => {
-    interface MemberNotification extends BaseEntity<MemberNotification, 'id'> {
+    interface MemberNotification extends BaseEntity {
       id: string;
       notification?: Ref<Notification>;
     }
 
-    interface Notification extends BaseEntity<Notification, 'id'> {
+    interface Notification extends BaseEntity {
       id: string;
     }
 
@@ -580,6 +596,63 @@ describe('check typings', () => {
 
     const em = { findOne: jest.fn() as any } as EntityManager;
     const res: Loaded<MemberNotification> | null = await em.findOne('MemberNotification' as EntityName<MemberNotification>, {} as MemberNotification | string);
+  });
+
+  test('Ref.load() returns Loaded type (#3755)', async () => {
+    interface Parent {
+      id: number;
+      children: Collection<Child>;
+    }
+
+    interface Child {
+      id: number;
+      parent: Ref<Parent>;
+    }
+
+    const parent = { load: jest.fn() as any } as Ref<Parent>;
+
+    // @ts-expect-error Loaded<Parent, never> is not assignable
+    const populated01: Loaded<Parent, 'children'> = {} as Loaded<Ref<Parent>>;
+    // @ts-expect-error Loaded<Parent, never> is not assignable
+    const populated02: Loaded<Parent, 'children'> = {} as Loaded<Parent>;
+    let populated1: Loaded<Parent, 'children'>;
+    function foo(e: Loaded<Parent, 'children'>) {
+      //
+    }
+    const e = await parent.load();
+    // @ts-expect-error Loaded<Parent, never> is not assignable
+    foo(e);
+    // populated1 = await parent.load();
+    const populated22 = await parent.load({ populate: [] });
+    // @ts-expect-error Loaded<Parent, never> is not assignable
+    const populated2: Loaded<Parent, 'children'> = populated22;
+
+    // only this should pass
+    const populated3: Loaded<Parent, 'children'> = await parent.load({ populate: ['children'] });
+    const populated4: Loaded<Parent, 'children'> = await parent.load({ populate: ['children', 'id'] });
+    const populated5: Loaded<Parent, 'children'> = await parent.load({ populate: ['children.parent'] });
+  });
+
+  test('assignability of Loaded<T> to Ref<T> via ref() helper', async () => {
+    interface Node extends BaseEntity {
+      id: string;
+    }
+
+    interface Author extends Node {
+      name: string;
+    }
+
+    interface Publisher extends Node {
+      foundingAuthor: Ref<Author>;
+      publishedBooks: Collection<Book>;
+    }
+
+    interface Book extends Node {
+      publishedBy: Ref<Publisher>;
+    }
+
+    const circularReferenceBook = {} as Loaded<Book, 'publishedBy.foundingAuthor'>;
+    const circularReference: Ref<Book> = ref(circularReferenceBook);
   });
 
   test('exclusion', async () => {
@@ -603,4 +676,151 @@ describe('check typings', () => {
   test('tuple type after entity serializized', async () => {
     assert<IsExact<EntityDTO<Book>['point'], [number, number] | undefined>>(true);
   });
+
+  test('GH #3277', async () => {
+    interface Owner {
+      id: number;
+      vehicles: Collection<Vehicle>;
+      vehicle: Ref<Vehicle>;
+    }
+
+    interface Manufacturer {
+      id: number;
+    }
+
+    interface Type {
+      id: number;
+      owner: Ref<Owner>;
+    }
+
+    interface Vehicle {
+      id: number;
+      owner: Ref<Owner>;
+      manufacturer: Ref<Manufacturer>;
+      type: Ref<Type>;
+    }
+
+    function preloaded1(owner: Loaded<Owner, 'vehicles'>) {
+      // const a: number = owner.vehicles.$[0].type.$.owner.id;
+    }
+
+    function preloaded2(owner: Loaded<Owner, 'vehicles.type'>) {
+      // const a: number = owner.vehicles.$[0].type.$.owner.id;
+    }
+
+    const owner1 = {} as Loaded<Owner, 'vehicles.manufacturer' | 'vehicles.type'>;
+    const owner2 = {} as Loaded<Owner, 'vehicles.type.owner.vehicles'>;
+    const owner3 = {} as Loaded<Owner, 'vehicle'>;
+    const owner4 = {} as Loaded<Owner>;
+
+    preloaded1(owner1);
+    preloaded1(owner2);
+    // @ts-expect-error
+    preloaded1(owner3);
+    // @ts-expect-error
+    preloaded1(owner4);
+    preloaded2(owner1);
+    preloaded2(owner2);
+    // @ts-expect-error
+    preloaded2(owner3);
+    // @ts-expect-error
+    preloaded2(owner4);
+
+    // const foo = await owner1.vehicles.$.loadItems({ populate: ['owner'] });
+    // const v1 = foo[0].owner.$.vehicles;
+  });
+
+  test('GH #3277 (2)', async () => {
+    interface Person {
+      id: number;
+      foobar: Collection<FooBar>;
+    }
+
+    interface Calendar {
+      id: number;
+      events: Collection<CalendarEvent>;
+      owner: Ref<Person>;
+    }
+
+    interface FooBar {
+      id: number;
+    }
+
+    interface CalendarEvent {
+      id: number;
+      order: Ref<Order>;
+      calendar: Ref<Calendar>;
+    }
+
+    interface Order {
+      id: number;
+      customer: Ref<Customer>;
+      foobar: Collection<FooBar>;
+    }
+
+    interface Customer {
+      foobar: Collection<FooBar>;
+    }
+
+
+    function preloaded(event: Loaded<CalendarEvent, 'calendar.owner'>) {
+      // no-op
+    }
+
+    const event1 = {} as Loaded<CalendarEvent, 'calendar.owner' | 'order.customer.foobar'>;
+    const event2 = {} as Loaded<CalendarEvent, 'calendar.owner.foobar' | 'order.customer'>;
+    const event3 = {} as Loaded<CalendarEvent, 'calendar.owner' | 'order.customer'>;
+    const event4 = {} as Loaded<CalendarEvent, 'calendar.owner' | 'order'>;
+    const event5 = {} as Loaded<CalendarEvent, 'calendar.owner' | 'order.foobar'>;
+
+    preloaded(event1);
+    preloaded(event2);
+    preloaded(event3);
+    preloaded(event4);
+    preloaded(event5);
+  });
+
+  test('GH #3277 (3)', async () => {
+    interface ChildModel {
+      id: string;
+      grandChild: Ref<GrandChildModel>;
+    }
+
+    interface GrandChildModel {
+      id: string;
+      children: Collection<ChildModel>;
+    }
+
+    interface ParentModel {
+      id: string;
+      child: Ref<ChildModel>;
+    }
+
+    const childModel = {} as Loaded<ChildModel, 'grandChild'>;
+    const parentModel = {} as ParentModel;
+    parentModel.child = ref(childModel);
+
+    const secondParentModel = {} as Loaded<ParentModel, 'child.grandChild'>;
+    secondParentModel.child = ref(childModel);
+  });
+
+  test('GH #4962', async () => {
+    interface AbstractEntity extends BaseEntity {
+      id: number;
+      status?: string;
+    }
+
+    abstract class AbstractRepository<
+      Entity extends AbstractEntity
+    > extends EntityRepository<Entity> {
+
+      async countWaiting() {
+        return this.find({
+          status: 'waiting',
+        } as FilterQuery<Entity>);
+      }
+
+    }
+  });
+
 });

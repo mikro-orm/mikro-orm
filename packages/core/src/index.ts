@@ -4,10 +4,12 @@
  */
 /* istanbul ignore file */
 export {
-  Constructor, ConnectionType, Dictionary, PrimaryKeyType, PrimaryKeyProp, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,
+  Constructor, ConnectionType, Dictionary, PrimaryKeyProp, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,
   AnyEntity, EntityClass, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection, IMigrator, IMigrationGenerator,
-  GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, MigrationDiff,
-  IEntityGenerator, ISeedManager, EntityClassGroup, OptionalProps, RequiredEntityData, CheckCallback, SimpleColumnMeta, Rel, Ref,
+  GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, MigrationDiff, GenerateOptions, FilterObject,
+  IEntityGenerator, ISeedManager, EntityClassGroup, OptionalProps, EagerProps, HiddenProps, RequiredEntityData, CheckCallback, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,
+  UmzugMigration, MigrateOptions, MigrationResult, MigrationRow, EntityKey, EntityValue, FilterKey, Opt, EntityType, FromEntityType, Selected, IsSubset,
+  EntityProps, ExpandProperty, ExpandScalar, FilterItemValue, ExpandQuery, Scalar,
 } from './typings';
 export * from './enums';
 export * from './errors';

@@ -1,7 +1,5 @@
-import { Entity, PrimaryKey, ManyToOne, IdentifiedReference, Property, MikroORM, wrap, ObjectBindingPattern } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { Entity, PrimaryKey, ManyToOne, Ref, Property, MikroORM, wrap, ObjectBindingPattern } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
-import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Test {
@@ -12,8 +10,8 @@ export class Test {
   @Property()
   name!: string;
 
-  @ManyToOne(() => Test, { nullable: true, wrappedReference: true })
-  rootNode?: IdentifiedReference<Test>;
+  @ManyToOne(() => Test, { nullable: true, ref: true })
+  rootNode?: Ref<Test>;
 
   constructor({ name }: Partial<Test> = {}) {
     this.name = name!;
@@ -23,13 +21,12 @@ export class Test {
 
 describe('GH issue 610', () => {
 
-  let orm: MikroORM<AbstractSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Test],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.dropSchema();
     await orm.schema.createSchema();

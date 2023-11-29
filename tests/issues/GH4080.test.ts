@@ -40,7 +40,7 @@ const BaseInterfaceSchema = new EntitySchema<BaseInterface>({
   },
 });
 
-const DerivedClassSchema = new EntitySchema<DerivedClass>({
+const DerivedClassSchema = new EntitySchema<DerivedClass, BaseClass>({
   class: DerivedClass,
   extends: 'BaseClass',
   properties: {
@@ -48,7 +48,7 @@ const DerivedClassSchema = new EntitySchema<DerivedClass>({
   },
 });
 
-const ImplementingClassSchema = new EntitySchema<ImplementingClass>({
+const ImplementingClassSchema = new EntitySchema<ImplementingClass, BaseInterface>({
   class: ImplementingClass,
   extends: 'BaseInterface',
   properties: {

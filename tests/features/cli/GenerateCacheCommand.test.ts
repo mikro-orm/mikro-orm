@@ -7,7 +7,7 @@ import { MySqlDriver } from '@mikro-orm/mysql';
 (global as any).console.log = jest.fn();
 
 const getConfigurationMock = jest.spyOn(CLIHelper, 'getConfiguration');
-getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, cache: { enabled: true }, getDriver: () => ({ getPlatform: jest.fn() }) } as any, false));
+getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: jest.fn() }) } as any, false));
 const discoverMock = jest.spyOn(MetadataDiscovery.prototype, 'discover');
 discoverMock.mockResolvedValue({} as MetadataStorage);
 
@@ -19,7 +19,7 @@ describe('GenerateCacheCommand', () => {
     const mockOption = jest.fn();
     const args = { option: mockOption };
     cmd.builder(args as any);
-    expect(mockOption).toBeCalledWith('ts-node', {
+    expect(mockOption).toHaveBeenCalledWith('ts-node', {
       alias: 'ts',
       type: 'boolean',
       desc: `Use ts-node to generate '.ts' cache`,
@@ -35,15 +35,4 @@ describe('GenerateCacheCommand', () => {
     expect(discoverMock.mock.calls[1][0]).toBe(true);
   });
 
-  test('handler throws when cache is disabled', async () => {
-    getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, cache: { enabled: false }, getDriver: () => ({ getPlatform: jest.fn() }) } as any, false));
-    discoverMock.mockReset();
-    discoverMock.mockResolvedValue({} as MetadataStorage);
-
-    const cmd = new GenerateCacheCommand();
-
-    expect(discoverMock.mock.calls.length).toBe(0);
-    await expect(cmd.handler({} as any)).resolves.toBeUndefined();
-    expect(discoverMock.mock.calls.length).toBe(0);
-  });
 });

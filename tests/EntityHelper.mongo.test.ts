@@ -18,7 +18,7 @@ describe('EntityHelperMongo', () => {
 
   test('#toObject() should return DTO', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    author.born = new Date();
+    author.born = '2023-03-23';
     expect(author).toBeInstanceOf(Author);
     expect(wrap(author).toObject()).toBeInstanceOf(Object);
     expect(author.toObject()).toBeInstanceOf(Object);
@@ -27,12 +27,13 @@ describe('EntityHelperMongo', () => {
   test('#toObject() should ignore properties marked with hidden flag', async () => {
     const test = Test.create('Bible');
     expect(test.hiddenField).toBeDefined();
+    // @ts-expect-error
     expect(wrap(test).toJSON().hiddenField).not.toBeDefined();
   });
 
   test('#toJSON() should return DTO', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    author.born = new Date();
+    author.born = '2023-03-23';
     expect(author).toBeInstanceOf(Author);
     expect(author.toJSON()).toBeInstanceOf(Object);
     expect(author.toJSON()).toMatchObject({ fooBar: 123 });
@@ -66,7 +67,9 @@ describe('EntityHelperMongo', () => {
     orm.em.clear();
 
     const author = await orm.em.findOneOrFail(Author, god.id, { populate: ['favouriteAuthor', 'books.author.books', 'books.publisher'] });
-    const json = wrap(author).toObject();
+    const json = wrap(author).toObject(['name']);
+    // @ts-expect-error
+    expect(json.name).toBeUndefined();
     expect(json.termsAccepted).toBe(false);
     expect(json.favouriteAuthor).toBe(god.id); // self reference will be ignored even when explicitly populated
     expect(json.books![0]).toMatchObject({
@@ -80,10 +83,10 @@ describe('EntityHelperMongo', () => {
   test('BaseEntity methods', async () => {
     const god = new Author('God', 'hello@heaven.god');
     expect(wrap(god, true).__populated).toBeUndefined();
-    expect(wrap(god, true).__touched).toBe(true);
-    expect(god.isTouched()).toBe(true);
+    expect(wrap(god, true).__touched).toBe(false); // propagation is not working on not managed entities when `useDefineForClassFields` is enabled
+    expect(god.isTouched()).toBe(false); // propagation is not working on not managed entities when `useDefineForClassFields` is enabled
     god.populated();
-    await expect(god.populate(['favouriteAuthor'])).rejects.toThrowError('Entity Author is not managed.');
+    await expect(god.populate(['favouriteAuthor'])).rejects.toThrow('Entity Author is not managed.');
     expect(wrap(god, true).__populated).toBe(true);
     expect(wrap(god, true).__platform).toBe(orm.em.getDriver().getPlatform());
 
@@ -124,15 +127,16 @@ describe('EntityHelperMongo', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const jon = await orm.em.findOne(Author, author.id);
+    const jon = await orm.em.findOneOrFail(Author, author.id);
     await orm.em.nativeUpdate(Author, { id: author.id }, { name: 'Changed!' });
-    expect(jon!.name).toBe('Jon Snow');
+    expect(jon.name).toBe('Jon Snow');
     await wrap(jon).init();
-    expect(jon!.name).toBe('Changed!');
+    expect(jon.name).toBe('Changed!');
   });
 
   test('should have string id getter and setter', async () => {
-    const author = new Author('Jon Snow', 'snow@wall.st');
+    // serialized id getter on not managed entities when `useDefineForClassFields` is enabled works only via `em.create`
+    const author = orm.em.create(Author, { name: 'Jon Snow', email: 'snow@wall.st' });
     author._id = new ObjectId('5b0ff0619fbec620008d2414');
     expect(author.id).toBe('5b0ff0619fbec620008d2414');
 
@@ -144,13 +148,16 @@ describe('EntityHelperMongo', () => {
   });
 
   test('wrap helper returns the argument when its falsy', async () => {
+    // @ts-expect-error
     expect(wrap(null)).toBeNull();
+    // @ts-expect-error
     expect(wrap(undefined)).toBeUndefined();
   });
 
   test('setting m:1 reference is propagated to 1:m collection', async () => {
-    const author = new Author('n', 'e');
-    const book = new Book('t');
+    // propagation is on not managed entities when `useDefineForClassFields` is enabled works only via `em.create`
+    const author = orm.em.create(Author, { name: 'n', email:  'e' });
+    const book = orm.em.create(Book, { title: 't' } as any);
     book.author = author;
     expect(author.books.getItems()).toContain(book);
     await orm.em.persistAndFlush(book);
@@ -166,10 +173,11 @@ describe('EntityHelperMongo', () => {
   });
 
   test('setting 1:1 reference is propagated to the inverse side', async () => {
-    const bar = FooBar.create('bar');
-    const baz = FooBaz.create('baz');
+    // propagation is on not managed entities when `useDefineForClassFields` is enabled works only via `em.create`
+    const bar = orm.em.create(FooBar, { name: 'bar' } as any);
+    const baz = orm.em.create(FooBaz, { name: 'baz' } as any);
     bar.baz = baz;
-    expect(baz.bar).toBe(bar);
+    expect(baz.bar.unwrap()).toBe(bar);
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
@@ -184,17 +192,14 @@ describe('EntityHelperMongo', () => {
   });
 
   test('custom inspect shows get/set props', async () => {
-    const bar = FooBar.create('bar');
-    bar.baz = FooBaz.create('baz');
+    const bar = orm.em.create(FooBar, { name: 'bar' } as any);
+    bar.baz = orm.em.create(FooBaz, { name: 'baz' } as any);
     let actual = inspect(bar);
 
     expect(actual).toBe('FooBar {\n' +
       '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
       "  name: 'bar',\n" +
-      '  baz: FooBaz {\n' +
-      "    name: 'baz',\n" +
-      "    bar: FooBar { meta: [Object], name: 'bar', baz: [FooBaz] }\n" +
-      '  }\n' +
+      "  baz: FooBaz { name: 'baz', bar: Ref<FooBar> { entity: [FooBar] } }\n" +
       '}');
 
     expect(inspect((bar as AnyEntity).__helper)).toBe('[WrappedEntity<FooBar>]');
@@ -217,8 +222,8 @@ describe('EntityHelperMongo', () => {
       "  baz: (FooBaz [managed by 1]) { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
       '}');
 
-    const god = new Author('God', 'hello@heaven.god');
-    const bible = new Book('Bible', god);
+    const god = orm.em.create(Author, { name: 'God', email: 'hello@heaven.god' });
+    const bible = orm.em.create(Book, { title: 'Bible', author: god });
     bible.createdAt = new Date('2020-07-18T17:31:08.535Z');
     god.favouriteAuthor = god;
     delete god.createdAt;
@@ -227,12 +232,10 @@ describe('EntityHelperMongo', () => {
     actual = inspect(god);
 
     expect(actual).toBe('Author {\n' +
-      '  hookTest: false,\n' +
-      '  termsAccepted: false,\n' +
       '  books: Collection<Book> {\n' +
       "    '0': Book {\n" +
-      '      createdAt: ISODate(\'2020-07-18T17:31:08.535Z\'),\n' +
       '      tags: [Collection<BookTag>],\n' +
+      '      createdAt: ISODate(\'2020-07-18T17:31:08.535Z\'),\n' +
       "      title: 'Bible',\n" +
       '      author: [Author],\n' +
       '      publisher: [Ref<Publisher>]\n' +
@@ -241,28 +244,30 @@ describe('EntityHelperMongo', () => {
       '    dirty: true\n' +
       '  },\n' +
       '  friends: Collection<Author> { initialized: true, dirty: false },\n' +
+      "  foo: 'bar',\n" +
       "  name: 'God',\n" +
       "  email: 'hello@heaven.god',\n" +
-      "  foo: 'bar',\n" +
+      '  termsAccepted: false,\n' +
       '  favouriteAuthor: Author {\n' +
-      '    hookTest: false,\n' +
-      '    termsAccepted: false,\n' +
       "    books: Collection<Book> { '0': [Book], initialized: true, dirty: true },\n" +
       '    friends: Collection<Author> { initialized: true, dirty: false },\n' +
+      "    foo: 'bar',\n" +
       "    name: 'God',\n" +
       "    email: 'hello@heaven.god',\n" +
-      "    foo: 'bar',\n" +
+      '    termsAccepted: false,\n' +
       '    favouriteAuthor: Author {\n' +
-      '      hookTest: false,\n' +
-      '      termsAccepted: false,\n' +
       '      books: [Collection<Book>],\n' +
       '      friends: [Collection<Author>],\n' +
+      "      foo: 'bar',\n" +
       "      name: 'God',\n" +
       "      email: 'hello@heaven.god',\n" +
-      "      foo: 'bar',\n" +
-      '      favouriteAuthor: [Author]\n' +
-      '    }\n' +
-      '  }\n' +
+      '      termsAccepted: false,\n' +
+      '      favouriteAuthor: [Author],\n' +
+      '      hookTest: false\n' +
+      '    },\n' +
+      '    hookTest: false\n' +
+      '  },\n' +
+      '  hookTest: false\n' +
       '}');
   });
 
@@ -274,8 +279,8 @@ describe('EntityHelperMongo', () => {
     await orm.em.persistAndFlush(bible);
     orm.em.clear();
 
-    const jon = await orm.em.findOneOrFail(Author, god, { populate: true });
-    const o = serialize(jon, { populate: true });
+    const jon = await orm.em.findOneOrFail(Author, god, { populate: ['*'] });
+    const o = serialize(jon, { populate: ['*'] });
     expect(o).toMatchObject({
       id: jon.id,
       createdAt: jon.createdAt,

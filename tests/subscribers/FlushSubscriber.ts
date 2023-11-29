@@ -1,7 +1,5 @@
 import type { EventSubscriber, FlushEventArgs } from '@mikro-orm/core';
-import { Subscriber } from '@mikro-orm/core';
 
-@Subscriber()
 export class FlushSubscriber implements EventSubscriber {
 
   static readonly log: [string, FlushEventArgs][] = [];

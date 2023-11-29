@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, Property, OneToOne } from '@mikro-orm/core';
-import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
+import { MikroORM, ObjectId, Entity, PrimaryKey, Property, OneToOne } from '@mikro-orm/mongodb';
 
 @Entity()
 export class Author {
@@ -52,7 +51,7 @@ test('GH issue 3548', async () => {
   author.authorDetail = authorDetail;
   await orm.em.fork().persist(author).flush();
 
-  const r1 = await orm.em.fork().find(AuthorDetail, {}, { populate: true });
+  const r1 = await orm.em.fork().find(AuthorDetail, {}, { populate: ['*'] });
   expect(r1[0]).toMatchObject({
     _id: expect.any(ObjectId),
     name: 'name',
@@ -65,7 +64,7 @@ test('GH issue 3548', async () => {
     },
   });
 
-  const r2 = await orm.em.fork().find(Author, {}, { populate: true });
+  const r2 = await orm.em.fork().find(Author, {}, { populate: ['*'] });
   expect(r2[0]).toMatchObject({
     _id: expect.any(ObjectId),
     authorDetail: {

@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, Property, MikroORM, wrap, IdentifiedReference, OneToOne } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, MikroORM, wrap, Ref, OneToOne } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -10,10 +9,10 @@ class A {
   @OneToOne({
     entity: 'B',
     mappedBy: 'a',
-    wrappedReference: true,
+    ref: true,
     nullable: true,
   })
-  b!: IdentifiedReference<B>;
+  b!: Ref<B>;
 
   @Property({ persist: false })
   get calcProp() {
@@ -28,8 +27,8 @@ class B {
   @PrimaryKey()
   id!: number;
 
-  @OneToOne({ entity: () => A, wrappedReference: true })
-  a!: IdentifiedReference<A>;
+  @OneToOne({ entity: () => A, ref: true })
+  a!: Ref<A>;
 
   @Property()
   prop: string = 'foo';
@@ -38,13 +37,12 @@ class B {
 
 describe('GH issue 535', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: `mikro_orm_test_gh_535`,
-      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });
@@ -54,7 +52,6 @@ describe('GH issue 535', () => {
   });
 
   test(`GH issue 535`, async () => {
-
     const a = new A();
     const b = new B();
     a.b = wrap(b).toReference();

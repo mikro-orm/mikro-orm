@@ -1,51 +1,50 @@
 import type { ReferenceOptions } from './Property';
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import type { QueryOrderMap } from '../enums';
-import { ReferenceType } from '../enums';
-import type { EntityName, EntityProperty, AnyEntity } from '../typings';
+import { ReferenceKind, type QueryOrderMap } from '../enums';
+import type { EntityName, EntityProperty, AnyEntity, EntityKey } from '../typings';
 
-export function createOneToDecorator<T, O>(
-  entity: OneToManyOptions<T, O> | string | ((e?: any) => EntityName<T>),
-  mappedBy: (string & keyof T) | ((e: T) => any) | undefined,
-  options: Partial<OneToManyOptions<T, O>>,
-  reference: ReferenceType,
+export function createOneToDecorator<Target, Owner>(
+  entity: OneToManyOptions<Owner, Target> | string | ((e?: any) => EntityName<Target>),
+  mappedBy: (string & keyof Target) | ((e: Target) => any) | undefined,
+  options: Partial<OneToManyOptions<Owner, Target>>,
+  kind: ReferenceKind,
 ) {
   return function (target: AnyEntity, propertyName: string) {
-    options = Utils.processDecoratorParameters<OneToManyOptions<T, O>>({ entity, mappedBy, options });
-    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
-    MetadataValidator.validateSingleDecorator(meta, propertyName, reference);
-    const property = { name: propertyName, reference } as EntityProperty<T>;
-    meta.properties[propertyName] = Object.assign(meta.properties[propertyName] ?? {}, property, options);
+    options = Utils.processDecoratorParameters<OneToManyOptions<Owner, Target>>({ entity, mappedBy, options });
+    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as any);
+    MetadataValidator.validateSingleDecorator(meta, propertyName, kind);
+    const property = { name: propertyName, kind } as EntityProperty<Target>;
+    meta.properties[propertyName as EntityKey<Target>] = Object.assign(meta.properties[propertyName as EntityKey<Target>] ?? {}, property, options);
 
     return Utils.propertyDecoratorReturnValue();
   };
 }
 
-export function OneToMany<T, O>(
-  entity: string | ((e?: any) => EntityName<T>),
-  mappedBy: (string & keyof T) | ((e: T) => any),
-  options?: Partial<OneToManyOptions<T, O>>,
+export function OneToMany<Target, Owner>(
+  entity: string | ((e?: any) => EntityName<Target>),
+  mappedBy: (string & keyof Target) | ((e: Target) => any),
+  options?: Partial<OneToManyOptions<Owner, Target>>,
 ): (target: AnyEntity, propertyName: string) => void;
-export function OneToMany<T, O>(
-  options: OneToManyOptions<T, O>,
+export function OneToMany<Target, Owner>(
+  options: OneToManyOptions<Owner, Target>,
 ): (target: AnyEntity, propertyName: string) => void;
-export function OneToMany<T, O>(
-  entity: OneToManyOptions<T, O> | string | ((e?: any) => EntityName<T>),
-  mappedBy?: (string & keyof T) | ((e: T) => any),
-  options: Partial<OneToManyOptions<T, O>> = {},
+export function OneToMany<Target, Owner>(
+  entity: OneToManyOptions<Owner, Target> | string | ((e?: any) => EntityName<Target>),
+  mappedBy?: (string & keyof Target) | ((e: Target) => any),
+  options: Partial<OneToManyOptions<Owner, Target>> = {},
 ): (target: AnyEntity, propertyName: string) => void {
-  return createOneToDecorator(entity, mappedBy, options, ReferenceType.ONE_TO_MANY);
+  return createOneToDecorator(entity, mappedBy, options, ReferenceKind.ONE_TO_MANY);
 }
 
-export type OneToManyOptions<T, O> = ReferenceOptions<T, O> & {
-  entity?: string | (() => EntityName<T>);
+export type OneToManyOptions<Owner, Target> = ReferenceOptions<Owner, Target> & {
+  entity?: string | (() => EntityName<Target>);
   orphanRemoval?: boolean;
-  orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
+  orderBy?: QueryOrderMap<Target> | QueryOrderMap<Target>[];
   joinColumn?: string;
   joinColumns?: string[];
   inverseJoinColumn?: string;
   inverseJoinColumns?: string[];
   referenceColumnName?: string;
-  mappedBy: (string & keyof T) | ((e: T) => any);
+  mappedBy: (string & keyof Target) | ((e: Target) => any);
 };

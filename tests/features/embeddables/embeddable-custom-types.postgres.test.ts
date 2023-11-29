@@ -5,15 +5,15 @@ import { mockLogger } from '../../helpers';
 
 export class AlwaysConvertsToAbc extends Type<string, string> {
 
-  convertToDatabaseValue(value: string, platform: Platform): string {
+  override convertToDatabaseValue(value: string, platform: Platform): string {
     return 'abc';
   }
 
-  convertToJSValue(value: string, platform: Platform): string {
+  override convertToJSValue(value: string, platform: Platform): string {
     return value;
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'varchar';
   }
 
@@ -69,15 +69,15 @@ class Parent {
 
 export class Numeric extends Type<number, string> {
 
-  convertToDatabaseValue(value: number): string {
+  override convertToDatabaseValue(value: number): string {
     return value.toString();
   }
 
-  convertToJSValue(value: string): number {
+  override convertToJSValue(value: string): number {
     return Number(value);
   }
 
-  getColumnType(prop: EntityProperty, platform: Platform): string {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return 'numeric(14,2)';
   }
 
@@ -140,7 +140,7 @@ describe('embedded entities with custom types', () => {
     await orm.em.persistAndFlush(parent);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "parent" ("nested_some_value", "nested_deep_some_value", "nested2", "some_value") values ('abc', 'abc', '{"someValue":"abc","deep":{"someValue":"abc"}}', 'abc') returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "parent" ("nested_some_value", "nested_deep_some_value", "nested2", "some_value") values ('abc', 'abc', '{"some_value":"abc","deep":{"some_value":"abc"}}', 'abc') returning "id"`);
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
 
     const p = await orm.em.findOneOrFail(Parent, parent.id);

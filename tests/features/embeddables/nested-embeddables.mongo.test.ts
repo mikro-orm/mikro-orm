@@ -8,7 +8,7 @@ class IdentityMeta {
   @Property()
   foo?: string;
 
-  @Property()
+  @Property({ index: true })
   bar?: string;
 
   constructor(foo?: string, bar?: string) {
@@ -21,7 +21,7 @@ class IdentityMeta {
 @Embeddable()
 class Identity {
 
-  @Property()
+  @Property({ unique: true })
   email: string;
 
   @Embedded(() => IdentityMeta, { nullable: true })
@@ -37,7 +37,7 @@ class Identity {
 @Embeddable()
 class Profile {
 
-  @Property()
+  @Property({ unique: true })
   username: string;
 
   @Embedded(() => Identity)
@@ -78,8 +78,12 @@ describe('embedded entities in mongo', () => {
     });
   });
 
+  beforeEach(async () => {
+    await orm.schema.clearDatabase();
+  });
+
   afterAll(async () => {
-    await orm.schema.dropSchema();
+    await orm.schema.dropSchema({ dropMigrationsTable: true });
     await orm.close(true);
   });
 
@@ -87,12 +91,66 @@ describe('embedded entities in mongo', () => {
     const createCollection = jest.spyOn(MongoConnection.prototype, 'createCollection');
     createCollection.mockResolvedValue({} as any);
     await orm.schema.createSchema();
-    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['user']);
+    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['user', 'mikro_orm_migrations']);
     createCollection.mockRestore();
+  });
+
+  test('create nested indexes', async () => {
+    await orm.schema.ensureIndexes();
+    const userInfo = await orm.em.getCollection(User).indexInformation({ full: true, session: undefined as any });
+    expect(userInfo.reduce((o: any, i: any) => { o[i.name] = i; return o; }, {} as any)).toMatchObject({
+      '_id_': {
+        key: { _id: 1 },
+      },
+      'profile1_identity_email_1': {
+        key: { profile1_identity_email: 1 },
+        sparse: false,
+        unique: true,
+      },
+      'profile1_identity_meta_bar_1': {
+        key: { profile1_identity_meta_bar: 1 },
+        sparse: true,
+      },
+      'profile1_username_1': {
+        key: { profile1_username: 1 },
+        sparse: false,
+        unique: true,
+      },
+      'profile2.identity.email_1': {
+        key: { 'profile2.identity.email': 1 },
+        sparse: false,
+        unique: true,
+      },
+      'profile2.identity.meta.bar_1': {
+        key: { 'profile2.identity.meta.bar': 1 },
+        sparse: true,
+      },
+      'profile2.username_1': {
+        key: { 'profile2.username': 1 },
+        sparse: false,
+        unique: true,
+      },
+    });
   });
 
   test('diffing', async () => {
     expect(orm.em.getComparator().getSnapshotGenerator('User').toString()).toMatchSnapshot();
+  });
+
+  test('unique constraints', async () => {
+    await orm.schema.ensureIndexes();
+
+    const user1 = new User();
+    user1.name = 'Uwe';
+    user1.profile1 = new Profile('u1', new Identity('e1', new IdentityMeta('f1', 'b1')));
+    user1.profile2 = new Profile('u2', new Identity('e2', new IdentityMeta('f2', 'b2')));
+
+    const user2 = new User();
+    user2.name = 'Uschi';
+    user2.profile1 = new Profile('u1', new Identity('e3'));
+    user2.profile2 = new Profile('u4', new Identity('e4', new IdentityMeta('f4')));
+
+    await expect(orm.em.persistAndFlush([user1, user2])).rejects.toThrow(/E11000 duplicate key error collection: mikro-orm-test-nested-embeddables\.user index: profile1_username_1 dup key: \{ profile1_username: "u1" }/);
   });
 
   test('persist and load', async () => {
@@ -189,10 +247,10 @@ describe('embedded entities in mongo', () => {
     expect(u5._id).toEqual(u1._id);
 
     const err1 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
-    await expect(orm.em.findOneOrFail(User, { profile1: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err1);
+    await expect(orm.em.findOneOrFail(User, { profile1: { identity: { city: 'London 1' } as any } })).rejects.toThrow(err1);
 
     const err2 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
-    await expect(orm.em.findOneOrFail(User, { profile2: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err2);
+    await expect(orm.em.findOneOrFail(User, { profile2: { identity: { city: 'London 1' } as any } })).rejects.toThrow(err2);
   });
 
   test('#assign() works with nested embeddables', async () => {
@@ -221,7 +279,7 @@ describe('embedded entities in mongo', () => {
     expect(jon.profile1.identity.meta!.foo).toBe('f');
     expect(jon.profile1.identity.meta).toBeInstanceOf(IdentityMeta);
 
-    orm.em.assign(jon, { profile1: { identity: { email: 'e4' } } }, { mergeObjects: false });
+    orm.em.assign(jon, { profile1: { identity: { email: 'e4' } } }, { mergeObjectProperties: false });
     expect(jon.profile1.username).toBeUndefined();
     expect(jon.profile1.identity.email).toBe('e4');
     expect(jon.profile1.identity.meta).toBeUndefined();

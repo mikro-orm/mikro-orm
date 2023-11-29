@@ -13,7 +13,14 @@ describe('events (mysql)', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql(undefined, undefined, true));
+  beforeAll(async () => orm = await initORMMySql(undefined, {
+    subscribers: [
+      Author2Subscriber,
+      EverythingSubscriber,
+      FlushSubscriber,
+      Test2Subscriber,
+    ],
+  }, true));
   beforeEach(async () => orm.schema.clearDatabase());
   afterEach(() => {
     Author2Subscriber.log.length = 0;
@@ -44,7 +51,7 @@ describe('events (mysql)', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persistAndFlush([book1, book2, book3]);
     expect(wrap(author, true).__onLoadFired).toBeUndefined();
     orm.em.clear();
   }
@@ -53,14 +60,13 @@ describe('events (mysql)', () => {
     expect(Author2Subscriber.log).toEqual([]);
     Author2.beforeDestroyCalled = 0;
     Author2.afterDestroyCalled = 0;
-    const repo = orm.em.getRepository(Author2);
     const author = new Author2('Jon Snow', 'snow@wall.st');
     expect(author.id).toBeUndefined();
     expect(author.version).toBeUndefined();
     expect(author.versionAsString).toBeUndefined();
     expect(author.hookParams).toHaveLength(0);
 
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.id).toBeDefined();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
@@ -68,7 +74,7 @@ describe('events (mysql)', () => {
     expect(author.hookParams[0].changeSet).toMatchObject({ entity: author, type: 'create', payload: { name: 'Jon Snow' } });
 
     author.name = 'John Snow';
-    await repo.persistAndFlush(author);
+    await orm.em.persistAndFlush(author);
     expect(author.version).toBe(2);
     expect(author.versionAsString).toBe('v2');
     expect(author.hookParams[2].em).toBe(orm.em);
@@ -76,13 +82,13 @@ describe('events (mysql)', () => {
 
     expect(Author2.beforeDestroyCalled).toBe(0);
     expect(Author2.afterDestroyCalled).toBe(0);
-    await repo.removeAndFlush(author);
+    await orm.em.removeAndFlush(author);
     expect(Author2.beforeDestroyCalled).toBe(1);
     expect(Author2.afterDestroyCalled).toBe(1);
 
     const author2 = new Author2('Johny Cash', 'johny@cash.com');
-    await repo.persistAndFlush(author2);
-    await repo.removeAndFlush(author2);
+    await orm.em.persistAndFlush(author2);
+    await orm.em.removeAndFlush(author2);
     expect(Author2.beforeDestroyCalled).toBe(2);
     expect(Author2.afterDestroyCalled).toBe(2);
 
@@ -204,20 +210,20 @@ describe('events (mysql)', () => {
     const authors2 = await orm.em.fork().find(Author2, {}, { populate: ['books'] });
     expect(authors2).toHaveLength(1);
     expect(EverythingSubscriber.log.map(l => [l[0], l[1].entity.constructor.name]).filter(a => a[0] === EventType.onLoad)).toEqual([
+      ['onLoad', 'Book2'],
+      ['onLoad', 'Book2'],
+      ['onLoad', 'Book2'],
       ['onLoad', 'Author2'],
-      ['onLoad', 'Book2'],
-      ['onLoad', 'Book2'],
-      ['onLoad', 'Book2'],
     ]);
     EverythingSubscriber.log.length = 0;
 
-    const authors3 = await orm.em.fork().find(Author2, {}, { populate: true });
+    const authors3 = await orm.em.fork().find(Author2, {}, { populate: ['*'] });
     expect(authors3).toHaveLength(1);
     expect(EverythingSubscriber.log.map(l => [l[0], l[1].entity.constructor.name]).filter(a => a[0] === EventType.onLoad)).toEqual([
+      ['onLoad', 'Book2'],
+      ['onLoad', 'Book2'],
+      ['onLoad', 'Book2'],
       ['onLoad', 'Author2'],
-      ['onLoad', 'Book2'],
-      ['onLoad', 'Book2'],
-      ['onLoad', 'Book2'],
       ['onLoad', 'Publisher2'],
       ['onLoad', 'BookTag2'],
       ['onLoad', 'BookTag2'],

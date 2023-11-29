@@ -1,5 +1,4 @@
-import { BigIntType, Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { performance } from 'perf_hooks';
 
 @Entity()
@@ -7,17 +6,17 @@ export class VendorBuyerRelationship {
 
   [OptionalProps]?: 'created';
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ onCreate: () => new Date() })
   created!: Date;
 
-  @ManyToOne(() => Member, { wrappedReference: true })
-  buyer!: IdentifiedReference<Member>;
+  @ManyToOne(() => Member, { ref: true })
+  buyer!: Ref<Member>;
 
-  @ManyToOne(() => Member, { wrappedReference: true })
-  vendor!: IdentifiedReference<Member>;
+  @ManyToOne(() => Member, { ref: true })
+  vendor!: Ref<Member>;
 
   @OneToMany(() => Order, o => o.buyerRel)
   orders = new Collection<Order>(this);
@@ -29,8 +28,8 @@ export class Member {
 
   [OptionalProps]?: 'created';
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ onCreate: () => new Date() })
   created!: Date;
@@ -44,8 +43,8 @@ export class Member {
   @OneToMany(() => Order, order => order.vendor)
   orders = new Collection<Order>(this);
 
-  @ManyToOne(() => Member, { wrappedReference: true, nullable: true })
-  parent?: IdentifiedReference<Member>;
+  @ManyToOne(() => Member, { ref: true, nullable: true })
+  parent?: Ref<Member>;
 
 }
 
@@ -54,32 +53,32 @@ export class Job {
 
   [OptionalProps]?: 'rejected';
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
-  @ManyToOne(() => Member, { wrappedReference: true, nullable: true })
-  member?: IdentifiedReference<Member>;
+  @ManyToOne(() => Member, { ref: true, nullable: true })
+  member?: Ref<Member>;
 
-  @ManyToOne(() => Order, { wrappedReference: true, nullable: true })
-  order?: IdentifiedReference<Order>;
+  @ManyToOne(() => Order, { ref: true, nullable: true })
+  order?: Ref<Order>;
 
   @OneToMany(() => Job, job => job.parent)
   children = new Collection<Job>(this);
 
-  @ManyToOne(() => Job, { wrappedReference: true, nullable: true })
-  parent?: IdentifiedReference<Job>;
+  @ManyToOne(() => Job, { ref: true, nullable: true })
+  parent?: Ref<Job>;
 
   @Property()
   rejected: boolean = false;
 
-  @ManyToOne(() => VendorBuyerRelationship, { wrappedReference: true, nullable: true })
-  buyer?: IdentifiedReference<VendorBuyerRelationship>;
+  @ManyToOne(() => VendorBuyerRelationship, { ref: true, nullable: true })
+  buyer?: Ref<VendorBuyerRelationship>;
 
-  @ManyToOne(() => Job, { wrappedReference: true, nullable: true })
-  delegate?: IdentifiedReference<Job>;
+  @ManyToOne(() => Job, { ref: true, nullable: true })
+  delegate?: Ref<Job>;
 
-  @ManyToOne(() => Member, { wrappedReference: true, nullable: true })
-  assignee?: IdentifiedReference<Member>;
+  @ManyToOne(() => Member, { ref: true, nullable: true })
+  assignee?: Ref<Member>;
 
 }
 
@@ -88,31 +87,30 @@ export class Order {
 
   [OptionalProps]?: 'created';
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ onCreate: () => new Date() })
   created!: Date;
 
-  @ManyToOne(() => VendorBuyerRelationship, { wrappedReference: true, nullable: true })
-  buyerRel?: IdentifiedReference<VendorBuyerRelationship>;
+  @ManyToOne(() => VendorBuyerRelationship, { ref: true, nullable: true })
+  buyerRel?: Ref<VendorBuyerRelationship>;
 
   @OneToMany(() => Job, job => job.order)
   jobs = new Collection<Job>(this);
 
-  @ManyToOne(() => Member, { wrappedReference: true, nullable: true })
-  vendor?: IdentifiedReference<Member>;
+  @ManyToOne(() => Member, { ref: true, nullable: true })
+  vendor?: Ref<Member>;
 
 }
 
 describe('GH issue 2379', () => {
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Order, Job, VendorBuyerRelationship,Member],
+      entities: [Order, Job, VendorBuyerRelationship, Member],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

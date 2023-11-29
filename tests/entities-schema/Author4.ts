@@ -1,7 +1,8 @@
 import type { Collection, EventArgs } from '@mikro-orm/core';
-import { EntitySchema, DateType, TimeType, BooleanType, t, ReferenceType, wrap } from '@mikro-orm/core';
+import { EntitySchema, DateType, TimeType, BooleanType, t, ReferenceKind, HiddenProps } from '@mikro-orm/core';
 import type { IBaseEntity5 } from './BaseEntity5';
 import type { IBook4 } from './Book4';
+import { BaseEntity5 } from './BaseEntity5';
 
 export interface IAuthor4 extends IBaseEntity5 {
   name: string;
@@ -9,7 +10,7 @@ export interface IAuthor4 extends IBaseEntity5 {
   age?: number;
   termsAccepted?: boolean;
   identities?: string[];
-  born?: Date;
+  born?: string;
   bornTime?: string;
   books: Collection<IBook4>;
   favouriteBook?: IBook4;
@@ -22,6 +23,8 @@ function randomHook(args: EventArgs<IAuthor4>) {
 }
 
 export class Identity {
+
+  [HiddenProps]?: 'foo' | 'bar';
 
   constructor(public foo: string, public bar: number) {}
 
@@ -43,7 +46,7 @@ export const IdentitySchema = new EntitySchema({
 
 export const Author4 = new EntitySchema<IAuthor4, IBaseEntity5>({
   name: 'Author4',
-  extends: 'BaseEntity5',
+  extends: BaseEntity5,
   properties: {
     name: { type: 'string' },
     email: { type: 'string', unique: true },
@@ -52,10 +55,10 @@ export const Author4 = new EntitySchema<IAuthor4, IBaseEntity5>({
     identities: { type: 'string[]', nullable: true },
     born: { type: DateType, nullable: true, length: 3 },
     bornTime: { type: TimeType, nullable: true, length: 3 },
-    books: { reference: '1:m', type: 'Book4', mappedBy: book => book.author },
-    favouriteBook: { reference: 'm:1', type: 'Book4', nullable: true },
+    books: { kind: '1:m', type: 'Book4', mappedBy: book => book.author },
+    favouriteBook: { kind: 'm:1', type: 'Book4', nullable: true },
     version: { type: 'number', persist: false },
-    identity: { type: 'Identity', reference: ReferenceType.EMBEDDED, nullable: true, object: true },
+    identity: { type: 'Identity', kind: ReferenceKind.EMBEDDED, nullable: true, object: true },
   },
   hooks: {
     onLoad: [randomHook],

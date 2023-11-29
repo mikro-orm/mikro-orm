@@ -1,13 +1,12 @@
-import type { EntityName } from '@mikro-orm/core';
-import { EntityRepository } from '@mikro-orm/core';
+import { EntityRepository, type EntityName } from '@mikro-orm/core';
 import type { Collection } from 'mongodb';
 import type { MongoEntityManager } from './MongoEntityManager';
 
 export class MongoEntityRepository<T extends object> extends EntityRepository<T> {
 
-  constructor(protected readonly _em: MongoEntityManager,
-              protected readonly entityName: EntityName<T>) {
-    super(_em, entityName);
+  constructor(protected override readonly em: MongoEntityManager,
+              entityName: EntityName<T>) {
+    super(em, entityName);
   }
 
   /**
@@ -24,15 +23,8 @@ export class MongoEntityRepository<T extends object> extends EntityRepository<T>
   /**
    * @inheritDoc
    */
-  getEntityManager(): MongoEntityManager {
-    return this._em;
-  }
-
-  /**
-   * @inheritDoc
-   */
-  protected get em(): MongoEntityManager {
-    return this._em;
+  override getEntityManager(): MongoEntityManager {
+    return this.em;
   }
 
 }

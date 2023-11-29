@@ -14,75 +14,19 @@ describe('QueryHelper', () => {
     await orm.close(true);
   });
 
-  test('test operators `>, <, >=, <=, !`', async () => {
-    expect(QueryHelper.processWhere({
-      where: {
-        'key1>': 123,
-        'key2<': 123,
-        'key3>=': 123,
-        'key4<=': 123,
-        'key5!=': 123,
-        'key6!': 123,
-      },
-      entityName: 'id',
-      metadata: orm.getMetadata(),
-      platform: orm.em.getDriver().getPlatform(),
-    })).toEqual({
-      key1: { $gt: 123 },
-      key2: { $lt: 123 },
-      key3: { $gte: 123 },
-      key4: { $lte: 123 },
-      key5: { $ne: 123 },
-      key6: { $not: 123 },
-    });
-    expect(QueryHelper.processWhere({
-      where: {
-        'key1 >': 123,
-        'key2 <': 123,
-        'key3 >=': 123,
-        'key4 <=': 123,
-        'key5 !=': 123,
-        'key6 !': 123,
-      },
-      entityName: 'id',
-      metadata: orm.getMetadata(),
-      platform: orm.em.getDriver().getPlatform(),
-    })).toEqual({
-      key1: { $gt: 123 },
-      key2: { $lt: 123 },
-      key3: { $gte: 123 },
-      key4: { $lte: 123 },
-      key5: { $ne: 123 },
-      key6: { $not: 123 },
-    });
-  });
-
-  test('test operators `:in, :nin, :gt(e), :lt(e), :ne, :not`', async () => {
-    expect(QueryHelper.processWhere({
-      where: {
-        'key1:gt': 123,
-        'key2:lt': 123,
-        'key3:gte': 123,
-        'key4:lte': 123,
-        'key5:ne': 123,
-        'key6:not': 123,
-        'key7:in': [123],
-        'key8:nin': [123],
-      }, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform(),
-    })).toEqual({
-      key1: { $gt: 123 },
-      key2: { $lt: 123 },
-      key3: { $gte: 123 },
-      key4: { $lte: 123 },
-      key5: { $ne: 123 },
-      key6: { $not: 123 },
-      key7: { $in: [123] },
-      key8: { $nin: [123] },
-    });
-  });
-
   test('processWhere returns empty object for undefined condition', async () => {
     expect(QueryHelper.processWhere({ where: undefined as any, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual({});
+  });
+
+  test('processWhere returns pk when pk is empty string and condition is entity', async () => {
+    const test = new Book2('t', 1);
+    test.uuid = '';
+    expect(QueryHelper.processWhere({ where: test, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual('');
+  });
+
+  test('processWhere returns pk when pk is 0 and condition is entity', async () => {
+    const test = new Test2({ id: 0 });
+    expect(QueryHelper.processWhere({ where: test, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual(0);
   });
 
   test('test entity conversion to PK', async () => {

@@ -1,6 +1,16 @@
 import type { Knex } from 'knex';
-import type { CheckCallback, Dictionary, EntityProperty, GroupOperator, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
-import type { QueryType } from './query/enums';
+import type {
+  CheckCallback,
+  Dictionary,
+  EntityProperty,
+  GroupOperator,
+  RawQueryFragment,
+  QBFilterQuery,
+  QueryOrderMap,
+  Type,
+  QueryFlag,
+} from '@mikro-orm/core';
+import type { JoinType, QueryType } from './query/enums';
 import type { DatabaseSchema, DatabaseTable } from './schema';
 
 export interface Table {
@@ -13,15 +23,14 @@ export type KnexStringRef = Knex.Ref<string, {
   [alias: string]: string;
 }>;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 type AnyString = string & {};
 
-export type Field<T> = AnyString | keyof T | KnexStringRef | Knex.QueryBuilder;
+export type Field<T> = AnyString | keyof T | RawQueryFragment | KnexStringRef | Knex.QueryBuilder;
 
 export interface JoinOptions {
   table: string;
   schema?: string;
-  type: 'leftJoin' | 'innerJoin' | 'pivotJoin';
+  type: JoinType;
   alias: string;
   ownerAlias: string;
   inverseAlias?: string;
@@ -31,6 +40,10 @@ export interface JoinOptions {
   path?: string;
   prop: EntityProperty;
   cond: Dictionary;
+  // used as cache when overriding the on condition via `populateWhere` as we need
+  // to revert the change when wrapping queries when pagination is triggered.
+  cond_?: Dictionary;
+  subquery?: string;
 }
 
 export interface Column {
@@ -45,6 +58,8 @@ export interface Column {
   scale?: number;
   default?: string | null;
   comment?: string;
+  generated?: string;
+  nativeEnumName?: string;
   enumItems?: string[];
   primary?: boolean;
   unique?: boolean;
@@ -63,17 +78,19 @@ export interface ForeignKey {
   deleteRule?: string;
 }
 
-export interface Index {
+export interface IndexDef {
   columnNames: string[];
   keyName: string;
   unique: boolean;
+  constraint: boolean;
   primary: boolean;
   composite?: boolean;
   expression?: string; // allows using custom sql expressions
+  options?: Dictionary; // for driver specific options
   type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
 }
 
-export interface Check<T = unknown> {
+export interface CheckDef<T = unknown> {
   name: string;
   expression: string | CheckCallback<T>;
   definition?: string;
@@ -96,13 +113,13 @@ export interface TableDifference {
   changedColumns: Dictionary<ColumnDifference>;
   removedColumns: Dictionary<Column>;
   renamedColumns: Dictionary<Column>;
-  addedIndexes: Dictionary<Index>;
-  changedIndexes: Dictionary<Index>;
-  removedIndexes: Dictionary<Index>;
-  renamedIndexes: Dictionary<Index>;
-  addedChecks: Dictionary<Check>;
-  changedChecks: Dictionary<Check>;
-  removedChecks: Dictionary<Check>;
+  addedIndexes: Dictionary<IndexDef>;
+  changedIndexes: Dictionary<IndexDef>;
+  removedIndexes: Dictionary<IndexDef>;
+  renamedIndexes: Dictionary<IndexDef>;
+  addedChecks: Dictionary<CheckDef>;
+  changedChecks: Dictionary<CheckDef>;
+  removedChecks: Dictionary<CheckDef>;
   addedForeignKeys: Dictionary<ForeignKey>;
   changedForeignKeys: Dictionary<ForeignKey>;
   removedForeignKeys: Dictionary<ForeignKey>;
@@ -129,7 +146,8 @@ export interface IQueryBuilder<T> {
   delete(cond?: QBFilterQuery): this;
   truncate(): this;
   count(field?: string | string[], distinct?: boolean): this;
-  join(field: string, alias: string, cond?: QBFilterQuery, type?: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): this;
+  join(field: string, alias: string, cond?: QBFilterQuery, type?: JoinType, path?: string): this;
+  innerJoin(field: string, alias: string, cond?: QBFilterQuery): this;
   leftJoin(field: string, alias: string, cond?: QBFilterQuery): this;
   joinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
   leftJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;
@@ -144,21 +162,32 @@ export interface IQueryBuilder<T> {
   orderBy(orderBy: QueryOrderMap<T>): this;
   groupBy(fields: (string | keyof T) | (string | keyof T)[]): this;
   having(cond?: QBFilterQuery | string, params?: any[]): this;
-  getAliasForJoinPath(path: string): string | undefined;
+  getAliasForJoinPath(path: string, options?: ICriteriaNodeProcessOptions): string | undefined;
+  getJoinForPath(path?: string, options?: ICriteriaNodeProcessOptions): JoinOptions | undefined;
   getNextAlias(entityName?: string): string;
-  raw(field: string): any;
+  clone(reset?: boolean): IQueryBuilder<T>;
+  setFlag(flag: QueryFlag): this;
+  unsetFlag(flag: QueryFlag): this;
+  hasFlag(flag: QueryFlag): boolean;
 }
 
-export interface ICriteriaNode {
+export interface ICriteriaNodeProcessOptions {
+  alias?: string;
+  matchPopulateJoins?: boolean;
+  ignoreBranching?: boolean;
+  preferNoBranch?: boolean;
+}
+
+export interface ICriteriaNode<T extends object> {
   readonly entityName: string;
-  readonly parent?: ICriteriaNode | undefined;
+  readonly parent?: ICriteriaNode<T> | undefined;
   readonly key?: string | undefined;
   payload: any;
   prop?: EntityProperty;
   index?: number;
-  process<T>(qb: IQueryBuilder<T>, alias?: string): any;
+  process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any;
   shouldInline(payload: any): boolean;
-  willAutoJoin<T>(qb: IQueryBuilder<T>, alias?: string): boolean;
+  willAutoJoin(qb: IQueryBuilder<T>, alias?: string): boolean;
   shouldRename(payload: any): boolean;
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string;
   getPath(addIndex?: boolean): string;

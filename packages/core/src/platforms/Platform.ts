@@ -1,8 +1,7 @@
 import { clone } from '../utils/clone';
 import { EntityRepository } from '../entity';
-import type { NamingStrategy } from '../naming-strategy';
-import { UnderscoreNamingStrategy } from '../naming-strategy';
-import type { Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings';
+import { UnderscoreNamingStrategy, type NamingStrategy } from '../naming-strategy';
+import type { Constructor, EntityProperty, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
@@ -12,7 +11,7 @@ import {
   TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType,
 } from '../types';
 import { parseJsonSafe, Utils } from '../utils/Utils';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import type { MikroORM } from '../MikroORM';
 import type { TransformContext } from '../types/Type';
 
@@ -46,6 +45,11 @@ export abstract class Platform {
   }
 
   usesCascadeStatement(): boolean {
+    return false;
+  }
+
+  /** for postgres native enums */
+  supportsNativeEnums(): boolean {
     return false;
   }
 
@@ -111,7 +115,7 @@ export abstract class Platform {
     return 'current_timestamp' + (length ? `(${length})` : '');
   }
 
-  getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
+  getDateTimeTypeDeclarationSQL(column: { length?: number } = { length: 0 }): string {
     return 'datetime' + (column.length ? `(${column.length})` : '');
   }
 
@@ -205,7 +209,7 @@ export abstract class Platform {
 
   getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
     if (column.items?.every(item => Utils.isString(item))) {
-      return `enum('${column.items.join("', '")}')`;
+      return `enum('${column.items.join("','")}')`;
     }
 
     return this.getTinyIntTypeDeclarationSQL(column);
@@ -266,6 +270,7 @@ export abstract class Platform {
       case 'uuid': return Type.getType(UuidType);
       case 'date': return Type.getType(DateType);
       case 'datetime': return Type.getType(DateTimeType);
+      case 'timestamp': return Type.getType(DateTimeType);
       case 'time': return Type.getType(TimeType);
       case 'object':
       case 'json': return Type.getType(JsonType);
@@ -306,8 +311,13 @@ export abstract class Platform {
     return path;
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
     return path.join('.');
+  }
+
+  /* istanbul ignore next */
+  getJsonIndexDefinition(index: { columnNames: string[] }): string[] {
+    return index.columnNames;
   }
 
   getFullTextWhereClause(prop: EntityProperty): string {
@@ -322,8 +332,7 @@ export abstract class Platform {
     throw new Error('Full text searching is not supported by this driver.');
   }
 
-  // TODO v6: remove the `marshall` parameter
-  convertsJsonAutomatically(marshall = false): boolean {
+  convertsJsonAutomatically(): boolean {
     return true;
   }
 
@@ -354,16 +363,9 @@ export abstract class Platform {
     // no extensions by default
   }
 
+  /* istanbul ignore next: kept for type inference only */
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): ISchemaGenerator {
     throw new Error(`${driver.constructor.name} does not support SchemaGenerator`);
-  }
-
-  getEntityGenerator(em: EntityManager): IEntityGenerator {
-    throw new Error(`${this.constructor.name} does not support EntityGenerator`);
-  }
-
-  getMigrator(em: EntityManager): IMigrator {
-    throw new Error(`${this.constructor.name} does not support Migrator`);
   }
 
   processDateProperty(value: unknown): string | number | Date {
@@ -371,7 +373,7 @@ export abstract class Platform {
   }
 
   quoteIdentifier(id: string, quote = '`'): string {
-    return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
+    return `${quote}${id.toString().replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
   quoteValue(value: any): string {
@@ -401,6 +403,10 @@ export abstract class Platform {
     return this.config;
   }
 
+  getTimezone() {
+    return this.timezone;
+  }
+
   isNumericColumn(mappedType: Type<unknown>): boolean {
     return [IntegerType, SmallIntType, BigIntType].some(t => mappedType instanceof t);
   }
@@ -427,7 +433,7 @@ export abstract class Platform {
 
   shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, includeFormulas = true): boolean {
     if (prop.formula) {
-      return includeFormulas && (!prop.lazy || populate === true || (populate !== false && populate.some(p => p.field === prop.name)));
+      return includeFormulas && (!prop.lazy || populate === true || (populate !== false && populate.some(p => p.field === prop.name || p.all)));
     }
 
     if (prop.persist === false) {
@@ -438,15 +444,15 @@ export abstract class Platform {
       return false;
     }
 
-    if ([ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference)) {
+    if ([ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind)) {
       return true;
     }
 
-    if (prop.reference === ReferenceType.EMBEDDED) {
+    if (prop.kind === ReferenceKind.EMBEDDED) {
       return !!prop.object;
     }
 
-    return prop.reference === ReferenceType.ONE_TO_ONE && prop.owner;
+    return prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner;
   }
 
   /**

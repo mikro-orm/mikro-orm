@@ -1,11 +1,27 @@
-import type { InputMigrations, MigrateDownOptions, MigrateUpOptions, MigrationParams, RunnableMigration } from 'umzug';
-import { Umzug } from 'umzug';
+import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
 import { basename, join } from 'path';
 import { ensureDir, pathExists, writeJSON } from 'fs-extra';
-import type { Constructor, Dictionary, IMigrationGenerator, IMigrator, MikroORM, Transaction } from '@mikro-orm/core';
-import { t, Type, UnknownType, Utils } from '@mikro-orm/core';
-import type { EntityManager } from '@mikro-orm/knex';
-import { DatabaseSchema, DatabaseTable, SchemaGenerator } from '@mikro-orm/knex';
+import {
+  t,
+  Type,
+  UnknownType,
+  Utils,
+  type Constructor,
+  type Dictionary,
+  type IMigrationGenerator,
+  type IMigrator,
+  type MikroORM,
+  type Transaction,
+  type Configuration,
+  type MigrationsOptions,
+} from '@mikro-orm/core';
+import {
+  DatabaseSchema,
+  DatabaseTable,
+  SqlSchemaGenerator,
+  type EntityManager,
+  type AbstractSqlDriver,
+} from '@mikro-orm/knex';
 import type { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
 import { MigrationStorage } from './MigrationStorage';
@@ -19,14 +35,19 @@ export class Migrator implements IMigrator {
   private runner!: MigrationRunner;
   private storage!: MigrationStorage;
   private generator!: IMigrationGenerator;
-  private readonly driver = this.em.getDriver();
-  private readonly schemaGenerator = new SchemaGenerator(this.em);
-  private readonly config = this.em.config;
-  private readonly options = this.config.get('migrations');
+  private readonly driver: AbstractSqlDriver;
+  private readonly schemaGenerator: SqlSchemaGenerator;
+  private readonly config: Configuration;
+  private readonly options: MigrationsOptions;
   private readonly absolutePath: string;
   private readonly snapshotPath: string;
 
   constructor(private readonly em: EntityManager) {
+    this.driver = this.em.getDriver();
+    this.schemaGenerator = new SqlSchemaGenerator(this.em);
+    this.config = this.em.config;
+    this.options = this.config.get('migrations');
+
     /* istanbul ignore next */
     const key = (this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
     this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
@@ -41,7 +62,7 @@ export class Migrator implements IMigrator {
   }
 
   static register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/migrator', new Migrator(orm.em as EntityManager));
+    orm.config.registerExtension('@mikro-orm/migrator', () => new Migrator(orm.em as EntityManager));
   }
 
   /**
@@ -255,7 +276,7 @@ export class Migrator implements IMigrator {
       Object.keys(columns).forEach(col => {
         const column = { ...columns[col] };
         /* istanbul ignore next */
-        column.mappedType = Type.getType(t[columns[col].mappedType] ?? UnknownType);
+        column.mappedType = Type.getType(t[columns[col].mappedType as keyof typeof t] as any ?? UnknownType);
         table.addColumn(column);
       });
 
@@ -342,7 +363,7 @@ export class Migrator implements IMigrator {
       delete options.transaction;
     }
 
-    ['from', 'to'].filter(k => options[k]).forEach(k => options[k] = this.getMigrationFilename(options[k]));
+    (['from', 'to'] as const).filter(k => options[k]).forEach(k => options[k] = this.getMigrationFilename(options[k] as string));
 
     return options as MigrateUpOptions;
   }

@@ -1,27 +1,31 @@
 import type { LogContext, LoggerNamespace } from './Logger';
 import { DefaultLogger } from './DefaultLogger';
 
+/**
+ * A basic logger that provides fully formatted output without color
+ */
 export class SimpleLogger extends DefaultLogger {
 
   /**
    * @inheritDoc
    */
-  log(namespace: LoggerNamespace, message: string, context?: LogContext): void {
-    if (!this.isEnabled(namespace)) {
+  override log(namespace: LoggerNamespace, message: string, context?: LogContext): void {
+    if (!this.isEnabled(namespace, context)) {
       return;
     }
 
     // clean up the whitespace
     message = message.replace(/\n/g, '').replace(/ +/g, ' ').trim();
+    const label = context?.label ? `(${context.label}) ` : '';
 
-    this.writer(`[${namespace}] ${message}`);
+    this.writer(`[${namespace}] ${label}${message}`);
   }
 
   /**
    * @inheritDoc
    */
-  logQuery(context: { query: string } & LogContext): void {
-    if (!this.isEnabled('query')) {
+  override logQuery(context: { query: string } & LogContext): void {
+    if (!this.isEnabled('query', context)) {
       return;
     }
 

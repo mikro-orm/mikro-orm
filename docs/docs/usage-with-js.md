@@ -56,8 +56,8 @@ export const schema = new EntitySchema({
     termsAccepted: { type: 'boolean', default: 0, onCreate: () => false },
     identities: { type: 'string[]', nullable: true },
     born: { type: DateType, nullable: true, length: 3 },
-    books: { reference: '1:m', entity: () => 'Book', mappedBy: book => book.author },
-    favouriteBook: { reference: 'm:1', type: 'Book' },
+    books: { kind: '1:m', entity: () => 'Book', mappedBy: book => book.author },
+    favouriteBook: { kind: 'm:1', type: 'Book' },
     version: { type: 'number', persist: false },
   },
 });
@@ -69,10 +69,10 @@ module.exports.schema = schema;
 
 > Do not forget to provide `name` and `path` schema parameters as well as `entity` and `schema` exports.
 
-Reference parameter can be one of (where `SCALAR` is the default one):
+Reference `kind` parameter can be one of (where `SCALAR` is the default one):
 
 ```ts
-export enum ReferenceType {
+export enum ReferenceKind {
   SCALAR = 'scalar',
   ONE_TO_ONE = '1:1',
   MANY_TO_ONE = 'm:1',
@@ -88,7 +88,6 @@ We can register our entities as usual:
 const orm = await MikroORM.init({
   entities: [Author, Book, BookTag, BaseEntity],
   dbName: 'my-db-name',
-  type: 'mysql',
 });
 ```
 

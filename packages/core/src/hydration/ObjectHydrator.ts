@@ -1,9 +1,9 @@
 import type { EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { Hydrator } from './Hydrator';
 import { Collection } from '../entity/Collection';
-import { Reference } from '../entity/Reference';
+import { Reference, ScalarReference } from '../entity/Reference';
 import { parseJsonSafe, Utils } from '../utils/Utils';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import type { EntityFactory } from '../entity/EntityFactory';
 
 type EntityHydrator<T extends object> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string) => void;
@@ -20,7 +20,7 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @inheritDoc
    */
-  hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+  override hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, type);
     const running = this.running;
     // the running state is used to consider propagation as hydration, saving the values directly to the entity data,
@@ -33,7 +33,7 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @inheritDoc
    */
-  hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
+  override hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, 'reference');
     const running = this.running;
     this.running = true;
@@ -58,45 +58,28 @@ export class ObjectHydrator extends Hydrator {
     context.set('Collection', Collection);
     context.set('Reference', Reference);
 
-    const preCondition = (dataKey: string) => {
-      /* istanbul ignore next */
-      const path = dataKey.match(/\[[^\]]+]|\.\w+/g) ?? [];
-      path.pop();
-
-      if (path.length === 0) {
-        return '';
-      }
-
-      let ret = '';
-      let prev = '';
-
-      for (const p of path) {
-        const key = prev ? prev + p : p;
-        ret += `data${key} && `;
-        prev = key;
-      }
-
-      return ret;
-    };
-
     const hydrateScalar = (prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
       const entityKey = path.map(k => this.wrap(k)).join('');
-      const preCond = preCondition(dataKey);
+      const tz = this.platform.getTimezone();
       const convertorKey = path.filter(k => !k.match(/\[idx_\d+]/)).map(k => this.safeKey(k)).join('_');
       const ret: string[] = [];
+      const idx = this.tmpIndex++;
       const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
 
-      if (prop.type.toLowerCase() === 'date') {
-        ret.push(
-          `  if (${preCond}data${dataKey}) entity${entityKey} = new Date(data${dataKey});`,
-          `  else if (${preCond}data${dataKey} === null) entity${entityKey} = ${nullVal};`,
-        );
-      } else if (prop.customType) {
+      if (prop.ref) {
+        context.set('ScalarReference', ScalarReference);
+        ret.push(`  const oldValue_${idx} = entity${entityKey};`);
+      }
+
+      ret.push(`  if (data${dataKey} === null) {`);
+      ret.push(`    entity${entityKey} = ${nullVal};`);
+      ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
+
+      if (prop.customType) {
         context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
         context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
         ret.push(
-          `  if (${preCond}typeof data${dataKey} !== 'undefined') {`,
           `    if (convertCustomTypes) {`,
           `      const value = convertToJSValue_${convertorKey}(data${dataKey});`,
         );
@@ -110,12 +93,42 @@ export class ObjectHydrator extends Hydrator {
           `    } else {`,
           `      entity${entityKey} = data${dataKey};`,
           `    }`,
-          `  }`,
         );
-      } else if (prop.type.toLowerCase() === 'boolean') {
-        ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey} === null ? ${nullVal} : !!data${dataKey};`);
+      } else if (prop.runtimeType === 'boolean') {
+        ret.push(`    entity${entityKey} = !!data${dataKey};`);
+      } else if (prop.runtimeType === 'Date') {
+        ret.push(`    if (data${dataKey} instanceof Date) {`);
+        ret.push(`      entity${entityKey} = data${dataKey};`);
+
+        if (!tz || tz === 'local') {
+          ret.push(`    } else {`);
+          ret.push(`      entity${entityKey} = new Date(data${dataKey});`);
+        } else {
+          ret.push(`    } else if (typeof data${dataKey} === 'number' || data${dataKey}.includes('+')) {`);
+          ret.push(`      entity${entityKey} = new Date(data${dataKey});`);
+          ret.push(`    } else {`);
+          ret.push(`      entity${entityKey} = new Date(data${dataKey} + '${tz}');`);
+        }
+
+        ret.push(`    }`);
       } else {
-        ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey};`);
+        ret.push(`    entity${entityKey} = data${dataKey};`);
+      }
+
+      if (prop.ref) {
+        ret.push(`    const value = entity${entityKey};`);
+        ret.push(`    entity${entityKey} = oldValue_${idx} ?? new ScalarReference(value);`);
+        ret.push(`    entity${entityKey}.bind(entity, '${prop.name}');`);
+        ret.push(`    entity${entityKey}.set(value);`);
+      }
+
+      ret.push(`  }`);
+
+      if (prop.ref) {
+        ret.push(`  if (!entity${entityKey}) {`);
+        ret.push(`    entity${entityKey} = new ScalarReference();`);
+        ret.push(`    entity${entityKey}.bind(entity, '${prop.name}');`);
+        ret.push(`  }`);
       }
 
       return ret;
@@ -124,14 +137,13 @@ export class ObjectHydrator extends Hydrator {
     const hydrateToOne = (prop: EntityProperty, dataKey: string, entityKey: string) => {
       const ret: string[] = [];
 
+      const method = type === 'reference' ? 'createReference' : 'create';
       const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
       ret.push(`  if (data${dataKey} === null) {\n    entity${entityKey} = ${nullVal};`);
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
       ret.push(`    if (isPrimaryKey(data${dataKey}, true)) {`);
 
-      if (prop.mapToPk) {
-        ret.push(`      entity${entityKey} = data${dataKey};`);
-      } else if (prop.wrappedReference) {
+      if (prop.ref) {
         ret.push(`      entity${entityKey} = Reference.create(factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema }));`);
       } else {
         ret.push(`      entity${entityKey} = factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema });`);
@@ -139,24 +151,22 @@ export class ObjectHydrator extends Hydrator {
 
       ret.push(`    } else if (data${dataKey} && typeof data${dataKey} === 'object') {`);
 
-      if (prop.mapToPk) {
-        ret.push(`      entity${entityKey} = data${dataKey};`);
-      } else if (prop.wrappedReference) {
-        ret.push(`      entity${entityKey} = Reference.create(factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema }));`);
+      if (prop.ref) {
+        ret.push(`      entity${entityKey} = Reference.create(factory.${method}('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema }));`);
       } else {
-        ret.push(`      entity${entityKey} = factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });`);
+        ret.push(`      entity${entityKey} = factory.${method}('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });`);
       }
 
       ret.push(`    }`);
       ret.push(`  }`);
 
-      if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.mapToPk) {
+      if (prop.kind === ReferenceKind.ONE_TO_ONE) {
         const meta2 = this.metadata.get(prop.type);
         const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
         if (prop2 && !prop2.mapToPk) {
-          ret.push(`  if (entity${entityKey} && !entity${entityKey}.${this.safeKey(prop2.name)}) {`);
-          ret.push(`    entity${entityKey}.${prop.wrappedReference ? 'unwrap().' : ''}${this.safeKey(prop2.name)} = ${prop2.wrappedReference ? 'Reference.create(entity)' : 'entity'};`);
+          ret.push(`  if (data${dataKey} && entity${entityKey} && !entity${entityKey}.${this.safeKey(prop2.name)}) {`);
+          ret.push(`    entity${entityKey}.${prop.ref ? 'unwrap().' : ''}${this.safeKey(prop2.name)} = ${prop2.ref ? 'Reference.create(entity)' : 'entity'};`);
           ret.push(`  }`);
         }
       }
@@ -165,8 +175,7 @@ export class ObjectHydrator extends Hydrator {
         context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
         ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
-        const pk = prop.mapToPk ? '' : '.__helper.getPrimaryKey()';
-        ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}${pk});`);
+        ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}.__helper.getPrimaryKey());`);
         ret.push(`  }`);
       }
 
@@ -222,18 +231,18 @@ export class ObjectHydrator extends Hydrator {
       }
     };
 
-    const createCond = (prop: EntityProperty, dataKey: string) => {
+    const createCond = (prop: EntityProperty, dataKey: string, cond?: string) => {
       const conds: string[] = [];
 
       if (prop.object) {
-        conds.push(`data${dataKey} != null`);
+        conds.push(`data${dataKey} ${cond ?? '!= null'}`);
       } else {
-        const notNull = prop.nullable ? '!= null' : '!== undefined';
+        const notNull = cond ?? (prop.nullable ? '!= null' : '!== undefined');
         meta.props
           .filter(p => p.embedded?.[0] === prop.name)
           .forEach(p => {
-            if (p.reference === ReferenceType.EMBEDDED && !p.object && !p.array) {
-              conds.push(...createCond(p, dataKey + this.wrap(p.embedded![1])));
+            if (p.kind === ReferenceKind.EMBEDDED && !p.object && !p.array) {
+              conds.push(...createCond(p, dataKey + this.wrap(p.embedded![1]), cond));
               return;
             }
 
@@ -278,7 +287,13 @@ export class ObjectHydrator extends Hydrator {
 
       /* istanbul ignore next */
       const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
-      ret.push(`  } else if (data${dataKey} === null) {`);
+
+      if (prop.object) {
+        ret.push(`  } else if (data${dataKey} === null) {`);
+      } else {
+        ret.push(`  } else if (${createCond(prop, dataKey, '=== null').join(' && ')}) {`);
+      }
+
       ret.push(`    entity${entityKey} = ${nullVal};`);
       ret.push(`  }`);
 
@@ -307,11 +322,11 @@ export class ObjectHydrator extends Hydrator {
       dataKey = dataKey ?? (object ? entityKey : this.wrap(prop.name));
       const ret: string[] = [];
 
-      if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
+      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.mapToPk) {
         ret.push(...hydrateToOne(prop, dataKey, entityKey));
-      } else if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
+      } else if (prop.kind === ReferenceKind.ONE_TO_MANY || prop.kind === ReferenceKind.MANY_TO_MANY) {
         ret.push(...hydrateToMany(prop, dataKey, entityKey));
-      } else if (prop.reference === ReferenceType.EMBEDDED) {
+      } else if (prop.kind === ReferenceKind.EMBEDDED) {
         if (prop.array) {
           ret.push(...hydrateEmbeddedArray(prop, path, dataKey));
         } else {
@@ -321,7 +336,7 @@ export class ObjectHydrator extends Hydrator {
             ret.push(...hydrateEmbedded({ ...prop, object: true }, path, dataKey));
           }
         }
-      } else { // ReferenceType.SCALAR
+      } else { // ReferenceKind.SCALAR
         ret.push(...hydrateScalar(prop, object, path, dataKey));
       }
 
@@ -354,7 +369,7 @@ export class ObjectHydrator extends Hydrator {
 
     if (prop2?.primary) {
       lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
-      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { wrappedReference: ${prop2.wrappedReference} }) };`);
+      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { ref: ${prop2.ref} }) };`);
       lines.push(`    }`);
     }
 
@@ -363,7 +378,7 @@ export class ObjectHydrator extends Hydrator {
 
     if (prop2 && !prop2.primary) {
       lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
-      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { wrappedReference: ${prop2.wrappedReference} }) };`);
+      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { ref: ${prop2.ref} }) };`);
       lines.push(`    }`);
     }
 
@@ -382,7 +397,7 @@ export class ObjectHydrator extends Hydrator {
   }
 
   private safeKey(key: string): string {
-    return key.replace(/[^\w]/g, '_');
+    return key.replace(/\W/g, '_');
   }
 
 }

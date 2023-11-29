@@ -1,14 +1,16 @@
 import type { MigrationsOptions, Transaction } from '@mikro-orm/core';
-import type { MongoDriver } from '@mikro-orm/mongodb';
+import type { MongoDriver, MongoConnection } from '@mikro-orm/mongodb';
 import type { Migration } from './Migration';
 
 export class MigrationRunner {
 
-  private readonly connection = this.driver.getConnection();
+  private readonly connection: MongoConnection;
   private masterTransaction?: Transaction;
 
   constructor(protected readonly driver: MongoDriver,
-              protected readonly options: MigrationsOptions) { }
+              protected readonly options: MigrationsOptions) {
+    this.connection = this.driver.getConnection();
+  }
 
   async run(migration: Migration, method: 'up' | 'down'): Promise<void> {
     migration.reset();

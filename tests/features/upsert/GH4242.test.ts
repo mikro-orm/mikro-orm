@@ -8,7 +8,7 @@ class B {
   @PrimaryKey({ type: 'uuid', defaultRaw: 'uuid_generate_v4()' })
   id!: string;
 
-  @ManyToOne(() => D, { onDelete: 'cascade', ref: true })
+  @ManyToOne(() => D, { deleteRule: 'cascade', ref: true })
   d!: Ref<D>;
 
   @Property({ unique: true })
@@ -87,7 +87,7 @@ test('4242 1/4', async () => {
   }]);
   expect(mock.mock.calls).toEqual([
     ['[query] insert into "d" ("tenant_workflow_id") values (1) on conflict ("tenant_workflow_id") do nothing returning "id", "updated_at", "optional"'],
-    ['[query] select "d0"."id", "d0"."tenant_workflow_id", "d0"."updated_at", "d0"."optional" from "d" as "d0" where "d0"."tenant_workflow_id" = 1'],
+    ['[query] select "d0"."id", "d0"."updated_at", "d0"."optional", "d0"."tenant_workflow_id" from "d" as "d0" where "d0"."tenant_workflow_id" = 1'],
   ]);
   mock.mockReset();
 
@@ -114,6 +114,7 @@ test('4242 2/4', async () => {
   expect(loadedDs4).toEqual([{
     id: expect.any(String),
     updatedAt: expect.any(Date),
+    optional: null,
     tenantWorkflowId: 1,
   }]);
   await orm.em.flush();
@@ -180,6 +181,7 @@ test('4242 4/4', async () => {
   expect(loadedDs4).toEqual({
     id: expect.any(String),
     updatedAt: expect.any(Date),
+    optional: null,
     tenantWorkflowId: 1,
   });
   await orm.em.flush();

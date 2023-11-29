@@ -1,5 +1,4 @@
-import { Cascade, Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Cascade, Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Parent {
@@ -24,8 +23,8 @@ export class Child {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Parent, { wrappedReference: true })
-  parent!: IdentifiedReference<Parent>;
+  @ManyToOne(() => Parent, { ref: true })
+  parent!: Ref<Parent>;
 
 }
 
@@ -35,8 +34,8 @@ export class Child2 {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Parent, { wrappedReference: true, cascade: [Cascade.ALL] })
-  parent!: IdentifiedReference<Parent>;
+  @ManyToOne(() => Parent, { ref: true, cascade: [Cascade.ALL] })
+  parent!: Ref<Parent>;
 
 }
 
@@ -46,20 +45,19 @@ export class Child3 {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Parent, { wrappedReference: true })
-  parent!: IdentifiedReference<Parent>;
+  @ManyToOne(() => Parent, { ref: true })
+  parent!: Ref<Parent>;
 
 }
 
 describe('GH issue 2395', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Parent, Child, Child2, Child3],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

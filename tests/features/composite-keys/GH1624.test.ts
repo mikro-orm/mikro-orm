@@ -1,4 +1,18 @@
-import { Collection, Entity, IdentifiedReference, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, Reference, Unique, wrap } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity,
+  Ref,
+  LoadStrategy,
+  ManyToOne,
+  MikroORM,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  Reference,
+  Unique,
+  wrap,
+  PrimaryKeyProp,
+} from '@mikro-orm/core';
 import { v4 } from 'uuid';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -34,12 +48,12 @@ export class User {
   @ManyToOne({
     entity: () => Organization,
     primary: true,
-    wrappedReference: true,
+    ref: true,
     index: true,
     cascade: [],
-    onDelete: 'no action',
+    deleteRule: 'no action',
   })
-  organization!: IdentifiedReference<Organization>;
+  organization!: Ref<Organization>;
 
   @Property({ columnType: 'varchar' })
   firstName!: string;
@@ -53,7 +67,7 @@ export class User {
   @OneToMany({ entity: 'UserRole', mappedBy: 'user' })
   userRoles = new Collection<UserRole>(this);
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['id', 'organization'];
 
   constructor(value: Partial<User> = {}) {
     Object.assign(this, value);
@@ -86,23 +100,23 @@ export class UserRole {
     entity: () => User,
     inversedBy: x => x.userRoles,
     primary: true,
-    wrappedReference: true,
+    ref: true,
     cascade: [],
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
   })
-  user!: IdentifiedReference<User>;
+  user!: Ref<User>;
 
   @ManyToOne({
     entity: () => Role,
     inversedBy: x => x.userRoles,
     primary: true,
-    wrappedReference: true,
+    ref: true,
     cascade: [],
-    onDelete: 'no action',
+    deleteRule: 'no action',
   })
-  role!: IdentifiedReference<Role>;
+  role!: Ref<Role>;
 
-  [PrimaryKeyType]?: [string, string, string];
+  [PrimaryKeyProp]?: ['user', 'role'];
 
   constructor(value: Partial<UserRole> = {}) {
     Object.assign(this, value);
@@ -120,9 +134,9 @@ export class Program {
     entity: () => Organization,
     inversedBy: 'programs',
     primary: true,
-    wrappedReference: true,
+    ref: true,
   })
-  organization!: IdentifiedReference<Organization>;
+  organization!: Ref<Organization>;
 
   @OneToMany({ entity: 'Site', mappedBy: 'program', cascade: [] })
   sites = new Collection<Site, Program>(this);
@@ -146,17 +160,17 @@ export class Site {
     entity: () => Program,
     inversedBy: 'sites',
     primary: true,
-    wrappedReference: true,
+    ref: true,
     cascade: [],
-    onUpdateIntegrity: 'no action',
-    onDelete: 'no action',
+    updateRule: 'no action',
+    deleteRule: 'no action',
   })
   program!: Reference<Program>;
 
   @Property({ columnType: 'varchar' })
   name!: string;
 
-  [PrimaryKeyType]?: [string, string, string];
+  [PrimaryKeyProp]?: ['id', 'program'];
 
   constructor(value: Partial<Site> = {}) {
     Object.assign(this, value);

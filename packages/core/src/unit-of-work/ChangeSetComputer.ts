@@ -1,24 +1,24 @@
-import type { Configuration } from '../utils';
-import { Utils } from '../utils';
+import { Utils, type Configuration, type EntityComparator } from '../utils';
 import type { MetadataStorage } from '../metadata';
-import type { AnyEntity, EntityData, EntityProperty } from '../typings';
+import type { AnyEntity, EntityData, EntityKey, EntityProperty, EntityValue } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import type { Collection, EntityValidator } from '../entity';
-import { helper } from '../entity';
+import { helper, type Collection, type EntityValidator } from '../entity';
 import type { Platform } from '../platforms';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 
 export class ChangeSetComputer {
 
-  private readonly comparator = this.config.getComparator(this.metadata);
+  private readonly comparator: EntityComparator;
 
   constructor(private readonly validator: EntityValidator,
               private readonly collectionUpdates: Set<Collection<AnyEntity>>,
               private readonly metadata: MetadataStorage,
               private readonly platform: Platform,
-              private readonly config: Configuration) { }
+              private readonly config: Configuration) {
+    this.comparator = this.config.getComparator(this.metadata);
+  }
 
-  computeChangeSet<T>(entity: T): ChangeSet<T> | null {
+  computeChangeSet<T extends object>(entity: T): ChangeSet<T> | null {
     const meta = this.metadata.get((entity as AnyEntity).constructor.name);
 
     if (meta.readonly) {
@@ -27,7 +27,7 @@ export class ChangeSetComputer {
 
     const wrapped = helper(entity);
     const type = wrapped.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
-    const map = new Map<T, [string, unknown][]>();
+    const map = new Map<T, [EntityKey<T>, unknown][]>();
 
     // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
     // to the `map` as we want to apply those only if something else changed.
@@ -48,7 +48,7 @@ export class ChangeSetComputer {
       this.validator.validate(changeSet.entity, changeSet.payload, meta);
     }
 
-    for (const prop of meta.relations) {
+    for (const prop of meta.relations.filter(prop => prop.persist !== false || prop.userDefined === false)) {
       this.processProperty(changeSet, prop);
     }
 
@@ -67,7 +67,7 @@ export class ChangeSetComputer {
     if (map.size > 0) {
       for (const [entity, pairs] of map) {
         for (const [prop, value] of pairs) {
-          entity[prop] = value;
+          entity[prop] = value as EntityValue<T>;
         }
       }
 
@@ -93,16 +93,16 @@ export class ChangeSetComputer {
       map.set(entity, pairs);
     }
 
-    if (prop.reference === ReferenceType.EMBEDDED && entity[prop.name]) {
+    if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
       for (const embeddedProp of prop.targetMeta!.hydrateProps) {
-        this.processPropertyInitializers(entity[prop.name], embeddedProp, type, map, nested || prop.object);
+        this.processPropertyInitializers(entity[prop.name] as T, embeddedProp, type, map, nested || prop.object);
       }
     }
   }
 
-  private computePayload<T>(entity: T, ignoreUndefined = false): EntityData<T> {
+  private computePayload<T extends object>(entity: T, ignoreUndefined = false): EntityData<T> {
     const data = this.comparator.prepareEntity(entity);
-    const entityName = helper(entity).__meta!.root.className;
+    const entityName = helper(entity).__meta.className;
     const originalEntityData = helper(entity).__originalEntityData;
 
     if (originalEntityData) {
@@ -110,7 +110,7 @@ export class ChangeSetComputer {
       const diff = comparator(originalEntityData, data);
 
       if (ignoreUndefined) {
-        Object.keys(diff)
+        Utils.keys(diff)
           .filter(k => diff[k] === undefined)
           .forEach(k => delete diff[k]);
       }
@@ -121,7 +121,7 @@ export class ChangeSetComputer {
     return data;
   }
 
-  private processProperty<T>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
+  private processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
     if (!target) {
       const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop);
       targets.forEach(([t]) => this.processProperty(changeSet, prop, t));
@@ -133,13 +133,13 @@ export class ChangeSetComputer {
       this.processToMany(prop, changeSet);
     }
 
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
+    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
       this.processToOne(prop, changeSet);
     }
   }
 
-  private processToOne<T>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
-    const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+  private processToOne<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+    const isToOneOwner = prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
 
     if (!isToOneOwner || prop.mapToPk) {
       return;
@@ -154,8 +154,8 @@ export class ChangeSetComputer {
     });
   }
 
-  private processToMany<T>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
-    const target = changeSet.entity[prop.name] as unknown as Collection<any>;
+  private processToMany<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+    const target = changeSet.entity[prop.name] as Collection<any>;
 
     if (!target.isDirty()) {
       return;
@@ -167,8 +167,10 @@ export class ChangeSetComputer {
       } else {
         changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) => item.__helper!.__identifier ?? item.__helper!.getPrimaryKey());
       }
-    } else {
-      target.setDirty(false); // inverse side with only populated items, nothing to persist
+    } else if (prop.kind === ReferenceKind.ONE_TO_MANY && target.getSnapshot() === undefined) {
+      this.collectionUpdates.add(target);
+    } else if (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner) {
+      this.collectionUpdates.add(target);
     }
   }
 

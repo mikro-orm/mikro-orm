@@ -1,24 +1,24 @@
 {
-  "version-2.7/docs": [
+  "docs": [
     {
       "type": "category",
       "label": "Overview",
       "items": [
         {
           "type": "doc",
-          "id": "version-2.7/installation"
+          "id": "installation"
         },
         {
           "type": "doc",
-          "id": "version-2.7/defining-entities"
+          "id": "defining-entities"
         },
         {
           "type": "doc",
-          "id": "version-2.7/entity-manager"
+          "id": "entity-manager"
         },
         {
           "type": "doc",
-          "id": "version-2.7/repositories"
+          "id": "repositories"
         }
       ]
     },
@@ -28,31 +28,31 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-2.7/identity-map"
+          "id": "identity-map"
         },
         {
           "type": "doc",
-          "id": "version-2.7/entity-references"
+          "id": "entity-references"
         },
         {
           "type": "doc",
-          "id": "version-2.7/entity-constructors"
+          "id": "entity-constructors"
         },
         {
           "type": "doc",
-          "id": "version-2.7/collections"
+          "id": "collections"
         },
         {
           "type": "doc",
-          "id": "version-2.7/unit-of-work"
+          "id": "unit-of-work"
         },
         {
           "type": "doc",
-          "id": "version-2.7/transactions"
+          "id": "transactions"
         },
         {
           "type": "doc",
-          "id": "version-2.7/cascading"
+          "id": "cascading"
         }
       ]
     },
@@ -62,47 +62,47 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-2.7/nested-populate"
+          "id": "nested-populate"
         },
         {
           "type": "doc",
-          "id": "version-2.7/query-conditions"
+          "id": "query-conditions"
         },
         {
           "type": "doc",
-          "id": "version-2.7/query-builder"
+          "id": "query-builder"
         },
         {
           "type": "doc",
-          "id": "version-2.7/serializing"
+          "id": "serializing"
         },
         {
           "type": "doc",
-          "id": "version-2.7/entity-helper"
+          "id": "entity-helper"
         },
         {
           "type": "doc",
-          "id": "version-2.7/property-validation"
+          "id": "property-validation"
         },
         {
           "type": "doc",
-          "id": "version-2.7/lifecycle-hooks"
+          "id": "lifecycle-hooks"
         },
         {
           "type": "doc",
-          "id": "version-2.7/naming-strategy"
+          "id": "naming-strategy"
         },
         {
           "type": "doc",
-          "id": "version-2.7/metadata-cache"
+          "id": "metadata-cache"
         },
         {
           "type": "doc",
-          "id": "version-2.7/debugging"
+          "id": "debugging"
         },
         {
           "type": "doc",
-          "id": "version-2.7/schema-generator"
+          "id": "schema-generator"
         }
       ]
     },
@@ -112,11 +112,11 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-2.7/usage-with-sql"
+          "id": "usage-with-sql"
         },
         {
           "type": "doc",
-          "id": "version-2.7/usage-with-mongo"
+          "id": "usage-with-mongo"
         }
       ]
     },
@@ -126,15 +126,15 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-2.7/usage-with-nestjs"
+          "id": "usage-with-nestjs"
         },
         {
           "type": "doc",
-          "id": "version-2.7/usage-with-js"
+          "id": "usage-with-js"
         },
         {
           "type": "doc",
-          "id": "version-2.7/custom-driver"
+          "id": "custom-driver"
         }
       ]
     }

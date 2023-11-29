@@ -38,6 +38,17 @@
   width: 100%;
 }
 
+.feature > div {
+  background-color: #182126;
+  border-radius: 10px;
+  padding: 15px;
+  height: 100%;
+}
+
+html[data-theme="light"] .feature > div {
+  background-color: #fff;
+}
+
 .featureImage {
   height: 150px;
   max-width: 200px;

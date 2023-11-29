@@ -1,14 +1,13 @@
 import type { Knex } from 'knex';
-import type { ConnectionType, EntityName } from '@mikro-orm/core';
-import { EntityRepository } from '@mikro-orm/core';
+import { EntityRepository, type ConnectionType, type EntityName } from '@mikro-orm/core';
 import type { SqlEntityManager } from './SqlEntityManager';
 import type { QueryBuilder } from './query';
 
 export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
 
-  constructor(protected readonly _em: SqlEntityManager,
-              protected readonly entityName: EntityName<T>) {
-    super(_em, entityName);
+  constructor(protected override readonly em: SqlEntityManager,
+              entityName: EntityName<T>) {
+    super(em, entityName);
   }
 
   /**
@@ -29,21 +28,14 @@ export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
    * Returns configured knex instance.
    */
   getKnex(type?: ConnectionType): Knex {
-    return this.getEntityManager().getConnection(type).getKnex();
+    return this.getEntityManager().getKnex(type);
   }
 
   /**
    * @inheritDoc
    */
-  getEntityManager(): SqlEntityManager {
-    return this._em;
-  }
-
-  /**
-   * @inheritDoc
-   */
-  protected get em(): SqlEntityManager {
-    return this._em;
+  override getEntityManager(): SqlEntityManager {
+    return this.em;
   }
 
 }

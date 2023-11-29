@@ -13,17 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cancel Workflow Action
-        uses: styfle/cancel-workflow-action@0.11.0
+        uses: styfle/cancel-workflow-action@0.12.0
         with:
           access_token: ${{ github.token }}
 
       - name: Checkout Source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
 
       - name: Enable corepack
         run: |
@@ -33,7 +33,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: yarn
 
@@ -52,12 +52,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
 
       - name: Enable corepack
         run: |
@@ -67,7 +67,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: yarn
 
@@ -86,12 +86,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
 
       - name: Enable corepack
         run: |
@@ -101,7 +101,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: yarn
 
@@ -118,13 +118,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ 14, 16, 18 ]
+        node-version: [ 18, 20 ]
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -136,7 +136,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: yarn
 
@@ -150,34 +150,14 @@ jobs:
       - name: Set CC Required env vars
         run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
 
-      - name: Check for changes
-        id: changed_packages
-        run: |
-          echo "::set-output name=changed_packages::$(node ./node_modules/.bin/lerna changed -p | wc -l | xargs)"
-
-      - name: Check for changes 2
-        if: steps.changed_packages.outputs.changed_packages == '0'
-        run: |
-          echo "no changes detected by lerna"
-
       - name: Test
-        if: steps.changed_packages.outputs.changed_packages != '0'
         run: |
           yarn coverage > COVERAGE_RESULT
           echo "$(cat COVERAGE_RESULT)"
           git status && git diff
 
       - name: Codecov
-        if: steps.changed_packages.outputs.changed_packages != '0'
         uses: codecov/codecov-action@v3
-
-#      - name: Codeclimate
-#        if: steps.changed_packages.outputs.changed_packages != '0'
-#        uses: paambaati/codeclimate-action@v4.0.0
-#        env:
-#          CC_TEST_REPORTER_ID: e2a39c5dc1a13674e97e94a467bacfaec953814982c7de89e9f0b55031e43bd8
-#        with:
-#          coverageCommand: echo "$(cat COVERAGE_RESULT)"
 
       - name: Teardown docker
         run: docker-compose down
@@ -189,15 +169,14 @@ jobs:
     needs: [ test, build, lint ]
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0 # we need to pull everything to have correct dev version suffix
-          ref: master
 
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
 
       - name: Enable corepack
         run: |
@@ -207,33 +186,21 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: yarn
 
       - name: Install
         run: yarn
 
-      - name: Check for changes
-        id: changed_packages
-        run: |
-          echo "::set-output name=changed_packages::$(node ./node_modules/.bin/lerna changed -p | wc -l | xargs)"
-
-      - name: Check for changes 2
-        if: steps.changed_packages.outputs.changed_packages == '0'
-        run: |
-          echo "no changes detected by lerna"
-
       - name: Build
-        if: steps.changed_packages.outputs.changed_packages != '0'
         run: yarn build
 
       - name: Release dev version for testing
-        if: steps.changed_packages.outputs.changed_packages != '0'
         run: |
           git config --global user.name 'MikroORM Release Bot'
           git config --global user.email 'noreply@mikro-orm.io'
-          yarn lerna run copy -- -- --canary
+          yarn lerna run copy -- -- --canary=major
           git commit -am 'chore: bump canary versions [skip ci]'
 
           echo "access=public" >> .npmrc

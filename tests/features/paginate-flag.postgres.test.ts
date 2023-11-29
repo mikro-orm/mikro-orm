@@ -130,14 +130,14 @@ export class A {
 
   @ManyToOne(() => TC, {
     nullable: false,
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
   })
   tc!: TC;
 
   @OneToOne(() => B, undefined, {
     nullable: true,
     inversedBy: b => b.a,
-    onDelete: 'set null',
+    deleteRule: 'set null',
     eager: true,
   })
   b?: any;
@@ -154,7 +154,7 @@ export class B {
   @ManyToOne(() => C)
   sub!: C;
 
-  @OneToOne(() => A, a => a.b, { nullable: true, onDelete: 'set null' })
+  @OneToOne(() => A, a => a.b, { nullable: true, deleteRule: 'set null' })
   a?: A;
 
 }
@@ -359,6 +359,7 @@ describe('GH issue 2095', () => {
     );
     expect(users5).toHaveLength(2);
     expect(users5[0].id).toBe('id-user-03');
+    expect(users5[0].groups).toHaveLength(0);
     expect(users5[1].id).toBe('id-user-02');
     expect(users5[1].groups).toHaveLength(1);
     expect(users5[1].groups[0].name).toBe('Group #1');
@@ -374,11 +375,13 @@ describe('GH issue 2095', () => {
         populateWhere: { groups: { name: ['Group #1'] } },
       },
     );
-    // with joined strategy the populateWhere condition is AND-ed with the base query
-    expect(users6).toHaveLength(1);
-    expect(users6[0].id).toBe('id-user-02');
-    expect(users6[0].groups).toHaveLength(1);
-    expect(users6[0].groups[0].name).toBe('Group #1');
+
+    expect(users6).toHaveLength(2);
+    expect(users6[0].id).toBe('id-user-03');
+    expect(users6[0].groups).toHaveLength(0);
+    expect(users6[1].id).toBe('id-user-02');
+    expect(users6[1].groups).toHaveLength(1);
+    expect(users6[1].groups[0].name).toBe('Group #1');
   });
 
   test('getting users with limit 2, offset 1. must be: [id-user-02, id-user-01]', async () => {

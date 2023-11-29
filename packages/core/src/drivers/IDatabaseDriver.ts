@@ -1,6 +1,6 @@
 import type {
   ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary, QBFilterQuery,
-  IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath, ObjectQuery,
+  IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath, ObjectQuery, FilterObject, Populate,
 } from '../typings';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint } from '../enums';
@@ -10,6 +10,7 @@ import type { Collection } from '../entity/Collection';
 import type { EntityManager } from '../EntityManager';
 import type { DriverException } from '../exceptions';
 import type { Configuration } from '../utils/Configuration';
+import type { LoggingOptions, LogContext } from '../logging';
 
 export const EntityManagerType = Symbol('EntityManagerType');
 
@@ -17,8 +18,6 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   [EntityManagerType]: EntityManager<this>;
   readonly config: Configuration;
-
-  init(): Promise<void>;
 
   createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType];
 
@@ -33,14 +32,14 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<EntityData<T>[]>;
+  find<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F>): Promise<EntityData<T>[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<EntityData<T> | null>;
+  findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F>): Promise<EntityData<T> | null>;
 
-  findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]>;
+  findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<EntityData<T>[]>;
 
   nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
@@ -52,7 +51,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   nativeDelete<T extends object>(entityName: string, where: FilterQuery<T>, options?: NativeDeleteOptions<T>): Promise<QueryResult<T>>;
 
-  syncCollection<T extends object, O extends object>(collection: Collection<T, O>, options?: DriverMethodOptions): Promise<void>;
+  syncCollections<T extends object, O extends object>(collections: Iterable<Collection<T, O>>, options?: DriverMethodOptions): Promise<void>;
 
   count<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
 
@@ -63,15 +62,13 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
    */
-  loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T, any>): Promise<Dictionary<T[]>>;
+  loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>, pivotJoin?: boolean): Promise<Dictionary<T[]>>;
 
   getPlatform(): Platform;
 
   setMetadata(metadata: MetadataStorage): void;
 
   getMetadata(): MetadataStorage;
-
-  ensureIndexes(): Promise<void>;
 
   /**
    * Returns name of the underlying database dependencies (e.g. `mongodb` or `mysql2`)
@@ -93,39 +90,73 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
 }
 
-type FieldsMap<T, P extends string = never> = { [K in keyof T]?: EntityField<ExpandProperty<T[K]>>[] };
-export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<T, P, '*'> | FieldsMap<T, P>;
+export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<T, P, '*'>;
 
-export interface FindOptions<T, P extends string = never> {
-  populate?: readonly AutoPath<T, P>[] | boolean;
-  populateWhere?: ObjectQuery<T> | PopulateHint;
-  orderBy?: (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
+export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
+
+export interface FindAllOptions<T, P extends string = never, F extends string = never> extends FindOptions<T, P, F> {
+  where?: FilterQuery<T>;
+}
+
+export type FilterOptions = Dictionary<boolean | Dictionary> | string[] | boolean;
+
+export interface FindOptions<T, P extends string = never, F extends string = never> {
+  where?: FilterQuery<T>;
+  populate?: Populate<T, P>;
+  populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
+  populateOrderBy?: OrderDefinition<T>;
+  fields?: readonly AutoPath<T, F, '*'>[];
+  orderBy?: OrderDefinition<T>;
   cache?: boolean | number | [string, number];
   limit?: number;
   offset?: number;
+  /** Fetch items `before` this cursor. */
+  before?: string | { startCursor: string | null } | FilterObject<T>;
+  /** Fetch items `after` this cursor. */
+  after?: string | { endCursor: string | null } | FilterObject<T>;
+  /** Fetch `first` N items. */
+  first?: number;
+  /** Fetch `last` N items. */
+  last?: number;
+  /** Fetch one more item than `first`/`last`, enabled automatically in `em.findByCursor` to check if there is a next page. */
+  overfetch?: boolean;
   refresh?: boolean;
   convertCustomTypes?: boolean;
   disableIdentityMap?: boolean;
-  fields?: readonly EntityField<T, P>[];
   schema?: string;
   flags?: QueryFlag[];
+  /** sql only */
   groupBy?: string | string[];
   having?: QBFilterQuery<T>;
-  strategy?: LoadStrategy;
-  flushMode?: FlushMode;
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  /** sql only */
+  strategy?: LoadStrategy | `${LoadStrategy}`;
+  flushMode?: FlushMode | `${FlushMode}`;
+  filters?: FilterOptions;
+  /** sql only */
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
+  /** sql only */
   lockTableAliases?: string[];
   ctx?: Transaction;
   connectionType?: ConnectionType;
+  /** sql only */
+  indexHint?: string;
+  /** sql only */
+  comments?: string | string[];
+  /** sql only */
+  hintComments?: string | string[];
+  loggerContext?: LogContext;
+  logging?: LoggingOptions;
 }
 
-export interface FindOneOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'lockMode'> {
+export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = never> extends Omit<FindOptions<T, P, F>, 'limit' | 'offset'> {
+}
+
+export interface FindOneOptions<T extends object, P extends string = never, F extends string = never> extends Omit<FindOptions<T, P, F>, 'limit' | 'lockMode'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
 }
 
-export interface FindOneOrFailOptions<T extends object, P extends string = never> extends FindOneOptions<T, P> {
+export interface FindOneOrFailOptions<T extends object, P extends string = never, F extends string = never> extends FindOneOptions<T, P, F> {
   failHandler?: (entityName: string, where: Dictionary | IPrimaryKey | any) => Error;
   strict?: boolean;
 }
@@ -142,29 +173,46 @@ export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOpti
   processCollections?: boolean;
 }
 
+export interface UpsertOptions<Entity> extends Omit<NativeInsertUpdateOptions<Entity>, 'upsert'> {
+  onConflictFields?: (keyof Entity)[];
+  onConflictAction?: 'ignore' | 'merge';
+  onConflictMergeFields?: (keyof Entity)[];
+  onConflictExcludeFields?: (keyof Entity)[];
+}
+
+export interface UpsertManyOptions<Entity> extends UpsertOptions<Entity> {
+  batchSize?: number;
+}
+
 export interface CountOptions<T extends object, P extends string = never>  {
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
   schema?: string;
   groupBy?: string | readonly string[];
   having?: QBFilterQuery<T>;
   cache?: boolean | number | [string, number];
-  populate?: readonly AutoPath<T, P>[] | boolean;
+  populate?: Populate<T, P>;
   ctx?: Transaction;
   connectionType?: ConnectionType;
+  /** sql only */
+  indexHint?: string;
+  /** sql only */
+  comments?: string | string[];
+  /** sql only */
+  hintComments?: string | string[];
 }
 
-export interface UpdateOptions<T>  {
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+export interface UpdateOptions<T> {
+  filters?: FilterOptions;
   schema?: string;
   ctx?: Transaction;
 }
 
 export interface DeleteOptions<T> extends DriverMethodOptions {
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
 }
 
 export interface NativeDeleteOptions<T> extends DriverMethodOptions {
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
 }
 
 export interface LockOptions extends DriverMethodOptions {
