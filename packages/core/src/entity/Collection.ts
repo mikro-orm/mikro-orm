@@ -338,7 +338,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     }
 
     const populate = Array.isArray(options.populate)
-      ? options.populate.map(f => `${this.property.name}.${f}`)
+      ? options.populate.map(f => f === '*' ? f : `${this.property.name}.${f}`)
       : [`${this.property.name}${options.ref ? ':ref' : ''}`];
     const schema = this.property.targetMeta!.schema === '*'
       ? helper(this.owner).__schema
