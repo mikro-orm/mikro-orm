@@ -8,10 +8,15 @@ import { FooBaz } from '../../entities/FooBaz';
 describe('SchemaGenerator', () => {
 
   let orm: MikroORM<MongoDriver>;
+  const restores: (() => void)[] = [];
 
   beforeAll(async () => orm = await initORMMongo());
   afterAll(async () => await orm.close(true));
   beforeEach(async () => orm.schema.clearDatabase());
+  afterEach(() => {
+    restores.forEach(f => f());
+    restores.splice(0, restores.length);
+  });
 
   test('create/drop collection', async () => {
     const driver = orm.em.getDriver();
@@ -76,4 +81,35 @@ describe('SchemaGenerator', () => {
     ensureIndexesSpy.mockRestore();
   });
 
+  test('ensureIndexes includes child errors on failure', async () => {
+    const createIndexesSpy = jest
+      .spyOn(MongoSchemaGenerator.prototype, 'createIndexes')
+      .mockImplementation(() => []);
+    restores.push(createIndexesSpy.mockRestore);
+    const createUniqueIndexesSpy = jest
+      .spyOn(MongoSchemaGenerator.prototype, 'createUniqueIndexes')
+      .mockImplementation(() => {
+        const error = new Error('Unique index must be made during collection creation');
+        error.name = 'BadRequest';
+        return ['foo-baz', Promise.reject(error)];
+      });
+    restores.push(createUniqueIndexesSpy.mockRestore);
+    const createPropertyIndexesSpy = jest
+      .spyOn(MongoSchemaGenerator.prototype, 'createPropertyIndexes')
+      .mockImplementation(() => []);
+    restores.push(createPropertyIndexesSpy.mockRestore);
+    const meta = orm.getMetadata(FooBaz);
+    meta.properties.name.unique = true;
+
+    const expectedError = new Error('Failed to create indexes: foo-baz');
+    (expectedError as Error & { errors: string[] }).errors = [
+      'BadRequest: Unique index must be made during collection creation',
+    ];
+
+    await expect(
+      orm.schema.ensureIndexes({ ensureCollections: false, retryLimit: 0 }),
+    ).rejects.toThrow(expectedError);
+
+    expect(createUniqueIndexesSpy).toHaveBeenCalledTimes(11);
+  });
 });
