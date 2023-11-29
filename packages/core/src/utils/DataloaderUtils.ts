@@ -3,7 +3,7 @@ import type {
   Primary,
   Ref,
 } from '../typings';
-import { Collection } from '../entity/Collection';
+import { Collection, type InitOptions } from '../entity/Collection';
 import { helper } from '../entity/wrap';
 import { type EntityManager } from '../EntityManager';
 import type DataLoader from 'dataloader';
@@ -74,23 +74,23 @@ export class DataloaderUtils {
    * which we can use to narrow down the find query to return just the items of the collections that have been dataloaded.
    * The entries of the filter Map will be used as the values of an $or operator so we end up with a query per entity.
    */
-  static groupInversedOrMappedKeysByEntity(
-    collections: readonly Collection<any>[],
-  ): Map<EntityMetadata<any>, Map<string, Set<Primary<any>>>> {
-    const entitiesMap = new Map<EntityMetadata<any>, Map<string, Set<Primary<any>>>>();
-    for (const col of collections) {
+  static groupInversedOrMappedKeysByEntityAndOpts(
+    collsWithOpts: readonly [Collection<any>, Omit<InitOptions<any, any>, 'dataloader'>?][],
+  ): Map<string, Map<string, Set<Primary<any>>>> {
+    const entitiesMap = new Map<string, Map<string, Set<Primary<any>>>>();
+    for (const [col, opts] of collsWithOpts) {
       /*
-      We first get the entity name of the Collection and we use it as the key of the first Map.
-      With that we know that we have to look for entities of this type in order to fulfill the collection.
+      We first get the entity name of the Collection and together with its options (see groupPrimaryKeysByEntityAndOpts
+      for a full explanation) we use it as the key of the first Map.
+      With that we know that we have to look for entities of this type (and with the same options) in order to fulfill the collection.
       The value is another Map which we can use to filter the find query to get results pertaining to the collections that have been dataloaded:
       its keys are the props we are going to filter to and its values are the corresponding PKs.
       */
-      // We use EntityMetadata objects as the key instead of __meta.className because it will be more performant
-      const entityMeta = col.property.targetMeta!; // The Entity Name (targetMeta.className) we will search for
-      let filterMap = entitiesMap.get(entityMeta); // We are going to use this map to filter the entities pertaining to the collections that have been dataloaded.
+      const key = `${col.property.targetMeta!.className}|${JSON.stringify(opts ?? {})}`;
+      let filterMap = entitiesMap.get(key); // We are going to use this map to filter the entities pertaining to the collections that have been dataloaded.
       if (filterMap == null) {
         filterMap = new Map<string, Set<Primary<any>>>();
-        entitiesMap.set(entityMeta, filterMap);
+        entitiesMap.set(key, filterMap);
       }
       // The Collection dataloader relies on the inverse side of the relationship (inversedBy/mappedBy), which is going to be
       // the key of the filter Map and it's the prop that we use to filter the results pertaining to the Collection.
@@ -107,31 +107,41 @@ export class DataloaderUtils {
   }
 
   /**
-   * Turn the entity map into actual queries.
-   * The keys are the entity names and the values are filter Maps which will be used as the values of an $or operator so we end up with a query per entity.
+   * Turn the entity+options map into actual queries.
+   * The keys are the entity names + a strigified version of the options and the values are filter Maps which will be used as the values of an $or operator so we end up with a query per entity+opts.
    * We must populate the inverse side of the relationship in order to be able to later retrieve the PK(s) from its item(s).
+   * Together with the query the promises will also return the key which can be used to narrow down the results pertaining to a certain set of options.
    */
-  static entitiesMapToQueries(
-    entitiesMap: Map<EntityMetadata<any>, Map<string, Set<Primary<any>>>>,
+  static entitiesAndOptsMapToQueries(
+    entitiesAndOptsMap: Map<string, Map<string, Set<Primary<any>>>>,
     em: EntityManager,
-  ): Promise<any[]>[] {
-    return Array.from(entitiesMap.entries()).map(
-      ([{ className }, filterMap]) =>
-        em.find(
-          className,
-          {
+  ): Promise<[string, any[]]>[] {
+    return Array.from(entitiesAndOptsMap, async ([key, filterMap]): Promise<[string, any[]]> => {
+      const className = key.substring(0, key.indexOf('|'));
+      const opts: Omit<InitOptions<any, any>, 'dataloader'> = JSON.parse(key.substring(key.indexOf('|') + 1));
+      const res = await em.find(
+        className,
+        opts?.where != null && Object.keys(opts.where).length > 0 ?
+          { $and: [
+            { $or: Array.from(filterMap.entries()).map(([prop, pks]) => ({ [prop]: Array.from(pks) })) },
+            opts.where,
+          ] } : {
             // The entries of the filter Map will be used as the values of the $or operator
             $or: Array.from(filterMap.entries()).map(([prop, pks]) => ({ [prop]: Array.from(pks) })),
           },
-          {
-            // We need to populate the inverse side of the relationship in order to be able to later retrieve the PK(s) from its item(s)
-            populate: Array.from(filterMap.keys()).filter(
+        {
+          ...opts,
+          // We need to populate the inverse side of the relationship in order to be able to later retrieve the PK(s) from its item(s)
+          populate: [
+            ...(opts.populate === false ? [] : opts.populate ?? []),
+            ...(opts.ref ? [':ref'] : []),
+            ...Array.from(filterMap.keys()).filter(
               // We need to do so only if the inverse side is a collection, because we can already retrieve the PK from a reference without having to load it
-              prop => em.getMetadata().get(className).properties[prop]?.ref !== true,
-            ) as any,
-          },
-        ),
-    );
+              prop => em.getMetadata<any>(className).properties[prop]?.ref !== true),
+            ] as any,
+        });
+      return [key, res];
+    });
   }
 
   /**
@@ -172,16 +182,23 @@ export class DataloaderUtils {
    * Returns the collection dataloader batchLoadFn, which aggregates collections by entity,
    * makes one query per entity and maps each input collection to the corresponging result.
    */
-  static getColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<Collection<any>, any> {
-    return async (collections: readonly Collection<any>[]) => {
-      const entitiesMap = DataloaderUtils.groupInversedOrMappedKeysByEntity(collections);
-      const promises = DataloaderUtils.entitiesMapToQueries(entitiesMap, em);
-      const results = (await Promise.all(promises)).flat();
+  static getColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Collection<any>, Omit<InitOptions<any, any>, 'dataloader'>?], any> {
+    return async (collsWithOpts: readonly [Collection<any>, Omit<InitOptions<any, any>, 'dataloader'>?][]) => {
+      const entitiesAndOptsMap = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collsWithOpts);
+      const promises = DataloaderUtils.entitiesAndOptsMapToQueries(entitiesAndOptsMap, em);
+      const resultsMap = new Map(await Promise.all(promises));
       // We need to filter the results in order to map each input collection
       // to a subset of each query matching the collection items.
-      return collections.map(collection =>
-        results.filter(DataloaderUtils.getColFilter(collection)),
-      );
+      return collsWithOpts.map(([col, opts]) => {
+        const key = `${col.property.targetMeta!.className}|${JSON.stringify(opts ?? {})}`;
+        const entities = resultsMap.get(key);
+        if (entities == null) {
+          // Should never happen
+          /* istanbul ignore next */
+          throw new Error('Cannot match results');
+        }
+        return entities.filter(DataloaderUtils.getColFilter(col));
+      });
     };
   }
 

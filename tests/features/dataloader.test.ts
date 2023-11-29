@@ -407,13 +407,14 @@ describe('Dataloader', () => {
     await orm.close(true);
   });
 
-  test('groupInversedOrMappedKeysByEntity', async () => {
+  test('groupInversedOrMappedKeysByEntityAndOpts', async () => {
     const collections = await getCollections(orm.em);
     expect(collections).toBeDefined();
 
-    const map = DataloaderUtils.groupInversedOrMappedKeysByEntity(collections);
-    expect(Array.from(map.keys()).map(({ className }) => className)).toEqual(['Book', 'Author', 'Chat', 'Message']);
-    const mapObj = Array.from(map.entries()).reduce<Record<string, Record<string, number[]>>>((acc, [{ className }, filterMap]) => {
+    const map = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collections.map(col => [col]));
+    expect(Array.from(map.keys()).map(key => key.substring(0, key.indexOf('|')))).toEqual(['Book', 'Author', 'Chat', 'Message']);
+    const mapObj = Array.from(map.entries()).reduce<Record<string, Record<string, number[]>>>((acc, [key, filterMap]) => {
+      const className = key.substring(0, key.indexOf('|'));
       acc[className] = Array.from(filterMap.entries()).reduce<Record<string, number[]>>((acc, [prop, set]) => {
         acc[prop] = Array.from(set.values());
         return acc;
@@ -428,23 +429,23 @@ describe('Dataloader', () => {
     });
   });
 
-  test('entitiesMapToQueries', async () => {
+  test('entitiesAndOptsMapToQueries', async () => {
     const map = new Map([
-      [orm.em.getMetadata().get('Book'), new Map([
+      ['Book|{}', new Map([
         ['author', new Set<Primary<any>>([1, 2, 3])],
         ['publisher', new Set<Primary<any>>([1, 2])],
       ])],
-      [orm.em.getMetadata().get('Author'), new Map([
+      ['Author|{}', new Map([
         ['buddiesInverse', new Set<Primary<any>>([1, 2, 3])],
       ])],
-      [orm.em.getMetadata().get('Chat'), new Map([
+      ['Chat|{}', new Map([
         ['owner', new Set<Primary<any>>([1, 2, 3])],
       ])],
-      [orm.em.getMetadata().get('Message'), new Map([
+      ['Message|{}', new Map([
         ['chat', new Set<Primary<any>>([{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }])],
       ])],
     ]);
-    const queries = DataloaderUtils.entitiesMapToQueries(map, orm.em);
+    const queries = DataloaderUtils.entitiesAndOptsMapToQueries(map, orm.em);
     expect(queries).toHaveLength(4);
     for (const query of queries) {
       expect(query instanceof Promise).toBeTruthy();
@@ -452,22 +453,22 @@ describe('Dataloader', () => {
   });
 
   test('getColFilter', async () => {
-    const promises = DataloaderUtils.entitiesMapToQueries(new Map([
-      [orm.em.getMetadata().get('Book'), new Map([
+    const promises = DataloaderUtils.entitiesAndOptsMapToQueries(new Map([
+      ['Book|{}', new Map([
         ['author', new Set<Primary<any>>([1, 2, 3])],
         ['publisher', new Set<Primary<any>>([1, 2])],
       ])],
-      [orm.em.getMetadata().get('Author'), new Map([
+      ['Author|{}', new Map([
         ['buddiesInverse', new Set<Primary<any>>([1, 2, 3])],
       ])],
-      [orm.em.getMetadata().get('Chat'), new Map([
+      ['Chat|{}', new Map([
         ['owner', new Set<Primary<any>>([1, 2, 3])],
       ])],
-      [orm.em.getMetadata().get('Message'), new Map([
+      ['Message|{}', new Map([
         ['chat', new Set<Primary<any>>([{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }])],
       ])],
     ]), orm.em);
-    const results = (await Promise.all(promises)).flat();
+    const results = (await Promise.all(promises)).map(([key, queryResults]) => queryResults).flat();
 
     const collections = await getCollections(orm.em);
     for (const collection of collections) {
@@ -481,7 +482,7 @@ describe('Dataloader', () => {
     const refBatchLoadFn = DataloaderUtils.getColBatchLoadFn(orm.em);
     const collections = await getCollections(orm.em);
     const mock = mockLogger(orm);
-    const res = await refBatchLoadFn(collections);
+    const res = await refBatchLoadFn(collections.map(col => [col]));
     await orm.em.flush();
     expect(mock.mock.calls).toMatchSnapshot();
     expect(res.length).toBe(collections.length);
@@ -501,6 +502,78 @@ describe('Dataloader', () => {
     expect(colsA.length).toBe(colsB.length);
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
+      expect(colB.isInitialized()).toBe(true);
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+    }
+  });
+
+  test('Collection.load with orderBy', async () => {
+    const colsA = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    const colsB = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    await Promise.all(colsA.map(col => col.loadItems({ orderBy: { title: QueryOrder.ASC } })));
+    const mock = mockLogger(orm);
+    await Promise.all(colsB.map(col => col.load({ orderBy: { title: QueryOrder.ASC }, dataloader: true })));
+    await orm.em.flush();
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(colsA.length).toBe(colsB.length);
+    for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
+      expect(colA.isInitialized()).toBe(true);
+      expect(colB.isInitialized()).toBe(true);
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+    }
+  });
+
+  test('Collection.load with where', async () => {
+    const colsA = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    const colsB = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    await Promise.all(colsA.map(col => col.loadItems({ where: { title: [ 'One', 'Two', 'Six' ] } })));
+    const mock = mockLogger(orm);
+    await Promise.all(colsB.map(col => col.load({ where: { title: [ 'One', 'Two', 'Six' ] }, dataloader: true })));
+    await orm.em.flush();
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(colsA.length).toBe(colsB.length);
+    for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
+      expect(colA.isInitialized()).toBe(true);
+      expect(colB.isInitialized()).toBe(true);
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+    }
+  });
+
+  test('Collection.load with populate', async () => {
+    const colsA = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    const colsB = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    await Promise.all(colsA.map(col => col.loadItems({ populate: [ 'publisher' ] })));
+    const mock = mockLogger(orm);
+    await Promise.all(colsB.map(col => col.load({ populate: [ 'publisher' ], dataloader: true })));
+    await orm.em.flush();
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(colsA.length).toBe(colsB.length);
+    for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
+      expect(colA.isInitialized()).toBe(true);
+      expect(colB.isInitialized()).toBe(true);
+      for (const book of colB.getItems()) {
+        expect(book.publisher!.isInitialized()).toBeTruthy();
+      }
+      expect(colB.isInitialized()).toBe(true);
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+    }
+  });
+
+  test('Collection.load with wildcard populate', async () => {
+    const colsA = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    const colsB = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    await Promise.all(colsA.map(col => col.loadItems({ populate: [ '*' ] })));
+    const mock = mockLogger(orm);
+    await Promise.all(colsB.map(col => col.load({ populate: [ '*' ], dataloader: true })));
+    await orm.em.flush();
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(colsA.length).toBe(colsB.length);
+    for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
+      expect(colA.isInitialized()).toBe(true);
+      expect(colB.isInitialized()).toBe(true);
+      for (const book of colB.getItems()) {
+        expect(book.publisher!.isInitialized()).toBeTruthy();
+      }
       expect(colB.isInitialized()).toBe(true);
       expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
     }

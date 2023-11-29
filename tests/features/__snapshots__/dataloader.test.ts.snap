@@ -61,6 +61,44 @@ exports[`Dataloader Collection.load 1`] = `
 ]
 `;
 
+exports[`Dataloader Collection.load with orderBy 1`] = `
+[
+  [
+    "[query] select \`b0\`.* from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1, 2, 3) order by \`b0\`.\`title\` asc",
+  ],
+]
+`;
+
+exports[`Dataloader Collection.load with populate 1`] = `
+[
+  [
+    "[query] select \`b0\`.*, \`p1\`.\`id\` as \`p1__id\`, \`p1\`.\`name\` as \`p1__name\`, \`p1\`.\`type\` as \`p1__type\` from \`book\` as \`b0\` left join \`publisher\` as \`p1\` on \`b0\`.\`publisher_id\` = \`p1\`.\`id\` where \`b0\`.\`author_id\` in (1, 2, 3)",
+  ],
+]
+`;
+
+exports[`Dataloader Collection.load with where 1`] = `
+[
+  [
+    "[query] select \`b0\`.* from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1, 2, 3) and \`b0\`.\`title\` in ('One', 'Two', 'Six')",
+  ],
+]
+`;
+
+exports[`Dataloader Collection.load with wildcard populate 1`] = `
+[
+  [
+    "[query] select \`b0\`.* from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1, 2, 3)",
+  ],
+  [
+    "[query] select \`p0\`.* from \`publisher\` as \`p0\` where \`p0\`.\`id\` in (1, 2)",
+  ],
+  [
+    "[query] select \`b0\`.* from \`book\` as \`b0\` where \`b0\`.\`publisher_id\` in (1, 2)",
+  ],
+]
+`;
+
 exports[`Dataloader Dataloader can be globally enabled for Collections with true, Dataloader.ALL, Dataloader.COLLECTION 1`] = `
 [
   [
