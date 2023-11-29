@@ -117,11 +117,7 @@ export class Reference<T> {
 
     if (!this.isInitialized() || opts.refresh) {
       if (opts.dataloader ?? dataloader ?? [Dataloader.ALL, Dataloader.REFERENCE].includes(DataloaderUtils.getDataloaderType(helper(this.entity).__em.config.get('dataloader')))) {
-        await helper(this.entity).__em.refLoader.load([this, {
-          ...(opts?.populate && { populate: opts?.populate }),
-          ...(opts?.lockMode && { lockMode: opts?.lockMode }),
-          ...(opts?.connectionType && { populate: opts?.connectionType }),
-        }]);
+        await helper(this.entity).__em.refLoader.load([this, opts]);
       } else {
         await helper(this.entity).init(undefined, opts?.populate, opts?.lockMode, opts?.connectionType);
       }
