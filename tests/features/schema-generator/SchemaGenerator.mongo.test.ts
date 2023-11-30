@@ -91,7 +91,7 @@ describe('SchemaGenerator', () => {
       .mockImplementation(() => {
         const error = new Error('Unique index must be made during collection creation');
         error.name = 'BadRequest';
-        return ['foo-baz', Promise.reject(error)];
+        return [['foo-baz', Promise.reject(error)]];
       });
     restores.push(createUniqueIndexesSpy.mockRestore);
     const createPropertyIndexesSpy = jest
