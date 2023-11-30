@@ -8,7 +8,7 @@ title: Collections
 
 The `Collection` class implements iterator, so we can use `for of` loop to iterate through it.
 
-Another way to access collection items is to use bracket syntax like when we access array items. Keep in mind that this approach will not check if the collection is initialed, while using `get` method will throw error in this case.
+Another way to access collection items is to use bracket syntax like when we access array items. Keep in mind that this approach will not check if the collection is initialized, while using `get` method will throw error in this case.
 
 > Note that array access in `Collection` is available only for reading already loaded items, we cannot add new items to `Collection` this way.
 
