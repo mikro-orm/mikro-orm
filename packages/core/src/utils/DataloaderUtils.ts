@@ -153,26 +153,24 @@ export class DataloaderUtils {
     collection: Collection<any, object>,
   ): (result: T) => result is S {
     return (result): result is S => {
-      // First check if Entity matches
-      if (helper(result).__meta.className === collection.property.type) {
-        // This is the inverse side of the relationship where the filtering will be done in order to match the target collection
-        // Either inversedBy or mappedBy exist because we already checked in groupInversedOrMappedKeysByEntity
-        const refOrCol = result[((collection.property.inversedBy ?? collection.property.mappedBy) as keyof T)] as
-          | Ref<any>
-          | Collection<any>;
-        if (refOrCol instanceof Collection) {
-          // The inverse side is a Collection
-          // We keep the result if any of PKs of the inverse side matches the PK of the collection owner
-          for (const item of refOrCol.getItems()) {
-            if (helper(item).getSerializedPrimaryKey() === helper(collection.owner).getSerializedPrimaryKey()) {
-              return true;
-            }
+      // There is no need to check if Entity matches because we already matched the key which is entity+options.
+      // This is the inverse side of the relationship where the filtering will be done in order to match the target collection
+      // Either inversedBy or mappedBy exist because we already checked in groupInversedOrMappedKeysByEntity
+      const refOrCol = result[((collection.property.inversedBy ?? collection.property.mappedBy) as keyof T)] as
+        | Ref<any>
+        | Collection<any>;
+      if (refOrCol instanceof Collection) {
+        // The inverse side is a Collection
+        // We keep the result if any of PKs of the inverse side matches the PK of the collection owner
+        for (const item of refOrCol.getItems()) {
+          if (helper(item).getSerializedPrimaryKey() === helper(collection.owner).getSerializedPrimaryKey()) {
+            return true;
           }
-        } else {
-          // The inverse side is a Reference
-          // We keep the result if the PK of the inverse side matches the PK of the collection owner
-          return helper(refOrCol).getSerializedPrimaryKey() === helper(collection.owner).getSerializedPrimaryKey();
         }
+      } else {
+        // The inverse side is a Reference
+        // We keep the result if the PK of the inverse side matches the PK of the collection owner
+        return helper(refOrCol).getSerializedPrimaryKey() === helper(collection.owner).getSerializedPrimaryKey();
       }
       return false;
     };

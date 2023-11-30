@@ -468,14 +468,15 @@ describe('Dataloader', () => {
         ['chat', new Set<Primary<any>>([{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }])],
       ])],
     ]), orm.em);
-    const results = (await Promise.all(promises)).map(([key, queryResults]) => queryResults).flat();
+    const resultsMap = new Map(await Promise.all(promises));
 
     const collections = await getCollections(orm.em);
     for (const collection of collections) {
-      const filtered = results.filter(DataloaderUtils.getColFilter(collection));
+      const key = `${collection.property.targetMeta!.className}|{}`;
+      const entities = resultsMap.get(key)!;
+      const filtered = entities.filter(DataloaderUtils.getColFilter(collection));
       expect(filtered.map((el: any) => el.id)).toEqual((await collection.loadItems()).map((el: any) => el.id));
     }
-    expect(true).toBeTruthy();
   });
 
   test('getColBatchLoadFn', async () => {
