@@ -29,6 +29,9 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('default values on json columns', async () => {
-  const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-  expect(diff1).toBe('');
+  const diff1 = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
+  expect(diff1).toEqual({
+    up: '',
+    down: '',
+  });
 });

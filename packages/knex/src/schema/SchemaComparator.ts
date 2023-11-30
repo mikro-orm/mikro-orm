@@ -549,6 +549,18 @@ export class SchemaComparator {
     return simplify(check1.expression as string) !== simplify(check2.expression as string);
   }
 
+  parseJsonDefault(defaultValue?: string | null): Dictionary | string | null {
+    if (!defaultValue) {
+      return null;
+    }
+
+    const val = defaultValue
+      .replace(/^(_\w+\\)?'(.*?)\\?'$/, '$2')
+      .replace(/^\(?'(.*?)'\)?$/, '$1');
+
+    return parseJsonSafe(val);
+  }
+
   hasSameDefaultValue(from: Column, to: Column): boolean {
     if (from.default == null || from.default.toString().toLowerCase() === 'null' || from.default.toString().startsWith('nextval(')) {
       return to.default == null || to.default!.toLowerCase() === 'null';
@@ -562,8 +574,8 @@ export class SchemaComparator {
     }
 
     if (to.mappedType instanceof JsonType) {
-      const defaultValueFrom = parseJsonSafe(from.default.replace(/^(_\w+\\)?'(.*?)\\?'$/, '$2'));
-      const defaultValueTo = parseJsonSafe(to.default?.replace(/^\(?'(.*?)'\)?$/, '$1'));
+      const defaultValueFrom = this.parseJsonDefault(from.default);
+      const defaultValueTo = this.parseJsonDefault(to.default);
 
       return Utils.equals(defaultValueFrom, defaultValueTo);
     }
