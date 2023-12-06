@@ -1309,7 +1309,7 @@ __metadata:
     "@side/jest-runtime": "npm:^1.1.0"
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
-    "@types/jest": "npm:29.5.10"
+    "@types/jest": "npm:29.5.11"
     "@types/node": "npm:20.10.3"
     "@types/pg": "npm:8.10.9"
     "@types/sqlstring": "npm:2.3.2"
@@ -2072,13 +2072,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:29.5.10":
-  version: 29.5.10
-  resolution: "@types/jest@npm:29.5.10"
+"@types/jest@npm:29.5.11":
+  version: 29.5.11
+  resolution: "@types/jest@npm:29.5.11"
   dependencies:
     expect: "npm:^29.0.0"
     pretty-format: "npm:^29.0.0"
-  checksum: f31cdc9cf840a3bc2230148bb5cba1e0369e3180ae75d85804038905300dd8cfa1d989a4dbbd909633c04568d0c1a9251b2ee5c4197309ec033403dd2a08ea42
+  checksum: 798f4c89407d9457bea1256de74c26f2b279f6c789c0e3311cd604cc75cdab333b9a29b00c51b0090d31abdf11cc788b4103282851a653bef6daf72edf97eef2
   languageName: node
   linkType: hard
 
