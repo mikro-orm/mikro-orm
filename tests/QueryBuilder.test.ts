@@ -3080,8 +3080,7 @@ describe('QueryBuilder', () => {
       .hintComment('test 456')
       .where({ favouriteBook: { $in: ['1', '2', '3'] } })
       .getFormattedQuery();
-    // works only with select queries
-    expect(sql3).toBe("update `my_schema`.`author2` set `name` = '...' where `favourite_book_uuid_pk` in ('1', '2', '3')");
+    expect(sql3).toBe("/* test 123 */ /* test 456 */ update `my_schema`.`author2` set `name` = '...' where `favourite_book_uuid_pk` in ('1', '2', '3')");
   });
 
   test('$or operator inside auto-joined relation', async () => {

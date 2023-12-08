@@ -65,6 +65,6 @@
     "fs-extra": "11.2.0",
     "globby": "11.1.0",
     "mikro-orm": "5.9.4",
-    "reflect-metadata": "0.1.13"
+    "reflect-metadata": "0.1.14"
   }
 }
