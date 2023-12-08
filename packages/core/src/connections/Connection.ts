@@ -97,6 +97,7 @@ export abstract class Connection {
       this.options.user = ret.user = this.options.user ?? decodeURIComponent(url.username);
       this.options.password = ret.password = this.options.password ?? decodeURIComponent(url.password);
       this.options.dbName = ret.database = this.options.dbName ?? decodeURIComponent(url.pathname).replace(/^\//, '');
+      this.options.schema = ret.schema = this.options.schema ?? decodeURIComponent(url.searchParams.get('schema') ?? '');
     } else {
       const url = new URL(this.config.getClientUrl());
       this.options.host = ret.host = this.options.host ?? this.config.get('host', decodeURIComponent(url.hostname));
@@ -104,6 +105,7 @@ export abstract class Connection {
       this.options.user = ret.user = this.options.user ?? this.config.get('user', decodeURIComponent(url.username));
       this.options.password = ret.password = this.options.password ?? this.config.get('password', decodeURIComponent(url.password));
       this.options.dbName = ret.database = this.options.dbName ?? this.config.get('dbName', decodeURIComponent(url.pathname).replace(/^\//, ''));
+      this.options.schema = ret.schema = this.options.schema ?? this.config.get('schema', decodeURIComponent(url.searchParams.get('schema') ?? ''));
     }
 
     return ret;
@@ -113,7 +115,7 @@ export abstract class Connection {
     const options = this.getConnectionOptions();
     const url = new URL(this.config.getClientUrl(true));
 
-    return `${url.protocol}//${options.user}${options.password ? ':*****' : ''}@${options.host}:${options.port}`;
+    return `${url.protocol}//${options.user}${options.password ? ':*****' : ''}@${options.host}:${options.port}${options.schema !== 'public' ? `?schema=${options.schema}` : ''}`;
   }
 
   setMetadata(metadata: MetadataStorage): void {
@@ -175,6 +177,7 @@ export interface ConnectionConfig {
   user?: string;
   password?: string | (() => MaybePromise<string> | MaybePromise<DynamicPassword>);
   database?: string;
+  schema?: string;
 }
 
 export type Transaction<T = any> = T;
