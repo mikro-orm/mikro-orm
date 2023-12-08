@@ -105,7 +105,6 @@ export abstract class Connection {
       this.options.user = ret.user = this.options.user ?? this.config.get('user', decodeURIComponent(url.username));
       this.options.password = ret.password = this.options.password ?? this.config.get('password', decodeURIComponent(url.password));
       this.options.dbName = ret.database = this.options.dbName ?? this.config.get('dbName', decodeURIComponent(url.pathname).replace(/^\//, ''));
-      this.options.schema = ret.schema = this.options.schema ?? this.config.get('schema', decodeURIComponent(url.searchParams.get('schema') ?? ''));
     }
 
     return ret;
@@ -114,8 +113,12 @@ export abstract class Connection {
   getClientUrl(): string {
     const options = this.getConnectionOptions();
     const url = new URL(this.config.getClientUrl(true));
+    const password = options.password ? ':*****' : '';
+    const schema = options.schema && options.schema !== this.platform.getDefaultSchemaName()
+      ? `?schema=${options.schema}`
+      : '';
 
-    return `${url.protocol}//${options.user}${options.password ? ':*****' : ''}@${options.host}:${options.port}${options.schema !== 'public' ? `?schema=${options.schema}` : ''}`;
+    return `${url.protocol}//${options.user}${password}@${options.host}:${options.port}${schema}`;
   }
 
   setMetadata(metadata: MetadataStorage): void {
