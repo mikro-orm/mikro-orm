@@ -97,7 +97,10 @@ export abstract class Connection {
       this.options.user = ret.user = this.options.user ?? decodeURIComponent(url.username);
       this.options.password = ret.password = this.options.password ?? decodeURIComponent(url.password);
       this.options.dbName = ret.database = this.options.dbName ?? decodeURIComponent(url.pathname).replace(/^\//, '');
-      this.options.schema = ret.schema = this.options.schema ?? decodeURIComponent(url.searchParams.get('schema') ?? '');
+
+      if (this.options.schema || url.searchParams.has('schema')) {
+        this.options.schema = ret.schema = this.options.schema ?? decodeURIComponent(url.searchParams.get('schema'));
+      }
     } else {
       const url = new URL(this.config.getClientUrl());
       this.options.host = ret.host = this.options.host ?? this.config.get('host', decodeURIComponent(url.hostname));
