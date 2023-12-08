@@ -99,7 +99,7 @@ export abstract class Connection {
       this.options.dbName = ret.database = this.options.dbName ?? decodeURIComponent(url.pathname).replace(/^\//, '');
 
       if (this.options.schema || url.searchParams.has('schema')) {
-        this.options.schema = ret.schema = this.options.schema ?? decodeURIComponent(url.searchParams.get('schema'));
+        this.options.schema = ret.schema = this.options.schema ?? decodeURIComponent(url.searchParams.get('schema')!);
       }
     } else {
       const url = new URL(this.config.getClientUrl());
