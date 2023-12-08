@@ -11,11 +11,11 @@ question about how something works, better place to ask is our [Slack channel](h
 
 ## Found a bug?
 
-If you find a bug in the source code, you can help by [submitting an issue](https://github.com/mikro-orm/mikro-orm/issues/new) or even better, by [submitting a Pull Request](https://github.com/mikro-orm/mikro-orm/pulls) with a fix. For reproductions, use the [mikro-orm/reproduction](https://github.com/mikro-orm/reproduction) as a base for it.
+If you find a bug in the source code, you can help by [submitting an issue](https://github.com/mikro-orm/mikro-orm/issues/new/choose) or even better, by [submitting a Pull Request](https://github.com/mikro-orm/mikro-orm/pulls) with a fix. For reproductions, use the [mikro-orm/reproduction](https://github.com/mikro-orm/reproduction) as a base for it.
 
 ## Missing a feature?
 
-You can *request* a new feature by [submitting an issue](https://github.com/mikro-orm/mikro-orm/issues/new) to this GitHub Repository. If you would like to *implement* a new feature, please submit an issue with a proposal for your work first, so we can discuss what is the best way to implement, as well as to be sure nobody else works on that already.
+You can *request* a new feature by [submitting an issue](https://github.com/mikro-orm/mikro-orm/issues/new/choose) to this GitHub Repository. If you would like to *implement* a new feature, please submit an issue with a proposal for your work first, so we can discuss what is the best way to implement, as well as to be sure nobody else works on that already.
 
 ## Submission guidelines
 
