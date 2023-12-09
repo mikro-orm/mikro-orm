@@ -26,7 +26,7 @@ import { VoType } from './VoType';
 export {
   Type, DateType, TimeType, DateTimeType, BigIntType, BlobType, Uint8ArrayType, ArrayType, EnumArrayType, EnumType,
   JsonType, IntegerType, SmallIntType, TinyIntType, MediumIntType, FloatType, DoubleType, BooleanType, DecimalType,
-  StringType, UuidType, TextType, UnknownType, TransformContext, VoType
+  StringType, UuidType, TextType, UnknownType, TransformContext, VoType,
 };
 
 export const types = {

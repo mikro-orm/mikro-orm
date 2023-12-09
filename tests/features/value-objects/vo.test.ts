@@ -83,7 +83,7 @@ test('should throw error in MaxLength', async () => {
   expect(() => {
     TestVo.from('123456');
   }).toThrow();
-})
+});
 
 test('should throw error in min', async () => {
   class TestVo extends ValueObject<string, TestVo> {
@@ -99,7 +99,7 @@ test('should throw error in min', async () => {
   expect(() => {
     TestVo.from('12345');
   }).toThrow();
-})
+});
 
 test('should throw error in min number', async () => {
   class TestVo extends ValueObject<number, TestVo> {
@@ -115,7 +115,7 @@ test('should throw error in min number', async () => {
   expect(() => {
     TestVo.from(5);
   }).toThrow();
-})
+});
 
 test('should throw error in max number', async () => {
   class TestVo extends ValueObject<number, TestVo> {
@@ -131,7 +131,7 @@ test('should throw error in max number', async () => {
   expect(() => {
     TestVo.from(7);
   }).toThrow();
-})
+});
 
 test('should throw error in float number precision', async () => {
   class TestVo extends ValueObject<number, TestVo> {
@@ -151,10 +151,10 @@ test('should throw error in float number precision', async () => {
   expect(() => {
     TestVo.from(1123.56);
   }).toThrow();
-})
+});
 
 test('should ensurable is false', () => {
 
-  const vo = new VoType(Email)
+  const vo = new VoType(Email);
   expect(vo.ensureComparable()).toBe(false);
-})
+});
