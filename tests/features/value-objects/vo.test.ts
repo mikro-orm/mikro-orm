@@ -1,6 +1,7 @@
 import { Email, Entity, PrimaryKey, Property, SimpleLogger, ValueObject } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
+import { VoType } from '@mikro-orm/core';
 
 @Entity()
 class User {
@@ -150,4 +151,10 @@ test('should throw error in float number precision', async () => {
   expect(() => {
     TestVo.from(1123.56);
   }).toThrow();
+})
+
+test('should ensurable is false', () => {
+
+  const vo = new VoType(Email)
+  expect(vo.ensureComparable()).toBe(false);
 })
