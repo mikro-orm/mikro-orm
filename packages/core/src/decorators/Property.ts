@@ -12,10 +12,13 @@ import type {
   EntityKey,
 } from '../typings';
 import type { Type, types } from '../types';
+import { ValueObject } from '@mikro-orm/core';
+import { VoType } from '../types/VoType';
 
 export function Property<T extends object>(options: PropertyOptions<T> = {}) {
   return function (target: any, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
+    const type = Utils.detectType(target, propertyName);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
     MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceKind.SCALAR);
     const name = options.name || propertyName;
@@ -36,6 +39,17 @@ export function Property<T extends object>(options: PropertyOptions<T> = {}) {
       prop.type = 'method';
       prop.getterName = propertyName as EntityKey<T>;
       prop.name = name as EntityKey<T>;
+    }
+
+    if (type && Utils.extendsFrom(ValueObject, type.prototype)) {
+      let instance = new type(null, true).getDatabaseValues();
+      prop.length = instance.max;
+      prop.precision = instance.precision;
+      prop.scale = instance.scale;
+      prop.type = instance.type;
+      prop.customType = new VoType(type);
+      prop.isValueObject = true;
+      instance = null; // Garbage collector
     }
 
     if (check) {

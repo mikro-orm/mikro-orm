@@ -75,7 +75,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    entity${entityKey} = ${nullVal};`);
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
 
-      if (prop.customType) {
+      if (prop.customType && !prop.isValueObject) {
         context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
         context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 

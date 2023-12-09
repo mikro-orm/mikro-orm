@@ -414,6 +414,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   extra?: string;
   userDefined?: boolean;
   optional?: boolean; // for ts-morph
+  isValueObject: boolean;
   ignoreSchemaChanges?: ('type' | 'extra')[];
 }
 
