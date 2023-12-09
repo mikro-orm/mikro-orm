@@ -373,11 +373,6 @@ export class EntityFactory {
           return data[k];
         }
 
-        // if (Utils.isVo(data[k]) && !Utils.isObject(data[k])) {
-        //   const vo = (meta.properties[k].type as VoType<any>);
-        //   data[k] = vo.convertToJSValue(data[k]!, this.platform) as any;
-        // }
-
         if (Utils.isObject(data[k]) && !Utils.extractPK(data[k], meta.properties[k].targetMeta, true)) {
           return this.create(meta.properties[k].type, data[k]!, options);
         }
