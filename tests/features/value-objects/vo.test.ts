@@ -9,7 +9,7 @@ class User {
   id!: number;
 
   @Property()
-  email: Email;
+  email?: Email;
 }
 
 let orm: MikroORM;
@@ -33,7 +33,7 @@ test('should create with Vo', async () => {
   const user = orm.em.repo(User).create({ email: 'test@test.com' });
   await orm.em.flush();
 
-  expect(email.equals(user.email)).toBe(true);
+  expect(email.equals(user.email!)).toBe(true);
 
   expect(mock.mock.calls).toEqual([
     [
@@ -58,5 +58,5 @@ test('should find with Vo', async () => {
   });
 
   expect(found).toBeDefined();
-  expect(found!.email.equals(email)).toBe(true);
+  expect(found!.email!.equals(email)).toBe(true);
 });
