@@ -67,7 +67,7 @@ export class EntityFactory {
 
     for (const key in data) {
       const keyData = key as keyof typeof data;
-      if (keyData === '__proto__') continue;
+      if (keyData === '__proto__') { continue; }
       if (meta.properties[key]?.isValueObject && !Utils.isObject(data[keyData])) {
          const vo = (meta.properties[key].customType as VoType<any>);
          data[keyData] = vo.convertToJSValue(data[keyData]!, this.platform) as any;

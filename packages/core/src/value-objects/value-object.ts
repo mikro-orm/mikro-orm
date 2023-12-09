@@ -68,7 +68,7 @@ export abstract class ValueObject<T, Vo> {
 
   constructor(value: T, skipValidation = false) {
     if (!skipValidation && (!this.validate(value) || !this.validateDatabase(value))) {
-      throw new Error(`Invalid value for ${this.constructor.name}`);
+      throw new ValidationError(`Invalid value for ${this.constructor.name}`);
     }
 
     this.setValue(value);
