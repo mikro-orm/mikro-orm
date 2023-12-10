@@ -61,7 +61,10 @@ export class Collection<T extends object, O extends object = object> extends Arr
    * Returns the Collection instance (itself), works the same as `Reference.load()`.
    */
   async load<TT extends T, P extends string = never>(options: InitOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
-    if (!this.isInitialized(true)) {
+    if (this.isInitialized(true)) {
+      const em = this.getEntityManager();
+      await em.populate(this.items, options.populate, options);
+    } else {
       await this.init(options);
     }
 
@@ -314,7 +317,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     if (options.dataloader ?? (DataloaderUtils.getDataloaderType(em.config.get('dataloader')) > Dataloader.COLLECTION)) {
       const order = [...this.items]; // copy order of references
       const customOrder = !!options.orderBy;
-      const items: TT[] = await this.getEntityManager().colLoader.load(this);
+      const items: TT[] = await em.colLoader.load(this);
 
       if (!customOrder) {
         this.reorderItems(items, order);
@@ -377,6 +380,13 @@ export class Collection<T extends object, O extends object = object> extends Arr
     let em = this._em ?? helper(this.owner).__em;
 
     if (!em) {
+      for (const i of this.items) {
+        if (i && helper(i).__em) {
+          em = helper(i).__em;
+          break;
+        }
+      }
+
       for (const i of items) {
         if (i && helper(i).__em) {
           em = helper(i).__em;

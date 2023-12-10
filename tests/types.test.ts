@@ -615,14 +615,13 @@ describe('check typings', () => {
     const populated01: Loaded<Parent, 'children'> = {} as Loaded<Ref<Parent>>;
     // @ts-expect-error Loaded<Parent, never> is not assignable
     const populated02: Loaded<Parent, 'children'> = {} as Loaded<Parent>;
-    let populated1: Loaded<Parent, 'children'>;
     function foo(e: Loaded<Parent, 'children'>) {
       //
     }
     const e = await parent.load();
     // @ts-expect-error Loaded<Parent, never> is not assignable
     foo(e);
-    // populated1 = await parent.load();
+    const populated1: Loaded<Parent, 'children'> = await parent.load();
     const populated22 = await parent.load({ populate: [] });
     // @ts-expect-error Loaded<Parent, never> is not assignable
     const populated2: Loaded<Parent, 'children'> = populated22;

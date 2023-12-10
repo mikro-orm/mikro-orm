@@ -15,6 +15,7 @@ import type {
   MergeSelected,
   FromEntityType,
   IsSubset,
+  MergeLoaded,
 } from '../typings';
 import type {
   CountOptions,
@@ -44,7 +45,7 @@ export class EntityRepository<Entity extends object> {
    */
   async findOne<
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(where: FilterQuery<Entity>, options?: FindOneOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields> | null> {
     return this.getEntityManager().findOne<Entity, Hint, Fields>(this.entityName, where, options);
   }
@@ -56,7 +57,7 @@ export class EntityRepository<Entity extends object> {
    */
   async findOneOrFail<
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(where: FilterQuery<Entity>, options?: FindOneOrFailOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>> {
     return this.getEntityManager().findOneOrFail<Entity, Hint, Fields>(this.entityName, where, options);
   }
@@ -121,7 +122,7 @@ export class EntityRepository<Entity extends object> {
    */
   async find<
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
     return this.getEntityManager().find(this.entityName, where as FilterQuery<Entity>, options);
   }
@@ -132,7 +133,7 @@ export class EntityRepository<Entity extends object> {
    */
   async findAndCount<
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields>): Promise<[Loaded<Entity, Hint, Fields>[], number]> {
     return this.getEntityManager().findAndCount(this.entityName, where, options);
   }
@@ -142,7 +143,7 @@ export class EntityRepository<Entity extends object> {
    */
   async findByCursor<
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(where: FilterQuery<Entity>, options?: FindByCursorOptions<Entity, Hint, Fields>): Promise<Cursor<Entity, Hint, Fields>> {
     return this.getEntityManager().findByCursor(this.entityName, where, options);
   }
@@ -152,7 +153,7 @@ export class EntityRepository<Entity extends object> {
    */
   async findAll<
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(options?: FindAllOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
     return this.getEntityManager().findAll(this.entityName, options);
   }
@@ -226,8 +227,9 @@ export class EntityRepository<Entity extends object> {
    */
   async populate<
     Hint extends string = never,
-    Fields extends string = never,
-  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint, '*'>[] | false, options?: EntityLoaderOptions<Entity, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
+    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
+    Fields extends string = '*',
+  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint, '*'>[] | false, options?: EntityLoaderOptions<Entity, Fields>): Promise<MergeLoaded<Entity, Naked, Hint, Fields>[]> {
     this.validateRepositoryType(entities, 'populate');
     return this.getEntityManager().populate(entities as Entity, populate, options);
   }

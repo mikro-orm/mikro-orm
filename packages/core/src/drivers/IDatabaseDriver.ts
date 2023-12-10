@@ -90,7 +90,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
 }
 
-export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<T, P, '*'>;
+export type EntityField<T, P extends string = '*'> = keyof T | '*' | AutoPath<T, P, '*'>;
 
 export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
 

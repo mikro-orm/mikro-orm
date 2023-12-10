@@ -36,7 +36,7 @@ export type EntityValue<T> = T[EntityKey<T>];
 export type FilterKey<T> = keyof FilterQuery<T>;
 export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
 export type Compute<T> = { [K in keyof T]: T[K] } & {};
-export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol ? never : K);
+export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol | '__selectedType' | '__loadedType' ? never : K);
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
 export type IsAny<T> = 0 extends (1 & T) ? true : false;
@@ -923,7 +923,7 @@ declare const __selectedType: unique symbol;
 declare const __loadedType: unique symbol;
 
 export type MergeSelected<T, U, F extends string> =
-  T extends { [__selectedType]?: [U, infer P, infer FF] } // Selected<U, infer P, infer FF>
+  T extends { [__selectedType]?: [U, infer P, infer FF] }
     ? string extends FF
       ? T
       : string extends P
@@ -931,9 +931,25 @@ export type MergeSelected<T, U, F extends string> =
         : Selected<U, P & string, F | (FF & string)>
     : T;
 
+// merge partial loading hints, and propagate populate: '*' to it
+type MergeFields<F1 extends string, F2 extends string, P1, P2> =
+  P1 | P2 extends '*'
+    ? '*'
+    : F1 | F2;
+
+export type MergeLoaded<T, U, P extends string, F extends string> =
+  T extends Loaded<U, infer PP, infer FF>
+    ? string extends FF
+      ? T
+      : string extends P
+        ? Loaded<U, never, F | (FF & string)>
+        : Loaded<U, P | (PP & string), MergeFields<F, (FF & string), P, PP>>
+    : T;
+
 type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
 type LoadedProp<T, L extends string = never, F extends string = '*'> = LoadedLoadable<T, Loaded<ExtractType<T>, L, F>>;
 export type AddEager<T> = ExtractEagerProps<T> & string;
+export type ExpandHint<T, L extends string> = L | AddEager<T>;
 
 export type Selected<T, L extends string = never, F extends string = '*'> = {
   [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
@@ -946,7 +962,7 @@ export type FromEntityType<T> = T extends EntityType<infer U> ? U : T;
  * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
  */
 export type Loaded<T, L extends string = never, F extends string = '*'> = ([F] extends ['*'] ? (T & {
-  [K in keyof T as IsPrefixed<T, K, L | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L>> | AddOptional<T[K]>;
+  [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>>]: LoadedProp<Defined<T[K]>, Suffix<K, L>> | AddOptional<T[K]>;
 }) : Selected<T, L, F>) & { [__loadedType]?: T };
 
 export interface LoadedReference<T> extends Reference<Defined<T>> {

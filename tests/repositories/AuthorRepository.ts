@@ -8,7 +8,7 @@ export class AuthorRepository extends EntityRepository<Author> {
     return `111 ${data} 222`;
   }
 
-  override async find<P extends string = never, F extends string = never>(where: FilterQuery<Author> = {}, options?: FindOptions<Author, P, F>): Promise<Loaded<Author, P, F>[]> {
+  override async find<P extends string = never, F extends string = '*'>(where: FilterQuery<Author> = {}, options?: FindOptions<Author, P, F>): Promise<Loaded<Author, P, F>[]> {
     return super.find(where, options);
   }
 

@@ -23,7 +23,7 @@ import type { Platform } from '../platforms/Platform';
 import { helper } from './wrap';
 import type { LoggingOptions } from '../logging/Logger';
 
-export type EntityLoaderOptions<Entity, Fields extends string = never> = {
+export type EntityLoaderOptions<Entity, Fields extends string = '*'> = {
   where?: FilterQuery<Entity>;
   populateWhere?: PopulateHint | `${PopulateHint}`;
   fields?: readonly EntityField<Entity, Fields>[];
@@ -54,7 +54,7 @@ export class EntityLoader {
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<Entity extends object, Fields extends string = never>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): Promise<void> {
+  async populate<Entity extends object, Fields extends string = '*'>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): Promise<void> {
     if (entities.length === 0 || Utils.isEmpty(populate)) {
       return;
     }

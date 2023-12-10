@@ -227,9 +227,10 @@ describe('EntityManagerMongo2', () => {
     orm.em.clear();
 
     let ent = await orm.em.findOneOrFail(Publisher, publisher.id);
-    await expect(ent.tests.loadCount()).resolves.toBe(3);
+    // eager loaded tests are type safe as we use `EagerProps` symbol
+    await expect(ent.tests.$.loadCount()).resolves.toBe(3);
     await ent.tests.init();
-    await expect(ent.tests.loadCount()).resolves.toBe(3);
+    await expect(ent.tests.$.loadCount()).resolves.toBe(3);
     orm.em.clear();
 
     ent = await orm.em.findOneOrFail(Publisher, publisher.id, { populate: ['tests'] as const });

@@ -59,6 +59,7 @@ import type {
   IsSubset,
   Loaded,
   MaybePromise,
+  MergeLoaded,
   MergeSelected,
   ObjectQuery,
   PopulateOptions,
@@ -192,7 +193,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async find<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint, Fields> = {}): Promise<Loaded<Entity, Hint, Fields>[]> {
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
@@ -276,7 +277,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async findAll<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(entityName: EntityName<Entity>, options?: FindAllOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
     return this.find<Entity, Hint, Fields>(entityName, options?.where ?? {}, options);
   }
@@ -351,7 +352,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   protected async processWhere<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(entityName: string, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint, Fields> | FindOneOptions<Entity, Hint, Fields>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<Entity>> {
     where = QueryHelper.processWhere({
       where,
@@ -495,7 +496,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async findAndCount<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint, Fields> = {}): Promise<[Loaded<Entity, Hint, Fields>[], number]> {
     const em = this.getContext(false);
     const copy = Utils.copy(where);
@@ -562,7 +563,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async findByCursor<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindByCursorOptions<Entity, Hint, Fields> = {}): Promise<Cursor<Entity, Hint, Fields>> {
     const em = this.getContext(false);
     entityName = Utils.className(entityName);
@@ -585,7 +586,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async refresh<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(entity: Entity, options: FindOneOptions<Entity, Hint, Fields> = {}): Promise<Loaded<Entity, Hint, Fields> | null> {
     const fork = this.fork();
     const entityName = entity.constructor.name;
@@ -616,7 +617,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async findOne<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOneOptions<Entity, Hint, Fields> = {}): Promise<Loaded<Entity, Hint, Fields> | null> {
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
@@ -704,7 +705,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async findOneOrFail<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOneOrFailOptions<Entity, Hint, Fields> = {}): Promise<Loaded<Entity, Hint, Fields>> {
     let entity: Loaded<Entity, Hint, Fields> | null;
     let isStrictViolation = false;
@@ -725,7 +726,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       throw options.failHandler!(entityName, where);
     }
 
-    return entity;
+    return entity as Loaded<Entity, Hint, Fields>;
   }
 
   /**
@@ -1667,13 +1668,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async populate<
     Entity extends object,
+    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Hint extends string = never,
-    Fields extends string = never,
-  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint, '*'>[] | false, options: EntityLoaderOptions<Entity, Fields> = {}): Promise<Loaded<Entity, Hint, Fields>[]> {
+    Fields extends string = '*',
+  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint, '*'>[] | false, options: EntityLoaderOptions<Entity, Fields> = {}): Promise<MergeLoaded<Entity, Naked, Hint, Fields>[]> {
     entities = Utils.asArray(entities);
 
     if (entities.length === 0) {
-      return entities as Loaded<Entity, Hint, Fields>[];
+      return entities as MergeLoaded<Entity, Naked, Hint, Fields>[];
     }
 
     const em = this.getContext();
@@ -1682,7 +1684,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const preparedPopulate = em.preparePopulate<Entity, Hint>(entityName, { populate: populate as any });
     await em.entityLoader.populate(entityName, entities, preparedPopulate, options);
 
-    return entities as Loaded<Entity, Hint, Fields>[];
+    return entities as MergeLoaded<Entity, Naked, Hint, Fields>[];
   }
 
   /**
@@ -1886,7 +1888,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private preparePopulate<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = never,
+    Fields extends string = '*',
   >(entityName: string, options: Pick<FindOptions<Entity, Hint, Fields>, 'populate' | 'strategy' | 'fields' | 'flags'>): PopulateOptions<Entity>[] {
     if (options.populate === false) {
       return [];

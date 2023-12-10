@@ -395,11 +395,9 @@ describe('partial loading (mysql)', () => {
     const [r2] = await orm.em.populate(r1, ['*'], { refresh: true });
     expect(r2.name).toBe('t1');
     expect(r2.books[0].title).toBe('Bible 1');
-    // @ts-expect-error
     expect(r2.books[0].price).toBe('123.00');
     expect(r2.books[0].author).toBeDefined();
     expect(r2.books[0].author.id).toBeDefined();
-    // @ts-expect-error
     expect(r2.books[0].author.name).toBe(god.name);
     expect(r2.books[0].author.email).toBe(god.email);
   });
