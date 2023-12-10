@@ -85,12 +85,11 @@ export class EntityLoader {
       const context = helper(e).__serializationContext;
       context.populate ??= populate as PopulateOptions<Entity>[];
       context.fields ??= options.fields ? [...options.fields as string[]] : undefined;
+      visited.add(e);
     });
 
     for (const pop of populate) {
-      entities.forEach(e => visited.add(e));
       await this.populateField<Entity>(entityName, entities, pop, options as Required<EntityLoaderOptions<Entity>>);
-      entities.forEach(e => visited.delete(e));
     }
   }
 
@@ -335,10 +334,12 @@ export class EntityLoader {
     }
 
     const items = await this.em.find(prop.type, where, {
-      refresh, filters, convertCustomTypes, lockMode, populateWhere, logging,
+      filters, convertCustomTypes, lockMode, populateWhere, logging,
       orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy)] as QueryOrderMap<Entity>[],
       populate: populate.children as never ?? populate.all ?? [],
       strategy, fields, schema, connectionType,
+      // @ts-ignore not a public option, will be propagated to the populate call
+      refresh: refresh && !children.every(item => options.visited.has(item)),
       // @ts-ignore not a public option, will be propagated to the populate call
       visited: options.visited,
     });
@@ -409,12 +410,13 @@ export class EntityLoader {
       fields,
       validate: false,
       lookup: false,
-      refresh,
       filters,
       ignoreLazyScalarProperties,
       populateWhere,
       connectionType,
       logging,
+      // @ts-ignore not a public option, will be propagated to the populate call
+      refresh: refresh && !filtered.every(item => options.visited.has(item)),
       // @ts-ignore not a public option, will be propagated to the populate call
       visited: options.visited,
     });
