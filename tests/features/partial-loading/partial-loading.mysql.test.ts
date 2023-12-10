@@ -291,4 +291,28 @@ describe('partial loading (mysql)', () => {
       'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`');
   });
 
+  test('populate partial', async () => {
+    const god = await createEntities();
+
+    const r1 = await orm.em.findOneOrFail(BookTag2, '1', {
+      fields: ['name', 'books.title', 'books.author.email'],
+    });
+    expect(r1.name).toBe('t1');
+    expect(r1.books[0].title).toBe('Bible 1');
+    expect(r1.books[0].price).toBeUndefined();
+    expect(r1.books[0].author).toBeDefined();
+    expect(r1.books[0].author.id).toBeDefined();
+    expect(r1.books[0].author.name).toBeUndefined();
+    expect(r1.books[0].author.email).toBe(god.email);
+
+    const [r2] = await orm.em.populate(r1, true, { refresh: true });
+    expect(r2.name).toBe('t1');
+    expect(r2.books[0].title).toBe('Bible 1');
+    expect(r2.books[0].price).toBe('123.00');
+    expect(r2.books[0].author).toBeDefined();
+    expect(r2.books[0].author.id).toBeDefined();
+    expect(r2.books[0].author.name).toBe(god.name);
+    expect(r2.books[0].author.email).toBe(god.email);
+  });
+
 });

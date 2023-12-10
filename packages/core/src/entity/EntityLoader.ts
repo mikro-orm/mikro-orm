@@ -65,12 +65,13 @@ export class EntityLoader {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
-    entities.forEach(e => helper(e).__serializationContext.populate ??= populate as PopulateOptions<T>[]);
+    for (const e of entities) {
+      helper(e).__serializationContext.populate ??= populate as PopulateOptions<T>[];
+      visited.add(e);
+    }
 
     for (const pop of populate) {
-      entities.forEach(e => visited.add(e));
       await this.populateField<T>(entityName, entities, pop, options as Required<EntityLoaderOptions<T>>);
-      entities.forEach(e => visited.delete(e));
     }
   }
 
@@ -294,10 +295,12 @@ export class EntityLoader {
     const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType } = options;
 
     return this.em.find(prop.type, where, {
-      refresh, filters, convertCustomTypes, lockMode, populateWhere,
+      filters, convertCustomTypes, lockMode, populateWhere,
       orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy), { [fk]: QueryOrder.ASC }] as QueryOrderMap<T>[],
       populate: populate.children as never ?? populate.all ?? [],
       strategy, fields, schema, connectionType,
+      // @ts-ignore not a public option, will be propagated to the populate call
+      refresh: refresh && !children.every(item => options.visited.has(item)),
       // @ts-ignore not a public option, will be propagated to the populate call
       visited: options.visited,
     });
@@ -355,11 +358,12 @@ export class EntityLoader {
       fields,
       validate: false,
       lookup: false,
-      refresh,
       filters,
       ignoreLazyScalarProperties,
       populateWhere,
       connectionType,
+      // @ts-ignore not a public option, will be propagated to the populate call
+      refresh: refresh && !filtered.every(item => options.visited.has(item)),
       // @ts-ignore not a public option, will be propagated to the populate call
       visited: options.visited,
     });
