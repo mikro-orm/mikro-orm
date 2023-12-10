@@ -119,15 +119,13 @@ describe('partial loading (mysql)', () => {
     orm.em.clear();
     mock.mock.calls.length = 0;
 
-    // old syntax is still supported
-    const r2 = await orm.em.find(Author2, god, { fields: ['id', 'books.uuid', 'books.author', 'books.title'] });
+    // old syntax is still supported but will yield Loaded instead of Selected
+    const r2 = await orm.em.find(Author2, god, { fields: ['id', { books: ['uuid', 'author', 'title'] } as any] });
     expect(r2).toHaveLength(1);
     expect(r2[0].id).toBe(god.id);
-    // @ts-expect-error
     expect(r2[0].name).toBeUndefined();
     expect(r2[0].books[0].uuid).toBe(god.books[0].uuid);
     expect(r2[0].books[0].title).toBe('Bible 1');
-    // @ts-expect-error
     expect(r2[0].books[0].price).toBeUndefined();
     expect(r2[0].books[0].author).toBeDefined();
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id`, `b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id` from `author2` as `a0` left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null where `a0`.`id` = ? order by `b1`.`title` asc');
@@ -376,6 +374,34 @@ describe('partial loading (mysql)', () => {
       'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
       'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
       'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`');
+  });
+
+  test('populate partial', async () => {
+    const god = await createEntities();
+
+    const r1 = await orm.em.findOneOrFail(BookTag2, 1, {
+      fields: ['name', 'books.title', 'books.author.email'],
+    });
+    expect(r1.name).toBe('t1');
+    expect(r1.books[0].title).toBe('Bible 1');
+    // @ts-expect-error
+    expect(r1.books[0].price).toBeUndefined();
+    expect(r1.books[0].author).toBeDefined();
+    expect(r1.books[0].author.id).toBeDefined();
+    // @ts-expect-error
+    expect(r1.books[0].author.name).toBeUndefined();
+    expect(r1.books[0].author.email).toBe(god.email);
+
+    const [r2] = await orm.em.populate(r1, ['*'], { refresh: true });
+    expect(r2.name).toBe('t1');
+    expect(r2.books[0].title).toBe('Bible 1');
+    // @ts-expect-error
+    expect(r2.books[0].price).toBe('123.00');
+    expect(r2.books[0].author).toBeDefined();
+    expect(r2.books[0].author.id).toBeDefined();
+    // @ts-expect-error
+    expect(r2.books[0].author.name).toBe(god.name);
+    expect(r2.books[0].author.email).toBe(god.email);
   });
 
 });
