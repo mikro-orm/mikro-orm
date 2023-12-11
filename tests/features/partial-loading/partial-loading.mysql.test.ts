@@ -392,7 +392,7 @@ describe('partial loading (mysql)', () => {
     expect(r1.books[0].author.name).toBeUndefined();
     expect(r1.books[0].author.email).toBe(god.email);
 
-    const [r2] = await orm.em.populate(r1, ['*'], { refresh: true });
+    const r2 = await orm.em.populate(r1, ['*'], { refresh: true });
     expect(r2.name).toBe('t1');
     expect(r2.books[0].title).toBe('Bible 1');
     expect(r2.books[0].price).toBe('123.00');

@@ -52,7 +52,8 @@ export class EntityLoader {
   }
 
   /**
-   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
+   * Loads specified relations in batch.
+   * This will execute one query for each relation, that will populate it on all the specified entities.
    */
   async populate<Entity extends object, Fields extends string = '*'>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): Promise<void> {
     if (entities.length === 0 || Utils.isEmpty(populate)) {

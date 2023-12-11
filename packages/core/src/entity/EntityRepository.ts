@@ -16,6 +16,7 @@ import type {
   FromEntityType,
   IsSubset,
   MergeLoaded,
+  ArrayElement,
 } from '../typings';
 import type {
   CountOptions,
@@ -226,12 +227,14 @@ export class EntityRepository<Entity extends object> {
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all the specified entities.
    */
   async populate<
+    Ent extends Entity | Entity[],
     Hint extends string = never,
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Fields extends string = '*',
-  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint, '*'>[] | false, options?: EntityLoaderOptions<Entity, Fields>): Promise<MergeLoaded<Entity, Naked, Hint, Fields>[]> {
+  >(entities: Ent, populate: AutoPath<Entity, Hint, '*'>[] | false, options?: EntityLoaderOptions<Entity, Fields>): Promise<Ent extends object[] ? MergeLoaded<ArrayElement<Ent>, Naked, Hint, Fields>[] : MergeLoaded<Ent, Naked, Hint, Fields>> {
     this.validateRepositoryType(entities, 'populate');
-    return this.getEntityManager().populate(entities as Entity, populate, options);
+    // @ts-ignore hard to type
+    return this.getEntityManager().populate(entities, populate, options);
   }
 
   /**

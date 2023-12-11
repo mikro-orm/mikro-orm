@@ -42,6 +42,7 @@ import type {
 import type {
   AnyEntity,
   AnyString,
+  ArrayElement,
   AutoPath,
   ConnectionType,
   Dictionary,
@@ -66,6 +67,7 @@ import type {
   Primary,
   Ref,
   RequiredEntityData,
+  UnboxArray,
 } from './typings';
 import {
   EventType,
@@ -1671,20 +1673,20 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Hint extends string = never,
     Fields extends string = '*',
-  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint, '*'>[] | false, options: EntityLoaderOptions<Entity, Fields> = {}): Promise<MergeLoaded<Entity, Naked, Hint, Fields>[]> {
-    entities = Utils.asArray(entities);
+  >(entities: Entity, populate: AutoPath<UnboxArray<Entity>, Hint, '*'>[] | false, options: EntityLoaderOptions<UnboxArray<Entity>, Fields> = {}): Promise<Entity extends object[] ? MergeLoaded<ArrayElement<Entity>, Naked, Hint, Fields>[] : MergeLoaded<Entity, Naked, Hint, Fields>> {
+    const arr = Utils.asArray(entities);
 
-    if (entities.length === 0) {
-      return entities as MergeLoaded<Entity, Naked, Hint, Fields>[];
+    if (arr.length === 0) {
+      return entities as any;
     }
 
     const em = this.getContext();
     options.schema ??= em._schema;
-    const entityName = (entities[0] as Dictionary).constructor.name;
+    const entityName = (arr[0] as Dictionary).constructor.name;
     const preparedPopulate = em.preparePopulate<Entity, Hint>(entityName, { populate: populate as any });
-    await em.entityLoader.populate(entityName, entities, preparedPopulate, options);
+    await em.entityLoader.populate(entityName, arr, preparedPopulate, options as EntityLoaderOptions<Entity>);
 
-    return entities as MergeLoaded<Entity, Naked, Hint, Fields>[];
+    return entities as any;
   }
 
   /**

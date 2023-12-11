@@ -151,6 +151,7 @@ export class WrappedEntity<Entity extends object> {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
+    // @ts-ignore hard to type
     await this.__em.populate(this.entity, populate, options);
 
     return this.entity as Loaded<Entity, Hint>;

@@ -457,6 +457,17 @@ const users = await em.find(User, {}, {
 
 `populate: false` is still allowed and serves as a way to disable eager loaded properties.
 
+## `em.populate()` returns just the entity when called on a single entity
+
+`em.populate()` now returns what you feed in—when you call it with a single entity, you get single entity back, when you call it with an array of entities, you get an array back.
+
+This has been the case initially, but it was problematic to type the method strictly, so it was changed to always an array in v5. This is now resolved in v6, so we can have the previous behavior back, but type-safe.
+
+```diff
+-const [author] = await em.populate(author, ['books']);
++const author = await em.populate(author, ['books']);
+```
+
 ## Duplicate field names are now validated
 
 When you use the same `fieldName` for two properties in one entity, error will be thrown:

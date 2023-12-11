@@ -258,6 +258,7 @@ export interface SerializeOptions<T, P extends string = never, E extends string 
   /** Skip properties with `null` value. */
   skipNull?: boolean;
 }
+
 /**
  * Converts entity instance to POJO, converting the `Collection`s to arrays and unwrapping the `Reference` wrapper, while respecting the serialization options.
  * This method accepts either a single entity or an array of entities, and returns the corresponding POJO or an array of POJO.

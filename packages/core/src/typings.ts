@@ -31,12 +31,13 @@ import type { FindOneOptions, FindOptions } from './drivers';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
-export type EntityKey<T = unknown> = string & keyof { [K in keyof T as ExcludeFunctions<T, K>]?: unknown };
+export type EntityKey<T = unknown> = string & keyof { [K in keyof T as CleanKeys<T, K>]?: unknown };
 export type EntityValue<T> = T[EntityKey<T>];
 export type FilterKey<T> = keyof FilterQuery<T>;
 export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
 export type Compute<T> = { [K in keyof T]: T[K] } & {};
-export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol | '__selectedType' | '__loadedType' ? never : K);
+type InternalKeys = 'EntityRepositoryType' | 'PrimaryKeyProp' | 'OptionalProps' | 'EagerProps' | 'HiddenProps' | '__selectedType' | '__loadedType';
+export type CleanKeys<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol | InternalKeys ? never : K);
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
 export type IsAny<T> = 0 extends (1 & T) ? true : false;
@@ -204,7 +205,7 @@ export type GetRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = 
 
 export type EntityDataPropValue<T> = T | Primary<T>;
 type ExpandEntityProp<T> = T extends Record<string, any>
-  ? { [K in keyof T as ExcludeFunctions<T, K>]?: EntityDataProp<ExpandProperty<T[K]>> | EntityDataPropValue<ExpandProperty<T[K]>> | null } | EntityDataPropValue<ExpandProperty<T>>
+  ? { [K in keyof T as CleanKeys<T, K>]?: EntityDataProp<ExpandProperty<T[K]>> | EntityDataPropValue<ExpandProperty<T[K]>> | null } | EntityDataPropValue<ExpandProperty<T>>
   : T;
 type ExpandRequiredEntityProp<T, I> = T extends Record<string, any>
   ? ExpandRequiredEntityPropObject<T, I> | EntityDataPropValue<ExpandProperty<T>>
@@ -266,8 +267,8 @@ type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
     : K extends ProbablyOptionalProps<T>
       ? true
       : false;
-type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? ExcludeFunctions<T, K> : never;
-type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : ExcludeFunctions<T, K>;
+type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? CleanKeys<T, K> : never;
+type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : CleanKeys<T, K>;
 export type EntityData<T> = { [K in EntityKey<T>]?: EntityDataItem<T[K]> };
 export type RequiredEntityData<T, I = never> = {
   [K in keyof T as RequiredKeys<T, K, I>]: T[K] | RequiredEntityDataProp<T[K], T> | Primary<T[K]>
@@ -816,7 +817,7 @@ export type PopulateOptions<T> = {
 type Loadable<T extends object> = Collection<T, any> | Reference<T> | Ref<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
 type ExtractType<T> = T extends Loadable<infer U> ? U : T;
 
-type ExtractStringKeys<T> = { [K in keyof T]: ExcludeFunctions<T, K> }[keyof T] & {};
+type ExtractStringKeys<T> = { [K in keyof T]: CleanKeys<T, K> }[keyof T] & {};
 type StringKeys<T, E extends string = never> = T extends Collection<any, any>
   ? ExtractStringKeys<ExtractType<T>> | E
   : T extends Reference<any>
@@ -859,6 +860,7 @@ export type AutoPath<O, P extends string | boolean, E extends string = never, D 
             : never
           : never;
 
+export type UnboxArray<T> = T extends any[] ? ArrayElement<T> : T;
 export type ArrayElement<ArrayType extends unknown[]> = ArrayType extends (infer ElementType)[] ? ElementType : never;
 
 export type ExpandProperty<T> = T extends Reference<infer U>
@@ -914,7 +916,7 @@ export type IsSubset<T, U> = keyof U extends keyof T
   ? {}
   : Dictionary extends U
     ? {}
-    : { [K in keyof U as K extends keyof T ? never : ExcludeFunctions<U, K>]: never; };
+    : { [K in keyof U as K extends keyof T ? never : CleanKeys<U, K>]: never; };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const __selectedType: unique symbol;
@@ -940,11 +942,11 @@ type MergeFields<F1 extends string, F2 extends string, P1, P2> =
 export type MergeLoaded<T, U, P extends string, F extends string> =
   T extends Loaded<U, infer PP, infer FF>
     ? string extends FF
-      ? T
+      ? Loaded<T, P, F>
       : string extends P
         ? Loaded<U, never, F | (FF & string)>
         : Loaded<U, P | (PP & string), MergeFields<F, (FF & string), P, PP>>
-    : T;
+    : Loaded<T, P, F>;
 
 type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
 type LoadedProp<T, L extends string = never, F extends string = '*'> = LoadedLoadable<T, Loaded<ExtractType<T>, L, F>>;

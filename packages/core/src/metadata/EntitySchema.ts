@@ -7,7 +7,7 @@ import {
   type Dictionary,
   type EntityName,
   type EntityProperty,
-  type ExcludeFunctions,
+  type CleanKeys,
   type ExpandProperty,
   type IsNever,
 } from '../typings';
@@ -37,7 +37,7 @@ export type EntitySchemaMetadata<Entity, Base = never> =
   & Omit<Partial<EntityMetadata<Entity>>, 'name' | 'properties' | 'extends'>
   & ({ name: string } | { class: Constructor<Entity>; name?: string })
   & { extends?: string | EntitySchema<Base> }
-  & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as ExcludeFunctions<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
+  & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as CleanKeys<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
 
 export class EntitySchema<Entity = any, Base = never> {
 
