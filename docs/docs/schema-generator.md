@@ -118,3 +118,11 @@ There are limitations of SQLite database because of which it behaves differently
 - alter column requires nullability
 
 Because of this, you can end up with different schema with SQLite, so it is not suggested to use SQLite for integration tests of your application.
+
+## Debugging
+
+Sometimes the schema diffing might not work as expected and will produce unwanted queries. Often this is a problem with how you set up the `columnType` or `default/defaultRaw` options of your properties. You can use `MIKRO_ORM_CLI_VERBOSE` env var to enable verbose logging of the CLI, which in turn enables both the underlying queries used to extract the current schema, as well as logs in the `SchemaComparator` which should help you understand why the ORM sees two columns as different (and what particular options are different).
+
+```bash
+$ MIKRO_ORM_CLI_VERBOSE=1 npx mikro-orm schema:update --dump
+```

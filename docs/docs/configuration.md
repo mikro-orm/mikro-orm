@@ -513,15 +513,13 @@ MikroORM.init({
 
 ## Persist created entities automatically
 
-> Since v5.5 `persistOnCreate` defaults to `true`.
+When you create new entity instance via `em.create()`, it will be automatically marked for future persistence (`em.persist()` will be called on it before its returned to you). In case you want to disable this behavior, you can set `persistOnCreate: false` globally or override this locally via `em.create(Type, data, { persist: false })`.
 
-If we create new entity via `em.create()`, we still need to mark it via `em.persist()` to make the `EntityManager` aware of it. Alternatively we can enable `persistOnCreate` flag, which will make this work automatically.
-
-> This flag affects only `em.create()`, entities created via constructors still need explicit `em.persist()` call or they need to be part of entity graph of some already managed entity.
+> This flag affects only `em.create()`, entities created manually via constructor still need an explicit `em.persist()` call, or they need to be part of the entity graph of some already managed entity.
 
 ```ts
 MikroORM.init({
-  persistOnCreate: true,
+  persistOnCreate: false, // defaults to true since v5.5
 });
 ```
 
@@ -560,7 +558,7 @@ MIKRO_ORM_FORCE_UNDEFINED = true
 Full list of supported options:
 
 | env variable                                                | config key                               |
-| ----------------------------------------------------------- | ---------------------------------------- |
+|-------------------------------------------------------------|------------------------------------------|
 | `MIKRO_ORM_BASE_DIR`                                        | `baseDir`                                |
 | `MIKRO_ORM_TYPE`                                            | `type`                                   |
 | `MIKRO_ORM_ENTITIES`                                        | `entities`                               |
@@ -588,7 +586,6 @@ Full list of supported options:
 | `MIKRO_ORM_ENSURE_INDEXES`                                  | `ensureIndexes`                          |
 | `MIKRO_ORM_IMPLICIT_TRANSACTIONS`                           | `implicitTransactions`                   |
 | `MIKRO_ORM_DEBUG`                                           | `debug`                                  |
-| `MIKRO_ORM_VERBOSE`                                         | `verbose`                                |
 | `MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES`                 | `discovery.warnWhenNoEntities`           |
 | `MIKRO_ORM_DISCOVERY_REQUIRE_ENTITIES_ARRAY`                | `discovery.requireEntitiesArray`         |
 | `MIKRO_ORM_DISCOVERY_ALWAYS_ANALYSE_PROPERTIES`             | `discovery.alwaysAnalyseProperties`      |
@@ -610,3 +607,13 @@ Full list of supported options:
 | `MIKRO_ORM_SEEDER_GLOB`                                     | `seeder.glob`                            |
 | `MIKRO_ORM_SEEDER_EMIT`                                     | `seeder.emit`                            |
 | `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`                           | `seeder.defaultSeeder`                   |
+
+There are also env vars you can use to control the CLI settings (those you can set in your `package.json`):
+
+| env variable                    | config key |
+|---------------------------------|------------|
+| `MIKRO_ORM_CLI_CONFIG`          | (CLI only) |
+| `MIKRO_ORM_CLI_TS_CONFIG_PATH`  | (CLI only) |
+| `MIKRO_ORM_CLI_ALWAYS_ALLOW_TS` | (CLI only) |
+| `MIKRO_ORM_CLI_USE_TS_NODE`     | (CLI only) |
+| `MIKRO_ORM_CLI_VERBOSE`         | (CLI only) |

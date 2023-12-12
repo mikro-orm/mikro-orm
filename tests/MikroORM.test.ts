@@ -120,14 +120,14 @@ describe('MikroORM', () => {
   });
 
   test('CLI config can export async function', async () => {
-    process.env.MIKRO_ORM_CLI = __dirname + '/cli-config.ts';
+    process.env.MIKRO_ORM_CLI_CONFIG = __dirname + '/cli-config.ts';
     const orm = await MikroORM.init();
 
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
     expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Test3']);
 
-    delete process.env.MIKRO_ORM_CLI;
+    delete process.env.MIKRO_ORM_CLI_CONFIG;
   });
 
   test('should prefer environment variables', async () => {
