@@ -5,7 +5,7 @@ title: Serializing
 By default, all entities are monkey patched with `toObject()` and `toJSON` methods:
 
 ```ts
-export interface AnyEntity<K = number | string> {
+interface AnyEntity<K = number | string> {
   toObject(parent?: AnyEntity, isCollection?: boolean): Record<string, any>;
   toJSON(...args: any[]): Record<string, any>;
   // ...
@@ -16,7 +16,7 @@ When you serialize your entity via `JSON.stringify(entity)`, its `toJSON` method
 
 ```ts
 @Entity()
-export class Book {
+class Book {
 
   // ...
 
@@ -41,7 +41,7 @@ If you want to omit some properties from serialized result, you can mark them wi
 
 ```ts
 @Entity()
-export class Book {
+class Book {
 
   // we use the `HiddenProps` symbol to define hidden properties on type level
   [HiddenProps]?: 'hiddenField' | 'otherHiddenField';
@@ -61,6 +61,26 @@ console.log(wrap(book).toObject().hiddenField); // undefined
 console.log(wrap(book).toJSON().hiddenField); // undefined
 ```
 
+Alternatively, you can use the `Hidden` type. It works the same as the `Opt` type (an alternative for `OptionalProps` symbol), and can be used in two ways:
+
+- with generics: `hiddenField?: Hidden<string>;`
+- with intersections: `hiddenField?: string & Hidden;`
+
+Both will work the same, and can be combined with the `HiddenProps` symbol approach.
+
+```ts
+@Entity()
+class Book {
+
+  @Property({ hidden: true })
+  hiddenField: Hidden<Date> = Date.now();
+
+  @Property({ hidden: true, nullable: true })
+  otherHiddenField?: string & Hidden;
+
+}
+```
+
 ## Shadow Properties
 
 The opposite situation where you want to define a property that lives only in memory (is not persisted into database) can be solved by defining your property as `persist: false`. Such property can be assigned via one of `Entity.assign()`, `em.create()` and `em.merge()`. It will be also part of serialized result.
@@ -69,7 +89,7 @@ This can be handled when dealing with additional values selected via `QueryBuild
 
 ```ts
 @Entity()
-export class Book {
+class Book {
 
   @Property({ persist: false })
   count?: number;
@@ -88,7 +108,7 @@ As an alternative to custom `toJSON()` method, we can also use property serializ
 
 ```ts
 @Entity()
-export class Book {
+class Book {
 
   @ManyToOne({ serializer: value => value.name, serializedName: 'authorName' })
   author: Author;
@@ -159,7 +179,7 @@ const dto2 = wrap(user1).serialize();
 By default, every relation is considered as not populated - this will result in the foreign key values to be present. Loaded collections will be represented as arrays of the foreign keys. To control the shape of the serialized response we can use the second `options` parameter:
 
 ```ts
-export interface SerializeOptions<T extends object, P extends string = never, E extends string = never> {
+interface SerializeOptions<T extends object, P extends string = never, E extends string = never> {
   /** Specify which relation should be serialized as populated and which as a FK. */
   populate?: AutoPath<T, P>[] | boolean;
 

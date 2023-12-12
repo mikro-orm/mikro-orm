@@ -60,6 +60,7 @@ export const EagerProps = Symbol('EagerProps');
 export const HiddenProps = Symbol('HiddenProps');
 
 export type Opt<T = unknown> = T & { __optional?: 1 };
+export type Hidden<T = unknown> = T & { __hidden?: 1 };
 
 export type UnwrapPrimary<T> = T extends Scalar
   ? T
@@ -331,7 +332,7 @@ export type EntityDTOProp<T> = T extends Scalar
               : T extends Relation<T>
                 ? EntityDTONested<T>
                 : T;
-type ExtractHiddenProps<T> = T extends { [HiddenProps]?: infer Prop } ? Prop : never;
+type ExtractHiddenProps<T> = (T extends { [HiddenProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Hidden ? K : never }[keyof T] & {});
 type ExcludeHidden<T, K extends keyof T> = K extends ExtractHiddenProps<T> ? never : K;
 export type EntityDTO<T> = { [K in EntityKey<T> as ExcludeHidden<T, K>]: EntityDTOProp<T[K]> };
 
