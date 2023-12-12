@@ -370,3 +370,13 @@ There is no way to rollback DDL changes in MySQL. An implicit commit is forced f
 - no nested transaction support
 - no schema diffing
 - only blank migrations are generated
+
+## Debugging
+
+Sometimes the schema diffing might not work as expected and will produce unwanted queries. Often this is a problem with how you set up the `columnType` or `default/defaultRaw` options of your properties. You can use `MIKRO_ORM_CLI_VERBOSE` env var to enable verbose logging of the CLI, which in turn enables both the underlying queries used to extract the current schema, as well as logs in the `SchemaComparator` which should help you understand why the ORM sees two columns as different (and what particular options are different).
+
+> Debugging issues with migrations is easier when you use `schema:update`, as you skip the Migrator layer on top of it and test the actual layer where those problems occur.
+
+```bash
+$ MIKRO_ORM_CLI_VERBOSE=1 npx mikro-orm schema:update --dump
+```

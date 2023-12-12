@@ -280,12 +280,13 @@ You can also set up array of possible paths to `mikro-orm.config.*` file in the 
 }
 ```
 
-Another way to control these CLI related settings is with the environment variables:
+Another way to control these CLI-related settings is with the environment variables:
 
-- `MIKRO_ORM_CLI`: the path to ORM config file
-- `MIKRO_ORM_CLI_USE_TS_NODE`: register ts-node
+- `MIKRO_ORM_CLI_CONFIG`: the path to ORM config file
+- `MIKRO_ORM_CLI_USE_TS_NODE`: register `ts-node` for TypeScript support
 - `MIKRO_ORM_CLI_TS_CONFIG_PATH`: path to the tsconfig.json (for ts-node)
 - `MIKRO_ORM_CLI_ALWAYS_ALLOW_TS`: enable `.ts` files to use without ts-node
+- `MIKRO_ORM_CLI_VERBOSE`: enable verbose logging (e.g. print queries used in seeder or schema diffing)
 
 Alternatively, you can also specify the config path via `--config` option:
 

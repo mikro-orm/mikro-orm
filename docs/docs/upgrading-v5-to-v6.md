@@ -268,6 +268,7 @@ The method was only forwarding the call to `BaseEntity.toObject`, so use that in
 - `Options.cache` -> `Options.metadataCache`
 - `UnitOfWork.registerManaged` -> `UnitOfWork.register`
 - `baseDir` -> `path` option in `EntityGenerator.generate()`
+- `MIKRO_ORM_CLI` env var -> `MIKRO_ORM_CLI_CONFIG`
 
 ## Removed dependency on `faker` in seeder package
 
