@@ -22,7 +22,7 @@ import {
   t,
   OnLoad,
   Opt,
-  HiddenProps,
+  Hidden,
   Embeddable,
   Embedded,
 } from '@mikro-orm/core';
@@ -34,13 +34,11 @@ import { Address2 } from './Address2';
 @Embeddable()
 export class Identity {
 
-  [HiddenProps]?: 'foo' | 'bar';
+  @Property({ hidden: true })
+  foo: string & Hidden;
 
   @Property({ hidden: true })
-  foo: string;
-
-  @Property({ hidden: true })
-  bar: number;
+  bar: Hidden<number>;
 
   constructor(foo: string, bar: number) {
     this.foo = foo;
