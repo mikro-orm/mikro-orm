@@ -1,4 +1,4 @@
-import { EntityRepository, OptionalProps, ref, wrap } from '@mikro-orm/core';
+import { Constructor, EntityRepository, EntitySchema, OptionalProps, ref, wrap } from '@mikro-orm/core';
 import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
@@ -820,6 +820,26 @@ describe('check typings', () => {
       }
 
     }
+  });
+
+  test('GH #5006', async () => {
+    interface User {
+      id: number;
+      name: string;
+    }
+
+    interface UserRepository extends EntityRepository<User> {
+      test(): number;
+    }
+
+    const schema = new EntitySchema<User>({
+      name: 'User',
+      repository: () => ({} as Constructor<UserRepository>),
+      properties: {
+        id: { type: 'number', primary: true },
+        name: { type: 'string' },
+      },
+    });
   });
 
 });

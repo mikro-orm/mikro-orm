@@ -72,11 +72,18 @@ type PrimaryPropToType<T, Keys extends (keyof T)[]> = {
 };
 
 type ReadonlyPrimary<T> = T extends any[] ? Readonly<T> : T;
-export type Primary<T> = T extends { [PrimaryKeyProp]?: infer PK }
-  ? (PK extends keyof T ? ReadonlyPrimary<UnwrapPrimary<T[PK]>> : (PK extends (keyof T)[] ? ReadonlyPrimary<PrimaryPropToType<T, PK>> : PK)) : T extends { _id?: infer PK }
-  ? ReadonlyPrimary<PK> | string : T extends { uuid?: infer PK }
-  ? ReadonlyPrimary<PK> : T extends { id?: infer PK }
-  ? ReadonlyPrimary<PK> : T;
+export type Primary<T> =
+  IsAny<T> extends true
+    ? any
+    : T extends { [PrimaryKeyProp]?: infer PK }
+      ? (PK extends keyof T ? ReadonlyPrimary<UnwrapPrimary<T[PK]>> : (PK extends (keyof T)[] ? ReadonlyPrimary<PrimaryPropToType<T, PK>> : PK))
+      : T extends { _id?: infer PK }
+        ? ReadonlyPrimary<PK> | string
+        : T extends { uuid?: infer PK }
+          ? ReadonlyPrimary<PK>
+          : T extends { id?: infer PK }
+            ? ReadonlyPrimary<PK>
+            : T;
 export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
   ? (PK extends keyof T ? PK : (PK extends any[] ? PK[number] : never)) : T extends { _id?: any }
   ? (T extends { id?: any } ? 'id' | '_id' : '_id') : T extends { uuid?: any }
@@ -292,13 +299,19 @@ export type ScalarRef<T> = ScalarReference<T>;
 /** Alias for `Reference<T> & { id: number }` (see {@apilink Ref}). */
 export type EntityRef<T> = true extends IsUnknown<PrimaryProperty<T>>
   ? Reference<T>
-  : ({ [K in PrimaryProperty<T> & keyof T]: T[K] } & Reference<T>);
+  : IsAny<T> extends true
+    ? Reference<T>
+    : ({ [K in PrimaryProperty<T> & keyof T]: T[K] } & Reference<T>);
 
 /**
  * Ref type represents a `Reference` instance, and adds the primary keys to its prototype automatically, so you can do
  * `ref.id` instead of `ref.unwrap().id`. It resolves to either `ScalarRef` or `EntityRef`, based on the type argument.
  */
-export type Ref<T> = T extends Scalar ? ScalarReference<T> : EntityRef<T>;
+export type Ref<T> = IsAny<T> extends true
+  ? Reference<T>
+  : T extends Scalar
+    ? ScalarReference<T>
+    : EntityRef<T>;
 
 type EntityDTONested<T> = T extends undefined | null ? T : EntityDTO<T>;
 export type EntityDTOProp<T> = T extends Scalar
