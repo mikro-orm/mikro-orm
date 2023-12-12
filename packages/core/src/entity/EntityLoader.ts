@@ -76,18 +76,30 @@ export class EntityLoader {
   }
 
   normalizePopulate<T>(entityName: string, populate: PopulateOptions<T>[] | true, strategy?: LoadStrategy, lookup = true): PopulateOptions<T>[] {
+    const meta = this.metadata.find(entityName)!;
+
     if (populate === true || populate.some(p => p.all)) {
       populate = this.lookupAllRelationships(entityName);
     } else {
       populate = Utils.asArray(populate);
     }
 
+    // convert nested `field` with dot syntax to PopulateOptions with `children` array
+    this.expandDotPaths(populate, meta);
+
     if (lookup) {
       populate = this.lookupEagerLoadedRelationships(entityName, populate, strategy);
+
+      // convert nested `field` with dot syntax produced by eager relations
+      this.expandDotPaths(populate, meta);
     }
 
-    // convert nested `field` with dot syntax to PopulateOptions with children array
-    populate.forEach(p => {
+    // merge same fields
+    return this.mergeNestedPopulate(populate);
+  }
+
+  private expandDotPaths<Entity>(normalized: PopulateOptions<Entity>[], meta: EntityMetadata<any>) {
+    normalized.forEach(p => {
       if (!p.field.includes('.')) {
         return;
       }
@@ -95,13 +107,10 @@ export class EntityLoader {
       const [f, ...parts] = p.field.split('.');
       p.field = f;
       p.children = p.children || [];
-      const prop = this.metadata.find(entityName)!.properties[f];
+      const prop = meta.properties[f];
       p.strategy ??= prop.strategy;
       p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy, p.all));
     });
-
-    // merge same fields
-    return this.mergeNestedPopulate(populate);
   }
 
   /**
