@@ -104,11 +104,21 @@ export class EntityLoader {
       normalized = this.lookupAllRelationships(entityName);
     }
 
+    // convert nested `field` with dot syntax to PopulateOptions with `children` array
+    this.expandDotPaths(normalized, meta);
+
     if (lookup && populate !== false) {
       normalized = this.lookupEagerLoadedRelationships(entityName, normalized, strategy);
+
+      // convert nested `field` with dot syntax produced by eager relations
+      this.expandDotPaths(normalized, meta);
     }
 
-    // convert nested `field` with dot syntax to PopulateOptions with children array
+    // merge same fields
+    return this.mergeNestedPopulate(normalized);
+  }
+
+  private expandDotPaths<Entity>(normalized: PopulateOptions<Entity>[], meta: EntityMetadata<any>) {
     normalized.forEach(p => {
       if (!p.field.includes('.')) {
         return;
@@ -121,9 +131,6 @@ export class EntityLoader {
       p.strategy ??= prop.strategy;
       p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy, p.all));
     });
-
-    // merge same fields
-    return this.mergeNestedPopulate(normalized);
   }
 
   /**
