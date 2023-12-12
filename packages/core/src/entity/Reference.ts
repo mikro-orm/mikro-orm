@@ -106,21 +106,21 @@ export class Reference<T> {
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
    * Returns the requested property instead of the whole entity.
    */
-  async load<K extends keyof T>(prop: K): Promise<T[K]>;
+  async load<K extends keyof T>(prop: K, dataloader?: boolean): Promise<T[K]>;
 
   /**
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
    * Returns either the whole entity, or the requested property.
    */
-  async load<TT extends T, K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P> | K): Promise<Loaded<TT, P> | T[K]> {
+  async load<TT extends T, K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P> | K, dataloader?: boolean): Promise<Loaded<TT, P> | T[K]> {
     const opts: Dictionary = typeof options === 'object' ? options : { prop: options } as LoadReferenceOptions<T, P>;
 
-    if (opts.dataloader ?? (DataloaderUtils.getDataloaderType(helper(this.entity).__em.config.get('dataloader')) > Dataloader.REFERENCE)) {
-      return helper(this.entity).__em.refLoader.load(this);
-    }
-
     if (!this.isInitialized() || opts.refresh) {
-      await helper(this.entity).init(undefined, opts?.populate, opts?.lockMode, opts?.connectionType);
+      if (opts.dataloader ?? dataloader ?? [Dataloader.ALL, Dataloader.REFERENCE].includes(DataloaderUtils.getDataloaderType(helper(this.entity).__em.config.get('dataloader')))) {
+        await helper(this.entity).__em.refLoader.load([this, opts]);
+      } else {
+        await helper(this.entity).init(undefined, opts?.populate, opts?.lockMode, opts?.connectionType);
+      }
     }
 
     if (opts.prop) {

@@ -1,0 +1,822 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GH #4977 1`] = `
+[
+  {
+    "author": {
+      "books": [
+        {
+          "id": 1,
+          "publisher": {
+            "books": [
+              {
+                "id": 1,
+                "title": "One",
+              },
+            ],
+            "id": 1,
+            "name": "AAA",
+          },
+          "title": "One",
+        },
+        {
+          "author": {
+            "id": 1,
+            "name": "a",
+          },
+          "id": 2,
+          "publisher": {
+            "books": [
+              {
+                "author": {
+                  "id": 1,
+                  "name": "a",
+                },
+                "id": 2,
+                "title": "Two",
+              },
+              {
+                "author": {
+                  "books": [
+                    {
+                      "id": 3,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Three",
+                    },
+                  ],
+                  "id": 2,
+                  "name": "b",
+                },
+                "id": 3,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Three",
+              },
+              {
+                "author": {
+                  "books": [
+                    {
+                      "id": 4,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Four",
+                    },
+                    {
+                      "author": {
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 5,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Five",
+                    },
+                    {
+                      "author": {
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 6,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Six",
+                    },
+                  ],
+                  "id": 3,
+                  "name": "c",
+                },
+                "id": 4,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Four",
+              },
+              {
+                "author": {
+                  "books": [
+                    {
+                      "author": {
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 4,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Four",
+                    },
+                    {
+                      "id": 5,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Five",
+                    },
+                    {
+                      "author": {
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 6,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Six",
+                    },
+                  ],
+                  "id": 3,
+                  "name": "c",
+                },
+                "id": 5,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Five",
+              },
+              {
+                "author": {
+                  "books": [
+                    {
+                      "author": {
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 4,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Four",
+                    },
+                    {
+                      "author": {
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 5,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Five",
+                    },
+                    {
+                      "id": 6,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Six",
+                    },
+                  ],
+                  "id": 3,
+                  "name": "c",
+                },
+                "id": 6,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Six",
+              },
+            ],
+            "id": 2,
+            "name": "BBB",
+          },
+          "title": "Two",
+        },
+      ],
+      "id": 1,
+      "name": "a",
+    },
+    "id": 1,
+    "publisher": {
+      "books": [
+        {
+          "author": {
+            "books": [
+              {
+                "id": 1,
+                "title": "One",
+              },
+              {
+                "author": {
+                  "id": 1,
+                  "name": "a",
+                },
+                "id": 2,
+                "publisher": {
+                  "books": [
+                    {
+                      "author": {
+                        "id": 1,
+                        "name": "a",
+                      },
+                      "id": 2,
+                      "title": "Two",
+                    },
+                    {
+                      "author": {
+                        "books": [
+                          {
+                            "id": 3,
+                            "publisher": {
+                              "id": 2,
+                              "name": "BBB",
+                            },
+                            "title": "Three",
+                          },
+                        ],
+                        "id": 2,
+                        "name": "b",
+                      },
+                      "id": 3,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Three",
+                    },
+                    {
+                      "author": {
+                        "books": [
+                          {
+                            "id": 4,
+                            "publisher": {
+                              "id": 2,
+                              "name": "BBB",
+                            },
+                            "title": "Four",
+                          },
+                          {
+                            "author": {
+                              "id": 3,
+                              "name": "c",
+                            },
+                            "id": 5,
+                            "publisher": {
+                              "id": 2,
+                              "name": "BBB",
+                            },
+                            "title": "Five",
+                          },
+                          {
+                            "author": {
+                              "id": 3,
+                              "name": "c",
+                            },
+                            "id": 6,
+                            "publisher": {
+                              "id": 2,
+                              "name": "BBB",
+                            },
+                            "title": "Six",
+                          },
+                        ],
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 4,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Four",
+                    },
+                    {
+                      "author": {
+                        "books": [
+                          {
+                            "author": {
+                              "id": 3,
+                              "name": "c",
+                            },
+                            "id": 4,
+                            "publisher": {
+                              "id": 2,
+                              "name": "BBB",
+                            },
+                            "title": "Four",
+                          },
+                          {
+                            "id": 5,
+                            "publisher": {
+                              "id": 2,
+                              "name": "BBB",
+                            },
+                            "title": "Five",
+                          },
+                          {
+                            "author": {
+                              "id": 3,
+                              "name": "c",
+                            },
+                            "id": 6,
+                            "publisher": {
+                              "id": 2,
+                              "name": "BBB",
+                            },
+                            "title": "Six",
+                          },
+                        ],
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 5,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Five",
+                    },
+                    {
+                      "author": {
+                        "books": [
+                          {
+                            "author": {
+                              "id": 3,
+                              "name": "c",
+                            },
+                            "id": 4,
+                            "publisher": {
+                              "id": 2,
+                              "name": "BBB",
+                            },
+                            "title": "Four",
+                          },
+                          {
+                            "author": {
+                              "id": 3,
+                              "name": "c",
+                            },
+                            "id": 5,
+                            "publisher": {
+                              "id": 2,
+                              "name": "BBB",
+                            },
+                            "title": "Five",
+                          },
+                          {
+                            "id": 6,
+                            "publisher": {
+                              "id": 2,
+                              "name": "BBB",
+                            },
+                            "title": "Six",
+                          },
+                        ],
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 6,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Six",
+                    },
+                  ],
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Two",
+              },
+            ],
+            "id": 1,
+            "name": "a",
+          },
+          "id": 1,
+          "title": "One",
+        },
+      ],
+      "id": 1,
+      "name": "AAA",
+    },
+    "title": "One",
+  },
+  {
+    "author": {
+      "books": [
+        {
+          "author": {
+            "id": 1,
+            "name": "a",
+          },
+          "id": 1,
+          "publisher": {
+            "books": [
+              {
+                "author": {
+                  "id": 1,
+                  "name": "a",
+                },
+                "id": 1,
+                "title": "One",
+              },
+            ],
+            "id": 1,
+            "name": "AAA",
+          },
+          "title": "One",
+        },
+        {
+          "id": 2,
+          "publisher": {
+            "books": [
+              {
+                "id": 2,
+                "title": "Two",
+              },
+              {
+                "author": {
+                  "books": [
+                    {
+                      "id": 3,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Three",
+                    },
+                  ],
+                  "id": 2,
+                  "name": "b",
+                },
+                "id": 3,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Three",
+              },
+              {
+                "author": {
+                  "books": [
+                    {
+                      "id": 4,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Four",
+                    },
+                    {
+                      "author": {
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 5,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Five",
+                    },
+                    {
+                      "author": {
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 6,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Six",
+                    },
+                  ],
+                  "id": 3,
+                  "name": "c",
+                },
+                "id": 4,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Four",
+              },
+              {
+                "author": {
+                  "books": [
+                    {
+                      "author": {
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 4,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Four",
+                    },
+                    {
+                      "id": 5,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Five",
+                    },
+                    {
+                      "author": {
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 6,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Six",
+                    },
+                  ],
+                  "id": 3,
+                  "name": "c",
+                },
+                "id": 5,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Five",
+              },
+              {
+                "author": {
+                  "books": [
+                    {
+                      "author": {
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 4,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Four",
+                    },
+                    {
+                      "author": {
+                        "id": 3,
+                        "name": "c",
+                      },
+                      "id": 5,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Five",
+                    },
+                    {
+                      "id": 6,
+                      "publisher": {
+                        "id": 2,
+                        "name": "BBB",
+                      },
+                      "title": "Six",
+                    },
+                  ],
+                  "id": 3,
+                  "name": "c",
+                },
+                "id": 6,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Six",
+              },
+            ],
+            "id": 2,
+            "name": "BBB",
+          },
+          "title": "Two",
+        },
+      ],
+      "id": 1,
+      "name": "a",
+    },
+    "id": 2,
+    "publisher": {
+      "books": [
+        {
+          "author": {
+            "books": [
+              {
+                "author": {
+                  "id": 1,
+                  "name": "a",
+                },
+                "id": 1,
+                "publisher": {
+                  "books": [
+                    {
+                      "author": {
+                        "id": 1,
+                        "name": "a",
+                      },
+                      "id": 1,
+                      "title": "One",
+                    },
+                  ],
+                  "id": 1,
+                  "name": "AAA",
+                },
+                "title": "One",
+              },
+              {
+                "id": 2,
+                "title": "Two",
+              },
+            ],
+            "id": 1,
+            "name": "a",
+          },
+          "id": 2,
+          "title": "Two",
+        },
+        {
+          "author": {
+            "books": [
+              {
+                "id": 3,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Three",
+              },
+            ],
+            "id": 2,
+            "name": "b",
+          },
+          "id": 3,
+          "publisher": {
+            "id": 2,
+            "name": "BBB",
+          },
+          "title": "Three",
+        },
+        {
+          "author": {
+            "books": [
+              {
+                "id": 4,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Four",
+              },
+              {
+                "author": {
+                  "id": 3,
+                  "name": "c",
+                },
+                "id": 5,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Five",
+              },
+              {
+                "author": {
+                  "id": 3,
+                  "name": "c",
+                },
+                "id": 6,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Six",
+              },
+            ],
+            "id": 3,
+            "name": "c",
+          },
+          "id": 4,
+          "publisher": {
+            "id": 2,
+            "name": "BBB",
+          },
+          "title": "Four",
+        },
+        {
+          "author": {
+            "books": [
+              {
+                "author": {
+                  "id": 3,
+                  "name": "c",
+                },
+                "id": 4,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Four",
+              },
+              {
+                "id": 5,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Five",
+              },
+              {
+                "author": {
+                  "id": 3,
+                  "name": "c",
+                },
+                "id": 6,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Six",
+              },
+            ],
+            "id": 3,
+            "name": "c",
+          },
+          "id": 5,
+          "publisher": {
+            "id": 2,
+            "name": "BBB",
+          },
+          "title": "Five",
+        },
+        {
+          "author": {
+            "books": [
+              {
+                "author": {
+                  "id": 3,
+                  "name": "c",
+                },
+                "id": 4,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Four",
+              },
+              {
+                "author": {
+                  "id": 3,
+                  "name": "c",
+                },
+                "id": 5,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Five",
+              },
+              {
+                "id": 6,
+                "publisher": {
+                  "id": 2,
+                  "name": "BBB",
+                },
+                "title": "Six",
+              },
+            ],
+            "id": 3,
+            "name": "c",
+          },
+          "id": 6,
+          "publisher": {
+            "id": 2,
+            "name": "BBB",
+          },
+          "title": "Six",
+        },
+      ],
+      "id": 2,
+      "name": "BBB",
+    },
+    "title": "Two",
+  },
+]
+`;

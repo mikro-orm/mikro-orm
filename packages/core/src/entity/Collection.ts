@@ -314,10 +314,10 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     const em = this.getEntityManager();
 
-    if (options.dataloader ?? (DataloaderUtils.getDataloaderType(em.config.get('dataloader')) > Dataloader.COLLECTION)) {
+    if (options.dataloader ?? [Dataloader.ALL, Dataloader.COLLECTION].includes(DataloaderUtils.getDataloaderType(em.config.get('dataloader')))) {
       const order = [...this.items]; // copy order of references
       const customOrder = !!options.orderBy;
-      const items: TT[] = await em.colLoader.load(this);
+      const items: TT[] = await em.colLoader.load([this, options]);
 
       if (!customOrder) {
         this.reorderItems(items, order);
@@ -338,7 +338,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     }
 
     const populate = Array.isArray(options.populate)
-      ? options.populate.map(f => `${this.property.name}.${f}`)
+      ? options.populate.map(f => f === '*' ? f : `${this.property.name}.${f}`)
       : [`${this.property.name}${options.ref ? ':ref' : ''}`];
     const schema = this.property.targetMeta!.schema === '*'
       ? helper(this.owner).__schema
