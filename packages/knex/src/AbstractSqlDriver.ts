@@ -617,6 +617,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const keys = new Set<EntityKey<T>>();
+    const fields = new Set<string>();
     const returning = new Set<EntityKey<T>>();
     data.forEach(row => {
       Utils.keys(row).forEach(k => {
@@ -656,6 +657,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const prop = meta.properties[key];
 
       prop.fieldNames.forEach((fieldName: string, fieldNameIdx: number) => {
+        if (fields.has(fieldName)) {
+          return;
+        }
+
+        fields.add(fieldName);
+
         sql += `${this.platform.quoteIdentifier(fieldName)} = case`;
         where.forEach((cond, idx) => {
           if (key in data[idx]) {
