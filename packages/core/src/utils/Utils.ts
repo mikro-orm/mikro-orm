@@ -1288,4 +1288,20 @@ export class Utils {
     }, {} as T);
   }
 
+  static extendsFrom(baseClass: any, instance: any) {
+    if (!instance) { return false; }
+    let proto = Object.getPrototypeOf(instance);
+    while (proto) {
+      if (proto === baseClass.prototype) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+    return false;
+  }
+
+  static detectType(target: any, propertyName: string) {
+    return Reflect.getMetadata('design:type', target, propertyName);
+  }
+
 }

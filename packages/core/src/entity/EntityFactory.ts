@@ -23,6 +23,7 @@ import type { Platform } from '../platforms/Platform';
 import type { Configuration } from '../utils/Configuration';
 import type { EventManager } from '../events/EventManager';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
+import type { VoType } from '../types/VoType';
 
 export interface FactoryOptions {
   initialized?: boolean;
@@ -63,6 +64,15 @@ export class EntityFactory {
 
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
+
+    for (const key in data) {
+      const keyData = key as keyof typeof data;
+      if (keyData === '__proto__') { continue; }
+      if (meta.properties[key]?.isValueObject && !Utils.isObject(data[keyData])) {
+         const vo = (meta.properties[key].customType as VoType<any>);
+         data[keyData] = vo.convertToJSValue(data[keyData]!, this.platform) as any;
+      }
+    }
 
     if (meta.virtual) {
       data = { ...data };
@@ -248,7 +258,6 @@ export class EntityFactory {
 
       // creates new instance via constructor as this is the new entity
       const entity = new Entity(...params);
-
       // creating managed entity instance when `forceEntityConstructor` is enabled,
       // we need to wipe all the values as they would cause update queries on next flush
       if (!options.initialized && this.config.get('forceEntityConstructor')) {
