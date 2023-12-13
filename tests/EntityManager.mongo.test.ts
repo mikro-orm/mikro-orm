@@ -1,3 +1,4 @@
+/* eslint-disable dot-notation */
 import { ObjectId } from 'bson';
 import type { EntityProperty } from '@mikro-orm/core';
 import {
@@ -1909,10 +1910,10 @@ describe('EntityManagerMongo', () => {
     expect(ref2).toBe(ref3);
 
     expect(ref3.unwrap()).toBe(author);
-    ref3.set(author2);
+    ref3['set'](author2);
     expect(ref3.unwrap()).toBe(author2);
     expect(ref3.id).toBe(author2.id);
-    ref3.set(Reference.create(author));
+    ref3['set'](Reference.create(author));
     expect(ref3.id).toBe(author.id);
 
     const ent = await ref.load();
