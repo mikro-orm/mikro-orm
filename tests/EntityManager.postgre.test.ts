@@ -1271,6 +1271,7 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
     const publishers2 = await orm.em.findAll(Publisher2, {
       populate: ['tests:ref'],
+      strategy: 'select-in',
       orderBy: { id: 1 },
     });
     expect(publishers2).toBeInstanceOf(Array);
@@ -1322,7 +1323,10 @@ describe('EntityManagerPostgre', () => {
     const publishers5 = await orm.em.findAll(Publisher2, {
       orderBy: { id: 1 },
     });
+    const mock = mockLogger(orm);
     await publishers5[0].tests.init({ ref: true });
+    expect(mock.mock.calls).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "p0"."test2_id" as "fk__test2_id", "p0"."publisher2_id" as "fk__publisher2_id" from "publisher2_tests" as "p0" where "p0"."publisher2_id" in (1) order by "p0"."id" asc');
     await publishers5[1].tests.init({ ref: true });
     expect(publishers5).toBeInstanceOf(Array);
     expect(publishers5.length).toBe(2);

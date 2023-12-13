@@ -27,7 +27,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       alias = nestedAlias;
     }
 
-    if (this.shouldAutoJoin(nestedAlias)) {
+    if (this.shouldAutoJoin(qb, nestedAlias)) {
       if (keys.some(k => ['$some', '$none', '$every'].includes(k))) {
         const $and: Dictionary[] = [];
         const primaryKeys = this.metadata.find(this.entityName)!.primaryKeys.map(pk => {
@@ -106,7 +106,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       alias = nestedAlias;
     }
 
-    if (this.shouldAutoJoin(nestedAlias)) {
+    if (this.shouldAutoJoin(qb, nestedAlias)) {
       return !keys.some(k => ['$some', '$none', '$every'].includes(k));
     }
 
@@ -159,17 +159,22 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     }
   }
 
-  private shouldAutoJoin(nestedAlias: string | undefined): boolean {
+  private shouldAutoJoin(qb: IQueryBuilder<T>, nestedAlias: string | undefined): boolean {
     if (!this.prop || !this.parent) {
       return false;
     }
 
+    const keys = Object.keys(this.payload);
+
+    if (keys.every(k => k.includes('.') && k.startsWith(`${qb.alias}.`))) {
+      return false;
+    }
+
+    const meta = this.metadata.find(this.entityName)!;
     const embeddable = this.prop.kind === ReferenceKind.EMBEDDED;
     const knownKey = [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE, ReferenceKind.EMBEDDED].includes(this.prop.kind) || (this.prop.kind === ReferenceKind.ONE_TO_ONE && this.prop.owner);
-    const operatorKeys = knownKey && Object.keys(this.payload).every(key => Utils.isOperator(key, false));
-    const primaryKeys = knownKey && Object.keys(this.payload).every(key => {
-      const meta = this.metadata.find(this.entityName)!;
-
+    const operatorKeys = knownKey && keys.every(key => Utils.isOperator(key, false));
+    const primaryKeys = knownKey && keys.every(key => {
       if (!meta.primaryKeys.includes(key)) {
         return false;
       }
