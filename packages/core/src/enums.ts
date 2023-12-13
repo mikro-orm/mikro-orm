@@ -128,8 +128,8 @@ export enum LoadStrategy {
   JOINED = 'joined'
 }
 
-export enum Dataloader {
-  OFF = 0,
+export enum DataloaderType {
+  NONE = 0,
   REFERENCE = 1,
   COLLECTION = 2,
   ALL = 3,

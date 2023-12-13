@@ -16,7 +16,7 @@ import type {
 import { ArrayCollection } from './ArrayCollection';
 import { DataloaderUtils, Utils } from '../utils';
 import { ValidationError } from '../errors';
-import { type LockMode, type QueryOrderMap, ReferenceKind, Dataloader } from '../enums';
+import { type LockMode, type QueryOrderMap, ReferenceKind, DataloaderType } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
 import type { FindOptions, CountOptions } from '../drivers/IDatabaseDriver';
@@ -314,7 +314,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     const em = this.getEntityManager();
 
-    if (options.dataloader ?? [Dataloader.ALL, Dataloader.COLLECTION].includes(DataloaderUtils.getDataloaderType(em.config.get('dataloader')))) {
+    if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(DataloaderUtils.getDataloaderType(em.config.get('dataloader')))) {
       const order = [...this.items]; // copy order of references
       const customOrder = !!options.orderBy;
       const items: TT[] = await em.colLoader.load([this, options]);

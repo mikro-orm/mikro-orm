@@ -13,7 +13,7 @@ import type {
   Ref,
 } from '../typings';
 import type { EntityFactory } from './EntityFactory';
-import { Dataloader, type  LockMode  } from '../enums';
+import { DataloaderType, type  LockMode  } from '../enums';
 import { helper, wrap } from './wrap';
 import { DataloaderUtils, Utils } from '../utils';
 
@@ -100,31 +100,13 @@ export class Reference<T> {
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
    * Returns the entity.
    */
-  async load<TT extends T, P extends string = never>(options?: LoadReferenceOptions<T, P>): Promise<Loaded<TT, P>>;
-
-  /**
-   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
-   * Returns the requested property instead of the whole entity.
-   */
-  async load<K extends keyof T>(prop: K, dataloader?: boolean): Promise<T[K]>;
-
-  /**
-   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
-   * Returns either the whole entity, or the requested property.
-   */
-  async load<TT extends T, K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P> | K, dataloader?: boolean): Promise<Loaded<TT, P> | T[K]> {
-    const opts: Dictionary = typeof options === 'object' ? options : { prop: options } as LoadReferenceOptions<T, P>;
-
-    if (!this.isInitialized() || opts.refresh) {
-      if (opts.dataloader ?? dataloader ?? [Dataloader.ALL, Dataloader.REFERENCE].includes(DataloaderUtils.getDataloaderType(helper(this.entity).__em.config.get('dataloader')))) {
-        await helper(this.entity).__em.refLoader.load([this, opts]);
+  async load<TT extends T, P extends string = never>(options: LoadReferenceOptions<TT, P> = {}): Promise<Loaded<TT, P>> {
+    if (!this.isInitialized() || options.refresh) {
+      if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.REFERENCE].includes(DataloaderUtils.getDataloaderType(helper(this.entity).__em.config.get('dataloader')))) {
+        await helper(this.entity).__em.refLoader.load([this, options]);
       } else {
-        await helper(this.entity).init(undefined, opts?.populate, opts?.lockMode, opts?.connectionType);
+        await helper(this.entity).init(undefined, options.populate as any, options.lockMode, options.connectionType);
       }
-    }
-
-    if (opts.prop) {
-      return this.entity[opts.prop as EntityKey];
     }
 
     return this.entity as Loaded<TT, P>;
@@ -149,6 +131,11 @@ export class Reference<T> {
 
   getProperty<K extends keyof T>(prop: K): T[K] {
     return this.getEntity()[prop];
+  }
+
+  async loadProperty<TT extends T, P extends string = never, K extends keyof TT = keyof TT>(prop: K, options?: LoadReferenceOptions<TT, P>): Promise<Loaded<TT, P>[K]> {
+    await this.load(options);
+    return (this.getEntity() as TT)[prop] as Loaded<TT, P>[K];
   }
 
   isInitialized(): boolean {
