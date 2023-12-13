@@ -127,10 +127,10 @@ export class QueryBuilderHelper {
       if (prop.fieldNames.length > 1 && fkIdx !== -1) {
         const fk = prop.targetMeta!.getPrimaryProps()[fkIdx];
         const prefixed = this.prefix(field, isTableNameAliasRequired, true, fkIdx);
-        valueSQL = fk.customType.convertToJSValueSQL!(prefixed, this.platform);
+        valueSQL = fk.customType!.convertToJSValueSQL!(prefixed, this.platform);
       } else  {
         const prefixed = this.prefix(field, isTableNameAliasRequired, true);
-        valueSQL = prop.customType.convertToJSValueSQL!(prefixed, this.platform);
+        valueSQL = prop.customType!.convertToJSValueSQL!(prefixed, this.platform);
       }
 
       if (alias === null) {

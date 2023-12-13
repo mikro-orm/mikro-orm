@@ -129,7 +129,7 @@ export class EntityComparator {
         } else {
           if (meta.properties[pk].customType) {
             const convertorKey = this.safeKey(pk);
-            context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => meta.properties[pk].customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+            context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => meta.properties[pk].customType!.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
             lines.push(`    ${pk}: convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)}),`);
           } else {
             lines.push(`    ${pk}: entity${this.wrap(pk)},`);
@@ -148,7 +148,7 @@ export class EntityComparator {
 
       if (meta.properties[pk].customType) {
         const convertorKey = this.safeKey(pk);
-        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => meta.properties[pk].customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => meta.properties[pk].customType!.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
         lines.push(`  return convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)});`);
       } else {
         lines.push(`  return entity${this.wrap(pk)};`);
@@ -468,9 +468,9 @@ export class EntityComparator {
 
       if (shouldProcessCustomType(childProp)) {
         const convertorKey = this.safeKey(childProp.name);
-        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => childProp.customType!.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
-        if (['number', 'string', 'boolean', 'bigint'].includes(childProp.customType.compareAsType().toLowerCase())) {
+        if (['number', 'string', 'boolean', 'bigint'].includes(childProp.customType!.compareAsType().toLowerCase())) {
           return `${padding}  if (${childCond}) ret${childDataKey} = convertToDatabaseValue_${convertorKey}(entity${childEntityKey});`;
         }
 
@@ -507,7 +507,7 @@ export class EntityComparator {
     if (prop.kind === ReferenceKind.ONE_TO_ONE || prop.kind === ReferenceKind.MANY_TO_ONE) {
       if (prop.mapToPk) {
         if (prop.customType) {
-          context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+          context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType!.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
           ret += `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(entity${entityKey});\n`;
         } else {
           ret += `    ret${dataKey} = entity${entityKey};\n`;
@@ -533,7 +533,7 @@ export class EntityComparator {
     }
 
     if (prop.customType) {
-      context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+      context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType!.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
       if (['number', 'string', 'boolean', 'bigint'].includes(prop.customType.compareAsType().toLowerCase())) {
         return ret + `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(entity${entityKey}${unwrap});\n  }\n`;
@@ -606,7 +606,7 @@ export class EntityComparator {
     if (prop.customType) {
       if (prop.customType.compareValues) {
         const idx = this.tmpIndex++;
-        context.set(`compareValues_${idx}`, (a: unknown, b: unknown) => prop.customType.compareValues!(a, b));
+        context.set(`compareValues_${idx}`, (a: unknown, b: unknown) => prop.customType!.compareValues!(a, b));
         return this.getGenericComparator(this.wrap(prop.name), `!compareValues_${idx}(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
       }
 

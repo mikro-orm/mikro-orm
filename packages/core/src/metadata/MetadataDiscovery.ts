@@ -1215,7 +1215,7 @@ export class MetadataDiscovery {
 
     const mappedType = this.getMappedType(prop);
 
-    if (!prop.customType && mappedType instanceof BigIntType) {
+    if (prop.fieldNames?.length === 1 && !prop.customType && mappedType instanceof BigIntType) {
       prop.customType = new BigIntType();
     }
 
@@ -1247,6 +1247,8 @@ export class MetadataDiscovery {
           prop.customTypes.push(pk.customType);
           prop.hasConvertToJSValueSQL ||= !!pk.customType.convertToJSValueSQL && pk.customType.convertToJSValueSQL('', this.platform) !== '';
           prop.hasConvertToDatabaseValueSQL ||= !!pk.customType.convertToDatabaseValueSQL && pk.customType.convertToDatabaseValueSQL('', this.platform) !== '';
+        } else {
+          prop.customTypes.push(undefined!);
         }
       }
     }

@@ -1095,16 +1095,16 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const knex = this.connection.getKnex();
     const aliased = knex.ref(tableAlias ? `${tableAlias}__${prop.fieldNames[0]}` : prop.fieldNames[0]).toString();
 
-    if (tableAlias && prop.customTypes?.some(type => type.convertToJSValueSQL)) {
+    if (tableAlias && prop.customTypes?.some(type => type?.convertToJSValueSQL)) {
       return prop.fieldNames.map((col, idx) => {
-        if (!prop.customTypes[idx].convertToJSValueSQL) {
+        if (!prop.customTypes[idx]?.convertToJSValueSQL) {
           return col;
         }
 
         const prefixed = knex.ref(col).withSchema(tableAlias).toString();
         const aliased = knex.ref(`${tableAlias}__${col}`).toString();
 
-        return raw(`${prop.customTypes[idx].convertToJSValueSQL!(prefixed, this.platform)} as ${aliased}`);
+        return raw(`${prop.customTypes[idx]!.convertToJSValueSQL!(prefixed, this.platform)} as ${aliased}`);
       });
     }
 

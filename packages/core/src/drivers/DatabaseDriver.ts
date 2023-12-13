@@ -317,7 +317,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
       if (prop.hasConvertToDatabaseValueSQL && !this.platform.isRaw(data[k])) {
         const quoted = this.platform.quoteValue(data[k]);
-        const sql = prop.customType.convertToDatabaseValueSQL!(quoted, this.platform);
+        const sql = prop.customType!.convertToDatabaseValueSQL!(quoted, this.platform);
         data[k] = raw(sql.replace(/\?/g, '\\?'));
       }
 

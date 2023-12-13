@@ -80,7 +80,7 @@ export class EntityAssigner {
     const customType = prop?.customType;
 
     if (options.convertCustomTypes && customType && prop.kind === ReferenceKind.SCALAR && !Utils.isEntity(data)) {
-      value = prop.customType.convertToJSValue(value, options.platform);
+      value = customType.convertToJSValue(value, options.platform);
     }
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop?.kind) && value != null) {

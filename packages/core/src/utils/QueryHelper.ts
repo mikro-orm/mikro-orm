@@ -249,7 +249,7 @@ export class QueryHelper {
       return cond;
     }
 
-    return prop.customType.convertToDatabaseValue(cond, platform, { fromQuery, key, mode: 'query' });
+    return prop.customType!.convertToDatabaseValue(cond, platform, { fromQuery, key, mode: 'query' });
   }
 
   private static isSupportedOperator(key: string): boolean {

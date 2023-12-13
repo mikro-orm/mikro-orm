@@ -355,8 +355,8 @@ export interface EntityProperty<Owner = any, Target = any> {
   targetMeta?: EntityMetadata<Target>;
   columnTypes: string[];
   generated?: string | GeneratedColumnCallback<Owner>;
-  customType: Type<any>;
-  customTypes: Type<any>[];
+  customType?: Type<any>;
+  customTypes: (Type<any> | undefined)[];
   hasConvertToJSValueSQL: boolean;
   hasConvertToDatabaseValueSQL: boolean;
   autoincrement?: boolean;
