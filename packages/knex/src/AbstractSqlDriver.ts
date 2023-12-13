@@ -962,12 +962,16 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const [propName, ref] = hint.field.split(':', 2);
       const prop = meta.properties[propName] || {};
 
+      if ((options?.strategy || hint.strategy || prop.strategy || this.config.get('loadStrategy')) !== LoadStrategy.JOINED) {
+        return false;
+      }
+
       if (ref) {
         // keep only pivot ref joins here, as that only triggers actual join
         return prop.kind === ReferenceKind.MANY_TO_MANY;
       }
 
-      return (prop.strategy || options?.strategy || hint.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && ![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind);
+      return ![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind);
     });
   }
 

@@ -1269,6 +1269,7 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(publishers[1].tests.getItems()[0]).isInitialized()).toBe(true);
 
     orm.em.clear();
+    const mock = mockLogger(orm);
     const publishers2 = await orm.em.findAll(Publisher2, {
       populate: ['tests:ref'],
       strategy: 'select-in',
@@ -1282,9 +1283,11 @@ describe('EntityManagerPostgre', () => {
     expect(publishers2[0].tests.isInitialized(true)).toBe(true); // empty collection
     expect(publishers2[0].tests.isDirty()).toBe(false);
     expect(publishers2[0].tests.count()).toBe(0);
-    expect(publishers2[1].tests.isInitialized(true)).toBe(false); // collection with references only
-    expect(wrap(publishers2[1].tests[0]).isInitialized()).toBe(false);
 
+    expect(mock.mock.calls).toHaveLength(2);
+    expect(mock.mock.calls[0][0]).toMatch('select "p0".* from "publisher2" as "p0" order by "p0"."id" asc');
+    expect(mock.mock.calls[1][0]).toMatch('select "p0"."test2_id" as "fk__test2_id", "p0"."publisher2_id" as "fk__publisher2_id" from "publisher2_tests" as "p0" where "p0"."publisher2_id" in (1, 2) order by "p0"."id" asc');
+    mock.mockReset();
     orm.em.clear();
 
     const publishers3 = await orm.em.findAll(Publisher2, {
@@ -1303,7 +1306,11 @@ describe('EntityManagerPostgre', () => {
     expect(publishers3[1].tests.isInitialized(true)).toBe(false); // collection with references only
     expect(wrap(publishers3[1].tests[0]).isInitialized()).toBe(false);
 
+    expect(mock.mock.calls).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "p0".*, "t1"."publisher2_id" as "t1__publisher2_id", "t1"."test2_id" as "t1__test2_id" from "publisher2" as "p0" left join "publisher2_tests" as "t1" on "p0"."id" = "t1"."publisher2_id" order by "p0"."id" asc, "t1"."id" asc');
+    mock.mockReset();
     orm.em.clear();
+
     const publishers4 = await orm.em.findAll(Publisher2, {
       orderBy: { id: 1 },
     });
@@ -1323,7 +1330,7 @@ describe('EntityManagerPostgre', () => {
     const publishers5 = await orm.em.findAll(Publisher2, {
       orderBy: { id: 1 },
     });
-    const mock = mockLogger(orm);
+    mock.mockReset();
     await publishers5[0].tests.init({ ref: true });
     expect(mock.mock.calls).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatch('select "p0"."test2_id" as "fk__test2_id", "p0"."publisher2_id" as "fk__publisher2_id" from "publisher2_tests" as "p0" where "p0"."publisher2_id" in (1) order by "p0"."id" asc');
