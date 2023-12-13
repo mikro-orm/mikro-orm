@@ -517,3 +517,12 @@ The `Reference.load()` method allowed two signatures, one to ensure the entity i
 -const email = book.author.load('email');
 +const email = book.author.loadProperty('email');
 ```
+
+## `Reference.set()` is private
+
+`Reference` wrapper holds an identity—this means its instance is bound to the underlying entity. This imposes a problem when you try to change the wrapped entity, as the same instance of the `Reference` wrapper can be present on other places in the entity graph. For this reason, the `set` method is no longer public, as replacing the reference instance should be always preferred.
+
+```diff
+-book.author.set(other);
++book.author = ref(other);
+```

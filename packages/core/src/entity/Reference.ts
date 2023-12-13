@@ -42,13 +42,13 @@ export class Reference<T> {
 
   static create<T>(entity: T | Ref<T>): Ref<T> {
     const unwrapped = Reference.unwrapReference(entity);
-    const ref = helper(entity).toReference() as Ref<T>;
+    const ref = helper(entity).toReference() as Reference<T>;
 
     if (unwrapped !== ref.unwrap()) {
-      ref.set(unwrapped as T);
+      ref.set(unwrapped);
     }
 
-    return ref;
+    return ref as Ref<T>;
   }
 
   static createFromPK<T>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): Ref<T> {
@@ -112,7 +112,7 @@ export class Reference<T> {
     return this.entity as Loaded<TT, P>;
   }
 
-  set<TT extends T>(entity: TT | Ref<TT>): void {
+  private set<TT extends T>(entity: TT | Ref<TT>): void {
     this.entity = Reference.unwrapReference(entity as T & object);
     delete helper(this.entity).__reference;
   }
