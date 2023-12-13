@@ -1922,10 +1922,10 @@ describe('EntityManagerMongo', () => {
 
     const ref4 = orm.em.getReference(Author, author.id, { wrapped: true });
     expect(ref4.isInitialized()).toBe(false);
-    await expect(ref4.load('name')).resolves.toBe('God');
+    await expect(ref4.loadProperty('name')).resolves.toBe('God');
     expect(ref4.isInitialized()).toBe(true);
     expect(ref4.getProperty('name')).toBe('God');
-    await expect(ref4.load('email')).resolves.toBe('hello@heaven.god');
+    await expect(ref4.loadProperty('email')).resolves.toBe('hello@heaven.god');
     expect(wrap(ref4, true).__populated).toBeUndefined();
     ref4.populated(false);
     expect(wrap(ref4, true).__populated).toBe(false);

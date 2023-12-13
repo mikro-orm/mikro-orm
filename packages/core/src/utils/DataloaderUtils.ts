@@ -7,7 +7,7 @@ import { Collection, type InitOptions } from '../entity/Collection';
 import { helper } from '../entity/wrap';
 import { type EntityManager } from '../EntityManager';
 import type DataLoader from 'dataloader';
-import { Dataloader } from '../enums';
+import { DataloaderType } from '../enums';
 import { type LoadReferenceOptions } from '../entity/Reference';
 
 export class DataloaderUtils {
@@ -200,12 +200,12 @@ export class DataloaderUtils {
     };
   }
 
-  static getDataloaderType(dataloaderCfg: Dataloader | boolean): Dataloader {
+  static getDataloaderType(dataloaderCfg: DataloaderType | boolean): DataloaderType {
     switch (dataloaderCfg) {
       case true:
-        return Dataloader.ALL;
+        return DataloaderType.ALL;
       case false:
-        return Dataloader.OFF;
+        return DataloaderType.NONE;
       default:
         return dataloaderCfg;
     }

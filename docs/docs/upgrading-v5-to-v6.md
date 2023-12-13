@@ -227,7 +227,7 @@ Note that if you used it for converting entity instance to reference wrapper, th
 
 ## Primary key inference
 
-Some methods allowed you to pass in the primary key property via second generic type argument, this is now removed in favour of the automatic inference. To set the PK type explicitly, use the `PrimaryKeyProp` symbol.
+Some methods allowed you to pass in the primary key property via second generic type argument, this is now removed in favor of the automatic inference. To set the PK type explicitly, use the `PrimaryKeyProp` symbol.
 
 `PrimaryKeyType` symbol has been removed, use `PrimaryKeyProp` instead if needed. Moreover, the value for composite PKs now has to be a tuple instead of a union to ensure we preserve the order of keys:
 
@@ -508,3 +508,12 @@ class User {
 ```
 
 > This validation can be disabled via `discovery.checkDuplicateFieldNames` ORM config option.
+
+## `Reference.load(prop: keyof T)` signature removed
+
+The `Reference.load()` method allowed two signatures, one to ensure the entity is loaded, and another to get a property value in one step. The latter is now removed in favor of a new method called `Reference.loadProperty(prop)`:
+
+```diff
+-const email = book.author.load('email');
++const email = book.author.loadProperty('email');
+```

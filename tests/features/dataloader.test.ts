@@ -16,7 +16,7 @@ import {
   helper,
   Primary,
   SimpleLogger,
-  Dataloader,
+  DataloaderType,
   serialize,
   Filter,
 } from '@mikro-orm/sqlite';
@@ -325,8 +325,8 @@ describe('Dataloader', () => {
   test('Reference.load with prop', async () => {
     const refsA = getReferences(orm.em).slice(0, 2);
     const refsB = getReferences(orm.em).slice(0, 2);
-    const resA = await Promise.all(refsA.map(ref => ref.load('age')));
-    const resB = await Promise.all(refsB.map(ref => ref.load('age', true)));
+    const resA = await Promise.all(refsA.map(ref => ref.loadProperty('age')));
+    const resB = await Promise.all(refsB.map(ref => ref.loadProperty('age', { dataloader: true })));
     await orm.em.flush();
     expect(resA).toEqual(resB);
   });
@@ -341,7 +341,7 @@ describe('Dataloader', () => {
   });
 
   test('Dataloader can be globally enabled for References with true, Dataloader.ALL, Dataloader.REFERENCE', async () => {
-    async function getRefs(dataloader: Dataloader | boolean) {
+    async function getRefs(dataloader: DataloaderType | boolean) {
       const orm = await MikroORM.init({
         dbName: ':memory:',
         dataloader,
@@ -358,14 +358,14 @@ describe('Dataloader', () => {
       return mock.mock.calls;
     }
 
-    const res = structuredClone(await getRefs(Dataloader.ALL));
+    const res = structuredClone(await getRefs(DataloaderType.ALL));
     expect(res).toMatchSnapshot();
     expect(await getRefs(true)).toEqual(res);
-    expect(await getRefs(Dataloader.REFERENCE)).toEqual(res);
+    expect(await getRefs(DataloaderType.REFERENCE)).toEqual(res);
   });
 
   test('Dataloader should not be globally enabled for References with false, Dataloader.OFF, Dataloader.COLLECTION', async () => {
-    async function getRefs(dataloader: Dataloader | boolean) {
+    async function getRefs(dataloader: DataloaderType | boolean) {
       const orm = await MikroORM.init({
         dbName: ':memory:',
         dataloader,
@@ -382,16 +382,16 @@ describe('Dataloader', () => {
       return mock.mock.calls;
     }
 
-    const res = structuredClone(await getRefs(Dataloader.OFF));
+    const res = structuredClone(await getRefs(DataloaderType.NONE));
     expect(res).toMatchSnapshot();
     expect(await getRefs(false)).toEqual(res);
-    expect(await getRefs(Dataloader.COLLECTION)).toEqual(res);
+    expect(await getRefs(DataloaderType.COLLECTION)).toEqual(res);
   });
 
   test('Reference dataloader can be disabled per-query', async () => {
     const orm = await MikroORM.init({
       dbName: ':memory:',
-      dataloader: Dataloader.ALL,
+      dataloader: DataloaderType.ALL,
       entities: [Author, Book, Chat, Message],
       loggerFactory: options => new SimpleLogger(options),
     });
@@ -581,7 +581,7 @@ describe('Dataloader', () => {
   });
 
   test('Dataloader can be globally enabled for Collections with true, Dataloader.ALL, Dataloader.COLLECTION', async () => {
-    async function getCols(dataloader: Dataloader | boolean) {
+    async function getCols(dataloader: DataloaderType | boolean) {
       const orm = await MikroORM.init({
         dbName: ':memory:',
         dataloader,
@@ -598,14 +598,14 @@ describe('Dataloader', () => {
       return mock.mock.calls;
     }
 
-    const res = structuredClone(await getCols(Dataloader.ALL));
+    const res = structuredClone(await getCols(DataloaderType.ALL));
     expect(res).toMatchSnapshot();
     expect(await getCols(true)).toEqual(res);
-    expect(await getCols(Dataloader.COLLECTION)).toEqual(res);
+    expect(await getCols(DataloaderType.COLLECTION)).toEqual(res);
   });
 
   test('Dataloader should not be globally enabled for Collections with false, Dataloader.OFF, Dataloader.REFERENCE', async () => {
-    async function getCols(dataloader: Dataloader | boolean) {
+    async function getCols(dataloader: DataloaderType | boolean) {
       const orm = await MikroORM.init({
         dbName: ':memory:',
         dataloader,
@@ -622,16 +622,16 @@ describe('Dataloader', () => {
       return mock.mock.calls;
     }
 
-    const res = structuredClone(await getCols(Dataloader.OFF));
+    const res = structuredClone(await getCols(DataloaderType.NONE));
     expect(res).toMatchSnapshot();
     expect(await getCols(false)).toEqual(res);
-    expect(await getCols(Dataloader.REFERENCE)).toEqual(res);
+    expect(await getCols(DataloaderType.REFERENCE)).toEqual(res);
   });
 
   test('Collection dataloader can be disabled per-query', async () => {
     const orm = await MikroORM.init({
       dbName: ':memory:',
-      dataloader: Dataloader.ALL,
+      dataloader: DataloaderType.ALL,
       entities: [Author, Book, Chat, Message],
       loggerFactory: options => new SimpleLogger(options),
     });
@@ -648,8 +648,8 @@ describe('Dataloader', () => {
   });
 
   test('getDataloaderType', async () => {
-    expect(DataloaderUtils.getDataloaderType(true)).toEqual(Dataloader.ALL);
-    expect(DataloaderUtils.getDataloaderType(false)).toEqual(Dataloader.OFF);
-    expect(DataloaderUtils.getDataloaderType(Dataloader.COLLECTION)).toEqual(Dataloader.COLLECTION);
+    expect(DataloaderUtils.getDataloaderType(true)).toEqual(DataloaderType.ALL);
+    expect(DataloaderUtils.getDataloaderType(false)).toEqual(DataloaderType.NONE);
+    expect(DataloaderUtils.getDataloaderType(DataloaderType.COLLECTION)).toEqual(DataloaderType.COLLECTION);
   });
 });
