@@ -332,10 +332,10 @@ const author = new Author(...)
 book.author = wrap(author).toReference();
 ```
 
-If the reference already exist, you can also re-assign to it via `set()` method:
+If the reference already exist, you need to re-assign it with a new `Reference` instance - they hold identity just like entities, so you need to replace them:
 
 ```ts
-book.author.set(new Author(...));
+article.author = ref(new User(...));
 ```
 
 ## What is `Ref` (`IdentifiedReference`)?
