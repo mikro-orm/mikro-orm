@@ -135,4 +135,11 @@ export abstract class AbstractSqlPlatform extends Platform {
     return ret + 'else null end)';
   }
 
+  /**
+   * @internal
+   */
+  getOrderByExpression(column: string, direction: string): string[] {
+    return [ `${column} ${direction.toLowerCase()}` ];
+  }
+
 }

@@ -638,7 +638,7 @@ export class QueryBuilderHelper {
         if (Array.isArray(order)) {
           order.forEach(part => ret.push(...this.getQueryOrderFromObject(type, part, populate)));
         } else {
-          ret.push(`${colPart} ${order.toLowerCase()}`);
+          ret.push(...this.platform.getOrderByExpression(colPart, order));
         }
       }
     }
