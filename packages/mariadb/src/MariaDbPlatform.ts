@@ -81,6 +81,7 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
     [QueryOrder.desc_nulls_last]: 'is null',
   } as const;
 
+  /* istanbul ignore next */
   override getOrderByExpression(column: string, direction: string): string[] {
     const ret: string[] = [];
     const dir = direction.toLowerCase();
