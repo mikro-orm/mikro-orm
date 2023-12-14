@@ -84,11 +84,14 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
   /* istanbul ignore next */
   override getOrderByExpression(column: string, direction: string): string[] {
     const ret: string[] = [];
-    const dir = direction.toLowerCase();
+    const dir = direction.toLowerCase() as keyof typeof this.NULLS_TRANSLATE;
+
     if (dir in this.NULLS_TRANSLATE) {
-      ret.push(`${column} ${this.NULLS_TRANSLATE[dir as keyof typeof this.NULLS_TRANSLATE]}`);
+      ret.push(`${column} ${this.NULLS_TRANSLATE[dir]}`);
     }
+
     ret.push(`${column} ${dir.replace(/(\s|nulls|first|last)*/gi, '')}`);
+
     return ret;
   }
 
