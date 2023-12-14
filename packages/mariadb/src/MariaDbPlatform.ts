@@ -1,4 +1,4 @@
-import { AbstractSqlPlatform } from '@mikro-orm/knex';
+import { AbstractSqlPlatform, QueryOrder } from '@mikro-orm/knex';
 import { MariaDbSchemaHelper } from './MariaDbSchemaHelper';
 import { MariaDbExceptionConverter } from './MariaDbExceptionConverter';
 import { Utils, type SimpleColumnMeta, type Dictionary, type Type } from '@mikro-orm/core';
@@ -72,6 +72,23 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
     const quotedIndexName = this.quoteIdentifier(indexName);
 
     return `alter table ${quotedTableName} add fulltext index ${quotedIndexName}(${quotedColumnNames.join(',')})`;
+  }
+
+  private readonly NULLS_TRANSLATE = {
+    [QueryOrder.asc_nulls_first]: 'is not null',
+    [QueryOrder.asc_nulls_last]: 'is null',
+    [QueryOrder.desc_nulls_first]: 'is not null',
+    [QueryOrder.desc_nulls_last]: 'is null',
+  } as const;
+
+  override getOrderByExpression(column: string, direction: string): string[] {
+    const ret: string[] = [];
+    const dir = direction.toLowerCase();
+    if (dir in this.NULLS_TRANSLATE) {
+      ret.push(`${column} ${this.NULLS_TRANSLATE[dir as keyof typeof this.NULLS_TRANSLATE]}`);
+    }
+    ret.push(`${column} ${dir.replace(/(\s|nulls|first|last)*/gi, '')}`);
+    return ret;
   }
 
 }
