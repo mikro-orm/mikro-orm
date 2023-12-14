@@ -92,7 +92,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return `alter table ${quotedTableName} add fulltext index ${quotedIndexName}(${quotedColumnNames.join(',')})`;
   }
 
-  private readonly NULLS_TRANSLATE = {
+  private readonly ORDER_BY_NULLS_TRANSLATE = {
     [QueryOrder.asc_nulls_first]: 'is not null',
     [QueryOrder.asc_nulls_last]: 'is null',
     [QueryOrder.desc_nulls_first]: 'is not null',
@@ -102,8 +102,8 @@ export class MySqlPlatform extends AbstractSqlPlatform {
   override getOrderByExpression(column: string, direction: string): string[] {
     const ret: string[] = [];
     const dir = direction.toLowerCase();
-    if (dir in this.NULLS_TRANSLATE) {
-      ret.push(`${column} ${this.NULLS_TRANSLATE[dir as keyof typeof this.NULLS_TRANSLATE]}`);
+    if (dir in this.ORDER_BY_NULLS_TRANSLATE) {
+      ret.push(`${column} ${this.ORDER_BY_NULLS_TRANSLATE[dir as keyof typeof this.ORDER_BY_NULLS_TRANSLATE]}`);
     }
     ret.push(`${column} ${dir.replace(/(\s|nulls|first|last)*/gi, '')}`);
     return ret;
