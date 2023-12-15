@@ -197,10 +197,10 @@ interface LogContext extends Dictionary {
 
 ### Providing additional context to a custom logger
 
-If you have implemented your own `LoggerFactory` and need to access additional contextual values inside your customer logger implementation, utilize the `LoggerContext` property of `FindOptions`. Adding additional key/value pairs to that object will make them available inside your custom logger:
+If you have implemented your own `LoggerFactory` and need to access additional contextual values inside your customer logger implementation, utilize the `loggerContext` property of `FindOptions`. Adding additional key/value pairs to that object will make them available inside your custom logger:
 
 ```ts
-const author = await em.findOne(Author, { id: 1 }, { loggerContext: { meaningOfLife: 42 } });
+const res = await em.findAll(Author, { loggerContext: { meaningOfLife: 42 } });
 
 // ...
 
@@ -210,4 +210,13 @@ class CustomLogger extends DefaultLogger {
     // 42
   }
 }
+```
+
+The logger context can be also set on `EntityManager` level, e.g. via `em.fork()`:
+
+```ts
+const fork = em.fork({
+  loggerContext: { meaningOfLife: 42 },
+});
+const res = await fork.findAll(Author); // same as previous example 
 ```

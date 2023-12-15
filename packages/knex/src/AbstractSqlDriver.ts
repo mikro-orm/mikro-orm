@@ -950,7 +950,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   /**
    * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
    */
-  protected autoJoinOneToOneOwner<T extends object, P extends string = never>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], fields: readonly EntityField<T, P>[] = []): PopulateOptions<T>[] {
+  protected autoJoinOneToOneOwner<T extends object, P extends string = never>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], fields: readonly EntityField<T, any>[] = []): PopulateOptions<T>[] {
     if (!this.config.get('autoJoinOneToOneOwner')) {
       return populate;
     }
@@ -1136,7 +1136,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   }
 
   /** @internal */
-  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, logging?: LoggingOptions): QueryBuilder<T> {
+  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions): QueryBuilder<T> {
     const connectionType = this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
     const qb = new QueryBuilder<T>(
       entityName,
@@ -1146,7 +1146,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       undefined,
       connectionType,
       undefined,
-      logging,
+      loggerContext,
     );
 
     if (!convertCustomTypes) {

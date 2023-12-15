@@ -137,7 +137,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
               alias?: string,
               private connectionType?: ConnectionType,
               private readonly em?: SqlEntityManager,
-              private readonly logging?: LoggingOptions) {
+              private readonly loggerContext?: LoggingOptions) {
     this.platform = this.driver.getPlatform();
     this.knex = this.driver.getConnection(this.connectionType).getKnex();
 
@@ -757,7 +757,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     const write = method === 'run' || !this.platform.getConfig().get('preferReadReplicas');
     const type = this.connectionType || (write ? 'write' : 'read');
-    const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context, this.logging);
+    const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context, this.loggerContext);
     const meta = this.mainAlias.metadata;
 
     if (!options.mapResults || !meta) {
