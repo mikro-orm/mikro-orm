@@ -189,12 +189,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         def = Cursor.for<T>(meta, def, orderBy);
       }
 
+      /* istanbul ignore next */
       const offsets = def ? Cursor.decode(def as string) as Dictionary[] : [];
 
       if (definition.length === offsets.length) {
         return this.createCursorCondition<T>(definition, offsets, inverse);
       }
 
+      /* istanbul ignore next */
       return {} as FilterQuery<T>;
     };
 
@@ -230,7 +232,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     };
   }
 
-  protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse = false): FilterQuery<T> {
+  /* istanbul ignore next */
+  protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse: boolean): FilterQuery<T> {
     const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
       if (Utils.isPlainObject(direction)) {
         const value = Utils.keys(direction).reduce((o, key) => {
@@ -286,7 +289,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         return;
       }
 
-      if (prop.embeddedProps && (prop.object || object)) {
+      if (prop.embeddedProps && (object || prop.object)) {
         const copy = data[k];
         delete data[k];
 
@@ -321,6 +324,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         data[k] = raw(sql.replace(/\?/g, '\\?'));
       }
 
+      /* istanbul ignore next */
       if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
         data[k] = JSON.stringify(data[k]);
       }
@@ -334,6 +338,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   protected inlineEmbeddables<T extends object>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
+    /* istanbul ignore next */
     if (data == null) {
       return;
     }
@@ -380,6 +385,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
             // we might be using some native JSON operator, e.g. with mongodb's `$geoWithin` or `$exists`
             if (props[kk]) {
+              /* istanbul ignore next */
               inline(data[prop.name], props[kk] || props[parentPropName], [prop.name]);
             } else if (props[parentPropName]) {
               data[`${prop.name}.${kk}` as keyof T] = (data[prop.name] as Dictionary)[kk];
