@@ -1,5 +1,6 @@
 import type { Dictionary, EntityKey, ExpandProperty } from './typings';
 import type { Transaction } from './connections';
+import type { LogContext } from './logging';
 
 export enum FlushMode {
   /** The `EntityManager` delays the flush until the current Transaction is committed. */
@@ -190,6 +191,7 @@ export interface TransactionOptions {
   clear?: boolean;
   flushMode?: FlushMode;
   ignoreNestedTransactions?: boolean;
+  loggerContext?: LogContext;
 }
 
 export abstract class PlainObject {

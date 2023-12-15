@@ -101,7 +101,6 @@ export interface FindAllOptions<T, P extends string = never, F extends string = 
 export type FilterOptions = Dictionary<boolean | Dictionary> | string[] | boolean;
 
 export interface FindOptions<T, P extends string = never, F extends string = never> {
-  where?: FilterQuery<T>;
   populate?: Populate<T, P>;
   populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
   populateOrderBy?: OrderDefinition<T>;
@@ -199,6 +198,8 @@ export interface CountOptions<T extends object, P extends string = never>  {
   comments?: string | string[];
   /** sql only */
   hintComments?: string | string[];
+  loggerContext?: LogContext;
+  logging?: LoggingOptions;
 }
 
 export interface UpdateOptions<T> {
