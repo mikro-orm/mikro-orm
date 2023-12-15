@@ -23,7 +23,7 @@ export abstract class Connection {
     if (options) {
       this.options = options;
     } else {
-      const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool'] as const;
+      const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool', 'schema'] as const;
       this.options = props.reduce((o, i) => {
         (o[i] as any) = this.config.get(i);
         return o;
@@ -100,6 +100,7 @@ export abstract class Connection {
 
       if (this.options.schema || url.searchParams.has('schema')) {
         this.options.schema = ret.schema = this.options.schema ?? decodeURIComponent(url.searchParams.get('schema')!);
+        this.config.set('schema', ret.schema);
       }
     } else {
       const url = new URL(this.config.getClientUrl());
