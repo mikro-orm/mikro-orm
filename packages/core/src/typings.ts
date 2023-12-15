@@ -450,7 +450,7 @@ export class EntityMetadata<T = any> {
             if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
               wrapped.__originalEntityData[prop.name as string] = val.__helper.getPrimaryKey(true);
             } else {
-              wrapped.__touched = true;
+              wrapped.__touched = !hydrator.isRunning();
             }
 
             EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
@@ -470,7 +470,7 @@ export class EntityMetadata<T = any> {
         },
         set(val: unknown) {
           this.__helper.__data[prop.name] = val;
-          this.__helper.__touched = true;
+          this.__helper.__touched = !this.__helper.hydrator.isRunning();
         },
         enumerable: true,
         configurable: true,

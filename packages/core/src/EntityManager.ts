@@ -1267,6 +1267,38 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * parameter matches a property name, its value will be extracted from `data`. If no matching property exists,
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
+   *
+   * The parameters are strictly checked, you need to provide all required properties. You can use `OptionalProps`
+   * symbol to omit some properties from this check without making them optional. Alternatively, use `partial: true`
+   * in the options to disable the strict checks for required properties. This option has no effect on runtime.
+   */
+  create<Entity extends object>(entityName: EntityName<Entity>, data: RequiredEntityData<Entity>, options?: CreateOptions): Entity;
+
+  /**
+   * Creates new instance of given entity and populates it with given data.
+   * The entity constructor will be used unless you provide `{ managed: true }` in the options parameter.
+   * The constructor will be given parameters based on the defined constructor of the entity. If the constructor
+   * parameter matches a property name, its value will be extracted from `data`. If no matching property exists,
+   * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
+   * `em.create()` will pass the data into it (unless we have a property named `data` too).
+   *
+   * The parameters are strictly checked, you need to provide all required properties. You can use `OptionalProps`
+   * symbol to omit some properties from this check without making them optional. Alternatively, use `partial: true`
+   * in the options to disable the strict checks for required properties. This option has no effect on runtime.
+   */
+  create<Entity extends object>(entityName: EntityName<Entity>, data: EntityData<Entity>, options: CreateOptions & { partial: true }): Entity;
+
+  /**
+   * Creates new instance of given entity and populates it with given data.
+   * The entity constructor will be used unless you provide `{ managed: true }` in the options parameter.
+   * The constructor will be given parameters based on the defined constructor of the entity. If the constructor
+   * parameter matches a property name, its value will be extracted from `data`. If no matching property exists,
+   * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
+   * `em.create()` will pass the data into it (unless we have a property named `data` too).
+   *
+   The parameters are strictly checked, you need to provide all required properties. You can use `OptionalProps`
+   symbol to omit some properties from this check without making them optional. Alternatively, use `partial: true`
+   in the options to disable the strict checks for required properties. This option has no effect on runtime.
    */
   create<Entity extends object>(entityName: EntityName<Entity>, data: RequiredEntityData<Entity>, options: CreateOptions = {}): Entity {
     const em = this.getContext();
@@ -1902,9 +1934,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 }
 
 export interface CreateOptions {
+  /** creates a managed entity instance instead, bypassing the constructor call */
   managed?: boolean;
+  /** create entity in a specific schema - alternatively, use `wrap(entity).setSchema()` */
   schema?: string;
+  /** persist the entity automatically - this is the default behavior and is also configurable globally via `persistOnCreate` option */
   persist?: boolean;
+  /** this option disables the strict typing which requires all mandatory properties to have value, it has no effect on runtime */
+  partial?: boolean;
 }
 
 export interface MergeOptions {

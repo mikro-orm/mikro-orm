@@ -269,18 +269,22 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           }
         });
 
-      meta2.props
-        .filter(prop => this.platform.shouldHaveColumn(prop, p.children || []))
-        .forEach(prop => {
-          if (prop.fieldNames.length > 1) { // composite keys
-            relationPojo[prop.name] = prop.fieldNames.map(name => root![`${relationAlias}__${name}`]);
-            prop.fieldNames.map(name => delete root![`${relationAlias}__${name}`]);
-          } else {
-            const alias = `${relationAlias}__${prop.fieldNames[0]}`;
-            relationPojo[prop.name] = root![alias];
-            delete root![alias];
-          }
-        });
+      const props = meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, p.children || []));
+
+      for (const prop of props) {
+        if (prop.fieldNames.length > 1) { // composite keys
+          relationPojo[prop.name] = prop.fieldNames.map(name => root![`${relationAlias}__${name}`]);
+        } else {
+          const alias = `${relationAlias}__${prop.fieldNames[0]}`;
+          relationPojo[prop.name] = root![alias];
+        }
+      }
+
+      // properties can be mapped to multiple places, e.g. when sharing a column in multiple FKs,
+      // so we need to delete them after everything is mapped from given level
+      for (const prop of props) {
+        prop.fieldNames.map(name => delete root![`${relationAlias}__${name}`]);
+      }
 
       if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(relation.reference)) {
         result[relation.name] = result[relation.name] || [] as unknown as T[keyof T & string];

@@ -945,6 +945,28 @@ export class Utils {
     return false;
   }
 
+  /**
+   * Maps nested FKs from `[1, 2, 3]` to `[1, [2, 3]]`.
+   */
+  static mapFlatCompositePrimaryKey(fk: Primary<any>[], prop: EntityProperty, fieldNames = prop.fieldNames, idx = 0): Primary<any> | Primary<any>[] {
+    if (!prop.targetMeta) {
+      return fk[idx++];
+    }
+
+    const parts: Primary<any>[] = [];
+
+    for (const pk of prop.targetMeta.getPrimaryProps()) {
+      parts.push(this.mapFlatCompositePrimaryKey(fk, pk, fieldNames, idx));
+      idx += pk.fieldNames.length;
+    }
+
+    if (parts.length < 2) {
+      return parts[0];
+    }
+
+    return parts;
+  }
+
   static getGlobalStorage(namespace: string): Dictionary {
     const key = `mikro-orm-${namespace}`;
     global[key] = global[key] || {};

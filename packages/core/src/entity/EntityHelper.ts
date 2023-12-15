@@ -104,13 +104,13 @@ export class EntityHelper {
               },
               set(val) {
                 this.__helper.__data[prop.name] = val;
-                this.__helper.__touched = true;
+                this.__helper.__touched = !this.__helper.hydrator.isRunning();
               },
               enumerable: true,
               configurable: true,
             });
             this.__helper.__data[prop.name] = val;
-            this.__helper.__touched = true;
+            this.__helper.__touched = !this.__helper.hydrator.isRunning();
           },
         });
       });
@@ -156,7 +156,7 @@ export class EntityHelper {
         if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
           wrapped.__originalEntityData[prop.name as string] = helper(wrapped.__data[prop.name]).getPrimaryKey(true);
         } else {
-          wrapped.__touched = true;
+          wrapped.__touched = !hydrator.isRunning();
         }
 
         EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
