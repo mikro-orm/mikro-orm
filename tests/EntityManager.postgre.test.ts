@@ -1378,10 +1378,38 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush([book1, book2, book3]);
     orm.em.clear();
 
-    const bt1 = await orm.em.findOneOrFail(BookTag2, tag1.id, { populate: ['books:ref'] });
+    const mock = mockLogger(orm);
+    const bt1 = await orm.em.findOneOrFail(BookTag2, tag1.id, {
+      populate: ['books:ref'],
+      strategy: 'joined',
+      filters: false,
+    });
+    expect(mock).toHaveBeenCalledTimes(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b1"."book_tag2_id" as "b1__book_tag2_id", "b1"."book2_uuid_pk" as "b1__book2_uuid_pk" ' +
+      'from "book_tag2" as "b0" ' +
+      'left join "book2_tags" as "b1" on "b0"."id" = "b1"."book_tag2_id" ' +
+      `where "b0"."id" = '1' ` +
+      'order by "b1"."order" asc');
     expect(bt1.books.isInitialized()).toBe(true);
     expect(bt1.books.isInitialized(true)).toBe(false);
     expect(wrap(bt1.books[0]).isInitialized()).toBe(false);
+    orm.em.clear();
+    mock.mockReset();
+
+    const bt2 = await orm.em.findOneOrFail(BookTag2, tag1.id, {
+      populate: ['books:ref'],
+      strategy: 'select-in',
+      filters: false,
+    });
+    expect(mock).toHaveBeenCalledTimes(2);
+    expect(mock.mock.calls[0][0]).toMatch(`select "b0".* from "book_tag2" as "b0" where "b0"."id" = '1' limit 1`);
+    expect(mock.mock.calls[1][0]).toMatch('select "b0"."book_tag2_id" as "fk__book_tag2_id", "b0"."book2_uuid_pk" as "fk__book2_uuid_pk" ' +
+      'from "book2_tags" as "b0" ' +
+      `where "b0"."book_tag2_id" in ('1') ` +
+      'order by "b0"."order" asc');
+    expect(bt2.books.isInitialized()).toBe(true);
+    expect(bt2.books.isInitialized(true)).toBe(false);
+    expect(wrap(bt2.books[0]).isInitialized()).toBe(false);
   });
 
   test('one to many relation (ref: true)', async () => {
