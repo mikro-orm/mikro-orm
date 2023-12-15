@@ -94,13 +94,13 @@ export type EntityField<T, P extends string = '*'> = keyof T | '*' | AutoPath<T,
 
 export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
 
-export interface FindAllOptions<T, P extends string = never, F extends string = never> extends FindOptions<T, P, F> {
+export interface FindAllOptions<T, P extends string = never, F extends string = '*'> extends FindOptions<T, P, F> {
   where?: FilterQuery<T>;
 }
 
 export type FilterOptions = Dictionary<boolean | Dictionary> | string[] | boolean;
 
-export interface FindOptions<T, P extends string = never, F extends string = never> {
+export interface FindOptions<T, P extends string = never, F extends string = '*'> {
   populate?: Populate<T, P>;
   populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
   populateOrderBy?: OrderDefinition<T>;
@@ -147,15 +147,15 @@ export interface FindOptions<T, P extends string = never, F extends string = nev
   logging?: LoggingOptions;
 }
 
-export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = never> extends Omit<FindOptions<T, P, F>, 'limit' | 'offset'> {
+export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = '*'> extends Omit<FindOptions<T, P, F>, 'limit' | 'offset'> {
 }
 
-export interface FindOneOptions<T extends object, P extends string = never, F extends string = never> extends Omit<FindOptions<T, P, F>, 'limit' | 'lockMode'> {
+export interface FindOneOptions<T extends object, P extends string = never, F extends string = '*'> extends Omit<FindOptions<T, P, F>, 'limit' | 'lockMode'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
 }
 
-export interface FindOneOrFailOptions<T extends object, P extends string = never, F extends string = never> extends FindOneOptions<T, P, F> {
+export interface FindOneOrFailOptions<T extends object, P extends string = never, F extends string = '*'> extends FindOneOptions<T, P, F> {
   failHandler?: (entityName: string, where: Dictionary | IPrimaryKey | any) => Error;
   strict?: boolean;
 }

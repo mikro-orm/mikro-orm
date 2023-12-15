@@ -1721,7 +1721,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext();
     this.prepareOptions(options, em);
     const entityName = (arr[0] as Dictionary).constructor.name;
-    const preparedPopulate = em.preparePopulate<Entity, Hint>(entityName, { populate: populate as any });
+    const preparedPopulate = em.preparePopulate<Entity>(entityName, { populate: populate as any });
     await em.entityLoader.populate(entityName, arr, preparedPopulate, options as EntityLoaderOptions<Entity>);
 
     return entities as any;
@@ -1902,7 +1902,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       });
     }
 
-    const preparedPopulate = this.preparePopulate<T, P, F>(meta.className, options);
+    const preparedPopulate = this.preparePopulate<T>(meta.className, options);
     await this.entityLoader.populate(meta.className, [entity], preparedPopulate, {
       ...options as Dictionary,
       ...this.getPopulateWhere<T>(where as ObjectQuery<T>, options),
@@ -1926,11 +1926,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }, [] as string[]);
   }
 
-  private preparePopulate<
-    Entity extends object,
-    Hint extends string = never,
-    Fields extends string = '*',
-  >(entityName: string, options: Pick<FindOptions<Entity, Hint, Fields>, 'populate' | 'strategy' | 'fields' | 'flags'>): PopulateOptions<Entity>[] {
+  private preparePopulate<Entity extends object>(entityName: string, options: Pick<FindOptions<Entity, any, any>, 'populate' | 'strategy' | 'fields' | 'flags'>): PopulateOptions<Entity>[] {
     if (options.populate === false) {
       return [];
     }
