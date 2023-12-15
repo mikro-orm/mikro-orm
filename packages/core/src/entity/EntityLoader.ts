@@ -297,7 +297,7 @@ export class EntityLoader {
   }
 
   private async findChildren<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, populate: PopulateOptions<Entity>, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): Promise<AnyEntity[]> {
-    const children = this.getChildReferences<Entity>(entities, prop, options);
+    const children = this.getChildReferences<Entity>(entities, prop, options, ref);
     const meta = prop.targetMeta!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
     let schema: string | undefined = options.schema;
@@ -554,8 +554,8 @@ export class EntityLoader {
     return ret;
   }
 
-  private getChildReferences<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>): AnyEntity[] {
-    const filtered = this.filterCollections(entities, prop.name, options);
+  private getChildReferences<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): AnyEntity[] {
+    const filtered = this.filterCollections(entities, prop.name, options, ref);
     const children: AnyEntity[] = [];
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY) {
@@ -571,7 +571,7 @@ export class EntityLoader {
     return children;
   }
 
-  private filterCollections<Entity extends object>(entities: Entity[], field: keyof Entity, options: Required<EntityLoaderOptions<Entity>>, ref?: string): Entity[] {
+  private filterCollections<Entity extends object>(entities: Entity[], field: keyof Entity, options: Required<EntityLoaderOptions<Entity>>, ref?: string | boolean): Entity[] {
     if (options.refresh) {
       return entities.filter(e => e[field]);
     }

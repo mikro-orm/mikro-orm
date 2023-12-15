@@ -334,10 +334,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         return;
       }
 
-      const relationPojo: EntityData<T> = {};
+      let relationPojo: EntityData<T> = {};
 
       meta2.props
-        .filter(prop => prop.persist === false && prop.fieldNames)
+        .filter(prop => !ref && prop.persist === false && prop.fieldNames)
         .filter(prop => !prop.lazy || populate.some(p => p.field === prop.name || p.all))
         .forEach(prop => {
           /* istanbul ignore if */
@@ -349,7 +349,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           }
         });
 
-      const props = meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, hint.children as any || []));
+      const props = ref
+        ? meta2.getPrimaryProps()
+        : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, hint.children as any || []));
 
       for (const prop1 of props) {
         if (prop1.fieldNames.length > 1) { // composite keys
@@ -368,6 +370,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       // so we need to delete them after everything is mapped from given level
       for (const prop1 of props) {
         prop1.fieldNames.map(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
+      }
+
+      if (ref) {
+        const tmp = Object.values(relationPojo);
+        relationPojo = meta2.compositePK ? tmp : tmp[0] as any;
       }
 
       if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
@@ -977,8 +984,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       }
 
       if (ref) {
-        // keep only pivot ref joins here, as that only triggers actual join
-        return prop.kind === ReferenceKind.MANY_TO_MANY;
+        return [ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind);
       }
 
       return ![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind);
@@ -1080,6 +1086,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           ...prop.joinColumns!.map(col => qb.helper.mapper(`${tableAlias}.${col}`, qb.type, undefined, `${tableAlias}__${col}`)),
           ...prop.inverseJoinColumns!.map(col => qb.helper.mapper(`${tableAlias}.${col}`, qb.type, undefined, `${tableAlias}__${col}`)),
         );
+      }
+
+      if (prop.kind === ReferenceKind.ONE_TO_MANY && ref) {
+        fields.push(...this.getFieldsForJoinedLoad(qb, meta2, prop.referencedColumnNames, hint.children as any, options, tableAlias, path));
       }
 
       const childExplicitFields = explicitFields?.filter(f => Utils.isPlainObject(f)).map(o => (o as Dictionary)[prop.name])[0] || [];

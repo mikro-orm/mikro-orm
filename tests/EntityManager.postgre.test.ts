@@ -1384,6 +1384,47 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(bt1.books[0]).isInitialized()).toBe(false);
   });
 
+  test('one to many relation (ref: true)', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    const tag1 = new BookTag2('silly');
+    const tag2 = new BookTag2('funny');
+    const tag3 = new BookTag2('sick');
+    const tag4 = new BookTag2('strange');
+    const tag5 = new BookTag2('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+
+    await orm.em.persistAndFlush([book1, book2, book3]);
+    orm.em.clear();
+    const mock = mockLogger(orm);
+    const a1 = await orm.em.findOneOrFail(Author2, author.id, {
+      populate: ['books:ref'],
+      strategy: 'joined',
+    });
+    expect(mock).toHaveBeenCalledTimes(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "a0".*, "b1"."uuid_pk" as "b1__uuid_pk" from "author2" as "a0" left join "book2" as "b1" on "a0"."id" = "b1"."author_id" and "b1"."author_id" is not null where "a0"."id" = 1 order by "b1"."title" asc');
+    expect(a1.books.isInitialized()).toBe(true);
+    expect(a1.books.isInitialized(true)).toBe(false);
+    expect(wrap(a1.books[0]).isInitialized()).toBe(false);
+    orm.em.clear();
+    mock.mockReset();
+
+    const a2 = await orm.em.findOneOrFail(Author2, author.id, {
+      populate: ['books:ref'],
+      strategy: 'select-in',
+    });
+    expect(mock).toHaveBeenCalledTimes(2);
+    expect(mock.mock.calls[0][0]).toMatch('select "a0".* from "author2" as "a0" where "a0"."id" = 1 limit 1');
+    expect(mock.mock.calls[1][0]).toMatch('select "b0"."uuid_pk", "b0"."author_id" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" in (1) order by "b0"."title" asc');
+    expect(a2.books.isInitialized()).toBe(true);
+    expect(a2.books.isInitialized(true)).toBe(false);
+    expect(wrap(a2.books[0]).isInitialized()).toBe(false);
+  });
+
   test('populating many to many relation with explicit schema name', async () => {
     const p1 = new Label2('foo');
     expect(p1.tests).toBeInstanceOf(Collection);
