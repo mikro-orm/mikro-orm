@@ -704,7 +704,7 @@ export class QueryBuilderHelper {
     // if we do not have alias, we don't consider spaces as custom expressions
     const re = hasAlias ? /[ ?<>=()'"`:]|^\d/ : /[?<>=()'"`:]|^\d/;
 
-    return !!field.match(re);
+    return !!field.match(re) && !field.match(/;|--/);
   }
 
   private prefix(field: string, always = false, quote = false, idx?: number): string {

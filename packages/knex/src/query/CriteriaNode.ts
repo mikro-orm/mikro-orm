@@ -130,7 +130,7 @@ export class CriteriaNode implements ICriteriaNode {
   }
 
   static isCustomExpression(field: string): boolean {
-    return !!field.match(/[ ?<>=()]|^\d/);
+    return !!field.match(/[ ?<>=()]|^\d/) && !field.match(/;|--/);
   }
 
 }
