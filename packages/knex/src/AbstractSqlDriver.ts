@@ -349,23 +349,26 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           }
         });
 
-      meta2.props
-        .filter(prop => this.platform.shouldHaveColumn(prop, hint.children as any || []))
-        .forEach(prop => {
-          if (prop.fieldNames.length > 1) { // composite keys
-            const fk = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as Primary<T>[];
-            prop.fieldNames.map(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
-            relationPojo[prop.name] = Utils.mapFlatCompositePrimaryKey(fk, prop) as EntityValue<T>;
-          } else if (prop.runtimeType === 'Date') {
-            const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
-            relationPojo[prop.name] = (typeof root![alias] === 'string' ? new Date(root![alias] as string) : root![alias]) as EntityValue<T>;
-            delete root![alias];
-          } else {
-            const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
-            relationPojo[prop.name] = root![alias];
-            delete root![alias];
-          }
-        });
+      const props = meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, hint.children as any || []));
+
+      for (const prop1 of props) {
+        if (prop1.fieldNames.length > 1) { // composite keys
+          const fk = prop1.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as Primary<T>[];
+          relationPojo[prop1.name] = Utils.mapFlatCompositePrimaryKey(fk, prop1) as EntityValue<T>;
+        } else if (prop1.runtimeType === 'Date') {
+          const alias = `${relationAlias}__${prop1.fieldNames[0]}` as EntityKey<T>;
+          relationPojo[prop1.name] = (typeof root![alias] === 'string' ? new Date(root![alias] as string) : root![alias]) as EntityValue<T>;
+        } else {
+          const alias = `${relationAlias}__${prop1.fieldNames[0]}` as EntityKey<T>;
+          relationPojo[prop1.name] = root![alias];
+        }
+      }
+
+      // properties can be mapped to multiple places, e.g. when sharing a column in multiple FKs,
+      // so we need to delete them after everything is mapped from given level
+      for (const prop1 of props) {
+        prop1.fieldNames.map(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
+      }
 
       if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
         result[prop.name] ??= [] as EntityValue<T>;

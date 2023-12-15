@@ -21,6 +21,7 @@ import { Reference } from './Reference';
 import { ReferenceKind, SCALAR_TYPES } from '../enums';
 import { EntityValidator } from './EntityValidator';
 import { helper, wrap } from './wrap';
+import { EntityHelper } from './EntityHelper';
 
 const validator = new EntityValidator(false);
 
@@ -37,6 +38,7 @@ export class EntityAssigner {
       return entity as any;
     }
 
+    EntityHelper.ensurePropagation(entity);
     opts.visited ??= new Set();
     opts.visited.add(entity);
     const wrapped = helper(entity);
