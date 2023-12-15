@@ -1222,7 +1222,7 @@ __metadata:
     "@mikro-orm/mongodb": "npm:5.9.4"
     fs-extra: "npm:11.2.0"
     mongodb: "npm:6.3.0"
-    umzug: "npm:3.4.0"
+    umzug: "npm:3.5.0"
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
   languageName: unknown
@@ -1235,7 +1235,7 @@ __metadata:
     "@mikro-orm/core": "npm:^5.9.2"
     "@mikro-orm/knex": "npm:5.9.4"
     fs-extra: "npm:11.2.0"
-    umzug: "npm:3.4.0"
+    umzug: "npm:3.5.0"
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
   languageName: unknown
@@ -10674,16 +10674,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"umzug@npm:3.4.0":
-  version: 3.4.0
-  resolution: "umzug@npm:3.4.0"
+"umzug@npm:3.5.0":
+  version: 3.5.0
+  resolution: "umzug@npm:3.5.0"
   dependencies:
     "@rushstack/ts-command-line": "npm:^4.12.2"
     emittery: "npm:^0.13.0"
     glob: "npm:^8.0.3"
     pony-cause: "npm:^2.1.4"
     type-fest: "npm:^3.0.0"
-  checksum: 0c609b2cd0a8e315b531a0214cd31e2adf547133a9c74a11a8bdb8d780998c6db6a2de0b6e4117c7feee22f2d196d0b63f45ac6e68374d39f0f1f2aa7020c3f3
+  checksum: 08f4e765f813dbe972a6703dcb1e79fdf7ff7eec4460529ccdd1fb44efc41abbfba80fe5893b801f23afd41c7d9f35089c9189c63c582c73b030bb8382638b69
   languageName: node
   linkType: hard
 
