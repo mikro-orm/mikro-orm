@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.5](https://github.com/mikro-orm/mikro-orm/compare/v5.9.4...v5.9.5) (2023-12-15)
+
+
+### Bug Fixes
+
+* **core:** fix extra updates for composite FKs that share a column ([78772fb](https://github.com/mikro-orm/mikro-orm/commit/78772fb3173822facd8a94c1e9d224130a41d8d9))
+* **core:** respect context in virtual entity expression callback ([84d42a7](https://github.com/mikro-orm/mikro-orm/commit/84d42a73fb26170ffe9fe97ca15bfb7b3897e313))
+* **postgres:** allow using array operators (e.g. `@>`) with object arrays ([6a5a1ef](https://github.com/mikro-orm/mikro-orm/commit/6a5a1efe9c7266ffd80c77c956433bc5345fa543)), closes [#4973](https://github.com/mikro-orm/mikro-orm/issues/4973)
+* **schema:** improve json default diffing for down migrations ([5bc19ba](https://github.com/mikro-orm/mikro-orm/commit/5bc19baf5ee4808c9f20806ebe0946f3fd43f83d))
+* **sql:** deduplicate keys in batch update queries ([7de7a48](https://github.com/mikro-orm/mikro-orm/commit/7de7a48b555f5059fb5eb8d29e22c241a7fb61ca))
+
+
+
+
+
 ## [5.9.4](https://github.com/mikro-orm/mikro-orm/compare/v5.9.3...v5.9.4) (2023-11-17)
 
 

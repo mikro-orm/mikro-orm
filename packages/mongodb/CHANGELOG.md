@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.5](https://github.com/mikro-orm/mikro-orm/compare/v5.9.4...v5.9.5) (2023-12-15)
+
+
+### Bug Fixes
+
+* **core:** respect context in virtual entity expression callback ([84d42a7](https://github.com/mikro-orm/mikro-orm/commit/84d42a73fb26170ffe9fe97ca15bfb7b3897e313))
+
+
+
+
+
 ## [5.9.4](https://github.com/mikro-orm/mikro-orm/compare/v5.9.3...v5.9.4) (2023-11-17)
 
 **Note:** Version bump only for package @mikro-orm/mongodb
