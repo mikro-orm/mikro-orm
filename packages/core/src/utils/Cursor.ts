@@ -6,8 +6,8 @@ import { ReferenceKind, type QueryOrder, type QueryOrderKeys } from '../enums';
 import { Reference } from '../entity/Reference';
 
 /**
- * As an alternative to the offset based pagination with `limit` and `offset`, we can paginate based on a cursor.
- * A cursor is an opaque string that defines specific place in ordered entity graph. You can use `em.findByCursor()`
+ * As an alternative to the offset-based pagination with `limit` and `offset`, we can paginate based on a cursor.
+ * A cursor is an opaque string that defines a specific place in ordered entity graph. You can use `em.findByCursor()`
  * to access those options. Under the hood, it will call `em.find()` and `em.count()` just like the `em.findAndCount()`
  * method, but will use the cursor options instead.
  *
@@ -33,7 +33,7 @@ import { Reference } from '../entity/Reference';
  * });
  * ```
  *
- * The `Cursor` object provides following interface:
+ * The `Cursor` object provides the following interface:
  *
  * ```ts
  * Cursor<User> {
@@ -52,7 +52,12 @@ import { Reference } from '../entity/Reference';
  * }
  * ```
  */
-export class Cursor<Entity extends object, Hint extends string = never, Fields extends string = '*'> {
+export class Cursor<
+  Entity extends object,
+  Hint extends string = never,
+  Fields extends string = '*',
+  Excludes extends string = never,
+> {
 
   readonly hasPrevPage: boolean;
   readonly hasNextPage: boolean;
@@ -60,9 +65,9 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
   private readonly definition: (readonly [EntityKey<Entity>, QueryOrder])[];
 
   constructor(
-    readonly items: Loaded<Entity, Hint, Fields>[],
+    readonly items: Loaded<Entity, Hint, Fields, Excludes>[],
     readonly totalCount: number,
-    options: FindByCursorOptions<Entity, Hint, Fields>,
+    options: FindByCursorOptions<Entity, Hint, Fields, Excludes>,
     meta: EntityMetadata<Entity>,
   ) {
     const { first, last, before, after, orderBy, overfetch } = options;
@@ -100,9 +105,9 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
   }
 
   /**
-   * Computes the cursor value for given entity.
+   * Computes the cursor value for a given entity.
    */
-  from(entity: Entity | Loaded<Entity, Hint, Fields>) {
+  from(entity: Entity | Loaded<Entity, Hint, Fields, Excludes>) {
     const processEntity = <T extends object> (entity: T, prop: EntityKey<T>, direction: QueryOrderKeys<T>, object = false) => {
       if (Utils.isPlainObject(direction)) {
         const value = Utils.keys(direction).reduce((o, key) => {
@@ -122,7 +127,7 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
     return Cursor.encode(value);
   }
 
-  * [Symbol.iterator](): IterableIterator<Loaded<Entity, Hint, Fields>> {
+  * [Symbol.iterator](): IterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     for (const item of this.items) {
       yield item;
     }

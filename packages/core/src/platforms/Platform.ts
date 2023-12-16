@@ -431,9 +431,21 @@ export abstract class Platform {
     return false;
   }
 
-  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, includeFormulas = true): boolean {
+  isPopulated<T>(key: string, populate: PopulateOptions<T>[] | boolean): boolean {
+    return populate === true || (populate !== false && populate.some(p => p.field === key || p.all));
+  }
+
+  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, exclude?: string[], includeFormulas = true): boolean {
+    if (exclude?.includes(prop.name)) {
+      return false;
+    }
+
+    if (exclude?.find(k => k.startsWith(`${prop.name}.`) && !this.isPopulated(prop.name, populate))) {
+      return false;
+    }
+
     if (prop.formula) {
-      return includeFormulas && (!prop.lazy || populate === true || (populate !== false && populate.some(p => p.field === prop.name || p.all)));
+      return includeFormulas && (!prop.lazy || this.isPopulated(prop.name, populate));
     }
 
     if (prop.persist === false) {

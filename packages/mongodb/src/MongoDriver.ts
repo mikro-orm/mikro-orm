@@ -45,13 +45,13 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return new MongoEntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
-  async find<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P, F> = {}): Promise<EntityData<T>[]> {
+  async find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {
     if (this.metadata.find(entityName)?.virtual) {
       return this.findVirtual(entityName, where, options);
     }
 
     const { first, last, before, after } = options as FindByCursorOptions<T>;
-    const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
+    const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields, options.exclude as any[]);
     where = this.renameFields(entityName, where, true);
     const isCursorPagination = [first, last, before, after].some(v => v != null);
 
@@ -88,9 +88,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return res.map(r => this.mapResult<T>(r, this.metadata.find<T>(entityName))!);
   }
 
-  async findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T, P, F> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
+  async findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T, P, F, E> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
     if (this.metadata.find(entityName)?.virtual) {
-      const [item] = await this.findVirtual(entityName, where, options as FindOptions<T, any, any>);
+      const [item] = await this.findVirtual(entityName, where, options as FindOptions<T, any, any, any>);
       /* istanbul ignore next */
       return item ?? null;
     }
@@ -99,7 +99,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       where = this.buildFilterById(entityName, where as string);
     }
 
-    const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
+    const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields, options.exclude as any[]);
     where = this.renameFields(entityName, where, true);
     const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
       this.renameFields(entityName, orderBy, false),
@@ -109,7 +109,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
   }
 
-  override async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<EntityData<T>[]> {
+  override async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
     const meta = this.metadata.find(entityName)!;
 
     if (meta.expression instanceof Function) {
@@ -348,7 +348,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return { _id: id } as FilterQuery<T>;
   }
 
-  protected buildFields<T extends object, P extends string = never>(entityName: string, populate: PopulateOptions<T>[], fields?: readonly EntityField<T, P>[]): string[] | undefined {
+  protected buildFields<T extends object, P extends string = never>(entityName: string, populate: PopulateOptions<T>[], fields?: readonly EntityField<T, P>[], exclude?: string[]): string[] | undefined {
     const meta = this.metadata.find<T>(entityName);
 
     if (!meta) {
@@ -388,8 +388,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       }
 
       ret.unshift(...meta.primaryKeys.filter(pk => !fields.includes(pk)));
-    } else if (lazyProps.filter(p => !p.formula).length > 0) {
-      const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate));
+    } else if (!Utils.isEmpty(exclude) || lazyProps.some(p => !p.formula)) {
+      const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate, exclude));
       ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
     }
 

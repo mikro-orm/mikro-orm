@@ -209,7 +209,7 @@ describe('partial loading (mysql)', () => {
       fields: ['uuid', 'title', 'author.email'],
       populate: ['author'],
       filters: false,
-      strategy: LoadStrategy.SELECT_IN,
+      strategy: LoadStrategy.JOINED,
     });
     expect(r2).toHaveLength(1);
     expect(r2[0].uuid).toBe(b1.uuid);
@@ -221,8 +221,7 @@ describe('partial loading (mysql)', () => {
     // @ts-expect-error
     expect(r2[0].author.name).toBeUndefined();
     expect(r2[0].author.email).toBeDefined();
-    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b0`.`author_id` from `book2` as `b0` where `b0`.`uuid_pk` = ?');
-    expect(mock.mock.calls[1][0]).toMatch('select `a0`.`id`, `a0`.`email` from `author2` as `a0` where `a0`.`id` in (?)');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b0`.`author_id`, `a1`.`id` as `a1__id`, `a1`.`email` as `a1__email` from `book2` as `b0` left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` where `b0`.`uuid_pk` = ?');
   });
 
   test('partial nested loading (m:n)', async () => {
@@ -392,7 +391,7 @@ describe('partial loading (mysql)', () => {
     expect(r1.books[0].author.name).toBeUndefined();
     expect(r1.books[0].author.email).toBe(god.email);
 
-    const r2 = await orm.em.populate(r1, ['*'], { refresh: true });
+    const r2 = await orm.em.refreshOrFail(r1, { populate: ['*'] });
     expect(r2.name).toBe('t1');
     expect(r2.books[0].title).toBe('Bible 1');
     expect(r2.books[0].price).toBe('123.00');

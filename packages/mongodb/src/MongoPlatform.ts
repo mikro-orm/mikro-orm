@@ -83,8 +83,8 @@ export class MongoPlatform extends Platform {
     return ret;
   }
 
-  override shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
-    if (super.shouldHaveColumn(prop, populate)) {
+  override shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[], exclude?: string[]): boolean {
+    if (super.shouldHaveColumn(prop, populate, exclude)) {
       return true;
     }
 

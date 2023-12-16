@@ -26,7 +26,12 @@ export class EntityTransformer {
     let contextCreated = false;
 
     if (!wrapped.__serializationContext.root) {
-      const root = new SerializationContext<Entity>(wrapped.__config, wrapped.__serializationContext.populate, wrapped.__serializationContext.fields);
+      const root = new SerializationContext<Entity>(
+        wrapped.__config,
+        wrapped.__serializationContext.populate,
+        wrapped.__serializationContext.fields,
+        wrapped.__serializationContext.exclude,
+      );
       SerializationContext.propagate(root, entity, isVisible);
       contextCreated = true;
     }
