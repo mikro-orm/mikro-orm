@@ -5,6 +5,7 @@ exports[`SchemaGenerator (no FKs) generate schema from metadata [mysql]: mysql-c
 alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);
 alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);
 alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);
+alter table \`base_user2\` add unique \`base_user2_employee_prop_unique\`(\`employee_prop\`);
 
 create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;
 

@@ -201,7 +201,7 @@ export const BaseUser2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    employeeProp: { type: 'number', nullable: true },
+    employeeProp: { type: 'number', nullable: true, unique: 'base_user2_employee_prop_unique' },
     managerProp: { type: 'string', length: 255, nullable: true },
     favouriteEmployeeInverse: { kind: '1:m', entity: () => BaseUser2, mappedBy: 'favouriteEmployee' },
     favouriteManagerInverse: {
@@ -844,7 +844,7 @@ export class Author2 {
 
 }
 ",
-  "import { Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 {
@@ -871,6 +871,7 @@ export class BaseUser2 {
   @OneToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteManager?: BaseUser2;
 
+  @Unique({ name: 'base_user2_employee_prop_unique' })
   @Property({ nullable: true })
   employeeProp?: number;
 
@@ -1368,7 +1369,7 @@ export class Author2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 {
@@ -1395,6 +1396,7 @@ export class BaseUser2 {
   @OneToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteManager?: BaseUser2;
 
+  @Unique({ name: 'base_user2_employee_prop_unique' })
   @Property({ nullable: true })
   employeeProp?: number;
 
@@ -1966,7 +1968,7 @@ export class Author2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Ref, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 {
@@ -1993,6 +1995,7 @@ export class BaseUser2 {
   @OneToOne({ entity: () => BaseUser2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteManager?: Ref<BaseUser2>;
 
+  @Unique({ name: 'base_user2_employee_prop_unique' })
   @Property({ nullable: true })
   employeeProp?: number;
 
@@ -2552,7 +2555,7 @@ export class Author2 {
 
 }
 ",
-  "import { Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Ref, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 {
@@ -2579,6 +2582,7 @@ export class BaseUser2 {
   @OneToOne({ entity: () => BaseUser2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteManager?: Ref<BaseUser2>;
 
+  @Unique({ name: 'base_user2_employee_prop_unique' })
   @Property({ nullable: true })
   employeeProp?: number;
 
@@ -3118,7 +3122,7 @@ export class Author2 {
 
 }
 ",
-  "import { Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 {
@@ -3145,6 +3149,7 @@ export class BaseUser2 {
   @OneToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteManager?: BaseUser2;
 
+  @Unique({ name: 'base_user2_employee_prop_unique' })
   @Property({ nullable: true })
   employeeProp?: number;
 
