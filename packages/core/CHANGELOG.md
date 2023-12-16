@@ -141,6 +141,21 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Please see the [upgrading guide](https://mikro-orm.io/docs/next/upgrading-v5-to-v6).
 
 
+## [5.9.5](https://github.com/mikro-orm/mikro-orm/compare/v5.9.4...v5.9.5) (2023-12-15)
+
+
+### Bug Fixes
+
+* **core:** ensure eager loading on deeper levels work with joined strategy ([cc5f476](https://github.com/mikro-orm/mikro-orm/commit/cc5f476ad481097e392b75e3507a17b6b9171432))
+* **core:** fix extra updates for composite FKs that share a column ([78772fb](https://github.com/mikro-orm/mikro-orm/commit/78772fb3173822facd8a94c1e9d224130a41d8d9))
+* **core:** fix infinite loop with `populate: true` and `refresh: true` ([#5001](https://github.com/mikro-orm/mikro-orm/issues/5001)) ([9f63378](https://github.com/mikro-orm/mikro-orm/commit/9f63378ee7896c04cb5f727e9e6d827f5a9c3117))
+* **core:** fix returning statement hydration after `em.upsert` ([a7e9a82](https://github.com/mikro-orm/mikro-orm/commit/a7e9a82710b3b1451dba5d60add87c85393ec74b)), closes [#4945](https://github.com/mikro-orm/mikro-orm/issues/4945)
+* **core:** respect context in virtual entity expression callback ([84d42a7](https://github.com/mikro-orm/mikro-orm/commit/84d42a73fb26170ffe9fe97ca15bfb7b3897e313))
+* **postgres:** allow using array operators (e.g. `@>`) with object arrays ([6a5a1ef](https://github.com/mikro-orm/mikro-orm/commit/6a5a1efe9c7266ffd80c77c956433bc5345fa543)), closes [#4973](https://github.com/mikro-orm/mikro-orm/issues/4973)
+* **schema:** improve json default diffing for down migrations ([5bc19ba](https://github.com/mikro-orm/mikro-orm/commit/5bc19baf5ee4808c9f20806ebe0946f3fd43f83d))
+* **sql:** deduplicate keys in batch update queries ([7de7a48](https://github.com/mikro-orm/mikro-orm/commit/7de7a48b555f5059fb5eb8d29e22c241a7fb61ca))
+
+
 ## [5.9.4](https://github.com/mikro-orm/mikro-orm/compare/v5.9.3...v5.9.4) (2023-11-17)
 
 
