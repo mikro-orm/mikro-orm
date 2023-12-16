@@ -36,6 +36,7 @@ import {
   type NativeInsertUpdateOptions,
   type Options,
   type OrderDefinition,
+  parseJsonSafe,
   type PopulateOptions,
   type Primary,
   QueryFlag,
@@ -349,32 +350,43 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           }
         });
 
-      const props = ref
+      const targetProps = ref
         ? meta2.getPrimaryProps()
         : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, hint.children as any || []));
 
-      for (const prop1 of props) {
-        if (prop1.fieldNames.length > 1) { // composite keys
-          const fk = prop1.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as Primary<T>[];
-          relationPojo[prop1.name] = Utils.mapFlatCompositePrimaryKey(fk, prop1) as EntityValue<T>;
-        } else if (prop1.runtimeType === 'Date') {
-          const alias = `${relationAlias}__${prop1.fieldNames[0]}` as EntityKey<T>;
-          relationPojo[prop1.name] = (typeof root![alias] === 'string' ? new Date(root![alias] as string) : root![alias]) as EntityValue<T>;
+      for (const prop of targetProps) {
+        if (prop.fieldNames.length > 1) { // composite keys
+          const fk = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as Primary<T>[];
+          relationPojo[prop.name] = Utils.mapFlatCompositePrimaryKey(fk, prop) as EntityValue<T>;
+        } else if (prop.runtimeType === 'Date') {
+          const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
+          relationPojo[prop.name] = (typeof root![alias] === 'string' ? new Date(root![alias] as string) : root![alias]) as EntityValue<T>;
         } else {
-          const alias = `${relationAlias}__${prop1.fieldNames[0]}` as EntityKey<T>;
-          relationPojo[prop1.name] = root![alias];
+          const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
+          relationPojo[prop.name] = root![alias];
+
+          if (prop.kind === ReferenceKind.EMBEDDED && (prop.object || meta.embeddable)) {
+            const item = parseJsonSafe(relationPojo[prop.name]);
+
+            if (Array.isArray(item)) {
+              relationPojo[prop.name] = item.map(row => row == null ? row : this.comparator.mapResult(prop.type, row)) as EntityValue<T>;
+            } else {
+              relationPojo[prop.name] = item == null ? item : this.comparator.mapResult(prop.type, item) as EntityValue<T>;
+            }
+          }
         }
       }
 
       // properties can be mapped to multiple places, e.g. when sharing a column in multiple FKs,
       // so we need to delete them after everything is mapped from given level
-      for (const prop1 of props) {
-        prop1.fieldNames.map(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
+      for (const prop of targetProps) {
+        prop.fieldNames.map(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
       }
 
       if (ref) {
         const tmp = Object.values(relationPojo);
-        relationPojo = meta2.compositePK ? tmp : tmp[0] as any;
+        /* istanbul ignore next */
+        relationPojo = (meta2.compositePK ? tmp : tmp[0]) as EntityData<T>;
       }
 
       if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {

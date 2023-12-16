@@ -1,5 +1,5 @@
-import { Entity, LoadStrategy, OneToMany, ManyToOne, Collection, PrimaryKey, BigIntType } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, LoadStrategy, OneToMany, ManyToOne, Collection, PrimaryKey } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class BidEntity {
