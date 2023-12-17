@@ -59,6 +59,9 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
   afterAll(() => orm.close(true));
 
   test('using `first` and `after` (id asc)', async () => {
+    const cursor0 = await orm.em.findByCursor(User, {});
+    expect(cursor0).toBeInstanceOf(Cursor);
+
     const mock = mockLogger(orm, ['query', 'query-params']);
 
     // 1. page

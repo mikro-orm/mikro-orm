@@ -324,6 +324,8 @@ describe('partial loading via `exclude` (mysql)', () => {
     expect(r2.books[0].author.id).toBeDefined();
     expect(r2.books[0].author.name).toBe(god.name);
     expect(r2.books[0].author.email).toBe(god.email);
+
+    await expect(orm.em.findAll(BookTag2, { fields: ['books.title'], exclude: ['name'] })).rejects.toThrow(`Cannot combine 'fields' and 'exclude' option.`);
   });
 
 });
