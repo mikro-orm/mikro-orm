@@ -1122,8 +1122,8 @@ export class MetadataDiscovery {
     try {
       // try to create two entity instances to detect the value is stable
       const now = Date.now();
-      const entity1 = new meta.class();
-      const entity2 = new meta.class();
+      const entity1 = new (meta.class as Constructor<any>)();
+      const entity2 = new (meta.class as Constructor<any>)();
 
       // we compare the two values by reference, this will discard things like `new Date()` or `Date.now()`
       if (this.config.get('discovery').inferDefaultValues && prop.default === undefined && entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name] && entity1[prop.name] !== now) {

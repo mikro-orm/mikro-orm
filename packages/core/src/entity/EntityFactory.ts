@@ -1,5 +1,6 @@
 import { Utils } from '../utils/Utils';
 import type {
+  Constructor,
   Dictionary,
   EntityData,
   EntityKey,
@@ -244,7 +245,7 @@ export class EntityFactory {
 
       options.initialized = options.newEntity || options.initialized;
       const params = this.extractConstructorParams<T>(meta, data, options);
-      const Entity = meta.class;
+      const Entity = meta.class as Constructor<T>;
 
       // creates new instance via constructor as this is the new entity
       const entity = new Entity(...params);

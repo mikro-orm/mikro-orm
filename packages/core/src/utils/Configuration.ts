@@ -291,7 +291,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets EntityRepository class to be instantiated.
    */
-  getRepositoryClass(repository: () => Constructor<EntityRepository<AnyEntity>>): MikroORMOptions<D>['entityRepository'] {
+  getRepositoryClass(repository: () => EntityClass<EntityRepository<AnyEntity>>): MikroORMOptions<D>['entityRepository'] {
     if (repository) {
       return repository();
     }
@@ -543,7 +543,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   dataloader: DataloaderType | boolean;
   populateWhere: PopulateHint;
   flushMode: FlushMode | 'commit' | 'auto' | 'always';
-  entityRepository?: Constructor;
+  entityRepository?: EntityClass<EntityRepository<any>>;
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   validate: boolean;

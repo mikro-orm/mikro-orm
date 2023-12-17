@@ -10,10 +10,20 @@ import {
   type CleanKeys,
   type ExpandProperty,
   type IsNever,
+  type EntityClass,
 } from '../typings';
 import type {
-  EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
-  SerializedPrimaryKeyOptions, UniqueOptions,
+  EmbeddedOptions,
+  EnumOptions,
+  IndexOptions,
+  ManyToManyOptions,
+  ManyToOneOptions,
+  OneToManyOptions,
+  OneToOneOptions,
+  PrimaryKeyOptions,
+  PropertyOptions,
+  SerializedPrimaryKeyOptions,
+  UniqueOptions,
 } from '../decorators';
 import type { EntityRepository } from '../entity/EntityRepository';
 import { BaseEntity } from '../entity/BaseEntity';
@@ -35,7 +45,7 @@ export type EntitySchemaProperty<Target, Owner> =
 type OmitBaseProps<Entity, Base> = IsNever<Base> extends true ? Entity : Omit<Entity, keyof Base>;
 export type EntitySchemaMetadata<Entity, Base = never> =
   & Omit<Partial<EntityMetadata<Entity>>, 'name' | 'properties' | 'extends'>
-  & ({ name: string } | { class: Constructor<Entity>; name?: string })
+  & ({ name: string } | { class: EntityClass<Entity>; name?: string })
   & { extends?: string | EntitySchema<Base> }
   & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as CleanKeys<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
 
@@ -241,7 +251,7 @@ export class EntitySchema<Entity = any, Base = never> {
     this._meta.extends = base as string;
   }
 
-  setClass(proto: Constructor<Entity>) {
+  setClass(proto: EntityClass<Entity>) {
     this._meta.class = proto;
     this._meta.prototype = proto.prototype;
     this._meta.className = proto.name;

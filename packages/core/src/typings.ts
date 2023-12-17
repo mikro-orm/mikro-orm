@@ -386,7 +386,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   prefix?: string | boolean;
   embedded?: [EntityKey<Owner>, EntityKey<Owner>];
   embeddedPath?: string[];
-  embeddable: Constructor<Owner>;
+  embeddable: EntityClass<Owner>;
   embeddedProps: Dictionary<EntityProperty>;
   discriminatorColumn?: string; // only for poly embeddables currently
   object?: boolean;
@@ -669,10 +669,10 @@ export interface EntityMetadata<T = any> {
   indexes: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
   uniques: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string }[];
   checks: CheckConstraint<T>[];
-  repository: () => Constructor<EntityRepository<any>>;
+  repository: () => EntityClass<EntityRepository<any>>;
   hooks: { [K in EventType]?: (keyof T | EventSubscriber<T>[EventType])[] };
   prototype: T;
-  class: Constructor<T>;
+  class: EntityClass<T>;
   abstract: boolean;
   useCache: boolean;
   filters: Dictionary<FilterDef>;
