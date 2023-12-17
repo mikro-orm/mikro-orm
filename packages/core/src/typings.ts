@@ -199,7 +199,12 @@ export interface IWrappedEntityInternal<Entity> extends IWrappedEntity<Entity> {
   __reference?: Ref<Entity>;
   __pk?: Primary<Entity>;
   __primaryKeys: Primary<Entity>[];
-  __serializationContext: { root?: SerializationContext<Entity>; populate?: PopulateOptions<Entity>[]; fields?: string[] };
+  __serializationContext: {
+    root?: SerializationContext<Entity>;
+    populate?: PopulateOptions<Entity>[];
+    fields?: string[];
+    exclude?: string[];
+  };
 }
 
 export type AnyEntity<T = any> = Partial<T>;
@@ -632,7 +637,7 @@ export interface EntityMetadata<T = any> {
   virtual?: boolean;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
-  expression?: string | ((em: any, where: FilterQuery<T>, options: FindOptions<T, any, any>) => object | string);
+  expression?: string | ((em: any, where: FilterQuery<T>, options: FindOptions<T, any, any, any>) => object | string);
   discriminatorColumn?: EntityKey<T>;
   discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<string>;
@@ -813,7 +818,7 @@ export interface MigrationObject {
 
 export type FilterDef = {
   name: string;
-  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<any, any, any> | FindOneOptions<any, any, any>) => Dictionary | Promise<Dictionary>);
+  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any>) => Dictionary | Promise<Dictionary>);
   default?: boolean;
   entity?: string[];
   args?: boolean;
@@ -905,17 +910,24 @@ type IsTrue<T> = IsNever<T> extends true
     : false;
 type StringLiteral<T> = T extends string ? string extends T ? never : T : never;
 type Prefix<T, K> = K extends `${infer S}.${string}` ? S : (K extends '*' ? keyof T : K);
-export type IsPrefixed<T, K extends keyof T, L extends string> = K extends symbol
-  ? never
-  : IsTrue<L> extends true
-    ? (T[K] & {} extends Loadable<any> ? K : never)
-    : IsNever<StringLiteral<L>> extends true
+type IsPrefixedExclude<T, K extends keyof T, E extends string> =
+  K extends E
+    ? never
+    : K;
+export type IsPrefixed<T, K extends keyof T, L extends string, E extends string = never> =
+  IsNever<E> extends false
+    ? IsPrefixedExclude<T, K, E>
+    : K extends symbol
       ? never
-      : K extends Prefix<T, L>
-        ? K
-        : K extends PrimaryProperty<T>
-          ? K
-          : never;
+      : IsTrue<L> extends true
+        ? (T[K] & {} extends Loadable<any> ? K : never)
+        : IsNever<StringLiteral<L>> extends true
+          ? never
+          : K extends Prefix<T, L>
+            ? K
+            : K extends PrimaryProperty<T>
+              ? K
+              : never;
 
 // filter by prefix and map to suffix
 type Suffix<Key, Hint extends string, All = true | '*'> = Hint extends `${infer Pref}.${infer Suf}`
@@ -938,14 +950,20 @@ declare const __selectedType: unique symbol;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const __loadedType: unique symbol;
 
+type AnyStringToNever<T> = string extends T ? never : T;
+
 export type MergeSelected<T, U, F extends string> =
-  T extends { [__selectedType]?: [U, infer P, infer FF] }
-    ? string extends FF
-      ? T
-      : string extends P
-        ? Selected<U, never, F | (FF & string)>
-        : Selected<U, P & string, F | (FF & string)>
-    : T;
+  T extends Loaded<infer TT, infer P, infer FF, infer E>
+    ? IsNever<Exclude<E, F>> extends true
+      ? Loaded<TT, P, AnyStringToNever<F> | AnyStringToNever<FF>> // no excludes, we want to merge the partial hints
+      : Loaded<TT, AnyStringToNever<P>, AnyStringToNever<FF>, AnyStringToNever<Exclude<E, F>>> // with excludes, we only remove the property from it
+    : T extends { [__selectedType]?: [U, infer P, infer FF] }
+      ? string extends FF
+        ? T
+        : string extends P
+          ? Selected<U, never, F | (FF & string)>
+          : Selected<U, P & string, F | (FF & string)>
+      : T;
 
 // merge partial loading hints, and propagate populate: '*' to it
 type MergeFields<F1 extends string, F2 extends string, P1, P2> =
@@ -953,17 +971,23 @@ type MergeFields<F1 extends string, F2 extends string, P1, P2> =
     ? '*'
     : F1 | F2;
 
-export type MergeLoaded<T, U, P extends string, F extends string> =
-  T extends Loaded<U, infer PP, infer FF>
+type MergeExcludes<F extends string, E extends string> =
+  F extends E
+    ? never
+    : Exclude<E, F>;
+
+// used for `em.populate` and `em.refresh`, allows ignoring the previous Excluded hint, which is used for refreshing as thats the default behaviour
+export type MergeLoaded<T, U, P extends string, F extends string, E extends string, R extends boolean = false> =
+  T extends Loaded<U, infer PP, infer FF, infer EE>
     ? string extends FF
-      ? Loaded<T, P, F>
+      ? Loaded<T, P, F, AnyStringToNever<EE> | E>
       : string extends P
-        ? Loaded<U, never, F | (FF & string)>
-        : Loaded<U, P | (PP & string), MergeFields<F, (FF & string), P, PP>>
+        ? Loaded<U, never, F | (FF & string), MergeExcludes<F | (FF & string), EE | E>>
+        : Loaded<U, P | AnyStringToNever<PP>, MergeFields<F, AnyStringToNever<FF>, P, PP>, MergeExcludes<MergeFields<F, AnyStringToNever<FF>, P, PP>, (R extends true ? never : EE) | E>>
     : Loaded<T, P, F>;
 
 type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
-type LoadedProp<T, L extends string = never, F extends string = '*'> = LoadedLoadable<T, Loaded<ExtractType<T>, L, F>>;
+type LoadedProp<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedLoadable<T, Loaded<ExtractType<T>, L, F, E>>;
 export type AddEager<T> = ExtractEagerProps<T> & string;
 export type ExpandHint<T, L extends string> = L | AddEager<T>;
 
@@ -974,12 +998,17 @@ export type Selected<T, L extends string = never, F extends string = '*'> = {
 export type EntityType<T> = T | { [__loadedType]?: T } | { [__selectedType]?: [T, any, any] };
 export type FromEntityType<T> = T extends EntityType<infer U> ? U : T;
 
+type LoadedInternal<T, L extends string = never, F extends string = '*', E extends string = never> =
+  [F] extends ['*']
+    ? IsNever<E> extends true
+      ? T & { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>>]: LoadedProp<Defined<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
+      : { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>, E>]: LoadedProp<Defined<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
+    : Selected<T, L, F>;
+
 /**
  * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
  */
-export type Loaded<T, L extends string = never, F extends string = '*'> = ([F] extends ['*'] ? (T & {
-  [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>>]: LoadedProp<Defined<T[K]>, Suffix<K, L>> | AddOptional<T[K]>;
-}) : Selected<T, L, F>) & { [__loadedType]?: T };
+export type Loaded<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedInternal<T, L, F, E> & { [__loadedType]?: T };
 
 export interface LoadedReference<T> extends Reference<Defined<T>> {
   $: Defined<T>;

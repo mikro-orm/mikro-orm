@@ -52,9 +52,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     this.logger = this.config.getLogger();
   }
 
-  abstract find<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F>): Promise<EntityData<T>[]>;
+  abstract find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F, E>): Promise<EntityData<T>[]>;
 
-  abstract findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F>): Promise<EntityData<T> | null>;
+  abstract findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null>;
 
   abstract nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
@@ -75,7 +75,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   /* istanbul ignore next */
-  async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<EntityData<T>[]> {
+  async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
     throw new Error(`Virtual entities are not supported by ${this.constructor.name} driver.`);
   }
 
@@ -88,7 +88,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>, pivotJoin?: boolean): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any, any>, pivotJoin?: boolean): Promise<Dictionary<T[]>> {
     throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
@@ -171,7 +171,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.dependencies;
   }
 
-  protected processCursorOptions<T extends object, P extends string>(meta: EntityMetadata<T>, options: FindOptions<T, P, any>, orderBy: OrderDefinition<T>): { orderBy: OrderDefinition<T>[]; where: FilterQuery<T> } {
+  protected processCursorOptions<T extends object, P extends string>(meta: EntityMetadata<T>, options: FindOptions<T, P, any, any>, orderBy: OrderDefinition<T>): { orderBy: OrderDefinition<T>[]; where: FilterQuery<T> } {
     const { first, last, before, after, overfetch } = options;
     const limit = first || last;
     const isLast = !first && !!last;

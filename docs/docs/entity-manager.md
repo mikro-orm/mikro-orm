@@ -246,45 +246,52 @@ console.log(author.books[0].tags[0].isInitialized()); // true, because it was po
 
 > This feature is fully available only for SQL drivers. In MongoDB always we need to query from the owning side - so in the example above, first load book tag by name, then associated book, then the author. Another option is to denormalize the schema.
 
-### Fetching Partial Entities
+### Partial loading
 
-> This feature is supported only for `SELECT_IN` loading strategy.
-
-When fetching single entity, we can choose to select only parts of an entity via `options.fields`:
+To fetch only some database columns, you can use the `fields` option:
 
 ```ts
-const author = await em.findOne(Author, '...', { fields: ['name', 'born'] });
+const author = await em.findOne(Author, '...', {
+  fields: ['name', 'born'],
+});
 console.log(author.id); // PK is always selected
 console.log(author.name); // Jon Snow
 console.log(author.email); // undefined
 ```
 
-From v4.4 it is also possible to specify fields for nested relations:
+This works also for nested relations:
 
 ```ts
-const author = await em.findOne(Author, '...', { fields: ['name', 'books.title', 'books.author', 'books.price'] });
+const author = await em.findOne(Author, '...', { 
+  fields: ['name', 'books.title', 'books.author', 'books.price'],
+});
 ```
 
-Or with an alternative object syntax:
-
-```ts
-const author = await em.findOne(Author, '...', { fields: ['name', { books: ['title', 'author', 'price'] }] });
-```
-
-It is also possible to use multiple levels:
-
-```ts
-const author = await em.findOne(Author, '...', { fields: ['name', { books: ['title', 'price', 'author', { author: ['email'] }] }] });
-```
-
-Primary keys are always selected even if we omit them. On the other hand, we are responsible for selecting the FKs - if we omit such property, the relation might not be loaded properly. In the following example the books would not be linked the author, because we did not specify the `books.author` field to be loaded.
+Primary keys are always selected even if you omit them. On the other hand, you are responsible for selecting the foreign keys—if you omit such property, the relation might not be loaded properly. In the following example the books would not be linked the author, because you did not specify the `books.author` field to be loaded.
 
 ```ts
 // this will load both author and book entities, but they won't be connected due to the missing FK in select
-const author = await em.findOne(Author, '...', { fields: ['name', { books: ['title', 'price'] });
+const author = await em.findOne(Author, '...', {
+  fields: ['name', 'books.title', 'books.price'],
+});
 ```
 
-> Same problem can occur in mongo with M:N collections - those are stored as array property on the owning entity, so we need to make sure to mark such properties too.
+> The Same problem can occur in mongo with M:N collections—those are stored as array property on the owning entity, so you need to make sure to mark such properties too.
+
+```ts
+const author = await em.findOne(Author, '...', { 
+  fields: ['name', 'books.title', 'books.author', 'books.price'],
+});
+```
+
+Alternatively, you can use the `exclude` option, which will omit the provided properties and select everything else:
+
+```ts
+const author = await em.findOne(Author, '...', { 
+  exclude: ['email', 'books.price'],
+  populate: ['books'], // unlike with `fields`, you need to explicitly populate the relation here
+});
+```
 
 ### Fetching Paginated Results
 

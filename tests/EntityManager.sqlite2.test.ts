@@ -1157,6 +1157,9 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(e2.name).toBe('123');
     await orm.em.refresh(e2);
     expect(e2.name).toBe('lalala');
+
+    await orm.em.nativeDelete(Author4, e2);
+    await expect(orm.em.refreshOrFail(e2)).rejects.toThrow(`Author4 not found (${e2.id})`);
   });
 
   test('qb.getCount()`', async () => {

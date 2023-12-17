@@ -17,7 +17,8 @@ export class SerializationContext<T> {
 
   constructor(private readonly config: Configuration,
               private readonly populate: PopulateOptions<T>[] = [],
-              private readonly fields?: string[]) {}
+              private readonly fields?: string[],
+              private readonly exclude?: string[]) {}
 
   /**
    * Returns true when there is a cycle detected.

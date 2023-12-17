@@ -187,16 +187,10 @@ export class EntitySerializer {
   }
 
   private static extractChildOptions<T extends object, U extends object>(options: SerializeOptions<T, any, any>, prop: EntityKey<T>): SerializeOptions<U, any> {
-    const extractChildElements = (items: string[], allSymbol?: string) => {
-      return items
-        .filter(field => field === allSymbol || field.startsWith(`${prop}.`))
-        .map(field => field === allSymbol ? allSymbol : field.substring(prop.length + 1));
-    };
-
     return {
       ...options,
-      populate: Array.isArray(options.populate) ? extractChildElements(options.populate, '*') : options.populate,
-      exclude: Array.isArray(options.exclude) ? extractChildElements(options.exclude) : options.exclude,
+      populate: Array.isArray(options.populate) ? Utils.extractChildElements(options.populate, prop, '*') : options.populate,
+      exclude: Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop) : options.exclude,
     } as SerializeOptions<U, any>;
   }
 

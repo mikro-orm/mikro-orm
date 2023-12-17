@@ -23,10 +23,11 @@ import type { Platform } from '../platforms/Platform';
 import { helper } from './wrap';
 import type { LoggingOptions } from '../logging/Logger';
 
-export type EntityLoaderOptions<Entity, Fields extends string = '*'> = {
+export type EntityLoaderOptions<Entity, Fields extends string = '*', Excludes extends string = never> = {
   where?: FilterQuery<Entity>;
   populateWhere?: PopulateHint | `${PopulateHint}`;
   fields?: readonly EntityField<Entity, Fields>[];
+  exclude?: readonly EntityField<Entity, Excludes>[];
   orderBy?: QueryOrderMap<Entity> | QueryOrderMap<Entity>[];
   refresh?: boolean;
   validate?: boolean;
@@ -86,6 +87,7 @@ export class EntityLoader {
       const context = helper(e).__serializationContext;
       context.populate ??= populate as PopulateOptions<Entity>[];
       context.fields ??= options.fields ? [...options.fields as string[]] : undefined;
+      context.exclude ??= options.exclude ? [...options.exclude as string[]] : undefined;
       visited.add(e);
     });
 
@@ -345,6 +347,7 @@ export class EntityLoader {
       filters, convertCustomTypes, lockMode, populateWhere, logging,
       orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy)] as QueryOrderMap<Entity>[],
       populate: populate.children as never ?? populate.all ?? [],
+      exclude: Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) as any : options.exclude,
       strategy, fields, schema, connectionType,
       // @ts-ignore not a public option, will be propagated to the populate call
       refresh: refresh && !children.every(item => options.visited.has(item)),
@@ -410,12 +413,14 @@ export class EntityLoader {
       .filter(orderBy => Utils.isObject(orderBy[prop.name]))
       .map(orderBy => orderBy[prop.name]);
     const { refresh, filters, ignoreLazyScalarProperties, populateWhere, connectionType, logging } = options;
+    const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) as any : options.exclude;
     const filtered = Utils.unique(children.filter(e => !(options as Dictionary).visited.has(e)));
 
     await this.populate<Entity>(prop.type, filtered, populate.children ?? populate.all as any, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<Entity>,
       orderBy: innerOrderBy as QueryOrderMap<Entity>[],
       fields,
+      exclude,
       validate: false,
       lookup: false,
       filters,
@@ -435,11 +440,13 @@ export class EntityLoader {
     const refresh = options.refresh;
     const where = await this.extractChildCondition(options, prop, true);
     const fields = this.buildFields(options.fields, prop);
-    const options2 = { ...options } as unknown as FindOptions<Entity, any, any>;
+    const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) : options.exclude;
+    const options2 = { ...options } as unknown as FindOptions<Entity, any, any, any>;
     delete options2.limit;
     delete options2.offset;
-    options2.fields = fields as any;
-    options2.populate = (populate?.children ?? []) as never;
+    options2.fields = fields;
+    options2.exclude = exclude;
+    options2.populate = (populate?.children ?? []);
 
     if (prop.customType) {
       ids.forEach((id, idx) => ids[idx] = QueryHelper.processCustomType<Entity>(prop, id as FilterQuery<Entity>, this.driver.getPlatform()) as Primary<Entity>[]);
