@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.0-rc.3](https://github.com/mikro-orm/mikro-orm/compare/b868f0287...06012f79f) (2023-12-17)
+
+
+### Bug Fixes
+
+* **core:** `collection.loadItems()` should respect wildcard populate ([7f3065f](https://github.com/mikro-orm/mikro-orm/commit/7f3065ff0b20cf3280f201119d3c9cdd632953ef)), closes [#4977](https://github.com/mikro-orm/mikro-orm/issues/4977)
+* **core:** fix hydration of object embeddables via joined strategy ([b3e3e55](https://github.com/mikro-orm/mikro-orm/commit/b3e3e555758ab250f6d1ba478b596f9eb5cbb6bd)), closes [#5020](https://github.com/mikro-orm/mikro-orm/issues/5020)
+* **core:** improve `EntitySchema` typing for `repository` option ([37ee42e](https://github.com/mikro-orm/mikro-orm/commit/37ee42e1db019cfaae3f7ff743377c7596b594f9)), closes [#5006](https://github.com/mikro-orm/mikro-orm/issues/5006)
+* **core:** mark `Reference.set()` as private ([#5017](https://github.com/mikro-orm/mikro-orm/issues/5017)) ([5aebf0b](https://github.com/mikro-orm/mikro-orm/commit/5aebf0bddfdef41edbce737286faa52dd7783cd1)), closes [#5003](https://github.com/mikro-orm/mikro-orm/issues/5003)
+* **core:** return managed entity from `em.refresh()` ([55815f4](https://github.com/mikro-orm/mikro-orm/commit/55815f4511750dbac4da8358bff115a54221425a))
+* **core:** remove `Reference.load(prop: keyof T)` signature ([#5015](https://github.com/mikro-orm/mikro-orm/issues/5015)) ([32b48f7](https://github.com/mikro-orm/mikro-orm/commit/32b48f7ea959880bd6b61720c83515f2bfcb8822))
+
+
+### Features
+
+* **core:** add `FindOptions.exclude` ([#5024](https://github.com/mikro-orm/mikro-orm/issues/5024)) ([fe239cf](https://github.com/mikro-orm/mikro-orm/commit/fe239cf1c273af0e0128b38b7bd6d47064081194))
+* **core:** add `Hidden`type as an alternative to `HiddenProps` symbol ([#5009](https://github.com/mikro-orm/mikro-orm/issues/5009)) ([c047bb1](https://github.com/mikro-orm/mikro-orm/commit/c047bb1e702a1a59fb6bf5efff26cbb41c2b6cdc))
+* **core:** allow all `CountOptions` in `Collection.loadCount()` ([25d1851](https://github.com/mikro-orm/mikro-orm/commit/25d18512d44ca1d57514d6df235db650045253a7))
+* **core:** allow configuring filters in `Reference.load()` and `Collection.load()` ([#5025](https://github.com/mikro-orm/mikro-orm/issues/5025)) ([06012f7](https://github.com/mikro-orm/mikro-orm/commit/06012f79f06d1f7378da1c5083d17c20ebf0839a)), closes [#4975](https://github.com/mikro-orm/mikro-orm/issues/4975)
+* **core:** allow setting logger context on EM level ([#5023](https://github.com/mikro-orm/mikro-orm/issues/5023)) ([7e56104](https://github.com/mikro-orm/mikro-orm/commit/7e5610400ba30623f31c56ffd480de1bbe37b9c6)), closes [#5022](https://github.com/mikro-orm/mikro-orm/issues/5022)
+* **core:** respect `schema` parameter in `clientUrl` ([#4998](https://github.com/mikro-orm/mikro-orm/issues/4998)) ([9176ee0](https://github.com/mikro-orm/mikro-orm/commit/9176ee080fc4051c4b149a8c8ba2b83ed1794446)), closes [#4997](https://github.com/mikro-orm/mikro-orm/issues/4997)
+* **core:** return single entity from `em.populate()` when called on single entity ([4c4ec23](https://github.com/mikro-orm/mikro-orm/commit/4c4ec2312ea9d6930b342c3707c54d6fa7c26ab7))
+* **core:** validate duplicate field names ([#4968](https://github.com/mikro-orm/mikro-orm/issues/4968)) ([71fead4](https://github.com/mikro-orm/mikro-orm/commit/71fead4577d89e4ef39e9b1d17c8069c0b33ce6c)), closes [#4359](https://github.com/mikro-orm/mikro-orm/issues/4359)
+* **entity-generator:** allow local and global configuration of all options ([#4965](https://github.com/mikro-orm/mikro-orm/issues/4965)) ([2876b8a](https://github.com/mikro-orm/mikro-orm/commit/2876b8a74560e60605ff0de2feaba0d29c28d4aa))
+* **mysql:** support `order by nulls first/last` ([#5021](https://github.com/mikro-orm/mikro-orm/issues/5021)) ([df75b24](https://github.com/mikro-orm/mikro-orm/commit/df75b2452a72adfc473772c37342c75e7e731d50)), closes [#5004](https://github.com/mikro-orm/mikro-orm/issues/5004)
+
+
 ## [6.0.0-rc.2](https://github.com/mikro-orm/mikro-orm/compare/9be482d...b868f0287) (2023-11-26)
 
 
