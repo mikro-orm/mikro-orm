@@ -334,8 +334,8 @@ describe('Dataloader', () => {
   test('Reference.load with populate', async () => {
     const refsA = getReferences(orm.em).slice(0, 2);
     const refsB = getReferences(orm.em).slice(0, 2);
-    const resA = await Promise.all(refsA.map(ref => ref.load({ populate: 'books' })));
-    const resB = await Promise.all(refsB.map(ref => ref.load({ populate: 'books', dataloader: true })));
+    const resA = await Promise.all(refsA.map(ref => ref.load({ populate: ['books'] })));
+    const resB = await Promise.all(refsB.map(ref => ref.load({ populate: ['books'], dataloader: true })));
     await orm.em.flush();
     expect(serialize(resA)).toEqual(serialize(resB));
   });

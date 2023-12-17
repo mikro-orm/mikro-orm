@@ -74,7 +74,7 @@ describe('EntityHelperMongo', () => {
     expect(json.favouriteAuthor).toBe(god.id); // self reference will be ignored even when explicitly populated
     expect(json.books![0]).toMatchObject({
       author: { name: bible.author.name },
-      publisher: { name: (await bible.publisher.load()).name },
+      publisher: { name: (await bible.publisher.loadOrFail()).name },
     });
     expect(json.books[0].author.books).toBeInstanceOf(Array); // even the cycle is there, as it is explicitly populated path
     expect(json.books[0].author.books).toHaveLength(1);

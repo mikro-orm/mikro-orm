@@ -609,7 +609,7 @@ describe('check typings', () => {
       parent: Ref<Parent>;
     }
 
-    const parent = { load: jest.fn() as any } as Ref<Parent>;
+    const parent = { loadOrFail: jest.fn() as any } as Ref<Parent>;
 
     // @ts-expect-error Loaded<Parent, never> is not assignable
     const populated01: Loaded<Parent, 'children'> = {} as Loaded<Ref<Parent>>;
@@ -618,18 +618,18 @@ describe('check typings', () => {
     function foo(e: Loaded<Parent, 'children'>) {
       //
     }
-    const e = await parent.load();
+    const e = await parent.loadOrFail();
     // @ts-expect-error Loaded<Parent, never> is not assignable
     foo(e);
-    const populated1: Loaded<Parent, 'children'> = await parent.load();
-    const populated22 = await parent.load({ populate: [] });
+    const populated1: Loaded<Parent, 'children'> = await parent.loadOrFail();
+    const populated22 = await parent.loadOrFail({ populate: [] });
     // @ts-expect-error Loaded<Parent, never> is not assignable
     const populated2: Loaded<Parent, 'children'> = populated22;
 
     // only this should pass
-    const populated3: Loaded<Parent, 'children'> = await parent.load({ populate: ['children'] });
-    const populated4: Loaded<Parent, 'children'> = await parent.load({ populate: ['children', 'id'] });
-    const populated5: Loaded<Parent, 'children'> = await parent.load({ populate: ['children.parent'] });
+    const populated3: Loaded<Parent, 'children'> = await parent.loadOrFail({ populate: ['children'] });
+    const populated4: Loaded<Parent, 'children'> = await parent.loadOrFail({ populate: ['children', 'id'] });
+    const populated5: Loaded<Parent, 'children'> = await parent.loadOrFail({ populate: ['children.parent'] });
   });
 
   test('assignability of Loaded<T> to Ref<T> via ref() helper', async () => {

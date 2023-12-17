@@ -3,7 +3,6 @@ import {
   type Cascade,
   type EventType,
   type LoadStrategy,
-  type LockMode,
   type QueryOrderMap,
   ReferenceKind,
 } from './enums';
@@ -152,12 +151,16 @@ export type FilterQuery<T> =
   | FilterQuery<T>[];
 export type QBFilterQuery<T = any> = ObjectQuery<T> | Dictionary;
 
-export interface IWrappedEntity<Entity> {
+export interface IWrappedEntity<Entity extends object> {
   isInitialized(): boolean;
   isTouched(): boolean;
   populated(populated?: boolean): void;
   populate<Hint extends string = never>(populate: AutoPath<Entity, Hint>[] | false, options?: EntityLoaderOptions<Entity>): Promise<Loaded<Entity, Hint>>;
-  init<Hint extends string = never>(populated?: boolean, populate?: Populate<Entity, Hint>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<Entity, Hint>>;
+  init<
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(options?: FindOneOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes> | null>;
   toReference(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
   toObject(): EntityDTO<Entity>;
   toObject(ignoreFields: never[]): EntityDTO<Entity>;
@@ -173,7 +176,7 @@ export interface IWrappedEntity<Entity> {
   setSchema(schema?: string): void;
 }
 
-export interface IWrappedEntityInternal<Entity> extends IWrappedEntity<Entity> {
+export interface IWrappedEntityInternal<Entity extends object> extends IWrappedEntity<Entity> {
   hasPrimaryKey(): boolean;
   getPrimaryKey(convertCustomTypes?: boolean): Primary<Entity> | null;
   getPrimaryKeys(convertCustomTypes?: boolean): Primary<Entity>[] | null;
@@ -303,7 +306,7 @@ export type Rel<T> = T;
 export type ScalarRef<T> = ScalarReference<T>;
 
 /** Alias for `Reference<T> & { id: number }` (see {@apilink Ref}). */
-export type EntityRef<T> = true extends IsUnknown<PrimaryProperty<T>>
+export type EntityRef<T extends object> = true extends IsUnknown<PrimaryProperty<T>>
   ? Reference<T>
   : IsAny<T> extends true
     ? Reference<T>
@@ -314,10 +317,10 @@ export type EntityRef<T> = true extends IsUnknown<PrimaryProperty<T>>
  * `ref.id` instead of `ref.unwrap().id`. It resolves to either `ScalarRef` or `EntityRef`, based on the type argument.
  */
 export type Ref<T> = IsAny<T> extends true
-  ? Reference<T>
+  ? Reference<T & object>
   : T extends Scalar
     ? ScalarReference<T>
-    : EntityRef<T>;
+    : EntityRef<T & object>;
 
 type EntityDTONested<T> = T extends undefined | null ? T : EntityDTO<T>;
 export type EntityDTOProp<T> = T extends Scalar

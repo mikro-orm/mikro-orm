@@ -483,7 +483,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
 
     const newGod = (await orm.em.findOne(Author4, god.id))!;
     const books = await orm.em.find(Book4, {});
-    await wrap(newGod).init(false);
+    await wrap(newGod).init();
 
     for (const book of books) {
       expect(wrap(book).toJSON()).toMatchObject({

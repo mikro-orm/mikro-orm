@@ -2,7 +2,7 @@ import type {
   Primary,
   Ref,
 } from '../typings';
-import { Collection, type InitOptions } from '../entity/Collection';
+import { Collection, type InitCollectionOptions } from '../entity/Collection';
 import { helper } from '../entity/wrap';
 import { type EntityManager } from '../EntityManager';
 import type DataLoader from 'dataloader';
@@ -54,7 +54,7 @@ export class DataloaderUtils {
       const promises = Array.from(groupedIdsMap).map(
         ([key, idsSet]) => {
           const className = key.substring(0, key.indexOf('|'));
-          const opts: Omit<LoadReferenceOptions<any, any>, 'dataloader'> = JSON.parse(key.substring(key.indexOf('|') + 1));
+          const opts = JSON.parse(key.substring(key.indexOf('|') + 1));
           return em.find(className, Array.from(idsSet), opts);
         },
       );
@@ -74,7 +74,7 @@ export class DataloaderUtils {
    * The entries of the filter Map will be used as the values of an $or operator so we end up with a query per entity.
    */
   static groupInversedOrMappedKeysByEntityAndOpts(
-    collsWithOpts: readonly [Collection<any>, Omit<InitOptions<any, any>, 'dataloader'>?][],
+    collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][],
   ): Map<string, Map<string, Set<Primary<any>>>> {
     const entitiesMap = new Map<string, Map<string, Set<Primary<any>>>>();
     for (const [col, opts] of collsWithOpts) {
@@ -117,16 +117,24 @@ export class DataloaderUtils {
   ): Promise<[string, any[]]>[] {
     return Array.from(entitiesAndOptsMap, async ([key, filterMap]): Promise<[string, any[]]> => {
       const className = key.substring(0, key.indexOf('|'));
-      const opts: Omit<InitOptions<any, any>, 'dataloader'> = JSON.parse(key.substring(key.indexOf('|') + 1));
-      const res = await em.find(
+      const opts: Omit<InitCollectionOptions<any, any>, 'dataloader'> = JSON.parse(key.substring(key.indexOf('|') + 1));
+      const res = await em.find<any>(
         className,
         opts?.where != null && Object.keys(opts.where).length > 0 ?
-          { $and: [
-            { $or: Array.from(filterMap.entries()).map(([prop, pks]) => ({ [prop]: Array.from(pks) })) },
-            opts.where,
-          ] } : {
+          {
+            $and: [
+              {
+                $or: Array.from(filterMap.entries()).map(([prop, pks]) => {
+                  return ({ [prop]: Array.from(pks) });
+                }),
+              },
+              opts.where,
+            ],
+          } : {
             // The entries of the filter Map will be used as the values of the $or operator
-            $or: Array.from(filterMap.entries()).map(([prop, pks]) => ({ [prop]: Array.from(pks) })),
+            $or: Array.from(filterMap.entries()).map(([prop, pks]) => {
+              return ({ [prop]: Array.from(pks) });
+            }),
           },
         {
           ...opts,
@@ -136,9 +144,10 @@ export class DataloaderUtils {
             ...(opts.ref ? [':ref'] : []),
             ...Array.from(filterMap.keys()).filter(
               // We need to do so only if the inverse side is a collection, because we can already retrieve the PK from a reference without having to load it
-              prop => em.getMetadata<any>(className).properties[prop]?.ref !== true),
-            ] as any,
-        });
+              prop => em.getMetadata<any>(className).properties[prop]?.ref !== true,
+            ),
+          ],
+        } as any);
       return [key, res];
     });
   }
@@ -179,8 +188,8 @@ export class DataloaderUtils {
    * Returns the collection dataloader batchLoadFn, which aggregates collections by entity,
    * makes one query per entity and maps each input collection to the corresponging result.
    */
-  static getColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Collection<any>, Omit<InitOptions<any, any>, 'dataloader'>?], any> {
-    return async (collsWithOpts: readonly [Collection<any>, Omit<InitOptions<any, any>, 'dataloader'>?][]) => {
+  static getColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
+    return async (collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]) => {
       const entitiesAndOptsMap = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collsWithOpts);
       const promises = DataloaderUtils.entitiesAndOptsMapToQueries(entitiesAndOptsMap, em);
       const resultsMap = new Map(await Promise.all(promises));

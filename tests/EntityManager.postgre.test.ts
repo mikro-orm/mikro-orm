@@ -370,7 +370,7 @@ describe('EntityManagerPostgre', () => {
     await em.begin();
 
     const book2 = await em.findOneOrFail(Book2, book.uuid);
-    const publisher2 = await book2.publisher!.load({ populate: ['tests'], lockMode: LockMode.PESSIMISTIC_WRITE });
+    const publisher2 = await book2.publisher!.loadOrFail({ populate: ['tests'], lockMode: LockMode.PESSIMISTIC_WRITE });
 
     await em.transactional(async () => {
       //
@@ -931,7 +931,7 @@ describe('EntityManagerPostgre', () => {
 
     const newGod = (await orm.em.findOne(Author2, god.id))!;
     const books = await orm.em.find(Book2, {});
-    await wrap(newGod).init(false);
+    await wrap(newGod).init();
 
     for (const book of books) {
       expect(wrap(book).toJSON()).toMatchObject({
@@ -1027,7 +1027,7 @@ describe('EntityManagerPostgre', () => {
     const bible2 = await em2.findOneOrFail(Book2, { uuid: bible.uuid });
     expect(wrap(bible2, true).__em!.id).toBe(em2.id);
     expect(wrap(bible2.publisher!, true).__em!.id).toBe(em2.id);
-    const publisher2 = await bible2.publisher!.load();
+    const publisher2 = await bible2.publisher!.loadOrFail();
     expect(wrap(publisher2, true).__em!.id).toBe(em2.id);
   });
 

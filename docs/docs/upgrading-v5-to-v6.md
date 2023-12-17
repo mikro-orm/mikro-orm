@@ -269,6 +269,7 @@ The method was only forwarding the call to `BaseEntity.toObject`, so use that in
 - `UnitOfWork.registerManaged` -> `UnitOfWork.register`
 - `baseDir` -> `path` option in `EntityGenerator.generate()`
 - `MIKRO_ORM_CLI` env var -> `MIKRO_ORM_CLI_CONFIG`
+- `InitOptions` -> `InitCollectionOptions`
 
 ## Removed dependency on `faker` in seeder package
 
@@ -525,4 +526,13 @@ The `Reference.load()` method allowed two signatures, one to ensure the entity i
 ```diff
 -book.author.set(other);
 +book.author = ref(other);
+```
+
+## `Reference.load()` can return `null`
+
+`Reference.load()` (and other methods that are using `WrappedEntity.init()` under the hood) can now return `null` when the target entity is not found instead of resolving to unloaded entity. This can happen either because it was removed in the meantime, or it is not compatible with the currently enabled filters. A new method called `loadOrFail()` is added to the `Reference` class which always returns a value or throws otherwise, just like `em.findOneOrFail()`.
+
+```diff
+-const publisher = await book.publisher.load();
++const publisher = await book.publisher.loadOrFail();
 ```
