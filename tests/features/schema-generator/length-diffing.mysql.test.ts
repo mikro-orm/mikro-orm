@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/core';
-import type { PostgreSqlDriver, SchemaGenerator } from '@mikro-orm/postgresql';
+import type { SchemaGenerator } from '@mikro-orm/postgresql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'book' })

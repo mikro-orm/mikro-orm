@@ -2,7 +2,6 @@ import {
   Collection,
   Entity,
   ManyToOne,
-  NotNullConstraintViolationException,
   OneToMany,
   OptionalProps,
   PrimaryKey,

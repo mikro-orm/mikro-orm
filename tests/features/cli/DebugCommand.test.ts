@@ -1,11 +1,10 @@
-import { MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
+import { MongoDriver } from '@mikro-orm/mongodb';
 
 (global as any).process.env.FORCE_COLOR = 0;
 
 import {
   Configuration,
   ConfigurationLoader,
-  IDatabaseDriver,
   Utils,
 } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';

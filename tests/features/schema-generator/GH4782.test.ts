@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/mysql';
-import { Entity, PrimaryKey, Property, t } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'user' })
 class User0 {

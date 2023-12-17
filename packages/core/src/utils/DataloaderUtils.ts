@@ -1,5 +1,4 @@
 import type {
-  EntityMetadata,
   Primary,
   Ref,
 } from '../typings';

@@ -2,7 +2,6 @@ import {
   Collection,
   Entity,
   Filter,
-  LoadStrategy,
   ManyToMany,
   ManyToOne,
   MikroORM,

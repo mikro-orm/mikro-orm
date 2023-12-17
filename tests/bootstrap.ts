@@ -34,7 +34,7 @@ import {
   Employee2,
   CarOwner2,
 } from './entities-sql';
-import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, IdentitySchema } from './entities-schema';
+import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, IdentitySchema } from './entities-schema';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';

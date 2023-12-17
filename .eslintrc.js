@@ -19,6 +19,7 @@ module.exports = {
   plugins: [
     '@typescript-eslint',
     'import',
+    'unused-imports',
   ],
   rules: {
     '@typescript-eslint/consistent-type-imports': 'error',
@@ -79,6 +80,7 @@ module.exports = {
     'for-direction': 'error',
     'getter-return': 'error',
     "import/no-duplicates": ["error", { "prefer-inline": true }],
+    "unused-imports/no-unused-imports": "error",
     'no-async-promise-executor': 'error',
     'no-case-declarations': 'error',
     'no-class-assign': 'error',
