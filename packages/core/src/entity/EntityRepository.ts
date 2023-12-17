@@ -150,7 +150,7 @@ export class EntityRepository<Entity extends object> {
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(where: FilterQuery<Entity>, options?: FindByCursorOptions<Entity, Hint, Fields, Excludes>): Promise<Cursor<Entity, Hint, Fields, Excludes>> {
+  >(where: FilterQuery<Entity>, options: FindByCursorOptions<Entity, Hint, Fields, Excludes>): Promise<Cursor<Entity, Hint, Fields, Excludes>> {
     return this.getEntityManager().findByCursor(this.entityName, where, options);
   }
 
