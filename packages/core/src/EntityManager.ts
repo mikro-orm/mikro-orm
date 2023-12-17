@@ -580,7 +580,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindByCursorOptions<Entity, Hint, Fields, Excludes> = {}): Promise<Cursor<Entity, Hint, Fields, Excludes>> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindByCursorOptions<Entity, Hint, Fields, Excludes>): Promise<Cursor<Entity, Hint, Fields, Excludes>> {
     const em = this.getContext(false);
     entityName = Utils.className(entityName);
     options.overfetch ??= true;
