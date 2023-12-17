@@ -251,7 +251,7 @@ export class EntityHelper {
     }
   }
 
-  static ensurePropagation<T>(entity: T) {
+  static ensurePropagation<T extends object>(entity: T) {
     if ((entity as Dictionary).__gettersDefined) {
       return;
     }

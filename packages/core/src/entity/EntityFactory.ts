@@ -54,7 +54,7 @@ export class EntityFactory {
   }
 
   create<T extends object, P extends string = string>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
-    data = Reference.unwrapReference(data);
+    data = Reference.unwrapReference(data as T);
     options.initialized ??= true;
 
     if ((data as Dictionary).__entity) {

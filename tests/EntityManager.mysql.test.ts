@@ -918,7 +918,7 @@ describe('EntityManagerMySql', () => {
     expect(books0).toHaveLength(0);
     const newGod = (await orm.em.findOne(Author2, god.id))!;
     const books = await orm.em.find(Book2, {});
-    await wrap(newGod).init(false);
+    await wrap(newGod).init();
 
     for (const book of books) {
       expect(wrap(book).toJSON()).toMatchObject({

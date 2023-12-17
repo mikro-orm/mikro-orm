@@ -1,6 +1,5 @@
 import type {
   AnyEntity,
-  ConnectionType,
   Dictionary,
   EntityData,
   EntityDTO,
@@ -16,12 +15,12 @@ import type {
 import { ArrayCollection } from './ArrayCollection';
 import { DataloaderUtils, Utils } from '../utils';
 import { ValidationError } from '../errors';
-import { type LockMode, type QueryOrderMap, ReferenceKind, DataloaderType } from '../enums';
+import { type QueryOrderMap, ReferenceKind, DataloaderType } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
 import type { FindOptions, CountOptions } from '../drivers/IDatabaseDriver';
 import { helper } from './wrap';
-import type { LoggingOptions } from '../logging/Logger';
+import type { EntityLoaderOptions } from './EntityLoader';
 
 export interface MatchingOptions<T extends object, P extends string = never> extends FindOptions<T, P> {
   where?: FilterQuery<T>;
@@ -60,8 +59,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
    * Ensures the collection is loaded first (without reloading it if it already is loaded).
    * Returns the Collection instance (itself), works the same as `Reference.load()`.
    */
-  async load<TT extends T, P extends string = never>(options: InitOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
-    if (this.isInitialized(true)) {
+  async load<TT extends T, P extends string = never>(options: InitCollectionOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
+    if (this.isInitialized(true) && !options.refresh) {
       const em = this.getEntityManager();
       await em.populate(this.items, options.populate, options);
     } else {
@@ -74,7 +73,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * Initializes the collection and returns the items
    */
-  async loadItems<TT extends T, P extends string = never>(options?: InitOptions<TT, P>): Promise<Loaded<TT, P>[]> {
+  async loadItems<TT extends T, P extends string = never>(options?: InitCollectionOptions<TT, P>): Promise<Loaded<TT, P>[]> {
     await this.load(options);
     return super.getItems() as Loaded<TT, P>[];
   }
@@ -302,7 +301,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     this._populated = populated;
   }
 
-  async init<TT extends T, P extends string = never>(options: InitOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
+  async init<TT extends T, P extends string = never>(options: InitCollectionOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
     if (this.dirty) {
       const items = [...this.items];
       this.dirty = false;
@@ -526,15 +525,10 @@ Object.defineProperties(Collection.prototype, {
   get: { get() { return () => this; } },
 });
 
-export interface InitOptions<T, P extends string = never> {
+export interface InitCollectionOptions<T, P extends string = never, F extends string = '*', E extends string = never> extends EntityLoaderOptions<T, F, E>{
   dataloader?: boolean;
   populate?: Populate<T, P>;
   ref?: boolean; // populate only references, works only with M:N collections that use pivot table
-  orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
-  where?: FilterQuery<T>;
-  lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
-  connectionType?: ConnectionType;
-  logging?: LoggingOptions;
 }
 
 export interface LoadCountOptions<T extends object> extends CountOptions<T, '*'> {

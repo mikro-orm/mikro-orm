@@ -212,7 +212,7 @@ export class EntityTransformer {
     return platform.normalizePrimaryKey(wrapped.getPrimaryKey(true) as IPrimaryKey) as EntityValue<Entity>;
   }
 
-  private static processCollection<Entity>(prop: keyof Entity, entity: Entity, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
+  private static processCollection<Entity extends object>(prop: keyof Entity, entity: Entity, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
     const col = entity[prop] as Collection<AnyEntity>;
 
     if (raw && col.isInitialized(true)) {

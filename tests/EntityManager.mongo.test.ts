@@ -491,7 +491,7 @@ describe('EntityManagerMongo', () => {
 
     const newGod = (await orm.em.findOne(Author, god.id))!;
     const books = await orm.em.find(Book, {});
-    await wrap(newGod).init(false);
+    await wrap(newGod).init();
 
     for (const book of books) {
       expect(book.toJSON()).toMatchObject({
@@ -1916,7 +1916,7 @@ describe('EntityManagerMongo', () => {
     ref3['set'](Reference.create(author));
     expect(ref3.id).toBe(author.id);
 
-    const ent = await ref.load();
+    const ent = await ref.loadOrFail();
     expect(ent).toBeInstanceOf(Author);
     expect(wrap(ent).isInitialized()).toBe(true);
     orm.em.clear();
