@@ -17,7 +17,7 @@ describe('EntityGenerator', () => {
       fileName: name => name.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase(),
     });
     expect(dump).toMatchSnapshot('sqlite-entity-dump');
-    await expect(pathExists('./tests/generated-entities/Author3.ts')).resolves.toBe(true);
+    await expect(pathExists('./tests/generated-entities/author3.ts')).resolves.toBe(true);
     await remove('./tests/generated-entities');
 
     await orm.close(true);
