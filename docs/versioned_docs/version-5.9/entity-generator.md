@@ -57,10 +57,6 @@ By default, the `EntityGenerator` generates only owning sides of relations (e.g.
 ```ts
 const dump = await orm.entityGenerator.generate({
   save: true,
-  entitySchema: true,
-  bidirectionalRelations: true,
-  identifiedReferences: true,
-  esmImport: true,
   baseDir: process.cwd() + '/my-entities',
   skipTables: ['book', 'author'],
   skipColumns: {
