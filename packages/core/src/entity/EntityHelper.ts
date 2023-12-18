@@ -154,7 +154,7 @@ export class EntityHelper {
 
         // when propagation from inside hydration, we set the FK to the entity data immediately
         if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
-          wrapped.__originalEntityData[prop.name as string] = helper(wrapped.__data[prop.name]).getPrimaryKey(true);
+          wrapped.__originalEntityData[prop.name as string] = Utils.getPrimaryKeyValues(wrapped.__data[prop.name], prop.targetMeta!.primaryKeys, true);
         } else {
           wrapped.__touched = !hydrator.isRunning();
         }

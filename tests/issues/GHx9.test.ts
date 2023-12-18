@@ -80,23 +80,22 @@ afterAll(async () => {
   await orm.close();
 });
 
-test('extra updates with 1:1 relations (joined)', async () => {
+test('extra updates with 1:1 relations (select-in)', async () => {
   const result = await orm.em.findOneOrFail(Project, { id: project.id, organization: org.id }, {
     populate: ['projectUpdate'],
-    strategy: LoadStrategy.JOINED,
+    strategy: LoadStrategy.SELECT_IN,
   });
 
   expect(wrap(result.projectUpdate!.$).isTouched()).toBe(false);
   expect(wrap(result).isTouched()).toBe(false);
 
-  orm.em.getUnitOfWork().computeChangeSets();
   expect(orm.em.getUnitOfWork().getChangeSets()).toHaveLength(0);
 });
 
-test('extra updates with 1:1 relations (select-in)', async () => {
+test('extra updates with 1:1 relations (joined)', async () => {
   const result = await orm.em.findOneOrFail(Project, { id: project.id, organization: org.id }, {
     populate: ['projectUpdate'],
-    strategy: LoadStrategy.SELECT_IN,
+    strategy: LoadStrategy.JOINED,
   });
 
   expect(wrap(result.projectUpdate!.$).isTouched()).toBe(false);
