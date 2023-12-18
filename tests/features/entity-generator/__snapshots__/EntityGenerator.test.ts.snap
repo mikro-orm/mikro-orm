@@ -3,7 +3,7 @@
 exports[`EntityGenerator generate entities from schema [sqlite]: sqlite-entity-dump 1`] = `
 [
   "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
-import { Book3 } from './Book3';
+import { Book3 } from './book3';
 
 @Entity()
 @Index({ name: 'author3_name_favourite_book_id_index', properties: ['name', 'favouriteBook'] })
@@ -66,8 +66,8 @@ export class BookTag3 {
 }
 ",
   "import { Entity, ManyToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
-import { Author3 } from './Author3';
-import { Publisher3 } from './Publisher3';
+import { Author3 } from './author3';
+import { Publisher3 } from './publisher3';
 
 @Entity()
 export class Book3 {
@@ -95,8 +95,8 @@ export class Book3 {
 }
 ",
   "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
-import { Book3 } from './Book3';
-import { BookTag3 } from './BookTag3';
+import { Book3 } from './book3';
+import { BookTag3 } from './book-tag3';
 
 @Entity({ tableName: 'book3_tags' })
 export class Book3Tags {
@@ -129,8 +129,8 @@ export class Publisher3 {
 }
 ",
   "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
-import { Publisher3 } from './Publisher3';
-import { Test3 } from './Test3';
+import { Publisher3 } from './publisher3';
+import { Test3 } from './test3';
 
 @Entity({ tableName: 'publisher3_tests' })
 export class Publisher3Tests {

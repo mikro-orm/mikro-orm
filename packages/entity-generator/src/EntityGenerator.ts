@@ -45,18 +45,18 @@ export class EntityGenerator {
   }
 
   async generate(options: GenerateOptions = {}): Promise<string[]> {
+    options = Utils.mergeConfig({}, this.config.get('entityGenerator'), options);
+    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config);
+    const metadata = this.getEntityMetadata(schema, options);
     const defaultPath = `${this.config.get('baseDir')}/generated-entities`;
     const baseDir = Utils.normalizePath(options.path ?? defaultPath);
-    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config);
-    options = Utils.mergeConfig({}, this.config.get('entityGenerator'), options);
-    const metadata = this.getEntityMetadata(schema, options);
 
     for (const meta of metadata) {
       if (!meta.pivotTable || this.referencedEntities.has(meta)) {
-        if (this.config.get('entityGenerator').entitySchema) {
-          this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform, !!options.esmImport, true));
+        if (options.entitySchema) {
+          this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform, { ...options, scalarTypeInDecorator: true }));
         } else {
-          this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform, !!options.esmImport, options.scalarTypeInDecorator!));
+          this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform, options));
         }
       }
     }

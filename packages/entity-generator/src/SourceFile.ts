@@ -1,16 +1,17 @@
 import {
   DateType,
   DecimalType,
-  ReferenceKind,
-  UnknownType,
-  Utils,
   type Dictionary,
   type EntityMetadata,
   type EntityOptions,
   type EntityProperty,
+  type GenerateOptions,
   type NamingStrategy,
-  type Platform,
   type OneToOneOptions,
+  type Platform,
+  ReferenceKind,
+  UnknownType,
+  Utils,
 } from '@mikro-orm/core';
 
 export class SourceFile {
@@ -22,8 +23,7 @@ export class SourceFile {
     protected readonly meta: EntityMetadata,
     protected readonly namingStrategy: NamingStrategy,
     protected readonly platform: Platform,
-    protected readonly esmImport: boolean,
-    protected readonly scalarTypeInDecorator: boolean,
+    protected readonly options: GenerateOptions,
   ) { }
 
   generate(): string {
@@ -104,10 +104,10 @@ export class SourceFile {
 
     ret += `${classBody}}\n`;
     const imports = [`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`];
-    const entityImportExtension = this.esmImport ? '.js' : '';
+    const entityImportExtension = this.options.esmImport ? '.js' : '';
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
     entityImports.sort().forEach(entity => {
-      imports.push(`import { ${entity} } from './${entity}${entityImportExtension}';`);
+      imports.push(`import { ${entity} } from './${this.options.fileName!(entity)}${entityImportExtension}';`);
     });
 
     ret = `${imports.join('\n')}\n\n${ret}`;
@@ -118,8 +118,8 @@ export class SourceFile {
     return ret;
   }
 
-  getBaseName() {
-    return this.meta.className + '.ts';
+  getBaseName(extension = '.ts') {
+    return `${this.options.fileName!(this.meta.className)}${extension}`;
   }
 
   protected quote(val: string) {
@@ -263,7 +263,7 @@ export class SourceFile {
   }
 
   protected getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
-    if (this.scalarTypeInDecorator && prop.kind === ReferenceKind.SCALAR && !prop.enum) {
+    if (this.options.scalarTypeInDecorator && prop.kind === ReferenceKind.SCALAR && !prop.enum) {
       options.type = this.quote(prop.type);
     }
     if (prop.nullable && !prop.mappedBy) {

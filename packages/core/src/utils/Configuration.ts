@@ -116,6 +116,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       identifiedReferences: false,
       scalarTypeInDecorator: false,
       scalarPropertiesForRelations: 'never',
+      fileName: (className: string) => className,
     },
     metadataCache: {
       pretty: false,
@@ -458,14 +459,14 @@ export type MigrationsOptions = {
   migrationsList?: MigrationObject[];
 };
 
-export type SeederOptions = {
+export interface SeederOptions {
   path?: string;
   pathTs?: string;
   glob?: string;
   defaultSeeder?: string;
   emit?: 'js' | 'ts';
   fileName?: (className: string) => string;
-};
+}
 
 export interface PoolConfig {
   name?: string;
@@ -579,6 +580,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     esmImport?: boolean;
     scalarTypeInDecorator?: boolean;
     scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
+    fileName?: (className: string) => string;
   };
   metadataCache: {
     enabled?: boolean;

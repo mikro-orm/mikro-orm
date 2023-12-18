@@ -716,6 +716,7 @@ export interface GenerateOptions {
   esmImport?: boolean;
   scalarTypeInDecorator?: boolean;
   scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
+  fileName?: (className: string) => string;
 }
 
 export interface IEntityGenerator {

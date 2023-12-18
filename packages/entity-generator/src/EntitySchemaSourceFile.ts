@@ -114,10 +114,6 @@ export class EntitySchemaSourceFile extends SourceFile {
     return ret;
   }
 
-  override getBaseName() {
-    return this.meta.className + '.ts';
-  }
-
   private getPropertyOptions(prop: EntityProperty): Dictionary {
     const options = {} as Dictionary;
 
