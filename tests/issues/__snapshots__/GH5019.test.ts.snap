@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GH #5019 query 1 1`] = `
+[
+  [
+    "[query] select \`b0\`.*, \`b1\`.\`book_tag_id\` as \`b1__book_tag_id\`, \`b1\`.\`book_id\` as \`b1__book_id\` from \`book_tag\` as \`b0\` left join \`book_tags\` as \`b1\` on \`b0\`.\`id\` = \`b1\`.\`book_tag_id\` where \`b2\`.\`book_id\` = 1",
+  ],
+]
+`;
+
+exports[`GH #5019 query 2 1`] = `
+[
+  [
+    "[query] select \`b0\`.*, \`b1\`.\`id\` as \`b1__id\`, \`b1\`.\`title\` as \`b1__title\` from \`book_tag\` as \`b0\` left join \`book_tags\` as \`b2\` on \`b0\`.\`id\` = \`b2\`.\`book_tag_id\` left join \`book\` as \`b1\` on \`b2\`.\`book_id\` = \`b1\`.\`id\` where \`b3\`.\`book_id\` = 1",
+  ],
+]
+`;
+
+exports[`GH #5019 query 3 1`] = `
+[
+  [
+    "[query] select \`b0\`.*, \`b1\`.\`id\` as \`b1__id\`, \`b1\`.\`title\` as \`b1__title\` from \`book_tag\` as \`b0\` left join \`book_tags\` as \`b2\` on \`b0\`.\`id\` = \`b2\`.\`book_tag_id\` left join \`book\` as \`b1\` on \`b2\`.\`book_id\` = \`b1\`.\`id\` where \`b0\`.\`id\` = 1",
+  ],
+]
+`;
