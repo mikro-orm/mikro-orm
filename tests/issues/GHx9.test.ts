@@ -73,12 +73,13 @@ beforeAll(async () => {
   });
 
   await orm.em.flush();
-  orm.em.clear();
 });
 
 afterAll(async () => {
   await orm.close();
 });
+
+beforeEach(() => orm.em.clear());
 
 test('extra updates with 1:1 relations (select-in)', async () => {
   const result = await orm.em.findOneOrFail(Project, { id: project.id, organization: org.id }, {
