@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import type { Collection } from './Collection';
+import { Collection } from './Collection';
 import type { EntityManager } from '../EntityManager';
 import type { Platform } from '../platforms/Platform';
 import type { AnyEntity, Dictionary, EntityData, EntityDTO, EntityMetadata, EntityProperty, Primary, RequiredEntityData } from '../typings';
@@ -56,8 +56,13 @@ export class EntityAssigner {
       throw new Error(`You must pass a non-${value} value to the property ${propName} of entity ${(entity as Dictionary).constructor.name}.`);
     }
 
-    if (prop && Utils.isCollection(entity[propName as keyof T])) {
-      return EntityAssigner.assignCollection<T>(entity, entity[propName as keyof T] as unknown as Collection<AnyEntity>, value, prop, options.em, options);
+    // create collection instance if its missing so old items can be deleted with orphan removal
+    if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(prop?.reference) && entity[prop.name] == null) {
+      entity[prop.name] = Collection.create(entity, prop.name, undefined, helper(entity).isInitialized()) as any;
+    }
+
+    if (prop && Utils.isCollection(entity[prop.name])) {
+      return EntityAssigner.assignCollection<T>(entity, entity[prop.name] as unknown as Collection<AnyEntity>, value, prop, options.em, options);
     }
 
     const customType = prop?.customType;
@@ -96,7 +101,7 @@ export class EntityAssigner {
     }
 
     if (prop?.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(prop.type) && (prop.setter || !prop.getter)) {
-      return entity[propName as keyof T] = validator.validateProperty(prop, value, entity);
+      return entity[prop.name] = validator.validateProperty(prop, value, entity);
     }
 
     if (prop?.reference === ReferenceType.EMBEDDED && EntityAssigner.validateEM(options.em)) {
