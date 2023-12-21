@@ -464,7 +464,9 @@ export class MetadataDiscovery {
     const meta2 = this.metadata.get(prop.type);
     Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
     const pivotMeta = this.metadata.find(prop.pivotEntity);
-    const pks = Object.values(pivotMeta?.properties ?? {}).filter(p => p.primary);
+    const props = Object.values(pivotMeta?.properties ?? {});
+    const pks = props.filter(p => p.primary);
+    const fks = props.filter(p => p.kind === ReferenceKind.MANY_TO_ONE);
 
     if (pivotMeta) {
       pivotMeta.pivotTable = true;
@@ -476,11 +478,11 @@ export class MetadataDiscovery {
       }
     }
 
-    if (pivotMeta && pks.length === 2) {
+    if (pivotMeta && (pks.length === 2 || fks.length >= 2)) {
       const owner = prop.mappedBy ? meta2.properties[prop.mappedBy] : prop;
       const [first, second] = this.ensureCorrectFKOrderInPivotEntity(pivotMeta, owner);
-      prop.joinColumns = first.fieldNames;
-      prop.inverseJoinColumns = second.fieldNames;
+      prop.joinColumns = first!.fieldNames;
+      prop.inverseJoinColumns = second!.fieldNames;
     }
 
     if (!prop.pivotTable && prop.owner && this.platform.usesPivotTable()) {
@@ -606,8 +608,18 @@ export class MetadataDiscovery {
     });
   }
 
-  private ensureCorrectFKOrderInPivotEntity(meta: EntityMetadata, owner: EntityProperty): [EntityProperty, EntityProperty] {
-    let [first, second] = Object.values(meta.properties).filter(p => p.primary);
+  private ensureCorrectFKOrderInPivotEntity(meta: EntityMetadata, owner: EntityProperty): [] | [EntityProperty, EntityProperty] {
+    const pks = Object.values(meta.properties).filter(p => p.primary);
+    const fks = Object.values(meta.properties).filter(p => p.kind === ReferenceKind.MANY_TO_ONE);
+    let first, second;
+
+    if (pks.length === 2) {
+      [first, second] = pks;
+    } else if (fks.length >= 2) {
+      [first, second] = fks;
+    } else {
+      return [];
+    }
 
     // wrong FK order, first FK needs to point to the owning side
     // (note that we can detect this only if the FKs target different types)
