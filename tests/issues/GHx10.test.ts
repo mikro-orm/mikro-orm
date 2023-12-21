@@ -201,17 +201,20 @@ test('orphan removal with complex FKs sharing a column (with loaded entity)', as
   const mock = mockLogger(orm, ['query']);
   await orm.em.flush();
 
-  expect(mock.mock.calls).toHaveLength(7);
+  expect(mock.mock.calls).toHaveLength(8);
   expect(mock.mock.calls[0][0]).toMatch('begin');
   expect(mock.mock.calls[1][0]).toMatch('insert into `project_update` (`id`, `organization_id`, `project_id`) values (?, ?, ?)');
   expect(mock.mock.calls[2][0]).toMatch('insert into `document` (`id`, `organization_id`, `project_id`, `project_update_id`) values (?, ?, ?, ?)');
   expect(mock.mock.calls[3][0]).toMatch('insert into `file` (`id`, `organization_id`, `document_id`) values (?, ?, ?)');
   expect(mock.mock.calls[4][0]).toMatch('update `project` set `name` = ? where `id` = ? and `organization_id` = ?');
   expect(mock.mock.calls[5][0]).toMatch('delete from `document` where (`project_id`, `organization_id`) in ( values (?, ?)) and (`id`, `organization_id`) not in ( values (?, ?))');
-  expect(mock.mock.calls[6][0]).toMatch('commit');
+  expect(mock.mock.calls[6][0]).toMatch('delete from `project_update` where (`project_id`, `organization_id`) in ( values (?, ?)) and (`id`, `organization_id`) not in ( values (?, ?))');
+  expect(mock.mock.calls[7][0]).toMatch('commit');
 
   const exists = await orm.em.count(Document, oldDocument);
   expect(exists).toBe(0);
+  const exists2 = await orm.em.count(ProjectUpdate, {});
+  expect(exists2).toBe(1);
 });
 
 test('orphan removal with complex FKs sharing a column (with reference)', async () => {
@@ -246,17 +249,20 @@ test('orphan removal with complex FKs sharing a column (with reference)', async 
   const mock = mockLogger(orm, ['query']);
   await orm.em.flush();
 
-  expect(mock.mock.calls).toHaveLength(7);
+  expect(mock.mock.calls).toHaveLength(8);
   expect(mock.mock.calls[0][0]).toMatch('begin');
   expect(mock.mock.calls[1][0]).toMatch('insert into `project_update` (`id`, `organization_id`, `project_id`) values (?, ?, ?)');
   expect(mock.mock.calls[2][0]).toMatch('insert into `document` (`id`, `organization_id`, `project_id`, `project_update_id`) values (?, ?, ?, ?)');
   expect(mock.mock.calls[3][0]).toMatch('insert into `file` (`id`, `organization_id`, `document_id`) values (?, ?, ?)');
   expect(mock.mock.calls[4][0]).toMatch('update `project` set `name` = ? where `id` = ? and `organization_id` = ?');
   expect(mock.mock.calls[5][0]).toMatch('delete from `document` where (`project_id`, `organization_id`) in ( values (?, ?)) and (`id`, `organization_id`) not in ( values (?, ?))');
-  expect(mock.mock.calls[6][0]).toMatch('commit');
+  expect(mock.mock.calls[6][0]).toMatch('delete from `project_update` where (`project_id`, `organization_id`) in ( values (?, ?)) and (`id`, `organization_id`) not in ( values (?, ?))');
+  expect(mock.mock.calls[7][0]).toMatch('commit');
 
   const exists = await orm.em.count(Document, oldDocument);
   expect(exists).toBe(0);
+  const exists2 = await orm.em.count(ProjectUpdate, {});
+  expect(exists2).toBe(1);
 });
 
 test('orphan removal with complex FKs sharing a column (with populated relation via joined strategy)', async () => {
@@ -307,4 +313,6 @@ test('orphan removal with complex FKs sharing a column (with populated relation 
 
   const exists = await orm.em.count(Document, oldDocument);
   expect(exists).toBe(0);
+  const exists2 = await orm.em.count(ProjectUpdate, {});
+  expect(exists2).toBe(1);
 });

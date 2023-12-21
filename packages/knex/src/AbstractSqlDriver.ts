@@ -810,21 +810,24 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
               .getKnexQuery()
               .whereNotIn(cols, insertDiff as string[][]);
 
-            return this.rethrow(this.execute<any>(kqb));
+            await this.rethrow(this.execute<any>(kqb));
+            continue;
           }
 
           const kqb = qb.update({ [coll.property.mappedBy]: null })
             .getKnexQuery()
             .whereNotIn(cols, insertDiff as string[][]);
 
-          return this.rethrow(this.execute<any>(kqb));
+          await this.rethrow(this.execute<any>(kqb));
+          continue;
         }
 
         const kqb = qb.update({ [coll.property.mappedBy]: pks })
           .getKnexQuery()
           .whereIn(cols, insertDiff as string[][]);
 
-        return this.rethrow(this.execute<any>(kqb));
+        await this.rethrow(this.execute<any>(kqb));
+        continue;
       }
 
       /* istanbul ignore next */
