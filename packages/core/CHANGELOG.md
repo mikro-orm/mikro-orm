@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.6](https://github.com/mikro-orm/mikro-orm/compare/v5.9.5...v5.9.6) (2023-12-21)
+
+
+### Bug Fixes
+
+* **core:** fix `assign` on collections of unloaded entities ([b60e4ee](https://github.com/mikro-orm/mikro-orm/commit/b60e4ee207849425b6faf7c8fa677388e16bb22e))
+* **core:** fix extra updates with select-in strategy and composite FKs ([c848f8c](https://github.com/mikro-orm/mikro-orm/commit/c848f8c840cd2c4690e5852e06d36dc5b2393d9b))
+
+
+
+
+
 ## [5.9.5](https://github.com/mikro-orm/mikro-orm/compare/v5.9.4...v5.9.5) (2023-12-15)
 
 
