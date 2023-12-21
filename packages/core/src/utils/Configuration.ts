@@ -66,6 +66,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     allowGlobalContext: false,
     // eslint-disable-next-line no-console
     logger: console.log.bind(console),
+    colors: true,
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
     findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findExactlyOneFailed(entityName, where),
     baseDir: process.cwd(),
@@ -194,12 +195,13 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   set<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T, value: U): void {
     this.options[key] = value;
+    this.sync();
   }
 
   /**
    * Resets the configuration to its default value
    */
-  reset<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T): void {
+  reset<T extends keyof MikroORMOptions<D>>(key: T): void {
     this.options[key] = (Configuration.DEFAULTS as MikroORMOptions<D>)[key];
   }
 
@@ -334,7 +336,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (!('implicitTransactions' in this.options)) {
-      this.set('implicitTransactions', this.platform.usesImplicitTransactions());
+      this.options.implicitTransactions = this.platform.usesImplicitTransactions();
     }
 
     const url = this.getClientUrl().match(/:\/\/.*\/([^?]+)/);
@@ -355,9 +357,16 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       return subscriber.constructor.name === 'Function' ? new (subscriber as Constructor)() : subscriber;
     }) as EventSubscriber[];
 
+    this.sync();
+
     if (!colors.enabled()) {
       this.options.highlighter = new NullHighlighter();
     }
+  }
+
+  private sync(): void {
+    process.env.MIKRO_ORM_COLORS = '' + this.options.colors;
+    this.logger.setDebugMode(this.options.debug);
   }
 
   /**
@@ -554,6 +563,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   allowGlobalContext: boolean;
   disableIdentityMap?: boolean;
   logger: (message: string) => void;
+  colors?: boolean;
   loggerFactory?: (options: LoggerOptions) => Logger;
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;

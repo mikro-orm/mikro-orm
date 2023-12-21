@@ -586,6 +586,7 @@ Full list of supported options:
 | `MIKRO_ORM_ENSURE_INDEXES`                                  | `ensureIndexes`                          |
 | `MIKRO_ORM_IMPLICIT_TRANSACTIONS`                           | `implicitTransactions`                   |
 | `MIKRO_ORM_DEBUG`                                           | `debug`                                  |
+| `MIKRO_ORM_COLORS`                                          | `colors`                                 |
 | `MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES`                 | `discovery.warnWhenNoEntities`           |
 | `MIKRO_ORM_DISCOVERY_REQUIRE_ENTITIES_ARRAY`                | `discovery.requireEntitiesArray`         |
 | `MIKRO_ORM_DISCOVERY_ALWAYS_ANALYSE_PROPERTIES`             | `discovery.alwaysAnalyseProperties`      |

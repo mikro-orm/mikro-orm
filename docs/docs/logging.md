@@ -32,10 +32,11 @@ It is also useful for debugging problems with entity discovery, as you will see 
 
 ## Disabling colored output
 
-To disable colored output, you can use multiple environment variables:
+To disable colored output, you can use the `colors` option in the ORM config, or one of the following environment variables:
 
-- `NO_COLOR`
 - `MIKRO_ORM_NO_COLOR`
+- `NO_COLOR`
+- `MIKRO_ORM_COLORS`
 - `FORCE_COLOR`
 
 ## Logger Namespaces

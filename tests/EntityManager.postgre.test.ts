@@ -1697,7 +1697,6 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('EM supports native insert/update/delete', async () => {
-    orm.config.getLogger().setDebugMode(false);
     const res1 = await orm.em.insert(Author2, { name: 'native name 1', email: 'native1@email.com' });
     expect(typeof res1).toBe('number');
 

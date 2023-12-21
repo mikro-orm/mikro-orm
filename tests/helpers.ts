@@ -7,7 +7,6 @@ export function mockLogger(orm: MikroORM, debug: LoggerNamespace[] = ['query', '
   const logger = orm.config.getLogger();
   Object.assign(logger, { writer: mock });
   orm.config.set('debug', debug);
-  logger.setDebugMode(debug);
 
   return mock;
 }

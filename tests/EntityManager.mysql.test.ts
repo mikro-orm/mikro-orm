@@ -1967,7 +1967,6 @@ describe('EntityManagerMySql', () => {
   });
 
   test('EM supports native insert/update/delete', async () => {
-    orm.config.getLogger().setDebugMode(false);
     const a = new Author2('native name 1', 'native1@email.com');
     const res1 = await orm.em.insert(a);
     expect(typeof res1).toBe('number');
@@ -2272,7 +2271,6 @@ describe('EntityManagerMySql', () => {
   test('query highlighting', async () => {
     const mock = mockLogger(orm, ['query']);
     Object.assign(orm.config.getLogger(), { highlighter: new SqlHighlighter() });
-    process.env.FORCE_COLOR = '1';
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
     await orm.em.persistAndFlush(author);
@@ -2283,7 +2281,27 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     Object.assign(orm.config.getLogger(), { highlighter: new NullHighlighter() });
-    process.env.FORCE_COLOR = '0';
+  });
+
+  test('colors: false', async () => {
+    const mock = mockLogger(orm, ['query']);
+
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    await orm.em.persistAndFlush(author);
+
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toMatch("\x1B[90m[query] \x1B[39mbegin\x1B[36m (via write connection '127.0.0.1')\x1B[39m");
+    expect(mock.mock.calls[1][0]).toMatch(/\x1B\[90m\[query] \x1B\[39minsert into `author2` \(`created_at`, `updated_at`, `name`, `email`, `terms_accepted`\) values \(\?, \?, \?, \?, \?\)\x1B\[90m \[took \d+ ms, 1 row affected]\x1B\[39m\x1B\[36m \(via write connection '127\.0\.0\.1'\)\x1B\[39m/);
+    expect(mock.mock.calls[2][0]).toMatch("\x1B[90m[query] \x1B[39mcommit\x1B[36m (via write connection '127.0.0.1')\x1B[39m");
+
+    orm.config.set('colors', false);
+    mock.mockReset();
+    await orm.em.removeAndFlush(author);
+
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toMatch("[query] begin (via write connection '127.0.0.1')");
+    expect(mock.mock.calls[1][0]).toMatch(/\[query] delete from `author2` where `id` in \(\?\) \[took \d+ ms, 1 row affected] \(via write connection '127\.0\.0\.1'\)/);
+    expect(mock.mock.calls[2][0]).toMatch("[query] commit (via write connection '127.0.0.1')");
   });
 
   test('datetime is stored in correct timezone', async () => {

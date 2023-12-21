@@ -217,6 +217,7 @@ export class ConfigurationLoader {
     read(ret, 'MIKRO_ORM_ENSURE_INDEXES', 'ensureIndexes', bool);
     read(ret, 'MIKRO_ORM_IMPLICIT_TRANSACTIONS', 'implicitTransactions', bool);
     read(ret, 'MIKRO_ORM_DEBUG', 'debug', bool);
+    read(ret, 'MIKRO_ORM_COLORS', 'colors', bool);
 
     ret.discovery = {};
     read(ret.discovery, 'MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES', 'warnWhenNoEntities', bool);
