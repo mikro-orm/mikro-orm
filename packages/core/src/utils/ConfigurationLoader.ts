@@ -160,7 +160,15 @@ export class ConfigurationLoader {
   static registerDotenv<D extends IDatabaseDriver>(options?: Options<D> | Configuration<D>): void {
     const baseDir = options instanceof Configuration ? options.get('baseDir') : options?.baseDir;
     const path = process.env.MIKRO_ORM_ENV ?? ((baseDir ?? process.cwd()) + '/.env');
-    dotenv.config({ path });
+    const env = {} as Dictionary;
+    dotenv.config({ path, processEnv: env });
+
+    // only propagate known env vars
+    for (const key of Object.keys(env)) {
+      if (key.startsWith('MIKRO_ORM_')) {
+        process.env[key] = env[key];
+      }
+    }
   }
 
   static loadEnvironmentVars<D extends IDatabaseDriver>(): Partial<Options<D>> {

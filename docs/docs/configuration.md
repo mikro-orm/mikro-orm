@@ -539,7 +539,9 @@ MikroORM.init({
 
 Since v4.5 it is possible to set most of the ORM options via environment variables. By default `.env` file from the root directory is loaded - it is also possible to set full path to the env file you want to use via `MIKRO_ORM_ENV` environment variable.
 
-> Environment variables always have precedence.
+> Only env vars with `MIKRO_ORM_` prefix are be loaded this way, all the others will be ignored. If you want to access all your env vars defined in the `.env` file, call `dotenv.register()` yourself in your app (or possibly in your ORM config file).
+
+> Environment variables always have precedence over the ORM config.
 
 Example `.env` file:
 
