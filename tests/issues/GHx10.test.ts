@@ -258,3 +258,53 @@ test('orphan removal with complex FKs sharing a column (with reference)', async 
   const exists = await orm.em.count(Document, oldDocument);
   expect(exists).toBe(0);
 });
+
+test('orphan removal with complex FKs sharing a column (with populated relation via joined strategy)', async () => {
+  // Loading the project does make orphanremoval work
+  const pr = await orm.em.findOneOrFail(Project, { organization: org.id }, {
+    populate: ['documents', 'projectUpdates', 'projectUpdates.documents'],
+    strategy: 'joined',
+  });
+
+  const projectUpdate = new ProjectUpdate();
+  orm.em.assign(projectUpdate, {
+    organization: org.id,
+    project: [project.id, org.id],
+  });
+
+  const file = new File();
+  const document = new Document();
+  orm.em.assign(file, {
+    organization: org.id,
+    document: [document.id, org.id],
+  });
+
+  // We attach the same document to both the project and project update
+  orm.em.assign(document, {
+    organization: org.id,
+    project: [project.id, org.id],
+    projectUpdate: [projectUpdate.id, org.id],
+    files: [file],
+  });
+
+  orm.em.assign(pr, {
+    name: 'jos',
+    documents: [document],
+    projectUpdates: [projectUpdate],
+  });
+
+  const mock = mockLogger(orm, ['query']);
+  await orm.em.flush();
+
+  expect(mock.mock.calls).toHaveLength(7);
+  expect(mock.mock.calls[0][0]).toMatch('begin');
+  expect(mock.mock.calls[1][0]).toMatch('insert into `project_update` (`id`, `organization_id`, `project_id`) values (?, ?, ?)');
+  expect(mock.mock.calls[2][0]).toMatch('insert into `document` (`id`, `organization_id`, `project_id`, `project_update_id`) values (?, ?, ?, ?)');
+  expect(mock.mock.calls[3][0]).toMatch('insert into `file` (`id`, `organization_id`, `document_id`) values (?, ?, ?)');
+  expect(mock.mock.calls[4][0]).toMatch('update `project` set `name` = ? where `id` = ? and `organization_id` = ?');
+  expect(mock.mock.calls[5][0]).toMatch('delete from `document` where (`id`, `organization_id`) in ( values (?, ?))');
+  expect(mock.mock.calls[6][0]).toMatch('commit');
+
+  const exists = await orm.em.count(Document, oldDocument);
+  expect(exists).toBe(0);
+});

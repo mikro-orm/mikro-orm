@@ -357,7 +357,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       for (const prop of targetProps) {
         if (prop.fieldNames.length > 1) { // composite keys
           const fk = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as Primary<T>[];
-          relationPojo[prop.name] = Utils.mapFlatCompositePrimaryKey(fk, prop) as EntityValue<T>;
+          const pk = Utils.mapFlatCompositePrimaryKey(fk, prop) as unknown[];
+          relationPojo[prop.name] = pk.every(val => val != null) ? pk as EntityValue<T> : null;
         } else if (prop.runtimeType === 'Date') {
           const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
           relationPojo[prop.name] = (typeof root![alias] === 'string' ? new Date(root![alias] as string) : root![alias]) as EntityValue<T>;
