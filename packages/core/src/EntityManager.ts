@@ -1731,14 +1731,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       p = p.split(':', 2)[0];
     }
 
-    const ret = p in meta.properties;
+    const ret = p in meta.root.properties;
 
     if (!ret) {
       return !!this.metadata.find(property)?.pivotTable;
     }
 
     if (parts.length > 0) {
-      return this.canPopulate((meta.properties)[p].type, parts.join('.'));
+      return this.canPopulate((meta.root.properties)[p].type, parts.join('.'));
     }
 
     return ret;
@@ -1763,7 +1763,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext();
     this.prepareOptions(options, em);
     const entityName = (arr[0] as Dictionary).constructor.name;
-    const preparedPopulate = em.preparePopulate<Entity>(entityName, { populate: populate as any });
+    const preparedPopulate = em.preparePopulate<Entity>(entityName, { populate: populate as any }, options.validate);
     await em.entityLoader.populate(entityName, arr, preparedPopulate, options as EntityLoaderOptions<Entity>);
 
     return entities as any;
@@ -1968,7 +1968,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }, [] as string[]);
   }
 
-  private preparePopulate<Entity extends object>(entityName: string, options: Pick<FindOptions<Entity, any, any>, 'populate' | 'strategy' | 'fields' | 'flags'>): PopulateOptions<Entity>[] {
+  private preparePopulate<Entity extends object>(entityName: string, options: Pick<FindOptions<Entity, any, any>, 'populate' | 'strategy' | 'fields' | 'flags'>, validate = true): PopulateOptions<Entity>[] {
     if (options.populate === false) {
       return [];
     }
@@ -2036,7 +2036,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret: PopulateOptions<Entity>[] = this.entityLoader.normalizePopulate<Entity>(entityName, options.populate as true, options.strategy as LoadStrategy);
     const invalid = ret.find(({ field }) => !this.canPopulate(entityName, field));
 
-    if (invalid) {
+    if (validate && invalid) {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
