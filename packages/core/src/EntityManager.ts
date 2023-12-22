@@ -1540,14 +1540,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return true;
     }
 
-    const ret = p in meta.properties;
+    const ret = p in meta.root.properties;
 
     if (!ret) {
       return !!this.metadata.find(property)?.pivotTable;
     }
 
     if (parts.length > 0) {
-      return this.canPopulate((meta.properties)[p].type, parts.join('.'));
+      return this.canPopulate((meta.root.properties)[p].type, parts.join('.'));
     }
 
     return ret;
@@ -1569,7 +1569,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext();
     options.schema ??= em._schema;
     const entityName = (entities[0] as Dictionary).constructor.name;
-    const preparedPopulate = em.preparePopulate<Entity>(entityName, { populate: populate as true });
+    const preparedPopulate = em.preparePopulate<Entity>(entityName, { populate: populate as any }, options.validate);
     await em.entityLoader.populate(entityName, entities, preparedPopulate, options);
 
     return entities as Loaded<Entity, Hint>[];
@@ -1773,7 +1773,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }, [] as AutoPath<T, P>[]);
   }
 
-  private preparePopulate<T extends object, P extends string = never>(entityName: string, options: Pick<FindOptions<T, P>, 'populate' | 'strategy' | 'fields'>): PopulateOptions<T>[] {
+  private preparePopulate<T extends object, P extends string = never>(entityName: string, options: Pick<FindOptions<T, P>, 'populate' | 'strategy' | 'fields'>, validate = true): PopulateOptions<T>[] {
     // infer populate hint if only `fields` are available
     if (!options.populate && options.fields) {
       options.populate = this.buildFields(options.fields);
@@ -1796,7 +1796,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret: PopulateOptions<T>[] = this.entityLoader.normalizePopulate<T>(entityName, options.populate as true, options.strategy);
     const invalid = ret.find(({ field }) => !this.canPopulate(entityName, field));
 
-    if (invalid) {
+    if (validate && invalid) {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
