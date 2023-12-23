@@ -71,7 +71,7 @@ export class Book extends BaseEntity3 {
     this.author = author!;
   }
 
-  toJSON<Ignored extends EntityKey<this>>(strict = true, strip: Ignored[] = ['metaObject', 'metaArray', 'metaArrayOfStrings'] as Ignored[]): Omit<EntityDTO<this>, Ignored> {
+  toJSON<Ignored extends EntityKey<this>>(strict = true, strip: Ignored[] = ['metaObject', 'metaArray', 'metaArrayOfStrings'] as Ignored[]): Omit<EntityDTO<this>, Ignored> | EntityDTO<this> {
     if (strict) {
       return wrap(this).toObject(strip);
     }

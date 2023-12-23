@@ -123,6 +123,8 @@ test('explicit serialization', async () => {
   });
 
   const o5 = serialize(jon, { populate: ['books.author', 'favouriteBook'], forceObject: true });
+  const pub = o5.books[0].publisher!.id;
+  expect(pub).toBe(1);
   expect(o5).toMatchObject({
     id: jon.id,
     createdAt: jon.createdAt,
