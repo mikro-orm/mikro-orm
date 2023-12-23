@@ -567,6 +567,7 @@ export class SchemaComparator {
   }
 
   parseJsonDefault(defaultValue?: string | null): Dictionary | string | null {
+    /* istanbul ignore next */
     if (!defaultValue) {
       return null;
     }

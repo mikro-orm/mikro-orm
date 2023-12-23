@@ -107,6 +107,7 @@ export class SerializationContext<T> {
     let fields: string[] = this.fields;
 
     for (const segment of this.path) {
+      /* istanbul ignore next */
       if (fields.length === 0) {
         return true;
       }

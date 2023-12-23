@@ -101,6 +101,7 @@ export abstract class SchemaHelper {
   }
 
   getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
+    /* istanbul ignore next */
     if (index.expression && !partialExpression) {
       return index.expression;
     }

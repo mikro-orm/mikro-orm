@@ -202,11 +202,6 @@ export class EntityFactory {
     const schema = this.driver.getSchemaName(meta, options);
 
     if (Array.isArray(id)) {
-      // composite FK as PK needs to be wrapped for `getPrimaryKeyCondFromArray` to work correctly
-      if (!meta.compositePK && meta.getPrimaryProps()[0].kind !== ReferenceKind.SCALAR) {
-        id = [id] as Primary<T>[];
-      }
-
       id = Utils.getPrimaryKeyCondFromArray(id, meta);
     }
 

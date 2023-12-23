@@ -30,10 +30,11 @@ export interface MatchingOptions<T extends object, P extends string = never> ext
 
 export class Collection<T extends object, O extends object = object> extends ArrayCollection<T, O> {
 
-  private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
   private readonly?: boolean;
   private _populated?: boolean;
   private _em?: unknown;
+  // this is for some reason needed for TS, otherwise it can fail with `Type instantiation is excessively deep and possibly infinite.`
+  private _snapshot?: T[];
 
   constructor(owner: O, items?: T[], initialized = true) {
     super(owner as unknown as O & AnyEntity, items);
@@ -156,25 +157,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
     this.cancelOrphanRemoval(unwrapped);
   }
 
-  override set<TT extends T>(items: Iterable<TT | Reference<TT>>): void {
-    if (!this.initialized) {
-      this.initialized = true;
-      this.snapshot = undefined;
-    }
-
-    super.set(items as T[]);
-    this.setDirty();
-  }
-
-  /**
-   * @internal
-   */
-  override hydrate(items: T[], forcePropagate?: boolean): void {
-    this.initialized = true;
-    super.hydrate(items);
-    this.takeSnapshot(forcePropagate);
-  }
-
   /**
    * @inheritDoc
    */
@@ -199,13 +181,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
         em.getUnitOfWork().scheduleOrphanRemoval(item);
       }
     }
-  }
-
-  /**
-   * @inheritDoc
-   */
-  override removeAll(): void {
-    this.set([]);
   }
 
   override contains<TT extends T>(item: TT | Reference<TT>, check = true): boolean {
@@ -352,27 +327,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
     });
 
     return this as unknown as LoadedCollection<Loaded<TT, P>>;
-  }
-
-  /**
-   * @internal
-   */
-  takeSnapshot(forcePropagate?: boolean): void {
-    this.snapshot = [...this.items];
-    this.setDirty(false);
-
-    if (this.property.owner || forcePropagate) {
-      this.items.forEach(item => {
-        this.propagate(item, 'takeSnapshot');
-      });
-    }
-  }
-
-  /**
-   * @internal
-   */
-  getSnapshot() {
-    return this.snapshot;
   }
 
   private getEntityManager(items: T[] = [], required = true) {

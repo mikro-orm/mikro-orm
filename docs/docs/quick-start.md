@@ -10,22 +10,22 @@ First install the module via package manager of your choice. Do not forget to in
 
 ```bash npm2yarn
 # for mongodb
-npm install @mikro-orm/core @mikro-orm/mongodb;
+npm install @mikro-orm/core @mikro-orm/mongodb
 
 # for mysql (works with mariadb too)
-npm install @mikro-orm/core @mikro-orm/mysql;  
+npm install @mikro-orm/core @mikro-orm/mysql  
 
 # for mariadb (works with mysql too)
-npm install @mikro-orm/core @mikro-orm/mariadb;
+npm install @mikro-orm/core @mikro-orm/mariadb
 
 # for postgresql (works with cockroachdb too)
-npm install @mikro-orm/core @mikro-orm/postgresql;  
+npm install @mikro-orm/core @mikro-orm/postgresql  
 
 # for sqlite
-npm install @mikro-orm/core @mikro-orm/sqlite; 
+npm install @mikro-orm/core @mikro-orm/sqlite 
 
 # for better-sqlite
-npm install @mikro-orm/core @mikro-orm/better-sqlite; 
+npm install @mikro-orm/core @mikro-orm/better-sqlite 
 ```
 
 Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) as well as `esModuleInterop` in `tsconfig.json` via:

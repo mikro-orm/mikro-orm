@@ -626,12 +626,6 @@ export class UnitOfWork {
         }) as any);
       }
 
-      if (props.every(prop => wrapped.__originalEntityData?.[prop] != null)) {
-        return Utils.getPrimaryKeyHash(props.map(p => {
-          return wrapped.__originalEntityData![p];
-        }) as string[]);
-      }
-
       return undefined;
     }).filter(i => i) as string[];
 

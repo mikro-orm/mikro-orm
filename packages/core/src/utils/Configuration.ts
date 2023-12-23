@@ -403,6 +403,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   private validateOptions(): void {
+    /* istanbul ignore next */
     if ('type' in this.options) {
       throw new Error('The `type` option has been removed in v6, please fill in the `driver` option instead or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from \'@mikro-orm/mysql\'; export default defineConfig({ ... })`).');
     }
