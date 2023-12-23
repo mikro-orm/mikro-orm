@@ -394,7 +394,7 @@ describe('QueryBuilder', () => {
       .leftJoin('a.books', 'b', {
         [sql`json_contains(b.meta, ${{ 'b.foo': 'bar' }})`]: [],
         [raw('json_contains(`b`.`meta`, ?) = ?', [{ 'b.foo': 'bar' }, false])]: [],
-        [raw('lower(??)', ['b.title'])]: '321',
+        [sql.lower(a => `${a}.title`)]: '321',
       })
       .where({ 'b.title': 'test 123' });
     expect(qb.getQuery()).toEqual('select `a`.*, `b`.* from `author2` as `a` ' +
@@ -402,7 +402,7 @@ describe('QueryBuilder', () => {
       'on `a`.`id` = `b`.`author_id` ' +
       'and json_contains(b.meta, ?) ' +
       'and json_contains(`b`.`meta`, ?) = ? ' +
-      'and lower(`b`.`title`) = ? ' +
+      'and lower(b.title) = ? ' +
       'where `b`.`title` = ?');
     expect(qb.getParams()).toEqual([{ 'b.foo': 'bar' }, { 'b.foo': 'bar' }, false, '321', 'test 123']);
     expect(qb.getFormattedQuery()).toEqual('select `a`.*, `b`.* from `author2` as `a` ' +
@@ -410,7 +410,7 @@ describe('QueryBuilder', () => {
       'on `a`.`id` = `b`.`author_id` ' +
       'and json_contains(b.meta, \'{\\"b.foo\\":\\"bar\\"}\') ' +
       'and json_contains(`b`.`meta`, \'{\\"b.foo\\":\\"bar\\"}\') = false ' +
-      'and lower(`b`.`title`) = \'321\' ' +
+      'and lower(b.title) = \'321\' ' +
       "where `b`.`title` = 'test 123'");
   });
 

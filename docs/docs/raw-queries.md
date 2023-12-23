@@ -56,6 +56,25 @@ When you want to refer to a column, you can use the `sql.ref()` function:
 await em.find(User, { foo: sql`bar` });
 ```
 
+### `sql.now()`
+
+When you want to define a default value for a datetime column, you can use the `sql.now()` function. It resolves to `current_timestamp` SQL function, and accepts a `length` parameter.
+
+```ts
+@Property({ default: sql.now() })
+createdAt: Date & Opt;
+```
+
+### `sql.lower()` and `sql.upper()`
+
+To convert a key to lowercase or uppercase, you can use the `sql.lower()` and `sql.upper()` functions
+
+```ts
+const books = await orm.em.find(Book, {
+  [sql.upper('title')]: 'TITLE',
+});
+```
+
 ### Aliasing
 
 To select a raw fragment, we need to alias it. For that, we can use ```sql`(select 1 + 1)`.as('<alias>')```.

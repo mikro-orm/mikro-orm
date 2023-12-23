@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/mysql';
+import { MikroORM, sql } from '@mikro-orm/mysql';
 import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'user' })
@@ -15,7 +15,7 @@ class User1 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ defaultRaw: 'current_timestamp(3)', columnType: 'timestamp(3)' })
+  @Property({ default: sql.now(3), columnType: 'timestamp(3)' })
   bar!: Date;
 
 }
@@ -26,7 +26,7 @@ class User2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ defaultRaw: 'current_timestamp(3)', columnType: 'timestamp(3)' })
+  @Property({ default: sql.now(3), columnType: 'timestamp(3)' })
   bar!: Date;
 
 }
@@ -37,7 +37,7 @@ class User3 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ defaultRaw: 'current_timestamp(6)', columnType: 'timestamp(6)' })
+  @Property({ default: sql.now(6), columnType: 'timestamp(6)' })
   bar!: Date;
 
 }

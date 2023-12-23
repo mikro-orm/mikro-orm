@@ -6,7 +6,7 @@ import {
   OptionalProps,
   PrimaryKey,
   Property,
-  SimpleLogger,
+  SimpleLogger, sql,
   Unique,
 } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
@@ -20,10 +20,10 @@ abstract class ApplicationEntity<Optionals = never> {
   @PrimaryKey()
   id!: number;
 
-  @Property({ name: 'created_at', defaultRaw: 'current_timestamp' })
+  @Property({ name: 'created_at', default: sql.now() })
   createdAt!: Date;
 
-  @Property({ name: 'updated_at', defaultRaw: 'current_timestamp', onUpdate: () => new Date() })
+  @Property({ name: 'updated_at', default: sql.now(), onUpdate: () => new Date() })
   updatedAt!: Date;
 
 }

@@ -1,54 +1,48 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, MikroORM, Opt, PrimaryKey, Property, sql } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
-export class Foo {
+class Foo {
 
   @PrimaryKey()
   id!: number;
 
   @Property({ defaultRaw: "'test'" })
-  bar0!: string;
+  bar0!: string & Opt;
 
   @Property({ default: 'test' })
-  bar1!: string;
+  bar1!: string & Opt;
+
+  @Property({ default: 1 })
+  num!: number & Opt;
+
+  @Property({ default: true })
+  bool!: boolean & Opt;
 
 }
 
 @Entity()
-export class Foo0 extends Foo {
+class Foo0 extends Foo {
 
-  @Property({ defaultRaw: 'now()' })
-  bar2!: Date;
+  @Property({ defaultRaw: sql.now() })
+  bar2!: Opt<Date>;
 
-  @Property({ defaultRaw: 'now(6)', length: 6 })
-  bar3!: Date;
-
-}
-
-@Entity()
-export class Foo1 extends Foo {
-
-  @Property({ defaultRaw: 'now()' })
-  bar2!: Date;
-
-  @Property({ defaultRaw: 'now(6)', length: 6 })
-  bar3!: Date;
-
-  @Property({ type: 'json', default: JSON.stringify({ value: 42 }) })
-  metadata!: any;
+  @Property({ default: sql.now(6), length: 6 })
+  bar3!: Date & Opt;
 
 }
 
 @Entity()
-export class Foo2 extends Foo {
+class Foo1 extends Foo {
 
-  @Property({ defaultRaw: 'now()' })
+  @Property({ default: sql.now() })
   bar2!: Date;
 
-  @Property({ defaultRaw: 'now()', length: 6 })
+  // test that we can infer the Date type from default here too
+  @Property({ default: sql.now(6), type: 'any', length: 6 })
   bar3!: Date;
 
   @Property({ type: 'json', default: JSON.stringify({ value: 42 }) })
@@ -57,9 +51,23 @@ export class Foo2 extends Foo {
 }
 
 @Entity()
-export class Foo3 extends Foo {
+class Foo2 extends Foo {
 
-  @Property({ defaultRaw: 'now' })
+  @Property({ default: sql.now() })
+  bar2!: Date;
+
+  @Property({ default: sql.now(), length: 6 })
+  bar3!: Date;
+
+  @Property({ type: 'json', default: JSON.stringify({ value: 42 }) })
+  metadata!: any;
+
+}
+
+@Entity()
+class Foo3 extends Foo {
+
+  @Property({ default: sql.now() })
   bar2!: Date;
 
   @Property({ type: 'json', default: JSON.stringify({ value: 43 }) })
@@ -75,6 +83,8 @@ describe('diffing default values (GH #2385)', () => {
       dbName: 'mikro_orm_test_gh_2385',
       driver: MySqlDriver,
       port: 3308,
+      metadataProvider: TsMorphMetadataProvider,
+      metadataCache: { enabled: false },
     });
     await orm.schema.refreshDatabase();
     expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();

@@ -59,8 +59,28 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return prop.type;
   }
 
+  private cleanUpTypeTags(type: string): string {
+    const genericTags = [/Opt<(.*?)>/, /Hidden<(.*?)>/];
+    const intersectionTags = [
+      '{ __optional?: 1 | undefined; }',
+      '{ __hidden?: 1 | undefined; }',
+    ];
+
+    for (const tag of genericTags) {
+      type = type.replace(tag, '$1');
+    }
+
+    for (const tag of intersectionTags) {
+      type = type.replace(' & ' + tag, '');
+      type = type.replace(tag + ' & ', '');
+    }
+
+    return type;
+  }
+
   private initPropertyType(meta: EntityMetadata, prop: EntityProperty): void {
-    const { type, optional } = this.readTypeFromSource(meta, prop);
+    const { type: typeRaw, optional } = this.readTypeFromSource(meta, prop);
+    const type = this.cleanUpTypeTags(typeRaw);
     prop.type = type;
     prop.runtimeType = type as 'string';
 

@@ -24,7 +24,7 @@ import {
   Opt,
   Hidden,
   Embeddable,
-  Embedded,
+  Embedded, sql,
 } from '@mikro-orm/core';
 
 import { Book2 } from './Book2';
@@ -61,10 +61,10 @@ export class Author2 extends BaseEntity2 {
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
 
-  @Property({ length: 3, defaultRaw: 'current_timestamp(3)' })
+  @Property({ length: 3, default: sql.now(3) })
   createdAt: Opt<Date> = new Date();
 
-  @Property({ onUpdate: () => new Date(), length: 3, defaultRaw: 'current_timestamp(3)' })
+  @Property({ onUpdate: () => new Date(), length: 3, default: sql.now(3) })
   updatedAt: Opt<Date> = new Date();
 
   @Property()

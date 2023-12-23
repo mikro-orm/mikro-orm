@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import { Utils } from './Utils';
-import type { Dictionary, EntityKey, AnyString } from '../typings';
+import type { AnyString, Dictionary, EntityKey } from '../typings';
 
 export class RawQueryFragment {
 
@@ -178,4 +178,15 @@ export function sql(sql: readonly string[], ...values: unknown[]) {
   }, ''), values);
 }
 
+export function createSqlFunction<T extends object, R = string>(func: string, key: string | ((alias: string) => string)): R {
+  if (typeof key === 'string') {
+    return raw<T, R>(`${func}(${key})`);
+  }
+
+  return raw<T, R>(a => `${func}(${(key(a))})`);
+}
+
 sql.ref = <T extends object>(...keys: string[]) => raw<T, RawQueryFragment>('??', [keys.join('.')]);
+sql.now = (length?: number) => raw<Date, string>('current_timestamp' + (length == null ? '' : `(${length})`));
+sql.lower = <T extends object>(key: string | ((alias: string) => string)) => createSqlFunction('lower', key);
+sql.upper = <T extends object>(key: string | ((alias: string) => string)) => createSqlFunction('upper', key);

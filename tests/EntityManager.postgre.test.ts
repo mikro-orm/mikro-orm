@@ -1784,7 +1784,7 @@ describe('EntityManagerPostgre', () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
 
     const books1 = await orm.em.find(Book2, {
-      [raw('upper(title)')]: ['B1', 'B2'],
+      [sql.upper('title')]: ['B1', 'B2'],
       author: {
         [raw(a => `${a}.age::text`)]: { $ilike: '%2%' },
       },
@@ -1794,7 +1794,7 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
 
     const books2 = await orm.em.find(Book2, {
-      [raw('upper(title)')]: raw('upper(?)', ['b2']),
+      [sql.upper('title')]: raw('upper(?)', ['b2']),
     }, { populate: ['perex'] });
     expect(books2).toHaveLength(1);
     expect(mock.mock.calls[1][0]).toMatch(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and upper(title) = upper('b2')`);
@@ -1850,7 +1850,7 @@ describe('EntityManagerPostgre', () => {
     const ref2 = await orm.em.findOneOrFail(Author2, 2);
 
     const mock = mockLogger(orm, ['query', 'query-params']);
-    ref1.age = raw(`age * 2`);
+    ref1.age = sql`age * 2`;
     expect(() => ref1.age!++).toThrow();
     expect(() => ref2.age = ref1.age).toThrow();
     expect(() => JSON.stringify(ref1)).toThrow();

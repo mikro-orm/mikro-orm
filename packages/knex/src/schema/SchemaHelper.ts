@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import { BigIntType, EnumType, Utils, type Connection, type Dictionary } from '@mikro-orm/core';
+import { BigIntType, EnumType, Utils, type Connection, type Dictionary, RawQueryFragment } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 import type { CheckDef, Column, IndexDef, Table, TableDifference } from '../typings';
@@ -257,6 +257,12 @@ export abstract class SchemaHelper {
   normalizeDefaultValue(defaultValue: string, length?: number, defaultValues: Dictionary<string[]> = {}): string | number {
     if (defaultValue == null) {
       return defaultValue;
+    }
+
+    const raw = RawQueryFragment.getKnownFragment(defaultValue);
+
+    if (raw) {
+      return this.platform.formatQuery(raw.sql, raw.params);
     }
 
     const genericValue = defaultValue.replace(/\(\d+\)/, '(?)').toLowerCase();

@@ -7,7 +7,9 @@ import {
   PrimaryKey,
   Cascade,
   Ref,
-  PrimaryKeyProp, Primary,
+  PrimaryKeyProp,
+  Primary,
+  sql,
 } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
 import { randomUUID } from 'crypto';
@@ -21,7 +23,8 @@ export class Category {
   id!: string;
 
   @Property({
-    defaultRaw: 'CURRENT_TIMESTAMP',
+    length: 3,
+    default: sql.now(3),
   })
   createdAt?: Date;
 
@@ -41,7 +44,8 @@ export class Article {
   id!: string;
 
   @Property({
-    defaultRaw: 'CURRENT_TIMESTAMP',
+    length: 3,
+    default: sql.now(3),
   })
   createdAt?: Date;
 
@@ -67,7 +71,8 @@ export class ArticleAttribute {
   id!: string;
 
   @Property({
-    defaultRaw: 'CURRENT_TIMESTAMP',
+    length: 3,
+    default: sql.now(3),
   })
   createdAt?: Date;
 

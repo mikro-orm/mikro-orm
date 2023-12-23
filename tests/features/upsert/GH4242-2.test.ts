@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryKey, Property, Ref, Reference, SimpleLogger, Unique } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, Ref, Reference, SimpleLogger, sql, Unique } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers';
 
@@ -14,7 +14,7 @@ class B {
   @Property({ unique: true })
   order!: number;
 
-  @Property({ defaultRaw: 'current_timestamp', onUpdate: () => new Date() })
+  @Property({ default: sql.now(), onUpdate: () => new Date() })
   updatedAt: Date = new Date();
 
 }
@@ -29,7 +29,7 @@ class D {
   @Property()
   tenantWorkflowId!: number;
 
-  @Property({ defaultRaw: 'current_timestamp', onUpdate: () => new Date() })
+  @Property({ default: sql.now(), onUpdate: () => new Date() })
   updatedAt: Date = new Date();
 
   @Property({ nullable: true })
