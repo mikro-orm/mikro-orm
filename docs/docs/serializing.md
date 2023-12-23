@@ -153,6 +153,8 @@ Primary keys are automatically included. If you want to hide them, you have two 
 - use `hidden: true` in the property options
 - use `serialization: { includePrimaryKeys: false }` in the ORM config
 
+Unpopulated relations are serialized as foreign key values, e.g. `{ author: 1 }`, if you want to enforce objects, e.g. `{ author: { id: 1 } }`, use `serialization: { forceObject: false }` in your ORM config. 
+
 **This also works for embeddables, including nesting and object mode.**
 
 ## Explicit serialization
