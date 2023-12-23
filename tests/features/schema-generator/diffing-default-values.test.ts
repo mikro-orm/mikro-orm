@@ -16,12 +16,18 @@ class Foo {
   @Property({ default: 'test' })
   bar1!: string & Opt;
 
+  @Property({ default: 1 })
+  num!: number & Opt;
+
+  @Property({ default: true })
+  bool!: boolean & Opt;
+
 }
 
 @Entity()
 class Foo0 extends Foo {
 
-  @Property({ default: sql.now() })
+  @Property({ defaultRaw: sql.now() })
   bar2!: Opt<Date>;
 
   @Property({ default: sql.now(6), length: 6 })
