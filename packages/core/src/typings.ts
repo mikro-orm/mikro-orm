@@ -57,9 +57,25 @@ export const PrimaryKeyProp = Symbol('PrimaryKeyProp');
 export const OptionalProps = Symbol('OptionalProps');
 export const EagerProps = Symbol('EagerProps');
 export const HiddenProps = Symbol('HiddenProps');
+export const Config = Symbol('Config');
 
-export type Opt<T = unknown> = T & { __optional?: 1 };
-export type Hidden<T = unknown> = T & { __hidden?: 1 };
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __optional: unique symbol;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __hidden: unique symbol;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __config: unique symbol;
+
+export type Opt<T = unknown> = T & { [__optional]?: 1 };
+export type Hidden<T = unknown> = T & { [__hidden]?: 1 };
+export type DefineConfig<T extends TypeConfig> = T & { [__config]?: 1 };
+export type CleanTypeConfig<T> = Compute<Pick<T, Extract<keyof T, keyof TypeConfig>>>;
+
+export interface TypeConfig {
+  forceObject?: boolean;
+}
 
 export type UnwrapPrimary<T> = T extends Scalar
   ? T
@@ -322,27 +338,35 @@ export type Ref<T> = IsAny<T> extends true
     ? ScalarReference<T>
     : EntityRef<T & object>;
 
-type EntityDTONested<T> = T extends undefined | null ? T : EntityDTO<T>;
-export type EntityDTOProp<T> = T extends Scalar
+type ExtractHiddenProps<T> = (T extends { [HiddenProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Hidden ? K : never }[keyof T] & {});
+type ExcludeHidden<T, K extends keyof T> = K extends ExtractHiddenProps<T> ? never : K;
+type EntityDTONested<T, C extends TypeConfig> = T extends undefined | null ? T : EntityDTO<T, C>;
+type ExtractConfig<T> = T extends { [Config]?: infer K } ? (K & TypeConfig) : TypeConfig;
+type PreferExplicitConfig<E, I> = IsNever<E, I, E>;
+type PrimaryOrObject<T, U, C extends TypeConfig> =
+  PreferExplicitConfig<C, ExtractConfig<T>>['forceObject'] extends true
+    ? { [K in PrimaryProperty<U> & keyof U]: U[K] }
+    : Primary<U>;
+
+export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
   ? T
   : T extends LoadedReference<infer U>
-    ? EntityDTONested<U>
+    ? EntityDTONested<U, C>
     : T extends Reference<infer U>
-      ? Primary<U>
+      ? PrimaryOrObject<E, U, C>
       : T extends ScalarReference<infer U>
         ? U
         : T extends { getItems(check?: boolean): infer U }
-          ? (U extends readonly (infer V)[] ? EntityDTONested<V>[] : EntityDTONested<U>)
+          ? (U extends readonly (infer V)[] ? EntityDTONested<V, C>[] : EntityDTONested<U, C>)
           : T extends { $: infer U }
-            ? (U extends readonly (infer V)[] ? EntityDTONested<V>[] : EntityDTONested<U>)
+            ? (U extends readonly (infer V)[] ? EntityDTONested<V, C>[] : EntityDTONested<U, C>)
             : T extends readonly (infer U)[]
               ? (T extends readonly [infer U, ...infer V] ? T : U[])
               : T extends Relation<T>
-                ? EntityDTONested<T>
+                ? EntityDTONested<T, C>
                 : T;
-type ExtractHiddenProps<T> = (T extends { [HiddenProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Hidden ? K : never }[keyof T] & {});
-type ExcludeHidden<T, K extends keyof T> = K extends ExtractHiddenProps<T> ? never : K;
-export type EntityDTO<T> = { [K in EntityKey<T> as ExcludeHidden<T, K>]: EntityDTOProp<T[K]> };
+
+export type EntityDTO<T, C extends TypeConfig = never> = { [K in EntityKey<T> as ExcludeHidden<T, K>]: EntityDTOProp<T, T[K], C> };
 
 export type CheckCallback<T> = (columns: Record<keyof T, string>) => string;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;

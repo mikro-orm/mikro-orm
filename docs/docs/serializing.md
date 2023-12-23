@@ -148,14 +148,39 @@ const dto = wrap(user).toObject();
 // `{ id: 1, books: [{ id: 2, publisher: { id: 3, name: '...' } }] }`
 ```
 
+**This also works for embeddables, including nesting and object mode.**
+
 Primary keys are automatically included. If you want to hide them, you have two options:
 
 - use `hidden: true` in the property options
 - use `serialization: { includePrimaryKeys: false }` in the ORM config
 
-Unpopulated relations are serialized as foreign key values, e.g. `{ author: 1 }`, if you want to enforce objects, e.g. `{ author: { id: 1 } }`, use `serialization: { forceObject: false }` in your ORM config. 
+### Foreign keys are `forceObject`
 
-**This also works for embeddables, including nesting and object mode.**
+Unpopulated relations are serialized as foreign key values, e.g. `{ author: 1 }`, if you want to enforce objects, e.g. `{ author: { id: 1 } }`, use `serialization: { forceObject: false }` in your ORM config.
+
+For strict typings to respect the global config option, you need to define it on your entity class via `Config` symbol:
+
+```ts
+import { Config, Entity, ManyToOne, PrimaryKey, Ref, wrap } from '@mikro-orm/core';
+
+@Entity()
+class Book {
+
+  [Config]?: DefineConfig<{ forceObject: true }>;
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => User, { ref: true })
+  author!: Ref<User>;
+
+}
+
+const book = await em.findOneOrFail(Book, 1);
+const dto = wrap(book).toObject();
+const identityId = dto.author.id; // without the Config symbol, `dto.identity` would resolve to number
+```
 
 ## Explicit serialization
 

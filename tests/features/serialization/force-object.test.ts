@@ -1,11 +1,17 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property, Ref, Config, DefineConfig, wrap } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 
-@Entity()
-class User {
+class BaseEntity {
+
+  [Config]?: DefineConfig<{ forceObject: true }>;
 
   @PrimaryKey()
   id!: number;
+
+}
+
+@Entity()
+class User extends BaseEntity {
 
   @Property()
   name!: string;
@@ -22,10 +28,7 @@ class User {
 }
 
 @Entity()
-class Shop {
-
-  @PrimaryKey()
-  id!: number;
+class Shop extends BaseEntity {
 
   @Property()
   name!: string;
@@ -33,25 +36,22 @@ class Shop {
   @OneToMany(() => Product, product => product.shop)
   products = new Collection<Product>(this);
 
-  @ManyToOne(() => User)
-  owner!: User;
+  @ManyToOne(() => User, { ref: true })
+  owner!: Ref<User>;
 
 }
 
 @Entity()
-export class Product {
-
-  @PrimaryKey()
-  id!: number;
+class Product extends BaseEntity {
 
   @Property()
   name!: string;
 
-  @ManyToOne(() => Shop)
-  shop!: Shop;
+  @ManyToOne(() => Shop, { ref: true })
+  shop!: Ref<Shop>;
 
-  @ManyToOne(() => User)
-  owner!: User;
+  @ManyToOne(() => User, { ref: true })
+  owner!: Ref<User>;
 
 }
 
@@ -100,7 +100,8 @@ test('serialization works based on populate hint', async () => {
     populate: ['products', 'owner'],
   });
 
-  expect(wrap(shop).toObject()).toEqual({
+  const dto = wrap(shop).toObject();
+  expect(dto).toEqual({
     id: 1,
     name: 'shop-1',
     products: [
@@ -109,6 +110,8 @@ test('serialization works based on populate hint', async () => {
     ],
     owner: { id: 1, name: 's1', email: 'sp-1@yopmail.com' },
   });
+  const shopId = dto.products[0].shop.id;
+  expect(shopId).toBe(1);
 
   wrap(shop.owner).populated(false);
   expect(wrap(shop).toObject()).toEqual({

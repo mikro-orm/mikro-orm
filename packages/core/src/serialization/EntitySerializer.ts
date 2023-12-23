@@ -2,6 +2,7 @@ import type { Collection } from '../entity/Collection';
 import type {
   ArrayElement,
   AutoPath,
+  CleanTypeConfig,
   Dictionary,
   EntityDTO,
   EntityDTOProp,
@@ -11,6 +12,8 @@ import type {
   FromEntityType,
   IPrimaryKey,
   Loaded,
+  TypeConfig,
+  UnboxArray,
 } from '../typings';
 import { helper } from '../entity/wrap';
 import type { Platform } from '../platforms';
@@ -93,7 +96,7 @@ export class EntitySerializer {
         return [prop, val] as const;
       })
       .filter(([, value]) => typeof value !== 'undefined' && !(value === null && options.skipNull))
-      .forEach(([prop, value]) => ret[this.propertyName(meta, prop!, wrapped.__platform)] = value as EntityDTOProp<EntityValue<T>>);
+      .forEach(([prop, value]) => ret[this.propertyName(meta, prop!, wrapped.__platform)] = value as EntityDTOProp<T, EntityValue<T>>);
 
     if (contextCreated) {
       root.close();
@@ -256,7 +259,7 @@ export interface SerializeOptions<T, P extends string = never, E extends string 
 /**
  * Converts entity instance to POJO, converting the `Collection`s to arrays and unwrapping the `Reference` wrapper, while respecting the serialization options.
  * This method accepts either a single entity or an array of entities, and returns the corresponding POJO or an array of POJO.
- * To serialize single entity, you can also use `wrap(entity).serialize()` which handles a single entity only.
+ * To serialize a single entity, you can also use `wrap(entity).serialize()` which handles a single entity only.
  *
  * ```ts
  * const dtos = serialize([user1, user, ...], { exclude: ['id', 'email'], forceObject: true });
@@ -270,12 +273,13 @@ export function serialize<
   Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
   Populate extends string = never,
   Exclude extends string = never,
->(entity: Entity, options?: SerializeOptions<Entity extends object[] ? ArrayElement<Entity> : Entity, Populate, Exclude>): Naked extends object[] ? EntityDTO<Loaded<ArrayElement<Naked>, Populate>>[] : EntityDTO<Loaded<Naked, Populate>>;
+  Config extends TypeConfig = never,
+>(entity: Entity, options?: Config & SerializeOptions<UnboxArray<Entity>, Populate, Exclude>): Naked extends object[] ? EntityDTO<Loaded<ArrayElement<Naked>, Populate>, CleanTypeConfig<Config>>[] : EntityDTO<Loaded<Naked, Populate>, CleanTypeConfig<Config>>;
 
 /**
  * Converts entity instance to POJO, converting the `Collection`s to arrays and unwrapping the `Reference` wrapper, while respecting the serialization options.
  * This method accepts either a single entity or an array of entities, and returns the corresponding POJO or an array of POJO.
- * To serialize single entity, you can also use `wrap(entity).serialize()` which handles a single entity only.
+ * To serialize a single entity, you can also use `wrap(entity).serialize()` which handles a single entity only.
  *
  * ```ts
  * const dtos = serialize([user1, user, ...], { exclude: ['id', 'email'], forceObject: true });
@@ -289,7 +293,8 @@ export function serialize<
   Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
   Populate extends string = never,
   Exclude extends string = never,
->(entities: Entity | Entity[], options?: SerializeOptions<Entity, Populate, Exclude>): EntityDTO<Loaded<Naked, Populate>> | EntityDTO<Loaded<Naked, Populate>>[] {
+  Config extends TypeConfig = never,
+>(entities: Entity | Entity[], options?: SerializeOptions<Entity, Populate, Exclude>): EntityDTO<Loaded<Naked, Populate>, CleanTypeConfig<Config>> | EntityDTO<Loaded<Naked, Populate>, CleanTypeConfig<Config>>[] {
   if (Array.isArray(entities)) {
     return entities.map(e => EntitySerializer.serialize(e, options)) as any;
   }
