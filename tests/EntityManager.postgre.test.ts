@@ -650,8 +650,9 @@ describe('EntityManagerPostgre', () => {
     await orm.em.fork().persistAndFlush(bar);
 
     const mock = mockLogger(orm, ['query', 'query-params']);
-
-    const em = orm.em.fork({ loggerContext: { label: 'foo', bar: 123 } });
+    const em = orm.em.fork({ loggerContext: { label: 'foo', bar: 1 } });
+    em.setLoggerContext({ label: 'foo', bar: 123 });
+    expect(em.getLoggerContext()).toEqual({ label: 'foo', bar: 123 });
     const logSpy = jest.spyOn(DefaultLogger.prototype, 'log');
     const b0 = await em.findOneOrFail(FooBar2, bar, {
       logging: { label: 'foo 123' },

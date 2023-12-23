@@ -7,7 +7,7 @@ import {
   OneToMany,
   Ref, OptionalProps,
 } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {

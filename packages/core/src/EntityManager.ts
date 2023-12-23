@@ -87,7 +87,6 @@ import { EventManager, type FlushEventArgs, TransactionEventBroadcaster } from '
 import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
 import type { CacheAdapter } from './cache/CacheAdapter';
-import type { LogContext, LoggingOptions } from './logging';
 
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
@@ -111,7 +110,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly resultCache: CacheAdapter;
   private filters: Dictionary<FilterDef> = {};
   private filterParams: Dictionary<Dictionary> = {};
-  protected loggerContext?: LoggingOptions;
+  protected loggerContext?: Dictionary;
   private transactionContext?: Transaction;
   private disableTransactions: boolean;
   private flushMode?: FlushMode;
@@ -351,6 +350,23 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getFilterParams<T extends Dictionary = Dictionary>(name: string): T {
     return this.getContext().filterParams[name] as T;
+  }
+
+  /**
+   * Sets logger context for this entity manager.
+   */
+  setLoggerContext(context: Dictionary): void {
+    this.getContext().loggerContext = context;
+  }
+
+  /**
+   * Gets logger context for this entity manager.
+   */
+  getLoggerContext<T extends Dictionary = Dictionary>(): T {
+    const em = this.getContext();
+    em.loggerContext ??= {};
+
+    return em.loggerContext as T;
   }
 
   setFlushMode(flushMode?: FlushMode): void {
@@ -2249,5 +2265,5 @@ export interface ForkOptions {
   /** default schema to use for this fork */
   schema?: string;
   /** default logger context, can be overridden via {@apilink FindOptions} */
-  loggerContext?: LogContext;
+  loggerContext?: Dictionary;
 }

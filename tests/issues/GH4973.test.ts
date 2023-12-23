@@ -39,7 +39,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [User, Book],
-    dbName: ':memory:',
+    dbName: '4973',
   });
   await orm.schema.refreshDatabase();
 });
