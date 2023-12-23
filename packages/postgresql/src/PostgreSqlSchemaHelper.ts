@@ -395,8 +395,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override normalizeDefaultValue(defaultValue: string, length: number) {
-    if (!defaultValue) {
-      return defaultValue;
+    if (!defaultValue || typeof defaultValue as unknown !== 'string') {
+      return super.normalizeDefaultValue(defaultValue, length, PostgreSqlSchemaHelper.DEFAULT_VALUES);
     }
 
     const match = defaultValue.match(/^'(.*)'::(.*)$/);

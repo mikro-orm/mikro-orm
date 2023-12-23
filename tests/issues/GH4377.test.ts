@@ -1,4 +1,4 @@
-import { Cascade, Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { Cascade, Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref, sql } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
 import { randomUUID } from 'crypto';
 
@@ -25,9 +25,7 @@ class Root {
   @PrimaryKey()
   id!: string;
 
-  @Property({
-    defaultRaw: 'CURRENT_TIMESTAMP',
-  })
+  @Property({ default: sql.now() })
   createdAt?: Date;
 
   @OneToOne(() => NonRoot, nonRoot => nonRoot.root, {

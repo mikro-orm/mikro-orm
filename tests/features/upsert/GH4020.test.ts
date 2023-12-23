@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, SimpleLogger, sql } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
@@ -11,7 +11,7 @@ export class GuildEntity {
   @Property()
   name!: string;
 
-  @Property({ defaultRaw: 'current_timestamp', index: true })
+  @Property({ default: sql.now(), index: true })
   created_at: Date = new Date();
 
 }

@@ -1,4 +1,4 @@
-import { BigIntType, Collection, EntitySchema, Ref } from '@mikro-orm/core';
+import { BigIntType, Collection, EntitySchema, Ref, sql } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/postgresql';
 
 class ProductEntity {
@@ -90,12 +90,12 @@ const companyProductsSchema = new EntitySchema({
     createdAt: {
       type: 'timestamp',
       onCreate: () => new Date(),
-      defaultRaw: 'current_timestamp',
+      default: sql.now(),
     },
     updatedAt: {
       type: 'timestamp',
       onUpdate: () => new Date(),
-      defaultRaw: 'current_timestamp',
+      default: sql.now(),
     },
   },
 });

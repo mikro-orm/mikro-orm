@@ -21,9 +21,19 @@ import { EntitySchema } from './EntitySchema';
 import { Cascade, type EventType, ReferenceKind } from '../enums';
 import { MetadataError } from '../errors';
 import type { Platform } from '../platforms';
-import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, t, Type, Uint8ArrayType } from '../types';
+import {
+  ArrayType,
+  BigIntType,
+  BlobType,
+  EnumArrayType,
+  JsonType,
+  t,
+  Type,
+  Uint8ArrayType,
+  UnknownType,
+} from '../types';
 import { colors } from '../logging/colors';
-import { raw } from '../utils/RawQueryFragment';
+import { raw, RawQueryFragment } from '../utils/RawQueryFragment';
 import type { Logger } from '../logging/Logger';
 
 export class MetadataDiscovery {
@@ -126,6 +136,8 @@ export class MetadataDiscovery {
 
     for (const meta of filtered) {
       for (const prop of Object.values(meta.properties)) {
+        this.initDefaultValue(prop);
+        this.inferTypeFromDefault(prop);
         this.initColumnType(prop);
       }
     }
@@ -385,6 +397,17 @@ export class MetadataDiscovery {
           .forEach(k => delete (prop as Dictionary)[k]);
       });
 
+    copy.props
+      .filter(prop => prop.default)
+      .forEach(prop => {
+        const raw = RawQueryFragment.getKnownFragment(prop.default as string);
+
+        if (raw) {
+          prop.defaultRaw ??= this.platform.formatQuery(raw.sql, raw.params);
+          delete prop.default;
+        }
+      });
+
     ([
       'prototype', 'props', 'referencingProperties', 'propertyOrder', 'relations',
       'concurrencyCheckKeys', 'checks',
@@ -558,6 +581,7 @@ export class MetadataDiscovery {
       this.initNullability(prop);
       this.applyNamingStrategy(meta, prop);
       this.initDefaultValue(prop);
+      this.inferTypeFromDefault(prop);
       this.initVersionProperty(meta, prop);
       this.initCustomType(meta, prop);
       this.initColumnType(prop);
@@ -1137,6 +1161,7 @@ export class MetadataDiscovery {
       const entity1 = new (meta.class as Constructor<any>)();
       const entity2 = new (meta.class as Constructor<any>)();
 
+
       // we compare the two values by reference, this will discard things like `new Date()` or `Date.now()`
       if (this.config.get('discovery').inferDefaultValues && prop.default === undefined && entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name] && entity1[prop.name] !== now) {
         prop.default ??= entity1[prop.name];
@@ -1162,12 +1187,34 @@ export class MetadataDiscovery {
     }
 
     let val = prop.default;
+    const raw = RawQueryFragment.getKnownFragment(val as string);
+
+    if (raw) {
+      prop.defaultRaw = this.platform.formatQuery(raw.sql, raw.params);
+      return;
+    }
 
     if (prop.customType instanceof ArrayType && Array.isArray(prop.default)) {
       val = prop.customType.convertToDatabaseValue(prop.default, this.platform)!;
     }
 
     prop.defaultRaw = typeof val === 'string' ? `'${val}'` : '' + val;
+  }
+
+  private inferTypeFromDefault(prop: EntityProperty): void {
+    if ((prop.defaultRaw == null && prop.default == null) || prop.type !== 'any') {
+      return;
+    }
+
+    switch (typeof prop.default) {
+      case 'string': prop.type = prop.runtimeType = 'string'; break;
+      case 'number': prop.type = prop.runtimeType = 'number'; break;
+      case 'boolean': prop.type = prop.runtimeType = 'boolean'; break;
+    }
+
+    if (prop.defaultRaw?.startsWith('current_timestamp')) {
+      prop.type = prop.runtimeType = 'Date';
+    }
   }
 
   private initVersionProperty(meta: EntityMetadata, prop: EntityProperty): void {
@@ -1265,7 +1312,7 @@ export class MetadataDiscovery {
       }
     }
 
-    if (prop.kind === ReferenceKind.SCALAR) {
+    if (prop.kind === ReferenceKind.SCALAR && !(mappedType instanceof UnknownType)) {
       prop.columnTypes ??= [mappedType.getColumnType(prop, this.platform)];
 
       // use only custom types provided by user, we don't need to use the ones provided by ORM,

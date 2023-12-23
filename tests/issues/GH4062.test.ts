@@ -1,4 +1,18 @@
-import { MikroORM, Cascade, Collection, Entity, EntityData, ManyToOne, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Ref, SimpleLogger } from '@mikro-orm/mysql';
+import {
+  MikroORM,
+  Cascade,
+  Collection,
+  Entity,
+  EntityData,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  PrimaryKeyProp,
+  Property,
+  Ref,
+  SimpleLogger,
+  sql,
+} from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -13,7 +27,7 @@ class Category {
   })
   articles = new Collection<Article>(this);
 
-  @Property({ defaultRaw: 'CURRENT_TIMESTAMP' })
+  @Property({ default: sql.now() })
   createdAt?: Date;
 
 }
@@ -39,7 +53,7 @@ class Article {
   attributes = new Collection<ArticleAttribute>(this);
 
   @Property({
-    defaultRaw: 'CURRENT_TIMESTAMP',
+    default: sql.now(),
   })
   createdAt?: Date;
 
@@ -63,7 +77,7 @@ class ArticleAttribute {
   [PrimaryKeyProp]?: ['id', ['id', 'category']];
 
   @Property({
-    defaultRaw: 'CURRENT_TIMESTAMP',
+    default: sql.now(),
   })
   createdAt?: Date;
 

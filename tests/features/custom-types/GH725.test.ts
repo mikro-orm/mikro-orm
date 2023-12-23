@@ -1,4 +1,4 @@
-import { EntitySchema, MikroORM, Type, ValidationError } from '@mikro-orm/core';
+import { EntitySchema, MikroORM, sql, Type, ValidationError } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -18,10 +18,6 @@ export class DateTime {
 }
 
 type Maybe<T> = T | null | undefined;
-
-export type TimestampTypeOptions = {
-  hasTimeZone: boolean;
-};
 
 export class DateTimeType extends Type<Maybe<DateTime>, Maybe<Date>> {
 
@@ -79,7 +75,7 @@ export const TestSchema = new EntitySchema<Test>({
       defaultRaw: 'uuid_generate_v4()',
     },
     createdAt: {
-      defaultRaw: 'now()',
+      default: sql.now(),
       type: DateTimeType,
     },
     updatedAt: {

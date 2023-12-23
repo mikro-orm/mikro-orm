@@ -1,6 +1,7 @@
 import type { Knex } from 'knex';
 import { inspect } from 'util';
 import {
+  ALIAS_REPLACEMENT,
   ALIAS_REPLACEMENT_RE,
   type Dictionary,
   type EntityData,
@@ -260,11 +261,11 @@ export class QueryBuilderHelper {
         join.cond[`${alias}.${typeProperty}`] = join.prop.targetMeta!.discriminatorValue;
       }
 
-      Object.keys(join.cond).forEach(key => {
-        const needsPrefix = key.includes('.') || Utils.isOperator(key) || RawQueryFragment.isKnownFragment(key);
-        const newKey = needsPrefix ? key : `${join.alias}.${key}`;
-        conditions.push(this.processJoinClause(newKey, join.cond[key], params));
-      });
+      for (const key of Object.keys(join.cond)) {
+        const hasPrefix = key.includes('.') || Utils.isOperator(key) || RawQueryFragment.isKnownFragment(key);
+        const newKey = hasPrefix ? key : `${join.alias}.${key}`;
+        conditions.push(this.processJoinClause(newKey, join.cond[key], join.alias, params));
+      }
 
       let sql = method + ' ';
 
@@ -284,10 +285,10 @@ export class QueryBuilderHelper {
     });
   }
 
-  private processJoinClause(key: string, value: unknown, params: Knex.Value[], operator = '$eq'): string {
+  private processJoinClause(key: string, value: unknown, alias: string, params: Knex.Value[], operator = '$eq'): string {
     if (Utils.isGroupOperator(key) && Array.isArray(value)) {
       const parts = value.map(sub => {
-        return this.wrapQueryGroup(Object.keys(sub).map(k => this.processJoinClause(k, sub[k], params)));
+        return this.wrapQueryGroup(Object.keys(sub).map(k => this.processJoinClause(k, sub[k], alias, params)));
       });
       return this.wrapQueryGroup(parts, key);
     }
@@ -302,13 +303,13 @@ export class QueryBuilderHelper {
     }
 
     if (Utils.isOperator(key, false) && Utils.isPlainObject(value)) {
-      const parts = Object.keys(value).map(k => this.processJoinClause(k, (value as Dictionary)[k], params, key));
+      const parts = Object.keys(value).map(k => this.processJoinClause(k, (value as Dictionary)[k], alias, params, key));
 
       return key === '$not' ? `not ${this.wrapQueryGroup(parts)}` : this.wrapQueryGroup(parts);
     }
 
     if (Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k, false))) {
-      const parts = Object.keys(value).map(op => this.processJoinClause(key, (value as Dictionary)[op], params, op));
+      const parts = Object.keys(value).map(op => this.processJoinClause(key, (value as Dictionary)[op], alias, params, op));
 
       return this.wrapQueryGroup(parts);
     }
@@ -345,7 +346,7 @@ export class QueryBuilderHelper {
     const rawField = RawQueryFragment.getKnownFragment(key);
 
     if (rawField) {
-      let sql = rawField.sql;
+      let sql = rawField.sql.replaceAll(ALIAS_REPLACEMENT, alias);
       params.push(...rawField.params as Knex.Value[]);
       params.push(...Utils.asArray(value) as Knex.Value[]);
 
