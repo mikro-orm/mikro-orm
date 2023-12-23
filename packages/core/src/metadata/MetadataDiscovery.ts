@@ -642,6 +642,7 @@ export class MetadataDiscovery {
     } else if (fks.length >= 2) {
       [first, second] = fks;
     } else {
+      /* istanbul ignore next */
       return [];
     }
 
@@ -1151,6 +1152,7 @@ export class MetadataDiscovery {
   }
 
   private inferDefaultValue(meta: EntityMetadata, prop: EntityProperty): void {
+    /* istanbul ignore next */
     if (!meta.class) {
       return;
     }
@@ -1242,7 +1244,7 @@ export class MetadataDiscovery {
       prop.type = prop.customType.constructor.name;
     }
 
-    if (!prop.customType && ['json', 'jsonb'].includes(prop.type)) {
+    if (!prop.customType && ['json', 'jsonb'].includes(prop.type?.toLowerCase())) {
       prop.customType = new JsonType();
     }
 
@@ -1260,15 +1262,15 @@ export class MetadataDiscovery {
     }
 
     // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
-    if (!prop.customType && (prop.type === 'array' || prop.type?.toString().endsWith('[]'))) {
+    if (!prop.customType && (prop.type?.toLowerCase() === 'array' || prop.type?.toString().endsWith('[]'))) {
       prop.customType = new ArrayType();
     }
 
-    if (!prop.customType && prop.type === 'Buffer') {
+    if (!prop.customType && prop.type?.toLowerCase() === 'buffer') {
       prop.customType = new BlobType();
     }
 
-    if (!prop.customType && prop.type === 'Uint8Array') {
+    if (!prop.customType && prop.type?.toLowerCase() === 'uint8array') {
       prop.customType = new Uint8ArrayType();
     }
 

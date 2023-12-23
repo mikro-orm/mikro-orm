@@ -780,6 +780,7 @@ export class DatabaseTable {
         return [prop.replace(root, meta.properties[root].fieldNames[0])];
       }
 
+      /* istanbul ignore next */
       return [prop];
     })));
 
