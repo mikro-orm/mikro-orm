@@ -1818,6 +1818,13 @@ describe('EntityManagerPostgre', () => {
       // @ts-expect-error
       ['1 = 1 union select * from author2; --']: 1,
     })).rejects.toThrow('Trying to query by not existing property Author2.1 = 1 union select * from author2; --');
+
+    await expect(orm.em.findAll(Author2, {
+      orderBy: {
+        // @ts-expect-error
+        ['1; drop table author2 --']: 1,
+      },
+    })).rejects.toThrow('Trying to order by not existing property Author2.1; drop table author2 --');
   });
 
   test('insert with raw sql fragment', async () => {

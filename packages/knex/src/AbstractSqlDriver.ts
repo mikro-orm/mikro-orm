@@ -1256,6 +1256,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       for (const propName of Utils.keys(orderHint)) {
         const prop = meta.properties[propName];
+
+        if (!prop) {
+          throw new Error(`Trying to order by not existing property ${meta.className}.${propName}`);
+        }
+
         const meta2 = this.metadata.find<T>(prop.type)!;
         const childOrder = orderHint[prop.name] as Dictionary;
         let path = `${parentPath}.${propName}`;
