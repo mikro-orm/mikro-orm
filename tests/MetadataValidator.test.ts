@@ -101,6 +101,9 @@ describe('MetadataValidator', () => {
     meta.Bar.properties.foo = { name: 'foo', kind: ReferenceKind.ONE_TO_ONE, type: 'Foo', inversedBy: 'bar' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Foo', options)).toThrow(`Both Foo.bar and Bar.foo are defined as owning sides, use 'mappedBy' on one of them`);
 
+    meta.Bar.properties.foo = { name: 'foo', kind: ReferenceKind.ONE_TO_ONE, type: 'Foo', mappedBy: 'bar', owner: true };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Foo', options)).toThrow(`Both Foo.bar and Bar.foo are defined as owning sides, use 'mappedBy' on one of them`);
+
     // one to one mappedBy
     meta.Foo.properties.bar = { name: 'bar', kind: ReferenceKind.ONE_TO_ONE, type: 'Bar', mappedBy: 'bar' };
     meta.Bar = { name: 'Bar', className: 'Bar', properties: {} };

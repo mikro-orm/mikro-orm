@@ -164,7 +164,7 @@ export class MetadataValidator {
     }
 
     // inverse side is not defined as owner
-    if (inverse.inversedBy) {
+    if (inverse.inversedBy || inverse.owner) {
       throw MetadataError.fromWrongOwnership(meta, prop, 'inversedBy');
     }
   }
