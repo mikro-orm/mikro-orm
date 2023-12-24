@@ -19,7 +19,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Features
 
 * **core:** add `FindOptions.exclude` ([#5024](https://github.com/mikro-orm/mikro-orm/issues/5024)) ([fe239cf](https://github.com/mikro-orm/mikro-orm/commit/fe239cf1c273af0e0128b38b7bd6d47064081194))
-* **core:** add `Hidden`type as an alternative to `HiddenProps` symbol ([#5009](https://github.com/mikro-orm/mikro-orm/issues/5009)) ([c047bb1](https://github.com/mikro-orm/mikro-orm/commit/c047bb1e702a1a59fb6bf5efff26cbb41c2b6cdc))
+* **core:** add `Hidden` type as an alternative to `HiddenProps` symbol ([#5009](https://github.com/mikro-orm/mikro-orm/issues/5009)) ([c047bb1](https://github.com/mikro-orm/mikro-orm/commit/c047bb1e702a1a59fb6bf5efff26cbb41c2b6cdc))
 * **core:** allow all `CountOptions` in `Collection.loadCount()` ([25d1851](https://github.com/mikro-orm/mikro-orm/commit/25d18512d44ca1d57514d6df235db650045253a7))
 * **core:** allow configuring filters in `Reference.load()` and `Collection.load()` ([#5025](https://github.com/mikro-orm/mikro-orm/issues/5025)) ([06012f7](https://github.com/mikro-orm/mikro-orm/commit/06012f79f06d1f7378da1c5083d17c20ebf0839a)), closes [#4975](https://github.com/mikro-orm/mikro-orm/issues/4975)
 * **core:** allow setting logger context on EM level ([#5023](https://github.com/mikro-orm/mikro-orm/issues/5023)) ([7e56104](https://github.com/mikro-orm/mikro-orm/commit/7e5610400ba30623f31c56ffd480de1bbe37b9c6)), closes [#5022](https://github.com/mikro-orm/mikro-orm/issues/5022)
