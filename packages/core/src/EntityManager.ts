@@ -210,7 +210,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = this.getContext();
-    this.prepareOptions(options, em);
+    em.prepareOptions(options);
     await em.tryFlush(entityName, options);
     entityName = Utils.className(entityName);
     where = await em.processWhere(entityName, where, options, 'read') as FilterQuery<Entity>;
@@ -690,7 +690,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const em = this.getContext();
     entityName = Utils.className(entityName);
-    this.prepareOptions(options, em);
+    em.prepareOptions(options);
     let entity = em.unitOfWork.tryGetById<Entity>(entityName, where, options.schema);
 
     // query for a not managed entity which is already in the identity map as it
@@ -816,7 +816,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async upsert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | Entity, options: UpsertOptions<Entity> = {}): Promise<Entity> {
     const em = this.getContext(false);
-    this.prepareOptions(options, em);
+    em.prepareOptions(options);
 
     let entityName: EntityName<Entity>;
     let where: FilterQuery<Entity>;
@@ -954,7 +954,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async upsertMany<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity[], data?: (EntityData<Entity> | Entity)[], options: UpsertManyOptions<Entity> = {}): Promise<Entity[]> {
     const em = this.getContext(false);
-    this.prepareOptions(options, em);
+    em.prepareOptions(options);
 
     let entityName: string;
     let propIndex: number;
@@ -1293,7 +1293,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async insert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: RequiredEntityData<Entity> | Entity, options: NativeInsertUpdateOptions<Entity> = {}): Promise<Primary<Entity>> {
     const em = this.getContext(false);
-    this.prepareOptions(options, em);
+    em.prepareOptions(options);
 
     let entityName;
 
@@ -1336,7 +1336,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async insertMany<Entity extends object>(entityNameOrEntities: EntityName<Entity> | Entity[], data?: RequiredEntityData<Entity>[] | Entity[], options: NativeInsertUpdateOptions<Entity> = {}): Promise<Primary<Entity>[]> {
     const em = this.getContext(false);
-    this.prepareOptions(options, em);
+    em.prepareOptions(options);
 
     let entityName;
 
@@ -1386,7 +1386,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async nativeUpdate<Entity extends object>(entityName: EntityName<Entity>, where: FilterQuery<Entity>, data: EntityData<Entity>, options: UpdateOptions<Entity> = {}): Promise<number> {
     const em = this.getContext(false);
-    this.prepareOptions(options, em);
+    em.prepareOptions(options);
 
     entityName = Utils.className(entityName);
     data = QueryHelper.processObjectParams(data);
@@ -1403,7 +1403,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async nativeDelete<Entity extends object>(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: DeleteOptions<Entity> = {}): Promise<number> {
     const em = this.getContext(false);
-    this.prepareOptions(options, em);
+    em.prepareOptions(options);
 
     entityName = Utils.className(entityName);
     where = await em.processWhere(entityName, where, options, 'delete');
@@ -1777,7 +1777,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = this.getContext();
-    this.prepareOptions(options, em);
+    em.prepareOptions(options);
     const entityName = (arr[0] as Dictionary).constructor.name;
     const preparedPopulate = em.preparePopulate<Entity>(entityName, { populate: populate as any }, options.validate);
     await em.entityLoader.populate(entityName, arr, preparedPopulate, options as EntityLoaderOptions<Entity>);
@@ -2096,15 +2096,15 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return !!options.populate;
   }
 
-  protected prepareOptions(options: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any>, em: this): void {
+  protected prepareOptions(options: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any>): void {
     if (!Utils.isEmpty(options.fields) && !Utils.isEmpty(options.exclude)) {
       throw new ValidationError(`Cannot combine 'fields' and 'exclude' option.`);
     }
 
-    options.schema ??= em._schema;
+    options.schema ??= this._schema;
     options.logging = Utils.merge(
       { id: this.id },
-      em.loggerContext,
+      this.loggerContext,
       options.loggerContext,
       options.logging,
     );

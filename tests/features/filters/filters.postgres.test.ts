@@ -238,7 +238,7 @@ describe('filters [postgres]', () => {
     expect(mock.mock.calls[0][0]).toMatch(`select "b0".* from "benefit_detail" as "b0" where "b0"."active" = $1`);
     expect(details[0].benefit.isInitialized()).toBe(false);
     await expect(details[0].benefit.load()).resolves.toBe(null);
-    await expect(details[0].benefit.loadOrFail()).rejects.toThrowError('Benefit not found (1)');
+    await expect(details[0].benefit.loadOrFail()).rejects.toThrow('Benefit not found (1)');
     await expect(details[0].benefit.load({ filters: false })).resolves.toMatchObject({
       id: 1,
       name: 'b1',
