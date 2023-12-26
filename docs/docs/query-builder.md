@@ -224,8 +224,8 @@ select `a`.*,
     from `book` as `b`
     order by `b`.`title` asc
     limit 1
-  ) as `b` on `b`.`author_id` = `a`.`id` 
-  left join `book_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book_uuid_pk` 
+  ) as `b` on `b`.`author_id` = `a`.`id`
+  left join `book_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book_uuid_pk`
   left join `book_tag` as `t` on `e1`.`book_tag_id` = `t`.`id`
 ```
 

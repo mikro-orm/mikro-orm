@@ -367,7 +367,7 @@ export class Article extends BaseEntity {
   description: Opt<string>; // can be used via generics too
 
   // ...
-  
+
 }
 ```
 
@@ -470,7 +470,7 @@ What about the password? Seeing the logger `Article` entity with populated `auth
 For now, let's use `sha256` algorithm which we can create synchronously, and hash the value inside the constructor:
 
 ```ts title='user.entity.ts'
-import crypto from 'crypto'; 
+import crypto from 'crypto';
 
 @Entity()
 export class User extends BaseEntity<'bio'> {

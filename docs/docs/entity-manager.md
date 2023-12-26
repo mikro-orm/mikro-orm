@@ -262,7 +262,7 @@ console.log(author.email); // undefined
 This works also for nested relations:
 
 ```ts
-const author = await em.findOne(Author, '...', { 
+const author = await em.findOne(Author, '...', {
   fields: ['name', 'books.title', 'books.author', 'books.price'],
 });
 ```
@@ -279,7 +279,7 @@ const author = await em.findOne(Author, '...', {
 > The Same problem can occur in mongo with M:N collections—those are stored as array property on the owning entity, so you need to make sure to mark such properties too.
 
 ```ts
-const author = await em.findOne(Author, '...', { 
+const author = await em.findOne(Author, '...', {
   fields: ['name', 'books.title', 'books.author', 'books.price'],
 });
 ```
@@ -287,7 +287,7 @@ const author = await em.findOne(Author, '...', {
 Alternatively, you can use the `exclude` option, which will omit the provided properties and select everything else:
 
 ```ts
-const author = await em.findOne(Author, '...', { 
+const author = await em.findOne(Author, '...', {
   exclude: ['email', 'books.price'],
   populate: ['books'], // unlike with `fields`, you need to explicitly populate the relation here
 });
@@ -496,16 +496,16 @@ const [author1, author2, author3] = await em.upsertMany(Author, [{ ... }, { ... 
 This will generate query similar to the following:
 
 ```sql
-insert into "author" 
+insert into "author"
   ("id", "current_age", "email", "foo")
   values
     (1, 41, 'a1', true),
     (2, 42, 'a2', true),
     (5, 43, 'a3', true)
-  on conflict ("email") 
+  on conflict ("email")
   do update set
     "current_age" = excluded."current_age",
-    "foo" = excluded."foo" 
+    "foo" = excluded."foo"
   returning "_id", "current_age", "foo", "bar"
 ```
 

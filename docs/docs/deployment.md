@@ -22,7 +22,7 @@ import { GeneratedCacheAdapter, MikroORM } from '@mikro-orm/core';
 await MikroORM.init({
   metadataCache: {
     enabled: true,
-    adapter: GeneratedCacheAdapter, 
+    adapter: GeneratedCacheAdapter,
     options: { data: require('./temp/metadata.json') },
   },
   // ...

@@ -40,7 +40,7 @@ Instead of defining schema per entity or operation it's possible to `.fork()` En
 const fork = em.fork({ schema: 'client-123' });
 await fork.findOne(User, { ... });
 
-// Will yield the same result as 
+// Will yield the same result as
 const user = await em.findOne(User, { ... }, { schema: 'client-123' });
 ```
 

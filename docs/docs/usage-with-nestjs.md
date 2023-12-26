@@ -192,7 +192,7 @@ With that option specified, every entity registered through the `forFeature()` m
 
 > `@CreateRequestContext()` decorator is available in `@mikro-orm/core` package.
 
-> Before v6, `@CreateRequestContext()` was called `@UseRequestContext()`. 
+> Before v6, `@CreateRequestContext()` was called `@UseRequestContext()`.
 
 As mentioned in the [docs](identity-map.md), we need a clean state for each request. That is handled automatically thanks to the `RequestContext` helper registered via middleware.
 

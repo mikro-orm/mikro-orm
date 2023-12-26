@@ -107,7 +107,7 @@ In this example, no `Book` would be removed with simple `Cascade.REMOVE` as no r
 
 As opposed to the application level cascading controlled by the `cascade` option, we can also define database level referential integrity actions: `on update` and `on delete`.
 
-Their values are automatically inferred from the `cascade` option value. You can also control the value manually via `updateRule` and `deleteRule` options. 
+Their values are automatically inferred from the `cascade` option value. You can also control the value manually via `updateRule` and `deleteRule` options.
 
 ```ts
 @Entity()

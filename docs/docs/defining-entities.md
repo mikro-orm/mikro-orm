@@ -1399,13 +1399,13 @@ export const User = new EntitySchema<IUser>({
     id: { type: 'number', primary: true },
     firstName: { type: 'string', length: 50 },
     lastName: { type: 'string', length: 50 },
-    fullName: { 
+    fullName: {
       type: 'string',
-      length: 100, 
+      length: 100,
       generated: cols => `(concat(${cols.firstName}, ' ', ${cols.lastName})) stored`,
     },
-    fullName2: { 
-      type: 'string', 
+    fullName2: {
+      type: 'string',
       columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual`,
     },
   },

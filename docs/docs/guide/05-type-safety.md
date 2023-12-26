@@ -301,8 +301,8 @@ The `Loaded` type also respects the partial loading hints (`fields` option). Whe
 
 ```ts
 // article is typed to `Selected<Article, 'author', 'title' | 'author.email'>`
-const article = await em.findOneOrFail(Article, 1, { 
-  fields: ['title', 'author.email'], 
+const article = await em.findOneOrFail(Article, 1, {
+  fields: ['title', 'author.email'],
   populate: ['author'],
 });
 

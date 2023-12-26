@@ -76,7 +76,7 @@ Several customization options exist to allow for style changes or custom logic.
 
 ### Query Labels
 
-It may often be beneficial to log the origin of a query when using [`EntityManager.find`](entity-manager.md#fetching-entities-with-entitymanager) or [`EntityManager.findOne`](entity-manager.md#fetching-entities-with-entitymanager) for debugging and redundancy elimination purposes. 
+It may often be beneficial to log the origin of a query when using [`EntityManager.find`](entity-manager.md#fetching-entities-with-entitymanager) or [`EntityManager.findOne`](entity-manager.md#fetching-entities-with-entitymanager) for debugging and redundancy elimination purposes.
 
 An optional `loggerContext` option can be included within the `FindOptions` parameter of either call which will add a label to the output when debug mode is enabled.
 
@@ -143,7 +143,7 @@ return MikroORM.init({
 });
 ```
 
-To use `SimpleLogger` instead, simply replace `DefaultLogger` in the example above: 
+To use `SimpleLogger` instead, simply replace `DefaultLogger` in the example above:
 ```ts
 class CustomLogger extends SimpleLogger {
   // ...
@@ -219,5 +219,5 @@ The logger context can be also set on `EntityManager` level, e.g. via `em.fork()
 const fork = em.fork({
   loggerContext: { meaningOfLife: 42 },
 });
-const res = await fork.findAll(Author); // same as previous example 
+const res = await fork.findAll(Author); // same as previous example
 ```

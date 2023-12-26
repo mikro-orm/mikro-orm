@@ -220,7 +220,7 @@ import { initORM } from '../src/db.js';
 export async function initTestApp(port: number) {
   // this will create all the ORM services and cache them
   const { orm } = await initORM({
-    // no need for debug information, it would only pollute the logs 
+    // no need for debug information, it would only pollute the logs
     debug: false,
     // we will use in-memory database, this way we can easily parallelize our tests
     dbName: ':memory:',
@@ -321,7 +321,7 @@ const orm = await MikroORM.init({
 });
 ```
 
-Since v6, you can also use the new `initSync()` method to instantiate the ORM synchronously. This will run the discovery only, and skip the database connection. When you first try to query the database (or work with it in any way that requires the connection), the ORM will connect to it lazily. 
+Since v6, you can also use the new `initSync()` method to instantiate the ORM synchronously. This will run the discovery only, and skip the database connection. When you first try to query the database (or work with it in any way that requires the connection), the ORM will connect to it lazily.
 
 > The sync method never connects to the database, so `connect: false` is implicit.
 
@@ -464,7 +464,7 @@ Or via CLI:
 ```bash
 npx mikro-orm-esm schema:create --dump  # Dumps create schema SQL
 npx mikro-orm-esm schema:update --dump  # Dumps update schema SQL
-npx mikro-orm-esm schema:drop --dump    # Dumps drop schema SQL 
+npx mikro-orm-esm schema:drop --dump    # Dumps drop schema SQL
 ```
 
 Your production database (the one in `sqlite.db` file in the root of your project) is probably out of sync, as we were mostly using the in-memory database inside the tests. Let's try to sync it via the CLI. First, run it with the `--dump` (or `-d`) flag to see what queries it generates, then run them via `--run` (or `-r`):

@@ -43,7 +43,7 @@ await em.flush();
 
 ## Entities with explicit primary key
 
-When you `em.persist()` a new entity which has the primary key value, it will be automatically added to the identity map. This means that a following call to `em.findOne()` based on its primary key will just return the same unmanaged entity instance instead of querying the database. 
+When you `em.persist()` a new entity which has the primary key value, it will be automatically added to the identity map. This means that a following call to `em.findOne()` based on its primary key will just return the same unmanaged entity instance instead of querying the database.
 
 > Such entity is added to the identity map, but still remains unmanaged - it does not have a reference to the `EntityManager` yet.
 
