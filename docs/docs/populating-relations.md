@@ -58,7 +58,7 @@ db.getCollection("author").find({"_id":{"$in":[...]}}).toArray();
 You can also populate all relationships by passing `populate: ['*']`. The result will be also strictly typed (the `Loaded` type respects the star hint).
 
 ```ts
-const tags = await em.find(BookTag, {}, { 
+const tags = await em.find(BookTag, {}, {
   populate: ['*'],
 });
 ```
@@ -73,7 +73,7 @@ If you want to automatically select all the relations that are part of your filt
 // this will populate all the books and their authors, all via a single query
 const tags = await em.find(BookTag, {
   books: { author: { name: '...' } },
-}, { 
+}, {
   populate: ['$infer'],
 });
 ```

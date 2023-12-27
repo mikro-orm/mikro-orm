@@ -55,7 +55,7 @@ app.get('/', async (req, res) => {
   const authors = await orm.em.find(Book, {});
   res.json(authors);
 });
-``` 
+```
 
 We should register this middleware as the last one just before request handlers and before any of our custom middleware that is using the ORM. There might be issues when we register it before request processing middleware like `queryParser` or `bodyParser`, so definitely register the context after them.
 

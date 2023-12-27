@@ -7,7 +7,7 @@ In this chapter, we will first implement all the methods of `/user` endpoint, in
 
 ## Improving route registration
 
-Before we jump in and implement the rest of the `User` and `Article` endpoint handlers, let's improve on how we register the routes. Let's create a `routes.ts` file in `src/modules/article`, and export a factory function from it:  
+Before we jump in and implement the rest of the `User` and `Article` endpoint handlers, let's improve on how we register the routes. Let's create a `routes.ts` file in `src/modules/article`, and export a factory function from it:
 
 ```ts title='modules/article/routes.ts'
 import { FastifyInstance } from 'fastify';
@@ -108,7 +108,7 @@ export class User extends BaseEntity<'bio'> {
 
   // for automatic inference via `em.getRepository(User)`
   [EntityRepositoryType]?: UserRepository;
-  
+
   // rest of the entity definition
 
 }
@@ -159,13 +159,13 @@ export async function registerUserRoutes(app: FastifyInstance) {
 }
 ```
 
-And now the `login` method, it will try to load the `User` entity based on the password, and compare it via our `User.verifyPassword()` instance method. If we don't find such combination of the `email` and `password`, we throw an error. 
+And now the `login` method, it will try to load the `User` entity based on the password, and compare it via our `User.verifyPassword()` instance method. If we don't find such combination of the `email` and `password`, we throw an error.
 
 ```ts title='modules/user/user.repository.ts'
 export class UserRepository extends EntityRepository<User> {
 
   // ...
-  
+
   async login(email: string, password: string) {
     // we use a more generic error so we don't leak such email is registered
     const err = new Error('Invalid combination of email and password');
@@ -275,7 +275,7 @@ With the JWT plugin, our `request` object will have a `user` property we can use
 - `app.jwt.sign()` to create the token from a payload
 - `request.jwtVerify()` to verify and decode the token back to the payload
 
-We will use the token payload to store the `user.id`. Let's add a new property to our `User` entity for it: 
+We will use the token payload to store the `user.id`. Let's add a new property to our `User` entity for it:
 
 ```ts title='modules/user/user.entity.ts'
 @Property({ persist: false })
@@ -299,7 +299,7 @@ import { AuthError } from '../common/utils.js';
 export class UserRepository extends EntityRepository<User> {
 
   // ...
-  
+
   async login(email: string, password: string) {
     // we use a more generic error so we don't leak such email is registered
     // highlight-next-line

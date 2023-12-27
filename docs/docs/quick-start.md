@@ -13,19 +13,19 @@ First install the module via package manager of your choice. Do not forget to in
 npm install @mikro-orm/core @mikro-orm/mongodb
 
 # for mysql (works with mariadb too)
-npm install @mikro-orm/core @mikro-orm/mysql  
+npm install @mikro-orm/core @mikro-orm/mysql
 
 # for mariadb (works with mysql too)
 npm install @mikro-orm/core @mikro-orm/mariadb
 
 # for postgresql (works with cockroachdb too)
-npm install @mikro-orm/core @mikro-orm/postgresql  
+npm install @mikro-orm/core @mikro-orm/postgresql
 
 # for sqlite
-npm install @mikro-orm/core @mikro-orm/sqlite 
+npm install @mikro-orm/core @mikro-orm/sqlite
 
 # for better-sqlite
-npm install @mikro-orm/core @mikro-orm/better-sqlite 
+npm install @mikro-orm/core @mikro-orm/better-sqlite
 ```
 
 Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) as well as `esModuleInterop` in `tsconfig.json` via:
@@ -260,7 +260,7 @@ For CLI to be able to access your database, you will need to create `mikro-orm.c
 
 > ORM configuration file can export the Promise, like: `export default Promise.resolve({...});`.
 
-To enable TypeScript support, add `useTsNode` flag to the `mikro-orm` section in your `package.json` file. By default, when `useTsNode` is not enabled, CLI will ignore `.ts` files, so if you want to oup-out of this behaviour, enable the `alwaysAllowTs` option. This would be useful if you want to use MikroORM with [Bun](https://bun.sh), which has TypeScript support out of the box. 
+To enable TypeScript support, add `useTsNode` flag to the `mikro-orm` section in your `package.json` file. By default, when `useTsNode` is not enabled, CLI will ignore `.ts` files, so if you want to oup-out of this behaviour, enable the `alwaysAllowTs` option. This would be useful if you want to use MikroORM with [Bun](https://bun.sh), which has TypeScript support out of the box.
 
 > The `useTsNode` is a flag only for the CLI, it has no effect on your application.
 
@@ -309,7 +309,7 @@ export default defineConfig({
   entities: [Author, Book, BookTag],
   dbName: 'my-db-name',
   // this is inferred as you import `defineConfig` from sqlite package
-  // driver: SqliteDriver, 
+  // driver: SqliteDriver,
 });
 ```
 

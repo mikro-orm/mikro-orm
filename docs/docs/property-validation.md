@@ -55,7 +55,7 @@ class User {
   get fooBar() {
     return foo + bar;
   }
-  
+
 }
 ```
 

@@ -68,9 +68,9 @@ import { Entity, LoadStrategy, OneToMany } from '@mikro-orm/core';
 
 @Entity()
 export class Author {
-  
+
   // ...
-  
+
   @OneToMany({
     entity: () => Book,
     mappedBy: b => b.author,

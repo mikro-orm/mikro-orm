@@ -6,11 +6,11 @@ title: Upgrading from v5 to v6
 
 ## Node 18.12+ required
 
-Support for older node versions was dropped. 
+Support for older node versions was dropped.
 
 ## ⚠️ TypeScript 5.0+ required
 
-Support for older TypeScript versions was dropped. 
+Support for older TypeScript versions was dropped.
 
 ## Strict partial loading
 
@@ -18,8 +18,8 @@ The `Loaded` type is now improved to support the partial loading hints (`fields`
 
 ```ts
 // book is typed to `Selected<Book, 'author', 'title' | 'author.email'>`
-const book = await em.findOneOrFail(Book, 1, { 
-  fields: ['title', 'author.email'], 
+const book = await em.findOneOrFail(Book, 1, {
+  fields: ['title', 'author.email'],
   populate: ['author'],
 });
 
@@ -43,7 +43,7 @@ The `order by` clause is shared for both the join branches and a new `populateOr
 
 ## Removed methods from `EntityRepository`
 
-Following methods are no longer available on the `EntityRepository` instance. 
+Following methods are no longer available on the `EntityRepository` instance.
 
 - `persist`
 - `persistAndFlush`
@@ -125,7 +125,7 @@ Instead of specifying the `type` we now have several options:
 1. use `defineConfig()` helper imported from the driver package to create your ORM config:
    ```ts title='mikro-orm.config.ts'
    import { defineConfig } from '@mikro-orm/mysql';
-   
+
    export default defineConfig({ ... });
    ```
 2. use `MikroORM.init()` on class imported from the driver package:
@@ -136,7 +136,7 @@ Instead of specifying the `type` we now have several options:
    ```
 3. specify the `driver` option:
    ```ts title='mikro-orm.config.ts'
-   import { MySqlDriver } from '@mikro-orm/mysql'; 
+   import { MySqlDriver } from '@mikro-orm/mysql';
 
    export default {
      driver: MySqlDriver,
@@ -305,7 +305,7 @@ Use `RequestContext.create` instead, it can be awaited now.
 
 ## Renamed `@UseRequestContext()`
 
-The decorator was renamed to `@CreateRequestContext()` to make it clear it always creates new context, and a new `@EnsureRequestContext()` decorator was added that will reuse existing contexts if available. 
+The decorator was renamed to `@CreateRequestContext()` to make it clear it always creates new context, and a new `@EnsureRequestContext()` decorator was added that will reuse existing contexts if available.
 
 ## Removed `em.raw()` and `qb.raw()`
 
@@ -334,9 +334,9 @@ Removed in favour of `sql.ref()`.
 
 ## Changed default PostgreSQL `Date` mapping precision
 
-Previously, all drivers defaulted the `Date` type mapping to a timestamp with 0 precision (so seconds). This is [discouraged in PostgreSQL](https://wiki.postgresql.org/wiki/Don't_Do_This#Don.27t_use_timestamp.280.29_or_timestamptz.280.29), and is no longer valid - the default mapping without the `length` property being explicitly set is now `timestamptz`, which stores microsecond precision, so equivalent to `timestampz(6)`.
+Previously, all drivers defaulted the `Date` type mapping to a timestamp with 0 precision (so seconds). This is [discouraged in PostgreSQL](https://wiki.postgresql.org/wiki/Don't_Do_This#Don.27t_use_timestamp.280.29_or_timestamptz.280.29), and is no longer valid - the default mapping without the `length` property being explicitly set is now `timestamptz`, which stores microsecond precision, so equivalent to `timestamptz(6)`.
 
-To revert back to the v5 behavior, you can either set the `columnType: 'timestampz(0)'`, or use `length: 0`:
+To revert back to the v5 behavior, you can either set the `columnType: 'timestamptz(0)'`, or use `length: 0`:
 
 ```ts
 @Property({ length: 0 })
@@ -376,7 +376,7 @@ const dto = wrap(user).toObject();
 
 **This also works for embeddables, including nesting and object mode.**
 
-## Changes in `Date` property mapping 
+## Changes in `Date` property mapping
 
 Previously, mapping of datetime columns to JS `Date` objects was dependent on the driver, while SQLite didn't have this out of box support and required manual conversion on various places. All drivers now have disabled `Date` conversion and this is now handled explicitly, in the same way for all of them.
 
