@@ -1,6 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/core';
-import type { SchemaGenerator } from '@mikro-orm/postgresql';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import { Entity, PrimaryKey, Property, t } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'book' })
 export class Book0 {
@@ -89,20 +88,17 @@ export class Book4 {
 
 describe('length diffing in mysql', () => {
 
-  let orm: MikroORM<MySqlDriver>;
-  let generator: SchemaGenerator;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Book0],
       dbName: `mikro_orm_test_length_diffing`,
-      driver: MySqlDriver,
       port: 3308,
     });
-    generator = orm.schema;
-    await generator.ensureDatabase();
-    await generator.execute('drop table if exists book');
-    await generator.createSchema();
+    await orm.schema.ensureDatabase();
+    await orm.schema.execute('drop table if exists book');
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));
@@ -110,26 +106,26 @@ describe('length diffing in mysql', () => {
   test('schema generator updates column types when length changes (varchar, decimal, ...)', async () => {
     orm.getMetadata().reset('Book0');
     await orm.discoverEntity(Book1);
-    const diff1 = await generator.getUpdateSchemaSQL({ wrap: false });
+    const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
-    await generator.execute(diff1);
+    await orm.schema.execute(diff1);
 
     orm.getMetadata().reset('Book1');
     await orm.discoverEntity(Book2);
-    const diff2 = await generator.getUpdateSchemaSQL({ wrap: false });
+    const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
-    await generator.execute(diff2);
+    await orm.schema.execute(diff2);
 
     orm.getMetadata().reset('Book2');
     await orm.discoverEntity(Book3);
-    const diff3 = await generator.getUpdateSchemaSQL({ wrap: false });
+    const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
-    await generator.execute(diff3);
+    await orm.schema.execute(diff3);
 
     orm.getMetadata().reset('Book3');
     await orm.discoverEntity(Book4);
 
-    await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });
 
 });

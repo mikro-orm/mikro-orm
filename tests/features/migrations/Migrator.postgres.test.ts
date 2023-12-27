@@ -61,11 +61,10 @@ describe('Migrator (postgres)', () => {
       extensions: [Migrator],
     });
 
-    const schemaGenerator = orm.schema;
-    await schemaGenerator.refreshDatabase();
-    await schemaGenerator.execute('alter table "custom"."book2" add column "foo" varchar null default \'lol\';');
-    await schemaGenerator.execute('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
-    await schemaGenerator.execute('alter table "custom"."test2" add column "path" polygon null default null;');
+    await orm.schema.refreshDatabase();
+    await orm.schema.execute('alter table "custom"."book2" add column "foo" varchar null default \'lol\';');
+    await orm.schema.execute('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
+    await orm.schema.execute('alter table "custom"."test2" add column "path" polygon null default null;');
     await remove(process.cwd() + '/temp/migrations-456');
   });
   beforeEach(() => orm.config.resetServiceCache());

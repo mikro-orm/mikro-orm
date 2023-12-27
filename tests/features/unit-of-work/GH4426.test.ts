@@ -26,8 +26,7 @@ beforeAll(async () => {
     dbName: ':memory:',
   });
 
-  const generator = orm.schema;
-  await generator.createSchema();
+  await orm.schema.createSchema();
 });
 
 afterAll(async () => {

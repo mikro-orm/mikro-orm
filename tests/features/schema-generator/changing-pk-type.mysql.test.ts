@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import type { Constructor } from '@mikro-orm/core';
 import { Entity, PrimaryKey, t } from '@mikro-orm/core';
-import { MikroORM, SchemaGenerator } from '@mikro-orm/mysql';
+import { MikroORM } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'user' })
 class User0 {
@@ -57,17 +57,14 @@ class User5 {
 describe('changing PK column type [mysql] (GH 1480)', () => {
 
   let orm: MikroORM;
-  let generator: SchemaGenerator;
-
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User0],
       dbName: 'mikro_orm_test_gh_1480',
       port: 3308,
     });
-    generator = orm.schema;
-    await generator.ensureDatabase();
-    await generator.dropSchema();
+    await orm.schema.ensureDatabase();
+    await orm.schema.dropSchema();
   });
 
   afterAll(() => orm.close(true));
