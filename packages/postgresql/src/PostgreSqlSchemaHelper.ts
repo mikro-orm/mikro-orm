@@ -134,9 +134,21 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const increments = (col.column_default?.includes('nextval') || col.is_identity === 'YES') && connection.getPlatform().isNumericColumn(mappedType);
       const key = this.getTableKey(col);
       ret[key] ??= [];
+      let type = col.data_type.toLowerCase() === 'array'
+        ? col.udt_name.replace(/^_(.*)$/, '$1[]')
+        : col.udt_name;
+
+      if (col.length != null && !type.endsWith(`(${col.length})`)) {
+        type += `(${col.length})`;
+      }
+
+      if (type === 'numeric' && col.numeric_precision != null && col.numeric_scale != null) {
+        type += `(${col.numeric_precision},${col.numeric_scale})`;
+      }
+
       const column: Column = {
         name: col.column_name,
-        type: col.data_type.toLowerCase() === 'array' ? col.udt_name.replace(/^_(.*)$/, '$1[]') : col.udt_name,
+        type,
         mappedType,
         length: col.length,
         precision: col.numeric_precision,

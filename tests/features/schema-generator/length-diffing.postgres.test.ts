@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, t } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mysql';
+import { MikroORM } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'book' })
 export class Book0 {
@@ -101,7 +101,7 @@ export class Book4 {
 
 }
 
-describe('length diffing in mysql', () => {
+describe('length diffing in postgres', () => {
 
   let orm: MikroORM;
 
@@ -109,7 +109,6 @@ describe('length diffing in mysql', () => {
     orm = await MikroORM.init({
       entities: [Book0],
       dbName: `mikro_orm_test_length_diffing`,
-      port: 3308,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists book');
@@ -118,7 +117,7 @@ describe('length diffing in mysql', () => {
 
   afterAll(() => orm.close(true));
 
-  test('schema generator updates column types when length changes (varchar, decimal, ...)', async () => {
+  test('schema orm.schema updates column types when length changes (varchar, decimal, ...)', async () => {
     orm.getMetadata().reset('Book0');
     await orm.discoverEntity(Book1);
     const diff1 = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
