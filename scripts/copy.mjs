@@ -26,7 +26,7 @@ function rewrite(path, replacer) {
   try {
     const file = readFileSync(path).toString();
     const replaced = replacer(file);
-    writeFileSync(path, replaced);
+    writeFileSync(path, replaced, { flush: true });
   } catch {
     // not found
   }
@@ -121,7 +121,7 @@ if (options.canary) {
   // eslint-disable-next-line no-console
   console.info(`canary: setting version to ${nextVersion}`);
 
-  writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
+  writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`, { flush: true });
 }
 
 if (options['pin-versions']) {
@@ -137,7 +137,7 @@ if (options['pin-versions']) {
   // eslint-disable-next-line no-console
   console.info(`pin-versions: version ${version}`, pkgJson.dependencies);
 
-  writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
+  writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`,{ flush: true });
 }
 
 copy('README.md', root, target);
