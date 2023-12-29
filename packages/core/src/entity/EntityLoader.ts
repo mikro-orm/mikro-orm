@@ -83,13 +83,13 @@ export class EntityLoader {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
-    entities.forEach(e => {
-      const context = helper(e).__serializationContext;
+    for (const entity of entities) {
+      const context = helper(entity).__serializationContext;
       context.populate ??= populate as PopulateOptions<Entity>[];
       context.fields ??= options.fields ? [...options.fields as string[]] : undefined;
       context.exclude ??= options.exclude ? [...options.exclude as string[]] : undefined;
-      visited.add(e);
-    });
+      visited.add(entity);
+    }
 
     for (const pop of populate) {
       await this.populateField<Entity>(entityName, entities, pop, options as Required<EntityLoaderOptions<Entity>>);
@@ -671,7 +671,7 @@ export class EntityLoader {
       .forEach(prop => {
         const field = this.getRelationName(meta, prop);
         const prefixed = prefix ? `${prefix}.${field}` as EntityKey<Entity> : field;
-        const nestedPopulate = populate.find(p => p.field === prop.name)?.children ?? [];
+        const nestedPopulate = populate.filter(p => p.field === prop.name).flatMap(p => p.children).filter(Boolean);
         const nested = this.lookupEagerLoadedRelationships<Entity>(prop.type, nestedPopulate as any, strategy, prefixed, visited.slice());
 
         if (nested.length > 0) {
