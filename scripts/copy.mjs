@@ -137,7 +137,7 @@ if (options['pin-versions']) {
   // eslint-disable-next-line no-console
   console.info(`pin-versions: version ${version}`, pkgJson.dependencies);
 
-  writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`,{ flush: true });
+  writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`, { flush: true });
 }
 
 copy('README.md', root, target);
