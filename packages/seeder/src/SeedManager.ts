@@ -1,15 +1,15 @@
-import globby from 'globby';
 import {
-  Utils,
+  type Configuration,
   type Constructor,
   type EntityManager,
   type ISeedManager,
   type MikroORM,
-  type Configuration,
   type SeederOptions,
+  Utils,
 } from '@mikro-orm/core';
-import type { Seeder } from './Seeder';
 import { ensureDir, writeFile } from 'fs-extra';
+import globby from 'globby';
+import type { Seeder } from './Seeder';
 
 export class SeedManager implements ISeedManager {
 
@@ -97,7 +97,7 @@ export class SeedManager implements ISeedManager {
       ret += `exports.${className} = ${className};\n`;
     }
 
-    await writeFile(filePath, ret);
+    await writeFile(filePath, ret, { flush: true });
 
     return filePath;
   }

@@ -1,4 +1,3 @@
-import { ensureDir, writeFile } from 'fs-extra';
 import {
   type EntityMetadata,
   type EntityProperty,
@@ -17,8 +16,9 @@ import {
   type EntityManager,
   type SchemaHelper,
 } from '@mikro-orm/knex';
-import { SourceFile } from './SourceFile';
+import { ensureDir, writeFile } from 'fs-extra';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
+import { SourceFile } from './SourceFile';
 
 export class EntityGenerator {
 
@@ -63,7 +63,7 @@ export class EntityGenerator {
 
     if (options.save) {
       await ensureDir(baseDir);
-      await Promise.all(this.sources.map(file => writeFile(baseDir + '/' + file.getBaseName(), file.generate())));
+      await Promise.all(this.sources.map(file => writeFile(baseDir + '/' + file.getBaseName(), file.generate(), { flush: true })));
     }
 
     return this.sources.map(file => file.generate());
