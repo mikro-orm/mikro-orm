@@ -9,9 +9,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Bug Fixes
 
 * **core:** check for root entity properties in `em.canPopulate()` when using STI ([b8fcf45](https://github.com/mikro-orm/mikro-orm/commit/b8fcf45932e5021541b4782b39b139bccd09cae6)), closes [#5043](https://github.com/mikro-orm/mikro-orm/issues/5043)
-* **core:** fix `assign` on collections of unloaded entities ([b60e4ee](https://github.com/mikro-orm/mikro-orm/commit/b60e4ee207849425b6faf7c8fa677388e16bb22e))
 * **core:** fix eager loading detection with multiple populate hints for one property ([da1daf5](https://github.com/mikro-orm/mikro-orm/commit/da1daf5c416684fd49c5fd0261732dd6faa77b60)), closes [#5057](https://github.com/mikro-orm/mikro-orm/issues/5057)
-* **core:** fix extra updates with select-in strategy and composite FKs ([c848f8c](https://github.com/mikro-orm/mikro-orm/commit/c848f8c840cd2c4690e5852e06d36dc5b2393d9b))
 * **core:** support pivot entities with autoincrement PK ([e250634](https://github.com/mikro-orm/mikro-orm/commit/e250634e1d4bc18b8e0f47cbed17b4d3bef78787)), closes [#4988](https://github.com/mikro-orm/mikro-orm/issues/4988)
 
 
