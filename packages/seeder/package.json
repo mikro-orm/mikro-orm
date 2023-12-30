@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/seeder",
-  "version": "5.9.6",
+  "version": "5.9.7",
   "description": "Seeder package for MikroORM.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
