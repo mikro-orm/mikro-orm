@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.7](https://github.com/mikro-orm/mikro-orm/compare/v5.9.5...v5.9.7) (2023-12-30)
+
+
+### Bug Fixes
+
+* **postgres:** respect column length in down migrations ([222e2b8](https://github.com/mikro-orm/mikro-orm/commit/222e2b8a25692535490b8bc8dd700b23f931b474)), closes [#5048](https://github.com/mikro-orm/mikro-orm/issues/5048)
+
+
+
+
+
 ## [5.9.6](https://github.com/mikro-orm/mikro-orm/compare/v5.9.5...v5.9.6) (2023-12-21)
 
 **Note:** Version bump only for package @mikro-orm/postgresql
