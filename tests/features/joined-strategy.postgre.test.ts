@@ -113,21 +113,26 @@ describe('Joined loading strategy', () => {
     await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: ['books2.perex'] });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "a0".*, ' +
-      '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."perex" as "b1__perex", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
+      '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."perex" as "b1__perex", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id", ' +
+      '"f2"."uuid_pk" as "favourite_book_uuid_pk" ' +
       'from "author2" as "a0" ' +
       'left join "book2" as "b1" on "a0"."id" = "b1"."author_id" and "b1"."author_id" is not null ' +
+      'left join "book2" as "f2" on "a0"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null ' +
       'where "a0"."id" = $1 ' +
-      'order by "b1"."title"');
+      'order by "b1"."title" asc');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
     await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: ['books2'] });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "a0".*, ' +
-      '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
+      '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id", ' +
+      '"f2"."uuid_pk" as "favourite_book_uuid_pk" ' +
       'from "author2" as "a0" ' +
       'left join "book2" as "b1" on "a0"."id" = "b1"."author_id" and "b1"."author_id" is not null ' +
-      'where "a0"."id" = $1');
+      'left join "book2" as "f2" on "a0"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null ' +
+      'where "a0"."id" = $1 ' +
+      'order by "b1"."title" asc');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -144,9 +149,11 @@ describe('Joined loading strategy', () => {
     await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: ['books.perex'] });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "a0".*, ' +
-      '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."perex" as "b1__perex", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
+      '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."perex" as "b1__perex", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id", ' +
+      '"f2"."uuid_pk" as "favourite_book_uuid_pk" ' +
       'from "author2" as "a0" ' +
       'left join "book2" as "b1" on "a0"."id" = "b1"."author_id" and "b1"."author_id" is not null ' +
+      'left join "book2" as "f2" on "a0"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null ' +
       'where "a0"."id" = $1');
   });
 
@@ -178,9 +185,11 @@ describe('Joined loading strategy', () => {
     await orm.em.find(Author2, { id: author2.id }, { populate: ['books2'] });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "a0".*, ' +
-      '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
+      '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id", ' +
+      '"f2"."uuid_pk" as "favourite_book_uuid_pk" ' +
       'from "author2" as "a0" ' +
       'left join "book2" as "b1" on "a0"."id" = "b1"."author_id" and "b1"."author_id" is not null ' +
+      'left join "book2" as "f2" on "a0"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null ' +
       'where "a0"."id" = $1');
 
     orm.em.clear();
@@ -188,9 +197,11 @@ describe('Joined loading strategy', () => {
     await orm.em.find(Author2, { id: author2.id }, { populate: ['books'], strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "a0".*, ' +
-      '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
+      '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id", ' +
+      '"f2"."uuid_pk" as "favourite_book_uuid_pk" ' +
       'from "author2" as "a0" ' +
       'left join "book2" as "b1" on "a0"."id" = "b1"."author_id" and "b1"."author_id" is not null ' +
+      'left join "book2" as "f2" on "a0"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null ' +
       'where "a0"."id" = $1');
 
     orm.em.clear();
@@ -198,9 +209,11 @@ describe('Joined loading strategy', () => {
     await orm.em.find(Author2, { id: author2.id }, { populate: ['books.perex'] });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "a0".*, ' +
-      '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."perex" as "b1__perex", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
+      '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."perex" as "b1__perex", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id", ' +
+      '"f2"."uuid_pk" as "favourite_book_uuid_pk" ' +
       'from "author2" as "a0" ' +
       'left join "book2" as "b1" on "a0"."id" = "b1"."author_id" and "b1"."author_id" is not null ' +
+      'left join "book2" as "f2" on "a0"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null ' +
       'where "a0"."id" = $1');
   });
 

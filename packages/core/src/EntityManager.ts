@@ -216,7 +216,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = await em.processWhere(entityName, where, options, 'read') as FilterQuery<Entity>;
     em.validator.validateParams(where);
     options.orderBy = options.orderBy || {};
-    options.populate = em.preparePopulate(entityName, options) as any;
+    options.populate = await em.preparePopulate(entityName, options) as any;
     const populate = options.populate as unknown as PopulateOptions<Entity>[];
     const cacheKey = em.cacheKey(entityName, options, 'em.find', where);
     const cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields, Excludes>[]>(entityName, options.cache, cacheKey, options.refresh, true);
@@ -432,7 +432,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         const prop = meta.properties[field];
         const joined = (prop.strategy || options.strategy || hint.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.kind !== ReferenceKind.SCALAR;
 
-        if (!joined) {
+        if (!joined && !hint.filter) {
           continue;
         }
 
@@ -454,6 +454,35 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     return ret;
+  }
+
+  /**
+   * When filters are active on M:1 or 1:1 relations, we need to ref join them eagerly as they might affect the FK value.
+   */
+  protected async autoJoinRefsForFilters<T extends object>(meta: EntityMetadata<T>, options: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>): Promise<void> {
+    if (!meta || !this.config.get('autoJoinRefsForFilters')) {
+      return;
+    }
+
+    const props = meta.relations.filter(prop => {
+      return [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)
+        && ((options.fields?.length ?? 0) === 0 || options.fields?.some(f => prop.name === f || prop.name.startsWith(`${String(f)}.`)));
+    });
+    const ret = options.populate as PopulateOptions<T>[];
+
+    for (const prop of props) {
+      const cond = await this.applyFilters(prop.type, {}, options.filters ?? {}, 'read', options);
+
+      if (!Utils.isEmpty(cond)) {
+        const populated = (options.populate as PopulateOptions<T>[]).filter(({ field }) => field.split(':')[0] === prop.name);
+
+        if (populated.length > 0) {
+          populated.forEach(hint => hint.filter = true);
+        } else {
+          ret.push({ field: `${prop.name}:ref` as any, strategy: LoadStrategy.JOINED, filter: true });
+        }
+      }
+    }
   }
 
   /**
@@ -713,7 +742,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     em.validator.validateParams(where);
-    options.populate = em.preparePopulate(entityName, options) as any;
+    options.populate = await em.preparePopulate(entityName, options) as any;
     const cacheKey = em.cacheKey(entityName, options, 'em.findOne', where);
     const cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields, Excludes>>(entityName, options.cache, cacheKey, options.refresh, true);
 
@@ -1606,7 +1635,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     };
     entityName = Utils.className(entityName);
     where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read') as FilterQuery<Entity>;
-    options.populate = em.preparePopulate(entityName, options as FindOptions<Entity, Hint>) as any;
+    options.populate = await em.preparePopulate(entityName, options as FindOptions<Entity, Hint>) as any;
     em.validator.validateParams(where);
     delete (options as FindOptions<Entity>).orderBy;
 
@@ -1779,7 +1808,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext();
     em.prepareOptions(options);
     const entityName = (arr[0] as Dictionary).constructor.name;
-    const preparedPopulate = em.preparePopulate<Entity>(entityName, { populate: populate as any }, options.validate);
+    const preparedPopulate = await em.preparePopulate<Entity>(entityName, { populate: populate as any }, options.validate);
     await em.entityLoader.populate(entityName, arr, preparedPopulate, options as EntityLoaderOptions<Entity>);
 
     return entities as any;
@@ -1960,7 +1989,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       });
     }
 
-    const preparedPopulate = this.preparePopulate<T>(meta.className, options);
+    const preparedPopulate = await this.preparePopulate<T>(meta.className, options);
     await this.entityLoader.populate(meta.className, [entity], preparedPopulate, {
       ...options as Dictionary,
       ...this.getPopulateWhere<T>(where as ObjectQuery<T>, options),
@@ -1984,7 +2013,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }, [] as string[]);
   }
 
-  private preparePopulate<Entity extends object>(entityName: string, options: Pick<FindOptions<Entity, any, any>, 'populate' | 'strategy' | 'fields' | 'flags'>, validate = true): PopulateOptions<Entity>[] {
+  private async preparePopulate<Entity extends object>(entityName: string, options: Pick<FindOptions<Entity, any, any>, 'populate' | 'strategy' | 'fields' | 'flags'>, validate = true): Promise<PopulateOptions<Entity>[]> {
     if (options.populate === false) {
       return [];
     }
@@ -2023,7 +2052,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (!options.populate) {
-      return this.entityLoader.normalizePopulate<Entity>(entityName, [], options.strategy as LoadStrategy);
+      const populate = this.entityLoader.normalizePopulate<Entity>(entityName, [], options.strategy as LoadStrategy);
+      await this.autoJoinRefsForFilters(meta, { ...options, populate });
+
+      return populate;
     }
 
     if (typeof options.populate !== 'boolean') {
@@ -2049,14 +2081,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }).flat() as any;
     }
 
-    const ret: PopulateOptions<Entity>[] = this.entityLoader.normalizePopulate<Entity>(entityName, options.populate as true, options.strategy as LoadStrategy);
-    const invalid = ret.find(({ field }) => !this.canPopulate(entityName, field));
+    const populate: PopulateOptions<Entity>[] = this.entityLoader.normalizePopulate<Entity>(entityName, options.populate as true, options.strategy as LoadStrategy);
+    const invalid = populate.find(({ field }) => !this.canPopulate(entityName, field));
 
     if (validate && invalid) {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
-    return ret.map(field => {
+    await this.autoJoinRefsForFilters(meta, { ...options, populate });
+
+    return populate.map(field => {
       // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
       const all = field.all ?? (Array.isArray(options.populate) && options.populate.includes('*'));
       field.strategy = all ? LoadStrategy.SELECT_IN : (options.strategy ?? field.strategy) as LoadStrategy;

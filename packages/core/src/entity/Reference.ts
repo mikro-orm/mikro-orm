@@ -152,8 +152,8 @@ export class Reference<T extends object> {
     return this.getEntity()[prop];
   }
 
-  async loadProperty<TT extends T, P extends string = never, K extends keyof TT = keyof TT>(prop: K, options?: LoadReferenceOptions<TT, P>): Promise<Loaded<TT, P>[K]> {
-    await this.load(options);
+  async loadProperty<TT extends T, P extends string = never, K extends keyof TT = keyof TT>(prop: K, options?: LoadReferenceOrFailOptions<TT, P>): Promise<Loaded<TT, P>[K]> {
+    await this.loadOrFail(options);
     return (this.getEntity() as TT)[prop] as Loaded<TT, P>[K];
   }
 

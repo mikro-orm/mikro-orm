@@ -572,7 +572,7 @@ export class EntityLoader {
     } else if (prop.kind === ReferenceKind.MANY_TO_MANY) { // inverse side
       children.push(...filtered as AnyEntity[]);
     } else { // MANY_TO_ONE or ONE_TO_ONE
-      children.push(...this.filterReferences(entities, prop.name, options) as AnyEntity[]);
+      children.push(...this.filterReferences(entities, prop.name, options, ref) as AnyEntity[]);
     }
 
     return children;
@@ -586,7 +586,11 @@ export class EntityLoader {
     return entities.filter(e => Utils.isCollection(e[field]) && !(e[field] as unknown as Collection<AnyEntity>).isInitialized(!ref));
   }
 
-  private filterReferences<Entity extends object>(entities: Entity[], field: keyof Entity & string, options: Required<EntityLoaderOptions<Entity>>): Entity[keyof Entity][] {
+  private filterReferences<Entity extends object>(entities: Entity[], field: keyof Entity & string, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): Entity[keyof Entity][] {
+    if (ref) {
+      return [];
+    }
+
     const children = entities.filter(e => Utils.isEntity(e[field], true));
 
     if (options.refresh) {

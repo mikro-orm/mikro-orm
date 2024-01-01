@@ -375,9 +375,10 @@ export class QueryBuilderHelper {
   }
 
   mapJoinColumns(type: QueryType, join: JoinOptions): (string | Knex.Raw)[] {
-    if (join.prop && join.prop.kind === ReferenceKind.ONE_TO_ONE && !join.prop.owner) {
+    if (join.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(join.prop.kind)) {
       return join.prop.fieldNames.map((fieldName, idx) => {
-        return this.mapper(`${join.alias}.${join.inverseJoinColumns![idx]}`, type, undefined, fieldName);
+        const columns = join.prop.owner ? join.joinColumns : join.inverseJoinColumns;
+        return this.mapper(`${join.alias}.${columns![idx]}`, type, undefined, fieldName);
       });
     }
 

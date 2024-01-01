@@ -973,12 +973,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   /**
    * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
    */
-  protected autoJoinOneToOneOwner<T extends object, P extends string = never>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], fields: readonly EntityField<T, any>[] = []): PopulateOptions<T>[] {
+  protected autoJoinOneToOneOwner<T extends object>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], fields: readonly EntityField<T, any>[] = []): PopulateOptions<T>[] {
     if (!this.config.get('autoJoinOneToOneOwner')) {
       return populate;
     }
 
-    const relationsToPopulate = populate.map(({ field }) => field);
+    const relationsToPopulate = populate.map(({ field }) => field.split(':')[0]);
     const toPopulate: PopulateOptions<T>[] = meta.relations
       .filter(prop => prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
       .filter(prop => fields.length === 0 || fields.some(f => prop.name === f || prop.name.startsWith(`${String(f)}.`)))
@@ -992,15 +992,15 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
    */
   joinedProps<T>(meta: EntityMetadata, populate: PopulateOptions<T>[], options?: { strategy?: Options['loadStrategy'] }): PopulateOptions<T>[] {
     return populate.filter(hint => {
-      const [propName, ref] = hint.field.split(':', 2);
+      const [propName] = hint.field.split(':', 2);
       const prop = meta.properties[propName] || {};
+
+      if (hint.filter && hint.strategy === LoadStrategy.JOINED) {
+        return true;
+      }
 
       if ((options?.strategy || hint.strategy || prop.strategy || this.config.get('loadStrategy')) !== LoadStrategy.JOINED) {
         return false;
-      }
-
-      if (ref) {
-        return [ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind);
       }
 
       return ![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind);
@@ -1084,17 +1084,27 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     joinedProps.forEach(hint => {
       const [propName, ref] = hint.field.split(':', 2) as [EntityKey<T>, string | undefined];
       const prop = meta.properties[propName];
+
+      // ignore ref joins of known FKs unless it's a filter hint
+      if (ref && !hint.filter && (prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner))) {
+        return;
+      }
+
       const meta2 = this.metadata.find<T>(prop.type)!;
       const pivotRefJoin = prop.kind === ReferenceKind.MANY_TO_MANY && ref;
       const tableAlias = qb.getNextAlias(prop.name);
       const field = parentTableAlias ? `${parentTableAlias}.${prop.name}` : prop.name;
       let path = parentJoinPath ? `${parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
 
-      if (!parentJoinPath && populateWhereAll && !path.startsWith('[populate]')) {
+      if (!parentJoinPath && populateWhereAll && !hint.filter && !path.startsWith('[populate]')) {
         path = '[populate]' + path;
       }
 
-      const joinType = pivotRefJoin ? JoinType.pivotJoin : JoinType.leftJoin;
+      const joinType = pivotRefJoin
+        ? JoinType.pivotJoin
+        : hint.filter && !prop.nullable
+          ? JoinType.innerJoin
+          : JoinType.leftJoin;
       qb.join(field, tableAlias, {}, joinType, path);
 
       if (pivotRefJoin) {
@@ -1120,6 +1130,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (!ref) {
         fields.push(...this.getFieldsForJoinedLoad(qb, meta2, childExplicitFields.length === 0 ? undefined : childExplicitFields, childExclude, hint.children as any, options, tableAlias, path));
+      } else if (hint.filter) {
+        fields.push(field);
       }
     });
 

@@ -126,9 +126,9 @@ em.find(Book, {}, { filters: { tenant: false } }); // disabled tenant filter, so
 em.find(Book, {}, { filters: false }); // disabled all filters, so truly `{}`
 ```
 
-## Filters and populating of relationships
+## Filters and relationships
 
-When populating relationships, filters will be applied only to the root entity of given query, but not to those that are auto-joined. On the other hand, this means that when you use the default loading strategy - `LoadStrategy.SELECT_IN` - filters will be applied to every entity populated this way, as the child entities will become root entities in their respective load calls.
+Since v6, filters are applied to the relations too, as part of `JOIN ON` condition. If a filter exists on a M:1 or 1:1 relation target, such an entity will be automatically joined, and when the foreign key is defined as `NOT NULL`, it will result in an `INNER JOIN` rather than `LEFT JOIN`. This is especially important for implementing soft deletes via filters, as the foreign key might point to a soft-deleted entity. When this happens, the automatic `INNER JOIN` will result in such a record not being returned at all. You can disable this behavior via `autoJoinRefsForFilters` ORM option.
 
 ## Naming of filters
 
