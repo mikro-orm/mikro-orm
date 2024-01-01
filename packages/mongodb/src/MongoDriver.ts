@@ -42,7 +42,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   override createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
-    return new MongoEntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
+    const EntityManagerClass = this.config.get('entityManager', MongoEntityManager);
+    return new EntityManagerClass(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
   async find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {

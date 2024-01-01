@@ -3,18 +3,19 @@ import { pathExists, pathExistsSync, realpath } from 'fs-extra';
 import { isAbsolute, join } from 'path';
 import { platform } from 'os';
 import { fileURLToPath } from 'url';
-import type { IDatabaseDriver } from '../drivers';
+import type { EntityManagerType, IDatabaseDriver } from '../drivers';
 import { Configuration, type Options } from './Configuration';
 import { Utils } from './Utils';
 import type { Dictionary } from '../typings';
 import { colors } from '../logging/colors';
+import type { EntityManager } from '../EntityManager';
 
 /**
  * @internal
  */
 export class ConfigurationLoader {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
     await this.commonJSCompat(options);
     this.registerDotenv(options);
     const paths = await this.getConfigPaths();

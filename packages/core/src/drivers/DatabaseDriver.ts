@@ -71,7 +71,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   abstract count<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
 
   createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
-    return new EntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
+    const EntityManagerClass = this.config.get('entityManager', EntityManager);
+    return new EntityManagerClass(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
   /* istanbul ignore next */

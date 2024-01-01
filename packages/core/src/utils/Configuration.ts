@@ -29,7 +29,7 @@ import type { MetadataProvider } from '../metadata/MetadataProvider';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider';
 import type { EventSubscriber } from '../events';
-import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
+import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
 import { DataloaderType, FlushMode, LoadStrategy, PopulateHint } from '../enums';
@@ -38,8 +38,7 @@ import { EntityComparator } from './EntityComparator';
 import type { Type } from '../types/Type';
 import type { MikroORM } from '../MikroORM';
 
-
-export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
+export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager> {
 
   static readonly DEFAULTS = {
     pool: {},
@@ -143,7 +142,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     dynamicImportProvider: /* istanbul ignore next */ (id: string) => import(id),
   } satisfies MikroORMOptions;
 
-  private readonly options: MikroORMOptions<D>;
+  private readonly options: MikroORMOptions<D, EM>;
   private readonly logger: Logger;
   private readonly driver: D;
   private readonly platform: Platform;
@@ -179,7 +178,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets specific configuration option. Falls back to specified `defaultValue` if provided.
    */
-  get<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T, defaultValue?: U): U {
+  get<T extends keyof MikroORMOptions<D, EM>, U extends MikroORMOptions<D, EM>[T]>(key: T, defaultValue?: U): U {
     if (typeof this.options[key] !== 'undefined') {
       return this.options[key] as U;
     }
@@ -187,14 +186,14 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     return defaultValue as U;
   }
 
-  getAll(): MikroORMOptions<D> {
+  getAll(): MikroORMOptions<D, EM> {
     return this.options;
   }
 
   /**
    * Overrides specified configuration value.
    */
-  set<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T, value: U): void {
+  set<T extends keyof MikroORMOptions<D, EM>, U extends MikroORMOptions<D, EM>[T]>(key: T, value: U): void {
     this.options[key] = value;
     this.sync();
   }
@@ -202,8 +201,8 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Resets the configuration to its default value
    */
-  reset<T extends keyof MikroORMOptions<D>>(key: T): void {
-    this.options[key] = (Configuration.DEFAULTS as MikroORMOptions<D>)[key];
+  reset<T extends keyof MikroORMOptions<D, EM>>(key: T): void {
+    this.options[key] = (Configuration.DEFAULTS as MikroORMOptions<D, EM>)[key];
   }
 
   /**
@@ -295,7 +294,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets EntityRepository class to be instantiated.
    */
-  getRepositoryClass(repository: () => EntityClass<EntityRepository<AnyEntity>>): MikroORMOptions<D>['entityRepository'] {
+  getRepositoryClass(repository: () => EntityClass<EntityRepository<AnyEntity>>): MikroORMOptions<D, EM>['entityRepository'] {
     if (repository) {
       return repository();
     }
@@ -517,7 +516,7 @@ export interface MetadataDiscoveryOptions {
   afterDiscovered?: (storage: MetadataStorage, platform: Platform) => MaybePromise<void>;
 }
 
-export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {
+export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = EntityManager> extends ConnectionOptions {
   entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
   entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
   extensions: { register: (orm: MikroORM) => void }[];
@@ -557,6 +556,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   populateWhere: PopulateHint;
   flushMode: FlushMode | 'commit' | 'auto' | 'always';
   entityRepository?: EntityClass<EntityRepository<any>>;
+  entityManager?: Constructor<EM>;
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   validate: boolean;
@@ -614,6 +614,6 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   dynamicImportProvider: (id: string) => Promise<unknown>;
 }
 
-export type Options<D extends IDatabaseDriver = IDatabaseDriver> =
-  Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>>
-  & Partial<MikroORMOptions<D>>;
+export type Options<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = EntityManager> =
+  Pick<MikroORMOptions<D, EM>, Exclude<keyof MikroORMOptions<D, EM>, keyof typeof Configuration.DEFAULTS>>
+  & Partial<MikroORMOptions<D, EM>>;

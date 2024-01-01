@@ -634,3 +634,28 @@ for (const t of tasks) {
 }
 // Logs A, B, C
 ```
+
+## Extending `EntityManager`
+
+To extend the EntityManager with your own custom methods, you can use the `entityManager` ORM option:
+
+```ts
+import { MikroORM, EntityManager } from '@mikro-orm/sqlite';
+
+class MyEntityManager extends EntityManager {
+
+  myCustomMethod(base: number): number {
+    return base * Math.random();
+  }
+
+}
+
+const orm = await MikroORM.init({
+  entities: [...],
+  dbName: ':memory:',
+  // highlight-next-line
+  entityManager: MyEntityManager,
+});
+console.log(orm.em instanceof MyEntityManager); // true
+const res = orm.em.myCustomMethod(123);
+```

@@ -1,24 +1,32 @@
-import { defineConfig, MikroORM, type Options, type IDatabaseDriver } from '@mikro-orm/core';
+import {
+  defineConfig,
+  MikroORM,
+  type Options,
+  type IDatabaseDriver,
+  type EntityManager,
+  type EntityManagerType,
+} from '@mikro-orm/core';
 import { BetterSqliteDriver } from './BetterSqliteDriver';
+import type { SqlEntityManager } from '@mikro-orm/knex';
 
 /**
  * @inheritDoc
  */
-export class BetterSqliteMikroORM extends MikroORM<BetterSqliteDriver> {
+export class BetterSqliteMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<BetterSqliteDriver, EM> {
 
   private static DRIVER = BetterSqliteDriver;
 
   /**
    * @inheritDoc
    */
-  static override async init<D extends IDatabaseDriver = BetterSqliteDriver>(options?: Options<D>): Promise<MikroORM<D>> {
+  static override async init<D extends IDatabaseDriver = BetterSqliteDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager>(options?: Options<D, EM>): Promise<MikroORM<D, EM>> {
     return super.init(options);
   }
 
   /**
    * @inheritDoc
    */
-  static override initSync<D extends IDatabaseDriver = BetterSqliteDriver>(options: Options<D>): MikroORM<D> {
+  static override initSync<D extends IDatabaseDriver = BetterSqliteDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager>(options: Options<D, EM>): MikroORM<D, EM> {
     return super.initSync(options);
   }
 
