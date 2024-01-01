@@ -120,6 +120,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     charset: 'utf8mb4',
     logger: (i: any) => i,
     multipleStatements: true,
+    autoJoinRefsForFilters: false,
     populateAfterFlush: false,
     entityRepository: SqlEntityRepository,
     driver: type === 'mysql' ? MySqlDriver : MariaDbDriver,

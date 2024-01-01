@@ -340,7 +340,7 @@ describe('Dataloader', () => {
     expect(serialize(resA)).toEqual(serialize(resB));
   });
 
-  test('Dataloader can be globally enabled for References with true, Dataloader.ALL, Dataloader.REFERENCE', async () => {
+  test('Dataloader can be globally enabled for References with true, DataloaderType.ALL, DataloaderType.REFERENCE', async () => {
     async function getRefs(dataloader: DataloaderType | boolean) {
       const orm = await MikroORM.init({
         dbName: ':memory:',
@@ -364,7 +364,7 @@ describe('Dataloader', () => {
     expect(await getRefs(DataloaderType.REFERENCE)).toEqual(res);
   });
 
-  test('Dataloader should not be globally enabled for References with false, Dataloader.OFF, Dataloader.COLLECTION', async () => {
+  test('Dataloader should not be globally enabled for References with false, DataloaderType.NONE, DataloaderType.COLLECTION', async () => {
     async function getRefs(dataloader: DataloaderType | boolean) {
       const orm = await MikroORM.init({
         dbName: ':memory:',
@@ -580,7 +580,7 @@ describe('Dataloader', () => {
     }
   });
 
-  test('Dataloader can be globally enabled for Collections with true, Dataloader.ALL, Dataloader.COLLECTION', async () => {
+  test('Dataloader can be globally enabled for Collections with true, DataloaderType.ALL, DataloaderType.COLLECTION', async () => {
     async function getCols(dataloader: DataloaderType | boolean) {
       const orm = await MikroORM.init({
         dbName: ':memory:',
@@ -604,7 +604,7 @@ describe('Dataloader', () => {
     expect(await getCols(DataloaderType.COLLECTION)).toEqual(res);
   });
 
-  test('Dataloader should not be globally enabled for Collections with false, Dataloader.OFF, Dataloader.REFERENCE', async () => {
+  test('Dataloader should not be globally enabled for Collections with false, DataloaderType.NONE, DataloaderType.REFERENCE', async () => {
     async function getCols(dataloader: DataloaderType | boolean) {
       const orm = await MikroORM.init({
         dbName: ':memory:',

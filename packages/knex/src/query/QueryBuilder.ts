@@ -35,7 +35,7 @@ import {
   Utils,
   ValidationError,
 } from '@mikro-orm/core';
-import { QueryType, JoinType } from './enums';
+import { JoinType, QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { type Alias, QueryBuilderHelper } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
@@ -350,6 +350,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const op = operator || params as keyof typeof GroupOperator;
     const topLevel = !op || !Utils.hasObjectKeys(this._cond);
     const criteriaNode = CriteriaNodeFactory.createNode<T>(this.metadata, this.mainAlias.entityName, cond);
+    const ignoreBranching = this.__populateWhere === 'infer';
 
     if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type!) && criteriaNode.willAutoJoin(this)) {
       // use sub-query to support joining
@@ -358,11 +359,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     if (topLevel) {
-      this._cond = criteriaNode.process(this);
+      this._cond = criteriaNode.process(this, { ignoreBranching });
     } else if (Array.isArray(this._cond[op])) {
-      this._cond[op].push(criteriaNode.process(this));
+      this._cond[op].push(criteriaNode.process(this, { ignoreBranching }));
     } else {
-      const cond1 = [this._cond, criteriaNode.process(this)];
+      const cond1 = [this._cond, criteriaNode.process(this, { ignoreBranching })];
       this._cond = { [op]: cond1 };
     }
 
@@ -1332,21 +1333,26 @@ export class QueryBuilder<T extends object = AnyEntity> {
       join.cond = {};
     });
 
-    const replaceOnConditions = (cond: Dictionary) => {
+    const replaceOnConditions = (cond: Dictionary, op?: string) => {
       Object.keys(cond).forEach(k => {
         if (Utils.isOperator(k)) {
           if (Array.isArray(cond[k])) {
-            return cond[k].forEach((c: Dictionary) => replaceOnConditions(c));
+            return cond[k].forEach((c: Dictionary) => replaceOnConditions(c, k));
           }
 
-          return replaceOnConditions(cond[k]);
+          /* istanbul ignore next */
+          return replaceOnConditions(cond[k], k);
         }
 
         const [alias] = this.helper.splitField(k as EntityKey<T>);
         const join = joins.find(j => j.alias === alias);
 
         if (join) {
-          join.cond = { ...join.cond, [k]: cond[k] };
+          if (join.cond[k]) {
+            join.cond = { [op ?? '$and']: [join.cond, { [k]: cond[k] }] };
+          } else {
+            join.cond = { ...join.cond, [k]: cond[k] };
+          }
         }
       });
     };

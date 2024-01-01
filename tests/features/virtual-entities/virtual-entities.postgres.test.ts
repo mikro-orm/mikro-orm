@@ -274,7 +274,7 @@ describe('virtual entities (sqlite)', () => {
       'group by "b"."uuid_pk"';
     const queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toHaveLength(7);
-    expect(queries[0]).toMatch(`select "a0".*, "a1"."author_id" as "address_author_id" from "author2" as "a0" left join "address2" as "a1" on "a0"."id" = "a1"."author_id" where "a0"."id" in (1, 2, 3)`);
+    expect(queries[0]).toMatch(`select "a0".*, "f1"."uuid_pk" as "favourite_book_uuid_pk", "a2"."author_id" as "address_author_id" from "author2" as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null left join "address2" as "a2" on "a0"."id" = "a2"."author_id" where "a0"."id" in (1, 2, 3)`);
     expect(queries[1]).toMatch(`select * from (${sql}) as "b0"`);
     expect(queries[2]).toMatch(`select * from (${sql}) as "b0" order by "b0"."title" asc limit 2`);
     expect(queries[3]).toMatch(`select * from (${sql}) as "b0" order by "b0"."title" asc limit 2 offset 1`);

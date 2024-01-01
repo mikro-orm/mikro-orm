@@ -858,6 +858,7 @@ export type PopulateOptions<T> = {
   field: EntityKey<T>;
   strategy?: LoadStrategy;
   all?: boolean;
+  filter?: boolean;
   children?: PopulateOptions<T[keyof T]>[];
 };
 
