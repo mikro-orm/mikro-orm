@@ -2185,12 +2185,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
           merge: true,
           convertCustomTypes: true,
           refresh,
+          recomputeSnapshot: true,
         })) as unknown as R;
       } else if (Utils.isObject<EntityData<T>>(cached) && merge) {
         data = em.entityFactory.create<T>(entityName, cached, {
           merge: true,
           convertCustomTypes: true,
           refresh,
+          recomputeSnapshot: true,
         }) as unknown as R;
       } else {
         data = cached;

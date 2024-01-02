@@ -31,6 +31,7 @@ export interface FactoryOptions {
   merge?: boolean;
   refresh?: boolean;
   convertCustomTypes?: boolean;
+  recomputeSnapshot?: boolean;
   schema?: string;
 }
 
@@ -117,6 +118,10 @@ export class EntityFactory {
         newEntity: options.newEntity,
         loaded: options.initialized,
       });
+
+      if (options.recomputeSnapshot) {
+        wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
+      }
     }
 
     if (this.eventManager.hasListeners(EventType.onInit, meta2)) {

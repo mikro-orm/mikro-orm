@@ -215,7 +215,7 @@ export class MetadataValidator {
 
   private validateDuplicateFieldNames(meta: EntityMetadata, options: MetadataDiscoveryOptions): void {
     const candidates = Object.values(meta.properties)
-      .filter(prop => prop.persist !== false && !prop.inherited && prop.fieldNames?.length === 1)
+      .filter(prop => prop.persist !== false && !prop.inherited && prop.fieldNames?.length === 1 && (prop.kind !== ReferenceKind.EMBEDDED || prop.object))
       .map(prop => prop.fieldNames[0]);
     const duplicates = Utils.findDuplicates(candidates);
 
@@ -223,7 +223,9 @@ export class MetadataValidator {
       const pairs = duplicates.flatMap(name => {
         return Object.values(meta.properties)
           .filter(p => p.fieldNames[0] === name)
-          .map(prop => [prop.name, prop.fieldNames[0]] as [string, string]);
+          .map(prop => {
+            return [prop.embedded ? prop.embedded.join('.') : prop.name, prop.fieldNames[0]] as [string, string];
+          });
       });
 
       throw MetadataError.duplicateFieldName(meta.className, pairs);

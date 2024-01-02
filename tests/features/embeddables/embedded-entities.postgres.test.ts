@@ -149,8 +149,8 @@ describe('embedded entities in postgresql', () => {
       kind: ReferenceKind.EMBEDDED,
       type: 'Address2',
     });
-    expect(orm.getMetadata().get('User').properties.addr_street).toMatchObject({
-      name: 'addr_street',
+    expect(orm.getMetadata().get('User').properties.address2_street).toMatchObject({
+      name: 'address2_street',
       kind: ReferenceKind.SCALAR,
       type: 'string',
       nullable: true,
@@ -160,8 +160,8 @@ describe('embedded entities in postgresql', () => {
       kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
-    expect(orm.getMetadata().get('User').properties.street).toMatchObject({
-      name: 'street',
+    expect(orm.getMetadata().get('User').properties.address4_street).toMatchObject({
+      name: 'address4_street',
       kind: ReferenceKind.SCALAR,
       type: 'string',
     });

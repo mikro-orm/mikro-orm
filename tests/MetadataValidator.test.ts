@@ -184,7 +184,7 @@ describe('MetadataValidator', () => {
         age: { kind: 'scalar', name: 'age', fieldNames: ['name'], type: 'string' },
       },
     } as any).init();
-    expect(() => validator.validateEntityDefinition(new MetadataStorage({ Foo1: schema1.meta }), 'Foo1', options)).toThrow("Duplicate fieldNames are not allowed: Foo1.name (fieldName: 'name'), Foo1.age (fieldName: 'age')");
+    expect(() => validator.validateEntityDefinition(new MetadataStorage({ Foo1: schema1.meta }), 'Foo1', options)).toThrow("Duplicate fieldNames are not allowed: Foo1.name (fieldName: 'name'), Foo1.age (fieldName: 'name')");
     schema1.meta.properties.age.fieldNames[0] = 'age';
     expect(() => validator.validateDiscovered([schema1.meta], options)).not.toThrow();
   });

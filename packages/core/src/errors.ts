@@ -225,7 +225,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
   }
 
   static duplicateFieldName(className: string, names: [string, string][]): MetadataError {
-    return new MetadataError(`Duplicate fieldNames are not allowed: ${names.map(n => `${className}.${n[0]} (fieldName: '${n[0]}')`).join(', ')}`);
+    return new MetadataError(`Duplicate fieldNames are not allowed: ${names.map(n => `${className}.${n[0]} (fieldName: '${n[1]}')`).join(', ')}`);
   }
 
   static multipleDecorators(entityName: string, propertyName: string): MetadataError {
@@ -234,10 +234,6 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
 
   static missingMetadata(entity: string): MetadataError {
     return new MetadataError(`Metadata for entity ${entity} not found`);
-  }
-
-  static conflictingPropertyName(className: string, name: string, embeddedName: string): MetadataError {
-    return new MetadataError(`Property ${className}:${name} is being overwritten by its child property ${embeddedName}:${name}. Consider using a prefix to overcome this issue.`);
   }
 
   static invalidPrimaryKey(meta: EntityMetadata, prop: EntityProperty, requiredName: string) {

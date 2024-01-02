@@ -947,11 +947,7 @@ export class MetadataDiscovery {
     const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_' : embeddedProp.prefix;
 
     for (const prop of Object.values(embeddable.properties).filter(p => p.persist !== false)) {
-      const name = prefix + prop.name;
-
-      if (meta.properties[name] !== undefined && getRootProperty(meta.properties[name]).kind !== ReferenceKind.EMBEDDED) {
-        throw MetadataError.conflictingPropertyName(meta.className, name, embeddedProp.name);
-      }
+      const name = (embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_') + prop.name;
 
       meta.properties[name] = Utils.copy(prop, false);
       meta.properties[name].name = name;
@@ -963,12 +959,13 @@ export class MetadataDiscovery {
         meta.properties[name].nullable = true;
       }
 
-      if (prefix) {
-        if (meta.properties[name].fieldNames) {
-          meta.properties[name].fieldNames[0] = prefix + meta.properties[name].fieldNames[0];
-        } else {
-          this.initFieldName(meta.properties[name]);
-        }
+      if (meta.properties[name].fieldNames) {
+        meta.properties[name].fieldNames[0] = prefix + meta.properties[name].fieldNames[0];
+      } else {
+        const name2 = meta.properties[name].name;
+        meta.properties[name].name = prefix + prop.name;
+        this.initFieldName(meta.properties[name]);
+        meta.properties[name].name = name2;
       }
 
       if (object) {
