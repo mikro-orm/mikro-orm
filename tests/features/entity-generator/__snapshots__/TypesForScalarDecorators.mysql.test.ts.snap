@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`TypesForScalarDecorators generate entities from schema [mysql]: dump 1`] = `
+exports[`TypesForScalarDecorators: dump 1`] = `
 [
   "import { Entity, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 

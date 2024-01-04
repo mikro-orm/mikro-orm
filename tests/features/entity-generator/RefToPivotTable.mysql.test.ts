@@ -2,9 +2,9 @@ import { MikroORM } from '@mikro-orm/mysql';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 let orm: MikroORM;
+const schemaName = 'pivot_ref_examples';
 
-test('RefToPivotTable', async () => {
-  const schemaName = 'pivot_ref_examples';
+beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: schemaName,
     port: 3308,
@@ -12,6 +12,11 @@ test('RefToPivotTable', async () => {
     extensions: [EntityGenerator],
     multipleStatements: true,
   });
+});
+
+afterAll(() => orm.close());
+
+test('RefToPivotTable', async () => {
   const driver = orm.config.getDriver();
   if (!await driver.getPlatform().getSchemaHelper()?.databaseExists(driver.getConnection(), schemaName)) {
     await orm.schema.createSchema({ schema: schemaName });
