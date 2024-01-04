@@ -742,7 +742,8 @@ export interface GenerateOptions {
   scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
   fileName?: (className: string) => string;
   onlyPurePivotTables?: boolean;
-  readOnlyPivotTables?: boolean;}
+  readOnlyPivotTables?: boolean;
+}
 
 export interface IEntityGenerator {
   generate(options?: GenerateOptions): Promise<string[]>;

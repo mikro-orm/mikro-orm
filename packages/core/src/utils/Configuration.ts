@@ -119,7 +119,8 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       scalarPropertiesForRelations: 'never',
       fileName: (className: string) => className,
       onlyPurePivotTables: false,
-      readOnlyPivotTables: false    },
+      readOnlyPivotTables: false,
+    },
     metadataCache: {
       pretty: false,
       adapter: FileCacheAdapter,
@@ -594,7 +595,8 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
     fileName?: (className: string) => string;
     onlyPurePivotTables?: boolean;
-    readOnlyPivotTables?: boolean;  };
+    readOnlyPivotTables?: boolean;
+  };
   metadataCache: {
     enabled?: boolean;
     combined?: boolean | string;

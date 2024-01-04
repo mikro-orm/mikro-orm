@@ -122,7 +122,6 @@ export class EntityGenerator {
         this.referencedEntities.add(meta);
       }
 
-
       // Entities with non-composite PKs are never pivot tables. Skip.
       if (!meta.compositePK) {
         continue;
