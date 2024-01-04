@@ -334,6 +334,15 @@ export class SourceFile {
       assign('precision');
       assign('scale');
     }
+    if (prop.autoincrement) {
+      if (!prop.primary || !['number', 'bigint'].includes(t) || this.meta.getPrimaryProps().length !== 1) {
+        options.autoincrement = true;
+      }
+    } else {
+      if (prop.primary && ['number', 'bigint'].includes(t) && this.meta.getPrimaryProps().length === 1) {
+        options.autoincrement = false;
+      }
+    }
   }
 
   protected getManyToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
@@ -364,6 +373,13 @@ export class SourceFile {
       options.inverseJoinColumn = this.quote(prop.inverseJoinColumns[0]);
     } else {
       options.inverseJoinColumns = `[${prop.inverseJoinColumns.map(this.quote).join(', ')}]`;
+    }
+
+    if (prop.fixedOrder) {
+      options.fixedOrder = true;
+      if (prop.fixedOrderColumn && prop.fixedOrderColumn !== this.namingStrategy.referenceColumnName()) {
+        options.fixedOrderColumn = this.quote(prop.fixedOrderColumn);
+      }
     }
   }
 

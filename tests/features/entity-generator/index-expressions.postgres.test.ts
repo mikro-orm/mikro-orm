@@ -2,16 +2,18 @@ import { MikroORM } from '@mikro-orm/postgresql';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 test('4911', async () => {
+  const schemaName = '4911';
   const orm = await MikroORM.init({
-    dbName: '4911',
+    dbName: schemaName,
     discovery: {
       warnWhenNoEntities: false,
     },
     extensions: [EntityGenerator],
   });
-  await orm.schema.ensureDatabase();
-  await orm.schema.execute(`drop table if exists dcim_device`);
-  await orm.schema.execute(`
+  const driver = orm.config.getDriver();
+  if (!await driver.getPlatform().getSchemaHelper()?.databaseExists(driver.getConnection(), schemaName)) {
+    await orm.schema.createSchema({ schema: schemaName });
+    await orm.schema.execute(`
 CREATE TABLE "public"."dcim_device" (
     "created" timestamptz,
     "id" int8 NOT NULL,
@@ -58,6 +60,7 @@ CREATE INDEX dcim_device_cluster_id_cf852f78 ON "public"."dcim_device" USING BTR
 CREATE UNIQUE INDEX dcim_device_asset_tag_key ON "public"."dcim_device" USING BTREE (asset_tag);
 CREATE INDEX dcim_device_asset_tag_8dac1079_like ON "public"."dcim_device" USING BTREE (asset_tag varchar_pattern_ops);
   `);
+  }
   const dump = await orm.entityGenerator.generate();
   expect(dump).toMatchSnapshot();
   await orm.close(true);

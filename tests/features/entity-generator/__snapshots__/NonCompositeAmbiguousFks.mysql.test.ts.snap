@@ -63,7 +63,7 @@ export class Products {
 
   [PrimaryKeyProp]?: 'productId';
 
-  @PrimaryKey()
+  @PrimaryKey({ autoincrement: false })
   productId!: number;
 
   @Property({ length: 255 })
@@ -170,7 +170,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'number', autoincrement: false },
     name: { type: 'string', length: 255 },
   },
 });
@@ -290,7 +290,7 @@ export class Products {
 
   [PrimaryKeyProp]?: 'productId';
 
-  @PrimaryKey()
+  @PrimaryKey({ autoincrement: false })
   productId!: number;
 
   @Property({ length: 255 })
@@ -411,7 +411,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'number', autoincrement: false },
     name: { type: 'string', length: 255 },
   },
 });
@@ -554,7 +554,7 @@ export class Products {
 
   [PrimaryKeyProp]?: 'productId';
 
-  @PrimaryKey()
+  @PrimaryKey({ autoincrement: false })
   productId!: number;
 
   @Property({ length: 255 })
@@ -688,7 +688,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'number', autoincrement: false },
     name: { type: 'string', length: 255 },
     productInverse: { kind: '1:1', entity: () => ManufacturedProducts, mappedBy: 'product' },
   },
@@ -825,7 +825,7 @@ export class Products {
 
   [PrimaryKeyProp]?: 'productId';
 
-  @PrimaryKey()
+  @PrimaryKey({ autoincrement: false })
   productId!: number;
 
   @Property({ length: 255 })
@@ -974,7 +974,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'number', autoincrement: false },
     name: { type: 'string', length: 255 },
     productInverse: {
       kind: '1:1',
@@ -1101,7 +1101,7 @@ export class Products {
 
   [PrimaryKeyProp]?: 'productId';
 
-  @PrimaryKey()
+  @PrimaryKey({ autoincrement: false })
   productId!: number;
 
   @Property({ length: 255 })
@@ -1197,7 +1197,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'number', autoincrement: false },
     name: { type: 'string', length: 255 },
   },
 });
@@ -1302,7 +1302,7 @@ export class Products {
 
   [PrimaryKeyProp]?: 'productId';
 
-  @PrimaryKey()
+  @PrimaryKey({ autoincrement: false })
   productId!: number;
 
   @Property({ length: 255 })
@@ -1412,7 +1412,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'number', autoincrement: false },
     name: { type: 'string', length: 255 },
   },
 });
@@ -1540,7 +1540,7 @@ export class Products {
 
   [PrimaryKeyProp]?: 'productId';
 
-  @PrimaryKey()
+  @PrimaryKey({ autoincrement: false })
   productId!: number;
 
   @Property({ length: 255 })
@@ -1663,7 +1663,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'number', autoincrement: false },
     name: { type: 'string', length: 255 },
     productInverse: { kind: '1:1', entity: () => ManufacturedProducts, mappedBy: 'product' },
   },
@@ -1785,7 +1785,7 @@ export class Products {
 
   [PrimaryKeyProp]?: 'productId';
 
-  @PrimaryKey()
+  @PrimaryKey({ autoincrement: false })
   productId!: number;
 
   @Property({ length: 255 })
@@ -1923,7 +1923,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'number', autoincrement: false },
     name: { type: 'string', length: 255 },
     productInverse: {
       kind: '1:1',
@@ -2041,7 +2041,7 @@ export class Products {
 
   [PrimaryKeyProp]?: 'productId';
 
-  @PrimaryKey()
+  @PrimaryKey({ autoincrement: false })
   productId!: number;
 
   @Property({ length: 255 })
@@ -2137,7 +2137,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'number', autoincrement: false },
     name: { type: 'string', length: 255 },
   },
 });
@@ -2242,7 +2242,7 @@ export class Products {
 
   [PrimaryKeyProp]?: 'productId';
 
-  @PrimaryKey()
+  @PrimaryKey({ autoincrement: false })
   productId!: number;
 
   @Property({ length: 255 })
@@ -2352,7 +2352,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'number', autoincrement: false },
     name: { type: 'string', length: 255 },
   },
 });
@@ -2480,7 +2480,7 @@ export class Products {
 
   [PrimaryKeyProp]?: 'productId';
 
-  @PrimaryKey()
+  @PrimaryKey({ autoincrement: false })
   productId!: number;
 
   @Property({ length: 255 })
@@ -2603,7 +2603,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'number', autoincrement: false },
     name: { type: 'string', length: 255 },
     productInverse: { kind: '1:1', entity: () => ManufacturedProducts, mappedBy: 'product' },
   },
@@ -2725,7 +2725,7 @@ export class Products {
 
   [PrimaryKeyProp]?: 'productId';
 
-  @PrimaryKey()
+  @PrimaryKey({ autoincrement: false })
   productId!: number;
 
   @Property({ length: 255 })
@@ -2863,7 +2863,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'number', autoincrement: false },
     name: { type: 'string', length: 255 },
     productInverse: {
       kind: '1:1',

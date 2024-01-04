@@ -358,7 +358,7 @@ export class EntitySchema<Entity = any, Base = never> {
       this._meta.simplePK = !this._meta.compositePK && pks[0].kind === ReferenceKind.SCALAR && !pks[0].customType;
     }
 
-    if (pks.length === 1 && pks[0].type === 'number') {
+    if (pks.length === 1 && ['number', 'bigint'].includes(pks[0].type)) {
       pks[0].autoincrement ??= true;
     }
 

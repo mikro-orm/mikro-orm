@@ -54,7 +54,7 @@ export class ProductColors {
   product!: Products;
 
   @Index({ name: 'fk_product_colors_products1_idx' })
-  @Property({ persist: false })
+  @Property({ autoincrement: true, persist: false })
   productId!: number;
 
 }
@@ -320,7 +320,12 @@ export const ProductColorsSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_colors_products1_idx' },
+    productId: {
+      type: 'number',
+      autoincrement: true,
+      persist: false,
+      index: 'fk_product_colors_products1_idx',
+    },
   },
 });
 ",
@@ -638,7 +643,7 @@ export class ProductColors {
   product!: Ref<Products>;
 
   @Index({ name: 'fk_product_colors_products1_idx' })
-  @Property({ persist: false })
+  @Property({ autoincrement: true, persist: false })
   productId!: number;
 
 }
@@ -913,7 +918,12 @@ export const ProductColorsSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_colors_products1_idx' },
+    productId: {
+      type: 'number',
+      autoincrement: true,
+      persist: false,
+      index: 'fk_product_colors_products1_idx',
+    },
   },
 });
 ",
@@ -1292,7 +1302,7 @@ export class ProductColors {
   product!: Products;
 
   @Index({ name: 'fk_product_colors_products1_idx' })
-  @Property({ persist: false })
+  @Property({ autoincrement: true, persist: false })
   productId!: number;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'color' })
@@ -1612,7 +1622,12 @@ export const ProductColorsSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_colors_products1_idx' },
+    productId: {
+      type: 'number',
+      autoincrement: true,
+      persist: false,
+      index: 'fk_product_colors_products1_idx',
+    },
     colorInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
   },
 });
@@ -1976,7 +1991,7 @@ export class ProductColors {
   product!: Ref<Products>;
 
   @Index({ name: 'fk_product_colors_products1_idx' })
-  @Property({ persist: false })
+  @Property({ autoincrement: true, persist: false })
   productId!: number;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'color' })
@@ -2305,7 +2320,12 @@ export const ProductColorsSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_colors_products1_idx' },
+    productId: {
+      type: 'number',
+      autoincrement: true,
+      persist: false,
+      index: 'fk_product_colors_products1_idx',
+    },
     colorInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
   },
 });

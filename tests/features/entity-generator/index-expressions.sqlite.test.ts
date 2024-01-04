@@ -10,7 +10,6 @@ test('4911', async () => {
     extensions: [EntityGenerator],
   });
   await orm.schema.ensureDatabase();
-  await orm.schema.execute(`drop table if exists dcim_device`);
   await orm.schema.execute(`
 CREATE TABLE "dcim_device" ("created" timestamptz, "id" int8 NOT NULL, "name" varchar, "_name" varchar, "asset_tag" varchar, "position" numeric, "face" varchar NOT NULL, "vc_position" int2 CHECK (vc_position >= 0), "vc_priority" int2 CHECK (vc_priority >= 0), "cluster_id" int8, "role_id" int8 NOT NULL, "device_type_id" int8 NOT NULL, "location_id" int8, "platform_id" int8, "primary_ip4_id" int8, "primary_ip6_id" int8, "rack_id" int8, "site_id" int8 NOT NULL, "tenant_id" int8, "virtual_chassis_id" int8, "airflow" varchar NOT NULL, "config_template_id" int8, "oob_ip_id" int8, PRIMARY KEY ("id"));
 CREATE INDEX dcim_device_virtual_chassis_id_aed51693 ON "dcim_device" (virtual_chassis_id);

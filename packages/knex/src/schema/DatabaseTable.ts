@@ -226,7 +226,7 @@ export class DatabaseTable {
 
       // Index is for FK. Map to the FK prop and move on.
       const fkForIndex = fkIndexes.get(index);
-      if (fkForIndex) {
+      if (fkForIndex && !fkForIndex.fk.columnNames.some(col => !index.columnNames.includes(col))) {
         ret.properties = [this.getPropertyName(namingStrategy, fkForIndex.baseName, fkForIndex.fk)];
         const map = index.unique ? compositeFkUniques : compositeFkIndexes;
         map[ret.properties[0]] = { keyName: index.keyName };
@@ -438,16 +438,16 @@ export class DatabaseTable {
       return index.columnNames.length >= fkColumnsLength && !currentFk.columnNames.some((columnName, i) => index.columnNames[i] !== columnName);
     });
     possibleIndexes.sort((a, b) => {
+      if (a.columnNames.length !== b.columnNames.length) {
+        return a.columnNames.length < b.columnNames.length ? -1 : 1;
+      }
+
       if (a.primary !== b.primary) {
         return a.primary ? -1 : 1;
       }
 
       if (a.unique !== b.unique) {
         return a.unique ? -1 : 1;
-      }
-
-      if (a.columnNames.length !== b.columnNames.length) {
-        return a.columnNames.length < b.columnNames.length ? -1 : 1;
       }
 
       return a.keyName.localeCompare(b.keyName);
@@ -661,6 +661,7 @@ export class DatabaseTable {
       defaultRaw: this.getPropertyDefaultValue(schemaHelper, column, type, true),
       nullable: column.nullable,
       primary: column.primary && persist,
+      autoincrement: column.autoincrement,
       fieldName: column.name,
       length: column.length,
       precision: column.precision,

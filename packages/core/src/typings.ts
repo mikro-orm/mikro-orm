@@ -741,6 +741,8 @@ export interface GenerateOptions {
   scalarTypeInDecorator?: boolean;
   scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
   fileName?: (className: string) => string;
+  onlyPurePivotTables?: boolean;
+  readOnlyPivotTables?: boolean;
 }
 
 export interface IEntityGenerator {
