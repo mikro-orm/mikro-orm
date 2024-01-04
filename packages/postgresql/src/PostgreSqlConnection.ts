@@ -1,4 +1,5 @@
 import TypeOverrides from 'pg/lib/type-overrides';
+import parseDate from 'postgres-date';
 import type { Dictionary } from '@mikro-orm/core';
 import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
 
@@ -20,7 +21,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     ret.types = types as any;
 
     if (this.config.get('forceUtcTimezone')) {
-      [1114].forEach(oid => types.setTypeParser(oid, str => new Date(str + 'Z'))); // timestamp w/o TZ type
+      [1114].forEach(oid => types.setTypeParser(oid, str => parseDate(str + 'Z'))); // timestamp w/o TZ type
       ret.parseInputDatesAsUTC = true;
     }
 
