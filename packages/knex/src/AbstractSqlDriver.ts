@@ -235,7 +235,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     qb.where(where);
 
-    const kqb = qb.getKnexQuery().clear('select');
+    const kqb = qb.getKnexQuery(false).clear('select');
 
     if (type === QueryType.COUNT) {
       kqb.select(this.connection.getKnex().raw('count(*) as count'));

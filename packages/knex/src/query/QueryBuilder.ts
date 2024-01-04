@@ -387,7 +387,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this.where(cond as string, params, '$or');
   }
 
-  orderBy(orderBy: QBQueryOrderMap<T> | QBQueryOrderMap<T>[]): this {
+  orderBy(orderBy: QBQueryOrderMap<T> | QBQueryOrderMap<T>[]): SelectQueryBuilder<T> {
     this.ensureNotFinalized();
     this._orderBy = [];
     Utils.asArray<QBQueryOrderMap<T>>(orderBy).forEach(o => {
@@ -404,16 +404,17 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this._orderBy.push(CriteriaNodeFactory.createNode<T>(this.metadata, this.mainAlias.entityName, processed).process(this, { matchPopulateJoins: true }));
     });
 
-    return this;
+    return this as SelectQueryBuilder<T>;
   }
 
-  groupBy(fields: (string | keyof T) | readonly (string | keyof T)[]): this {
+  groupBy(fields: (string | keyof T) | readonly (string | keyof T)[]): SelectQueryBuilder<T> {
     this.ensureNotFinalized();
     this._groupBy = Utils.asArray(fields);
-    return this;
+
+    return this as SelectQueryBuilder<T>;
   }
 
-  having(cond: QBFilterQuery | string = {}, params?: any[]): this {
+  having(cond: QBFilterQuery | string = {}, params?: any[]): SelectQueryBuilder<T> {
     this.ensureNotFinalized();
 
     if (Utils.isString(cond)) {
@@ -422,10 +423,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     this._having = CriteriaNodeFactory.createNode<T>(this.metadata, this.mainAlias.entityName, cond).process(this);
 
-    return this;
+    return this as SelectQueryBuilder<T>;
   }
 
-  onConflict(fields: Field<T> | Field<T>[] = []): this {
+  onConflict(fields: Field<T> | Field<T>[] = []): InsertQueryBuilder<T> {
     const meta = this.mainAlias.metadata as EntityMetadata<T>;
     this.ensureNotFinalized();
     this._onConflict ??= [];
@@ -436,7 +437,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
         return meta.properties[key]?.fieldNames ?? [key];
       }),
     });
-    return this;
+    return this as InsertQueryBuilder<T>;
   }
 
   ignore(): this {
@@ -477,7 +478,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this;
   }
 
-  limit(limit?: number, offset = 0): this {
+  limit(limit?: number, offset = 0): SelectQueryBuilder<T> {
     this.ensureNotFinalized();
     this._limit = limit;
 
@@ -485,13 +486,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.offset(offset);
     }
 
-    return this;
+    return this as SelectQueryBuilder<T>;
   }
 
-  offset(offset?: number): this {
+  offset(offset?: number): SelectQueryBuilder<T> {
     this.ensureNotFinalized();
     this._offset = offset;
-    return this;
+    return this as SelectQueryBuilder<T>;
   }
 
   withSchema(schema?: string): this {
@@ -575,9 +576,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Specifies FROM which entity's table select/update/delete will be executed, removing all previously set FROM-s.
    * Allows setting a main string alias of the selection data.
    */
-  from<T extends AnyEntity<T> = AnyEntity>(target: QueryBuilder<T>, aliasName?: string): QueryBuilder<T>;
-  from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T>): QueryBuilder<T>;
-  from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T> | QueryBuilder<T>, aliasName?: string): QueryBuilder<T> {
+  from<T extends AnyEntity<T> = AnyEntity>(target: QueryBuilder<T>, aliasName?: string): SelectQueryBuilder<T>;
+  from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T>): SelectQueryBuilder<T>;
+  from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T> | QueryBuilder<T>, aliasName?: string): SelectQueryBuilder<T> {
     this.ensureNotFinalized();
 
     if (target instanceof QueryBuilder) {
@@ -592,12 +593,12 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.fromEntityName(entityName, aliasName);
     }
 
-    return this as unknown as QueryBuilder<T>;
+    return this as unknown as SelectQueryBuilder<T>;
   }
 
-  getKnexQuery(): Knex.QueryBuilder {
+  getKnexQuery(processVirtualEntity = true): Knex.QueryBuilder {
     this.finalize();
-    const qb = this.getQueryBase();
+    const qb = this.getQueryBase(processVirtualEntity);
     const type = this.type ?? QueryType.SELECT;
     (qb as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
 
@@ -940,9 +941,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return qb;
   }
 
-  getKnex(): Knex.QueryBuilder {
+  getKnex(processVirtualEntity = true): Knex.QueryBuilder {
     const qb = this.knex.queryBuilder();
-    const { subQuery, aliasName, entityName } = this.mainAlias;
+    const { subQuery, aliasName, entityName, metadata } = this.mainAlias;
     const ref = subQuery ? subQuery : this.knex.ref(this.helper.getTableName(entityName));
 
     if (this.finalized && (this._explicitAlias || this.helper.isTableNameAliasRequired(this.type))) {
@@ -955,13 +956,42 @@ export class QueryBuilder<T extends object = AnyEntity> {
       ref.withSchema(schema);
     }
 
-    qb.from(ref);
+    if (metadata?.virtual && processVirtualEntity) {
+      qb.fromRaw(this.fromVirtual(metadata));
+    } else {
+      qb.from(ref);
+    }
 
     if (this.context) {
       qb.transacting(this.context);
     }
 
     return qb;
+  }
+
+  private fromVirtual<T extends object>(meta: EntityMetadata<T>): string {
+    if (typeof meta.expression === 'string') {
+      return `(${meta.expression}) as ${this.platform.quoteIdentifier(this.alias)}`;
+    }
+
+    const res = meta.expression!(this.em, this._cond as any, {});
+
+    if (typeof res === 'string') {
+      return `(${res}) as ${this.platform.quoteIdentifier(this.alias)}`;
+    }
+
+    if (res instanceof QueryBuilder) {
+      return `(${res.getFormattedQuery()}) as ${this.platform.quoteIdentifier(this.alias)}`;
+    }
+
+    if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(res)) {
+      const { sql, bindings } = res.toSQL();
+      const query = this.platform.formatQuery(sql, bindings);
+      return `(${query}) as ${this.platform.quoteIdentifier(this.alias)}`;
+    }
+
+    /* istanbul ignore next */
+    return res as unknown as string;
   }
 
   private joinReference(field: string | Knex.QueryBuilder | QueryBuilder, alias: string, cond: Dictionary, type: JoinType, path?: string, schema?: string, subquery?: string): EntityProperty<T> {
@@ -1168,8 +1198,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this;
   }
 
-  private getQueryBase(): Knex.QueryBuilder {
-    const qb = this.getKnex();
+  private getQueryBase(processVirtualEntity: boolean): Knex.QueryBuilder {
+    const qb = this.getKnex(processVirtualEntity);
     const schema = this.getSchema(this.mainAlias);
     // Joined tables doesn't need to belong to the same schema as the main table
     const joinSchema = this._schema ?? this.em?.schema ?? schema;

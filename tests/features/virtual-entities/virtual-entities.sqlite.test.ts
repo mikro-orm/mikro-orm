@@ -1,5 +1,5 @@
-import { EntitySchema, MikroORM, QueryFlag, ReferenceKind, raw, sql } from '@mikro-orm/core';
-import type { EntityManager } from '@mikro-orm/better-sqlite';
+import { EntitySchema, QueryFlag, ReferenceKind, raw, sql } from '@mikro-orm/core';
+import { EntityManager, MikroORM } from '@mikro-orm/better-sqlite';
 import { mockLogger } from '../../bootstrap';
 import type { IAuthor4 } from '../../entities-schema';
 import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, Identity, IdentitySchema } from '../../entities-schema';
@@ -25,7 +25,7 @@ const AuthorProfileSchema = new EntitySchema({
   expression: authorProfilesSQL,
   properties: {
     name: { type: 'string' },
-    age: { type: 'string' },
+    age: { type: 'number' },
     totalBooks: { type: 'number' },
     usedTags: { type: 'string[]' },
     identity: { type: 'Identity', kind: ReferenceKind.EMBEDDED, object: true },
@@ -47,7 +47,7 @@ const AuthorProfileSchema2 = new EntitySchema({
   expression: () => authorProfilesSQL,
   properties: {
     name: { type: 'string' },
-    age: { type: 'string' },
+    age: { type: 'number' },
     totalBooks: { type: 'number' },
     usedTags: { type: 'string[]' },
     identity: { type: 'Identity', kind: ReferenceKind.EMBEDDED, object: true },
@@ -180,6 +180,10 @@ describe('virtual entities (sqlite)', () => {
       expect(profile.identity).toBeInstanceOf(Identity);
     }
 
+    const someProfiles0 = await orm.em.qb(AuthorProfile2).limit(2).offset(1).orderBy({ name: 'asc' });
+    expect(someProfiles0).toHaveLength(2);
+    expect(someProfiles0.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
+
     const someProfiles1 = await orm.em.find(AuthorProfile2, {}, { limit: 2, offset: 1, orderBy: { name: 'asc' } });
     expect(someProfiles1).toHaveLength(2);
     expect(someProfiles1.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
@@ -196,13 +200,14 @@ describe('virtual entities (sqlite)', () => {
     expect(someProfiles4).toHaveLength(2);
     expect(someProfiles4.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
 
-    expect(mock.mock.calls).toHaveLength(6);
+    expect(mock.mock.calls).toHaveLength(7);
     expect(mock.mock.calls[0][0]).toMatch(`select count(*) as count from (${authorProfilesSQL}) as \`a0\``);
     expect(mock.mock.calls[1][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\``);
-    expect(mock.mock.calls[2][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2 offset 1`);
-    expect(mock.mock.calls[3][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2`);
-    expect(mock.mock.calls[4][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` where \`a0\`.\`name\` like 'Jon%' and \`a0\`.\`age\` >= 0 order by \`a0\`.\`name\` asc limit 2`);
-    expect(mock.mock.calls[5][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` where \`a0\`.\`name\` in ('Jon Snow 2', 'Jon Snow 3')`);
+    expect(mock.mock.calls[2][0]).toMatch(`select \`a0\`.* from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2 offset 1`);
+    expect(mock.mock.calls[3][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2 offset 1`);
+    expect(mock.mock.calls[4][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2`);
+    expect(mock.mock.calls[5][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` where \`a0\`.\`name\` like 'Jon%' and \`a0\`.\`age\` >= 0 order by \`a0\`.\`name\` asc limit 2`);
+    expect(mock.mock.calls[6][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` where \`a0\`.\`name\` in ('Jon Snow 2', 'Jon Snow 3')`);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
   });
 
