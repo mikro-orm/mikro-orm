@@ -180,9 +180,13 @@ describe('virtual entities (sqlite)', () => {
       expect(profile.identity).toBeInstanceOf(Identity);
     }
 
-    const someProfiles0 = await orm.em.qb(AuthorProfile2).limit(2).offset(1).orderBy({ name: 'asc' });
-    expect(someProfiles0).toHaveLength(2);
-    expect(someProfiles0.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
+    const someProfiles01 = await orm.em.qb(AuthorProfile).limit(2).offset(1).orderBy({ name: 'asc' });
+    expect(someProfiles01).toHaveLength(2);
+    expect(someProfiles01.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
+
+    const someProfiles02 = await orm.em.qb(AuthorProfile2).limit(2).offset(1).orderBy({ name: 'asc' });
+    expect(someProfiles02).toHaveLength(2);
+    expect(someProfiles02.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
 
     const someProfiles1 = await orm.em.find(AuthorProfile2, {}, { limit: 2, offset: 1, orderBy: { name: 'asc' } });
     expect(someProfiles1).toHaveLength(2);
@@ -200,14 +204,15 @@ describe('virtual entities (sqlite)', () => {
     expect(someProfiles4).toHaveLength(2);
     expect(someProfiles4.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
 
-    expect(mock.mock.calls).toHaveLength(7);
+    expect(mock.mock.calls).toHaveLength(8);
     expect(mock.mock.calls[0][0]).toMatch(`select count(*) as count from (${authorProfilesSQL}) as \`a0\``);
     expect(mock.mock.calls[1][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\``);
     expect(mock.mock.calls[2][0]).toMatch(`select \`a0\`.* from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2 offset 1`);
-    expect(mock.mock.calls[3][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2 offset 1`);
-    expect(mock.mock.calls[4][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2`);
-    expect(mock.mock.calls[5][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` where \`a0\`.\`name\` like 'Jon%' and \`a0\`.\`age\` >= 0 order by \`a0\`.\`name\` asc limit 2`);
-    expect(mock.mock.calls[6][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` where \`a0\`.\`name\` in ('Jon Snow 2', 'Jon Snow 3')`);
+    expect(mock.mock.calls[3][0]).toMatch(`select \`a0\`.* from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2 offset 1`);
+    expect(mock.mock.calls[4][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2 offset 1`);
+    expect(mock.mock.calls[5][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2`);
+    expect(mock.mock.calls[6][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` where \`a0\`.\`name\` like 'Jon%' and \`a0\`.\`age\` >= 0 order by \`a0\`.\`name\` asc limit 2`);
+    expect(mock.mock.calls[7][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` where \`a0\`.\`name\` in ('Jon Snow 2', 'Jon Snow 3')`);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
   });
 
@@ -271,6 +276,14 @@ describe('virtual entities (sqlite)', () => {
       expect(book.constructor.name).toBe('BookWithAuthor');
     }
 
+    const someBooks01 = await orm.em.qb(BookWithAuthor).limit(2).offset(1).orderBy({ title: 'asc' });
+    expect(someBooks01).toHaveLength(2);
+    expect(someBooks01.map(p => p.title)).toEqual(['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3']);
+
+    const someBooks02 = await orm.em.qb(BookWithAuthor2).limit(2).offset(1).orderBy({ title: 'asc' });
+    expect(someBooks02).toHaveLength(2);
+    expect(someBooks02.map(p => p.title)).toEqual(['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3']);
+
     const someBooks1 = await orm.em.find(BookWithAuthor2, {}, { limit: 2, offset: 1, orderBy: { title: 'asc' } });
     expect(someBooks1).toHaveLength(2);
     expect(someBooks1.map(p => p.title)).toEqual(['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3']);
@@ -293,13 +306,15 @@ describe('virtual entities (sqlite)', () => {
       'inner join `tags_ordered` as `t1` on `b`.`id` = `t1`.`book4_id` ' +
       'inner join `book_tag4` as `t` on `t1`.`book_tag4_id` = `t`.`id` ' +
       'group by `b`.`id`';
-    expect(mock.mock.calls).toHaveLength(6);
+    expect(mock.mock.calls).toHaveLength(8);
     expect(mock.mock.calls[0][0]).toMatch(`select count(*) as count from (${sql}) as \`b0\``);
     expect(mock.mock.calls[1][0]).toMatch(`select * from (${sql}) as \`b0\``);
-    expect(mock.mock.calls[2][0]).toMatch(`select * from (${sql}) as \`b0\` order by \`b0\`.\`title\` asc limit 2 offset 1`);
-    expect(mock.mock.calls[3][0]).toMatch(`select * from (${sql}) as \`b0\` order by \`b0\`.\`title\` asc limit 2`);
-    expect(mock.mock.calls[4][0]).toMatch(`select * from (${sql}) as \`b0\` where \`b0\`.\`title\` like 'My Life%' and \`b0\`.\`author_name\` is not null order by \`b0\`.\`title\` asc limit 2`);
-    expect(mock.mock.calls[5][0]).toMatch(`select * from (${sql}) as \`b0\` where \`b0\`.\`title\` in ('My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3')`);
+    expect(mock.mock.calls[2][0]).toMatch(`select \`b0\`.* from (${sql}) as \`b0\` order by \`b0\`.\`title\` asc limit 2 offset 1`);
+    expect(mock.mock.calls[3][0]).toMatch(`select \`b0\`.* from (${sql}) as \`b0\` order by \`b0\`.\`title\` asc limit 2 offset 1`);
+    expect(mock.mock.calls[4][0]).toMatch(`select * from (${sql}) as \`b0\` order by \`b0\`.\`title\` asc limit 2 offset 1`);
+    expect(mock.mock.calls[5][0]).toMatch(`select * from (${sql}) as \`b0\` order by \`b0\`.\`title\` asc limit 2`);
+    expect(mock.mock.calls[6][0]).toMatch(`select * from (${sql}) as \`b0\` where \`b0\`.\`title\` like 'My Life%' and \`b0\`.\`author_name\` is not null order by \`b0\`.\`title\` asc limit 2`);
+    expect(mock.mock.calls[7][0]).toMatch(`select * from (${sql}) as \`b0\` where \`b0\`.\`title\` in ('My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3')`);
 
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
     expect(mock.mock.calls[0][0]).toMatch(sql);
