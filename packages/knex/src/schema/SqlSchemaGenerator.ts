@@ -48,11 +48,15 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     this.lastEnsuredDatabase = dbName;
 
     if (!exists) {
-      this.config.set('dbName', this.helper.getManagementDbName());
-      await this.driver.reconnect();
-      await this.createDatabase(dbName);
-      this.config.set('dbName', dbName);
-      await this.driver.reconnect();
+      const managementDbName = this.helper.getManagementDbName();
+
+      if (managementDbName) {
+        this.config.set('dbName', managementDbName);
+        await this.driver.reconnect();
+        await this.createDatabase(dbName);
+        this.config.set('dbName', dbName);
+        await this.driver.reconnect();
+      }
 
       if (options?.create) {
         await this.createSchema(options);

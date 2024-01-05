@@ -164,6 +164,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }, {});
   }
 
+  override getManagementDbName(): string {
+    return '';
+  }
+
   override getCreateDatabaseSQL(name: string): string {
     return '';
   }
