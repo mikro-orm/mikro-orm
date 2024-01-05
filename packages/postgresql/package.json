@@ -59,7 +59,8 @@
   },
   "dependencies": {
     "@mikro-orm/knex": "5.9.7",
-    "pg": "8.11.3"
+    "pg": "8.11.3",
+    "postgres-date": "2.1.0"
   },
   "devDependencies": {
     "@mikro-orm/core": "^5.9.7"
