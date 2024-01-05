@@ -40,7 +40,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   override async ensureDatabase(options?: EnsureDatabaseOptions): Promise<boolean> {
     const dbName = this.config.get('dbName')!;
 
-    if (this.lastEnsuredDatabase === dbName) {
+    if (this.lastEnsuredDatabase === dbName && !options?.forceCheck) {
       return true;
     }
 
@@ -481,7 +481,12 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
    * creates new database and connects to it
    */
   override async createDatabase(name: string): Promise<void> {
-    await this.driver.execute(this.helper.getCreateDatabaseSQL('' + this.knex.ref(name)));
+    const sql = this.helper.getCreateDatabaseSQL('' + this.knex.ref(name));
+
+    if (sql) {
+      await this.driver.execute(sql);
+    }
+
     this.config.set('dbName', name);
     await this.driver.reconnect();
   }

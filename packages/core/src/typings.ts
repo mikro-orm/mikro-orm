@@ -724,6 +724,7 @@ export interface ClearDatabaseOptions {
 export interface EnsureDatabaseOptions extends CreateSchemaOptions, ClearDatabaseOptions {
   clear?: boolean;
   create?: boolean;
+  forceCheck?: boolean;
 }
 
 export interface DropSchemaOptions {
@@ -748,7 +749,7 @@ export interface RefreshDatabaseOptions extends CreateSchemaOptions {
 
 export interface ISchemaGenerator {
   createSchema(options?: CreateSchemaOptions): Promise<void>;
-  ensureDatabase(): Promise<boolean>;
+  ensureDatabase(options?: EnsureDatabaseOptions): Promise<boolean>;
   getCreateSchemaSQL(options?: CreateSchemaOptions): Promise<string>;
   dropSchema(options?: DropSchemaOptions): Promise<void>;
   getDropSchemaSQL(options?: Omit<DropSchemaOptions, 'dropDb'>): Promise<string>;

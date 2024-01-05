@@ -17,6 +17,7 @@ import type {
   MaybePromise,
   MigrationObject,
   EntityMetadata,
+  EnsureDatabaseOptions,
 } from '../typings';
 import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
@@ -547,7 +548,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   forceUndefined: boolean;
   forceUtcTimezone: boolean;
   timezone?: string;
-  ensureDatabase: boolean;
+  ensureDatabase: boolean | EnsureDatabaseOptions;
   ensureIndexes: boolean;
   useBatchInserts?: boolean;
   useBatchUpdates?: boolean;

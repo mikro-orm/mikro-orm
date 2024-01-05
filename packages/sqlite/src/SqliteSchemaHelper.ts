@@ -164,8 +164,13 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }, {});
   }
 
+  override getCreateDatabaseSQL(name: string): string {
+    return '';
+  }
+
   override async databaseExists(connection: Connection, name: string): Promise<boolean> {
-    return true;
+    const tables = await connection.execute(this.getListTablesSQL());
+    return tables.length > 0;
   }
 
   /**

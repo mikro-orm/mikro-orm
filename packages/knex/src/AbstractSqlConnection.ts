@@ -62,12 +62,8 @@ export abstract class AbstractSqlConnection extends Connection {
    * @inheritDoc
    */
   async isConnected(): Promise<boolean> {
-    try {
-      await this.getKnex().raw('select 1');
-      return true;
-    } catch {
-      return false;
-    }
+    const check = await this.checkConnection();
+    return check.ok;
   }
 
   /**

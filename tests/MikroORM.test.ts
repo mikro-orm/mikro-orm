@@ -224,6 +224,7 @@ describe('MikroORM', () => {
       entities: [Car2, CarOwner2, User2, Sandwich],
       debug: ['info'],
       logger,
+      ensureDatabase: false,
     });
     expect(logger.mock.calls[0][0]).toEqual(`[info] MikroORM version: ${await Utils.getORMVersion()}`);
     expect(logger.mock.calls[1][0]).toEqual('[info] MikroORM failed to connect to database not-found on mysql://root@127.0.0.1:3306');

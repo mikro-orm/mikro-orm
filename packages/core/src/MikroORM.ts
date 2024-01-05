@@ -125,12 +125,13 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
     const dbName = this.config.get('dbName')!;
     const db = dbName + (clientUrl ? ' on ' + clientUrl : '');
 
+    if (this.config.get('ensureDatabase')) {
+      const options = this.config.get('ensureDatabase');
+      await this.schema.ensureDatabase(typeof options === 'boolean' ? {} : { ...options, forceCheck: true });
+    }
+
     if (await this.isConnected()) {
       this.logger.log('info', `MikroORM successfully connected to database ${colors.green(db)}`);
-
-      if (this.config.get('ensureDatabase')) {
-        await this.schema.ensureDatabase();
-      }
     } else {
       this.logger.error('info', `MikroORM failed to connect to database ${db}`);
     }
