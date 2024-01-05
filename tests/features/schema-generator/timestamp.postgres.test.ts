@@ -18,9 +18,9 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [TimestampTest],
     dbName: '5071',
-    ensureDatabase: { create: true, clear: true },
     forceUtcTimezone: true,
   });
+  await orm.schema.refreshDatabase();
 });
 afterAll(async () => await orm.close(true));
 
