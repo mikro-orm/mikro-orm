@@ -1,8 +1,8 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/postgresql';
 
 @Entity()
-export class TimestampTest {
+class TimestampTest {
 
   @PrimaryKey()
   id!: number;
@@ -12,27 +12,25 @@ export class TimestampTest {
 
 }
 
-test('postgres timestamp is correctly parsed', async () => {
-  const orm = await MikroORM.init({
+let orm: MikroORM;
+
+beforeAll(async () => {
+  orm = await MikroORM.init({
     entities: [TimestampTest],
-    dbName: `mikro_orm_test_timestamp`,
-    driver: PostgreSqlDriver,
+    dbName: '5071',
+    ensureDatabase: { create: true, clear: true },
     forceUtcTimezone: true,
   });
+});
+afterAll(async () => await orm.close(true));
 
-  await orm.schema.ensureDatabase();
-  await orm.schema.execute('drop table if exists timestamp_test');
-  await orm.schema.createSchema();
-
+test('postgres timestamp is correctly parsed', async () => {
   const createdAt = new Date('0022-01-01T00:00:00Z');
-
-  const something = orm.em.create(TimestampTest, { createdAtTimestamp: createdAt });
+  const something = orm.em.create(TimestampTest, { id: 1, createdAtTimestamp: createdAt });
   await orm.em.persistAndFlush(something);
 
-  const res = await orm.em.find(TimestampTest, something.id);
+  const res = await orm.em.fork().find(TimestampTest, something.id);
 
   expect(isNaN(res[0]!.createdAtTimestamp.getTime())).toBe(false);
   expect(res[0]!.createdAtTimestamp.getTime()).toEqual(createdAt.getTime());
-
-  await orm.close(true);
 });
