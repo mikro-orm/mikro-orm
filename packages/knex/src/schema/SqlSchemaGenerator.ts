@@ -1,5 +1,17 @@
 ﻿import type { Knex } from 'knex';
-import { AbstractSchemaGenerator, Utils, type Dictionary, type EntityMetadata, type MikroORM, type ISchemaGenerator } from '@mikro-orm/core';
+import {
+  AbstractSchemaGenerator,
+  Utils,
+  type Dictionary,
+  type EntityMetadata,
+  type MikroORM,
+  type ISchemaGenerator,
+  type ClearDatabaseOptions,
+  type CreateSchemaOptions,
+  type EnsureDatabaseOptions,
+  type DropSchemaOptions,
+  type UpdateSchemaOptions,
+} from '@mikro-orm/core';
 import type { CheckDef, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
@@ -16,7 +28,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     orm.config.registerExtension('@mikro-orm/schema-generator', () => new SqlSchemaGenerator(orm.em));
   }
 
-  override async createSchema(options?: { wrap?: boolean; schema?: string }): Promise<void> {
+  override async createSchema(options?: CreateSchemaOptions): Promise<void> {
     await this.ensureDatabase();
     const sql = await this.getCreateSchemaSQL(options);
     await this.execute(sql);
@@ -25,7 +37,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   /**
    * Returns true if the database was created.
    */
-  override async ensureDatabase(): Promise<boolean> {
+  override async ensureDatabase(options?: EnsureDatabaseOptions): Promise<boolean> {
     const dbName = this.config.get('dbName')!;
 
     if (this.lastEnsuredDatabase === dbName) {
@@ -42,7 +54,15 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       this.config.set('dbName', dbName);
       await this.driver.reconnect();
 
+      if (options?.create) {
+        await this.createSchema(options);
+      }
+
       return true;
+    }
+
+    if (options?.clear) {
+      await this.clearDatabase(options);
     }
 
     return false;
@@ -54,7 +74,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schemaName);
   }
 
-  override async getCreateSchemaSQL(options: { wrap?: boolean; schema?: string } = {}): Promise<string> {
+  override async getCreateSchemaSQL(options: CreateSchemaOptions = {}): Promise<string> {
     const wrap = options.wrap ?? this.options.disableForeignKeys;
     const toSchema = this.getTargetSchema(options.schema);
     let ret = '';
@@ -78,7 +98,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return this.wrapSchema(ret, { wrap });
   }
 
-  override async dropSchema(options: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean; schema?: string } = {}): Promise<void> {
+  override async dropSchema(options: DropSchemaOptions = {}): Promise<void> {
     if (options.dropDb) {
       const name = this.config.get('dbName')!;
       return this.dropDatabase(name);
@@ -88,7 +108,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     await this.execute(sql);
   }
 
-  override async clearDatabase(options?: { schema?: string; truncate?: boolean }): Promise<void> {
+  override async clearDatabase(options?: ClearDatabaseOptions): Promise<void> {
     // truncate by default, so no value is considered as true
     /* istanbul ignore if */
     if (options?.truncate === false) {
@@ -113,7 +133,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
   }
 
-  override async getDropSchemaSQL(options: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string } = {}): Promise<string> {
+  override async getDropSchemaSQL(options: Omit<DropSchemaOptions, 'dropDb'> = {}): Promise<string> {
     await this.ensureDatabase();
     const wrap = options.wrap ?? this.options.disableForeignKeys;
     const metadata = this.getOrderedMetadata(options.schema).reverse();
@@ -159,12 +179,12 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return meta.schema && meta.schema === '*' ? schemaName : (meta.schema ?? schemaName);
   }
 
-  override async updateSchema(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<void> {
+  override async updateSchema(options: UpdateSchemaOptions<DatabaseSchema> = {}): Promise<void> {
     const sql = await this.getUpdateSchemaSQL(options);
     await this.execute(sql);
   }
 
-  override async getUpdateSchemaSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<string> {
+  override async getUpdateSchemaSQL(options: UpdateSchemaOptions<DatabaseSchema> = {}): Promise<string> {
     await this.ensureDatabase();
     const { fromSchema, toSchema } = await this.prepareSchemaForComparison(options);
     const comparator = new SchemaComparator(this.platform);
@@ -173,7 +193,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return this.diffToSQL(diffUp, options);
   }
 
-  override async getUpdateSchemaMigrationSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<{ up: string; down: string }> {
+  override async getUpdateSchemaMigrationSQL(options: UpdateSchemaOptions<DatabaseSchema> = {}): Promise<{ up: string; down: string }> {
     if (!options.fromSchema) {
       await this.ensureDatabase();
     }
@@ -189,7 +209,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     };
   }
 
-  private async prepareSchemaForComparison(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string }) {
+  private async prepareSchemaForComparison(options: UpdateSchemaOptions<DatabaseSchema>) {
     options.wrap ??= this.options.disableForeignKeys;
     options.safe ??= false;
     options.dropTables ??= true;

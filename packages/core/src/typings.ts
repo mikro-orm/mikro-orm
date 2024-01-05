@@ -711,21 +711,56 @@ export interface EntityMetadata<T = any> {
   readonly _id: number;
 }
 
+export interface CreateSchemaOptions {
+  wrap?: boolean;
+  schema?: string;
+}
+
+export interface ClearDatabaseOptions {
+  schema?: string;
+  truncate?: boolean;
+}
+
+export interface EnsureDatabaseOptions extends CreateSchemaOptions, ClearDatabaseOptions {
+  clear?: boolean;
+  create?: boolean;
+}
+
+export interface DropSchemaOptions {
+  wrap?: boolean;
+  dropMigrationsTable?: boolean;
+  dropDb?: boolean;
+  schema?: string;
+}
+
+export interface UpdateSchemaOptions<DatabaseSchema = unknown> {
+  wrap?: boolean;
+  safe?: boolean;
+  dropDb?: boolean;
+  dropTables?: boolean;
+  schema?: string;
+  fromSchema?: DatabaseSchema;
+}
+
+export interface RefreshDatabaseOptions extends CreateSchemaOptions {
+  ensureIndexes?: boolean;
+}
+
 export interface ISchemaGenerator {
-  createSchema(options?: { wrap?: boolean; schema?: string }): Promise<void>;
+  createSchema(options?: CreateSchemaOptions): Promise<void>;
   ensureDatabase(): Promise<boolean>;
-  getCreateSchemaSQL(options?: { wrap?: boolean; schema?: string }): Promise<string>;
-  dropSchema(options?: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean; schema?: string }): Promise<void>;
-  getDropSchemaSQL(options?: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string }): Promise<string>;
-  updateSchema(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean; schema?: string }): Promise<void>;
-  getUpdateSchemaSQL(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean; schema?: string }): Promise<string>;
-  getUpdateSchemaMigrationSQL(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<{ up: string; down: string }>;
+  getCreateSchemaSQL(options?: CreateSchemaOptions): Promise<string>;
+  dropSchema(options?: DropSchemaOptions): Promise<void>;
+  getDropSchemaSQL(options?: Omit<DropSchemaOptions, 'dropDb'>): Promise<string>;
+  updateSchema(options?: UpdateSchemaOptions): Promise<void>;
+  getUpdateSchemaSQL(options?: UpdateSchemaOptions): Promise<string>;
+  getUpdateSchemaMigrationSQL(options?: UpdateSchemaOptions): Promise<{ up: string; down: string }>;
   createDatabase(name: string): Promise<void>;
   dropDatabase(name?: string): Promise<void>;
   execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
   ensureIndexes(): Promise<void>;
-  refreshDatabase(options?: { ensureIndexes?: boolean }): Promise<void>;
-  clearDatabase(options?: { schema?: string }): Promise<void>;
+  refreshDatabase(options?: RefreshDatabaseOptions): Promise<void>;
+  clearDatabase(options?: ClearDatabaseOptions): Promise<void>;
 }
 
 export interface GenerateOptions {

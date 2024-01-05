@@ -181,14 +181,14 @@ beforeAll(async () => {
     dbName: schemaName,
     port: 3308,
     discovery: { warnWhenNoEntities: false },
-    extensions: [EntityGenerator],
     multipleStatements: true,
+    ensureDatabase: false,
   });
-  const driver = orm.config.getDriver();
-  if (!await driver.getPlatform().getSchemaHelper()?.databaseExists(driver.getConnection(), schemaName)) {
-    await orm.schema.createSchema({ schema: schemaName });
+
+  if (await orm.schema.ensureDatabase({ create: true })) {
     await orm.schema.execute(schema);
   }
+
   await orm.close(true);
 });
 

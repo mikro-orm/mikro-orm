@@ -11,15 +11,14 @@ beforeAll(async () => {
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],
     multipleStatements: true,
+    ensureDatabase: false,
   });
 });
 
 afterAll(() => orm.close());
 
 test('RefToPivotTable', async () => {
-  const driver = orm.config.getDriver();
-  if (!await driver.getPlatform().getSchemaHelper()?.databaseExists(driver.getConnection(), schemaName)) {
-    await orm.schema.createSchema({ schema: schemaName });
+  if (await orm.schema.ensureDatabase({ create: true })) {
     await orm.schema.execute(`
 CREATE TABLE IF NOT EXISTS \`sender\` (
   \`sender_id\` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,

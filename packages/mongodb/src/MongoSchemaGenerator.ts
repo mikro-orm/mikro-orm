@@ -1,4 +1,12 @@
-import { AbstractSchemaGenerator, Utils, type Dictionary, type EntityMetadata, type EntityProperty, type MikroORM } from '@mikro-orm/core';
+import {
+  AbstractSchemaGenerator,
+  Utils,
+  type CreateSchemaOptions,
+  type Dictionary,
+  type EntityMetadata,
+  type EntityProperty,
+  type MikroORM,
+} from '@mikro-orm/core';
 import type { MongoDriver } from './MongoDriver';
 
 export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
@@ -7,7 +15,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     orm.config.registerExtension('@mikro-orm/schema-generator', () => new MongoSchemaGenerator(orm.em));
   }
 
-  override async createSchema(options: CreateSchemaOptions = {}): Promise<void> {
+  override async createSchema(options: MongoCreateSchemaOptions = {}): Promise<void> {
     options.ensureIndexes ??= true;
     const existing = await this.connection.listCollections();
     const metadata = this.getOrderedMetadata();
@@ -49,7 +57,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await Promise.all(promises);
   }
 
-  override async updateSchema(options: CreateSchemaOptions = {}): Promise<void> {
+  override async updateSchema(options: MongoCreateSchemaOptions = {}): Promise<void> {
     await this.createSchema(options);
   }
 
@@ -57,7 +65,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     return false;
   }
 
-  override async refreshDatabase(options: CreateSchemaOptions = {}): Promise<void> {
+  override async refreshDatabase(options: MongoCreateSchemaOptions = {}): Promise<void> {
     await this.ensureDatabase();
     await this.dropSchema();
     await this.createSchema(options);
@@ -214,13 +222,9 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
 
 }
 
-export interface CreateSchemaOptions {
+export interface MongoCreateSchemaOptions extends CreateSchemaOptions {
   /** create indexes? defaults to true */
   ensureIndexes?: boolean;
-  /** not valid for mongo driver */
-  wrap?: boolean;
-  /** not valid for mongo driver */
-  schema?: string;
 }
 
 export interface EnsureIndexesOptions {

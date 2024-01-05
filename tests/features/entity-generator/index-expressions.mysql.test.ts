@@ -2,19 +2,18 @@ import { MikroORM } from '@mikro-orm/mysql';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 test('4911', async () => {
-  const schemaName = '4911';
   const orm = await MikroORM.init({
-    dbName: schemaName,
+    dbName: '4911',
     port: 3308,
     discovery: {
       warnWhenNoEntities: false,
     },
     multipleStatements: true,
+    ensureDatabase: false,
     extensions: [EntityGenerator],
   });
-  const driver = orm.config.getDriver();
-  if (!await driver.getPlatform().getSchemaHelper()?.databaseExists(driver.getConnection(), schemaName)) {
-    await orm.schema.createSchema({ schema: schemaName });
+
+  if (await orm.schema.ensureDatabase({ create: true })) {
     await orm.schema.execute(`
 CREATE TABLE \`dcim_device\` (
     \`created\` timestamp,
