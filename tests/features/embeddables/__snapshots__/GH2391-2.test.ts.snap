@@ -16,7 +16,7 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
     if (result.foo_audit1_archivedAt == null || result.foo_audit1_archivedAt instanceof Date) {
       ret.foo_audit1_archived = result.foo_audit1_archivedAt;
     } else {
-      ret.foo_audit1_archived = new Date(result.foo_audit1_archivedAt);
+      ret.foo_audit1_archived = parseDate(result.foo_audit1_archivedAt);
     }
     mapped.foo_audit1_archivedAt = true;
   }
@@ -24,7 +24,7 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
     if (result.foo_audit1_updated_at == null || result.foo_audit1_updated_at instanceof Date) {
       ret.foo_audit1_updatedAt = result.foo_audit1_updated_at;
     } else {
-      ret.foo_audit1_updatedAt = new Date(result.foo_audit1_updated_at);
+      ret.foo_audit1_updatedAt = parseDate(result.foo_audit1_updated_at);
     }
     mapped.foo_audit1_updated_at = true;
   }
@@ -32,7 +32,7 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
     if (result.foo_audit1_created == null || result.foo_audit1_created instanceof Date) {
       ret.foo_audit1_created = result.foo_audit1_created;
     } else {
-      ret.foo_audit1_created = new Date(result.foo_audit1_created);
+      ret.foo_audit1_created = parseDate(result.foo_audit1_created);
     }
     mapped.foo_audit1_created = true;
   }
@@ -44,7 +44,7 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
     if (result.foo_audit1_nested_audit1_archivedAt == null || result.foo_audit1_nested_audit1_archivedAt instanceof Date) {
       ret.foo_audit1_nested_audit1_archived = result.foo_audit1_nested_audit1_archivedAt;
     } else {
-      ret.foo_audit1_nested_audit1_archived = new Date(result.foo_audit1_nested_audit1_archivedAt);
+      ret.foo_audit1_nested_audit1_archived = parseDate(result.foo_audit1_nested_audit1_archivedAt);
     }
     mapped.foo_audit1_nested_audit1_archivedAt = true;
   }
@@ -52,7 +52,7 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
     if (result.foo_audit1_nested_audit1_updated_at == null || result.foo_audit1_nested_audit1_updated_at instanceof Date) {
       ret.foo_audit1_nested_audit1_updatedAt = result.foo_audit1_nested_audit1_updated_at;
     } else {
-      ret.foo_audit1_nested_audit1_updatedAt = new Date(result.foo_audit1_nested_audit1_updated_at);
+      ret.foo_audit1_nested_audit1_updatedAt = parseDate(result.foo_audit1_nested_audit1_updated_at);
     }
     mapped.foo_audit1_nested_audit1_updated_at = true;
   }
@@ -60,7 +60,7 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
     if (result.foo_audit1_nested_audit1_created == null || result.foo_audit1_nested_audit1_created instanceof Date) {
       ret.foo_audit1_nested_audit1_created = result.foo_audit1_nested_audit1_created;
     } else {
-      ret.foo_audit1_nested_audit1_created = new Date(result.foo_audit1_nested_audit1_created);
+      ret.foo_audit1_nested_audit1_created = parseDate(result.foo_audit1_nested_audit1_created);
     }
     mapped.foo_audit1_nested_audit1_created = true;
   }

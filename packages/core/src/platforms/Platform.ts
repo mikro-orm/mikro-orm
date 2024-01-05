@@ -344,6 +344,10 @@ export abstract class Platform {
     return parseJsonSafe(value);
   }
 
+  parseDate(value: string | number): Date {
+    return new Date(value);
+  }
+
   getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
     return EntityRepository;
   }

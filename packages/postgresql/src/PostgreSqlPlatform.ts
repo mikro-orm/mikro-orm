@@ -1,4 +1,5 @@
 import { Client } from 'pg';
+import parseDate from 'postgres-date';
 import { raw, ALIAS_REPLACEMENT, JsonProperty, Utils, type EntityProperty, Type, type SimpleColumnMeta, type Dictionary } from '@mikro-orm/core';
 import { AbstractSqlPlatform, type IndexDef } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
@@ -329,6 +330,17 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     return '';
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override parseDate(value: string | number): Date {
+    if (typeof value === 'number') {
+      return new Date(value);
+    }
+
+    return parseDate(value) as Date;
   }
 
 }

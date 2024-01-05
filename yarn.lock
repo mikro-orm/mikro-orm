@@ -1260,6 +1260,7 @@ __metadata:
     "@mikro-orm/core": "npm:^5.0.0"
     "@mikro-orm/knex": "npm:5.9.7"
     pg: "npm:8.11.3"
+    postgres-date: "npm:2.1.0"
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
   languageName: unknown
@@ -9124,6 +9125,13 @@ __metadata:
   dependencies:
     obuf: "npm:~1.1.2"
   checksum: f5c01758fd2fa807afbd34e1ba2146f683818ebc2d23f4a62f0fd627c0b1126fc543cab1b63925f97ce6c7d8f5f316043218619c447445210ea82f10411efb1b
+  languageName: node
+  linkType: hard
+
+"postgres-date@npm:2.1.0":
+  version: 2.1.0
+  resolution: "postgres-date@npm:2.1.0"
+  checksum: faa1c70dfad0e35bd4aa7cb6088fcd4e4f039aa25dc42150129178fc2a0baa7e37eca0bf18e4142a40dea18d1955459b08783f78ec487ef27b4b93ab5e854597
   languageName: node
   linkType: hard
 

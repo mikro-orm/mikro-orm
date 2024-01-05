@@ -292,12 +292,12 @@ export class EntityComparator {
 
       if (!tz || tz === 'local') {
         lines.push(`${padding}    } else {`);
-        lines.push(`${padding}      ${key} = new Date(${value});`);
+        lines.push(`${padding}      ${key} = parseDate(${value});`);
       } else {
         lines.push(`${padding}    } else if (typeof ${value} === 'number' || ${value}.includes('+')) {`);
-        lines.push(`${padding}      ${key} = new Date(${value});`);
+        lines.push(`${padding}      ${key} = parseDate(${value});`);
         lines.push(`${padding}    } else {`);
-        lines.push(`${padding}      ${key} = new Date(${value} + '${tz}');`);
+        lines.push(`${padding}      ${key} = parseDate(${value} + '${tz}');`);
       }
 
       lines.push(`${padding}    }`);
@@ -330,6 +330,7 @@ export class EntityComparator {
         lines.push(`  }`);
       } else if (prop.runtimeType === 'Date') {
         lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
+        context.set('parseDate', (value: string | number) => this.platform.parseDate(value as string));
         parseDate('ret' + this.wrap(prop.name), propName(prop.fieldNames[0]));
         lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
