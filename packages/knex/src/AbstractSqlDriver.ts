@@ -515,7 +515,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
             const field = prop.fieldNames[0];
 
             if (!duplicates.includes(field) || !usedDups.includes(field)) {
-              if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])) {
+              if (prop.customType && !prop.object && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])) {
                 keys.push(prop.customType.convertToDatabaseValueSQL!('?', this.platform));
               } else {
                 keys.push('?');
@@ -693,7 +693,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
             const pks = Utils.getOrderedPrimaryKeys(cond as Dictionary, meta);
             sql += ` when (${pkCond}) then `;
 
-            if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(data[idx][key])) {
+            if (prop.customType && !prop.object && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(data[idx][key])) {
               sql += prop.customType.convertToDatabaseValueSQL!('?', this.platform);
             } else {
               sql += '?';
@@ -1452,7 +1452,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         });
 
       meta.props
-        .filter(prop => prop.hasConvertToDatabaseValueSQL || prop.hasConvertToJSValueSQL)
+        .filter(prop => !prop.object && (prop.hasConvertToDatabaseValueSQL || prop.hasConvertToJSValueSQL))
         .forEach(prop => ret.push(prop.name));
     }
 

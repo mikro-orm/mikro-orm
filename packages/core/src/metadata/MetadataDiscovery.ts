@@ -994,6 +994,7 @@ export class MetadataDiscovery {
         meta.properties[name].fieldNameRaw = fieldName.sql; // for querying in SQL drivers
         meta.properties[name].persist = false; // only virtual as we store the whole object
         meta.properties[name].userDefined = false; // mark this as a generated/internal property, so we can distinguish from user-defined non-persist properties
+        meta.properties[name].object = true;
       }
 
       this.initEmbeddables(meta, meta.properties[name], visited);
