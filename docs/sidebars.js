@@ -139,6 +139,7 @@ module.exports = {
         { type: 'link', label: 'Inversify + PostgreSQL', href: 'https://github.com/PodaruDragos/inversify-example-app' },
         { type: 'link', label: 'NextJS + MySQL', href: 'https://github.com/jonahallibone/mikro-orm-nextjs' },
         { type: 'link', label: 'GraphQL + PostgreSQL + TypeScript', href: 'https://github.com/driescroons/mikro-orm-graphql-example' },
+        { type: 'link', label: 'Accounts.js REST and GraphQL authentication + SQLite', href: 'https://github.com/darkbasic/mikro-orm-accounts-example' },
       ],
     },
     {
