@@ -78,10 +78,10 @@ Several customization options exist to allow for style changes or custom logic.
 
 It may often be beneficial to log the origin of a query when using [`EntityManager.find`](entity-manager.md#fetching-entities-with-entitymanager) or [`EntityManager.findOne`](entity-manager.md#fetching-entities-with-entitymanager) for debugging and redundancy elimination purposes.
 
-An optional `loggerContext` option can be included within the `FindOptions` parameter of either call which will add a label to the output when debug mode is enabled.
+An optional `logging.label` option can be included within the `FindOptions` parameter of either call which will add a label to the output when debug mode is enabled.
 
 ```ts
-const author = await em.findOne(Author, { id: 1 }, { loggerContext: { label: 'Author Retrieval - /authors/me' } });
+const author = await em.findOne(Author, { id: 1 }, { logging: { label: 'Author Retrieval - /authors/me' } });
 // [query] (Author Retrieval - /authors/me) select "a0".* from "Author" as "a0" where "a0"."id" = 1 limit 1 [took 21 ms]
 ```
 
@@ -221,3 +221,5 @@ const fork = em.fork({
 });
 const res = await fork.findAll(Author); // same as previous example
 ```
+
+> The default logger context of `EntityManager` contains the fork `id`, this way you can tell which `EntityManager` instance issued what queries.

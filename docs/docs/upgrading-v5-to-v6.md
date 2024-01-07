@@ -307,9 +307,20 @@ Use `RequestContext.create` instead, it can be awaited now.
 
 The decorator was renamed to `@CreateRequestContext()` to make it clear it always creates new context, and a new `@EnsureRequestContext()` decorator was added that will reuse existing contexts if available.
 
-## Removed `em.raw()` and `qb.raw()`
+## Raw SQL fragments now require `raw` helper
 
-Both removed in favour of new static `raw()` helper, which can be also used to do atomic updates via `flush`:
+The raw SQL fragments used to be detected automatically, which wasn't very precise. In v6, a new `raw` static helper is introduced to deal with this:
+
+```diff
+const users = await em.find(User, {
+-  [expr('lower(email)')]: 'foo@bar.baz',
++  [raw('lower(email)')]: 'foo@bar.baz',
+});
+```
+
+The previous `em.raw()` and `qb.raw()` helpers are now removed in favor of this new static `raw` helper. Similarly, the `expr` helper is also removed in favor of it.
+
+Note that this new helper can be also used to do atomic updates via `flush`:
 
 ```ts
 const ref = em.getReference(User, 1);

@@ -8,7 +8,7 @@ MikroORM allows different ways to [obtain entity metadata](metadata-providers.md
 
 After the discovery process ends, all metadata will be cached. By default, `FileCacheAdapter` will be used to store the cache inside `./temp` folder to JSON files.
 
-If we use folder based discovery, cache will be dependent on environment - if we run via ts-node, the cache will be generated for TS files. To generate production cache, we can use the CLI command `mikro-orm cache:generate`.
+If we use folder-based discovery, cache will be dependent on environment—if we run via ts-node, the cache will be generated for TS files. To generate production cache, we can use the CLI command `mikro-orm cache:generate`. Alternatively, you can generate a cache bundle and use the [`GeneratedCacheAdapter`](./deployment.md#deploy-pre-built-cache), which allows to remove the production dependency on `@mikro-orm/reflection` package.
 
 ## Automatic Invalidation
 

@@ -65,6 +65,8 @@ In addition to this, there is one gotcha with defining entities using decorators
 
 > Another way to define your entities is via [`EntitySchema`](https://mikro-orm.io/docs/entity-schema), this approach works also for vanilla JavaScript projects, as well as allows to define entities via interfaces instead of classes. Check the [Defining Entities section](https://mikro-orm.io/docs/defining-entities), all examples there have code tabs with definitions via `EntitySchema` too.
 
+The reflection with `ts-morph` is performance heavy, so the [metadata are cached](../metadata-cache.md) into `temp` folder and invalidated automatically when you change your entity definition (or update the ORM version). You should add this folder to `.gitignore` file. Note that when you build your production bundle, you can leverage the CLI to generate production cache on build time to get faster start-up times. See the [deployment section](../deployment.md) for more about this.
+
 ## Configuring TypeScript
 
 We will use the following TypeScript config, so create the `tsconfig.json` file and copy it there. If you know what you are doing, you can adjust the configuration to fit your needs.
@@ -110,6 +112,7 @@ Next, we will set up the CLI config MikroORM. This config will be then automatic
 
 ```ts title='src/mikro-orm.config.ts'
 import { Options, SqliteDriver } from '@mikro-orm/sqlite';
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 const config: Options = {
   // for simplicity, we use the SQLite database, as it's available pretty much everywhere
@@ -134,6 +137,7 @@ Alternatively, we can use the `defineConfig` helper that should provide intellis
 
 ```ts
 import { defineConfig } from '@mikro-orm/sqlite';
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 // no need to specify the `driver` now, it will be inferred automatically
 export default defineConfig({
@@ -199,7 +203,7 @@ Current MikroORM CLI configuration
    - node 20.9.0
    - knex 3.0.1
    - sqlite3 5.1.6
-   - typescript 5.2.2
+   - typescript 5.3.3
  - package.json found
  - ts-node enabled
  - searched config paths:
