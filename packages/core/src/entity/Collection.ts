@@ -62,8 +62,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
    */
   async load<TT extends T, P extends string = never>(options: InitCollectionOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
     if (this.isInitialized(true) && !options.refresh) {
-      const em = this.getEntityManager();
-      await em.populate(this.items, options.populate, options);
+      const em = this.getEntityManager(this.items, false);
+      await em?.populate(this.items, options.populate, options);
     } else {
       await this.init(options);
     }
@@ -329,7 +329,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return this as unknown as LoadedCollection<Loaded<TT, P>>;
   }
 
-  private getEntityManager(items: T[] = [], required = true) {
+  private getEntityManager(items: Iterable<T> = [], required = true) {
     let em = this._em ?? helper(this.owner).__em;
 
     if (!em) {

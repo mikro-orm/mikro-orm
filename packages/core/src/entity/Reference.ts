@@ -103,6 +103,11 @@ export class Reference<T extends object> {
   async load<TT extends T, P extends string = never, F extends string = '*', E extends string = never>(options: LoadReferenceOptions<TT, P, F, E> = {}): Promise<Loaded<TT, P, F, E> | null> {
     if (!this.isInitialized() || options.refresh) {
       const wrapped = helper(this.entity as TT & object);
+
+      if (!wrapped.__em) {
+        return this.entity as Loaded<TT, P, F, E>;
+      }
+
       if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.REFERENCE].includes(DataloaderUtils.getDataloaderType(wrapped.__em.config.get('dataloader')))) {
         return wrapped.__em.refLoader.load([this, options]);
       }
