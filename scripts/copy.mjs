@@ -45,8 +45,9 @@ async function getRootVersion(bump = true) {
   if (bump) {
     const parts = rootVersion.split('.');
     const inc = bump ? 1 : 0;
+    const canary = String(options.canary).toLowerCase();
 
-    switch (options.canary?.toLowerCase()) {
+    switch (canary) {
       case 'major': {
         parts[0] = `${+parts[0] + inc}`;
         parts[1] = 0;
