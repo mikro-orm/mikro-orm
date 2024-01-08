@@ -4,6 +4,21 @@ title: Seeding
 
 When initializing your application or testing it can be exhausting to create sample data for your database. The solution is to use seeding. Create factories for your entities and use them in the seed script or combine multiple seed scripts.
 
+:::info
+
+To use seeder, you need to first install `@mikro-orm/seeder`, and register the `SeedManager` extension in your ORM config.
+
+```ts title='mikro-orm.config.ts'
+import { SeedManager } from '@mikro-orm/seeder';
+
+export default defineConfig({
+  // ...
+  extendsion: [SeedManager],
+})
+```
+
+:::
+
 ## Configuration
 
 > `seeder.path` and `seeder.pathTs` works the same way as `entities` and `entitiesTs` in entity discovery.
@@ -292,7 +307,7 @@ afterAll(async () => {
 });
 ```
 
-## Running migrations in production
+## Running seeder in production
 
 In production environment we might want to use compiled seeder files. All we need to do is to configure the seeder path accordingly:
 
