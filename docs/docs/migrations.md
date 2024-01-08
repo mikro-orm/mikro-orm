@@ -2,13 +2,26 @@
 title: Migrations
 ---
 
-> To use migrations we need to first install `@mikro-orm/migrations` package for SQL driver or `@mikro-orm/migrations-mongodb` for MongoDB.
+MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug). It allows you to generate migrations based on the current schema difference.
 
-MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug). It allows us to generate migrations with current schema differences.
+:::info
 
-> Since v5, migrations are stored without extension.
+To use migrations, you need to first install `@mikro-orm/migrations` package for SQL driver or `@mikro-orm/migrations-mongodb` for MongoDB, and register the `Migrator` extension in your ORM config.
 
-By default, each migration will be all executed inside a transaction, and all of them will be wrapped in one master transaction, so if one of them fails, everything will be rolled back.
+```ts title='mikro-orm.config.ts'
+import { Migrator } from '@mikro-orm/migrations'; // or `@mikro-orm/migrations-mongodb`
+
+export default defineConfig({
+  // ...
+  extendsion: [Migrator],
+})
+```
+
+:::
+
+> Since v5, migrations are stored without an extension.
+
+By default, each migration will be executed inside a transaction, and all of them will be wrapped in one master transaction, so if one of them fails, everything will be rolled back.
 
 ## Migration class
 
@@ -26,7 +39,7 @@ export class Migration20191019195930 extends Migration {
 }
 ```
 
-To support undoing those changed, we can implement the `down` method, which throws an error by default.
+To support undoing those changed, you can implement the `down` method, which throws an error by default.
 
 Migrations are by default wrapped in a transaction. You can override this behaviour on per migration basis by implementing the `isTransactional(): boolean` method.
 
@@ -50,11 +63,11 @@ import { User } from '../entities/User';
 
 export class Migration20191019195930 extends Migration {
 
-    async up(): Promise<void> {
-        const em = this.getEntityManager();
-        em.create(User, { ... });
-        await em.flush();
-    }
+  async up(): Promise<void> {
+    const em = this.getEntityManager();
+    em.create(User, { ... });
+    await em.flush();
+  }
 
 }
 ```
@@ -63,7 +76,7 @@ export class Migration20191019195930 extends Migration {
 
 > This is optional and only needed for the specific use case, when both entities and schema already exist.
 
-If we want to start using migrations, and we already have the schema generated, we can do so by creating so called initial migration:
+If you want to start using migrations, and you already have the schema generated, you can do so by creating so called initial migration:
 
 > Initial migration can be created only if there are no migrations previously generated or executed.
 
@@ -75,7 +88,7 @@ This will create the initial migration, containing the schema dump from `schema:
 
 ## Snapshots
 
-Creating new migration will automatically save the target schema snapshot into migrations folder. This snapshot will be then used if we try to create new migration, instead of using current database schema. This means that if we try to create new migration before we run the pending ones, we still get the right schema diff.
+Creating new migration will automatically save the target schema snapshot into migrations folder. This snapshot will be then used if you try to create new migration, instead of using current database schema. This means that if you try to create new migration before you run the pending ones, you still get the right schema diff.
 
 > Snapshots should be versioned just like the regular migration files.
 
@@ -93,7 +106,7 @@ await MikroORM.init({
   migrations: {
     tableName: 'mikro_orm_migrations', // name of database table with log of executed transactions
     path: './migrations', // path to the folder with migrations
-    pathTs: undefined, // path to the folder with TS migrations (if used, we should put path to compiled files in `path`)
+    pathTs: undefined, // path to the folder with TS migrations (if used, you should put path to compiled files in `path`)
     glob: '!(*.d).{js,ts}', // how to match migration files (all .js and .ts files, but not .d.ts)
     transactional: true, // wrap each migration in a transaction
     disableForeignKeys: true, // wrap statements with `set foreign_key_checks = 0` or equivalent
@@ -109,7 +122,7 @@ await MikroORM.init({
 
 ## Running migrations in production
 
-In production environment we might want to use compiled migration files. Since v5, this should work almost out of box, all we need to do is to configure the migration path accordingly:
+In production environment you might want to use compiled migration files. Since v5, this should work almost out of box, all you need to do is to configure the migration path accordingly:
 
 ```ts
 import { MikroORM, Utils } from '@mikro-orm/core';
@@ -127,11 +140,11 @@ await MikroORM.init({
 });
 ```
 
-This should allow using CLI to generate TS migration files (as in CLI we probably have TS support enabled), while using compiled JS files in production, where ts-node is not registered.
+This should allow using CLI to generate TS migration files (as in CLI you probably have TS support enabled), while using compiled JS files in production, where ts-node is not registered.
 
 ## Using custom `MigrationGenerator`
 
-When we generate new migrations, `MigrationGenerator` class is responsible for generating the file contents. We can provide our own implementation to do things like formatting the SQL statement.
+When you generate new migrations, `MigrationGenerator` class is responsible for generating the file contents. You can provide your own implementation to do things like formatting the SQL statement.
 
 ```ts
 import { TSMigrationGenerator } from '@mikro-orm/migrations';
@@ -176,9 +189,9 @@ npx mikro-orm migration:pending  # List all pending migrations
 npx mikro-orm migration:fresh    # Drop the database and migrate up to the latest version
 ```
 
-> To create blank migration file, we can use `npx mikro-orm migration:create --blank`.
+> To create blank migration file, you can use `npx mikro-orm migration:create --blank`.
 
-For `migration:up` and `migration:down` commands we can specify `--from` (`-f`), `--to` (`-t`) and `--only` (`-o`) options to run only a subset of migrations:
+For `migration:up` and `migration:down` commands you can specify `--from` (`-f`), `--to` (`-t`) and `--only` (`-o`) options to run only a subset of migrations:
 
 ```sh
 npx mikro-orm migration:up --from 2019101911 --to 2019102117  # the same as above
@@ -186,9 +199,9 @@ npx mikro-orm migration:up --only 2019101923                  # apply a single m
 npx mikro-orm migration:down --to 0                           # migrate down all migrations
 ```
 
-> To run TS migration files, we will need to [enable `useTsNode` flag](quick-start.md#setting-up-the-commandline-tool) in our `package.json`.
+> To run TS migration files, you will need to [enable `useTsNode` flag](quick-start.md#setting-up-the-commandline-tool) in your `package.json`.
 
-For the `migration:fresh` command we can specify `--seed` to seed the database after migrating.
+For the `migration:fresh` command you can specify `--seed` to seed the database after migrating.
 
 ```shell
 npx mikro-orm migration:fresh --seed              # seed the database with the default database seeder
@@ -199,14 +212,16 @@ npx mikro-orm migration:fresh --seed=UsersSeeder  # seed the database with the U
 
 ## Using the Migrator programmatically
 
-Or we can create a simple script where we initialize MikroORM like this:
+Or you can create a simple script where you initialize MikroORM like this:
 
 ```ts title="./migrate.ts"
 import { MikroORM } from '@mikro-orm/core';
+import { Migrator } from '@mikro-orm/migrations';
 
 (async () => {
   const orm = await MikroORM.init({
-    dbName: 'our-db-name',
+    extendsion: [Migrator],
+    dbName: 'your-db-name',
     // ...
   });
 
@@ -232,7 +247,7 @@ $ ts-node migrate
 
 ## Providing transaction context
 
-In some cases we might want to control the transaction context ourselves:
+In some cases, you might want to control the transaction context yourself:
 
 ```ts
 await orm.em.transactional(async em => {
@@ -242,13 +257,15 @@ await orm.em.transactional(async em => {
 
 ## Importing migrations statically
 
-If we do not want to dynamically import a folder (e.g. when bundling our code with webpack) we can import migrations directly.
+If you do not want to dynamically import a folder (e.g. when bundling your code with webpack) you can import migrations directly.
 
 ```ts
 import { MikroORM } from '@mikro-orm/core';
+import { Migrator } from '@mikro-orm/migrations';
 import { Migration20191019195930 } from '../migrations/Migration20191019195930.ts';
 
 await MikroORM.init({
+  extendsion: [Migrator],
   migrations: {
     migrationsList: [
       {
@@ -260,10 +277,11 @@ await MikroORM.init({
 });
 ```
 
-With the help of [webpack's context module api](https://webpack.js.org/guides/dependency-management/#context-module-api) we can dynamically import the migrations making it possible to import all files in a folder.
+With the help of [webpack's context module api](https://webpack.js.org/guides/dependency-management/#context-module-api) you can dynamically import the migrations making it possible to import all files in a folder.
 
 ```ts
 import { MikroORM } from '@mikro-orm/core';
+import { Migrator } from '@mikro-orm/migrations';
 import { basename } from 'path';
 
 const migrations = {};
@@ -282,6 +300,7 @@ const migrationsList = Object.keys(migrations).map((migrationName) => ({
 }));
 
 await MikroORM.init({
+  extendsion: [Migrator],
   migrations: {
     migrationsList,
   },
@@ -302,7 +321,7 @@ You can customize the naming convention for your migration file by utilizing the
 ```ts
 migrations: {
   fileName: (timestamp: string, name?: string) => {
-    // force user to provide the name, otherwise we would end up with `Migration20230421212713_undefined`
+    // force user to provide the name, otherwise you would end up with `Migration20230421212713_undefined`
     if (!name) {
       throw new Error('Specify migration name via `mikro-orm migration:create --name=...`');
     }
@@ -324,7 +343,7 @@ Support for migrations in MongoDB has been added in v5.3. It uses its own packag
 
 ### Transactions
 
-The default options for `Migrator` will use transactions, and those impose some additional requirements in mongo, namely the collections need to exist upfront and we need to run a replicaset. You might want to disable transactions for `migrations: { transactional: false }`.
+The default options for `Migrator` will use transactions, and those impose some additional requirements in mongo, namely the collections need to exist upfront and you need to run a replicaset. You might want to disable transactions for `migrations: { transactional: false }`.
 
 ```ts
 await this.driver.nativeDelete('Book', { foo: true }, { ctx: this.ctx });
