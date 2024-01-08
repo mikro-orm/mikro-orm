@@ -15,7 +15,7 @@ function useContainerClassName() {
 export default function BlogPostItem({ children, className, list }) {
   const containerClassName = useContainerClassName();
   return (
-    <BlogPostItemContainer className={clsx(containerClassName, className)} list>
+    <BlogPostItemContainer className={clsx(containerClassName, className)} list={list}>
       <BlogPostItemHeader />
       <BlogPostItemContent>{children}</BlogPostItemContent>
       <BlogPostItemFooter />
