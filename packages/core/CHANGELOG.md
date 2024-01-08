@@ -147,7 +147,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Please see the [upgrading guide](https://mikro-orm.io/docs/upgrading-v5-to-v6).
 
 
-## [5.9.7](https://github.com/mikro-orm/mikro-orm/compare/v5.9.5...v5.9.7) (2023-12-30)
+## [5.9.7](https://github.com/mikro-orm/mikro-orm/compare/v5.9.6...v5.9.7) (2023-12-30)
 
 
 ### Bug Fixes
