@@ -226,6 +226,7 @@ export interface LockOptions extends DriverMethodOptions {
   lockMode?: LockMode;
   lockVersion?: number | Date;
   lockTableAliases?: string[];
+  logging?: LoggingOptions;
 }
 
 export interface DriverMethodOptions {

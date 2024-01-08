@@ -72,7 +72,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       const { orderBy: newOrderBy, where: newWhere } = this.processCursorOptions(meta, options, options.orderBy!);
       const newWhereConverted = this.renameFields(entityName, newWhere as FilterQuery<T>, true);
       const orderBy = Utils.asArray(newOrderBy).map(order => this.renameFields(entityName, order));
-      const res = await this.rethrow(this.getConnection('read').find(entityName, andWhere(where, newWhereConverted), orderBy, options.limit, options.offset, fields, options.ctx));
+      const res = await this.rethrow(this.getConnection('read').find(entityName, andWhere(where, newWhereConverted), orderBy, options.limit, options.offset, fields, options.ctx, options.logging));
 
       if (isCursorPagination && !first && !!last) {
         res.reverse();
@@ -105,7 +105,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
       this.renameFields(entityName, orderBy, false),
     );
-    const res = await this.rethrow(this.getConnection('read').find(entityName, where, orderBy, 1, undefined, fields, options.ctx));
+    const res = await this.rethrow(this.getConnection('read').find(entityName, where, orderBy, 1, undefined, fields, options.ctx, options.logging));
 
     return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
   }

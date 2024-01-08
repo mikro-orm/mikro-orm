@@ -85,6 +85,10 @@ describe('logging', () => {
       loggerContext: { bar: 456, new: true },
     });
 
+    await em.count(Example, { id: 1 }, {
+      logging: { enabled: false },
+    });
+
     await em.findOne(Example, { id: 1 }, { refresh: true });
 
     expect(mock.mock.calls).toHaveLength(2);

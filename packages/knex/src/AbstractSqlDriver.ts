@@ -220,7 +220,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   }
 
   protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType): Promise<T[] | number> {
-    const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes)
+    const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes, options.logging)
       .indexHint(options.indexHint!)
       .comment(options.comments!)
       .hintComment(options.hintComments!);
@@ -410,7 +410,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return this.countVirtual<T>(entityName, where, options);
     }
 
-    const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false)
+    const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging)
       .indexHint(options.indexHint!)
       .comment(options.comments!)
       .hintComment(options.hintComments!)
@@ -858,7 +858,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const pivotProp2 = pivotMeta.relations[prop.owner ? 0 : 1];
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
     options = { ...options };
-    const qb = this.createQueryBuilder<T>(prop.pivotEntity, ctx, options.connectionType)
+    const qb = this.createQueryBuilder<T>(prop.pivotEntity, ctx, options.connectionType, undefined, options?.logging)
       .withSchema(this.getSchemaName(pivotMeta, options))
       .indexHint(options.indexHint!)
       .comment(options.comments!)
@@ -1243,7 +1243,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
   override async lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
     const meta = helper(entity).__meta;
-    const qb = this.createQueryBuilder((entity as object).constructor.name, options.ctx).withSchema(options.schema ?? meta.schema);
+    const qb = this.createQueryBuilder((entity as object).constructor.name, options.ctx, undefined, undefined, options.logging).withSchema(options.schema ?? meta.schema);
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select(raw('1')).where(cond!).setLockMode(options.lockMode, options.lockTableAliases);
     await this.rethrow(qb.execute());
