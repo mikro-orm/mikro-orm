@@ -288,3 +288,8 @@ html[data-theme="dark"] .markdown blockquote {
   --ifm-link-color: #f8feff;
   --ifm-link-hover-color: #f8feff;
 }
+
+#giscus-comments {
+  display: block;
+  margin-top: 50px;
+}

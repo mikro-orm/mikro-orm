@@ -68,7 +68,7 @@ module.exports = {
           type: 'docsVersionDropdown',
           position: 'left',
         },
-        { to: 'docs/installation', label: 'Docs', position: 'left' },
+        { to: 'docs/quick-start', label: 'Docs', position: 'left' },
         { to: 'api', label: 'API', position: 'left', activeBaseRegex: 'api/(?!core/changelog)', },
         { to: 'docs/faq', label: 'FAQ', position: 'left' },
         { to: 'blog', label: 'Blog', position: 'left' },
@@ -109,10 +109,10 @@ module.exports = {
         {
           title: 'Docs',
           items: [
-            { label: 'Installation & Usage', to: 'docs/installation' },
             { label: 'Quick Start', to: 'docs/quick-start' },
-            { label: 'Migration from v5 to v6', to: 'docs/next/upgrading-v5-to-v6' },
-            { label: 'Version 6.0 docs', to: 'docs/next/guide' },
+            { label: 'Getting Started', to: 'docs/guide' },
+            { label: 'Migration from v5 to v6', to: 'docs/upgrading-v5-to-v6' },
+            { label: 'Version 5.9 docs', to: 'docs/5.9/installation' },
           ],
         },
         {
@@ -154,11 +154,6 @@ module.exports = {
           editUrl: 'https://github.com/mikro-orm/mikro-orm/edit/master/docs/',
           showLastUpdateAuthor: true,
           showLastUpdateTime: true,
-          versions: {
-            current: {
-              label: '6.0 (next)',
-            },
-          },
           remarkPlugins: [
             [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
           ],
@@ -195,11 +190,15 @@ module.exports = {
         redirects: [
           {
             from: '/docs',
-            to: '/docs/installation',
+            to: '/docs/quick-start',
           },
           {
             from: '/docs/next',
-            to: '/docs/next/guide',
+            to: '/docs/quick-start',
+          },
+          {
+            from: '/docs/installation',
+            to: '/docs/quick-start',
           },
           {
             from: '/docs/next/installation',

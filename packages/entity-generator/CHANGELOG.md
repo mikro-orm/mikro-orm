@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.0.0](https://github.com/mikro-orm/mikro-orm/compare/v5.9.2...v6.0.0) (2024-01-07)
+
+
+### Bug Fixes
+
+* **core:** ensure propagation and change-tracking works with `useDefineForClassFields` ([#4730](https://github.com/mikro-orm/mikro-orm/issues/4730)) ([83f24aa](https://github.com/mikro-orm/mikro-orm/commit/83f24aa3fc065fdfa50ae3df6af5ea14516018e1)), closes [#4216](https://github.com/mikro-orm/mikro-orm/issues/4216)
+* **core:** refactor mapping of `Date` properties ([#4391](https://github.com/mikro-orm/mikro-orm/issues/4391)) ([3a80369](https://github.com/mikro-orm/mikro-orm/commit/3a8036928ce36d31a2005b7e5133cf825b84a1b5)), closes [#4362](https://github.com/mikro-orm/mikro-orm/issues/4362) [#4360](https://github.com/mikro-orm/mikro-orm/issues/4360) [#1476](https://github.com/mikro-orm/mikro-orm/issues/1476)
+* **entity-generator:** use index expressions for complex indexes (e.g. conditional) ([64a39f8](https://github.com/mikro-orm/mikro-orm/commit/64a39f82c7d391d28e28c639512a810c516f08a9)), closes [#4911](https://github.com/mikro-orm/mikro-orm/issues/4911)
+
+
+### Features
+
+* **core:** remove static require calls ([#3814](https://github.com/mikro-orm/mikro-orm/issues/3814)) ([b58f476](https://github.com/mikro-orm/mikro-orm/commit/b58f4763995738cad11d08665b239443f9fb4499)), closes [#3743](https://github.com/mikro-orm/mikro-orm/issues/3743)
+* **entity-generator:** added ability to output type option in decorator ([#4935](https://github.com/mikro-orm/mikro-orm/issues/4935)) ([2d1936a](https://github.com/mikro-orm/mikro-orm/commit/2d1936a80f948e0fd83b8fc89bb48feb132537d6))
+* **entity-generator:** allow generating scalar properties for FKs ([#4892](https://github.com/mikro-orm/mikro-orm/issues/4892)) ([abad6ca](https://github.com/mikro-orm/mikro-orm/commit/abad6ca9dcafaaf9319261b4ac116ef5ad6485b3)), closes [#4898](https://github.com/mikro-orm/mikro-orm/issues/4898)
+* **entity-generator:** allow local and global configuration of all options ([#4965](https://github.com/mikro-orm/mikro-orm/issues/4965)) ([2876b8a](https://github.com/mikro-orm/mikro-orm/commit/2876b8a74560e60605ff0de2feaba0d29c28d4aa))
+* **entity-generator:** allow overriding generated entity file name ([4ebc8e3](https://github.com/mikro-orm/mikro-orm/commit/4ebc8e3665d7c75788b51a6da59575ccff19f612)), closes [#5026](https://github.com/mikro-orm/mikro-orm/issues/5026)
+* **entity-generator:** detect more ManyToMany relations ([#4974](https://github.com/mikro-orm/mikro-orm/issues/4974)) ([d0e3ac9](https://github.com/mikro-orm/mikro-orm/commit/d0e3ac97d6443c050ce4c9a1a4fab6a20edaf9c0))
+* **entity-generator:** generate `OptionalProps` and other symbols for `EntitySchema` ([00f0a34](https://github.com/mikro-orm/mikro-orm/commit/00f0a3465808670a79d47ea345dfd50706f843b7))
+
+
+
+
+
 ## [5.9.2](https://github.com/mikro-orm/mikro-orm/compare/v5.9.1...v5.9.2) (2023-11-02)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

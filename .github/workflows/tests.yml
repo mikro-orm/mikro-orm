@@ -200,7 +200,7 @@ jobs:
         run: |
           git config --global user.name 'MikroORM Release Bot'
           git config --global user.email 'noreply@mikro-orm.io'
-          yarn lerna run copy -- -- --canary=major
+          yarn lerna run copy -- -- --canary
           git commit -am 'chore: bump canary versions [skip ci]'
 
           echo "access=public" >> .npmrc
