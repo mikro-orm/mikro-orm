@@ -170,6 +170,7 @@ export type QBFilterQuery<T = any> = ObjectQuery<T> | Dictionary;
 export interface IWrappedEntity<Entity extends object> {
   isInitialized(): boolean;
   isTouched(): boolean;
+  isManaged(): boolean;
   populated(populated?: boolean): void;
   populate<Hint extends string = never>(populate: AutoPath<Entity, Hint>[] | false, options?: EntityLoaderOptions<Entity>): Promise<Loaded<Entity, Hint>>;
   init<

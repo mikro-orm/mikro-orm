@@ -94,6 +94,10 @@ export class WrappedEntity<Entity extends object> {
     return this.__touched;
   }
 
+  isManaged(): boolean {
+    return !!this.__managed;
+  }
+
   populated(populated: boolean | undefined = true): void {
     this.__populated = populated;
   }

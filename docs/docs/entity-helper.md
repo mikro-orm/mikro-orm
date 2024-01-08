@@ -152,6 +152,7 @@ em.assign(user, dto);
 interface IWrappedEntity<Entity> {
   isInitialized(): boolean;
   isTouched(): boolean;
+  isManaged(): boolean;
   populated(populated?: boolean): void;
   populate<Hint extends string = never>(
     populate: AutoPath<Entity, Hint>[] | boolean,

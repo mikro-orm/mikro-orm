@@ -1,4 +1,15 @@
-import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property, ref, Ref } from '@mikro-orm/sqlite';
+import {
+  Collection,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  MikroORM,
+  PrimaryKey,
+  Property,
+  ref,
+  Ref,
+  wrap,
+} from '@mikro-orm/sqlite';
 
 @Entity()
 class Item {
@@ -48,6 +59,7 @@ beforeAll(async () => {
     entities: [User, Item],
   });
   await orm.schema.createSchema();
+  await orm.em.insert(Item, { id: 1, name: 'item' });
 });
 
 afterAll(async () => {
@@ -56,8 +68,12 @@ afterAll(async () => {
 
 test('load on not managed entity (GH #5082)', async () => {
   const u = new User('foo', 'foo@x.com');
+  u.id = 123;
   u.item = ref(Item, 1);
   orm.em.persist(u);
   await u.items.load();
   await u.item.load();
+  expect(wrap(u).isManaged()).toBe(false);
+  await orm.em.flush();
+  expect(wrap(u).isManaged()).toBe(true);
 });
