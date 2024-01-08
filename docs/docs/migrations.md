@@ -13,7 +13,7 @@ import { Migrator } from '@mikro-orm/migrations'; // or `@mikro-orm/migrations-m
 
 export default defineConfig({
   // ...
-  extension: [Migrator],
+  extensions: [Migrator],
 })
 ```
 
@@ -220,7 +220,7 @@ import { Migrator } from '@mikro-orm/migrations';
 
 (async () => {
   const orm = await MikroORM.init({
-    extension: [Migrator],
+    extensions: [Migrator],
     dbName: 'your-db-name',
     // ...
   });
@@ -265,7 +265,7 @@ import { Migrator } from '@mikro-orm/migrations';
 import { Migration20191019195930 } from '../migrations/Migration20191019195930.ts';
 
 await MikroORM.init({
-  extension: [Migrator],
+  extensions: [Migrator],
   migrations: {
     migrationsList: [
       {
@@ -300,7 +300,7 @@ const migrationsList = Object.keys(migrations).map((migrationName) => ({
 }));
 
 await MikroORM.init({
-  extension: [Migrator],
+  extensions: [Migrator],
   migrations: {
     migrationsList,
   },
