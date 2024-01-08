@@ -13,7 +13,7 @@ import { SeedManager } from '@mikro-orm/seeder';
 
 export default defineConfig({
   // ...
-  extendsion: [SeedManager],
+  extension: [SeedManager],
 })
 ```
 
