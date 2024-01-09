@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.2](https://github.com/mikro-orm/mikro-orm/compare/v6.0.1...v6.0.2) (2024-01-09)
+
+
+### Bug Fixes
+
+* **core:** respect `logging` options in `em.count` ([481d02e](https://github.com/mikro-orm/mikro-orm/commit/481d02ed393a582856404be6cdf86ae028b5ba34)), closes [#5085](https://github.com/mikro-orm/mikro-orm/issues/5085)
+* **core:** support `$some/$none/$every` on nested relations ([2b3bd4d](https://github.com/mikro-orm/mikro-orm/commit/2b3bd4d15c9daac2cb2ba058bca3e74be8ca9cbc)), closes [#5099](https://github.com/mikro-orm/mikro-orm/issues/5099)
+
+
+### Features
+
+* **entity-generator:** allow customizing entity name based on schema name ([1e5afb8](https://github.com/mikro-orm/mikro-orm/commit/1e5afb8acbb7a8f06da1245d419074272d685f0f)), closes [#5084](https://github.com/mikro-orm/mikro-orm/issues/5084)
+
+
+
+
+
 ## [6.0.1](https://github.com/mikro-orm/mikro-orm/compare/v6.0.0...v6.0.1) (2024-01-08)
 
 **Note:** Version bump only for package @mikro-orm/knex

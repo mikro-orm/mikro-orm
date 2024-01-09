@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.2](https://github.com/mikro-orm/mikro-orm/compare/v6.0.1...v6.0.2) (2024-01-09)
+
+
+### Bug Fixes
+
+* **core:** allow calling `em.remove` with not managed entity ([88e055e](https://github.com/mikro-orm/mikro-orm/commit/88e055e09b2b2c9ef0abe192dbec7f175fe9fd4e)), closes [#5103](https://github.com/mikro-orm/mikro-orm/issues/5103)
+* **core:** respect `logging` options in `em.count` ([3b94bf9](https://github.com/mikro-orm/mikro-orm/commit/3b94bf957243e8ded787c853915c84cfc94832d7)), closes [#5085](https://github.com/mikro-orm/mikro-orm/issues/5085)
+* **core:** respect `logging` options in `em.count` ([481d02e](https://github.com/mikro-orm/mikro-orm/commit/481d02ed393a582856404be6cdf86ae028b5ba34)), closes [#5085](https://github.com/mikro-orm/mikro-orm/issues/5085)
+
+
+### Features
+
+* **core:** add `wrap(entity).isManaged()` ([5931649](https://github.com/mikro-orm/mikro-orm/commit/59316495304199b93685324d0077b22fec502fb6)), closes [#5082](https://github.com/mikro-orm/mikro-orm/issues/5082)
+* **entity-generator:** allow customizing entity name based on schema name ([1e5afb8](https://github.com/mikro-orm/mikro-orm/commit/1e5afb8acbb7a8f06da1245d419074272d685f0f)), closes [#5084](https://github.com/mikro-orm/mikro-orm/issues/5084)
+
+
+
+
+
 ## [6.0.1](https://github.com/mikro-orm/mikro-orm/compare/v6.0.0...v6.0.1) (2024-01-08)
 
 **Note:** Version bump only for package @mikro-orm/core

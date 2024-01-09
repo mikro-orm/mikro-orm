@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.2](https://github.com/mikro-orm/mikro-orm/compare/v6.0.1...v6.0.2) (2024-01-09)
+
+
+### Bug Fixes
+
+* **core:** respect `logging` options in `em.count` ([481d02e](https://github.com/mikro-orm/mikro-orm/commit/481d02ed393a582856404be6cdf86ae028b5ba34)), closes [#5085](https://github.com/mikro-orm/mikro-orm/issues/5085)
+
+
+
+
+
 ## [6.0.1](https://github.com/mikro-orm/mikro-orm/compare/v6.0.0...v6.0.1) (2024-01-08)
 
 **Note:** Version bump only for package @mikro-orm/mongodb
