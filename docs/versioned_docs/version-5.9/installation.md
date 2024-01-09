@@ -186,7 +186,7 @@ For CLI to be able to access our database, we will need to create `mikro-orm.con
 
 > ORM configuration file can export the Promise, like: `export default Promise.resolve({...});`.
 
-TypeScript is also supported, just enable `useTsNode` flag in our `package.json` file. By default, when `useTsNode` is not enabled, CLI will ignore `.ts` files, so if you want to out-out of this behaviour, enable the `alwaysAllowTs` option. This would be useful if you want to use MikroORM with [Bun](https://bun.sh), which has TypeScript support out of the box. There we can also set up array of possible paths to `mikro-orm.config` file, as well as use different file name. The `package.json` file can be located in the current working directory, or in one of its parent folders.
+TypeScript is also supported, just enable `useTsNode` flag in our `package.json` file. By default, when `useTsNode` is not enabled, CLI will ignore `.ts` files, so if you want to opt out of this behaviour, enable the `alwaysAllowTs` option. This would be useful if you want to use MikroORM with [Bun](https://bun.sh), which has TypeScript support out of the box. There we can also set up array of possible paths to `mikro-orm.config` file, as well as use different file name. The `package.json` file can be located in the current working directory, or in one of its parent folders.
 
 We can use these environment variables to override CLI settings:
 
