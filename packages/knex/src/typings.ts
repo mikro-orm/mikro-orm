@@ -9,6 +9,8 @@ import type {
   QueryOrderMap,
   Type,
   QueryFlag,
+  AnyEntity,
+  EntityName,
 } from '@mikro-orm/core';
 import type { JoinType, QueryType } from './query/enums';
 import type { DatabaseSchema, DatabaseTable } from './schema';
@@ -141,6 +143,7 @@ export interface IQueryBuilder<T> {
   _fields?: Field<T>[];
   select(fields: Field<T> | Field<T>[], distinct?: boolean): this;
   addSelect(fields: string | string[]): this;
+  from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T> | IQueryBuilder<T>, aliasName?: string): IQueryBuilder<T>;
   insert(data: any): this;
   update(data: any): this;
   delete(cond?: QBFilterQuery): this;
