@@ -307,7 +307,8 @@ export class UnitOfWork {
   }
 
   remove<T extends object>(entity: T, visited?: Set<AnyEntity>, options: { cascade?: boolean } = {}): void {
-    if (helper(entity).__managed) {
+    // allow removing not managed entities if they are not part of the persist stack
+    if (helper(entity).__managed || !this.persistStack.has(entity)) {
       this.removeStack.add(entity);
       this.queuedActions.add(helper(entity).__meta.className);
     } else {

@@ -2077,6 +2077,15 @@ describe('EntityManagerPostgre', () => {
     expect(address2).toBeNull();
   });
 
+  test('remove by unfetched entity', async () => {
+    await orm.em.insert(Author2, { id: 5, name: 'n', email: 'e' });
+    const author = new Author2('n', 'e');
+    author.id = 5;
+    const mock = mockLogger(orm);
+    await orm.em.remove(author).flush();
+    expect(mock).toHaveBeenCalled();
+  });
+
   test('pagination', async () => {
     for (let i = 1; i <= 10; i++) {
       const num = `${i}`.padStart(2, '0');
