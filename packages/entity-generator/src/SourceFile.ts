@@ -391,7 +391,7 @@ export class SourceFile {
 
   protected getForeignKeyDecoratorOptions(options: OneToOneOptions<any, any>, prop: EntityProperty) {
     const parts = prop.referencedTableName.split('.', 2);
-    const className = this.namingStrategy.getClassName(parts.length > 1 ? parts[1] : parts[0], '_');
+    const className = this.namingStrategy.getEntityName(...parts.reverse() as [string, string]);
     this.entityImports.add(className);
     options.entity = `() => ${className}`;
 

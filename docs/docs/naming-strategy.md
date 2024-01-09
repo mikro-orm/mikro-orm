@@ -62,9 +62,17 @@ Return a table name for an entity class.
 
 ---
 
+#### `NamingStrategy.getEntityName(tableName: string, schemaName?: string): string`
+
+Return a name of the entity class based on database table name (used in `EntityGenerator`). 
+
+Default implementation ignores the schema name, but when duplicates are detected, the name will be prefixed automatically.
+
+---
+
 #### `NamingStrategy.propertyToColumnName(propertyName: string): string`
 
-Return a column name for a property.
+Return a column name for a property (used in `EntityGenerator`).
 
 ---
 

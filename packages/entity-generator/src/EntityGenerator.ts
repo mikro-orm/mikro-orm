@@ -107,6 +107,20 @@ export class EntityGenerator {
       this.generateIdentifiedReferences(metadata);
     }
 
+    // enforce schema usage in class names only on duplicates
+    const duplicates = Utils.findDuplicates(metadata.map(meta => meta.className));
+
+    for (const duplicate of duplicates) {
+      for (const meta of metadata.filter(meta => meta.className === duplicate)) {
+        meta.className = this.namingStrategy.getEntityName(`${meta.schema}_${meta.className}`);
+        metadata.forEach(meta => meta.relations.forEach(prop => {
+          if (prop.type === duplicate) {
+            prop.type = meta.className;
+          }
+        }));
+      }
+    }
+
     return metadata;
   }
 

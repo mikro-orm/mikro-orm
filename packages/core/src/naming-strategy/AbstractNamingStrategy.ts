@@ -42,6 +42,13 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return `${tableName}_${type}`;
   }
 
+  /**
+   * @inheritDoc
+   */
+  getEntityName(tableName: string, schemaName?: string): string {
+    return this.getClassName(tableName, '_');
+  }
+
   columnNameToProperty(columnName: string): string {
     return columnName.replace(/[_\- ](\w)/g, m => m[1].toUpperCase()).replace(/[_\- ]+/g, '');
   }

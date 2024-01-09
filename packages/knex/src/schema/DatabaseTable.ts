@@ -204,7 +204,7 @@ export class DatabaseTable {
       skippedColumnNames,
     } = this.foreignKeysToProps(namingStrategy, scalarPropertiesForRelations);
 
-    let name = namingStrategy.getClassName(this.name, '_');
+    let name = namingStrategy.getEntityName(this.name, this.schema);
     name = name.match(/^\d/) ? 'E' + name : name;
     const schema = new EntitySchema({ name, collection: this.name, schema: this.schema });
 
@@ -710,7 +710,7 @@ export class DatabaseTable {
 
   private getPropertyTypeForForeignKey(namingStrategy: NamingStrategy, fk: ForeignKey): string {
     const parts = fk.referencedTableName.split('.', 2);
-    return namingStrategy.getClassName(parts.length > 1 ? parts[1] : parts[0], '_');
+    return namingStrategy.getEntityName(...parts.reverse() as [string, string]);
   }
 
   private getPropertyTypeForColumn(namingStrategy: NamingStrategy, column: Column, fk?: ForeignKey): string {
