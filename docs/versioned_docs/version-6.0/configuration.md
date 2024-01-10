@@ -137,13 +137,14 @@ export default defineConfig({
 
 To select driver, you can either use `type` option, or provide the driver class reference.
 
-| type         | driver name        | dependency      | note                    |
-| ------------ | ------------------ | --------------- | ----------------------- |
-| `mongo`      | `MongoDriver`      | `mongodb^3.3.4` | -                       |
-| `mysql`      | `MySqlDriver`      | `mysql2^2.0.0`  | compatible with MariaDB |
-| `mariadb`    | `MariaDbDriver`    | `mariadb^2.0.0` | compatible with MySQL   |
-| `postgresql` | `PostgreSqlDriver` | `pg^7.0.0`      | -                       |
-| `sqlite`     | `SqliteDriver`     | `sqlite3^4.0.0` | -                       |
+| type            | driver name          | dependency       | note                        |
+|-----------------|----------------------|------------------|-----------------------------|
+| `mongo`         | `MongoDriver`        | `mongodb`        | -                           |
+| `mysql`         | `MySqlDriver`        | `mysql2`         | compatible with MariaDB     |
+| `mariadb`       | `MariaDbDriver`      | `mariadb`        | compatible with MySQL       |
+| `postgresql`    | `PostgreSqlDriver`   | `pg`             | compatible with CockroachDB |
+| `sqlite`        | `SqliteDriver`       | `sqlite3`        | -                           |
+| `better-sqlite` | `BetterSqliteDriver` | `better-sqlite3` | -                           |
 
 > Driver and connection implementations are not directly exported from `@mikro-orm/core` module. You can import them from the driver packages (e.g. `import { PostgreSqlDriver } from '@mikro-orm/postgresql'`).
 
