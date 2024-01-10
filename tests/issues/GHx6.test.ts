@@ -93,3 +93,13 @@ test('raw fragments with populateOrderBy on relation', async () => {
     'left join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
     'order by t0.created desc, j1.DateCompleted desc');
 });
+
+test('raw fragments with multiple items in filter', async () => {
+  const mock = mockLogger(orm);
+  await orm.em.findAll(Tag, {
+    where: {
+      [raw('id')]: { $gte: 10, $lte: 50 },
+    },
+  });
+  expect(mock.mock.calls[0][0]).toMatch('select `t0`.* from `tag` as `t0` where id >= 10 and id <= 50');
+});

@@ -521,7 +521,6 @@ export class QueryBuilderHelper {
   }
 
   private processObjectSubCondition(cond: any, key: string, qb: Knex.QueryBuilder, method: 'where' | 'having', m: 'where' | 'orWhere' | 'having', type: QueryType): void {
-    // grouped condition for one field
     let value = cond[key];
     const size = Utils.getObjectKeysSize(value);
 
@@ -529,8 +528,14 @@ export class QueryBuilderHelper {
       return;
     }
 
+    // grouped condition for one field, e.g. `{ age: { $gte: 10, $lt: 50 } }`
     if (size > 1) {
-      const subCondition = Object.entries(value).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
+      const rawField = RawQueryFragment.getKnownFragment(key);
+      const subCondition = Object.entries(value).map(([subKey, subValue]) => {
+        key = rawField?.clone().toString() ?? key;
+        return ({ [key]: { [subKey]: subValue } });
+      });
+
       return subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, '$and', method));
     }
 
