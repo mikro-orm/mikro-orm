@@ -1287,7 +1287,7 @@ export const Book = new EntitySchema<IBook>({
 @Entity()
 export class Book {
 
-  @PrimaryKey({ type: 'uuid', defaultRaw: 'uuid_generate_v4()' })
+  @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   uuid: string;
 
   @Property()
@@ -1306,7 +1306,7 @@ export class Book {
 @Entity()
 export class Book {
 
-  @PrimaryKey({ type: 'uuid', defaultRaw: 'uuid_generate_v4()' })
+  @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   uuid: string;
 
   @Property()
@@ -1331,7 +1331,7 @@ export class Book {
 export const BookSchema = new EntitySchema<Book>({
   class: Book,
   properties: {
-    uuid: { type: 'uuid', defaultRaw: 'uuid_generate_v4()', primary: true },
+    uuid: { type: 'uuid', defaultRaw: 'gen_random_uuid()', primary: true },
     title: { type: 'string' },
     author: { entity: () => Author, reference: 'm:1' },
   },
