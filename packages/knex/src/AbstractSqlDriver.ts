@@ -1,5 +1,6 @@
 import type { Knex } from 'knex';
 import {
+  ALIAS_REPLACEMENT_RE,
   type AnyEntity,
   type Collection,
   type Configuration,
@@ -45,6 +46,7 @@ import {
   type QueryOrderMap,
   type QueryResult,
   raw,
+  RawQueryFragment,
   ReferenceKind,
   type RequiredEntityData,
   type Transaction,
@@ -1255,19 +1257,28 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     // as `options.populateWhere` will be always recomputed to respect filters
     const populateWhereAll = (options as Dictionary)._populateWhere !== 'infer' && !Utils.isEmpty((options as Dictionary)._populateWhere);
     const path = (populateWhereAll ? '[populate]' : '') + meta.className;
-    const populateOrderBy = this.buildPopulateOrderBy(qb, meta, Utils.asArray<QueryOrderMap<T>>(options.populateOrderBy ?? options.orderBy), path);
+    const populateOrderBy = this.buildPopulateOrderBy(qb, meta, Utils.asArray<QueryOrderMap<T>>(options.populateOrderBy ?? options.orderBy), path, !!options.populateOrderBy);
     const joinedPropsOrderBy = this.buildJoinedPropsOrderBy(qb, meta, joinedProps, options, path);
 
     return [...Utils.asArray(options.orderBy), ...populateOrderBy, ...joinedPropsOrderBy] as QueryOrderMap<T>[];
   }
 
-  protected buildPopulateOrderBy<T extends object>(qb: QueryBuilder<T>, meta: EntityMetadata<T>, populateOrderBy: QueryOrderMap<T>[], parentPath: string, parentAlias = qb.alias): QueryOrderMap<T>[] {
+  protected buildPopulateOrderBy<T extends object>(qb: QueryBuilder<T>, meta: EntityMetadata<T>, populateOrderBy: QueryOrderMap<T>[], parentPath: string, explicit: boolean, parentAlias = qb.alias): QueryOrderMap<T>[] {
     const orderBy: QueryOrderMap<T>[] = [];
 
     for (let i = 0; i < populateOrderBy.length; i++) {
       const orderHint = populateOrderBy[i];
 
       for (const propName of Utils.keys(orderHint)) {
+        const raw = RawQueryFragment.getKnownFragment(propName, explicit);
+
+        if (raw) {
+          const sql = raw.sql.replace(new RegExp(ALIAS_REPLACEMENT_RE, 'g'), parentAlias);
+          const raw2 = new RawQueryFragment(sql, raw.params);
+          orderBy.push({ [raw2 as EntityKey]: orderHint[propName] } as QueryOrderMap<T>);
+          continue;
+        }
+
         const prop = meta.properties[propName];
 
         if (!prop) {
@@ -1290,7 +1301,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         }
 
         if (![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind) && typeof childOrder === 'object') {
-          const children = this.buildPopulateOrderBy(qb, meta2, Utils.asArray(childOrder as QueryOrderMap<T>), path, propAlias);
+          const children = this.buildPopulateOrderBy(qb, meta2, Utils.asArray(childOrder as QueryOrderMap<T>), path, explicit, propAlias);
           orderBy.push(...children);
           continue;
         }
