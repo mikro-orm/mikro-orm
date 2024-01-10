@@ -36,6 +36,7 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
       client: type,
       connection: {
         filename: this.config.get('dbName'),
+        options: this.config.get('options'),
       },
       pool: this.config.get('pool'),
       useNullAsDefault: true,
