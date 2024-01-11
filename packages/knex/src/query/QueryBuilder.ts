@@ -913,14 +913,15 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return ret;
   }
 
-  clone(reset?: boolean): QueryBuilder<T> {
+  clone(reset?: boolean | string[]): QueryBuilder<T> {
     const qb = new QueryBuilder<T>(this.mainAlias.entityName, this.metadata, this.driver, this.context, this.mainAlias.aliasName, this.connectionType, this.em);
 
-    if (reset) {
+    if (reset === true) {
       return qb;
     }
 
     Object.assign(qb, this);
+    reset = reset || [];
 
     // clone array/object properties
     const properties = [
@@ -928,7 +929,14 @@ export class QueryBuilder<T extends object = AnyEntity> {
       '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
       '_comments', '_hintComments',
     ] as const;
-    properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop]));
+
+    for (const prop of properties) {
+      if (reset.includes(prop)) {
+        continue;
+      }
+
+      (qb as any)[prop] = Utils.copy(this[prop]);
+    }
 
     /* istanbul ignore else */
     if (this._fields) {
@@ -1403,7 +1411,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
   private wrapPaginateSubQuery(meta: EntityMetadata): void {
     const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
-    const subQuery = this.clone().select(pks).groupBy(pks).limit(this._limit!);
+    const subQuery = this.clone(['_orderBy', '_cond']).select(pks).groupBy(pks).limit(this._limit!);
     // revert the on conditions added via populateWhere, we want to apply those only once
     Object.values(subQuery._joins).forEach(join => join.cond = join.cond_ ?? {});
 
@@ -1418,6 +1426,12 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
       for (const orderMap of this._orderBy) {
         for (const [field, direction] of Object.entries(orderMap)) {
+          if (RawQueryFragment.isKnownFragment(field)) {
+            const rawField = RawQueryFragment.getKnownFragment(field, false)!;
+            orderBy.push({ [rawField.clone() as any]: direction });
+            continue;
+          }
+
           const [a, f] = this.helper.splitField(field as EntityKey<T>);
           const prop = this.helper.getProperty(f, a);
           const type = this.platform.castColumn(prop);
@@ -1427,7 +1441,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
             addToSelect.push(fieldName);
           }
 
-          orderBy.push({ [raw(`min(${this.knex.ref(fieldName)}${type})`)]: direction });
+          const key = raw(`min(${this.knex.ref(fieldName)}${type})`);
+          orderBy.push({ [key]: direction });
         }
       }
 
@@ -1553,6 +1568,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
     if (this._onConflict?.[0]) {
       prefix = 'Upsert';
       object.onConflict = this._onConflict[0];
+    }
+
+    if (!Utils.isEmpty(this._orderBy)) {
+      object.orderBy = this._orderBy;
     }
 
     const name = this._mainAlias ? `${prefix}QueryBuilder<${this._mainAlias?.entityName}>` : 'QueryBuilder';

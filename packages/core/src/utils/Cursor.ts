@@ -4,6 +4,7 @@ import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseD
 import { Utils } from './Utils';
 import { ReferenceKind, type QueryOrder, type QueryOrderKeys } from '../enums';
 import { Reference } from '../entity/Reference';
+import { RawQueryFragment } from '../utils/RawQueryFragment';
 
 /**
  * As an alternative to the offset-based pagination with `limit` and `offset`, we can paginate based on a cursor.
@@ -155,10 +156,24 @@ export class Cursor<
 
   static getDefinition<Entity extends object>(meta: EntityMetadata<Entity>, orderBy: OrderDefinition<Entity>) {
     return Utils.asArray(orderBy).flatMap(order => {
-      return Utils.keys(order)
-        .map(key => meta.properties[key as EntityKey<Entity>])
-        .filter(prop => prop && ([ReferenceKind.SCALAR, ReferenceKind.EMBEDDED, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner)))
-        .map(prop => [prop.name, order[prop.name] as QueryOrder] as const);
+      const ret: [EntityKey, QueryOrder][] = [];
+
+      for (const key of Utils.keys(order)) {
+        if (RawQueryFragment.isKnownFragment(key)) {
+          ret.push([key as EntityKey, order[key] as QueryOrder]);
+          continue;
+        }
+
+        const prop = meta.properties[key];
+
+        if (!prop || !([ReferenceKind.SCALAR, ReferenceKind.EMBEDDED, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))) {
+          continue;
+        }
+
+        ret.push([prop.name as EntityKey, order[prop.name] as QueryOrder]);
+      }
+
+      return ret;
     });
   }
 

@@ -47,6 +47,13 @@ export class RawQueryFragment {
     return new RawQueryFragment(this.sql, this.params);
   }
 
+  /**
+   * @internal allows testing we don't leak memory, as the raw fragments cache needs to be cleared automatically
+   */
+  static checkCacheSize() {
+    return this.#rawQueryCache.size;
+  }
+
   static isKnownFragment(key: string) {
     return this.#rawQueryCache.has(key);
   }
