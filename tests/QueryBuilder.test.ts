@@ -1,5 +1,14 @@
 import { inspect } from 'util';
-import { LockMode, MikroORM, QueryFlag, QueryOrder, raw, sql, UnderscoreNamingStrategy } from '@mikro-orm/core';
+import {
+  LockMode,
+  MikroORM,
+  QueryFlag,
+  QueryOrder,
+  raw,
+  RawQueryFragment,
+  sql,
+  UnderscoreNamingStrategy,
+} from '@mikro-orm/core';
 import { CriteriaNode, QueryBuilder, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { v4 } from 'uuid';
@@ -24,6 +33,7 @@ describe('QueryBuilder', () => {
       },
     }, true);
   });
+  afterEach(() => expect(RawQueryFragment.checkCacheSize()).toBe(0));
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);

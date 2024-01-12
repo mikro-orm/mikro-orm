@@ -134,8 +134,8 @@ test('qb.joinAndSelect', async () => {
       [raw('similarity(u."name", ?)', ['def'])]: QueryOrder.DESC_NULLS_LAST,
     })
     .limit(100)
-    .offset(0).
-    getFormattedQuery();
+    .offset(0)
+    .getFormattedQuery();
   expect(query).toMatch('select `u`.*, `a`.`id` as `a__id`, `a`.`DateCompleted` as `a__DateCompleted` ' +
     'from `tag` as `u` ' +
     'left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` ' +

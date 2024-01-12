@@ -1,5 +1,13 @@
 import { v4 } from 'uuid';
-import { AnyEntity, ChangeSet, DefaultLogger, EventSubscriber, FilterQuery, FlushEventArgs } from '@mikro-orm/core';
+import {
+  AnyEntity,
+  ChangeSet,
+  DefaultLogger,
+  EventSubscriber,
+  FilterQuery,
+  FlushEventArgs,
+  RawQueryFragment,
+} from '@mikro-orm/core';
 import {
   ChangeSetType,
   Collection,
@@ -72,6 +80,7 @@ describe('EntityManagerPostgre', () => {
 
   beforeAll(async () => orm = await initORMPostgreSql());
   beforeEach(async () => orm.schema.clearDatabase());
+  afterEach(() => expect(RawQueryFragment.checkCacheSize()).toBe(0));
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -1136,8 +1145,8 @@ describe('EntityManagerPostgre', () => {
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
 
-    await orm.em.persist(book1);
-    await orm.em.persist(book2);
+    orm.em.persist(book1);
+    orm.em.persist(book2);
     await orm.em.persistAndFlush(book3);
 
     expect(typeof tag1.id).toBe('bigint');

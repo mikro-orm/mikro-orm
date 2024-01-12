@@ -23,6 +23,7 @@ import {
   PopulateHint,
   raw,
   ref,
+  RawQueryFragment,
 } from '@mikro-orm/core';
 import { MySqlDriver, MySqlConnection, ScalarReference } from '@mikro-orm/mysql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
@@ -39,6 +40,7 @@ describe('EntityManagerMySql', () => {
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   beforeEach(async () => orm.schema.clearDatabase());
   afterEach(() => {
+    expect(RawQueryFragment.checkCacheSize()).toBe(0);
     orm.config.set('debug', false);
     Author2Subscriber.log.length = 0;
     EverythingSubscriber.log.length = 0;

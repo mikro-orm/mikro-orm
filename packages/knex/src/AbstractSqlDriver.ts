@@ -898,6 +898,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       for (const field of targetFields) {
         const f = field.toString();
         fields.unshift(f.includes('.') ? field as string : `${targetAlias}.${f}`);
+
+        if (RawQueryFragment.isKnownFragment(field as string)) {
+          qb.rawFragments.add(f);
+        }
       }
 
       // we need to handle 1:1 owner auto-joins explicitly, as the QB type is the pivot table, not the target
@@ -926,6 +930,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const res = owners.length ? await this.rethrow(qb.execute('all', { mergeResults: false, mapResults: false })) : [];
     const items = res.map((row: Dictionary) => super.mapResult(row, prop.targetMeta));
+    qb.clearRawFragmentsCache();
 
     const map: Dictionary<T[]> = {};
     const pkProps = ownerMeta.getPrimaryProps();

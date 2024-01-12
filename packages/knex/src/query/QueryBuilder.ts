@@ -95,6 +95,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
   __populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
   /** @internal */
   _populateMap: Dictionary<string> = {};
+  /** @internal */
+  readonly rawFragments = new Set<string>();
 
   private aliasCounter = 0;
   private flags: Set<QueryFlag> = new Set([QueryFlag.CONVERT_CUSTOM_TYPES]);
@@ -629,8 +631,17 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     this.helper.finalize(type, qb, this.mainAlias.metadata, this._data, this._returning);
+    this.clearRawFragmentsCache();
 
     return qb;
+  }
+
+  /**
+   * @internal
+   */
+  clearRawFragmentsCache(): void {
+    this.rawFragments.forEach(key => RawQueryFragment.remove(key));
+    this.rawFragments.clear();
   }
 
   /**
@@ -920,26 +931,29 @@ export class QueryBuilder<T extends object = AnyEntity> {
       return qb;
     }
 
-    Object.assign(qb, this);
     reset = reset || [];
 
     // clone array/object properties
     const properties = [
       'flags', '_populate', '_populateWhere', '__populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
       '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
-      '_comments', '_hintComments',
-    ] as const;
+      '_comments', '_hintComments', 'rawFragments',
+    ];
 
-    for (const prop of properties) {
+    RawQueryFragment.cloneRegistry = this.rawFragments;
+
+    for (const prop of Object.keys(this)) {
       if (reset.includes(prop)) {
         continue;
       }
 
-      (qb as any)[prop] = Utils.copy(this[prop]);
+      (qb as any)[prop] = properties.includes(prop) ? Utils.copy(this[prop as keyof this]) : this[prop as keyof this];
     }
 
+    delete RawQueryFragment.cloneRegistry;
+
     /* istanbul ignore else */
-    if (this._fields) {
+    if (this._fields && !reset.includes('_fields')) {
       qb._fields = [...this._fields];
     }
 
@@ -1411,7 +1425,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
   private wrapPaginateSubQuery(meta: EntityMetadata): void {
     const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
-    const subQuery = this.clone(['_orderBy', '_cond']).select(pks).groupBy(pks).limit(this._limit!);
+    const subQuery = this.clone(['_orderBy', '_fields']).select(pks).groupBy(pks).limit(this._limit!);
     // revert the on conditions added via populateWhere, we want to apply those only once
     Object.values(subQuery._joins).forEach(join => join.cond = join.cond_ ?? {});
 
@@ -1428,6 +1442,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
         for (const [field, direction] of Object.entries(orderMap)) {
           if (RawQueryFragment.isKnownFragment(field)) {
             const rawField = RawQueryFragment.getKnownFragment(field, false)!;
+            this.rawFragments.add(field);
             orderBy.push({ [rawField.clone() as any]: direction });
             continue;
           }
@@ -1459,11 +1474,18 @@ export class QueryBuilder<T extends object = AnyEntity> {
             return field.__as === prop;
           }
 
+          if (field instanceof RawQueryFragment) {
+            // not perfect, but should work most of the time, ideally we should check only the alias (`... as alias`)
+            return field.sql.includes(prop);
+          }
+
           // not perfect, but should work most of the time, ideally we should check only the alias (`... as alias`)
           return field.toString().includes(prop);
         });
 
-        if (field) {
+        if (field instanceof RawQueryFragment) {
+          knexQuery.select(this.platform.formatQuery(field.sql, field.params));
+        } else if (field) {
           knexQuery.select(field as string);
         }
       });

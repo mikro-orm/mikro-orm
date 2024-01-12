@@ -6,6 +6,7 @@ export class RawQueryFragment {
 
   static #rawQueryCache = new Map<string, RawQueryFragment>();
   static #index = 0;
+  static cloneRegistry?: Set<string>;
 
   #used = false;
   readonly #key: string;
@@ -44,6 +45,7 @@ export class RawQueryFragment {
   }
 
   clone(): RawQueryFragment {
+    RawQueryFragment.cloneRegistry?.add(this.#key);
     return new RawQueryFragment(this.sql, this.params);
   }
 
@@ -54,7 +56,11 @@ export class RawQueryFragment {
     return this.#rawQueryCache.size;
   }
 
-  static isKnownFragment(key: string) {
+  static isKnownFragment(key: string | RawQueryFragment) {
+    if (key instanceof RawQueryFragment) {
+      return true;
+    }
+
     return this.#rawQueryCache.has(key);
   }
 
@@ -66,10 +72,14 @@ export class RawQueryFragment {
     const raw = this.#rawQueryCache.get(key);
 
     if (raw && cleanup) {
-      this.#rawQueryCache.delete(key);
+      this.remove(key);
     }
 
     return raw;
+  }
+
+  static remove(key: string) {
+    this.#rawQueryCache.delete(key);
   }
 
   /* istanbul ignore next */
