@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.3](https://github.com/mikro-orm/mikro-orm/compare/v6.0.2...v6.0.3) (2024-01-13)
+
+
+### Bug Fixes
+
+* **core:** allow raw fragments as keys with multiple conditions ([d0d5de8](https://github.com/mikro-orm/mikro-orm/commit/d0d5de8cc0b0f290a75dbd5962953b8e4065d02e)), closes [#5112](https://github.com/mikro-orm/mikro-orm/issues/5112)
+* **core:** fix leaking raw fragments cache ([9638410](https://github.com/mikro-orm/mikro-orm/commit/9638410583fb660de807dd1e18777d26bec9bfd6))
+* **core:** respect raw fragments in `orderBy` and `populateOrderBy` ([7bf986c](https://github.com/mikro-orm/mikro-orm/commit/7bf986cebba090207f7d42f1c1d66fed919e7c77)), closes [#5110](https://github.com/mikro-orm/mikro-orm/issues/5110)
+* **core:** support raw fragments in order by with pagination ([67ee6f5](https://github.com/mikro-orm/mikro-orm/commit/67ee6f59d5f26d283080a686a001ab6dfa8ea515)), closes [#5110](https://github.com/mikro-orm/mikro-orm/issues/5110)
+
+
+### Features
+
+* **core:** do not map array types as `Loaded` when partially loaded ([75d035d](https://github.com/mikro-orm/mikro-orm/commit/75d035dbb56dfe4aec78db39a7dfbc99e1d372a2)), closes [#5123](https://github.com/mikro-orm/mikro-orm/issues/5123)
+* **core:** export `AutoPath` and `UnboxArray` types ([000c50c](https://github.com/mikro-orm/mikro-orm/commit/000c50c2dd1e6c8d74ee4994633c65192f420105)), closes [#5124](https://github.com/mikro-orm/mikro-orm/issues/5124)
+* **core:** map double and decimal properties to `number` or `string` based on the runtime type ([312f293](https://github.com/mikro-orm/mikro-orm/commit/312f293cb9a23115da440c64e0a8ff7e21ae13c2)), closes [#5120](https://github.com/mikro-orm/mikro-orm/issues/5120)
+* **core:** provide mapped custom types into constructor with `forceEntityConstructor` ([b293789](https://github.com/mikro-orm/mikro-orm/commit/b293789441ee179dcfac4016774bfd2ccb6f830b)), closes [#5118](https://github.com/mikro-orm/mikro-orm/issues/5118)
+
+
+
+
+
 ## [6.0.2](https://github.com/mikro-orm/mikro-orm/compare/v6.0.1...v6.0.2) (2024-01-09)
 
 

@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.3](https://github.com/mikro-orm/mikro-orm/compare/v6.0.2...v6.0.3) (2024-01-13)
+
+
+### Bug Fixes
+
+* **core:** allow raw fragments as keys with multiple conditions ([d0d5de8](https://github.com/mikro-orm/mikro-orm/commit/d0d5de8cc0b0f290a75dbd5962953b8e4065d02e)), closes [#5112](https://github.com/mikro-orm/mikro-orm/issues/5112)
+* **core:** fix leaking raw fragments cache ([9638410](https://github.com/mikro-orm/mikro-orm/commit/9638410583fb660de807dd1e18777d26bec9bfd6))
+* **core:** respect raw fragments in `orderBy` and `populateOrderBy` ([7bf986c](https://github.com/mikro-orm/mikro-orm/commit/7bf986cebba090207f7d42f1c1d66fed919e7c77)), closes [#5110](https://github.com/mikro-orm/mikro-orm/issues/5110)
+* **core:** support raw fragments in order by with pagination ([67ee6f5](https://github.com/mikro-orm/mikro-orm/commit/67ee6f59d5f26d283080a686a001ab6dfa8ea515)), closes [#5110](https://github.com/mikro-orm/mikro-orm/issues/5110)
+
+
+
+
+
 ## [6.0.2](https://github.com/mikro-orm/mikro-orm/compare/v6.0.1...v6.0.2) (2024-01-09)
 
 
