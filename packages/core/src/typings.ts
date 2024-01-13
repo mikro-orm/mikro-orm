@@ -965,7 +965,7 @@ type LoadedLoadable<T, E extends object> =
     ? LoadedReference<E>
     : T extends ScalarReference<infer U>
       ? LoadedScalarReference<U>
-      : T extends Scalar | Scalar[]
+      : T extends Scalar | any[]
           ? T
           : E;
 
