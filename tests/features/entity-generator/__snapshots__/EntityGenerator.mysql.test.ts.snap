@@ -249,7 +249,7 @@ export class Book2 {
   title?: string;
   perex?: string;
   price?: string;
-  double?: string;
+  double?: number;
   meta?: any;
   author!: Ref<Author2>;
   publisher?: Ref<Publisher2>;
@@ -268,7 +268,7 @@ export const Book2Schema = new EntitySchema({
     title: { type: 'string', length: 255, nullable: true, index: 'book2_title_index' },
     perex: { type: 'string', columnType: 'text', nullable: true },
     price: { type: 'string', columnType: 'numeric(8,2)', nullable: true },
-    double: { type: 'string', columnType: 'double', nullable: true },
+    double: { type: 'number', columnType: 'double', nullable: true },
     meta: { type: 'any', columnType: 'json', nullable: true },
     author: { kind: 'm:1', entity: () => Author2, ref: true },
     publisher: {
@@ -928,7 +928,7 @@ export class Book2 {
   price?: string;
 
   @Property({ columnType: 'double', nullable: true })
-  double?: string;
+  double?: number;
 
   @Property({ columnType: 'json', nullable: true })
   meta?: any;
@@ -1469,7 +1469,7 @@ export class Book2 {
   price?: string;
 
   @Property({ columnType: 'double', nullable: true })
-  double?: string;
+  double?: number;
 
   @Property({ columnType: 'json', nullable: true })
   meta?: any;
@@ -2068,7 +2068,7 @@ export class Book2 {
   price?: string;
 
   @Property({ columnType: 'double', nullable: true })
-  double?: string;
+  double?: number;
 
   @Property({ columnType: 'json', nullable: true })
   meta?: any;
@@ -2639,7 +2639,7 @@ export class Book2 {
   price?: string;
 
   @Property({ columnType: 'double', nullable: true })
-  double?: string;
+  double?: number;
 
   @Property({ columnType: 'json', nullable: true })
   meta?: any;
@@ -3203,7 +3203,7 @@ export class Book2 {
   perex?: string;
 
   @Property({ columnType: 'double', nullable: true })
-  double?: string;
+  double?: number;
 
   @Property({ columnType: 'json', nullable: true })
   meta?: any;

@@ -25,6 +25,8 @@ import {
   ArrayType,
   BigIntType,
   BlobType,
+  DoubleType,
+  DecimalType,
   EnumArrayType,
   JsonType,
   t,
@@ -1278,6 +1280,14 @@ export class MetadataDiscovery {
       prop.customType = new BigIntType();
     }
 
+    if (prop.fieldNames?.length === 1 && !prop.customType && mappedType instanceof DoubleType) {
+      prop.customType = new DoubleType();
+    }
+
+    if (prop.fieldNames?.length === 1 && !prop.customType && mappedType instanceof DecimalType) {
+      prop.customType = new DecimalType();
+    }
+
     if (prop.customType && !prop.columnTypes) {
       const mappedType = this.getMappedType({ columnTypes: [prop.customType.getColumnType(prop, this.platform)] } as EntityProperty);
       prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
@@ -1292,6 +1302,10 @@ export class MetadataDiscovery {
       prop.columnTypes ??= [prop.customType.getColumnType(prop, this.platform)];
       prop.hasConvertToJSValueSQL = !!prop.customType.convertToJSValueSQL && prop.customType.convertToJSValueSQL('', this.platform) !== '';
       prop.hasConvertToDatabaseValueSQL = !!prop.customType.convertToDatabaseValueSQL && prop.customType.convertToDatabaseValueSQL('', this.platform) !== '';
+
+      if (prop.customType instanceof BigIntType && ['string', 'bigint', 'number'].includes(prop.runtimeType.toLowerCase())) {
+        prop.customType.mode = prop.runtimeType.toLowerCase() as 'string';
+      }
     }
 
     if (Type.isMappedType(prop.customType) && prop.kind === ReferenceKind.SCALAR && !prop.type?.toString().endsWith('[]')) {

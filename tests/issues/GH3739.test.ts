@@ -4,7 +4,7 @@ import { Entity, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/mysql';
 export class Asset1 {
 
   @PrimaryKey({ columnType: 'bigint' })
-  id!: string;
+  id!: bigint;
 
   @Property()
   name!: string;
@@ -15,7 +15,7 @@ export class Asset1 {
 export class Asset2 {
 
   @PrimaryKey({ type: 'bigint' })
-  id!: string;
+  id!: bigint;
 
   @Property()
   name!: string;
@@ -26,7 +26,7 @@ export class Asset2 {
 export class Asset3 {
 
   @PrimaryKey({ type: t.bigint })
-  id!: string;
+  id!: bigint;
 
   @Property()
   name!: string;
@@ -45,7 +45,7 @@ test('bigint in mysql 1/3', async () => {
     name: 'foo',
   });
   const a2 = orm.em.create(Asset1, {
-    id: '90071992547409923',
+    id: 90071992547409923n,
     name: 'foo',
   });
   await orm.em.flush();

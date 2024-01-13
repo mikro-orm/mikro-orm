@@ -441,7 +441,7 @@ describe('EntityManagerPostgre', () => {
     expect(orm.em).toBeInstanceOf(EntityManager);
 
     const god = new Author2('God', 'hello@heaven.god');
-    const bible = new Book2('Bible', god);
+    const bible = new Book2('Bible', god, 0.01);
     bible.double = 123.45;
     await orm.em.persistAndFlush(bible);
 
@@ -451,11 +451,11 @@ describe('EntityManagerPostgre', () => {
 
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
 
-    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book1 = new Book2('My Life on The Wall, part 1', author, 1.11);
     book1.publisher = ref(publisher);
-    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author, 2.22);
     book2.publisher = ref(publisher);
-    const book3 = new Book2('My Life on The Wall, part 3', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author, 3.33);
     book3.publisher = ref(publisher);
 
     orm.em.persist(book1);
@@ -474,6 +474,10 @@ describe('EntityManagerPostgre', () => {
     const booksRepository = orm.em.getRepository(Book2);
     const books = await booksRepository.findAll({ populate: ['author'] });
     expect(wrap(books[0].author).isInitialized()).toBe(true);
+    expect(typeof books[0].double).toBe('number');
+    expect(books[0].double).toBe(123.45);
+    expect(typeof books[0].price).toBe('number');
+    expect(books[0].price).toBe(0.01);
     await expect(authorRepository.findOne({ favouriteBook: bible.uuid })).resolves.not.toBe(null);
     orm.em.clear();
 

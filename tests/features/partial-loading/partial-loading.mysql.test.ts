@@ -394,7 +394,7 @@ describe('partial loading (mysql)', () => {
     const r2 = await orm.em.refreshOrFail(r1, { populate: ['*'] });
     expect(r2.name).toBe('t1');
     expect(r2.books[0].title).toBe('Bible 1');
-    expect(r2.books[0].price).toBe('123.00');
+    expect(r2.books[0].price).toBe(123.00);
     expect(r2.books[0].author).toBeDefined();
     expect(r2.books[0].author.id).toBeDefined();
     expect(r2.books[0].author.name).toBe(god.name);

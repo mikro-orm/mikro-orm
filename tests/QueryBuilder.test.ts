@@ -2097,7 +2097,7 @@ describe('QueryBuilder', () => {
     expect(res4[0].books).toHaveLength(1);
     expect(res4[0].books[0]).toMatchObject({
       title: 'foo 1',
-      price: '123.00',
+      price: 123.00,
       priceTaxed: '146.3700',
     });
     expect(res4[0].books[0].tags).toHaveLength(3);
@@ -2924,7 +2924,7 @@ describe('QueryBuilder', () => {
       expect(res4[0].books).toHaveLength(1);
       expect(res4[0].books[0]).toMatchObject({
         title: 'foo 1',
-        price: '123.00',
+        price: 123.00,
         priceTaxed: '146.3700',
       });
       expect(res4[0].books[0].tags).toHaveLength(3);

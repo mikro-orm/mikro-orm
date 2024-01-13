@@ -78,7 +78,7 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(r2[0].termsAccepted).toBe(false);
     expect(r2[0].email).toBe('lol@lol.lol');
     expect(r2[0].books[0].title).toBe('Bible 1');
-    expect(r2[0].books[0].price).toBe('123.00');
+    expect(r2[0].books[0].price).toBe(123.00);
     expect(r2[0].books[0].perex?.$).toBe('b1 perex');
     expect(r1[0]).toBe(r2[0]);
 
@@ -117,7 +117,7 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(r2[0].termsAccepted).toBe(false);
     expect(r2[0].email).toBe('lol@lol.lol');
     expect(r2[0].books[0].title).toBe('lol');
-    expect(r2[0].books[0].price).toBe('123.00');
+    expect(r2[0].books[0].price).toBe(123.00);
     expect(r2[0].books[0].perex?.$).toBe('b1 perex');
     expect(r1[0]).toBe(r2[0]);
 

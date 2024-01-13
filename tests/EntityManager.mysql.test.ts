@@ -882,7 +882,7 @@ describe('EntityManagerMySql', () => {
     const res4 = await orm.em.findOneOrFail(Book2, { [raw<Book2>(['price', 'createdAt'])]: { $lte: [100, new Date()] } });
     expect(res4).toBeInstanceOf(Book2);
     expect(res4.createdAt).toBeDefined();
-    expect(res4.price).toBe('100.00');
+    expect(res4.price).toBe(100.00);
     expect(res4.meta).toEqual({ category: 'foo', items: 1 });
     expect(mock.mock.calls[0][0]).toMatch('where `b0`.`author_id` is not null and (`b0`.`price`, `b0`.`created_at`) <= (?, ?)');
   });
@@ -2531,7 +2531,7 @@ describe('EntityManagerMySql', () => {
     const mock = mockLogger(orm, ['query']);
 
     const b = await orm.em.findOneOrFail(Book2, { author: { name: 'God' } }, { strategy: 'select-in' });
-    expect(b.price).toBe('1000.00');
+    expect(b.price).toBe(1000.00);
     expect(b.priceTaxed).toBe('1190.0000');
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t2`.`id` as `test_id` ' +
       'from `book2` as `b0` ' +
@@ -2582,7 +2582,7 @@ describe('EntityManagerMySql', () => {
     const mock = mockLogger(orm, ['query']);
 
     const b = await orm.em.fork().findOneOrFail(Book2, { priceTaxed: '1190.0000' }, { strategy: 'select-in' });
-    expect(b.price).toBe('1000.00');
+    expect(b.price).toBe(1000.00);
     expect(b.priceTaxed).toBe('1190.0000');
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` ' +
       'from `book2` as `b0` ' +
@@ -2590,7 +2590,7 @@ describe('EntityManagerMySql', () => {
       'where `b0`.`author_id` is not null and `b0`.price * 1.19 = ? limit ?');
 
     const a1 = await orm.em.fork().find(Author2, { $or: [{ favouriteBook: { priceTaxed: '1190.0000' } }] }, { populate: ['books'], strategy: 'select-in' });
-    expect(a1[0].books[0].price).toBe('1000.00');
+    expect(a1[0].books[0].price).toBe(1000.00);
     expect(a1[0].books[0].priceTaxed).toBe('1190.0000');
     expect(mock.mock.calls[1][0]).toMatch('select `a0`.*, `a2`.`author_id` as `address_author_id` ' +
       'from `author2` as `a0` ' +
@@ -2604,7 +2604,7 @@ describe('EntityManagerMySql', () => {
       'order by `b0`.`title` asc');
 
     const a2 = await orm.em.fork().find(Author2, { favouriteBook: { $or: [{ priceTaxed: '1190.0000' }] } }, { populate: ['books'], strategy: 'select-in' });
-    expect(a2[0].books[0].price).toBe('1000.00');
+    expect(a2[0].books[0].price).toBe(1000.00);
     expect(a2[0].books[0].priceTaxed).toBe('1190.0000');
     expect(mock.mock.calls[3][0]).toMatch('select `a0`.*, `a2`.`author_id` as `address_author_id` ' +
       'from `author2` as `a0` ' +

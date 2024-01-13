@@ -8,7 +8,7 @@ import type { EntityProperty } from '../typings';
  */
 export class BigIntType extends Type<string | bigint | number | null | undefined, string | null | undefined> {
 
-  constructor(readonly mode: 'bigint' | 'number' | 'string' = 'bigint') {
+  constructor(public mode?: 'bigint' | 'number' | 'string') {
     super();
   }
 
@@ -26,13 +26,13 @@ export class BigIntType extends Type<string | bigint | number | null | undefined
     }
 
     switch (this.mode) {
-      case 'bigint':
-        return BigInt(value);
       case 'number':
         return Number(value);
       case 'string':
-      default:
         return String(value);
+      case 'bigint':
+      default:
+        return BigInt(value);
     }
   }
 
@@ -45,7 +45,7 @@ export class BigIntType extends Type<string | bigint | number | null | undefined
   }
 
   override compareAsType(): string {
-    return 'bigint';
+    return this.mode ?? 'bigint';
   }
 
 }

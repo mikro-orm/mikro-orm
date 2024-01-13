@@ -187,7 +187,7 @@ export class Book2 {
   price?: string;
 
   @Property({ columnType: 'double', nullable: true })
-  double?: string;
+  double?: number;
 
   @Property({ columnType: 'json', nullable: true })
   meta?: any;
@@ -768,7 +768,7 @@ export class Book2 {
   price?: string;
 
   @Property({ columnType: 'double', nullable: true })
-  double?: string;
+  double?: number;
 
   @Property({ columnType: 'json', nullable: true })
   meta?: any;

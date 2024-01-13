@@ -31,10 +31,10 @@ describe('Joined loading strategy', () => {
     const a2 = await orm.em.findOneOrFail(Author2, author, { populate: ['books2', 'following'] });
     expect(a2.books2).toHaveLength(2);
     expect(a2.books2[0].title).toBe('The Fall');
-    expect(a2.books2[0].price).toBe('200.00');
+    expect(a2.books2[0].price).toBe(200.00);
     expect(a2.books2[0].priceTaxed).toBe('238.0000');
     expect(a2.books2[1].title).toBe('The Stranger');
-    expect(a2.books2[1].price).toBe('100.00');
+    expect(a2.books2[1].price).toBe(100.00);
     expect(a2.books2[1].priceTaxed).toBe('119.0000');
   });
 
