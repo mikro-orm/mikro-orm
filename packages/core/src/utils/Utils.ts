@@ -480,7 +480,7 @@ export class Utils {
 
       if (inside === 2 && token.type === 'Punctuator' && token.value === '{') {
         ret.push(ObjectBindingPattern as unknown as string);
-        i += 2;
+        i = tokens.findIndex((t, idx) => idx > i + 2 && t.type === 'Punctuator' && t.value === '}');
         continue;
       }
 
