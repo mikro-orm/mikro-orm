@@ -42,6 +42,7 @@ module.exports = {
         'inheritance-mapping',
         'cascading',
         'query-builder',
+        'raw-queries',
       ],
     },
     {

@@ -43,7 +43,8 @@
         "repositories",
         "inheritance-mapping",
         "cascading",
-        "query-builder"
+        "query-builder",
+        "raw-queries"
       ]
     },
     {
