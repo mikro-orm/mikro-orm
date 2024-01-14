@@ -26,6 +26,8 @@ beforeAll(async () => {
   await orm.schema.createSchema();
 });
 
+afterAll(() => orm.close());
+
 test('GH #5123', async () => {
   const a = orm.em.create(A, { array: [{ test: 'test' }] });
   await orm.em.persistAndFlush(a);

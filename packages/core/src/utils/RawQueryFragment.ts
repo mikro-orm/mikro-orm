@@ -8,7 +8,8 @@ export class RawQueryFragment {
   static #index = 0;
   static cloneRegistry?: Set<string>;
 
-  #used = false;
+  #assigned = false;
+  #used = 0;
   readonly #key: string;
 
   constructor(
@@ -32,16 +33,17 @@ export class RawQueryFragment {
 
   toString() {
     RawQueryFragment.#rawQueryCache.set(this.#key, this);
+    this.#used++;
     return this.#key;
   }
 
   /** @internal */
-  use() {
-    if (this.#used) {
+  assign() {
+    if (this.#assigned) {
       throw new Error(`Cannot reassign already used RawQueryFragment: '${this.sql}'`);
     }
 
-    this.#used = true;
+    this.#assigned = true;
   }
 
   clone(): RawQueryFragment {
@@ -79,7 +81,17 @@ export class RawQueryFragment {
   }
 
   static remove(key: string) {
-    this.#rawQueryCache.delete(key);
+    const raw = this.#rawQueryCache.get(key);
+
+    if (!raw) {
+      return;
+    }
+
+    raw.#used--;
+
+    if (raw.#used <= 0) {
+      this.#rawQueryCache.delete(key);
+    }
   }
 
   /* istanbul ignore next */

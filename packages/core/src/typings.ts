@@ -601,7 +601,7 @@ export class EntityMetadata<T = any> {
         },
         set(val: unknown) {
           if (typeof val === 'object' && !!val && '__raw' in val) {
-            (val as Dictionary).use();
+            (val as Dictionary).assign();
           }
 
           this.__helper.__data[prop.name] = val;
