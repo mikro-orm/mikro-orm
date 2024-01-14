@@ -37,6 +37,7 @@ export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
 export type Compute<T> = { [K in keyof T]: T[K] } & {};
 type InternalKeys = 'EntityRepositoryType' | 'PrimaryKeyProp' | 'OptionalProps' | 'EagerProps' | 'HiddenProps' | '__selectedType' | '__loadedType';
 export type CleanKeys<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol | InternalKeys ? never : K);
+export type FunctionKeys<T, K extends keyof T> = T[K] extends Function ? K : never;
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
 export type IsAny<T> = 0 extends (1 & T) ? true : false;
@@ -1061,6 +1062,8 @@ export type ExpandHint<T, L extends string> = L | AddEager<T>;
 
 export type Selected<T, L extends string = never, F extends string = '*'> = {
   [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
+} & {
+  [K in keyof T as FunctionKeys<T, K>]: T[K];
 } & { [__selectedType]?: [T, L, F] };
 
 export type EntityType<T> = T | { [__loadedType]?: T } | { [__selectedType]?: [T, any, any] };

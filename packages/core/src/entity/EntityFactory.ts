@@ -295,7 +295,11 @@ export class EntityFactory {
     } else {
       this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, this.driver.getSchemaName(meta, options));
     }
-    Utils.keys(data).forEach(key => helper(entity)?.__loadedProperties.add(key as string));
+
+    Utils.keys(data).forEach(key => {
+      helper(entity)?.__loadedProperties.add(key as string);
+      helper(entity)?.__serializationContext.fields?.push(key as string);
+    });
   }
 
   private findEntity<T extends object>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T | undefined {
