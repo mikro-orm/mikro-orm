@@ -642,6 +642,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       where = helper(entity).getPrimaryKey() as FilterQuery<Entity>;
       data = em.comparator.prepareEntity(entity);
     } else {
+      data = Utils.copy(data);
       where = Utils.extractPK(data, meta) as FilterQuery<Entity>;
 
       if (where) {
@@ -785,7 +786,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const entities = new Map<Entity, EntityData<Entity>>();
     const entitiesByData = new Map<EntityData<Entity>, Entity>();
 
-    for (let row of data) {
+    for (let i = 0; i < data.length; i++) {
+      let row = data[i];
       let where: FilterQuery<Entity>;
 
       if (Utils.isEntity(row)) {
@@ -801,6 +803,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         where = helper(entity).getPrimaryKey() as FilterQuery<Entity>;
         row = em.comparator.prepareEntity(entity);
       } else {
+        row = data[i] = Utils.copy(row);
         where = Utils.extractPK(row, meta) as FilterQuery<Entity>;
 
         if (where) {
