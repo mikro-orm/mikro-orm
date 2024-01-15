@@ -599,6 +599,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   getKnexQuery(processVirtualEntity = true): Knex.QueryBuilder {
+    if (this.#query) {
+      return this.#query.qb;
+    }
+
+    this.#query = {} as any;
     this.finalize();
     const qb = this.getQueryBase(processVirtualEntity);
     const type = this.type ?? QueryType.SELECT;
@@ -623,7 +628,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(type, this._onConflict!, qb), this._onConflict);
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
-      return this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
+      return this.#query!.qb = this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
     }
 
     if (this.lockMode) {
@@ -633,7 +638,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this.helper.finalize(type, qb, this.mainAlias.metadata, this._data, this._returning);
     this.clearRawFragmentsCache();
 
-    return qb;
+    return this.#query!.qb = qb;
   }
 
   /**
@@ -651,16 +656,21 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this.toQuery().sql;
   }
 
-  #query?: { sql: string; _sql: Knex.Sql; params: readonly unknown[] };
+  #query?: { sql?: string; _sql?: Knex.Sql; params?: readonly unknown[]; qb: Knex.QueryBuilder<T> };
 
   toQuery(): { sql: string; _sql: Knex.Sql; params: readonly unknown[] } {
-    if (this.#query) {
-      return this.#query;
+    if (this.#query?.sql) {
+      return { sql: this.#query.sql, _sql: this.#query._sql!, params: this.#query.params! };
     }
 
     const sql = this.getKnexQuery().toSQL();
     const query = sql.toNative();
-    return this.#query = { sql: query.sql, params: query.bindings ?? [], _sql: sql };
+
+    this.#query!.sql = query.sql;
+    this.#query!._sql = sql;
+    this.#query!.params = query.bindings ?? [];
+
+    return { sql: this.#query!.sql, _sql: this.#query!._sql, params: this.#query!.params };
   }
 
   /**
@@ -674,7 +684,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Returns raw interpolated query string with all the parameters inlined.
    */
   getFormattedQuery(): string {
-    const query = this.toQuery()._sql;
+    const query = this.getKnexQuery().toSQL();
     return this.platform.formatQuery(query.sql, query.bindings);
   }
 

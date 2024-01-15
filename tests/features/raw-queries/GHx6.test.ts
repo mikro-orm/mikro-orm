@@ -128,20 +128,20 @@ test('qb.joinAndSelect', async () => {
     .select('*')
     .leftJoinAndSelect('jobs', 'a')
     .where({
-      [raw('similarity("u"."name", ?)', ['abc'])]: { $gte: 0.3 },
+      [raw('coalesce("u"."name", ?)', ['abc'])]: { $gte: 0.3 },
     })
     .orderBy({
-      [raw('similarity(u."name", ?)', ['def'])]: QueryOrder.DESC_NULLS_LAST,
+      [raw('coalesce(u."name", ?)', ['def'])]: QueryOrder.DESC_NULLS_LAST,
     })
     .limit(100)
-    .offset(0)
-    .getFormattedQuery();
-  expect(query).toMatch('select `u`.*, `a`.`id` as `a__id`, `a`.`DateCompleted` as `a__DateCompleted` ' +
+    .offset(0);
+  expect(query.getKnexQuery().toSQL().sql).toMatch('select `u`.*, `a`.`id` as `a__id`, `a`.`DateCompleted` as `a__DateCompleted` ' +
     'from `tag` as `u` ' +
     'left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` ' +
     'left join `job` as `a` on `t1`.`job_id` = `a`.`id` ' +
-    'where `u`.`id` in (select `u`.`id` from (select `u`.`id` from `tag` as `u` left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` left join `job` as `a` on `t1`.`job_id` = `a`.`id` where similarity("u"."name", \'abc\') >= 0.3 group by `u`.`id` order by similarity(u."name", \'def\') desc nulls last limit 100) as `u`) ' +
-    'order by similarity(u."name", \'def\') desc nulls last');
+    'where `u`.`id` in (select `u`.`id` from (select `u`.`id` from `tag` as `u` left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` left join `job` as `a` on `t1`.`job_id` = `a`.`id` where coalesce("u"."name", ?) >= ? group by `u`.`id` order by coalesce(u."name", \'def\') desc nulls last limit ?) as `u`) ' +
+    'order by coalesce(u."name", \'def\') desc nulls last');
+  await query;
   expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
