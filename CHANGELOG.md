@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.4](https://github.com/mikro-orm/mikro-orm/compare/v6.0.3...v6.0.4) (2024-01-15)
+
+
+### Bug Fixes
+
+* **core:** respect reloaded properties of partially loaded entity during serialization ([f7b6497](https://github.com/mikro-orm/mikro-orm/commit/f7b649738a484cbe87c908ca42ec1fa53d963de5)), closes [#5128](https://github.com/mikro-orm/mikro-orm/issues/5128)
+
+
+### Features
+
+* **core:** allow reusing single `raw` fragment in multiple keys ([fc967e2](https://github.com/mikro-orm/mikro-orm/commit/fc967e23f40c5201125ad3ab43be6bece4573862)), closes [#5129](https://github.com/mikro-orm/mikro-orm/issues/5129)
+
+
+
+
+
 ## [6.0.3](https://github.com/mikro-orm/mikro-orm/compare/v6.0.2...v6.0.3) (2024-01-13)
 
 
