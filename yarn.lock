@@ -1290,7 +1290,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.11"
-    "@types/node": "npm:20.11.0"
+    "@types/node": "npm:20.11.1"
     "@types/pg": "npm:8.10.9"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:9.0.7"
@@ -1310,7 +1310,7 @@ __metadata:
     lerna: "npm:8.0.2"
     lint-staged: "npm:15.2.0"
     mongodb: "npm:6.3.0"
-    mongodb-memory-server: "npm:9.1.4"
+    mongodb-memory-server: "npm:9.1.5"
     node-gyp: "npm:^9.4.0"
     rimraf: "npm:5.0.5"
     ts-jest: "npm:29.1.1"
@@ -2169,12 +2169,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.11.0":
-  version: 20.11.0
-  resolution: "@types/node@npm:20.11.0"
+"@types/node@npm:20.11.1":
+  version: 20.11.1
+  resolution: "@types/node@npm:20.11.1"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 8da60a8ccb65181c3d6f7686ddc5f1b1616cafa14d9e520a866adff82c17cc99336a78dd7ce7bee8f54e2332946f678b0e3aa377fbaaf751d3c05b64600872c6
+  checksum: 0b633e9f707167b4b61e472ddb93caca390714ef4f579d528eb5a8e4c621a5d267cc427dc5e01adc9a3ba87ec1e161a51d1bba716ae762c7a01648cbebab6bb5
   languageName: node
   linkType: hard
 
@@ -7802,9 +7802,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb-memory-server-core@npm:9.1.4":
-  version: 9.1.4
-  resolution: "mongodb-memory-server-core@npm:9.1.4"
+"mongodb-memory-server-core@npm:9.1.5":
+  version: 9.1.5
+  resolution: "mongodb-memory-server-core@npm:9.1.5"
   dependencies:
     async-mutex: "npm:^0.4.0"
     camelcase: "npm:^6.3.0"
@@ -7818,17 +7818,17 @@ __metadata:
     tar-stream: "npm:^3.0.0"
     tslib: "npm:^2.6.2"
     yauzl: "npm:^2.10.0"
-  checksum: c0f0cfec9e7bede29a6a65080ff8c5f0c0730123a4baba7397696ba2d29df6d1dffee43873b784d5f56dae67d893aa2838ee4eed3b8034a165a1cc814bda27fb
+  checksum: c3f45d43c463f0d0ca7b1f5a8e5934603f3147726201718393eba993cdec2134fb2135eb127ac94b513cc404b64dee8f26994e9b2433c7c7dece97149c2f526d
   languageName: node
   linkType: hard
 
-"mongodb-memory-server@npm:9.1.4":
-  version: 9.1.4
-  resolution: "mongodb-memory-server@npm:9.1.4"
+"mongodb-memory-server@npm:9.1.5":
+  version: 9.1.5
+  resolution: "mongodb-memory-server@npm:9.1.5"
   dependencies:
-    mongodb-memory-server-core: "npm:9.1.4"
+    mongodb-memory-server-core: "npm:9.1.5"
     tslib: "npm:^2.6.2"
-  checksum: 8ea2a727c4385144efde2bdd128716eb730a7f38537b827cb64d24e22cfce50ca80d85fe7404d19bd4ee303260eac01f298b27594bdf33bb846fd333733a3982
+  checksum: 583f043e739289f5f52fb3db1a9a459c796822c184236941fd83aa3b23803cf7458b1ab3472bc1970056954086d25698385e72fc4cd600ff64657cd1c076fbb9
   languageName: node
   linkType: hard
 
