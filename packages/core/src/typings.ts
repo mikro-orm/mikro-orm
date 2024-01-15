@@ -223,7 +223,7 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
   __serializationContext: {
     root?: SerializationContext<Entity>;
     populate?: PopulateOptions<Entity>[];
-    fields?: string[];
+    fields?: Set<string>;
     exclude?: string[];
   };
 }

@@ -86,7 +86,7 @@ export class EntityLoader {
     for (const entity of entities) {
       const context = helper(entity).__serializationContext;
       context.populate ??= populate as PopulateOptions<Entity>[];
-      context.fields ??= options.fields ? [...options.fields as string[]] : undefined;
+      context.fields ??= options.fields ? new Set(options.fields as string[]) : undefined;
       context.exclude ??= options.exclude ? [...options.exclude as string[]] : undefined;
       visited.add(entity);
     }

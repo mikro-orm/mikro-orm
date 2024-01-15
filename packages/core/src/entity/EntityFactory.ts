@@ -298,7 +298,7 @@ export class EntityFactory {
 
     Utils.keys(data).forEach(key => {
       helper(entity)?.__loadedProperties.add(key as string);
-      helper(entity)?.__serializationContext.fields?.push(key as string);
+      helper(entity)?.__serializationContext.fields?.add(key as string);
     });
   }
 
