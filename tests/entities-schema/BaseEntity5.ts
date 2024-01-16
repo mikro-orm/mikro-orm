@@ -13,7 +13,7 @@ export const BaseEntity5 = new EntitySchema<IBaseEntity5>({
   abstract: true,
   properties: {
     id: { type: 'number', primary: true },
-    createdAt: { type: 'Date', onCreate: () => new Date(), nullable: true },
-    updatedAt: { type: 'Date', onCreate: () => new Date(), onUpdate: () => new Date(), nullable: true },
+    createdAt: { type: 'Date', onCreate: owner => (owner.updatedAt ? new Date(owner.updatedAt) : new Date()), nullable: true },
+    updatedAt: { type: 'Date', onCreate: owner => (owner.createdAt ? new Date(owner.createdAt) : new Date()), onUpdate: () => new Date(), nullable: true },
   },
 });
