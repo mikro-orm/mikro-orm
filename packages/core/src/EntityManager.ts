@@ -2028,11 +2028,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       // we need to prune the `populate` hint from to-one relations, as partially loading them does not require their population, we want just the FK
       const pruneToOneRelations = (meta: EntityMetadata, fields: string[]): string[] => {
         return fields.filter(field => {
-          if (!field.includes('.')) {
-            if (field === '*') {
-              return true;
-            }
+          if (field === '*') {
+            return false;
+          }
 
+          if (!field.includes('.')) {
             return ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(meta.properties[field].kind);
           }
 
@@ -2041,7 +2041,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
           /* istanbul ignore next */
           if (key === '*') {
-            return true;
+            return false;
           }
 
           const prop = meta.properties[key];
