@@ -2545,7 +2545,7 @@ describe('EntityManagerPostgre', () => {
         const a = new Author2('a4', 'e4');
         const b = new Book2('t4', a, 123);
         while (!orm.em.getReference(Author2, 5, { wrapped: true }).isInitialized()) {
-          await new Promise(r => setTimeout(r, 0));
+          await new Promise(r => setImmediate(r));
         }
         await orm.em.persistAndFlush(b);
         return b;
@@ -2554,7 +2554,7 @@ describe('EntityManagerPostgre', () => {
         const a = new Author2('a5', 'e5');
         const b = new Book2('t5', a, 456);
         while (!orm.em.getReference(Author2, 3, { wrapped: true }).isInitialized()) {
-          await new Promise(r => setTimeout(r, 0));
+          await new Promise(r => setImmediate(r));
         }
         await orm.em.persistAndFlush(b);
         return b;
@@ -2563,7 +2563,7 @@ describe('EntityManagerPostgre', () => {
         const a = new Author2('a6', 'e6');
         const b = new Book2('t6', a, 789);
         while (!orm.em.getReference(Author2, 4, { wrapped: true }).isInitialized()) {
-          await new Promise(r => setTimeout(r, 0));
+          await new Promise(r => setImmediate(r));
         }
         await orm.em.persistAndFlush(b);
         return b;

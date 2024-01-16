@@ -820,28 +820,37 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('property onUpdate hook (updatedAt field)', async () => {
+    jest.useFakeTimers();
+
     const repo = orm.em.getRepository<any>(Author3);
     const author = new Author3('name', 'email');
     await expect(author.createdAt).toBeDefined();
     await expect(author.updatedAt).toBeDefined();
-    // allow 1 ms difference as updated time is recalculated when persisting
-    await expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
+    await expect(+author.updatedAt - +author.createdAt).toEqual(0);
     await orm.em.persistAndFlush(author);
 
     author.name = 'name1';
-    await new Promise(resolve => setTimeout(resolve, 10));
+
+    jest.advanceTimersByTime(10);
+
     await orm.em.persistAndFlush(author);
-    await expect(author.createdAt).toBeDefined();
-    await expect(author.updatedAt).toBeDefined();
-    await expect(author.updatedAt).not.toEqual(author.createdAt);
-    await expect(author.updatedAt > author.createdAt).toBe(true);
+    expect(author.createdAt).toBeDefined();
+    expect(author.updatedAt).toBeDefined();
+    expect(author.updatedAt).not.toEqual(author.createdAt);
+    expect(author.updatedAt > author.createdAt).toBe(true);
+    expect(+author.updatedAt).toBe(+author.createdAt + 10);
+
+    jest.advanceTimersByTime(10);
 
     orm.em.clear();
     const ent = (await repo.findOne(author.id))!;
-    await expect(ent.createdAt).toBeDefined();
-    await expect(ent.updatedAt).toBeDefined();
-    await expect(ent.updatedAt).not.toEqual(ent.createdAt);
-    await expect(ent.updatedAt > ent.createdAt).toBe(true);
+    expect(ent.createdAt).toBeDefined();
+    expect(ent.updatedAt).toBeDefined();
+    expect(ent.updatedAt).not.toEqual(ent.createdAt);
+    expect(ent.updatedAt > ent.createdAt).toBe(true);
+    expect(+author.updatedAt).toBe(+author.createdAt + 10);
+
+    jest.useRealTimers();
   });
 
   test('EM supports native insert/update/delete', async () => {

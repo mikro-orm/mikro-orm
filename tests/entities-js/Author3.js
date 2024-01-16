@@ -28,7 +28,7 @@ class Author3 extends BaseEntity4 {
     this.name = name;
     this.email = email;
     this.createdAt = new Date();
-    this.updatedAt = new Date();
+    this.updatedAt = new Date(this.createdAt);
     this.termsAccepted = false;
   }
 

@@ -40,25 +40,33 @@ describe('result cache (postgres)', () => {
     await createBooksWithTags();
 
     const mock = mockLogger(orm, ['query']);
+    jest.useFakeTimers();
 
     const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1);
     orm.em.clear();
+
+    jest.advanceTimersByTime(50);
 
     const res2 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res2.map(e => wrap(e).toObject()));
     orm.em.clear();
 
+    jest.advanceTimersByTime(50);
+
     const res3 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res3.map(e => wrap(e).toObject()));
     orm.em.clear();
 
-    await new Promise(r => setTimeout(r, 200)); // wait for cache to expire
+    jest.advanceTimersByTime(1); // wait for cache to expire
+
     const res4 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res4.map(e => wrap(e).toObject()));
+
+    jest.useRealTimers();
   });
 
   test('result caching (global, find)', async () => {
@@ -66,27 +74,35 @@ describe('result cache (postgres)', () => {
 
     const mock = mockLogger(orm, ['query']);
     orm.config.get('resultCache').global = 100;
+    jest.useFakeTimers();
 
     const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1);
     orm.em.clear();
+
+    jest.advanceTimersByTime(50);
 
     const res2 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res2.map(e => wrap(e).toObject()));
     orm.em.clear();
 
+    jest.advanceTimersByTime(50);
+
     const res3 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res3.map(e => wrap(e).toObject()));
     orm.em.clear();
 
-    await new Promise(r => setTimeout(r, 200)); // wait for cache to expire
+    jest.advanceTimersByTime(1); // wait for cache to expire
+
     const res4 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res4.map(e => wrap(e).toObject()));
 
     orm.config.get('resultCache').global = undefined;
+
+    jest.useRealTimers();
   });
 
   test('result caching (findOne)', async () => {
@@ -100,29 +116,39 @@ describe('result cache (postgres)', () => {
       cache: ['abc', 100],
       strategy: LoadStrategy.JOINED,
     });
+    jest.useFakeTimers();
 
     const res1 = await call();
     expect(mock.mock.calls).toHaveLength(1);
     orm.em.clear();
+
+    jest.advanceTimersByTime(50);
 
     const res2 = await call();
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(wrap(res1).toObject()).toEqual(wrap(res2).toObject());
     orm.em.clear();
 
+    jest.advanceTimersByTime(50);
+
     const res3 = await call();
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(wrap(res1).toObject()).toEqual(wrap(res3).toObject());
     orm.em.clear();
 
-    await new Promise(r => setTimeout(r, 200)); // wait for cache to expire
+    jest.advanceTimersByTime(1); // wait for cache to expire
+
     const res4 = await call();
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(wrap(res1).toObject()).toEqual(wrap(res4).toObject());
 
+    jest.advanceTimersByTime(50);
+
     const res5 = await call();
     expect(mock.mock.calls).toHaveLength(2); // cache hit
     expect(wrap(res1).toObject()).toEqual(wrap(res5).toObject());
+
+    jest.advanceTimersByTime(50);
 
     // clear key
     await orm.em.clearCache('abc');
@@ -130,56 +156,74 @@ describe('result cache (postgres)', () => {
     const res6 = await call();
     expect(mock.mock.calls).toHaveLength(3); // cache miss as we just cleared the key
     expect(wrap(res1).toObject()).toEqual(wrap(res6).toObject());
+
+    jest.useRealTimers();
   });
 
   test('result caching (count)', async () => {
     await createBooksWithTags();
 
     const mock = mockLogger(orm, ['query']);
+    jest.useFakeTimers();
 
     const res1 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 100 });
     expect(mock.mock.calls).toHaveLength(1);
     orm.em.clear();
+
+    jest.advanceTimersByTime(50);
 
     const res2 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 100 });
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1).toEqual(res2);
     orm.em.clear();
 
+    jest.advanceTimersByTime(50);
+
     const res3 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 100 });
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1).toEqual(res3);
     orm.em.clear();
 
-    await new Promise(r => setTimeout(r, 200)); // wait for cache to expire
+    jest.advanceTimersByTime(1); // wait for cache to expire
+
     const res4 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 100 });
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(res1).toEqual(res4);
+
+    jest.useRealTimers();
   });
 
   test('result caching (query builder)', async () => {
     await createBooksWithTags();
 
     const mock = mockLogger(orm, ['query']);
+    jest.useFakeTimers();
 
     const res1 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(100).getResultList();
     expect(mock.mock.calls).toHaveLength(1);
     orm.em.clear();
+
+    jest.advanceTimersByTime(50);
 
     const res2 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(100).getResultList();
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(serialize(res1)).toEqual(serialize(res2));
     orm.em.clear();
 
+    jest.advanceTimersByTime(50);
+
     const res3 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(100).getResultList();
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(serialize(res1)).toEqual(serialize(res3));
     orm.em.clear();
 
-    await new Promise(r => setTimeout(r, 200)); // wait for cache to expire
+    jest.advanceTimersByTime(1); // wait for cache to expire
+
     const res4 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache().getResultList();
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(serialize(res1)).toEqual(serialize(res4));
+
+    jest.useRealTimers();
   });
 
 });

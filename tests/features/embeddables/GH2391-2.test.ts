@@ -138,6 +138,8 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     expect(line2.fooAudit1.archived).toEqual(tmp1);
     expect(line2.barAudit2.archived).toEqual(tmp2);
     expect(line2.barAudit2.nestedAudit1.archived).toEqual(tmp3);
+
+    jest.useRealTimers();
   });
 
 });
