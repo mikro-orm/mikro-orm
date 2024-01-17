@@ -49,8 +49,9 @@
     "release:next": "lerna run compile && yarn publish:next",
     "release:pin-versions": "lerna run copy -- -- --pin-versions",
     "test": "jest",
+    "clean-tests": "rimraf temp tests/generated-entities",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
-    "coverage": "rimraf temp tests/generated-entities && yarn test --coverage",
+    "coverage": "yarn clean-tests && yarn test --coverage",
     "lint": "eslint \"packages/**/*.ts\" \"tests/**/*.ts\""
   },
   "commitlint": {
