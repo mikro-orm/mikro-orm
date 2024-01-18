@@ -2027,28 +2027,35 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (!options.populate && options.fields) {
       // we need to prune the `populate` hint from to-one relations, as partially loading them does not require their population, we want just the FK
       const pruneToOneRelations = (meta: EntityMetadata, fields: string[]): string[] => {
-        return fields.filter(field => {
-          if (field === '*') {
-            return false;
+        const ret: string[] = [];
+
+        for (const field of fields) {
+          if (field === '*' || field.startsWith('*.')) {
+            ret.push(...meta.props.filter(prop => prop.lazy || [ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind)).map(prop => prop.name));
+            continue;
           }
 
-          if (!field.includes('.')) {
-            return ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(meta.properties[field].kind);
+          if (!field.includes('.') && ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(meta.properties[field].kind)) {
+            ret.push(field);
+            continue;
           }
 
           const parts = field.split('.');
           const key = parts.shift()!;
 
-          /* istanbul ignore next */
-          if (key === '*') {
-            return false;
+          if (parts.length === 0) {
+            continue;
           }
 
           const prop = meta.properties[key];
-          const ret = pruneToOneRelations(prop.targetMeta!, [parts.join('.')]);
+          const inner = pruneToOneRelations(prop.targetMeta!, [parts.join('.')]);
 
-          return ret.length > 0;
-        });
+          if (inner.length > 0) {
+            ret.push(...inner.map(c => `${key}.${c}`));
+          }
+        }
+
+        return Utils.unique(ret);
       };
 
       options.populate = pruneToOneRelations(meta, this.buildFields(options.fields)) as any;
