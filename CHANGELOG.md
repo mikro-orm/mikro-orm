@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.5](https://github.com/mikro-orm/mikro-orm/compare/v6.0.4...v6.0.5) (2024-01-18)
+
+
+### Bug Fixes
+
+* **cli:** try to respect windows ESM binary ([57e91e2](https://github.com/mikro-orm/mikro-orm/commit/57e91e2d9a2ac6fbe51e503e9208fc300e6b0d13)), closes [#5147](https://github.com/mikro-orm/mikro-orm/issues/5147)
+* **core:** do not infer `populate: ['*']` from `fields: ['*']` ([f658376](https://github.com/mikro-orm/mikro-orm/commit/f658376c81ad4636efbe21ee03df58bf5bf7d471)), closes [#5139](https://github.com/mikro-orm/mikro-orm/issues/5139)
+* **core:** do not mutate data provided to `em.upsert/Many` ([3d8c242](https://github.com/mikro-orm/mikro-orm/commit/3d8c242f6576c234c9d6b1eabbebe510039e3099)), closes [#5136](https://github.com/mikro-orm/mikro-orm/issues/5136)
+* **core:** don't convert mapped types for constructor parameters when creating new entity ([37befd3](https://github.com/mikro-orm/mikro-orm/commit/37befd30e7125a4248600b0324109664729ef75f)), closes [#5150](https://github.com/mikro-orm/mikro-orm/issues/5150)
+* **core:** fix bigint mode detection when hydrating new entity from returning statement ([a42321d](https://github.com/mikro-orm/mikro-orm/commit/a42321d422b6a2f86e6e6e319627dba13f2d7461)), closes [#5146](https://github.com/mikro-orm/mikro-orm/issues/5146)
+* **core:** merge serialization hints when lazy populating ([f1d2487](https://github.com/mikro-orm/mikro-orm/commit/f1d2487c690da948cedd77bcfd0e82048b8592b4)), closes [#5138](https://github.com/mikro-orm/mikro-orm/issues/5138)
+* **query-builder:** cache knex QB instance to get around issues with raw fragments ([f6e76d8](https://github.com/mikro-orm/mikro-orm/commit/f6e76d858e1b4869a8f9a93a518df4837d294df1))
+* **reflection:** improve detection of `Ref` types with FK as PK ([c8858d2](https://github.com/mikro-orm/mikro-orm/commit/c8858d225f514957fc13591bb8806dbba2227e45)), closes [#5144](https://github.com/mikro-orm/mikro-orm/issues/5144)
+
+
+
+
+
 ## [6.0.4](https://github.com/mikro-orm/mikro-orm/compare/v6.0.3...v6.0.4) (2024-01-15)
 
 

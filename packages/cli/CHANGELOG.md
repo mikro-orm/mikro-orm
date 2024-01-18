@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.5](https://github.com/mikro-orm/mikro-orm/compare/v6.0.4...v6.0.5) (2024-01-18)
+
+
+### Bug Fixes
+
+* **cli:** try to respect windows ESM binary ([57e91e2](https://github.com/mikro-orm/mikro-orm/commit/57e91e2d9a2ac6fbe51e503e9208fc300e6b0d13)), closes [#5147](https://github.com/mikro-orm/mikro-orm/issues/5147)
+
+
+
+
+
 ## [6.0.4](https://github.com/mikro-orm/mikro-orm/compare/v6.0.3...v6.0.4) (2024-01-15)
 
 **Note:** Version bump only for package @mikro-orm/cli

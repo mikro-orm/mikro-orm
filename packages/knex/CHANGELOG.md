@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.5](https://github.com/mikro-orm/mikro-orm/compare/v6.0.4...v6.0.5) (2024-01-18)
+
+
+### Bug Fixes
+
+* **query-builder:** cache knex QB instance to get around issues with raw fragments ([f6e76d8](https://github.com/mikro-orm/mikro-orm/commit/f6e76d858e1b4869a8f9a93a518df4837d294df1))
+
+
+
+
+
 ## [6.0.4](https://github.com/mikro-orm/mikro-orm/compare/v6.0.3...v6.0.4) (2024-01-15)
 
 **Note:** Version bump only for package @mikro-orm/knex

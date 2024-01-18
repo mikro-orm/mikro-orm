@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.5](https://github.com/mikro-orm/mikro-orm/compare/v6.0.4...v6.0.5) (2024-01-18)
+
+
+### Bug Fixes
+
+* **core:** do not infer `populate: ['*']` from `fields: ['*']` ([f658376](https://github.com/mikro-orm/mikro-orm/commit/f658376c81ad4636efbe21ee03df58bf5bf7d471)), closes [#5139](https://github.com/mikro-orm/mikro-orm/issues/5139)
+* **core:** do not mutate data provided to `em.upsert/Many` ([3d8c242](https://github.com/mikro-orm/mikro-orm/commit/3d8c242f6576c234c9d6b1eabbebe510039e3099)), closes [#5136](https://github.com/mikro-orm/mikro-orm/issues/5136)
+* **core:** don't convert mapped types for constructor parameters when creating new entity ([37befd3](https://github.com/mikro-orm/mikro-orm/commit/37befd30e7125a4248600b0324109664729ef75f)), closes [#5150](https://github.com/mikro-orm/mikro-orm/issues/5150)
+* **core:** fix bigint mode detection when hydrating new entity from returning statement ([a42321d](https://github.com/mikro-orm/mikro-orm/commit/a42321d422b6a2f86e6e6e319627dba13f2d7461)), closes [#5146](https://github.com/mikro-orm/mikro-orm/issues/5146)
+* **core:** merge serialization hints when lazy populating ([f1d2487](https://github.com/mikro-orm/mikro-orm/commit/f1d2487c690da948cedd77bcfd0e82048b8592b4)), closes [#5138](https://github.com/mikro-orm/mikro-orm/issues/5138)
+
+
+
+
+
 ## [6.0.4](https://github.com/mikro-orm/mikro-orm/compare/v6.0.3...v6.0.4) (2024-01-15)
 
 

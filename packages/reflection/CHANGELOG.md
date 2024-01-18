@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.5](https://github.com/mikro-orm/mikro-orm/compare/v6.0.4...v6.0.5) (2024-01-18)
+
+
+### Bug Fixes
+
+* **reflection:** improve detection of `Ref` types with FK as PK ([c8858d2](https://github.com/mikro-orm/mikro-orm/commit/c8858d225f514957fc13591bb8806dbba2227e45)), closes [#5144](https://github.com/mikro-orm/mikro-orm/issues/5144)
+
+
+
+
+
 ## [6.0.4](https://github.com/mikro-orm/mikro-orm/compare/v6.0.3...v6.0.4) (2024-01-15)
 
 **Note:** Version bump only for package @mikro-orm/reflection
