@@ -1137,8 +1137,8 @@ __metadata:
     tsconfig-paths: "npm:4.2.0"
     yargs: "npm:17.7.2"
   bin:
-    mikro-orm: ./dist/cli.js
-    mikro-orm-esm: ./dist/esm.js
+    mikro-orm: ./dist/cli
+    mikro-orm-esm: ./dist/esm
   languageName: unknown
   linkType: soft
 
