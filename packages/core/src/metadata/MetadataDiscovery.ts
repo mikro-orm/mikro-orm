@@ -1290,7 +1290,12 @@ export class MetadataDiscovery {
 
     if (prop.customType && !prop.columnTypes) {
       const mappedType = this.getMappedType({ columnTypes: [prop.customType.getColumnType(prop, this.platform)] } as EntityProperty);
-      prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
+
+      if (prop.customType.compareAsType() === 'any') {
+        prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
+      } else {
+        prop.runtimeType ??= prop.customType.runtimeType as typeof prop.runtimeType;
+      }
     } else {
       prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
     }
