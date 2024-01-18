@@ -76,6 +76,7 @@ export class EntityLoader {
     options.refresh ??= false;
     options.convertCustomTypes ??= true;
     populate = this.normalizePopulate<Entity>(entityName, populate as true, options.strategy, options.lookup);
+    const exclude = options.exclude as string[] ?? [];
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
     /* istanbul ignore next */
@@ -85,9 +86,15 @@ export class EntityLoader {
 
     for (const entity of entities) {
       const context = helper(entity).__serializationContext;
-      context.populate ??= populate as PopulateOptions<Entity>[];
-      context.fields ??= options.fields ? new Set(options.fields as string[]) : undefined;
-      context.exclude ??= options.exclude ? [...options.exclude as string[]] : undefined;
+      context.populate = context.populate ? context.populate.concat(populate) : populate as PopulateOptions<Entity>[];
+
+      if (context.fields && options.fields) {
+        options.fields.forEach(f => context.fields!.add(f as string));
+      } else if (options.fields) {
+        context.fields = new Set(options.fields as string[]);
+      }
+
+      context.exclude = context.exclude ? context.exclude.concat(exclude) : exclude;
       visited.add(entity);
     }
 
