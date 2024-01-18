@@ -173,7 +173,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     // `{ object?: import("...").Entity | undefined; } & import("...").Reference<Entity>`
     // `{ node?: ({ id?: number | undefined; } & import("...").Reference<import("...").Entity>) | undefined; } & import("...").Reference<Entity>`
     // the regexp is looking for the `wrapper`, possible prefixed with `.` or wrapped in parens.
-    const type = prop.type.replace(/import\(.*\)\./g, '');
+    const type = prop.type
+      .replace(/import\(.*\)\./g, '')
+      .replace(/\{ .* } & ([\w &]+)/g, '$1');
     const m = type.match(new RegExp(`(?:^|[.( ])${wrapper}<(\\w+),?.*>(?:$|[) ])`));
 
     if (!m) {
