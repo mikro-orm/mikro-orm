@@ -14,7 +14,7 @@ export const TestSchema = new EntitySchema<Test>({
       primary: true,
       type: String,
       columnType: 'uuid',
-      defaultRaw: 'uuid_generate_v4()',
+      defaultRaw: 'gen_random_uuid()',
     },
     createdAt: {
       type: Date,
