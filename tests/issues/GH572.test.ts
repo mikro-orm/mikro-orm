@@ -2,7 +2,7 @@ import { Entity, Ref, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder } fro
 import { mockLogger } from '../helpers';
 
 @Entity()
-export class A {
+class A {
 
   @PrimaryKey()
   id!: number;
@@ -13,7 +13,7 @@ export class A {
 }
 
 @Entity()
-export class B {
+class B {
 
   @PrimaryKey()
   id!: number;

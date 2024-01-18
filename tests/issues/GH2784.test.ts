@@ -1,7 +1,7 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity()
-export class Address {
+class Address {
 
   @PrimaryKey()
   id!: number;

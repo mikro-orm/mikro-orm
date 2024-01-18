@@ -1,7 +1,7 @@
 import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity()
-export class Position {
+class Position {
 
   @PrimaryKey()
   id!: number;
@@ -12,7 +12,7 @@ export class Position {
 }
 
 @Entity()
-export class Leg {
+class Leg {
 
   @PrimaryKey()
   id!: number;
@@ -23,7 +23,7 @@ export class Leg {
 }
 
 @Entity()
-export class Position2 {
+class Position2 {
 
   @PrimaryKey()
   id!: number;
@@ -34,7 +34,7 @@ export class Position2 {
 }
 
 @Entity()
-export class Leg2 {
+class Leg2 {
 
   @PrimaryKey()
   id!: number;

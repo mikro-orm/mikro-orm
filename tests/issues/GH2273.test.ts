@@ -1,7 +1,7 @@
 import { Entity, LoadStrategy, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
-export class Checkout {
+class Checkout {
 
   @PrimaryKey()
   id!: number;
@@ -14,7 +14,7 @@ export class Checkout {
 }
 
 @Entity()
-export class Discount {
+class Discount {
 
   @PrimaryKey()
   id!: number;
@@ -35,7 +35,7 @@ export class Discount {
 }
 
 @Entity()
-export class Checkout2 {
+class Checkout2 {
 
   @PrimaryKey()
   id!: number;
@@ -49,7 +49,7 @@ export class Checkout2 {
 }
 
 @Entity()
-export class Discount2 {
+class Discount2 {
 
   @PrimaryKey()
   id!: number;

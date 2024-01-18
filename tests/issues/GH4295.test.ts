@@ -14,7 +14,7 @@ class RunScheduleEntity {
 }
 
 @Entity()
-export class AEntity {
+class AEntity {
 
   @PrimaryKey()
   id!: number;

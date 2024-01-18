@@ -6,7 +6,7 @@ export interface EmailMessageTest {
 }
 
 @Entity()
-export class TestTemplate {
+class TestTemplate {
 
   @PrimaryKey()
   _id!: ObjectId;

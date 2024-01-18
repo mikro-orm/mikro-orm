@@ -1,7 +1,7 @@
 import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity({ forceConstructor: true })
-export class Parent {
+class Parent {
 
   @PrimaryKey()
   id!: number;
@@ -12,7 +12,7 @@ export class Parent {
 }
 
 @Entity({ forceConstructor: true })
-export class Child {
+class Child {
 
   @PrimaryKey()
   id!: number;

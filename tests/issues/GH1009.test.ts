@@ -1,7 +1,7 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'brands' })
-export class Brand {
+class Brand {
 
   @PrimaryKey()
   id!: number;
@@ -12,7 +12,7 @@ export class Brand {
 }
 
 @Entity({ tableName: 'brand_site_restrictions' })
-export class BrandSiteRestriction {
+class BrandSiteRestriction {
 
   @PrimaryKey()
   id!: number;
@@ -26,7 +26,7 @@ export class BrandSiteRestriction {
 }
 
 @Entity({ tableName: 'placements' })
-export class Placement {
+class Placement {
 
   @PrimaryKey()
   id!: number;
@@ -40,7 +40,7 @@ export class Placement {
 }
 
 @Entity({ tableName: 'publishers' })
-export class Publisher {
+class Publisher {
 
   @OneToMany({ entity: () => Site, mappedBy: 'publisher' })
   sites = new Collection<Site>(this);
@@ -51,7 +51,7 @@ export class Publisher {
 }
 
 @Entity({ tableName: 'sites' })
-export class Site {
+class Site {
 
   @ManyToOne({ entity: () => Publisher, nullable: true })
   publisher?: Publisher;

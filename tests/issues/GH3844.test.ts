@@ -2,7 +2,7 @@ import { Entity, PrimaryKey, Property, OneToOne, Ref, ref } from '@mikro-orm/cor
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
-export class GamePoolEntity {
+class GamePoolEntity {
 
   @PrimaryKey()
   contract_address!: string;
@@ -36,7 +36,7 @@ export class GamePoolEntity {
 }
 
 @Entity()
-export class GamePoolScannerEntity {
+class GamePoolScannerEntity {
 
   @OneToOne(() => GamePoolEntity, e => e.scanner, {
     primary: true,

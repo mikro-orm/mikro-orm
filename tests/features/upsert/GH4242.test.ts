@@ -47,7 +47,6 @@ beforeAll(async () => {
   });
 
   await orm.schema.ensureDatabase();
-  await orm.schema.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
   await orm.schema.refreshDatabase();
 });
 

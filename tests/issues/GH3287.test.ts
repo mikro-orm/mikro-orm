@@ -1,7 +1,7 @@
 import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PrimaryKey } from '@mikro-orm/better-sqlite';
 
 @Entity()
-export class Group {
+class Group {
 
   @PrimaryKey()
   id!: number;
@@ -15,7 +15,7 @@ export class Group {
 }
 
 @Entity()
-export class Participant {
+class Participant {
 
   @PrimaryKey()
   id!: number;

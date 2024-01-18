@@ -1,7 +1,7 @@
 import { MikroORM, ObjectId, Entity, PrimaryKey, Property, OneToOne } from '@mikro-orm/mongodb';
 
 @Entity()
-export class Author {
+class Author {
 
   @PrimaryKey()
   _id!: ObjectId;
@@ -15,7 +15,7 @@ export class Author {
 }
 
 @Entity()
-export class AuthorDetail {
+class AuthorDetail {
 
   @PrimaryKey()
   _id!: ObjectId;

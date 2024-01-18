@@ -2,7 +2,7 @@ import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PopulateHint, P
 import { mockLogger } from '../helpers';
 
 @Entity()
-export class App {
+class App {
 
   @PrimaryKey()
   id!: number;
@@ -16,7 +16,7 @@ export class App {
 }
 
 @Entity()
-export class User {
+class User {
 
   @PrimaryKey()
   id!: number;

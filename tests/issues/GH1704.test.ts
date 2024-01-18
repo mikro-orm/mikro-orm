@@ -2,7 +2,7 @@ import { Entity, PrimaryKey, Property, OneToOne, MikroORM } from '@mikro-orm/sql
 import { mockLogger } from '../helpers';
 
 @Entity()
-export class Profile {
+class Profile {
 
   @PrimaryKey()
   id!: number;

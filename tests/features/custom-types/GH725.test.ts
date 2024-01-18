@@ -1,5 +1,4 @@
 import { EntitySchema, MikroORM, sql, Type, ValidationError } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
@@ -105,13 +104,12 @@ export const TestSchema2 = new EntitySchema<Test2>({
 describe('GH issue 725', () => {
 
   test('mapping values from returning statement to custom types', async () => {
-    const orm = await MikroORM.init<AbstractSqlDriver>({
+    const orm = await MikroORM.init({
       entities: [TestSchema],
-      dbName: `mikro_orm_test_gh_725`,
+      dbName: 'mikro_orm_test_gh_725',
       driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
-    await orm.schema.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
     await orm.schema.dropSchema();
     await orm.schema.createSchema();
 
@@ -142,7 +140,7 @@ describe('GH issue 725', () => {
   });
 
   test('validation when trying to persist not discovered entity', async () => {
-    const orm = await MikroORM.init<AbstractSqlDriver>({
+    const orm = await MikroORM.init({
       entities: [TestSchema2],
       dbName: `:memory:`,
       driver: SqliteDriver,

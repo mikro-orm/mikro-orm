@@ -2,7 +2,7 @@ import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OptionalProps,
 import { performance } from 'perf_hooks';
 
 @Entity()
-export class VendorBuyerRelationship {
+class VendorBuyerRelationship {
 
   [OptionalProps]?: 'created';
 
@@ -24,7 +24,7 @@ export class VendorBuyerRelationship {
 }
 
 @Entity()
-export class Member {
+class Member {
 
   [OptionalProps]?: 'created';
 
@@ -49,7 +49,7 @@ export class Member {
 }
 
 @Entity()
-export class Job {
+class Job {
 
   [OptionalProps]?: 'rejected';
 

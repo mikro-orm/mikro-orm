@@ -1,6 +1,6 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 
-export class Test {
+class Test {
 
   id!: string;
   createdAt!: Date;

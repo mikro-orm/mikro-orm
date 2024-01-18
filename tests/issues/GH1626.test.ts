@@ -6,7 +6,7 @@ import {
   Property,
 } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
-export class NativeBigIntType extends BigIntType {
+class NativeBigIntType extends BigIntType {
 
   override convertToJSValue(value: any): any {
     if (!value) {
@@ -19,7 +19,7 @@ export class NativeBigIntType extends BigIntType {
 }
 
 @Entity()
-export class Author {
+class Author {
 
   @PrimaryKey({ type: NativeBigIntType, comment: 'PK' })
   id!: bigint;

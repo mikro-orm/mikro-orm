@@ -1,7 +1,7 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, wrap } from '@mikro-orm/sqlite';
 
 @Entity()
-export class Parent {
+class Parent {
 
   @PrimaryKey()
   id!: number;

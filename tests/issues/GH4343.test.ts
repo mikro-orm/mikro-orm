@@ -3,7 +3,7 @@ import { Entity, ManyToOne, PrimaryKey, Property, ref, Ref } from '@mikro-orm/co
 import { v4 } from 'uuid';
 
 @Entity()
-export class LocalizedString {
+class LocalizedString {
 
   @PrimaryKey({ type: 'uuid' })
   id = v4();
@@ -21,7 +21,7 @@ export class LocalizedString {
 }
 
 @Entity()
-export class Book {
+class Book {
 
   @PrimaryKey({ type: 'uuid' })
   id = v4();

@@ -13,7 +13,7 @@ import {
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
-export class Order {
+class Order {
 
   @PrimaryKey()
   id!: number;
@@ -33,7 +33,7 @@ export class Order {
 }
 
 @Entity()
-export class Product {
+class Product {
 
   @PrimaryKey()
   id!: number;
@@ -55,7 +55,7 @@ export class Product {
 }
 
 @Entity()
-export class OrderItem {
+class OrderItem {
 
   [OptionalProps]?: 'amount';
 

@@ -1,7 +1,7 @@
 import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
-export class B {
+class B {
 
   @PrimaryKey()
   id!: number;
@@ -12,7 +12,7 @@ export class B {
 }
 
 @Entity()
-export class A {
+class A {
 
   @PrimaryKey()
   id!: number;

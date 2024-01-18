@@ -2,7 +2,7 @@ import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite'
 import { Guid } from 'guid-typescript';
 import { mockLogger } from '../helpers';
 
-export class GuidType extends Type<Guid | undefined, string | undefined> {
+class GuidType extends Type<Guid | undefined, string | undefined> {
 
   override convertToDatabaseValue(value: Guid | undefined): string | undefined {
     if (!value) {
@@ -27,7 +27,7 @@ export class GuidType extends Type<Guid | undefined, string | undefined> {
 }
 
 @Entity()
-export class Couch {
+class Couch {
 
   @PrimaryKey({ type: GuidType })
   id!: Guid;

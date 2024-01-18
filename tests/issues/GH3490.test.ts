@@ -1,7 +1,7 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity()
-export class Contract {
+class Contract {
 
   @PrimaryKey()
   id!: number;
@@ -12,7 +12,7 @@ export class Contract {
 }
 
 @Entity()
-export class Customer {
+class Customer {
 
   @PrimaryKey()
   id!: number;

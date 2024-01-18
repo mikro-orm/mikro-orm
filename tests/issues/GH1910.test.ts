@@ -2,7 +2,7 @@ import type { EntityManager } from '@mikro-orm/postgresql';
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity()
-export class A {
+class A {
 
   @PrimaryKey({ type: 'number' })
   id!: number;
