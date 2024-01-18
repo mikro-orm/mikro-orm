@@ -46,8 +46,8 @@
   },
   "homepage": "https://mikro-orm.io",
   "bin": {
-    "mikro-orm": "./dist/cli",
-    "mikro-orm-esm": "./dist/esm"
+    "mikro-orm": "./dist/cli.js",
+    "mikro-orm-esm": "./dist/esm.js"
   },
   "engines": {
     "node": ">= 18.12.0"
