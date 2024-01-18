@@ -18,8 +18,8 @@ const options = process.argv.slice(2).reduce((args, arg) => {
   return args;
 }, {});
 
-function copy(filename, from, to) {
-  copyFileSync(resolve(from, filename), resolve(to, filename));
+function copy(filename, from, to, newFilename = filename) {
+  copyFileSync(resolve(from, filename), resolve(to, newFilename));
 }
 
 function rewrite(path, replacer) {
@@ -147,6 +147,8 @@ copy('package.json', process.cwd(), target);
 
 if (resolve(process.cwd()) === resolve(root, 'packages/cli')) {
   copy('esm.cmd', resolve(process.cwd(), 'src'), target);
+  copy('cli.js', target, target, 'cli');
+  copy('esm.js', target, target, 'esm');
 }
 
 rewrite(resolve(target, 'package.json'), pkg => {
