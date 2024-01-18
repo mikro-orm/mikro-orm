@@ -391,7 +391,7 @@ export class EntityFactory {
         const tmp = { ...data };
 
         for (const prop of meta.props) {
-          if (prop.customType && tmp[prop.name] != null) {
+          if (options.convertCustomTypes && prop.customType && tmp[prop.name] != null) {
             tmp[prop.name] = prop.customType.convertToJSValue(tmp[prop.name], this.platform) as any;
           }
         }
@@ -399,7 +399,7 @@ export class EntityFactory {
         return tmp;
       }
 
-      if (meta.properties[k].customType && data[k] != null) {
+      if (options.convertCustomTypes && meta.properties[k].customType && data[k] != null) {
         return meta.properties[k].customType!.convertToJSValue(data[k], this.platform);
       }
 
