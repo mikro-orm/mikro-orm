@@ -97,6 +97,7 @@ module.exports = {
         'usage-with-js',
         'usage-with-babel',
         'usage-with-adminjs',
+        'usage-with-jest',
         'entity-constructors',
         'multiple-schemas',
         'using-bigint-pks',
