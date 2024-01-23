@@ -222,7 +222,7 @@ export class MetadataValidator {
     if (duplicates.length > 0 && options.checkDuplicateFieldNames) {
       const pairs = duplicates.flatMap(name => {
         return Object.values(meta.properties)
-          .filter(p => p.fieldNames[0] === name)
+          .filter(p => p.fieldNames?.[0] === name)
           .map(prop => {
             return [prop.embedded ? prop.embedded.join('.') : prop.name, prop.fieldNames[0]] as [string, string];
           });
