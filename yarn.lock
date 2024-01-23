@@ -1147,7 +1147,7 @@ __metadata:
   resolution: "@mikro-orm/core@workspace:packages/core"
   dependencies:
     dataloader: "npm:2.2.2"
-    dotenv: "npm:16.3.2"
+    dotenv: "npm:16.4.0"
     esprima: "npm:4.0.1"
     fs-extra: "npm:11.2.0"
     globby: "npm:11.1.0"
@@ -1247,7 +1247,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.0.5"
     "@mikro-orm/knex": "npm:6.0.5"
-    mysql2: "npm:3.7.1"
+    mysql2: "npm:3.8.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -4043,10 +4043,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:16.3.2":
-  version: 16.3.2
-  resolution: "dotenv@npm:16.3.2"
-  checksum: 3d788056eb4c84ae8c8aa86642d0e1da1d41604fcd8d99a97c9b9c850e64faf5e6983717cfc071d4649139583f714d38f75414f8f869fe813cc38c6ad4601797
+"dotenv@npm:16.4.0":
+  version: 16.4.0
+  resolution: "dotenv@npm:16.4.0"
+  checksum: e72aef255a475547b5646ae3fcd5dc1214642fff4443af2580ea80709ec5c7727b8cdc85b3b86859d9def2cbad0d1e7ccf9f85bf30ac2dae4c96745997ab54a1
   languageName: node
   linkType: hard
 
@@ -7946,9 +7946,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.7.1":
-  version: 3.7.1
-  resolution: "mysql2@npm:3.7.1"
+"mysql2@npm:3.8.0":
+  version: 3.8.0
+  resolution: "mysql2@npm:3.8.0"
   dependencies:
     denque: "npm:^2.1.0"
     generate-function: "npm:^2.3.1"
@@ -7958,7 +7958,7 @@ __metadata:
     named-placeholders: "npm:^1.1.3"
     seq-queue: "npm:^0.0.5"
     sqlstring: "npm:^2.3.2"
-  checksum: 145aa91bf0a99b851c997510656b9f89a089837cfb360a3126d9dfe89067a0f5c6d52b84bf9761010253552f07c444b622828db51384463407ea9e80b5d988bc
+  checksum: baa9908e8b6ef689cbe194ed3597f0a7199ee1c66f78959bcf52319e6158784bc1e14dff39ff6ef59cd2ac13658df15d3590e198a90a2d658a935702f4414bce
   languageName: node
   linkType: hard
 
