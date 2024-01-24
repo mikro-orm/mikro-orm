@@ -131,7 +131,7 @@ export class EntityAssigner {
 
     if (options.mergeObjectProperties && Utils.isPlainObject(entity[propName as EntityKey]) && Utils.isPlainObject(value)) {
       entity[propName as EntityKey<T>] ??= {} as EntityValue<T>;
-      Utils.merge(entity[propName as EntityKey<T>], value);
+      entity[propName as EntityKey<T>] = Utils.merge({}, entity[propName as EntityKey<T>], value);
     } else if (!prop || prop.setter || !prop.getter) {
       entity[propName as EntityKey<T>] = value;
     }
