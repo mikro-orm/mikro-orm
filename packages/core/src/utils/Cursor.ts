@@ -4,7 +4,9 @@ import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseD
 import { Utils } from './Utils';
 import { ReferenceKind, type QueryOrder, type QueryOrderKeys } from '../enums';
 import { Reference } from '../entity/Reference';
+import { helper } from '../entity/wrap';
 import { RawQueryFragment } from '../utils/RawQueryFragment';
+import { CursorError } from '../errors';
 
 /**
  * As an alternative to the offset-based pagination with `limit` and `offset`, we can paginate based on a cursor.
@@ -118,11 +120,21 @@ export class Cursor<
         return ({ [prop]: value });
       }
 
-      if (object) {
-        return ({ [prop]: entity[prop] });
+      if (entity[prop] == null) {
+        throw CursorError.entityNotPopulated(entity, prop);
       }
 
-      return entity[prop];
+      let value: unknown = entity[prop];
+
+      if (Utils.isEntity(value, true)) {
+        value = helper(value).getPrimaryKey();
+      }
+
+      if (object) {
+        return ({ [prop]: value });
+      }
+
+      return value;
     };
     const value = this.definition.map(([key, direction]) => processEntity(entity as Entity, key, direction));
     return Cursor.encode(value);

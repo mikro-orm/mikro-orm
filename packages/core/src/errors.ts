@@ -131,6 +131,14 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
 }
 
+export class CursorError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
+
+  static entityNotPopulated(entity: AnyEntity, prop: string): ValidationError {
+    return new CursorError(`Cannot create cursor, value for '${entity.constructor.name}.${prop}' is missing.`);
+  }
+
+}
+
 export class OptimisticLockError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
 
   static notVersioned(meta: EntityMetadata): OptimisticLockError {
