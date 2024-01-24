@@ -674,6 +674,7 @@ describe('check typings', () => {
 
   test('tuple type after entity serializized', async () => {
     assert<IsExact<EntityDTO<Book>['point'], [number, number] | undefined>>(true);
+    assert<IsExact<EntityDTO<Author>['age'], number | undefined>>(true);
   });
 
   test('GH #3277', async () => {

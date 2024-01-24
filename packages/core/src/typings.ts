@@ -1,11 +1,5 @@
 import type { Transaction } from './connections';
-import {
-  type Cascade,
-  type EventType,
-  type LoadStrategy,
-  type QueryOrderMap,
-  ReferenceKind,
-} from './enums';
+import { type Cascade, type EventType, type LoadStrategy, type QueryOrderMap, ReferenceKind } from './enums';
 import {
   type AssignOptions,
   type Collection,
@@ -342,7 +336,6 @@ export type Ref<T> = IsAny<T> extends true
 
 type ExtractHiddenProps<T> = (T extends { [HiddenProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Hidden ? K : never }[keyof T] & {});
 type ExcludeHidden<T, K extends keyof T> = K extends ExtractHiddenProps<T> ? never : K;
-type EntityDTONested<T, C extends TypeConfig> = T extends undefined | null ? T : EntityDTO<T, C>;
 type ExtractConfig<T> = T extends { [Config]?: infer K } ? (K & TypeConfig) : TypeConfig;
 type PreferExplicitConfig<E, I> = IsNever<E, I, E>;
 type PrimaryOrObject<T, U, C extends TypeConfig> =
@@ -353,22 +346,35 @@ type PrimaryOrObject<T, U, C extends TypeConfig> =
 export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
   ? T
   : T extends LoadedReference<infer U>
-    ? EntityDTONested<U, C>
+    ? EntityDTO<U, C>
     : T extends Reference<infer U>
       ? PrimaryOrObject<E, U, C>
       : T extends ScalarReference<infer U>
         ? U
         : T extends { getItems(check?: boolean): infer U }
-          ? (U extends readonly (infer V)[] ? EntityDTONested<V, C>[] : EntityDTONested<U, C>)
+          ? (U extends readonly (infer V)[] ? EntityDTO<V, C>[] : EntityDTO<U, C>)
           : T extends { $: infer U }
-            ? (U extends readonly (infer V)[] ? EntityDTONested<V, C>[] : EntityDTONested<U, C>)
+            ? (U extends readonly (infer V)[] ? EntityDTO<V, C>[] : EntityDTO<U, C>)
             : T extends readonly (infer U)[]
               ? (T extends readonly [infer U, ...infer V] ? T : U[])
               : T extends Relation<T>
-                ? EntityDTONested<T, C>
+                ? EntityDTO<T, C>
                 : T;
 
-export type EntityDTO<T, C extends TypeConfig = never> = { [K in EntityKey<T> as ExcludeHidden<T, K>]: EntityDTOProp<T, T[K], C> };
+// ideally this should also mark not populated collections as optional, but that would be breaking
+type DTOIsOptional<T, K extends keyof T> = T[K] extends LoadedCollection<any>
+  ? false
+  : K extends ProbablyOptionalProps<T>
+    ? true
+    : false;
+type DTORequiredKeys<T, K extends keyof T> = DTOIsOptional<T, K> extends false ? ExcludeHidden<T, K> & CleanKeys<T, K> : never;
+type DTOOptionalKeys<T, K extends keyof T> = DTOIsOptional<T, K> extends false ? never : ExcludeHidden<T, K> & CleanKeys<T, K>;
+
+export type EntityDTO<T, C extends TypeConfig = never> = {
+  [K in keyof T as DTORequiredKeys<T, K>]: EntityDTOProp<T, T[K], C>
+} & {
+  [K in keyof T as DTOOptionalKeys<T, K>]?: EntityDTOProp<T, T[K], C> | AddOptional<T[K]>
+};
 
 export type CheckCallback<T> = (columns: Record<keyof T, string>) => string;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;
