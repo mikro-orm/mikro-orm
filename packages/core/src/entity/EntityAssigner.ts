@@ -109,8 +109,7 @@ export class EntityAssigner {
     }
 
     if (options.mergeObjects && Utils.isPlainObject(entity[propName]) && Utils.isPlainObject(value)) {
-      entity[propName] ??= {};
-      Utils.merge(entity[propName], value);
+      entity[propName] = Utils.merge({}, entity[propName], value);
     } else if (!prop || prop.setter || !prop.getter) {
       entity[propName] = value;
     }
