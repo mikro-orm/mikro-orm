@@ -368,12 +368,7 @@ export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
                 ? EntityDTONested<T, C>
                 : T;
 
-// export type EntityDTO<T, C extends TypeConfig = never> = { [K in EntityKey<T> as ExcludeHidden<T, K>]: EntityDTOProp<T, T[K], C> };
-export type EntityDTO<T, C extends TypeConfig = never> = {
-  [K in keyof T as RequiredKeys<T, K, never> & ExcludeHidden<T, K>]: EntityDTOProp<T, T[K], C>
-} & {
-  [K in keyof T as OptionalKeys<T, K, never> & ExcludeHidden<T, K>]?: EntityDTOProp<T, T[K], C> | null
-};
+export type EntityDTO<T, C extends TypeConfig = never> = { [K in EntityKey<T> as ExcludeHidden<T, K>]: EntityDTOProp<T, T[K], C> };
 
 export type CheckCallback<T> = (columns: Record<keyof T, string>) => string;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;
