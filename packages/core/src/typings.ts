@@ -362,7 +362,7 @@ export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
                 : T;
 
 // ideally this should also mark not populated collections as optional, but that would be breaking
-type DTOProbablyOptionalProps<T> = ExplicitlyOptionalProps<T> | Defined<NullableKeys<T>>;
+type DTOProbablyOptionalProps<T> = Defined<NullableKeys<T>>;
 type DTOIsOptional<T, K extends keyof T> = T[K] extends LoadedCollection<any>
   ? false
   : K extends PrimaryProperty<T>
