@@ -24,7 +24,9 @@ import {
   Opt,
   Hidden,
   Embeddable,
-  Embedded, sql,
+  Embedded,
+  sql,
+  OptionalProps,
 } from '@mikro-orm/core';
 
 import { Book2 } from './Book2';
@@ -57,6 +59,9 @@ export class Identity {
 @Index({ name: 'custom_idx_name_123', properties: ['name'] })
 @Unique({ properties: ['name', 'email'] })
 export class Author2 extends BaseEntity2 {
+
+  // just for testing the types, this is not needed
+  [OptionalProps]?: 'id';
 
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
