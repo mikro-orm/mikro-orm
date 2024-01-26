@@ -106,7 +106,7 @@
     "@types/node": "20.11.6",
     "@types/pg": "8.11.0",
     "@types/sqlstring": "2.3.2",
-    "@types/uuid": "9.0.7",
+    "@types/uuid": "9.0.8",
     "@types/webpack-env": "1.18.4",
     "@typescript-eslint/eslint-plugin": "6.19.1",
     "@typescript-eslint/parser": "6.19.1",
