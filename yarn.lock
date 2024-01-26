@@ -1247,7 +1247,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.0.5"
     "@mikro-orm/knex": "npm:6.0.5"
-    mysql2: "npm:3.8.0"
+    mysql2: "npm:3.9.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1290,7 +1290,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.11"
-    "@types/node": "npm:20.11.6"
+    "@types/node": "npm:20.11.7"
     "@types/pg": "npm:8.11.0"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:9.0.8"
@@ -2169,12 +2169,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.11.6":
-  version: 20.11.6
-  resolution: "@types/node@npm:20.11.6"
+"@types/node@npm:20.11.7":
+  version: 20.11.7
+  resolution: "@types/node@npm:20.11.7"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 375dfc75f0aa8b7fb99382d84c317e5dab2969dcc3f54d8490b119151060923eae6483839552347bc78262bbcefb2951ee131e15372f4e80b755be2dda9afe80
+  checksum: ff0428c093987f1f6e3400b91450077cf006d7f0e4ff316e20636218562c53761565ceb06bd7a161badf46e6884d78b554c7b1c3a7717cf5cb8c97f461ecd754
   languageName: node
   linkType: hard
 
@@ -7946,9 +7946,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.8.0":
-  version: 3.8.0
-  resolution: "mysql2@npm:3.8.0"
+"mysql2@npm:3.9.0":
+  version: 3.9.0
+  resolution: "mysql2@npm:3.9.0"
   dependencies:
     denque: "npm:^2.1.0"
     generate-function: "npm:^2.3.1"
@@ -7958,7 +7958,7 @@ __metadata:
     named-placeholders: "npm:^1.1.3"
     seq-queue: "npm:^0.0.5"
     sqlstring: "npm:^2.3.2"
-  checksum: baa9908e8b6ef689cbe194ed3597f0a7199ee1c66f78959bcf52319e6158784bc1e14dff39ff6ef59cd2ac13658df15d3590e198a90a2d658a935702f4414bce
+  checksum: 17b3c340ba99e6aa2085693424b67eca48cbd416aae6d7ee17bf8886fd44f462a384deaa0dc34fb69ae91eed929d8298225e4b475eee472934f97662a004d6ec
   languageName: node
   linkType: hard
 
