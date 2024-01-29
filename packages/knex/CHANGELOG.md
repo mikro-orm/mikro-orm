@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.6](https://github.com/mikro-orm/mikro-orm/compare/v6.0.5...v6.0.6) (2024-01-29)
+
+
+### Bug Fixes
+
+* **query-builder:** only map the first result with `qb.getSingleResult()` ([0e56fe1](https://github.com/mikro-orm/mikro-orm/commit/0e56fe134775ed800bea99752a98ecd615c9d4a6)), closes [#5182](https://github.com/mikro-orm/mikro-orm/issues/5182)
+
+
+
+
+
 ## [6.0.5](https://github.com/mikro-orm/mikro-orm/compare/v6.0.4...v6.0.5) (2024-01-18)
 
 

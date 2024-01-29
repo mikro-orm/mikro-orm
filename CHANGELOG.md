@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.6](https://github.com/mikro-orm/mikro-orm/compare/v6.0.5...v6.0.6) (2024-01-29)
+
+
+### Bug Fixes
+
+* **core:** ensure `em.insertMany` returns array of PKs for a single item too ([#5180](https://github.com/mikro-orm/mikro-orm/issues/5180)) ([0d58aaf](https://github.com/mikro-orm/mikro-orm/commit/0d58aaf77400638471f369406485fb3f42349ca6)), closes [#5179](https://github.com/mikro-orm/mikro-orm/issues/5179)
+* **core:** fix TypeError caused by validation of duplicate field names ([01d8c26](https://github.com/mikro-orm/mikro-orm/commit/01d8c261b9a92e9e0b067e2f38875ac5c419bf86)), closes [#5163](https://github.com/mikro-orm/mikro-orm/issues/5163)
+* **core:** make PK properties non-nullable in `EntityDTO` ([dc4fc6f](https://github.com/mikro-orm/mikro-orm/commit/dc4fc6f265ca0eb96fe647c16c3018014b91e5dc))
+* **core:** respect optionality in `EntityDTO` type ([1691a79](https://github.com/mikro-orm/mikro-orm/commit/1691a799ff762e1ecde15388433cd2544e42fc5e))
+* **core:** validate missing populate hint for cursor based pagination on relation properties ([ea48db0](https://github.com/mikro-orm/mikro-orm/commit/ea48db0c258080e6e98242a684122ba436c3cc04)), closes [#5155](https://github.com/mikro-orm/mikro-orm/issues/5155)
+* **mongo:** ensure `assign` on object properties won't ignore changes ([a360300](https://github.com/mikro-orm/mikro-orm/commit/a360300d64b7de1bb31b281949f64180f412ac66)), closes [#5158](https://github.com/mikro-orm/mikro-orm/issues/5158)
+* **query-builder:** only map the first result with `qb.getSingleResult()` ([0e56fe1](https://github.com/mikro-orm/mikro-orm/commit/0e56fe134775ed800bea99752a98ecd615c9d4a6)), closes [#5182](https://github.com/mikro-orm/mikro-orm/issues/5182)
+
+
+
+
+
 ## [6.0.5](https://github.com/mikro-orm/mikro-orm/compare/v6.0.4...v6.0.5) (2024-01-18)
 
 
