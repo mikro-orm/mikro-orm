@@ -1410,10 +1410,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     data.forEach(row => em.validator.validateParams(row, 'insert data'));
     const res = await em.driver.nativeInsertMany<Entity>(entityName, data as EntityData<Entity>[], { ctx: em.transactionContext, ...options });
 
-    if(!res.insertedIds) {
-      return [res.insertId];
+    if (res.insertedIds) {
+      return res.insertedIds;
     }
-    return res.insertedIds;
+
+    return [res.insertId];
   }
 
   /**
