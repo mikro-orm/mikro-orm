@@ -825,7 +825,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /**
    * Executes the query, returning array of results
    */
-  async getResultList(): Promise<T[]> {
+  async getResultList(limit?: number): Promise<T[]> {
     await this.em!.tryFlush(this.mainAlias.entityName, { flushMode: this.flushMode });
     const res = await this.execute<EntityData<T>[]>('all', true);
     const entities: T[] = [];
@@ -850,6 +850,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
       const entity = this.em!.map<T>(this.mainAlias.entityName, r, { schema: this._schema });
       propagatePopulateHint(entity, this._populate);
       entities.push(entity);
+
+      if (limit != null && --limit === 0) {
+        break;
+      }
     }
 
     return entities;
@@ -859,8 +863,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Executes the query, returning the first result or null
    */
   async getSingleResult(): Promise<T | null> {
-    const res = await this.getResultList();
-    return res[0] || null;
+    const [res] = await this.getResultList(1);
+    return res || null;
   }
 
   /**
