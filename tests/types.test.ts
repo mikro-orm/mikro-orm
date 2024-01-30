@@ -843,4 +843,16 @@ describe('check typings', () => {
     });
   });
 
+  test('GH #5186', async () => {
+    interface User {
+      id: number;
+      name: string | null;
+    }
+
+    type UserDTO = EntityDTO<User>;
+    const dto1: UserDTO = { id: 1, name: null };
+    // @ts-expect-error
+    const dto2: UserDTO = { id: 1, name: undefined };
+  });
+
 });

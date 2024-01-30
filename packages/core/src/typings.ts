@@ -285,7 +285,7 @@ export type RequiredEntityDataNested<T, O> = T extends any[]
   : RequiredEntityData<T, O> | ExpandRequiredEntityProp<T, O>;
 
 type ExplicitlyOptionalProps<T> = (T extends { [OptionalProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Opt ? K : never }[keyof T] & {});
-type NullableKeys<T> = { [K in keyof T]: null extends T[K] ? K : never }[keyof T];
+type NullableKeys<T, V = null> = { [K in keyof T]: V extends T[K] ? K : never }[keyof T];
 type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | Defined<NullableKeys<T>>;
 
 type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
@@ -362,7 +362,7 @@ export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
                 : T;
 
 // ideally this should also mark not populated collections as optional, but that would be breaking
-type DTOProbablyOptionalProps<T> = Defined<NullableKeys<T>>;
+type DTOProbablyOptionalProps<T> = Defined<NullableKeys<T, undefined>>;
 type DTOIsOptional<T, K extends keyof T> = T[K] extends LoadedCollection<any>
   ? false
   : K extends PrimaryProperty<T>
@@ -374,7 +374,7 @@ type DTORequiredKeys<T, K extends keyof T> = DTOIsOptional<T, K> extends false ?
 type DTOOptionalKeys<T, K extends keyof T> = DTOIsOptional<T, K> extends false ? never : ExcludeHidden<T, K> & CleanKeys<T, K>;
 
 export type EntityDTO<T, C extends TypeConfig = never> = {
-  [K in keyof T as DTORequiredKeys<T, K>]: EntityDTOProp<T, T[K], C>
+  [K in keyof T as DTORequiredKeys<T, K>]: EntityDTOProp<T, T[K], C> | AddOptional<T[K]>
 } & {
   [K in keyof T as DTOOptionalKeys<T, K>]?: EntityDTOProp<T, T[K], C> | AddOptional<T[K]>
 };
