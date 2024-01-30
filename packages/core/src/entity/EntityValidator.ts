@@ -76,8 +76,14 @@ export class EntityValidator {
       givenType = Utils.getObjectType(ret);
     }
 
-    if (givenType !== expectedType) {
-      throw ValidationError.fromWrongPropertyType(entity, prop.name, expectedType, givenType, givenValue);
+    if (prop.enum && prop.items) {
+      if (!prop.items.some(it => it === givenValue)) {
+        throw ValidationError.fromWrongPropertyType(entity, prop.name, expectedType, givenType, givenValue);
+      }
+    } else {
+      if (givenType !== expectedType) {
+        throw ValidationError.fromWrongPropertyType(entity, prop.name, expectedType, givenType, givenValue);
+      }
     }
 
     return ret;
