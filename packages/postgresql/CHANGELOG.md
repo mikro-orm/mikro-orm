@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.7](https://github.com/mikro-orm/mikro-orm/compare/v6.0.6...v6.0.7) (2024-01-30)
+
+
+### Features
+
+* **postgres:** add support for `interval` type ([659a613](https://github.com/mikro-orm/mikro-orm/commit/659a613f802b7c47f94ee2729425c8576b20146a)), closes [#5181](https://github.com/mikro-orm/mikro-orm/issues/5181)
+
+
+
+
+
 ## [6.0.6](https://github.com/mikro-orm/mikro-orm/compare/v6.0.5...v6.0.6) (2024-01-29)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

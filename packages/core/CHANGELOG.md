@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.7](https://github.com/mikro-orm/mikro-orm/compare/v6.0.6...v6.0.7) (2024-01-30)
+
+
+### Bug Fixes
+
+* **core:** consider `PrimaryKeyProp` as optional properties for `em.create()` ([69522f2](https://github.com/mikro-orm/mikro-orm/commit/69522f2e7bee589cf3363bae9e65f5d1ed498405)), closes [#5187](https://github.com/mikro-orm/mikro-orm/issues/5187)
+* **core:** do not add `undefined` to `null` types in `EntityDTO` ([d661c68](https://github.com/mikro-orm/mikro-orm/commit/d661c68dd8f529e92fc2275ce72fda0341d4e7bb)), closes [#5186](https://github.com/mikro-orm/mikro-orm/issues/5186)
+* **core:** fix ignoring function properties when they are optional ([fb33934](https://github.com/mikro-orm/mikro-orm/commit/fb339341661afa3d8fde8f357028f05e64ae846f))
+* **reflection:** fix validation of string enums when loading via `QueryBuilder` ([908864c](https://github.com/mikro-orm/mikro-orm/commit/908864c741b3cd42498852f926253b6dbc523530)), closes [#5185](https://github.com/mikro-orm/mikro-orm/issues/5185)
+
+
+### Features
+
+* **postgres:** add support for `interval` type ([659a613](https://github.com/mikro-orm/mikro-orm/commit/659a613f802b7c47f94ee2729425c8576b20146a)), closes [#5181](https://github.com/mikro-orm/mikro-orm/issues/5181)
+
+
+
+
+
 ## [6.0.6](https://github.com/mikro-orm/mikro-orm/compare/v6.0.5...v6.0.6) (2024-01-29)
 
 
