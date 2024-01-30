@@ -51,7 +51,7 @@ describe('GH issue 2810', () => {
   afterAll(async () => await orm.close(true));
 
   test('create without existing parent', async () => {
-    const element = new ElementEntity();
+    const element = orm.em.create(ElementEntity, {});
     element.node = new NodeEntity();
     element.node.parent = null;
 
