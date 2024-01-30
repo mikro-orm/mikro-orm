@@ -30,7 +30,7 @@ export type FilterKey<T> = keyof FilterQuery<T>;
 export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
 export type Compute<T> = { [K in keyof T]: T[K] } & {};
 type InternalKeys = 'EntityRepositoryType' | 'PrimaryKeyProp' | 'OptionalProps' | 'EagerProps' | 'HiddenProps' | '__selectedType' | '__loadedType';
-export type CleanKeys<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol | InternalKeys ? never : K);
+export type CleanKeys<T, K extends keyof T> = (T[K] & {}) extends Function ? never : (K extends symbol | InternalKeys ? never : K);
 export type FunctionKeys<T, K extends keyof T> = T[K] extends Function ? K : never;
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;

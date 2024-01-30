@@ -21,6 +21,8 @@ describe('EntityAssignerMongo', () => {
     expect(book.author).toBe(jon);
     // @ts-expect-error unknown property
     book.assign({ title: 'Better Book2 1', author: god, notExisting: true });
+    const partial = { title: 'Better Book2 1', author: god } as Partial<Book>;
+    book.assign({ ...partial, title: 'foo' });
     expect(book.author).toBe(god);
     expect((book as any).notExisting).toBe(true);
     await orm.em.persistAndFlush(god);

@@ -534,6 +534,7 @@ describe('Utils', () => {
   });
 
   test('getPrimaryKeyCond', () => {
+    // @ts-expect-error no PK so this correctly fails compilation
     expect(Utils.getPrimaryKeyCond({ a: null }, ['a'])).toBe(null);
   });
 
