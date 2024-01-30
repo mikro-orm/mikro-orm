@@ -60,7 +60,8 @@
   "dependencies": {
     "@mikro-orm/knex": "6.0.6",
     "pg": "8.11.3",
-    "postgres-date": "2.1.0"
+    "postgres-date": "2.1.0",
+    "postgres-interval": "4.0.2"
   },
   "devDependencies": {
     "@mikro-orm/core": "^6.0.6"

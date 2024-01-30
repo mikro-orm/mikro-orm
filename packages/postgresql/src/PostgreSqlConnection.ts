@@ -17,7 +17,8 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   override getConnectionOptions(): Knex.PgConnectionConfig {
     const ret = super.getConnectionOptions() as Knex.PgConnectionConfig;
     const types = new TypeOverrides();
-    [1082, 1114, 1184].forEach(oid => types.setTypeParser(oid, str => str)); // date, timestamp, timestamptz type
+    // date, timestamp, timestamptz, interval type
+    [1082, 1114, 1184, 1186].forEach(oid => types.setTypeParser(oid, str => str));
     ret.types = types as any;
 
     return ret;

@@ -20,12 +20,13 @@ import { DecimalType } from './DecimalType';
 import { StringType } from './StringType';
 import { UuidType } from './UuidType';
 import { TextType } from './TextType';
+import { IntervalType } from './IntervalType';
 import { UnknownType } from './UnknownType';
 
 export {
   Type, DateType, TimeType, DateTimeType, BigIntType, BlobType, Uint8ArrayType, ArrayType, EnumArrayType, EnumType,
   JsonType, IntegerType, SmallIntType, TinyIntType, MediumIntType, FloatType, DoubleType, BooleanType, DecimalType,
-  StringType, UuidType, TextType, UnknownType, TransformContext,
+  StringType, UuidType, TextType, UnknownType, TransformContext, IntervalType,
 };
 
 export const types = {
@@ -50,6 +51,7 @@ export const types = {
   string: StringType,
   uuid: UuidType,
   text: TextType,
+  interval: IntervalType,
   unknown: UnknownType,
 };
 

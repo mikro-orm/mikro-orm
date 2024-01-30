@@ -1,5 +1,6 @@
 import { Client } from 'pg';
 import parseDate from 'postgres-date';
+import PostgresInterval, { type IPostgresInterval } from 'postgres-interval';
 import { raw, ALIAS_REPLACEMENT, JsonProperty, Utils, type EntityProperty, Type, type SimpleColumnMeta, type Dictionary } from '@mikro-orm/core';
 import { AbstractSqlPlatform, type IndexDef } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
@@ -47,6 +48,18 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   override getDefaultDateTimeLength(): number {
     return 6; // timestamptz actually means timestamptz(6)
+  }
+
+  override convertIntervalToJSValue(value: string): unknown {
+    return PostgresInterval(value);
+  }
+
+  override convertIntervalToDatabaseValue(value: IPostgresInterval): unknown {
+    if (Utils.isObject(value) && 'toPostgres' in value && typeof value.toPostgres === 'function') {
+      return value.toPostgres();
+    }
+
+    return value;
   }
 
   override getTimeTypeDeclarationSQL(): string {

@@ -8,7 +8,7 @@ import type { Configuration } from '../utils/Configuration';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import {
   ArrayType, BigIntType, BlobType, Uint8ArrayType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
-  TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType,
+  TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType, IntervalType,
 } from '../types';
 import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
@@ -203,6 +203,10 @@ export abstract class Platform {
     return `varchar(${column.length ?? 255})`;
   }
 
+  getIntervalTypeDeclarationSQL(column: { length?: number }): string {
+    return 'interval' + (column.length ? `(${column.length})` : '');
+  }
+
   getTextTypeDeclarationSQL(_column: { length?: number }): string {
     return `text`;
   }
@@ -250,8 +254,9 @@ export abstract class Platform {
     }
 
     switch (this.extractSimpleType(type)) {
-      case 'string': return Type.getType(StringType);
+      case 'string':
       case 'varchar': return Type.getType(StringType);
+      case 'interval': return Type.getType(IntervalType);
       case 'text': return Type.getType(TextType);
       case 'number': return Type.getType(IntegerType);
       case 'bigint': return Type.getType(BigIntType);
@@ -342,6 +347,14 @@ export abstract class Platform {
 
   convertJsonToJSValue(value: unknown): unknown {
     return parseJsonSafe(value);
+  }
+
+  convertIntervalToJSValue(value: string): unknown {
+    return value;
+  }
+
+  convertIntervalToDatabaseValue(value: unknown): unknown {
+    return value;
   }
 
   parseDate(value: string | number): Date {

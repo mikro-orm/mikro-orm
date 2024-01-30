@@ -1261,6 +1261,7 @@ __metadata:
     "@mikro-orm/knex": "npm:6.0.6"
     pg: "npm:8.11.3"
     postgres-date: "npm:2.1.0"
+    postgres-interval: "npm:4.0.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -9178,6 +9179,13 @@ __metadata:
   version: 2.0.1
   resolution: "postgres-date@npm:2.0.1"
   checksum: 908eacec35faf9b6fa4248074e7c8db0fc4ac6a2e0a00eacef9fb9cf44a25fc6f100af7cda09f5d89d076c87923b59e940a309560d86aded4753985c97255be1
+  languageName: node
+  linkType: hard
+
+"postgres-interval@npm:4.0.2":
+  version: 4.0.2
+  resolution: "postgres-interval@npm:4.0.2"
+  checksum: 8eb7487d24c2752c5bd0798e0039e336ba5814f19a1e60926f9e4ecbbaea85387aa1871175085e90bc2a3bc354c8bfe0ef0b7a162817cff7d4b4714b83f9f1bd
   languageName: node
   linkType: hard
 

@@ -32,7 +32,7 @@ import {
   t,
   Type,
   Uint8ArrayType,
-  UnknownType,
+  UnknownType, IntervalType,
 } from '../types';
 import { colors } from '../logging/colors';
 import { raw, RawQueryFragment } from '../utils/RawQueryFragment';
@@ -1276,16 +1276,10 @@ export class MetadataDiscovery {
 
     const mappedType = this.getMappedType(prop);
 
-    if (prop.fieldNames?.length === 1 && !prop.customType && mappedType instanceof BigIntType) {
-      prop.customType = new BigIntType();
-    }
-
-    if (prop.fieldNames?.length === 1 && !prop.customType && mappedType instanceof DoubleType) {
-      prop.customType = new DoubleType();
-    }
-
-    if (prop.fieldNames?.length === 1 && !prop.customType && mappedType instanceof DecimalType) {
-      prop.customType = new DecimalType();
+    if (prop.fieldNames?.length === 1 && !prop.customType) {
+      [BigIntType, DoubleType, DecimalType, IntervalType]
+        .filter(type => mappedType instanceof type)
+        .forEach(type => prop.customType = new type());
     }
 
     if (prop.customType && !prop.columnTypes) {

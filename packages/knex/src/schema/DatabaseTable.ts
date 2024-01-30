@@ -8,6 +8,7 @@ import {
   type EntityMetadata,
   type EntityProperty,
   EntitySchema,
+  IntervalType,
   type NamingStrategy,
   ReferenceKind,
   t,
@@ -97,7 +98,7 @@ export class DatabaseTable {
         }
       }
 
-      if (mappedType instanceof DateTimeType) {
+      if (mappedType instanceof DateTimeType || mappedType instanceof IntervalType) {
         const match = prop.columnTypes[idx].match(/\w+\((\d+)\)/);
 
         if (match) {
