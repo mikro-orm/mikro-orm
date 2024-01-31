@@ -103,7 +103,7 @@
     "@types/esprima": "4.0.6",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "29.5.11",
-    "@types/node": "20.11.10",
+    "@types/node": "20.11.13",
     "@types/pg": "8.11.0",
     "@types/sqlstring": "2.3.2",
     "@types/uuid": "9.0.8",
@@ -131,5 +131,5 @@
     "typescript": "5.3.3",
     "uuid": "9.0.1"
   },
-  "packageManager": "yarn@4.0.2"
+  "packageManager": "yarn@4.1.0"
 }
