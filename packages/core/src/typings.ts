@@ -942,7 +942,7 @@ export type AutoPath<O, P extends string | boolean, E extends string = never, D 
   P extends boolean
     ? P
     : [D] extends [never]
-      ? any
+      ? never
       : P extends any
         ? P extends string
           ? (P & `${string}.` extends never ? P : P & `${string}.`) extends infer Q
