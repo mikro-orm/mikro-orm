@@ -91,9 +91,9 @@ import type { CacheAdapter } from './cache/CacheAdapter';
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
  * such as UnitOfWork, Query Language, and Repository API.
- * @template {D} current driver type
+ * @template {IDatabaseDriver} Driver current driver type
  */
-export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
+export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
   private static counter = 1;
   readonly _id = EntityManager.counter++;
@@ -120,7 +120,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * @internal
    */
   constructor(readonly config: Configuration,
-              protected readonly driver: D,
+              protected readonly driver: Driver,
               protected readonly metadata: MetadataStorage,
               protected readonly useContext = true,
               protected readonly eventManager = new EventManager(config.get('subscribers'))) {
@@ -138,22 +138,22 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the Driver instance used by this EntityManager.
    * Driver is singleton, for one MikroORM instance, only one driver is created.
    */
-  getDriver(): D {
+  getDriver(): Driver {
     return this.driver;
   }
 
   /**
    * Gets the Connection instance, by default returns write connection
    */
-  getConnection(type?: ConnectionType): ReturnType<D['getConnection']> {
-    return this.driver.getConnection(type) as ReturnType<D['getConnection']>;
+  getConnection(type?: ConnectionType): ReturnType<Driver['getConnection']> {
+    return this.driver.getConnection(type) as ReturnType<Driver['getConnection']>;
   }
 
   /**
    * Gets the platform instance. Just like the driver, platform is singleton, one for a MikroORM instance.
    */
-  getPlatform(): ReturnType<D['getPlatform']> {
-    return this.driver.getPlatform() as ReturnType<D['getPlatform']>;
+  getPlatform(): ReturnType<Driver['getPlatform']> {
+    return this.driver.getPlatform() as ReturnType<Driver['getPlatform']>;
   }
 
   /**
@@ -1218,7 +1218,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Runs your callback wrapped inside a database transaction.
    */
-  async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
+  async transactional<T>(cb: (em: Driver[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
     const em = this.getContext(false);
 
     if (this.disableTransactions) {
@@ -1824,7 +1824,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Returns new EntityManager instance with its own identity map
    */
-  fork(options: ForkOptions = {}): D[typeof EntityManagerType] {
+  fork(options: ForkOptions = {}): Driver[typeof EntityManagerType] {
     const em = options.disableContextResolution ? this : this.getContext(false);
     options.clear ??= true;
     options.useContext ??= false;

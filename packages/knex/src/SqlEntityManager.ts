@@ -18,7 +18,7 @@ import type { SqlEntityRepository } from './SqlEntityRepository';
 /**
  * @inheritDoc
  */
-export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> extends EntityManager<D> {
+export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriver> extends EntityManager<Driver> {
 
   /**
    * Creates a QueryBuilder instance
