@@ -70,7 +70,7 @@ import { OptimisticLockError, ValidationError } from './errors';
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
  * such as UnitOfWork, Query Language and Repository API.
- * @template {D} current driver type
+ * @template {IDatabaseDriver} D current driver type
  */
 export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -642,7 +642,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       where = helper(entity).getPrimaryKey() as FilterQuery<Entity>;
       data = em.comparator.prepareEntity(entity);
     } else {
-      data = Utils.copy(data);
+      data = Utils.copy(QueryHelper.processParams(data)) as EntityData<Entity>;
       where = Utils.extractPK(data, meta) as FilterQuery<Entity>;
 
       if (where) {
@@ -803,14 +803,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         where = helper(entity).getPrimaryKey() as FilterQuery<Entity>;
         row = em.comparator.prepareEntity(entity);
       } else {
-        row = data[i] = Utils.copy(row);
+        row = data[i] = Utils.copy(QueryHelper.processParams(row));
         where = Utils.extractPK(row, meta) as FilterQuery<Entity>;
 
         if (where) {
           const exists = em.unitOfWork.getById<Entity>(entityName, where as Primary<Entity>, options.schema);
 
           if (exists) {
-            em.assign(exists, row);
+            em.assign(exists, row as any);
             entities.set(exists, row);
             entitiesByData.set(row, exists);
             continue;
