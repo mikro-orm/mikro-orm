@@ -1449,7 +1449,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       }
     } else if (!Utils.isEmpty(options.exclude) || lazyProps.some(p => !p.formula)) {
       const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate, options.exclude as string[], false));
-      ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
+      ret.push(...props.filter(p => !lazyProps.includes(p)).map(p => p.name));
       addFormulas = true;
     } else if (hasLazyFormulas || requiresSQLConversion) {
       ret.push('*');
