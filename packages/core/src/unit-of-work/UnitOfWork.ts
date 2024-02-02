@@ -56,7 +56,7 @@ export class UnitOfWork {
     this.platform = this.em.getPlatform();
     this.eventManager = this.em.getEventManager();
     this.comparator = this.em.getComparator();
-    this.changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.metadata, this.platform, this.em.config);
+    this.changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.metadata, this.platform, this.em.config, this.em);
     this.changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.getValidator(), this.em.config);
   }
 

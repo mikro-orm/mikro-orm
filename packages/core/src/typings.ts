@@ -446,8 +446,8 @@ export interface EntityProperty<Owner = any, Target = any> {
   getterName?: keyof Owner;
   cascade: Cascade[];
   orphanRemoval?: boolean;
-  onCreate?: (entity: Owner) => any;
-  onUpdate?: (entity: Owner) => any;
+  onCreate?: (entity: Owner, em: EntityManager) => any;
+  onUpdate?: (entity: Owner, em: EntityManager) => any;
   deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
   updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
   strategy?: LoadStrategy;
