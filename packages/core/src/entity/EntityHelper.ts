@@ -155,7 +155,7 @@ export class EntityHelper {
 
       if (showEM) {
         if (helper(this).__em) {
-          name += ` [managed by ${helper(this).__em.id}]`;
+          name += ` [managed by ${helper(this).__em!.id}]`;
         } else {
           name += ` [not managed]`;
         }

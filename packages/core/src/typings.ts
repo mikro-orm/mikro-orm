@@ -196,7 +196,7 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
   getSerializedPrimaryKey(): string & keyof Entity;
   __meta: EntityMetadata<Entity>;
   __data: Dictionary;
-  __em?: any; // we cannot have `EntityManager` here as that causes a cycle
+  __em?: EntityManager;
   __platform: Platform;
   __config: Configuration;
   __factory: EntityFactory; // internal factory instance that has its own global fork

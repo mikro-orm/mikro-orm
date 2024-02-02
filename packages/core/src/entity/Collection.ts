@@ -63,7 +63,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   async load<TT extends T, P extends string = never>(options: InitCollectionOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
     if (this.isInitialized(true) && !options.refresh) {
       const em = this.getEntityManager(this.items, false);
-      await em?.populate(this.items, options.populate, options);
+      await em?.populate(this.items, options.populate as any, options as any);
     } else {
       await this.init(options);
     }
@@ -91,14 +91,14 @@ export class Collection<T extends object, O extends object = object> extends Arr
       return this._count!;
     }
 
-    const em = this.getEntityManager();
+    const em = this.getEntityManager()!;
 
     if (!em.getPlatform().usesPivotTable() && this.property.kind === ReferenceKind.MANY_TO_MANY && this.property.owner) {
       return this._count = this.length;
     }
 
     const cond = this.createLoadCountCondition(where ?? {} as FilterQuery<T>);
-    const count = await em.count(this.property.type, cond, countOptions);
+    const count = await em.count(this.property.type, cond, countOptions as any);
 
     if (!where) {
       this._count = count;
@@ -108,7 +108,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   }
 
   async matching<TT extends T, P extends string = never>(options: MatchingOptions<T, P>): Promise<Loaded<TT, P>[]> {
-    const em = this.getEntityManager();
+    const em = this.getEntityManager()!;
     const { where, ctx, ...opts } = options;
     opts.orderBy = this.createOrderBy(opts.orderBy);
     let items: Loaded<TT, P>[];
@@ -118,7 +118,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
       const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, opts.orderBy, ctx, options);
       items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<TT>) => em.merge(this.property.type, item, { convertCustomTypes: true })) as any;
     } else {
-      items = await em.find(this.property.type, this.createCondition(where), opts) as any;
+      items = await em.find(this.property.type, this.createCondition(where), opts as any) as any;
     }
 
     if (options.store) {
@@ -286,12 +286,13 @@ export class Collection<T extends object, O extends object = object> extends Arr
       return this as unknown as LoadedCollection<Loaded<TT, P>>;
     }
 
-    const em = this.getEntityManager();
+    const em = this.getEntityManager()!;
 
     if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(DataloaderUtils.getDataloaderType(em.config.get('dataloader')))) {
       const order = [...this.items]; // copy order of references
       const customOrder = !!options.orderBy;
-      const items: TT[] = await em.colLoader.load([this, options]);
+      // eslint-disable-next-line dot-notation
+      const items: TT[] = await em['colLoader'].load([this, options]);
 
       if (!customOrder) {
         this.reorderItems(items, order);
@@ -317,20 +318,21 @@ export class Collection<T extends object, O extends object = object> extends Arr
     const schema = this.property.targetMeta!.schema === '*'
       ? helper(this.owner).__schema
       : undefined;
-    await em.populate(this.owner, populate, {
+    await em.populate(this.owner as TT[], populate, {
       ...options,
       refresh: true,
       connectionType: options.connectionType,
       schema,
-      where: { [this.property.name]: options.where },
-      orderBy: { [this.property.name]: options.orderBy },
+      where: { [this.property.name]: options.where } as FilterQuery<TT>,
+      orderBy: { [this.property.name]: options.orderBy } as QueryOrderMap<TT>,
     });
 
     return this as unknown as LoadedCollection<Loaded<TT, P>>;
   }
 
   private getEntityManager(items: Iterable<T> = [], required = true) {
-    let em = this._em ?? helper(this.owner).__em;
+    const wrapped = helper(this.owner);
+    let em = (this._em ?? wrapped.__em) as typeof wrapped.__em;
 
     if (!em) {
       for (const i of this.items) {

@@ -109,7 +109,8 @@ export class Reference<T extends object> {
       }
 
       if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.REFERENCE].includes(DataloaderUtils.getDataloaderType(wrapped.__em.config.get('dataloader')))) {
-        return wrapped.__em.refLoader.load([this, options]);
+        // eslint-disable-next-line dot-notation
+        return wrapped.__em!['refLoader'].load([this, options as any]);
       }
 
       return wrapped.init(options);
@@ -127,7 +128,7 @@ export class Reference<T extends object> {
 
     if (!ret) {
       const wrapped = helper(this.entity);
-      options.failHandler ??= wrapped.__em.config.get('findOneOrFailHandler');
+      options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
       const entityName = this.entity.constructor.name;
       const where = wrapped.getPrimaryKey() as any;
       throw options.failHandler!(entityName, where);
