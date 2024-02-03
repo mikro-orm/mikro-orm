@@ -681,7 +681,13 @@ export class QueryBuilderHelper {
       const returningProps = meta.hydrateProps.filter(prop => Utils.isRawSql(data[prop.name]));
 
       if (returningProps.length > 0) {
-        qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
+        qb.returning(returningProps.flatMap(prop => {
+          if (prop.hasConvertToJSValueSQL) {
+            const sql = prop.customType!.convertToJSValueSQL!(prop.fieldNames[0], this.platform) + ' as ' + this.platform.quoteIdentifier(prop.fieldNames[0]);
+            return [this.knex.raw(sql) as any];
+          }
+          return prop.fieldNames;
+        }) as any);
       }
     }
   }

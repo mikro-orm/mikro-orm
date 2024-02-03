@@ -44,6 +44,15 @@ services:
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
 
+  postgis:
+    image: imresamu/postgis:16-3.4
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgis:/var/lib/postgresql/data
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+
 volumes:
   mysql8:
     driver_opts:
@@ -54,6 +63,10 @@ volumes:
       type: tmpfs
       device: tmpfs
   postgre:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+  postgis:
     driver_opts:
       type: tmpfs
       device: tmpfs
