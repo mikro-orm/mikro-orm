@@ -974,8 +974,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return [];
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
-    return this.rethrow(this.connection.execute(queryOrKnex, params, method, ctx));
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, loggerContext?: LoggingOptions): Promise<T> {
+    return this.rethrow(this.connection.execute(queryOrKnex, params, method, ctx, loggerContext));
   }
 
   /**
