@@ -18,6 +18,7 @@ import type {
   MigrationObject,
   EntityMetadata,
   EnsureDatabaseOptions,
+  MetadataProcessor,
 } from '../typings';
 import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
@@ -599,6 +600,8 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
     fileName?: (className: string) => string;
     onlyPurePivotTables?: boolean;
     readOnlyPivotTables?: boolean;
+    onInitialMetadata?: MetadataProcessor;
+    onProcessedMetadata?: MetadataProcessor;
   };
   metadataCache: {
     enabled?: boolean;

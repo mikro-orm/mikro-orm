@@ -47,7 +47,7 @@ export class EntityGenerator {
   async generate(options: GenerateOptions = {}): Promise<string[]> {
     options = Utils.mergeConfig({}, this.config.get('entityGenerator'), options);
     const schema = await DatabaseSchema.create(this.connection, this.platform, this.config);
-    const metadata = this.getEntityMetadata(schema, options);
+    const metadata = await this.getEntityMetadata(schema, options);
     const defaultPath = `${this.config.get('baseDir')}/generated-entities`;
     const baseDir = Utils.normalizePath(options.path ?? defaultPath);
 
@@ -69,7 +69,7 @@ export class EntityGenerator {
     return this.sources.map(file => file.generate());
   }
 
-  private getEntityMetadata(schema: DatabaseSchema, options: GenerateOptions) {
+  private async getEntityMetadata(schema: DatabaseSchema, options: GenerateOptions) {
     let metadata = schema.getTables()
       .filter(table => !options.schema || table.schema === options.schema)
       .sort((a, b) => a.name!.localeCompare(b.name!))
@@ -97,6 +97,8 @@ export class EntityGenerator {
 
     metadata = metadata.filter(table => !options.skipTables || !options.skipTables.includes(table.tableName));
 
+    await options.onInitialMetadata?.(metadata, this.platform);
+
     this.detectManyToManyRelations(metadata, options.onlyPurePivotTables!, options.readOnlyPivotTables!);
 
     if (options.bidirectionalRelations) {
@@ -120,6 +122,8 @@ export class EntityGenerator {
         }));
       }
     }
+
+    await options.onProcessedMetadata?.(metadata, this.platform);
 
     return metadata;
   }

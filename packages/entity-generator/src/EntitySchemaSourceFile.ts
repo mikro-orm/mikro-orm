@@ -5,8 +5,19 @@ export class EntitySchemaSourceFile extends SourceFile {
 
   override generate(): string {
     this.coreImports.add('EntitySchema');
-    let ret = `export class ${this.meta.className} {\n`;
+    let ret = `export `;
+    if (this.meta.abstract) {
+      ret += `abstract `;
+    }
+    ret += `class ${this.meta.className}`;
+    if (this.meta.extends) {
+      this.entityImports.add(this.meta.extends);
+      ret += ` extends ${this.meta.extends}`;
+    }
+    ret += ' {\n';
     const enumDefinitions: string[] = [];
+    const eagerProperties: EntityProperty<any>[] = [];
+    const hiddenProperties: EntityProperty<any>[] = [];
     const optionalProperties: EntityProperty<any>[] = [];
     const primaryProps: EntityProperty<any>[] = [];
     const props: string[] = [];
@@ -17,6 +28,14 @@ export class EntitySchemaSourceFile extends SourceFile {
       if (prop.enum) {
         const enumClassName = this.namingStrategy.getClassName(this.meta.collection + '_' + prop.fieldNames[0], '_');
         enumDefinitions.push(this.getEnumClassDefinition(enumClassName, prop.items as string[], 2));
+      }
+
+      if (prop.eager) {
+        eagerProperties.push(prop);
+      }
+
+      if (prop.hidden) {
+        hiddenProperties.push(prop);
       }
 
       if (!prop.nullable && typeof prop.default !== 'undefined') {
@@ -37,6 +56,18 @@ export class EntitySchemaSourceFile extends SourceFile {
       } else {
         ret += `${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames[0]};\n`;
       }
+    }
+
+    if (eagerProperties.length > 0) {
+      this.coreImports.add('EagerProps');
+      const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
+      ret += `${' '.repeat(2)}[EagerProps]?: ${eagerPropertyNames.join(' | ')};\n`;
+    }
+
+    if (hiddenProperties.length > 0) {
+      this.coreImports.add('HiddenProps');
+      const hiddenPropertyNames = hiddenProperties.map(prop => `'${prop.name}'`).sort();
+      ret += `${' '.repeat(2)}[HiddenProps]?: ${hiddenPropertyNames.join(' | ')};\n`;
     }
 
     if (optionalProperties.length > 0) {
@@ -100,10 +131,10 @@ export class EntitySchemaSourceFile extends SourceFile {
     ret += `  properties: {\n`;
     Object.values(this.meta.properties).forEach(prop => {
       const options = this.getPropertyOptions(prop);
-      let def = '{ ' + Object.entries(options).map(([opt, val]) => `${opt}: ${Array.isArray(val) ? `[${val.join(', ')}]` : val}`).join(', ') + ' }';
+      let def = this.serializeObject(options);
 
       if (def.length > 80) {
-        def = '{\n' + Object.entries(options).map(([opt, val]) => `      ${opt}: ${Array.isArray(val) ? `[\n        ${val.join(',\n        ')}\n      ]` : val}`).join(',\n') + ',\n    }';
+        def = this.serializeObject(options, 2);
       }
       //
       ret += `    ${prop.name}: ${def},\n`;
@@ -121,7 +152,7 @@ export class EntitySchemaSourceFile extends SourceFile {
       options.primary = true;
     }
 
-    if (prop.kind !== ReferenceKind.SCALAR) {
+    if (typeof prop.kind !== 'undefined' && prop.kind !== ReferenceKind.SCALAR) {
       options.kind = this.quote(prop.kind);
     }
 
@@ -129,10 +160,12 @@ export class EntitySchemaSourceFile extends SourceFile {
       this.getManyToManyDecoratorOptions(options, prop);
     } else if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this.getOneToManyDecoratorOptions(options, prop);
-    } else if (prop.kind !== ReferenceKind.SCALAR) {
-      this.getForeignKeyDecoratorOptions(options, prop);
-    } else {
+    } else if (prop.kind === ReferenceKind.SCALAR || typeof prop.kind === 'undefined') {
       this.getScalarPropertyDecoratorOptions(options, prop);
+    } else if (prop.kind === ReferenceKind.EMBEDDED) {
+      this.getEmbeddedPropertyDeclarationOptions(options, prop);
+    } else {
+      this.getForeignKeyDecoratorOptions(options, prop);
     }
 
     if (prop.enum) {
