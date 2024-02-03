@@ -1277,12 +1277,16 @@ export class Utils {
     return typeof value === 'object' && !!value && '__raw' in value;
   }
 
-  static primaryKeyToObject<T>(meta: EntityMetadata<T>, primaryKey: Primary<T> | T) {
+  static primaryKeyToObject<T>(meta: EntityMetadata<T>, primaryKey: Primary<T> | T, visible?: (keyof T)[]) {
     const pks = meta.compositePK && Utils.isPlainObject(primaryKey) ? Object.values(primaryKey) : Utils.asArray(primaryKey);
     const pkProps = meta.getPrimaryProps();
 
     return meta.primaryKeys.reduce((o, pk, idx) => {
       const pkProp = pkProps[idx];
+
+      if (visible && !visible.includes(pkProp.name)) {
+        return o;
+      }
 
       if (Utils.isPlainObject(pks[idx]) && pkProp.targetMeta) {
         o[pk] = Utils.getOrderedPrimaryKeys(pks[idx], pkProp.targetMeta) as any;

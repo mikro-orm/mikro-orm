@@ -183,7 +183,9 @@ export class EntityTransformer {
 
   private static processEntity<Entity extends object>(prop: keyof Entity, entity: Entity, platform: Platform, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
     const child = entity[prop] as unknown as Entity | Reference<Entity>;
-    const wrapped = helper(child);
+    const wrapped = helper(child as Entity);
+    const meta = wrapped.__meta;
+    const visible = meta.primaryKeys.filter(prop => isVisible(meta, prop));
 
     if (raw && wrapped.isInitialized() && child !== entity) {
       return wrapped.toPOJO() as unknown as EntityValue<Entity>;
@@ -205,11 +207,23 @@ export class EntityTransformer {
       return wrap(child).toJSON() as EntityValue<Entity>;
     }
 
+    const pk = wrapped.getPrimaryKey(true)!;
+
     if (wrapped.__config.get('serialization').forceObject) {
-      return Utils.primaryKeyToObject(wrapped.__meta, wrapped.getPrimaryKey(true)!) as EntityValue<Entity>;
+      return Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<Entity>;
     }
 
-    return platform.normalizePrimaryKey(wrapped.getPrimaryKey(true) as IPrimaryKey) as EntityValue<Entity>;
+    if (Utils.isPlainObject(pk)) {
+      const pruned = Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<Entity>;
+
+      if (visible.length === 1) {
+        return platform.normalizePrimaryKey(pruned[visible[0]] as IPrimaryKey) as EntityValue<Entity>;
+      }
+
+      return pruned;
+    }
+
+    return platform.normalizePrimaryKey(pk as IPrimaryKey) as EntityValue<Entity>;
   }
 
   private static processCollection<Entity extends object>(prop: keyof Entity, entity: Entity, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {

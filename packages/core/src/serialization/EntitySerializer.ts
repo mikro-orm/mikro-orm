@@ -202,16 +202,31 @@ export class EntitySerializer {
     const wrapped = helper(child);
     const populated = isPopulated(prop, options) && wrapped.isInitialized();
     const expand = populated || !wrapped.__managed;
+    const meta = wrapped.__meta;
+    const childOptions = this.extractChildOptions(options, prop) as Dictionary;
+    const visible = meta.primaryKeys.filter(prop => isVisible(meta, prop, childOptions));
 
     if (expand) {
-      return this.serialize(child, this.extractChildOptions(options, prop)) as EntityValue<T>;
+      return this.serialize(child, childOptions) as EntityValue<T>;
     }
+
+    const pk = wrapped.getPrimaryKey(true)!;
 
     if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
-      return Utils.primaryKeyToObject(wrapped.__meta, wrapped.getPrimaryKey(true)!) as EntityValue<T>;
+      return Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<T>;
     }
 
-    return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as EntityValue<T>;
+    if (Utils.isPlainObject(pk)) {
+      const pruned = Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<T>;
+
+      if (visible.length === 1) {
+        return platform.normalizePrimaryKey(pruned[visible[0]] as IPrimaryKey) as EntityValue<T>;
+      }
+
+      return pruned;
+    }
+
+    return platform.normalizePrimaryKey(pk as IPrimaryKey) as EntityValue<T>;
   }
 
   private static processCollection<T extends object>(prop: EntityKey<T>, entity: T, options: SerializeOptions<T, any, any>): EntityValue<T> | undefined {

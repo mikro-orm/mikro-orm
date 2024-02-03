@@ -291,8 +291,8 @@ export class CalendarDateArrayType extends ArrayType<CalendarDate> {
 
   constructor() {
     super(
-            date => ({ date }), // to JS
-            d => d.date, // to DB
+      date => ({ date }), // to JS
+      d => d.date, // to DB
     );
   }
 
