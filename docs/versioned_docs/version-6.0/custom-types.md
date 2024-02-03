@@ -276,6 +276,36 @@ stringArray?: string[];
 numericArray?: number[];
 ```
 
+#### Extending `ArrayType`
+
+You can also map the array items to more complex types like objects. Consider the following example of mapping a `date[]` column to array of objects with `date` string property:
+
+```ts
+import { ArrayType } from '@mikro-orm/core';
+
+export interface CalendarDate {
+  date: string;
+}
+
+export class CalendarDateArrayType extends ArrayType<CalendarDate> {
+
+  constructor() {
+    super(
+            date => ({ date }), // to JS
+            d => d.date, // to DB
+    );
+  }
+
+  getColumnType(): string {
+    return 'date[]';
+  }
+
+}
+
+@Property({ type: CalendarDateArrayType })
+favoriteDays!: CalendarDate[];
+```
+
 ### BigIntType
 
 Since v6, `bigint`s are represented by the native `BigInt` type, and as such, they don't require explicit type in the decorator options:
