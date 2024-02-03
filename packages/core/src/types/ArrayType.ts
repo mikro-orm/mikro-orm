@@ -4,9 +4,12 @@ import type { EntityProperty } from '../typings';
 import type { Platform } from '../platforms';
 import { ValidationError } from '../errors';
 
-export class ArrayType<T extends string | number = string> extends Type<T[] | null, string | null> {
+export class ArrayType<T = string> extends Type<T[] | null, string | null> {
 
-  constructor(private readonly hydrate: (i: string) => T = i => i as T) {
+  constructor(
+    private readonly toJsValue: (i: string) => T = i => i as T,
+    private readonly toDbValue: (i: T) => string = i => i as string,
+  ) {
     super();
   }
 
@@ -16,7 +19,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
     }
 
     if (Array.isArray(value)) {
-      return platform.marshallArray(value as string[]);
+      return platform.marshallArray(value.map(i => this.toDbValue(i)));
     }
 
     /* istanbul ignore next */
@@ -36,7 +39,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
       value = platform.unmarshallArray(value) as T[];
     }
 
-    return value.map(i => this.hydrate(i as string));
+    return value.map(i => this.toJsValue(i as string));
   }
 
   override compareAsType(): string {
