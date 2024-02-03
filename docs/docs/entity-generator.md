@@ -126,30 +126,28 @@ Some of the things that are suitable for these hooks include
 Here's an example that will make any column named "password" (regardless of what table is defined in) be lazy and hidden in its `onInitialMetadata` and in `onProcessedMetadata` will make all ManyToMany relations be hidden.
 
 ```ts
-import { ReferenceKind } from "@mikro-orm/core";
+import { ReferenceKind } from '@mikro-orm/core';
 
 await orm.entityGenerator.generate({
-    onInitialMetadata: (metadata, platform) => {
-        metadata.forEach((entity) => {
-            Object.entries(entity.properties).forEach(propEntry => {
-                const [propName, propOptions] = propEntry;
-                if (propName === 'password') {
-                    propOptions.hidden = true;
-                    propOptions.lazy = true;
-                }
-            });
-        });
-    },
-    onProcessedMetadata: (metadata, platform) => {
-        metadata.forEach((entity) => {
-            Object.entries(entity.properties).forEach(propEntry => {
-                const [propName, propOptions] = propEntry;
-                if (propOptions.kind === ReferenceKind.MANY_TO_MANY) {
-                    propOptions.hidden = true;
-                }
-            });
-        });
-    }
+  onInitialMetadata: (metadata, platform) => {
+    metadata.forEach(meta => {
+      meta.props.forEach(prop => {
+        if (prop.name === 'password') {
+          prop.hidden = true;
+          prop.lazy = true;
+        }
+      });
+    });
+  },
+  onProcessedMetadata: (metadata, platform) => {
+    metadata.forEach(meta => {
+      meta.props.forEach(prop => {
+        if (prop.kind === ReferenceKind.MANY_TO_MANY) {
+          prop.hidden = true;
+        }
+      });
+    });
+  },
 });
 ```
 
@@ -158,40 +156,36 @@ Adding embedded and virtual entities via the hooks can be somewhat tricky. The m
 Here's an example that defines a simple embeddable with just two properties and adds a reference to it that is otherwise known to be a JSON column.
 
 ```ts
-import { ReferenceKind } from "@mikro-orm/core";
+import { ReferenceKind } from '@mikro-orm/core';
 
 await orm.entityGenerator.generate({
-    onInitialMetadata: (metadata, platform) => {
-        const embeddableEntityMeta = new EntityMetadata({
-            className: 'IdentitiesContainer',
-            collection: platform.getConfig().getNamingStrategy().classToTableName('IdentitiesContainer'),
-            embeddable: true,
-        });
-        embeddableEntityMeta.addProperty(
-            {
-                name: 'github',
-                type: 'string',
-                nullable: true,
-                fieldNames: ['github'],
-                columnTypes: ['varchar(255)'],
-            },
-        );
-        embeddableEntityMeta.addProperty(
-            {
-                name: 'local',
-                type: 'number',
-                nullable: true,
-                fieldNames: ['local'],
-                columnTypes: ['int'],
-            },
-        );
-        metadata.push(embeddableEntityMeta);
+  onInitialMetadata: (metadata, platform) => {
+    const embeddableEntityMeta = new EntityMetadata({
+      className: 'IdentitiesContainer',
+      collection: platform.getConfig().getNamingStrategy().classToTableName('IdentitiesContainer'),
+      embeddable: true,
+    });
+    embeddableEntityMeta.addProperty({
+      name: 'github',
+      type: 'string',
+      nullable: true,
+      fieldNames: ['github'],
+      columnTypes: ['varchar(255)'],
+    });
+    embeddableEntityMeta.addProperty({
+      name: 'local',
+      type: 'number',
+      nullable: true,
+      fieldNames: ['local'],
+      columnTypes: ['int'],
+    });
+    metadata.push(embeddableEntityMeta);
 
-        const identitiesPropOnAuthor = metadata.find(entity => entity.className === 'Author')!.properties.identities;
-        identitiesPropOnAuthor.kind = ReferenceKind.EMBEDDED;
-        identitiesPropOnAuthor.object = true;
-        identitiesPropOnAuthor.type = 'IdentitiesContainer';
-    },
+    const identitiesPropOnAuthor = metadata.find(meta => meta.className === 'Author')!.properties.identities;
+    identitiesPropOnAuthor.kind = ReferenceKind.EMBEDDED;
+    identitiesPropOnAuthor.object = true;
+    identitiesPropOnAuthor.type = 'IdentitiesContainer';
+  },
 });
 ```
 

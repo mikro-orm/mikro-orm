@@ -279,12 +279,15 @@ export class SourceFile {
     if (this.meta.abstract) {
       options.abstract = true;
     }
+
     if (this.meta.discriminatorValue) {
       options.discriminatorValue = typeof this.meta.discriminatorValue === 'string' ? this.quote(this.meta.discriminatorValue) : this.meta.discriminatorValue;
     }
+
     if (this.meta.discriminatorColumn) {
       options.discriminatorColumn = this.quote(this.meta.discriminatorColumn);
     }
+
     if (this.meta.discriminatorMap) {
       options.discriminatorMap = this.meta.discriminatorMap;
     }
@@ -373,6 +376,7 @@ export class SourceFile {
     if (this.options.scalarTypeInDecorator && prop.kind === ReferenceKind.SCALAR && !prop.enum) {
       options.type = this.quote(prop.type);
     }
+
     if (prop.nullable && !prop.mappedBy) {
       options.nullable = true;
     }
@@ -380,28 +384,16 @@ export class SourceFile {
     if (prop.persist === false) {
       options.persist = false;
     }
-    if (prop.hidden) {
-      options.hidden = true;
-    }
-    if (prop.version) {
-      options.version = true;
-    }
-    if (prop.concurrencyCheck) {
-      options.concurrencyCheck = true;
-    }
-    if (prop.eager) {
-      options.eager = true;
-    }
-    if (prop.lazy) {
-      options.lazy = true;
-    }
-    if (prop.orphanRemoval) {
-      options.orphanRemoval = true;
-    }
+
+    (['hidden', 'version', 'concurrencyCheck', 'eager', 'lazy', 'orphanRemoval'] as const)
+      .filter(key => prop[key])
+      .forEach(key => options[key] = true);
+
     if (prop.cascade && (prop.cascade.length !== 1 || prop.cascade[0] !== Cascade.PERSIST)) {
       this.coreImports.add('Cascade');
       options.cascade = `[${prop.cascade.map(value => 'Cascade.' + value.toUpperCase()).join(', ')}]`;
     }
+
     if (typeof prop.comment === 'string') {
       options.comment = prop.comment;
     }
@@ -525,12 +517,15 @@ export class SourceFile {
     this.coreImports.add('Embedded');
     this.entityImports.add(prop.type);
     options.entity = `() => ${prop.type}`;
+
     if (prop.array) {
       options.array = true;
     }
+
     if (prop.object) {
       options.object = true;
     }
+
     if (prop.prefix === false || typeof prop.prefix === 'string') {
       options.prefix = prop.prefix;
     }
