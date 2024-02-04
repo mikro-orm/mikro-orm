@@ -264,7 +264,12 @@ export class QueryBuilderHelper {
       for (const key of Object.keys(join.cond)) {
         const hasPrefix = key.includes('.') || Utils.isOperator(key) || RawQueryFragment.isKnownFragment(key);
         const newKey = hasPrefix ? key : `${join.alias}.${key}`;
-        conditions.push(this.processJoinClause(newKey, join.cond[key], join.alias, params));
+        const clause = this.processJoinClause(newKey, join.cond[key], join.alias, params);
+
+        /* istanbul ignore else */
+        if (clause !== '()') {
+          conditions.push(clause);
+        }
       }
 
       let sql = method + ' ';

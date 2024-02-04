@@ -1,7 +1,7 @@
 import type { ReferenceOptions } from './Property';
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import type { EntityName, EntityProperty, AnyEntity, EntityKey } from '../typings';
+import type { EntityName, EntityProperty, AnyEntity, EntityKey, FilterQuery } from '../typings';
 import { ReferenceKind, type QueryOrderMap } from '../enums';
 
 export function ManyToMany<T extends object, O>(
@@ -24,6 +24,7 @@ export interface ManyToManyOptions<Owner, Target> extends ReferenceOptions<Owner
   owner?: boolean;
   inversedBy?: (string & keyof Target) | ((e: Target) => any);
   mappedBy?: (string & keyof Target) | ((e: Target) => any);
+  where?: FilterQuery<Target>;
   orderBy?: QueryOrderMap<Target> | QueryOrderMap<Target>[];
   fixedOrder?: boolean;
   fixedOrderColumn?: string;
