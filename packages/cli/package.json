@@ -63,8 +63,8 @@
   },
   "dependencies": {
     "@jercle/yargonaut": "1.1.5",
-    "@mikro-orm/core": "^5.9.8",
-    "@mikro-orm/knex": "^5.9.8",
+    "@mikro-orm/core": "5.9.8",
+    "@mikro-orm/knex": "5.9.8",
     "fs-extra": "11.1.1",
     "tsconfig-paths": "4.2.0",
     "yargs": "17.7.2"
