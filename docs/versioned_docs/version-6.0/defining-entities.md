@@ -346,13 +346,13 @@ values={[
 
 ```ts title="./entities/Author.ts"
 @Property()
-foo = 1;
+foo: number & Opt = 1;
 
 @Property()
-bar = 'abc';
+bar: string & Opt = 'abc';
 
 @Property()
-baz = new Date();
+baz: Date & Opt = new Date();
 ```
 
   </TabItem>
@@ -360,13 +360,13 @@ baz = new Date();
 
 ```ts title="./entities/Author.ts"
 @Property()
-foo = 1;
+foo: number & Opt = 1;
 
 @Property()
-bar = 'abc';
+bar: string & Opt = 'abc';
 
 @Property()
-baz = new Date();
+baz: Date & Opt = new Date();
 ```
 
   </TabItem>
@@ -400,13 +400,13 @@ values={[
 
 ```ts title="./entities/Author.ts"
 @Property({ default: 1 })
-foo!: number;
+foo!: number & Opt;
 
 @Property({ default: 'abc' })
-bar!: string;
+bar!: string & Opt;
 
 @Property({ defaultRaw: 'now' })
-baz!: Date;
+baz!: Date & Opt;
 ```
 
   </TabItem>
@@ -414,13 +414,13 @@ baz!: Date;
 
 ```ts title="./entities/Author.ts"
 @Property({ default: 1 })
-foo!: number;
+foo!: number & Opt;
 
 @Property({ default: 'abc' })
-bar!: string;
+bar!: string & Opt;
 
 @Property({ defaultRaw: 'now' })
-baz!: Date;
+baz!: Date & Opt;
 ```
 
   </TabItem>
@@ -436,6 +436,8 @@ properties: {
 
   </TabItem>
 </Tabs>
+
+Note that we use the `Opt` type to intersect with the property type to tell the ORM (on type level) that the property should be considered optional for input types (e.g. in `em.create()`)), but will be present for managed entities (e.g. `EntityDTO` type).
 
 ## Enums
 
