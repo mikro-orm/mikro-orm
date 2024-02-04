@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.1.0](https://github.com/mikro-orm/mikro-orm/compare/v6.0.7...v6.1.0) (2024-02-04)
+
+
+### Bug Fixes
+
+* **postgres:** improve diffing of native postgres enums ([49d6b4d](https://github.com/mikro-orm/mikro-orm/commit/49d6b4d561196c7c1e0c6f94e6cc1ee1966b9178)), closes [#5108](https://github.com/mikro-orm/mikro-orm/issues/5108)
+
+
+### Features
+
+* **core:** allow mapping array columns to arrays of objects via `ArrayType` ([#5204](https://github.com/mikro-orm/mikro-orm/issues/5204)) ([42cc9cc](https://github.com/mikro-orm/mikro-orm/commit/42cc9ccf4639d430d8d1cc60bb5c3385b0e501f2)), closes [#5188](https://github.com/mikro-orm/mikro-orm/issues/5188)
+
+
+
+
+
 ## [6.0.7](https://github.com/mikro-orm/mikro-orm/compare/v6.0.6...v6.0.7) (2024-01-30)
 
 

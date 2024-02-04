@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.1.0](https://github.com/mikro-orm/mikro-orm/compare/v6.0.7...v6.1.0) (2024-02-04)
+
+
+### Features
+
+* **entity-generator:** allow post processing the metadata ([#5113](https://github.com/mikro-orm/mikro-orm/issues/5113)) ([e82058f](https://github.com/mikro-orm/mikro-orm/commit/e82058f173f7f8404828b5974884b06d83f2b1eb)), closes [#5010](https://github.com/mikro-orm/mikro-orm/issues/5010)
+
+
+
+
+
 ## [6.0.7](https://github.com/mikro-orm/mikro-orm/compare/v6.0.6...v6.0.7) (2024-01-30)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

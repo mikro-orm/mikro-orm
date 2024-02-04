@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.1.0](https://github.com/mikro-orm/mikro-orm/compare/v6.0.7...v6.1.0) (2024-02-04)
+
+
+### Bug Fixes
+
+* **core:** allow `CacheAdapter.get` to return `Promise<undefined>` ([#5200](https://github.com/mikro-orm/mikro-orm/issues/5200)) ([98ce1e5](https://github.com/mikro-orm/mikro-orm/commit/98ce1e5509e5f97f1ab7568593ee973b1ed49eb5)), closes [#5199](https://github.com/mikro-orm/mikro-orm/issues/5199)
+* **core:** fix broken inference of `AutoPath` in TS 5.4 ([#5197](https://github.com/mikro-orm/mikro-orm/issues/5197)) ([8bbc252](https://github.com/mikro-orm/mikro-orm/commit/8bbc252cf1639a7653119bbc84bdf1a04e0410e1))
+* **core:** make `wrap(e, true).__em` correctly typed to `EntityManager` ([35d607c](https://github.com/mikro-orm/mikro-orm/commit/35d607cba16d551a36085d93f68acb8ec693ee60))
+* **core:** process upsert data to allow using entity instances in place of relations ([9305653](https://github.com/mikro-orm/mikro-orm/commit/930565364dbf9aee4a7f79034768ce0f665e731c)), closes [#5165](https://github.com/mikro-orm/mikro-orm/issues/5165)
+* **core:** respect `upsertMany` options when batching ([d6d1381](https://github.com/mikro-orm/mikro-orm/commit/d6d138179f4f60071ce5efafc7a84e2befdae604)), closes [#5209](https://github.com/mikro-orm/mikro-orm/issues/5209)
+* **core:** respect hidden properties of composite PKs during serialization ([3d1cba3](https://github.com/mikro-orm/mikro-orm/commit/3d1cba32dfbed2094943091a8b25e186b24d2b1d)), closes [#5203](https://github.com/mikro-orm/mikro-orm/issues/5203)
+
+
+### Features
+
+* **core:** add second EM parameter to `onCreate` and `onUpdate` callback ([a964aeb](https://github.com/mikro-orm/mikro-orm/commit/a964aeb54bd4082f3fcbb8848739223bcdbc1c05)), closes [#5201](https://github.com/mikro-orm/mikro-orm/issues/5201)
+* **core:** allow declarative partial loading of collection items ([#5210](https://github.com/mikro-orm/mikro-orm/issues/5210)) ([5e4fa60](https://github.com/mikro-orm/mikro-orm/commit/5e4fa6024d803a410fa8cc3bb8ff9fd451e26ea2)), closes [#4963](https://github.com/mikro-orm/mikro-orm/issues/4963)
+* **core:** allow mapping array columns to arrays of objects via `ArrayType` ([#5204](https://github.com/mikro-orm/mikro-orm/issues/5204)) ([42cc9cc](https://github.com/mikro-orm/mikro-orm/commit/42cc9ccf4639d430d8d1cc60bb5c3385b0e501f2)), closes [#5188](https://github.com/mikro-orm/mikro-orm/issues/5188)
+* **entity-generator:** allow post processing the metadata ([#5113](https://github.com/mikro-orm/mikro-orm/issues/5113)) ([e82058f](https://github.com/mikro-orm/mikro-orm/commit/e82058f173f7f8404828b5974884b06d83f2b1eb)), closes [#5010](https://github.com/mikro-orm/mikro-orm/issues/5010)
+
+
+
+
+
 ## [6.0.7](https://github.com/mikro-orm/mikro-orm/compare/v6.0.6...v6.0.7) (2024-01-30)
 
 

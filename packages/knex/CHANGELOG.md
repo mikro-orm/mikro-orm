@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.1.0](https://github.com/mikro-orm/mikro-orm/compare/v6.0.7...v6.1.0) (2024-02-04)
+
+
+### Bug Fixes
+
+* **core:** handle possible match between virtual property name and another property's field name ([7fc779f](https://github.com/mikro-orm/mikro-orm/commit/7fc779f9b19271b12d2822ae754e80b309d361a9)), closes [#5191](https://github.com/mikro-orm/mikro-orm/issues/5191)
+* **postgres:** improve diffing of native postgres enums ([49d6b4d](https://github.com/mikro-orm/mikro-orm/commit/49d6b4d561196c7c1e0c6f94e6cc1ee1966b9178)), closes [#5108](https://github.com/mikro-orm/mikro-orm/issues/5108)
+* **query-builder:** support `convertToJSValueSQL` on returning statement of update queries ([2e1d6c8](https://github.com/mikro-orm/mikro-orm/commit/2e1d6c80d108b2b736a44fba87592604127ed266)), closes [#5176](https://github.com/mikro-orm/mikro-orm/issues/5176)
+
+
+### Features
+
+* **core:** allow declarative partial loading of collection items ([#5210](https://github.com/mikro-orm/mikro-orm/issues/5210)) ([5e4fa60](https://github.com/mikro-orm/mikro-orm/commit/5e4fa6024d803a410fa8cc3bb8ff9fd451e26ea2)), closes [#4963](https://github.com/mikro-orm/mikro-orm/issues/4963)
+* **knex:** add `loggerContext` parameter to `em.execute` ([b6d46df](https://github.com/mikro-orm/mikro-orm/commit/b6d46dfa779462a630e12983454f83bfdd409b58))
+
+
+
+
+
 ## [6.0.7](https://github.com/mikro-orm/mikro-orm/compare/v6.0.6...v6.0.7) (2024-01-30)
 
 
