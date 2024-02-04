@@ -330,7 +330,7 @@ export class EntityLoader {
     }
 
     const ids = Utils.unique(children.map(e => e.__helper.getPrimaryKey()));
-    const where = this.mergePrimaryCondition<Entity>(ids, fk as FilterKey<Entity>, options, meta, this.metadata, this.driver.getPlatform());
+    let where = this.mergePrimaryCondition<Entity>(ids, fk as FilterKey<Entity>, options, meta, this.metadata, this.driver.getPlatform());
     const fields = this.buildFields(options.fields, prop, ref) as any;
 
     /* eslint-disable prefer-const */
@@ -348,6 +348,10 @@ export class EntityLoader {
 
     if (typeof populateWhere === 'object') {
       populateWhere = await this.extractChildCondition({ where: populateWhere } as any, prop);
+    }
+
+    if (!Utils.isEmpty(prop.where)) {
+      where = { $and: [where, prop.where] } as FilterQuery<Entity>;
     }
 
     const items = await this.em.find(prop.type, where, {
@@ -445,7 +449,7 @@ export class EntityLoader {
   private async findChildrenFromPivotTable<Entity extends object>(filtered: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>, orderBy?: QueryOrderMap<Entity>[], populate?: PopulateOptions<Entity>, pivotJoin?: boolean): Promise<AnyEntity[]> {
     const ids = (filtered as AnyEntity[]).map(e => e.__helper!.__primaryKeys);
     const refresh = options.refresh;
-    const where = await this.extractChildCondition(options, prop, true);
+    let where = await this.extractChildCondition(options, prop, true);
     const fields = this.buildFields(options.fields, prop);
     const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) : options.exclude;
     const options2 = { ...options } as unknown as FindOptions<Entity, any, any, any>;
@@ -457,6 +461,10 @@ export class EntityLoader {
 
     if (prop.customType) {
       ids.forEach((id, idx) => ids[idx] = QueryHelper.processCustomType<Entity>(prop, id as FilterQuery<Entity>, this.driver.getPlatform()) as Primary<Entity>[]);
+    }
+
+    if (!Utils.isEmpty(prop.where)) {
+      where = { $and: [where, prop.where] } as FilterQuery<Entity>;
     }
 
     const map = await this.driver.loadFromPivotTable<any, any>(prop, ids, where, orderBy, this.em.getTransactionContext(), options2, pivotJoin);

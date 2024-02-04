@@ -454,6 +454,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   owner: boolean;
   inversedBy: EntityKey<Target>;
   mappedBy: EntityKey<Target>;
+  where?: FilterQuery<Target>; // only for 1:M and M:N
   orderBy?: QueryOrderMap<Owner> | QueryOrderMap<Owner>[];
   customOrder?: string[] | number[] | boolean[];
   fixedOrder?: boolean;

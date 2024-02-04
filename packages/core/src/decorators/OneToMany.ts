@@ -2,7 +2,7 @@ import type { ReferenceOptions } from './Property';
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
 import { ReferenceKind, type QueryOrderMap } from '../enums';
-import type { EntityName, EntityProperty, AnyEntity, EntityKey } from '../typings';
+import type { EntityName, EntityProperty, AnyEntity, EntityKey, FilterQuery } from '../typings';
 
 export function createOneToDecorator<Target, Owner>(
   entity: OneToManyOptions<Owner, Target> | string | ((e?: any) => EntityName<Target>),
@@ -41,6 +41,7 @@ export type OneToManyOptions<Owner, Target> = ReferenceOptions<Owner, Target> & 
   entity?: string | (() => EntityName<Target>);
   orphanRemoval?: boolean;
   orderBy?: QueryOrderMap<Target> | QueryOrderMap<Target>[];
+  where?: FilterQuery<Target>;
   joinColumn?: string;
   joinColumns?: string[];
   inverseJoinColumn?: string;

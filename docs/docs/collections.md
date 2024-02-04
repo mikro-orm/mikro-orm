@@ -273,13 +273,52 @@ Same applies for `Collection.remove()`.
 
 ## Filtering and ordering of collection items
 
-When initializing collection items via `collection.init()`, we can filter the collection as well as order its items:
+When initializing collection items via `collection.init()`, you can filter the collection as well as order its items:
 
 ```ts
-await book.tags.init({ where: { active: true }, orderBy: { name: QueryOrder.DESC } });
+await book.tags.init({
+  where: { active: true },
+  orderBy: { name: QueryOrder.DESC },
+});
 ```
 
-> We should never modify partially loaded collection.
+> You should never modify partially loaded collections.
+
+## Declarative partial loading
+
+Collections can also represent only a subset of the target entities:
+
+```ts
+@Entity()
+class Author {
+
+  @OneToMany(() => Book, b => b.author)
+  books = new Collection<Book>(this);
+
+  @OneToMany(() => Book, b => b.author, { where: { favorite: true } })
+  favoriteBooks = new Collection<Book>(this);
+
+}
+```
+
+This works also for M:N relations. Note that if you want to declare more relations mapping to the same pivot table, you need to explicitly specify its name (or use the same pivot entity):
+
+```ts
+@Entity()
+class Book {
+
+  @ManyToMany(() => BookTag)
+  tags = new Collection<BookTag>(this);
+
+  @ManyToMany({
+    entity: () => BookTag, 
+    pivotTable: 'book_tags',
+    where: { popular: true },
+  })
+  popularTags = new Collection<BookTag>(this);
+
+}
+```
 
 ## Filtering Collections
 

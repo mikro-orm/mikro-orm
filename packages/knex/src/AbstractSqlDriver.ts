@@ -35,6 +35,7 @@ import {
   type LoggingOptions,
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
+  type ObjectQuery,
   type Options,
   type OrderDefinition,
   parseJsonSafe,
@@ -98,6 +99,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging);
     const fields = this.buildFields(meta, populate, joinedProps, qb, qb.alias, options);
     const orderBy = this.buildOrderBy(qb, meta, populate, options);
+    const populateWhere = this.buildPopulateWhere(meta, joinedProps, options);
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
 
     if (Utils.isPrimaryKey(where, meta.compositePK)) {
@@ -106,11 +108,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const { first, last, before, after } = options as FindByCursorOptions<T>;
     const isCursorPagination = [first, last, before, after].some(v => v != null);
-
     qb.__populateWhere = (options as Dictionary)._populateWhere;
     qb.select(fields)
       // only add populateWhere if we are populate-joining, as this will be used to add `on` conditions
-      .populate(populate, joinedProps.length > 0 ? options.populateWhere : undefined)
+      .populate(populate, joinedProps.length > 0 ? populateWhere : undefined)
       .where(where)
       .groupBy(options.groupBy!)
       .having(options.having!)
@@ -1254,6 +1255,39 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select(raw('1')).where(cond!).setLockMode(options.lockMode, options.lockTableAliases);
     await this.rethrow(qb.execute());
+  }
+
+  protected buildPopulateWhere<T extends object>(meta: EntityMetadata<T>, joinedProps: PopulateOptions<T>[], options: Pick<FindOptions<any>, 'populateWhere'>): ObjectQuery<T> {
+    const where = {} as ObjectQuery<T>;
+
+    for (const hint of joinedProps) {
+      const [propName] = hint.field.split(':', 2) as [EntityKey<T>];
+      const prop = meta.properties[propName];
+
+      if (!Utils.isEmpty(prop.where)) {
+        where[prop.name] = Utils.copy(prop.where);
+      }
+
+      if (hint.children) {
+        const inner = this.buildPopulateWhere(prop.targetMeta!, hint.children as any, {});
+
+        if (!Utils.isEmpty(inner)) {
+          where[prop.name] ??= {} as any;
+          Object.assign(where[prop.name] as object, inner);
+        }
+      }
+    }
+
+    if (Utils.isEmpty(options.populateWhere)) {
+      return where;
+    }
+
+    if (Utils.isEmpty(where)) {
+      return options.populateWhere as ObjectQuery<T>;
+    }
+
+    /* istanbul ignore next */
+    return { $and: [options.populateWhere, where] } as ObjectQuery<T>;
   }
 
   protected buildOrderBy<T extends object>(qb: QueryBuilder<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[], options: Pick<FindOptions<any>, 'strategy' | 'orderBy' | 'populateOrderBy'>): QueryOrderMap<T>[] {
