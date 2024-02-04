@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.8](https://github.com/mikro-orm/mikro-orm/compare/v5.9.7...v5.9.8) (2024-02-04)
+
+
+### Bug Fixes
+
+* **core:** do not mutate data provided to `em.upsert/Many` ([5acb4eb](https://github.com/mikro-orm/mikro-orm/commit/5acb4eb9bc57d0431637a96badf035e2b631e516)), closes [#5136](https://github.com/mikro-orm/mikro-orm/issues/5136)
+* **core:** ensure `em.insertMany` returns array of PKs for a single item too ([#5180](https://github.com/mikro-orm/mikro-orm/issues/5180)) ([b9a55e5](https://github.com/mikro-orm/mikro-orm/commit/b9a55e54ef2a67e4bfdd8514e7163a9e77e0f985)), closes [#5179](https://github.com/mikro-orm/mikro-orm/issues/5179)
+* **core:** process upsert data to allow using entity instances in place of relations ([42e3c5e](https://github.com/mikro-orm/mikro-orm/commit/42e3c5ee7c8e3ab5abc9436cf3f3d368a648ef4a)), closes [#5165](https://github.com/mikro-orm/mikro-orm/issues/5165)
+* **mongo:** ensure `assign` on object properties won't ignore changes ([bd22d7c](https://github.com/mikro-orm/mikro-orm/commit/bd22d7c68531341253a6aa1f8745c6d80285f589)), closes [#5158](https://github.com/mikro-orm/mikro-orm/issues/5158)
+* **postgres:** parse timestamp dates less than year 1000 ([#5071](https://github.com/mikro-orm/mikro-orm/issues/5071)) ([63eb5c5](https://github.com/mikro-orm/mikro-orm/commit/63eb5c509b2083acfc5822308aef36e2d0859be1))
+
+
+
+
+
 ## [5.9.7](https://github.com/mikro-orm/mikro-orm/compare/v5.9.5...v5.9.7) (2023-12-30)
 
 

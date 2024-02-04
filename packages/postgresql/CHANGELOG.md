@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.9.8](https://github.com/mikro-orm/mikro-orm/compare/v5.9.7...v5.9.8) (2024-02-04)
+
+
+### Bug Fixes
+
+* **postgres:** parse timestamp dates less than year 1000 ([#5071](https://github.com/mikro-orm/mikro-orm/issues/5071)) ([63eb5c5](https://github.com/mikro-orm/mikro-orm/commit/63eb5c509b2083acfc5822308aef36e2d0859be1))
+
+
+
+
+
 ## [5.9.7](https://github.com/mikro-orm/mikro-orm/compare/v5.9.5...v5.9.7) (2023-12-30)
 
 
