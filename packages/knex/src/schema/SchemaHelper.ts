@@ -137,7 +137,7 @@ export abstract class SchemaHelper {
     return pkIndex?.keyName !== defaultName;
   }
 
-  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
+  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>, alter?: boolean) {
     const compositePK = fromTable.getPrimaryKey()?.composite;
 
     if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
@@ -188,6 +188,10 @@ export abstract class SchemaHelper {
   }
 
   getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
+    return '';
+  }
+
+  getPostAlterTable(tableDiff: TableDifference, safe: boolean): string {
     return '';
   }
 

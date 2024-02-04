@@ -257,7 +257,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       name = schema + '.' + name;
     }
 
-    return `alter type ${this.platform.quoteIdentifier(name)} add value ${this.platform.quoteValue(value)}`;
+    return `alter type ${this.platform.quoteIdentifier(name)} add value if not exists ${this.platform.quoteValue(value)}`;
   }
 
   override async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName?: string, schemaName?: string): Promise<Dictionary<string[]>> {
@@ -299,7 +299,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return enums;
   }
 
-  override createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
+  override createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>, alter?: boolean) {
     const pk = fromTable.getPrimaryKey();
     const primaryKey = column.primary && !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
 
@@ -312,11 +312,17 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
 
     if (column.nativeEnumName && column.enumItems) {
+      const existingType = alter ? column.nativeEnumName in fromTable.nativeEnums : false;
+
+      if (!existingType) {
+        fromTable.nativeEnums[column.nativeEnumName] = [];
+      }
+
       return table.enum(column.name, column.enumItems, {
         useNative: true,
         enumName: column.nativeEnumName,
         schemaName: fromTable.schema && fromTable.schema !== this.platform.getDefaultSchemaName() ? fromTable.schema : undefined,
-        existingType: changedProperties ? column.nativeEnumName in fromTable.nativeEnums : false,
+        existingType,
       });
     }
 
@@ -367,8 +373,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const changedEnums = Object.values(tableDiff.changedColumns).filter(col => col.fromColumn.mappedType instanceof EnumType);
 
     for (const col of changedEnums) {
-      const constraintName = `${tableName}_${col.column.name}_check`;
-      ret.push(`alter table ${quotedName} drop constraint if exists "${constraintName}"`);
+      if (!col.fromColumn.nativeEnumName && col.column.nativeEnumName && col.fromColumn.default) {
+        ret.push(`alter table ${quotedName} alter column "${col.column.name}" drop default`);
+      }
+
+      if (!col.fromColumn.nativeEnumName) {
+        const constraintName = `${tableName}_${col.column.name}_check`;
+        ret.push(`alter table ${quotedName} drop constraint if exists "${constraintName}"`);
+      }
     }
 
     // changing uuid column type requires to cast it to text first
@@ -376,6 +388,28 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     for (const col of uuids) {
       ret.push(`alter table ${quotedName} alter column "${col.column.name}" type text using ("${col.column.name}"::text)`);
+    }
+
+    return ret.join(';\n');
+  }
+
+  override getPostAlterTable(tableDiff: TableDifference, safe: boolean): string {
+    const ret: string[] = [];
+
+    const parts = tableDiff.name.split('.');
+    const tableName = parts.pop()!;
+    const schemaName = parts.pop();
+    /* istanbul ignore next */
+    const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
+    const quotedName = this.platform.quoteIdentifier(name);
+
+    // detect that the column was an enum before and remove the check constraint in such case here
+    const changedEnums = Object.values(tableDiff.changedColumns).filter(col => col.fromColumn.mappedType instanceof EnumType);
+
+    for (const col of changedEnums) {
+      if (!col.fromColumn.nativeEnumName && col.column.nativeEnumName && col.column.default) {
+        ret.push(`alter table ${quotedName} alter column "${col.column.name}" set default ${col.column.default}`);
+      }
     }
 
     return ret.join(';\n');
