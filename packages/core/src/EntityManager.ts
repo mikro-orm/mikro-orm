@@ -1003,7 +1003,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       for (let i = 0; i < data.length; i += batchSize) {
         const chunk = data.slice(i, i + batchSize);
-        ret.push(...await this.upsertMany(entityName, chunk));
+        ret.push(...await this.upsertMany(entityName, chunk, options));
       }
 
       return ret;
