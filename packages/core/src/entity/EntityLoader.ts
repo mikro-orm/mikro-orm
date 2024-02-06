@@ -138,7 +138,12 @@ export class EntityLoader {
       p.children = p.children || [];
       const prop = meta.properties[f];
       p.strategy ??= prop.strategy;
-      p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy, p.all));
+
+      if (parts[0] === '*') {
+        p.all = true;
+      } else {
+        p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy, p.all));
+      }
     });
   }
 

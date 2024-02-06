@@ -2075,8 +2075,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     if (typeof options.populate !== 'boolean') {
       options.populate = Utils.asArray(options.populate).map(field => {
         /* istanbul ignore next */
-        if (typeof field === 'boolean') {
-          return [{ field: meta.primaryKeys[0], strategy: options.strategy, all: field }];
+        if (typeof field === 'boolean' || field === '*') {
+          return [{ field: meta.primaryKeys[0], strategy: options.strategy, all: !!field }];
         }
 
         // will be handled in QueryBuilder when processing the where condition via CriteriaNode
