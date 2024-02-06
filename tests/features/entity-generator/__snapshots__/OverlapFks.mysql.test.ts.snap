@@ -14,7 +14,7 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -24,8 +24,6 @@ import { Products } from './Products';
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
-
-  [OptionalProps]?: 'isCurrentlyAllowed';
 
   @Property({ columnType: 'char(2)', persist: false })
   country!: unknown;
@@ -38,14 +36,14 @@ export class ProductCountryMap {
   productId!: number;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
   countries!: Countries;
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -53,8 +51,6 @@ import { Sellers } from './Sellers';
 export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
-
-  [OptionalProps]?: 'isCurrentlyAllowed';
 
   @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Sellers;
@@ -70,18 +66,16 @@ export class ProductSellers {
   productId!: number;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
 }
 ",
-  "import { Entity, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
 
   [PrimaryKeyProp]?: 'productId';
-
-  [OptionalProps]?: 'currentQuantity';
 
   @PrimaryKey()
   productId!: number;
@@ -94,11 +88,11 @@ export class Products {
   currentPrice!: string;
 
   @Property({ default: 0 })
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -106,8 +100,6 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
-
-  [OptionalProps]?: 'quantitySold';
 
   @PrimaryKey()
   saleId!: number;
@@ -129,7 +121,7 @@ export class Sales {
   singularPrice!: string;
 
   @Property({ default: 1 })
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 
   @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
   productCountryMap!: ProductCountryMap;
@@ -171,15 +163,14 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   country!: unknown;
   product!: Products;
   productId!: number;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   countries!: Countries;
 }
 
@@ -204,16 +195,15 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   seller!: Sellers;
   sellerId!: number;
   product!: Products;
   productId!: number;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -242,15 +232,14 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
-  [OptionalProps]?: 'currentQuantity';
   productId!: number;
   name!: string;
   currentPrice!: string;
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 }
 
 export const ProductsSchema = new EntitySchema({
@@ -263,18 +252,17 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
-  [OptionalProps]?: 'quantitySold';
   saleId!: number;
   country!: unknown;
   seller!: ProductSellers;
   sellerId!: number;
   productId!: number;
   singularPrice!: string;
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
   productCountryMap!: ProductCountryMap;
 }
 
@@ -343,7 +331,7 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -353,8 +341,6 @@ import { Products } from './Products';
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
-
-  [OptionalProps]?: 'isCurrentlyAllowed';
 
   @Property({ columnType: 'char(2)', persist: false })
   country!: unknown;
@@ -367,14 +353,14 @@ export class ProductCountryMap {
   productId!: number;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
   countries!: Ref<Countries>;
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -382,8 +368,6 @@ import { Sellers } from './Sellers';
 export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
-
-  [OptionalProps]?: 'isCurrentlyAllowed';
 
   @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Ref<Sellers>;
@@ -399,18 +383,16 @@ export class ProductSellers {
   productId!: number;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
 }
 ",
-  "import { Entity, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
 
   [PrimaryKeyProp]?: 'productId';
-
-  [OptionalProps]?: 'currentQuantity';
 
   @PrimaryKey()
   productId!: number;
@@ -423,11 +405,11 @@ export class Products {
   currentPrice!: string;
 
   @Property({ default: 0 })
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -435,8 +417,6 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
-
-  [OptionalProps]?: 'quantitySold';
 
   @PrimaryKey()
   saleId!: number;
@@ -458,7 +438,7 @@ export class Sales {
   singularPrice!: string;
 
   @Property({ default: 1 })
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 
   @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
   productCountryMap!: Ref<ProductCountryMap>;
@@ -500,17 +480,16 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   country!: unknown;
   product!: Ref<Products>;
   productId!: number;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   countries!: Ref<Countries>;
 }
 
@@ -542,18 +521,17 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   seller!: Ref<Sellers>;
   sellerId!: number;
   product!: Ref<Products>;
   productId!: number;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -584,15 +562,14 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
-  [OptionalProps]?: 'currentQuantity';
   productId!: number;
   name!: string;
   currentPrice!: string;
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 }
 
 export const ProductsSchema = new EntitySchema({
@@ -605,20 +582,19 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
-  [OptionalProps]?: 'quantitySold';
   saleId!: number;
   country!: unknown;
   seller!: Ref<ProductSellers>;
   sellerId!: number;
   productId!: number;
   singularPrice!: string;
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
   productCountryMap!: Ref<ProductCountryMap>;
 }
 
@@ -693,7 +669,7 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -704,8 +680,6 @@ import { Sales } from './Sales';
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
-
-  [OptionalProps]?: 'isCurrentlyAllowed';
 
   @Property({ columnType: 'char(2)', persist: false })
   country!: unknown;
@@ -718,7 +692,7 @@ export class ProductCountryMap {
   productId!: number;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
   countries!: Countries;
@@ -728,7 +702,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -737,8 +711,6 @@ import { Sellers } from './Sellers';
 export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
-
-  [OptionalProps]?: 'isCurrentlyAllowed';
 
   @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Sellers;
@@ -754,22 +726,20 @@ export class ProductSellers {
   productId!: number;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
   sellerInverse = new Collection<Sales>(this);
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
 export class Products {
 
   [PrimaryKeyProp]?: 'productId';
-
-  [OptionalProps]?: 'currentQuantity';
 
   @PrimaryKey()
   productId!: number;
@@ -782,14 +752,14 @@ export class Products {
   currentPrice!: string;
 
   @Property({ default: 0 })
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
   productInverse = new Collection<ProductSellers>(this);
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -797,8 +767,6 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
-
-  [OptionalProps]?: 'quantitySold';
 
   @PrimaryKey()
   saleId!: number;
@@ -820,7 +788,7 @@ export class Sales {
   singularPrice!: string;
 
   @Property({ default: 1 })
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 
   @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
   productCountryMap!: ProductCountryMap;
@@ -869,16 +837,15 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Sales } from './Sales';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   country!: unknown;
   product!: Products;
   productId!: number;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   countries!: Countries;
   productCountryMapInverse = new Collection<Sales>(this);
 }
@@ -905,17 +872,16 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Sales } from './Sales';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   seller!: Sellers;
   sellerId!: number;
   product!: Products;
   productId!: number;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   sellerInverse = new Collection<Sales>(this);
 }
 
@@ -946,16 +912,15 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
-  [OptionalProps]?: 'currentQuantity';
   productId!: number;
   name!: string;
   currentPrice!: string;
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
   productInverse = new Collection<ProductSellers>(this);
 }
 
@@ -970,18 +935,17 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
-  [OptionalProps]?: 'quantitySold';
   saleId!: number;
   country!: unknown;
   seller!: ProductSellers;
   sellerId!: number;
   productId!: number;
   singularPrice!: string;
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
   productCountryMap!: ProductCountryMap;
 }
 
@@ -1057,7 +1021,7 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -1068,8 +1032,6 @@ import { Sales } from './Sales';
 export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
-
-  [OptionalProps]?: 'isCurrentlyAllowed';
 
   @Property({ columnType: 'char(2)', persist: false })
   country!: unknown;
@@ -1082,7 +1044,7 @@ export class ProductCountryMap {
   productId!: number;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
   countries!: Ref<Countries>;
@@ -1092,7 +1054,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -1101,8 +1063,6 @@ import { Sellers } from './Sellers';
 export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
-
-  [OptionalProps]?: 'isCurrentlyAllowed';
 
   @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Ref<Sellers>;
@@ -1118,22 +1078,20 @@ export class ProductSellers {
   productId!: number;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
   sellerInverse = new Collection<Sales>(this);
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
 export class Products {
 
   [PrimaryKeyProp]?: 'productId';
-
-  [OptionalProps]?: 'currentQuantity';
 
   @PrimaryKey()
   productId!: number;
@@ -1146,14 +1104,14 @@ export class Products {
   currentPrice!: string;
 
   @Property({ default: 0 })
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
   productInverse = new Collection<ProductSellers>(this);
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -1161,8 +1119,6 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
-
-  [OptionalProps]?: 'quantitySold';
 
   @PrimaryKey()
   saleId!: number;
@@ -1184,7 +1140,7 @@ export class Sales {
   singularPrice!: string;
 
   @Property({ default: 1 })
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 
   @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
   productCountryMap!: Ref<ProductCountryMap>;
@@ -1233,18 +1189,17 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   country!: unknown;
   product!: Ref<Products>;
   productId!: number;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   countries!: Ref<Countries>;
   productCountryMapInverse = new Collection<Sales>(this);
 }
@@ -1278,19 +1233,18 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   seller!: Ref<Sellers>;
   sellerId!: number;
   product!: Ref<Products>;
   productId!: number;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   sellerInverse = new Collection<Sales>(this);
 }
 
@@ -1323,16 +1277,15 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
-  [OptionalProps]?: 'currentQuantity';
   productId!: number;
   name!: string;
   currentPrice!: string;
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
   productInverse = new Collection<ProductSellers>(this);
 }
 
@@ -1347,20 +1300,19 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
-  [OptionalProps]?: 'quantitySold';
   saleId!: number;
   country!: unknown;
   seller!: Ref<ProductSellers>;
   sellerId!: number;
   productId!: number;
   singularPrice!: string;
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
   productCountryMap!: Ref<ProductCountryMap>;
 }
 
@@ -1434,7 +1386,7 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -1445,8 +1397,6 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
   country!: Countries;
 
@@ -1454,11 +1404,11 @@ export class ProductCountryMap {
   product!: Products;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
 }
 ",
-  "import { Entity, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -1467,8 +1417,6 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Sellers;
 
@@ -1476,18 +1424,16 @@ export class ProductSellers {
   product!: Products;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
 }
 ",
-  "import { Entity, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
 
   [PrimaryKeyProp]?: 'productId';
-
-  [OptionalProps]?: 'currentQuantity';
 
   @PrimaryKey()
   productId!: number;
@@ -1500,11 +1446,11 @@ export class Products {
   currentPrice!: string;
 
   @Property({ default: 0 })
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -1513,8 +1459,6 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
-
-  [OptionalProps]?: 'quantitySold';
 
   @PrimaryKey()
   saleId!: number;
@@ -1529,7 +1473,7 @@ export class Sales {
   singularPrice!: string;
 
   @Property({ default: 1 })
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 
 }
 ",
@@ -1568,14 +1512,13 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['country', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   country!: Countries;
   product!: Products;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -1597,14 +1540,13 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   seller!: Sellers;
   product!: Products;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -1631,15 +1573,14 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
-  [OptionalProps]?: 'currentQuantity';
   productId!: number;
   name!: string;
   currentPrice!: string;
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 }
 
 export const ProductsSchema = new EntitySchema({
@@ -1652,16 +1593,15 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
-  [OptionalProps]?: 'quantitySold';
   saleId!: number;
   country!: ProductCountryMap;
   seller!: ProductSellers;
   singularPrice!: string;
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 }
 
 export const SalesSchema = new EntitySchema({
@@ -1729,7 +1669,7 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -1740,8 +1680,6 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
   country!: Ref<Countries>;
 
@@ -1749,11 +1687,11 @@ export class ProductCountryMap {
   product!: Ref<Products>;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
 }
 ",
-  "import { Entity, ManyToOne, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -1762,8 +1700,6 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Ref<Sellers>;
 
@@ -1771,18 +1707,16 @@ export class ProductSellers {
   product!: Ref<Products>;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
 }
 ",
-  "import { Entity, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
 
   [PrimaryKeyProp]?: 'productId';
-
-  [OptionalProps]?: 'currentQuantity';
 
   @PrimaryKey()
   productId!: number;
@@ -1795,11 +1729,11 @@ export class Products {
   currentPrice!: string;
 
   @Property({ default: 0 })
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -1808,8 +1742,6 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
-
-  [OptionalProps]?: 'quantitySold';
 
   @PrimaryKey()
   saleId!: number;
@@ -1824,7 +1756,7 @@ export class Sales {
   singularPrice!: string;
 
   @Property({ default: 1 })
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 
 }
 ",
@@ -1863,16 +1795,15 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['country', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   country!: Ref<Countries>;
   product!: Ref<Products>;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -1901,16 +1832,15 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   seller!: Ref<Sellers>;
   product!: Ref<Products>;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -1939,15 +1869,14 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
-  [OptionalProps]?: 'currentQuantity';
   productId!: number;
   name!: string;
   currentPrice!: string;
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 }
 
 export const ProductsSchema = new EntitySchema({
@@ -1960,18 +1889,17 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
-  [OptionalProps]?: 'quantitySold';
   saleId!: number;
   country!: Ref<ProductCountryMap>;
   seller!: Ref<ProductSellers>;
   singularPrice!: string;
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 }
 
 export const SalesSchema = new EntitySchema({
@@ -2045,7 +1973,7 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -2057,8 +1985,6 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
   country!: Countries;
 
@@ -2066,14 +1992,14 @@ export class ProductCountryMap {
   product!: Products;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'country' })
   countryInverse = new Collection<Sales>(this);
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -2083,8 +2009,6 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Sellers;
 
@@ -2092,22 +2016,20 @@ export class ProductSellers {
   product!: Products;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
   sellerInverse = new Collection<Sales>(this);
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
 export class Products {
 
   [PrimaryKeyProp]?: 'productId';
-
-  [OptionalProps]?: 'currentQuantity';
 
   @PrimaryKey()
   productId!: number;
@@ -2120,14 +2042,14 @@ export class Products {
   currentPrice!: string;
 
   @Property({ default: 0 })
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
   productInverse = new Collection<ProductSellers>(this);
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -2136,8 +2058,6 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
-
-  [OptionalProps]?: 'quantitySold';
 
   @PrimaryKey()
   saleId!: number;
@@ -2152,7 +2072,7 @@ export class Sales {
   singularPrice!: string;
 
   @Property({ default: 1 })
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 
 }
 ",
@@ -2198,15 +2118,14 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Sales } from './Sales';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['country', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   country!: Countries;
   product!: Products;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   countryInverse = new Collection<Sales>(this);
 }
 
@@ -2230,15 +2149,14 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Sales } from './Sales';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   seller!: Sellers;
   product!: Products;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   sellerInverse = new Collection<Sales>(this);
 }
 
@@ -2267,16 +2185,15 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
-  [OptionalProps]?: 'currentQuantity';
   productId!: number;
   name!: string;
   currentPrice!: string;
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
   productInverse = new Collection<ProductSellers>(this);
 }
 
@@ -2291,16 +2208,15 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
-  [OptionalProps]?: 'quantitySold';
   saleId!: number;
   country!: ProductCountryMap;
   seller!: ProductSellers;
   singularPrice!: string;
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 }
 
 export const SalesSchema = new EntitySchema({
@@ -2375,7 +2291,7 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -2387,8 +2303,6 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
   country!: Ref<Countries>;
 
@@ -2396,14 +2310,14 @@ export class ProductCountryMap {
   product!: Ref<Products>;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'country' })
   countryInverse = new Collection<Sales>(this);
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -2413,8 +2327,6 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Ref<Sellers>;
 
@@ -2422,22 +2334,20 @@ export class ProductSellers {
   product!: Ref<Products>;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
   sellerInverse = new Collection<Sales>(this);
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
 export class Products {
 
   [PrimaryKeyProp]?: 'productId';
-
-  [OptionalProps]?: 'currentQuantity';
 
   @PrimaryKey()
   productId!: number;
@@ -2450,14 +2360,14 @@ export class Products {
   currentPrice!: string;
 
   @Property({ default: 0 })
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
   productInverse = new Collection<ProductSellers>(this);
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -2466,8 +2376,6 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
-
-  [OptionalProps]?: 'quantitySold';
 
   @PrimaryKey()
   saleId!: number;
@@ -2482,7 +2390,7 @@ export class Sales {
   singularPrice!: string;
 
   @Property({ default: 1 })
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 
 }
 ",
@@ -2528,17 +2436,16 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['country', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   country!: Ref<Countries>;
   product!: Ref<Products>;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   countryInverse = new Collection<Sales>(this);
 }
 
@@ -2569,17 +2476,16 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   seller!: Ref<Sellers>;
   product!: Ref<Products>;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   sellerInverse = new Collection<Sales>(this);
 }
 
@@ -2610,16 +2516,15 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
-  [OptionalProps]?: 'currentQuantity';
   productId!: number;
   name!: string;
   currentPrice!: string;
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
   productInverse = new Collection<ProductSellers>(this);
 }
 
@@ -2634,18 +2539,17 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
-  [OptionalProps]?: 'quantitySold';
   saleId!: number;
   country!: Ref<ProductCountryMap>;
   seller!: Ref<ProductSellers>;
   singularPrice!: string;
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 }
 
 export const SalesSchema = new EntitySchema({
@@ -2718,7 +2622,7 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -2729,8 +2633,6 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
   country!: Countries;
 
@@ -2738,11 +2640,11 @@ export class ProductCountryMap {
   product!: Products;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
 }
 ",
-  "import { Entity, ManyToOne, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -2751,8 +2653,6 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Sellers;
 
@@ -2760,18 +2660,16 @@ export class ProductSellers {
   product!: Products;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
 }
 ",
-  "import { Entity, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
 
   [PrimaryKeyProp]?: 'productId';
-
-  [OptionalProps]?: 'currentQuantity';
 
   @PrimaryKey()
   productId!: number;
@@ -2784,11 +2682,11 @@ export class Products {
   currentPrice!: string;
 
   @Property({ default: 0 })
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -2797,8 +2695,6 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
-
-  [OptionalProps]?: 'quantitySold';
 
   @PrimaryKey()
   saleId!: number;
@@ -2813,7 +2709,7 @@ export class Sales {
   singularPrice!: string;
 
   @Property({ default: 1 })
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 
 }
 ",
@@ -2852,14 +2748,13 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['country', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   country!: Countries;
   product!: Products;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -2881,14 +2776,13 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   seller!: Sellers;
   product!: Products;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -2915,15 +2809,14 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
-  [OptionalProps]?: 'currentQuantity';
   productId!: number;
   name!: string;
   currentPrice!: string;
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 }
 
 export const ProductsSchema = new EntitySchema({
@@ -2936,16 +2829,15 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
-  [OptionalProps]?: 'quantitySold';
   saleId!: number;
   country!: ProductCountryMap;
   seller!: ProductSellers;
   singularPrice!: string;
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 }
 
 export const SalesSchema = new EntitySchema({
@@ -3013,7 +2905,7 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -3024,8 +2916,6 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
   country!: Ref<Countries>;
 
@@ -3033,11 +2923,11 @@ export class ProductCountryMap {
   product!: Ref<Products>;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
 }
 ",
-  "import { Entity, ManyToOne, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -3046,8 +2936,6 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Ref<Sellers>;
 
@@ -3055,18 +2943,16 @@ export class ProductSellers {
   product!: Ref<Products>;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
 }
 ",
-  "import { Entity, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
 
   [PrimaryKeyProp]?: 'productId';
-
-  [OptionalProps]?: 'currentQuantity';
 
   @PrimaryKey()
   productId!: number;
@@ -3079,11 +2965,11 @@ export class Products {
   currentPrice!: string;
 
   @Property({ default: 0 })
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -3092,8 +2978,6 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
-
-  [OptionalProps]?: 'quantitySold';
 
   @PrimaryKey()
   saleId!: number;
@@ -3108,7 +2992,7 @@ export class Sales {
   singularPrice!: string;
 
   @Property({ default: 1 })
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 
 }
 ",
@@ -3147,16 +3031,15 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['country', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   country!: Ref<Countries>;
   product!: Ref<Products>;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -3185,16 +3068,15 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   seller!: Ref<Sellers>;
   product!: Ref<Products>;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -3223,15 +3105,14 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
-  [OptionalProps]?: 'currentQuantity';
   productId!: number;
   name!: string;
   currentPrice!: string;
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 }
 
 export const ProductsSchema = new EntitySchema({
@@ -3244,18 +3125,17 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
-  [OptionalProps]?: 'quantitySold';
   saleId!: number;
   country!: Ref<ProductCountryMap>;
   seller!: Ref<ProductSellers>;
   singularPrice!: string;
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 }
 
 export const SalesSchema = new EntitySchema({
@@ -3329,7 +3209,7 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -3341,8 +3221,6 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
   country!: Countries;
 
@@ -3350,14 +3228,14 @@ export class ProductCountryMap {
   product!: Products;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'country' })
   countryInverse = new Collection<Sales>(this);
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -3367,8 +3245,6 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Sellers;
 
@@ -3376,22 +3252,20 @@ export class ProductSellers {
   product!: Products;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
   sellerInverse = new Collection<Sales>(this);
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
 export class Products {
 
   [PrimaryKeyProp]?: 'productId';
-
-  [OptionalProps]?: 'currentQuantity';
 
   @PrimaryKey()
   productId!: number;
@@ -3404,14 +3278,14 @@ export class Products {
   currentPrice!: string;
 
   @Property({ default: 0 })
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
   productInverse = new Collection<ProductSellers>(this);
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -3420,8 +3294,6 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
-
-  [OptionalProps]?: 'quantitySold';
 
   @PrimaryKey()
   saleId!: number;
@@ -3436,7 +3308,7 @@ export class Sales {
   singularPrice!: string;
 
   @Property({ default: 1 })
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 
 }
 ",
@@ -3482,15 +3354,14 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Sales } from './Sales';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['country', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   country!: Countries;
   product!: Products;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   countryInverse = new Collection<Sales>(this);
 }
 
@@ -3514,15 +3385,14 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Sales } from './Sales';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   seller!: Sellers;
   product!: Products;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   sellerInverse = new Collection<Sales>(this);
 }
 
@@ -3551,16 +3421,15 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
-  [OptionalProps]?: 'currentQuantity';
   productId!: number;
   name!: string;
   currentPrice!: string;
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
   productInverse = new Collection<ProductSellers>(this);
 }
 
@@ -3575,16 +3444,15 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
-  [OptionalProps]?: 'quantitySold';
   saleId!: number;
   country!: ProductCountryMap;
   seller!: ProductSellers;
   singularPrice!: string;
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 }
 
 export const SalesSchema = new EntitySchema({
@@ -3659,7 +3527,7 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -3671,8 +3539,6 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['country', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
   country!: Ref<Countries>;
 
@@ -3680,14 +3546,14 @@ export class ProductCountryMap {
   product!: Ref<Products>;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'country' })
   countryInverse = new Collection<Sales>(this);
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, OptionalProps, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -3697,8 +3563,6 @@ export class ProductSellers {
 
   [PrimaryKeyProp]?: ['seller', 'product'];
 
-  [OptionalProps]?: 'isCurrentlyAllowed';
-
   @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Ref<Sellers>;
 
@@ -3706,22 +3570,20 @@ export class ProductSellers {
   product!: Ref<Products>;
 
   @Property({ default: false })
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
   sellerInverse = new Collection<Sales>(this);
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
 export class Products {
 
   [PrimaryKeyProp]?: 'productId';
-
-  [OptionalProps]?: 'currentQuantity';
 
   @PrimaryKey()
   productId!: number;
@@ -3734,14 +3596,14 @@ export class Products {
   currentPrice!: string;
 
   @Property({ default: 0 })
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
   productInverse = new Collection<ProductSellers>(this);
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -3750,8 +3612,6 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
-
-  [OptionalProps]?: 'quantitySold';
 
   @PrimaryKey()
   saleId!: number;
@@ -3766,7 +3626,7 @@ export class Sales {
   singularPrice!: string;
 
   @Property({ default: 1 })
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 
 }
 ",
@@ -3812,17 +3672,16 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['country', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   country!: Ref<Countries>;
   product!: Ref<Products>;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   countryInverse = new Collection<Sales>(this);
 }
 
@@ -3853,17 +3712,16 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
-  [OptionalProps]?: 'isCurrentlyAllowed';
   seller!: Ref<Sellers>;
   product!: Ref<Products>;
-  isCurrentlyAllowed: boolean = false;
+  isCurrentlyAllowed: boolean & Opt = false;
   sellerInverse = new Collection<Sales>(this);
 }
 
@@ -3894,16 +3752,15 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, OptionalProps, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
-  [OptionalProps]?: 'currentQuantity';
   productId!: number;
   name!: string;
   currentPrice!: string;
-  currentQuantity: number = 0;
+  currentQuantity: number & Opt = 0;
   productInverse = new Collection<ProductSellers>(this);
 }
 
@@ -3918,18 +3775,17 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, OptionalProps, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
-  [OptionalProps]?: 'quantitySold';
   saleId!: number;
   country!: Ref<ProductCountryMap>;
   seller!: Ref<ProductSellers>;
   singularPrice!: string;
-  quantitySold: number = 1;
+  quantitySold: number & Opt = 1;
 }
 
 export const SalesSchema = new EntitySchema({

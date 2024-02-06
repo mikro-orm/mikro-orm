@@ -2,14 +2,12 @@
 
 exports[`EntityGenerator generate entities from schema [sqlite]: sqlite-entity-dump 1`] = `
 [
-  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book3 } from './book3';
 
 @Entity()
 @Index({ name: 'author3_name_favourite_book_id_index', properties: ['name', 'favouriteBook'] })
 export class Author3 {
-
-  [OptionalProps]?: 'termsAccepted';
 
   @PrimaryKey()
   id!: number;
@@ -31,7 +29,7 @@ export class Author3 {
   age?: number;
 
   @Property({ default: 0 })
-  termsAccepted: number = 0;
+  termsAccepted: number & Opt = 0;
 
   @Property({ nullable: true })
   identities?: string;
@@ -47,12 +45,10 @@ export class Author3 {
 
 }
 ",
-  "import { Entity, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class BookTag3 {
-
-  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -61,18 +57,16 @@ export class BookTag3 {
   name!: string;
 
   @Property({ defaultRaw: \`current_timestamp\` })
-  version!: Date;
+  version!: Date & Opt;
 
 }
 ",
-  "import { Entity, ManyToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author3 } from './author3';
 import { Publisher3 } from './publisher3';
 
 @Entity()
 export class Book3 {
-
-  [OptionalProps]?: 'title';
 
   @PrimaryKey()
   id!: number;
@@ -84,7 +78,7 @@ export class Book3 {
   updatedAt?: Date;
 
   @Property({ default: '' })
-  title!: string;
+  title!: string & Opt;
 
   @ManyToOne({ entity: () => Author3, updateRule: 'cascade' })
   author!: Author3;
@@ -146,12 +140,10 @@ export class Publisher3Tests {
 
 }
 ",
-  "import { Entity, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Test3 {
-
-  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -160,7 +152,7 @@ export class Test3 {
   name?: string;
 
   @Property({ default: 1 })
-  version: number = 1;
+  version: number & Opt = 1;
 
 }
 ",

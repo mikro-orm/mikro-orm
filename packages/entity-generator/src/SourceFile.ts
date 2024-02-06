@@ -79,8 +79,6 @@ export class SourceFile {
     ret += ' {';
     const enumDefinitions: string[] = [];
     const eagerProperties: EntityProperty<any>[] = [];
-    const hiddenProperties: EntityProperty<any>[] = [];
-    const optionalProperties: EntityProperty<any>[] = [];
     const primaryProps: EntityProperty<any>[] = [];
     let classBody = '\n';
     Object.values(this.meta.properties).forEach(prop => {
@@ -104,14 +102,6 @@ export class SourceFile {
         eagerProperties.push(prop);
       }
 
-      if (prop.hidden) {
-        hiddenProperties.push(prop);
-      }
-
-      if (!prop.nullable && typeof prop.default !== 'undefined') {
-          optionalProperties.push(prop);
-      }
-
       if (prop.primary && (!['id', '_id', 'uuid'].includes(prop.name) || this.meta.compositePK)) {
         primaryProps.push(prop);
       }
@@ -132,18 +122,6 @@ export class SourceFile {
       this.coreImports.add('EagerProps');
       const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
       ret += `\n\n${' '.repeat(2)}[EagerProps]?: ${eagerPropertyNames.join(' | ')};`;
-    }
-
-    if (hiddenProperties.length > 0) {
-      this.coreImports.add('HiddenProps');
-      const hiddenPropertyNames = hiddenProperties.map(prop => `'${prop.name}'`).sort();
-      ret += `\n\n${' '.repeat(2)}[HiddenProps]?: ${hiddenPropertyNames.join(' | ')};`;
-    }
-
-    if (optionalProperties.length > 0) {
-      this.coreImports.add('OptionalProps');
-      const optionalPropertyNames = optionalProperties.map(prop => `'${prop.name}'`).sort();
-      ret += `\n\n${' '.repeat(2)}[OptionalProps]?: ${optionalPropertyNames.join(' | ')};`;
     }
 
     ret += `${classBody}}\n`;
@@ -174,10 +152,16 @@ export class SourceFile {
   protected getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
 
+    let hiddenType = '';
+    if (prop.hidden) {
+      this.coreImports.add('Hidden');
+      hiddenType += ' & Hidden';
+    }
+
     if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
       this.coreImports.add('Collection');
       this.entityImports.add(prop.type);
-      return `${padding}${prop.name} = new Collection<${prop.type}>(this);\n`;
+      return `${padding}${prop.name}${hiddenType ? `: Collection<${prop.type}>${hiddenType}` : ''} = new Collection<${prop.type}>(this);\n`;
     }
 
     // string defaults are usually things like SQL functions, but can be also enums, for that `useDefault` should be true
@@ -188,7 +172,7 @@ export class SourceFile {
     if (prop.ref) {
       this.coreImports.add('Ref');
       this.entityImports.add(prop.type);
-      return `${padding}${prop.name}${optional}: Ref<${prop.type}>;\n`;
+      return `${padding}${prop.name}${optional}: Ref<${prop.type}>${hiddenType};\n`;
     }
 
     let ret = `${prop.name}${optional}: ${prop.type}`;
@@ -196,9 +180,15 @@ export class SourceFile {
     if (prop.kind === ReferenceKind.EMBEDDED && prop.array) {
       ret += '[]';
     }
+    ret += hiddenType;
+
+    if (useDefault || (optional !== '?' && typeof prop.default === 'string')) {
+      this.coreImports.add('Opt');
+      ret += ' & Opt';
+    }
 
     if (!useDefault) {
-      return `${padding + ret};\n`;
+      return `${padding}${ret};\n`;
     }
 
     if (prop.enum && typeof prop.default === 'string') {

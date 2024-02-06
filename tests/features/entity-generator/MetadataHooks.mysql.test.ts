@@ -31,6 +31,9 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
         const [propName, propOptions] = propEntry;
         expect(propOptions.kind).not.toBe(ReferenceKind.MANY_TO_MANY);
 
+        if (propName === 'createdAt') {
+          propOptions.hidden = true;
+        }
         if (propName === 'email') {
           propOptions.hidden = true;
         }
