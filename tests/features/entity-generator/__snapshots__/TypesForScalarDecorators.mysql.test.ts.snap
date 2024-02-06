@@ -2,14 +2,12 @@
 
 exports[`TypesForScalarDecorators: dump 1`] = `
 [
-  "import { Entity, OptionalProps, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
-
-  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ type: 'number' })
   userId!: number;
@@ -24,7 +22,7 @@ export class Users {
   enabled!: boolean;
 
   @Property({ length: 0, type: 'Date', defaultRaw: \`CURRENT_TIMESTAMP\` })
-  createdAt!: Date;
+  createdAt!: Date & Opt;
 
 }
 ",

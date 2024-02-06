@@ -17,8 +17,6 @@ export class EntitySchemaSourceFile extends SourceFile {
     ret += ' {\n';
     const enumDefinitions: string[] = [];
     const eagerProperties: EntityProperty<any>[] = [];
-    const hiddenProperties: EntityProperty<any>[] = [];
-    const optionalProperties: EntityProperty<any>[] = [];
     const primaryProps: EntityProperty<any>[] = [];
     const props: string[] = [];
 
@@ -32,14 +30,6 @@ export class EntitySchemaSourceFile extends SourceFile {
 
       if (prop.eager) {
         eagerProperties.push(prop);
-      }
-
-      if (prop.hidden) {
-        hiddenProperties.push(prop);
-      }
-
-      if (!prop.nullable && typeof prop.default !== 'undefined') {
-        optionalProperties.push(prop);
       }
 
       if (prop.primary && (!['id', '_id', 'uuid'].includes(prop.name) || this.meta.compositePK)) {
@@ -62,18 +52,6 @@ export class EntitySchemaSourceFile extends SourceFile {
       this.coreImports.add('EagerProps');
       const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
       ret += `${' '.repeat(2)}[EagerProps]?: ${eagerPropertyNames.join(' | ')};\n`;
-    }
-
-    if (hiddenProperties.length > 0) {
-      this.coreImports.add('HiddenProps');
-      const hiddenPropertyNames = hiddenProperties.map(prop => `'${prop.name}'`).sort();
-      ret += `${' '.repeat(2)}[HiddenProps]?: ${hiddenPropertyNames.join(' | ')};\n`;
-    }
-
-    if (optionalProperties.length > 0) {
-      this.coreImports.add('OptionalProps');
-      const optionalPropertyNames = optionalProperties.map(prop => `'${prop.name}'`).sort();
-      ret += `${' '.repeat(2)}[OptionalProps]?: ${optionalPropertyNames.join(' | ')};\n`;
     }
 
     ret += `${props.join('')}}\n`;
