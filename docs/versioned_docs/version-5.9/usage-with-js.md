@@ -5,7 +5,7 @@ sidebar_label: Usage with Vanilla JS
 
 Since MikroORM 3.2, we can use `EntitySchema` helper to define own entities without decorators, which works also for Vanilla JavaScript.
 
-> Read more about `EntitySchema` in [this section](entity-schema.md).
+> Read more about `EntitySchema` in [this section](./entity-schema.md).
 
 Here is an example of such entity:
 

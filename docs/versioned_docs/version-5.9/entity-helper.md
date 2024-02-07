@@ -109,7 +109,7 @@ wrap(book).assign({
 });
 ```
 
-When updating collections, we can either pass complete array of all items, or just a single item - in such case, the new item will be appended to the existing items. Passing a completely new array of items will replace the existing items. Previously existing items will be disconnected/removed from the collection. Also check the [Collection page](collections.md#removing-items-from-collection) on the effects of removing entities from collections.
+When updating collections, we can either pass complete array of all items, or just a single item - in such case, the new item will be appended to the existing items. Passing a completely new array of items will replace the existing items. Previously existing items will be disconnected/removed from the collection. Also check the [Collection page](./collections.md#removing-items-from-collection) on the effects of removing entities from collections.
 
 ```ts
 // resets the addresses collection to a single item

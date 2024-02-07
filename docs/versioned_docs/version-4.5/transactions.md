@@ -2,7 +2,7 @@
 title: Transactions and Concurrency
 ---
 
-> Starting v3.4, transactions are also supported in [MongoDB driver](usage-with-mongo.md).
+> Starting v3.4, transactions are also supported in [MongoDB driver](./usage-with-mongo.md).
 
 ## Transaction Demarcation
 

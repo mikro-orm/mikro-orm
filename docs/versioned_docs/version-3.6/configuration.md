@@ -12,7 +12,7 @@ MikroORM.init({
 });
 ```
 
-When using `entitiesDirs`, you can optionally provide also set of directories with TS source files, that will be used to look up missing types (see more at [Metadata Providers](metadata-providers.md)).
+When using `entitiesDirs`, you can optionally provide also set of directories with TS source files, that will be used to look up missing types (see more at [Metadata Providers](./metadata-providers.md)).
 
 > The `entitiesDirsTs` option is used only with the default `TsMorphMetadataProvider`. By default, all your source files will be scanned, based on your `tsconfig.json`.
 
@@ -53,7 +53,7 @@ MikroORM.init({
 
 > If you disable `discovery.alwaysAnalyseProperties` option, you will need to explicitly provide `nullable` and `wrappedReference` parameters (where applicable).
 
-Read more about this in [Metadata Providers](metadata-providers.md) sections.
+Read more about this in [Metadata Providers](./metadata-providers.md) sections.
 
 ## Driver
 
@@ -133,7 +133,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Installation](installation.md) and [Read Connections](read-connections.md) sections.
+Read more about this in [Installation](./installation.md) and [Read Connections](./read-connections.md) sections.
 
 ## Auto-flush
 
@@ -148,7 +148,7 @@ await orm.em.persist(new Entity()); // flushed
 orm.em.persist(new Entity(), false); // you can still use second parameter to disable auto-flushing
 ```
 
-Read more about this in [Entity Manager](entity-manager.md#auto-flushing) docs.
+Read more about this in [Entity Manager](./entity-manager.md#auto-flushing) docs.
 
 ## Naming Strategy
 
@@ -166,7 +166,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Naming Strategy](naming-strategy.md) section.
+Read more about this in [Naming Strategy](./naming-strategy.md) section.
 
 ## Auto-join of 1:1 owners
 
@@ -229,7 +229,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Repositories](repositories.md) section.
+Read more about this in [Repositories](./repositories.md) section.
 
 ## Strict Mode
 
@@ -256,7 +256,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Debugging](debugging.md) section.
+Read more about this in [Debugging](./debugging.md) section.
 
 ## Custom Fail Handler
 
@@ -270,7 +270,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Entity Manager](entity-manager.md#handling-not-found-entities) docs.
+Read more about this in [Entity Manager](./entity-manager.md#handling-not-found-entities) docs.
 
 ## Migrations
 
@@ -290,7 +290,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Migrations](migrations.md) section.
+Read more about this in [Migrations](./migrations.md) section.
 
 ## Caching
 
@@ -307,4 +307,4 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Metadata Cache](metadata-cache.md) section.
+Read more about this in [Metadata Cache](./metadata-cache.md) section.

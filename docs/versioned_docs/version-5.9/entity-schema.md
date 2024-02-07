@@ -183,7 +183,7 @@ export const schema = new EntitySchema<BookTag>({
 
 ## Hooks example
 
-Entity hooks can be defined either as a property name, or as a function. When defined as a function, the `this` argument will be the entity instance. Arrow functions can be used if desired, and the entity will be available at args.entity. See [Events and Lifecycle Hooks](events.md) section for more details on `EventArgs`.
+Entity hooks can be defined either as a property name, or as a function. When defined as a function, the `this` argument will be the entity instance. Arrow functions can be used if desired, and the entity will be available at args.entity. See [Events and Lifecycle Hooks](./events.md) section for more details on `EventArgs`.
 
 ```ts
 export class BookTag {

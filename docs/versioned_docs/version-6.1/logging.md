@@ -76,7 +76,7 @@ Several customization options exist to allow for style changes or custom logic.
 
 ### Query Labels
 
-It may often be beneficial to log the origin of a query when using [`EntityManager.find`](entity-manager.md#fetching-entities-with-entitymanager) or [`EntityManager.findOne`](entity-manager.md#fetching-entities-with-entitymanager) for debugging and redundancy elimination purposes.
+It may often be beneficial to log the origin of a query when using [`EntityManager.find`](./entity-manager.md#fetching-entities-with-entitymanager) or [`EntityManager.findOne`](./entity-manager.md#fetching-entities-with-entitymanager) for debugging and redundancy elimination purposes.
 
 An optional `logging.label` option can be included within the `FindOptions` parameter of either call which will add a label to the output when debug mode is enabled.
 

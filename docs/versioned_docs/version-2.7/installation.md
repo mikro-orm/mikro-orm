@@ -60,7 +60,7 @@ const orm = await MikroORM.init({
 
 ## Entity discovery in TypeScript
 
-Internally, `MikroORM` uses [performs analysis](metadata-cache.md) of source files of entities to sniff types of all properties. This process can be slow if your project contains lots of files. To speed up the discovery process a bit, you can provide more accurate paths where your entity source files are:
+Internally, `MikroORM` uses [performs analysis](./metadata-cache.md) of source files of entities to sniff types of all properties. This process can be slow if your project contains lots of files. To speed up the discovery process a bit, you can provide more accurate paths where your entity source files are:
 
 ```typescript
 const orm = await MikroORM.init({
@@ -82,6 +82,6 @@ app.use((req, res, next) => {
 });
 ```
 
-More info about `RequestContext` is described [here](identity-map.md#request-context).
+More info about `RequestContext` is described [here](./identity-map#request-context).
 
-Now you can start [defining your entities](defining-entities.md) (in one of the `entitiesDirs` folders).
+Now you can start [defining your entities](./defining-entities.md) (in one of the `entitiesDirs` folders).

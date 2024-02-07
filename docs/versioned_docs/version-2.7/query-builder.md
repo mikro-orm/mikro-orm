@@ -18,7 +18,7 @@ console.log(qb.getParams());
 const res1 = await qb.execute();
 ```
 
-`QueryBuilder` also supports [smart query conditions](query-conditions.md).
+`QueryBuilder` also supports [smart query conditions](./query-conditions.md).
 
 ## Running native SQL query
 

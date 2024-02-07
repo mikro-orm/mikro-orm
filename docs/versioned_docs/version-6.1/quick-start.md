@@ -88,7 +88,7 @@ const orm = await MikroORM.init({
 });
 ```
 
-Read more about the differences in [Metadata Providers section](metadata-providers.md).
+Read more about the differences in [Metadata Providers section](./metadata-providers.md).
 
 ```ts
 import { MikroORM } from '@mikro-orm/postgresql';
@@ -104,7 +104,7 @@ const orm = await MikroORM.init({
 
 > For `ts-morph` discovery to work in production, you need to deploy `.d.ts` declaration files. Be sure to enable `compilerOptions.declaration` in your `tsconfig.json`.
 
-You can also use different the default [`ReflectMetadataProvider`](metadata-providers.md#reflectmetadataprovider) or even write custom one. Using [`EntitySchema`](entity-schema.md) is another way to define your entities and does not depend on the metadata providers at all.
+You can also use different the default [`ReflectMetadataProvider`](./metadata-providers.md#reflectmetadataprovider) or even write custom one. Using [`EntitySchema`](./entity-schema.md) is another way to define your entities and does not depend on the metadata providers at all.
 
 ```ts
 import { MikroORM } from '@mikro-orm/postgresql';
@@ -190,7 +190,7 @@ export class Book {
 }
 ```
 
-More information can be found in [defining entities section](defining-entities.md) in docs.
+More information can be found in [defining entities section](./defining-entities.md) in docs.
 
 ## EntityManager
 

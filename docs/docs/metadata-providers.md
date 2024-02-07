@@ -27,7 +27,7 @@ If we use folder-based discovery, we should specify paths to the compiled entiti
 
 > When running via `node`, `.d.ts` files are used to obtain the type, so we need to ship them in the production build. TS source files are no longer needed (since v4). Be sure to enable `compilerOptions.declaration` in our `tsconfig.json`.
 
-After the discovery process ends, all [metadata will be cached](metadata-cache.md). By default, `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files.
+After the discovery process ends, all [metadata will be cached](./metadata-cache.md). By default, `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files.
 
 > We can generate production cache via CLI command `mikro-orm cache:generate`.
 
@@ -56,7 +56,7 @@ await MikroORM.init({
 
 ### Limitations and requirements
 
-While `TsMorphMetadataProvider` do not suffer from any of the following problems, it brings a performance penalty (that can be limited only to cases where you change your entity definition via metadata caching) and is in general not compatible with other compilers like webpack or babel. It also requires you to deploy `.d.ts` files alongside your compiled `.js` entities (more about this in the [deployment section](deployment.md).
+While `TsMorphMetadataProvider` do not suffer from any of the following problems, it brings a performance penalty (that can be limited only to cases where you change your entity definition via metadata caching) and is in general not compatible with other compilers like webpack or babel. It also requires you to deploy `.d.ts` files alongside your compiled `.js` entities (more about this in the [deployment section](./deployment.md).
 
 #### Explicit types
 
@@ -127,8 +127,8 @@ We might have to install additional typings, one example is use of `ObjectId` in
 
 ## Using EntitySchema
 
-Alternatively, you can use [`EntitySchema`](entity-schema.md) instead, which is suitable for JavaScript only projects.
+Alternatively, you can use [`EntitySchema`](./entity-schema.md) instead, which is suitable for JavaScript only projects.
 
 > If you want to have absolute control, you can also use `EntitySchema.fromMetadata()` factory method.
 
-Read more about it in [Usage with JavaScript section](usage-with-js.md).
+Read more about it in [Usage with JavaScript section](./usage-with-js.md).

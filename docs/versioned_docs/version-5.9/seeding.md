@@ -23,7 +23,7 @@ MikroORM.init({
 });
 ```
 
-We can also override these default using the [environment variables](configuration.md#using-environment-variables):
+We can also override these default using the [environment variables](./configuration.md#using-environment-variables):
 
 - `MIKRO_ORM_SEEDER_PATH`
 - `MIKRO_ORM_SEEDER_PATH_TS`
@@ -43,7 +43,7 @@ npx mikro-orm seeder:create test            # generates the class TestSeeder
 npx mikro-orm seeder:create project-names   # generates the class ProjectNamesSeeder
 ```
 
-This creates a new seeder class. By default, it will be generated in the `./seeders/` directory. You can configure the directory in the config with the key `seeder.path` or using the [environment variable](configuration.md#using-environment-variables) `MIKRO_ORM_SEEDER_PATH`. You are allowed to call the `seeder:create` command with a name, class name or hyphenated name.
+This creates a new seeder class. By default, it will be generated in the `./seeders/` directory. You can configure the directory in the config with the key `seeder.path` or using the [environment variable](./configuration.md#using-environment-variables) `MIKRO_ORM_SEEDER_PATH`. You are allowed to call the `seeder:create` command with a name, class name or hyphenated name.
 
 As an example we will look at a very basic seeder.
 
@@ -239,7 +239,7 @@ const books: Book[] = new BookFactory(orm.em).each(book => {
 
 ## Use with CLI
 
-You may execute the `seeder:run` MikroORM CLI command to seed your database. By default, the `seeder:run` command runs the `DatabaseSeeder` class, which may in turn invoke other seed classes. You can configure the default seeder using the key `seeder.defaultSeeder` or using the [environment variable](configuration.md#using-environment-variables) `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`. You can also use the `--class` option to specify a seeder class:
+You may execute the `seeder:run` MikroORM CLI command to seed your database. By default, the `seeder:run` command runs the `DatabaseSeeder` class, which may in turn invoke other seed classes. You can configure the default seeder using the key `seeder.defaultSeeder` or using the [environment variable](./configuration.md#using-environment-variables) `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`. You can also use the `--class` option to specify a seeder class:
 
 ```shell script
 npx mikro-orm seeder:run
@@ -247,7 +247,7 @@ npx mikro-orm seeder:run
 npx mikro-orm seeder:run --class=BookSeeder
 ```
 
-You may also seed your database using the [`migrate:fresh`](migrations.md#using-via-cli) or [`schema:fresh`](schema-generator.md) command in combination with the `--seed` option, which will drop all tables and re-run all of your migrations or generate the database based on the current entities. This command is useful for completely re-building your database:
+You may also seed your database using the [`migrate:fresh`](./migrations.md#using-via-cli) or [`schema:fresh`](schema-generator.md) command in combination with the `--seed` option, which will drop all tables and re-run all of your migrations or generate the database based on the current entities. This command is useful for completely re-building your database:
 
 ```shell script
 npx mikro-orm migration:fresh --seed    # will drop the database, run all migrations and the DatabaseSeeder class
@@ -255,7 +255,7 @@ npx mikro-orm migration:fresh --seed    # will drop the database, run all migrat
 npx mikro-orm schema:fresh --seed       # will recreate the database and run the DatabaseSeeder class
 ```
 
-If you do not want to run the `DatabaseSeeder` class you can either specify what the default seeder class should be. This can be done by changing the [default settings](#default-settings). Another option is to explicitly define the seeder class you want to run.
+If you do not want to run the `DatabaseSeeder` class you can either specify what the default seeder class should be. This can be done by changing the [default settings](./configuration.md#seeder). Another option is to explicitly define the seeder class you want to run.
 
 ```shell script
 npx mikro-orm migration:fresh --seed TestSeeder       # will drop the database, run all migrations and the TestSeeder class

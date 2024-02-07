@@ -39,7 +39,7 @@ export class Book { ... }
 export interface Book extends WrappedEntity<Book, 'id'> { }
 ```
 
-For more examples, take a look at [defining entities section](defining-entities.md).
+For more examples, take a look at [defining entities section](./defining-entities.md).
 
 ## Integrated Knex.js as query builder and runner
 
@@ -97,7 +97,7 @@ Use `mappedBy`/`inversedBy` instead.
 
 ## SchemaGenerator.generate() is now async
 
-If you used `SchemaGenerator`, now there is CLI tool you can use instead. Learn more in [SchemaGenerator docs](schema-generator.md). To setup CLI, take a look at [installation section](quick-start.md).
+If you used `SchemaGenerator`, now there is CLI tool you can use instead. Learn more in [SchemaGenerator docs](schema-generator.md). To setup CLI, take a look at [installation section](./quick-start.md).
 
 ## New method on NamingStrategy interface
 

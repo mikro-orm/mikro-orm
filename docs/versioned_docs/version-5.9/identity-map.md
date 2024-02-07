@@ -36,7 +36,7 @@ Since v5, it is no longer possible to use the global identity map. This was a co
 
 We can still disable this check via `allowGlobalContext` configuration, or a connected environment variable `MIKRO_ORM_ALLOW_GLOBAL_CONTEXT` - this can be handy especially in unit tests.
 
-## <a name="request-context"></a> `RequestContext` helper
+## `RequestContext` helper {#request-context}
 
 If we use dependency injection container like `inversify` or the one in `nestjs` framework, it can be hard to achieve this, because we usually want to access our repositories via DI container, but it will always provide us with the same instance, rather than new one for each request.
 
