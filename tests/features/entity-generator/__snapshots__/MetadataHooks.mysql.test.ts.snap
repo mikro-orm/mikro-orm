@@ -18,7 +18,7 @@ export class Address2 {
 
 }
 ",
-  "import { Cascade, Collection, EagerProps, Embedded, Entity, Hidden, Index, ManyToMany, ManyToOne, OneToMany, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Cascade, Collection, EagerProps, Embedded, Entity, Formula, Hidden, Index, ManyToMany, ManyToOne, OneToMany, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { IdentitiesContainer } from './IdentitiesContainer';
 
@@ -77,6 +77,9 @@ export class Author2 {
   @Embedded({ entity: () => IdentitiesContainer, array: true, object: true, prefix: false, nullable: true })
   identity?: IdentitiesContainer[];
 
+  @Formula(alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`, { lazy: true })
+  secondsSinceLastModified!: number;
+
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })
   authorToFriend: Collection<Author2> & Hidden = new Collection<Author2>(this);
 
@@ -98,9 +101,10 @@ export class Author2 {
 }
 ",
   "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { CustomBase2 } from './CustomBase2';
 
 @Entity({ abstract: true, discriminatorColumn: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
-export abstract class BaseUser2 {
+export abstract class BaseUser2 extends CustomBase2 {
 
   @PrimaryKey()
   id!: number;
@@ -587,7 +591,7 @@ export class User2 {
 ",
   "import { Entity, Hidden, Index, Property, Unique } from '@mikro-orm/core';
 
-@Entity({ expression: "SELECT name, email FROM author2", comment: 'test', virtual: true })
+@Entity({ expression: 'SELECT name, email FROM author2', comment: 'test', virtual: true })
 export class AuthorPartialView {
 
   @Index({ name: 'custom_idx_name_123' })
@@ -598,6 +602,25 @@ export class AuthorPartialView {
   @Unique({ name: 'custom_email_unique_name' })
   @Property({ length: 255, hidden: true })
   email!: string & Hidden;
+
+}
+",
+  "import { Entity, Index, Property, Unique } from '@mikro-orm/core';
+
+@Entity({ tableName: 'author_partial_view', expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']), comment: 'test', virtual: true })
+export class AuthorPartialView2 {
+
+  @Index({ name: 'custom_idx_name_123' })
+  @Property({ length: 255, onUpdate: owner => { owner.name += ' also'; }, comment: 'author name also' })
+  name!: string;
+
+  @Index({ name: 'custom_email_index_name' })
+  @Unique({ name: 'custom_email_unique_name' })
+  @Property({ length: 255, serializer: (email) => {
+        const [localPart, hostnamePart] = email.split('@', 2);
+        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+    }, serializedName: 'anonymizedEmail' })
+  email!: string;
 
 }
 ",
@@ -628,11 +651,9 @@ import { BaseUser2 } from './BaseUser2';
 export class Manager2 extends BaseUser2 {
 }
 ",
-  "import { Entity } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+  "
 
-@Entity({ virtual: true, discriminatorValue: 'owner' })
-export class CompanyOwner2 extends BaseUser2 {
+export abstract class CustomBase2 {
 }
 ",
 ]
@@ -681,6 +702,7 @@ export class Author2 {
   favouriteBook?: Book2;
   favouriteAuthor?: Author2;
   identity?: IdentitiesContainer[];
+  secondsSinceLastModified!: number;
   authorToFriend: Collection<Author2> & Hidden = new Collection<Author2>(this);
   following = new Collection<Author2>(this);
   authorInverse = new Collection<Book2>(this);
@@ -753,6 +775,10 @@ export const Author2Schema = new EntitySchema({
       prefix: false,
       nullable: true,
     },
+    secondsSinceLastModified: {
+      formula: alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
+      lazy: true,
+    },
     authorToFriend: {
       kind: 'm:n',
       entity: () => Author2,
@@ -775,8 +801,9 @@ export const Author2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema } from '@mikro-orm/core';
+import { CustomBase2 } from './CustomBase2';
 
-export abstract class BaseUser2 {
+export abstract class BaseUser2 extends CustomBase2 {
   id!: number;
   firstName!: string;
   lastName!: string;
@@ -1322,6 +1349,38 @@ export const AuthorPartialViewSchema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 
+export class AuthorPartialView2 {
+  name!: string;
+  email!: string;
+}
+
+export const AuthorPartialView2Schema = new EntitySchema({
+  class: AuthorPartialView2,
+  tableName: 'author_partial_view',
+  properties: {
+    name: {
+      type: 'string',
+      length: 255,
+      onUpdate: owner => { owner.name += ' also'; },
+      comment: 'author name also',
+      index: 'custom_idx_name_123',
+    },
+    email: {
+      type: 'string',
+      length: 255,
+      serializer: (email) => {
+        const [localPart, hostnamePart] = email.split('@', 2);
+        return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
+    },
+      serializedName: 'anonymizedEmail',
+      index: 'custom_email_index_name',
+      unique: 'custom_email_unique_name',
+    },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+
 export class IdentitiesContainer {
   github!: string;
   local!: number;
@@ -1360,13 +1419,12 @@ export const Manager2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
 
-export class CompanyOwner2 extends BaseUser2 {
+export abstract class CustomBase2 {
 }
 
-export const CompanyOwner2Schema = new EntitySchema({
-  class: CompanyOwner2,
+export const CustomBase2Schema = new EntitySchema({
+  class: CustomBase2,
   properties: {
   },
 });
