@@ -1,5 +1,6 @@
 import { Cascade, EntityMetadata, GenerateOptions, Platform, ReferenceKind, MetadataProcessor } from '@mikro-orm/core';
 import { initORMMySql } from '../../bootstrap';
+import { Author2 } from '../../entities-sql';
 
 const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
   expect(platform).toBeInstanceOf(Platform);
@@ -18,15 +19,24 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
 
     if (entity.className === 'BaseUser2') {
       entity.abstract = true;
+      entity.extends = 'CustomBase2';
       entity.discriminatorColumn = 'type';
       entity.discriminatorMap = {
-        employee: "'Employee2'",
-        manager: "'Manager2'",
+        employee: 'Employee2',
+        manager: 'Manager2',
       };
     }
 
     if (entity.className === 'Author2') {
       entity.readonly = true;
+      entity.addProperty({
+        name: 'secondsSinceLastModified',
+        fieldNames: [platform.getConfig().getNamingStrategy().propertyToColumnName('secondsSinceLastModified')],
+        columnTypes: ['int'],
+        type: 'number',
+        lazy: true,
+        formula: alias => `TIMESTAMPDIFF(SECONDS, NOW(), ${alias}.updated_at)`,
+      });
       Object.entries(entity.properties).forEach(propEntry => {
         const [propName, propOptions] = propEntry;
         expect(propOptions.kind).not.toBe(ReferenceKind.MANY_TO_MANY);
@@ -64,14 +74,35 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
     className: 'AuthorPartialView',
     collection: platform.getConfig().getNamingStrategy().classToTableName('AuthorPartialView'),
     virtual: true,
-    expression: '"SELECT name, email FROM author2"',
-    comment: "'test'",
+    expression: 'SELECT name, email FROM author2',
+    comment: 'test',
   });
   const nameProp = virtualEntityBase.props.find(prop => prop.name === 'name')!;
-  nameProp.comment = "'author name'";
+  nameProp.comment = 'author name';
   virtualEntityMeta.addProperty(nameProp);
   virtualEntityMeta.addProperty(virtualEntityBase.props.find(prop => prop.name === 'email')!);
   metadata.push(virtualEntityMeta);
+
+  const virtualEntityMeta2 = new EntityMetadata<any>({
+    className: 'AuthorPartialView2',
+    collection: platform.getConfig().getNamingStrategy().classToTableName('AuthorPartialView'),
+    virtual: true,
+    expression: (em: typeof orm.em) => em.createQueryBuilder<Author2>('Author2').select(['name', 'email']),
+    comment: 'test',
+  });
+  const nameProp2 = Object.assign({}, virtualEntityBase.props.find(prop => prop.name === 'name')!);
+  nameProp2.comment = 'author name also';
+  nameProp2.onUpdate = owner => { owner.name += ' also'; };
+  virtualEntityMeta2.addProperty(nameProp2);
+  const emailProp2 = Object.assign({}, virtualEntityBase.props.find(prop => prop.name === 'email')!);
+  emailProp2.serializer = (email: string) => {
+    const [localPart, hostnamePart] = email.split('@', 2);
+    return `${localPart[0]}${'*'.repeat(localPart.length - 2)}${localPart[localPart.length - 1]}@${hostnamePart}`;
+  };
+  emailProp2.hidden = false;
+  emailProp2.serializedName = 'anonymizedEmail';
+  virtualEntityMeta2.addProperty(emailProp2);
+  metadata.push(virtualEntityMeta2);
 
   const embeddableEntityMeta = new EntityMetadata({
     className: 'IdentitiesContainer',
@@ -123,11 +154,19 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
     relations: [],
   });
   metadata.push(companyOwner2def);
+
+  const customBase2 = new EntityMetadata({
+    className: 'CustomBase2',
+    abstract: true,
+    virtual: true,
+    relations: [],
+  });
+  metadata.push(customBase2);
 };
 
 const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (metadata, platform) => {
   metadata.forEach(entity => {
-    if (['AuthorPartialView', 'Employee2', 'Manager2', 'CompanyOwner2'].includes(entity.className)) {
+    if (['AuthorPartialView', 'AuthorPartialView2', 'CustomBase2', 'Employee2', 'Manager2', 'CompanyOwner2'].includes(entity.className)) {
       expect(entity.virtual).toBe(true);
     } else if (entity.className === 'IdentitiesContainer') {
       expect(entity.embeddable).toBe(true);
