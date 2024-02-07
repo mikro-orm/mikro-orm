@@ -35,12 +35,14 @@ export class SourceFile {
 
   generate(): string {
     let ret = '';
-    if (this.meta.embeddable) {
-      this.coreImports.add('Embeddable');
-      ret += `@Embeddable(${this.getEmbeddableDeclOptions()})\n`;
-    } else {
-      this.coreImports.add('Entity');
-      ret += `@Entity(${this.getEntityDeclOptions()})\n`;
+    if (this.meta.embeddable || this.meta.collection) {
+      if (this.meta.embeddable) {
+        this.coreImports.add('Embeddable');
+        ret += `@Embeddable(${this.getEmbeddableDeclOptions()})\n`;
+      } else {
+        this.coreImports.add('Entity');
+        ret += `@Entity(${this.getEntityDeclOptions()})\n`;
+      }
     }
 
     this.meta.indexes.forEach(index => {
@@ -125,7 +127,10 @@ export class SourceFile {
     }
 
     ret += `${classBody}}\n`;
-    const imports = [`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`];
+    const imports = [];
+    if (this.coreImports.size > 0) {
+      imports.push(`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`);
+    }
     const entityImportExtension = this.options.esmImport ? '.js' : '';
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
     entityImports.sort().forEach(entity => {
@@ -243,11 +248,13 @@ export class SourceFile {
     }
 
     if (typeof this.meta.expression === 'string') {
-      options.expression = this.meta.expression;
+      options.expression = this.quote(this.meta.expression);
+    } else if (typeof this.meta.expression === 'function') {
+      options.expression = `${this.meta.expression}`;
     }
 
     if (this.meta.comment) {
-      options.comment = this.meta.comment;
+      options.comment = this.quote(this.meta.comment);
     }
 
     if (this.meta.readonly && !this.meta.virtual) {
@@ -279,7 +286,8 @@ export class SourceFile {
     }
 
     if (this.meta.discriminatorMap) {
-      options.discriminatorMap = this.meta.discriminatorMap;
+      options.discriminatorMap = Object.fromEntries(Object.entries(this.meta.discriminatorMap)
+        .map(([discriminatorValue, className]) => [discriminatorValue, this.quote(className)]));
     }
 
     if (!Utils.hasObjectKeys(options)) {
@@ -315,11 +323,15 @@ export class SourceFile {
     const indexes = this.getPropertyIndexes(prop, options);
     decorator = [...indexes.sort(), decorator].map(d => padding + d).join('\n');
 
-    if (!Utils.hasObjectKeys(options)) {
-      return `${decorator}()\n`;
+    const decoratorArgs = [];
+    if (prop.formula) {
+      decoratorArgs.push(`${prop.formula}`);
+    }
+    if (Utils.hasObjectKeys(options)) {
+      decoratorArgs.push(`${this.serializeObject(options)}`);
     }
 
-    return `${decorator}(${this.serializeObject(options)})\n`;
+    return `${decorator}(${decoratorArgs.join(', ')})\n`;
   }
 
   protected getPropertyIndexes(prop: EntityProperty, options: Dictionary): string[] {
@@ -375,6 +387,14 @@ export class SourceFile {
       options.persist = false;
     }
 
+    (['onCreate', 'onUpdate', 'serializer'] as const)
+      .filter(key => typeof prop[key] === 'function')
+      .forEach(key => options[key] = `${prop[key]}`);
+
+    if (typeof prop.serializedName === 'string') {
+      options.serializedName = this.quote(prop.serializedName);
+    }
+
     (['hidden', 'version', 'concurrencyCheck', 'eager', 'lazy', 'orphanRemoval'] as const)
       .filter(key => prop[key])
       .forEach(key => options[key] = true);
@@ -385,7 +405,7 @@ export class SourceFile {
     }
 
     if (typeof prop.comment === 'string') {
-      options.comment = prop.comment;
+      options.comment = this.quote(prop.comment);
     }
 
     if (prop.default == null) {
@@ -407,12 +427,6 @@ export class SourceFile {
   }
 
   protected getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
-    let t = prop.type;
-
-    if (t === 'Date') {
-      t = 'datetime';
-    }
-
     if (prop.fieldNames[0] !== this.namingStrategy.propertyToColumnName(prop.name)) {
       options.fieldName = `'${prop.fieldNames[0]}'`;
     }
@@ -421,6 +435,12 @@ export class SourceFile {
     // in the decorator so return early.
     if (prop.enum) {
       return;
+    }
+
+    let t = prop.type;
+
+    if (t === 'Date') {
+      t = 'datetime';
     }
 
     const mappedType1 = this.platform.getMappedType(t);
@@ -586,6 +606,10 @@ export class SourceFile {
 
     if (prop.enum) {
       return '@Enum';
+    }
+
+    if (prop.formula) {
+      return '@Formula';
     }
 
     return '@Property';
