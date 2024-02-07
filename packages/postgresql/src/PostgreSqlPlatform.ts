@@ -349,6 +349,11 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
    * @inheritDoc
    */
   override parseDate(value: string | number): Date {
+    // postgres-date returns `null` for a JS ISO string which has the `T` separator
+    if (typeof value === 'string' && value.charAt(10) === 'T') {
+      return new Date(value);
+    }
+
     if (typeof value === 'number') {
       return new Date(value);
     }
