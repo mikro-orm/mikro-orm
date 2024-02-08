@@ -123,7 +123,7 @@ And specify it in the ORM config:
 
 ```ts
 MikroORM.init({
-   entityRepository: () => ExtendedEntityRepository,
+   entityRepository: ExtendedEntityRepository,
 })
 ```
 
