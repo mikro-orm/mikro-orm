@@ -136,7 +136,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     let type = typeName;
     const union = type.split(' | ');
-    const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined');
+    const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined') || tsType.isNullable();
     type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
 
     prop.array ??= type.endsWith('[]') || !!type.match(/Array<(.*)>/);

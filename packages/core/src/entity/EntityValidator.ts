@@ -6,6 +6,8 @@ import { helper } from './wrap';
 
 export class EntityValidator {
 
+  KNOWN_TYPES = new Set(['string', 'number', 'boolean', 'bigint', 'Uint8Array', 'Date', 'Buffer', 'RegExp']);
+
   constructor(private strict: boolean) { }
 
   validate<T extends object>(entity: T, payload: any, meta: EntityMetadata<T>): void {
@@ -81,7 +83,7 @@ export class EntityValidator {
         throw ValidationError.fromWrongPropertyType(entity, prop.name, expectedType, givenType, givenValue);
       }
     } else {
-      if (givenType !== expectedType) {
+      if (givenType !== expectedType && this.KNOWN_TYPES.has(expectedType)) {
         throw ValidationError.fromWrongPropertyType(entity, prop.name, expectedType, givenType, givenValue);
       }
     }

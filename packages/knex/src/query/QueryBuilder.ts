@@ -888,10 +888,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Executes the query, returning both array of results and total count query (without offset and limit).
    */
   async getResultAndCount(): Promise<[T[], number]> {
-    return Promise.all([
-      this.getResultList(),
-      this.getCount(),
-    ]);
+    return [
+      await this.getResultList(),
+      await this.getCount(),
+    ];
   }
 
   /**
