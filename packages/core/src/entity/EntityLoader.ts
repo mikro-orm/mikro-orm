@@ -133,14 +133,16 @@ export class EntityLoader {
         return;
       }
 
-      const [f, ...parts] = p.field.split('.');
+      let [f, ...parts] = p.field.split('.');
       p.field = f as EntityKey<Entity>;
-      p.children = p.children || [];
+      p.children ??= [];
       const prop = meta.properties[f];
       p.strategy ??= prop.strategy;
 
       if (parts[0] === '*') {
-        p.all = true;
+        prop.targetMeta!.props
+          .filter(prop => prop.lazy || prop.kind !== ReferenceKind.SCALAR)
+          .forEach(prop => p.children!.push({ field: prop.name as EntityKey, strategy: p.strategy }));
       } else {
         p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy, p.all));
       }
