@@ -103,7 +103,7 @@
     "@types/esprima": "4.0.6",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "29.5.12",
-    "@types/node": "20.11.16",
+    "@types/node": "20.11.17",
     "@types/pg": "8.11.0",
     "@types/sqlstring": "2.3.2",
     "@types/uuid": "9.0.8",
