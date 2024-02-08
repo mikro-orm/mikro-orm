@@ -133,7 +133,7 @@ export class EntityLoader {
         return;
       }
 
-      let [f, ...parts] = p.field.split('.');
+      const [f, ...parts] = p.field.split('.');
       p.field = f as EntityKey<Entity>;
       p.children ??= [];
       const prop = meta.properties[f];
