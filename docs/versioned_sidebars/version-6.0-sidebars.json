@@ -176,7 +176,7 @@
         },
         {
           "type": "link",
-          "label": "Express + MongoDB + JavaScript",
+          "label": "Express + SQLite + JavaScript",
           "href": "https://github.com/mikro-orm/express-js-example-app"
         },
         {
@@ -203,6 +203,11 @@
           "type": "link",
           "label": "Accounts.js REST and GraphQL authentication + SQLite",
           "href": "https://github.com/darkbasic/mikro-orm-accounts-example"
+        },
+        {
+          "type": "link",
+          "label": "Nest + Shopify + PostgreSQL + GraphQL",
+          "href": "https://github.com/Cloudshelf/Shopify_CSConnector"
         }
       ]
     },

@@ -162,10 +162,11 @@ You can find example integrations for some popular frameworks in the [`mikro-orm
 - [Inversify + PostgreSQL](https://github.com/PodaruDragos/inversify-example-app)
 - [NextJS + MySQL](https://github.com/jonahallibone/mikro-orm-nextjs)
 - [Accounts.js REST and GraphQL authentication + SQLite](https://github.com/darkbasic/mikro-orm-accounts-example)
+- [Nest + Shopify + PostgreSQL + GraphQL](https://github.com/Cloudshelf/Shopify_CSConnector)
 
 ### JavaScript Examples 
 
-- [Express + MongoDB](https://github.com/mikro-orm/express-js-example-app)
+- [Express + SQLite](https://github.com/mikro-orm/express-js-example-app)
 
 ## 🚀 Quick Start
 
