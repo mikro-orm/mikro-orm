@@ -167,7 +167,7 @@ export class ConfigurationLoader {
     // only propagate known env vars
     for (const key of Object.keys(env)) {
       if (key.startsWith('MIKRO_ORM_')) {
-        process.env[key] = env[key];
+        process.env[key] ??= env[key]; // respect user provided values
       }
     }
   }
