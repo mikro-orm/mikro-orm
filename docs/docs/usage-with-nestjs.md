@@ -174,10 +174,10 @@ Note, however, that glob paths are not supported by webpack, so if you are build
 @Module({
   imports: [
     MikroOrmModule.forRoot({
-      ...
-        autoLoadEntities: true,
-}),
-],
+      // ...
+      autoLoadEntities: true,
+    }),
+  ],
 })
 export class AppModule {}
 ```
