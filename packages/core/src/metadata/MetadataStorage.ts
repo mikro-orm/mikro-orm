@@ -1,4 +1,4 @@
-import { EntityMetadata, type Dictionary, type EntityData, type EntityName } from '../typings';
+import { EntityMetadata, type Dictionary, type EntityData, type EntityName, type EntityKey } from '../typings';
 import { Utils } from '../utils/Utils';
 import { MetadataError } from '../errors';
 import type { EntityManager } from '../EntityManager';
@@ -54,7 +54,7 @@ export class MetadataStorage {
   }
 
   getByDiscriminatorColumn<T>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> | undefined {
-    const value = data[meta.root.discriminatorColumn!];
+    const value = data[meta.root.discriminatorColumn as EntityKey<T>];
 
     if (!value) {
       return undefined;

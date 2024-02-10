@@ -323,7 +323,7 @@ export class EntityFactory {
       return meta;
     }
 
-    const prop = meta.properties[meta.root.discriminatorColumn];
+    const prop = meta.properties[meta.root.discriminatorColumn as EntityKey<T>];
     const value = data[prop.name] as string;
     const type = meta.root.discriminatorMap![value];
     meta = type ? this.metadata.find(type)! : meta;
