@@ -78,6 +78,7 @@ jobs:
         run: |
           cd docs
           yarn
+          export MIKRO_ORM_DOCS_TESTING=1
           yarn build
 
   lint:
