@@ -20,7 +20,7 @@ class Teacher extends User {}
 const userSchema = new EntitySchema<User>({
   class: User,
   abstract: true,
-  discriminatorColumn: 'type' as any,
+  discriminatorColumn: 'type',
   properties: {
     id: {
       type: Number,
