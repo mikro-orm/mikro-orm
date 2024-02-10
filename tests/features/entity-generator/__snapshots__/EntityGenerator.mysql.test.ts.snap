@@ -728,6 +728,633 @@ export const User2Schema = new EntitySchema({
 ]
 `;
 
+exports[`EntityGenerator generate EntitySchema with reference wrappers and named import [mysql]: mysql-entityschema-named-dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Author2 } from './Author2.js';
+
+export class Address2 {
+  [PrimaryKeyProp]?: 'author';
+  author!: Ref<Author2>;
+  value!: string;
+}
+
+export const Address2Schema = new EntitySchema({
+  class: Address2,
+  properties: {
+    author: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Author2,
+      ref: true,
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    value: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, Ref } from '@mikro-orm/core';
+import { Book2 } from './Book2.js';
+
+export class Author2 {
+  id!: number;
+  createdAt!: Date & Opt;
+  updatedAt!: Date & Opt;
+  name!: string;
+  email!: string;
+  age?: number;
+  termsAccepted: boolean & Opt = false;
+  optional?: boolean;
+  identities?: string;
+  born?: string;
+  bornTime?: string;
+  favouriteBook?: Ref<Book2>;
+  favouriteAuthor?: Ref<Author2>;
+  identity?: any;
+  authorToFriend = new Collection<Author2>(this);
+  following = new Collection<Author2>(this);
+}
+
+export const Author2Schema = new EntitySchema({
+  class: Author2,
+  indexes: [
+    { name: 'author2_name_age_index', properties: ['name', 'age'] },
+  ],
+  uniques: [
+    { name: 'author2_name_email_unique', properties: ['name', 'email'] },
+  ],
+  properties: {
+    id: { primary: true, type: 'number' },
+    createdAt: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    updatedAt: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    name: { type: 'string', length: 255, index: 'custom_idx_name_123' },
+    email: {
+      type: 'string',
+      length: 255,
+      index: 'custom_email_index_name',
+      unique: 'custom_email_unique_name',
+    },
+    age: { type: 'number', nullable: true },
+    termsAccepted: { type: 'boolean', default: false, index: 'author2_terms_accepted_index' },
+    optional: { type: 'boolean', nullable: true },
+    identities: { type: 'string', columnType: 'text', nullable: true },
+    born: {
+      type: 'string',
+      columnType: 'date',
+      nullable: true,
+      index: 'author2_born_index',
+    },
+    bornTime: { type: 'string', columnType: 'time', nullable: true, index: 'born_time_idx' },
+    favouriteBook: {
+      kind: 'm:1',
+      entity: () => Book2,
+      ref: true,
+      deleteRule: 'cascade',
+      nullable: true,
+    },
+    favouriteAuthor: {
+      kind: 'm:1',
+      entity: () => Author2,
+      ref: true,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    identity: { type: 'any', columnType: 'json', nullable: true },
+    authorToFriend: {
+      kind: 'm:n',
+      entity: () => Author2,
+      pivotTable: 'author_to_friend',
+      joinColumn: 'author2_1_id',
+      inverseJoinColumn: 'author2_2_id',
+    },
+    following: {
+      kind: 'm:n',
+      entity: () => Author2,
+      joinColumn: 'author2_1_id',
+      inverseJoinColumn: 'author2_2_id',
+    },
+  },
+});
+",
+  "import { EntitySchema, Ref } from '@mikro-orm/core';
+
+export class BaseUser2 {
+  id!: number;
+  firstName!: string;
+  lastName!: string;
+  type!: BaseUser2Type;
+  ownerProp?: string;
+  favouriteEmployee?: Ref<BaseUser2>;
+  favouriteManager?: Ref<BaseUser2>;
+  employeeProp?: number;
+  managerProp?: string;
+}
+
+export enum BaseUser2Type {
+  EMPLOYEE = 'employee',
+  MANAGER = 'manager',
+  OWNER = 'owner',
+}
+
+export const BaseUser2Schema = new EntitySchema({
+  class: BaseUser2,
+  properties: {
+    id: { primary: true, type: 'number' },
+    firstName: { type: 'string', length: 100 },
+    lastName: { type: 'string', length: 100 },
+    type: { enum: true, items: () => BaseUser2Type, index: 'base_user2_type_index' },
+    ownerProp: { type: 'string', length: 255, nullable: true },
+    favouriteEmployee: {
+      kind: 'm:1',
+      entity: () => BaseUser2,
+      ref: true,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    favouriteManager: {
+      kind: '1:1',
+      entity: () => BaseUser2,
+      ref: true,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    employeeProp: { type: 'number', nullable: true, unique: 'base_user2_employee_prop_unique' },
+    managerProp: { type: 'string', length: 255, nullable: true },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class BookTag2 {
+  id!: bigint;
+  name!: string;
+}
+
+export const BookTag2Schema = new EntitySchema({
+  class: BookTag2,
+  properties: {
+    id: { primary: true, type: 'bigint' },
+    name: { type: 'string', length: 50 },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Author2 } from './Author2.js';
+import { BookTag2 } from './BookTag2.js';
+import { Publisher2 } from './Publisher2.js';
+
+export class Book2 {
+  [PrimaryKeyProp]?: 'uuidPk';
+  uuidPk!: string;
+  createdAt!: Date & Opt;
+  title?: string;
+  perex?: string;
+  price?: string;
+  double?: number;
+  meta?: any;
+  author!: Ref<Author2>;
+  publisher?: Ref<Publisher2>;
+  foo?: string;
+  bookToTagUnordered = new Collection<BookTag2>(this);
+}
+
+export const Book2Schema = new EntitySchema({
+  class: Book2,
+  properties: {
+    uuidPk: { primary: true, type: 'string', length: 36 },
+    createdAt: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    title: { type: 'string', length: 255, nullable: true, index: 'book2_title_index' },
+    perex: { type: 'string', columnType: 'text', nullable: true },
+    price: { type: 'string', columnType: 'numeric(8,2)', nullable: true },
+    double: { type: 'number', columnType: 'double', nullable: true },
+    meta: { type: 'any', columnType: 'json', nullable: true },
+    author: { kind: 'm:1', entity: () => Author2, ref: true },
+    publisher: {
+      kind: 'm:1',
+      entity: () => Publisher2,
+      ref: true,
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      nullable: true,
+    },
+    foo: { type: 'string', length: 255, nullable: true, default: 'lol' },
+    bookToTagUnordered: {
+      kind: 'm:n',
+      entity: () => BookTag2,
+      pivotTable: 'book_to_tag_unordered',
+      joinColumn: 'book2_uuid_pk',
+      inverseJoinColumn: 'book_tag2_id',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Book2 } from './Book2.js';
+import { BookTag2 } from './BookTag2.js';
+
+export class Book2Tags {
+  [PrimaryKeyProp]?: 'order';
+  order!: number;
+  book2!: Ref<Book2>;
+  bookTag2!: Ref<BookTag2>;
+}
+
+export const Book2TagsSchema = new EntitySchema({
+  class: Book2Tags,
+  tableName: 'book2_tags',
+  properties: {
+    order: { primary: true, type: 'number' },
+    book2: {
+      kind: 'm:1',
+      entity: () => Book2,
+      ref: true,
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    bookTag2: {
+      kind: 'm:1',
+      entity: () => BookTag2,
+      ref: true,
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+  },
+});
+",
+  "import { EntitySchema, Ref } from '@mikro-orm/core';
+import { Car2 } from './Car2.js';
+
+export class CarOwner2 {
+  id!: number;
+  name!: string;
+  car!: Ref<Car2>;
+}
+
+export const CarOwner2Schema = new EntitySchema({
+  class: CarOwner2,
+  properties: {
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+    car: { kind: 'm:1', entity: () => Car2, ref: true, updateRule: 'cascade' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Car2 {
+  [PrimaryKeyProp]?: ['name', 'year'];
+  name!: string;
+  year!: number;
+  price!: number;
+}
+
+export const Car2Schema = new EntitySchema({
+  class: Car2,
+  properties: {
+    name: { primary: true, type: 'string', length: 100, index: 'car2_name_index' },
+    year: { primary: true, type: 'number', index: 'car2_year_index' },
+    price: { type: 'number' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Test2 } from './Test2.js';
+
+export class Configuration2 {
+  [PrimaryKeyProp]?: ['property', 'test'];
+  property!: string;
+  test!: Ref<Test2>;
+  value!: string;
+}
+
+export const Configuration2Schema = new EntitySchema({
+  class: Configuration2,
+  properties: {
+    property: { primary: true, type: 'string', length: 255 },
+    test: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Test2,
+      ref: true,
+      updateRule: 'cascade',
+    },
+    value: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class Dummy2 {
+  id!: number;
+}
+
+export const Dummy2Schema = new EntitySchema({
+  class: Dummy2,
+  properties: {
+    id: { primary: true, type: 'number' },
+  },
+});
+",
+  "import { EntitySchema, Opt, Ref } from '@mikro-orm/core';
+import { FooBaz2 } from './FooBaz2.js';
+
+export class FooBar2 {
+  id!: number;
+  name!: string;
+  nameWithSpace?: string;
+  baz?: Ref<FooBaz2>;
+  fooBar?: Ref<FooBar2>;
+  version!: Date & Opt;
+  blob?: Buffer;
+  blob2?: Buffer;
+  array?: string;
+  objectProperty?: any;
+}
+
+export const FooBar2Schema = new EntitySchema({
+  class: FooBar2,
+  properties: {
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+    nameWithSpace: { type: 'string', fieldName: 'name with space', length: 255, nullable: true },
+    baz: {
+      kind: '1:1',
+      entity: () => FooBaz2,
+      ref: true,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    fooBar: {
+      kind: '1:1',
+      entity: () => FooBar2,
+      ref: true,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    version: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    blob: { type: 'Buffer', length: 65535, nullable: true },
+    blob2: { type: 'Buffer', length: 65535, nullable: true },
+    array: { type: 'string', columnType: 'text', nullable: true },
+    objectProperty: { type: 'any', columnType: 'json', nullable: true },
+  },
+});
+",
+  "import { EntitySchema, Opt } from '@mikro-orm/core';
+
+export class FooBaz2 {
+  id!: number;
+  name!: string;
+  version!: Date & Opt;
+}
+
+export const FooBaz2Schema = new EntitySchema({
+  class: FooBaz2,
+  properties: {
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+    version: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2.js';
+import { FooBaz2 } from './FooBaz2.js';
+
+export class FooParam2 {
+  [PrimaryKeyProp]?: ['bar', 'baz'];
+  bar!: Ref<FooBar2>;
+  baz!: Ref<FooBaz2>;
+  value!: string;
+  version!: Date & Opt;
+}
+
+export const FooParam2Schema = new EntitySchema({
+  class: FooParam2,
+  properties: {
+    bar: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => FooBar2,
+      ref: true,
+      updateRule: 'cascade',
+    },
+    baz: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => FooBaz2,
+      ref: true,
+      updateRule: 'cascade',
+    },
+    value: { type: 'string', length: 255 },
+    version: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+  },
+});
+",
+  "import { EntitySchema, Opt } from '@mikro-orm/core';
+
+export class Publisher2 {
+  id!: number;
+  name!: string & Opt;
+  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
+  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  enum1?: number;
+  enum2?: number;
+  enum3?: number;
+  enum4?: Publisher2Enum4;
+  enum5?: Publisher2Enum5;
+}
+
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+
+export enum Publisher2Enum4 {
+  A = 'a',
+  B = 'b',
+  C = 'c',
+}
+
+export enum Publisher2Enum5 {
+  A = 'a',
+}
+
+export const Publisher2Schema = new EntitySchema({
+  class: Publisher2,
+  properties: {
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, default: 'asd' },
+    type: { enum: true, items: () => Publisher2Type, default: 'local' },
+    type2: { enum: true, items: () => Publisher2Type2, default: 'LOCAL' },
+    enum1: { type: 'number', columnType: 'tinyint', nullable: true },
+    enum2: { type: 'number', columnType: 'tinyint', nullable: true },
+    enum3: { type: 'number', columnType: 'tinyint', nullable: true },
+    enum4: { enum: true, items: () => Publisher2Enum4, nullable: true },
+    enum5: { enum: true, items: () => Publisher2Enum5, nullable: true },
+  },
+});
+",
+  "import { EntitySchema, Ref } from '@mikro-orm/core';
+import { Publisher2 } from './Publisher2.js';
+import { Test2 } from './Test2.js';
+
+export class Publisher2Tests {
+  id!: number;
+  publisher2!: Ref<Publisher2>;
+  test2!: Ref<Test2>;
+}
+
+export const Publisher2TestsSchema = new EntitySchema({
+  class: Publisher2Tests,
+  tableName: 'publisher2_tests',
+  properties: {
+    id: { primary: true, type: 'number' },
+    publisher2: {
+      kind: 'm:1',
+      entity: () => Publisher2,
+      ref: true,
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    test2: {
+      kind: 'm:1',
+      entity: () => Test2,
+      ref: true,
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class Sandwich {
+  id!: number;
+  name!: string;
+  price!: number;
+}
+
+export const SandwichSchema = new EntitySchema({
+  class: Sandwich,
+  properties: {
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+    price: { type: 'number' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, Ref } from '@mikro-orm/core';
+import { Book2 } from './Book2.js';
+import { FooBar2 } from './FooBar2.js';
+
+export class Test2 {
+  id!: number;
+  name?: string;
+  book?: Ref<Book2>;
+  parent?: Ref<Test2>;
+  version: number & Opt = 1;
+  fooBar?: Ref<FooBar2>;
+  fooBaz?: number;
+  bars = new Collection<FooBar2>(this);
+}
+
+export const Test2Schema = new EntitySchema({
+  class: Test2,
+  properties: {
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, nullable: true },
+    book: {
+      kind: '1:1',
+      entity: () => Book2,
+      ref: true,
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    parent: {
+      kind: 'm:1',
+      entity: () => Test2,
+      ref: true,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    version: { type: 'number', default: 1 },
+    fooBar: {
+      kind: '1:1',
+      entity: () => FooBar2,
+      ref: true,
+      fieldName: 'foo___bar',
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    bars: {
+      kind: 'm:n',
+      entity: () => FooBar2,
+      joinColumn: 'test2_id',
+      inverseJoinColumn: 'foo_bar2_id',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Car2 } from './Car2.js';
+import { Sandwich } from './Sandwich.js';
+
+export class User2 {
+  [PrimaryKeyProp]?: ['firstName', 'lastName'];
+  firstName!: string;
+  lastName!: string;
+  foo?: number;
+  favouriteCar?: Ref<Car2>;
+  cars = new Collection<Car2>(this);
+  sandwiches = new Collection<Sandwich>(this);
+}
+
+export const User2Schema = new EntitySchema({
+  class: User2,
+  properties: {
+    firstName: { primary: true, type: 'string', length: 100 },
+    lastName: { primary: true, type: 'string', length: 100 },
+    foo: { type: 'number', nullable: true },
+    favouriteCar: {
+      kind: '1:1',
+      entity: () => Car2,
+      ref: true,
+      updateRule: 'cascade',
+      deleteRule: 'set null',
+      nullable: true,
+    },
+    cars: {
+      kind: 'm:n',
+      entity: () => Car2,
+      joinColumns: ['user2_first_name', 'user2_last_name'],
+      inverseJoinColumns: ['car2_name', 'car2_year'],
+    },
+    sandwiches: {
+      kind: 'm:n',
+      entity: () => Sandwich,
+      joinColumns: ['user2_first_name', 'user2_last_name'],
+      inverseJoinColumn: 'sandwich_id',
+    },
+  },
+});
+",
+]
+`;
+
 exports[`EntityGenerator generate OptionalProps and include properties for columns that are not nullable, but have defaults: generate-OptionalProps 1`] = `
 [
   "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';

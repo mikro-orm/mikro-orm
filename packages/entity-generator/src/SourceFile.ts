@@ -12,6 +12,7 @@ import {
   type OneToOneOptions,
   type Platform,
   ReferenceKind,
+  type TypeConfig,
   UnknownType,
   Utils,
 } from '@mikro-orm/core';
@@ -69,27 +70,22 @@ export class SourceFile {
       ret += `@Unique({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
     });
 
-    ret += `export `;
-    if (this.meta.abstract) {
-      ret += `abstract `;
+    let classHead = '';
+    if (this.meta.className === this.options.customBaseEntityName) {
+      this.coreImports.add('Config');
+      this.coreImports.add('DefineConfig');
+      const defineConfigTypeSettings: TypeConfig = {};
+      defineConfigTypeSettings.forceObject = this.platform.getConfig().get('serialization').forceObject ?? false;
+      classHead += `\n${' '.repeat(2)}[Config]?: DefineConfig<${this.serializeObject(defineConfigTypeSettings)}>;\n\n`;
     }
-    ret += `class ${this.meta.className}`;
-    if (this.meta.extends) {
-      this.entityImports.add(this.meta.extends);
-      ret += ` extends ${this.meta.extends}`;
-    }
-    ret += ' {';
+
     const enumDefinitions: string[] = [];
     const eagerProperties: EntityProperty<any>[] = [];
     const primaryProps: EntityProperty<any>[] = [];
-    let classBody = '\n';
+    let classBody = '';
     Object.values(this.meta.properties).forEach(prop => {
       const decorator = this.getPropertyDecorator(prop, 2);
       const definition = this.getPropertyDefinition(prop, 2);
-
-      if (!classBody.endsWith('\n\n')) {
-        classBody += '\n';
-      }
 
       classBody += decorator;
       classBody += definition;
@@ -114,19 +110,28 @@ export class SourceFile {
       const primaryPropNames = primaryProps.map(prop => `'${prop.name}'`);
 
       if (primaryProps.length > 1) {
-        ret += `\n\n${' '.repeat(2)}[PrimaryKeyProp]?: [${primaryPropNames.join(', ')}];`;
+        classHead += `\n${' '.repeat(2)}[PrimaryKeyProp]?: [${primaryPropNames.join(', ')}];\n`;
       } else {
-        ret += `\n\n${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames[0]};`;
+        classHead += `\n${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames[0]};\n`;
       }
     }
 
     if (eagerProperties.length > 0) {
       this.coreImports.add('EagerProps');
       const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
-      ret += `\n\n${' '.repeat(2)}[EagerProps]?: ${eagerPropertyNames.join(' | ')};`;
+      classHead += `\n${' '.repeat(2)}[EagerProps]?: ${eagerPropertyNames.join(' | ')};\n`;
     }
 
-    ret += `${classBody}}\n`;
+    ret += this.getEntityClass(classBody ? `${classHead}\n${classBody}` : classHead);
+    ret = `${this.generateImports()}\n\n${ret}`;
+    if (enumDefinitions.length) {
+      ret += '\n' + enumDefinitions.join('\n');
+    }
+
+    return ret;
+  }
+
+  protected generateImports() {
     const imports = [];
     if (this.coreImports.size > 0) {
       imports.push(`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`);
@@ -136,12 +141,28 @@ export class SourceFile {
     entityImports.sort().forEach(entity => {
       imports.push(`import { ${entity} } from './${this.options.fileName!(entity)}${entityImportExtension}';`);
     });
+    return imports.join('\n');
+  }
 
-    ret = `${imports.join('\n')}\n\n${ret}`;
-    if (enumDefinitions.length) {
-      ret += '\n' + enumDefinitions.join('\n');
+  protected getEntityClass(classBody: string) {
+    let ret = `export `;
+    if (this.meta.abstract) {
+      ret += `abstract `;
     }
-
+    ret += `class ${this.meta.className}`;
+    if (this.meta.extends) {
+      this.entityImports.add(this.meta.extends);
+      ret += ` extends ${this.meta.extends}`;
+    } else if (this.options.useCoreBaseEntity) {
+      if (this.meta.className === 'BaseEntity') {
+        this.coreImports.add('BaseEntity as MikroBaseEntity');
+        ret += ` extends MikroBaseEntity`;
+      } else {
+        this.coreImports.add('BaseEntity');
+        ret += ` extends BaseEntity`;
+      }
+    }
+    ret += ` {\n${classBody}}\n`;
     return ret;
   }
 

@@ -1,20 +1,20 @@
-import { ReferenceKind, Utils, type Dictionary, type EntityProperty } from '@mikro-orm/core';
+import { ReferenceKind, Utils, type Dictionary, type EntityProperty, type TypeConfig } from '@mikro-orm/core';
 import { SourceFile } from './SourceFile';
 
 export class EntitySchemaSourceFile extends SourceFile {
 
   override generate(): string {
     this.coreImports.add('EntitySchema');
-    let ret = `export `;
-    if (this.meta.abstract) {
-      ret += `abstract `;
+
+    let classBody = '';
+    if (this.meta.className === this.options.customBaseEntityName) {
+      this.coreImports.add('Config');
+      this.coreImports.add('DefineConfig');
+      const defineConfigTypeSettings: TypeConfig = {};
+      defineConfigTypeSettings.forceObject = this.platform.getConfig().get('serialization').forceObject ?? false;
+      classBody += `${' '.repeat(2)}[Config]?: DefineConfig<${this.serializeObject(defineConfigTypeSettings)}>;\n`;
     }
-    ret += `class ${this.meta.className}`;
-    if (this.meta.extends) {
-      this.entityImports.add(this.meta.extends);
-      ret += ` extends ${this.meta.extends}`;
-    }
-    ret += ' {\n';
+
     const enumDefinitions: string[] = [];
     const eagerProperties: EntityProperty<any>[] = [];
     const primaryProps: EntityProperty<any>[] = [];
@@ -42,27 +42,22 @@ export class EntitySchemaSourceFile extends SourceFile {
       const primaryPropNames = primaryProps.map(prop => `'${prop.name}'`);
 
       if (primaryProps.length > 1) {
-        ret += `${' '.repeat(2)}[PrimaryKeyProp]?: [${primaryPropNames.join(', ')}];\n`;
+        classBody += `${' '.repeat(2)}[PrimaryKeyProp]?: [${primaryPropNames.join(', ')}];\n`;
       } else {
-        ret += `${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames[0]};\n`;
+        classBody += `${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames[0]};\n`;
       }
     }
 
     if (eagerProperties.length > 0) {
       this.coreImports.add('EagerProps');
       const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
-      ret += `${' '.repeat(2)}[EagerProps]?: ${eagerPropertyNames.join(' | ')};\n`;
+      classBody += `${' '.repeat(2)}[EagerProps]?: ${eagerPropertyNames.join(' | ')};\n`;
     }
 
-    ret += `${props.join('')}}\n`;
+    classBody += `${props.join('')}`;
+    const classDecl = this.getEntityClass(classBody);
 
-    const imports = [`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`];
-    const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
-    entityImports.sort().forEach(entity => {
-      imports.push(`import { ${entity} } from './${entity}';`);
-    });
-
-    ret = `${imports.join('\n')}\n\n${ret}`;
+    let ret = `${this.generateImports()}\n\n${classDecl}`;
     if (enumDefinitions.length) {
       ret += '\n' + enumDefinitions.join('\n');
     }
