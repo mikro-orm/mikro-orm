@@ -20,7 +20,11 @@ function Version() {
   const context = useDocusaurusContext();
   const { siteConfig = {} } = context;
   const latestVersion = [versions[0], pkg.version];
-  const pastVersions = versions.filter(version => version !== versions[0]).map(v => [v, v + '.0']);
+  /** @type {string[]|undefined} */
+  const includedVersions = siteConfig.presets[0][1].docs.onlyIncludeVersions;
+  const pastVersions = versions
+    .filter(version => version !== versions[0] && (!includedVersions || includedVersions.includes(version)))
+    .map(v => [v, v + '.0']);
   const repoUrl = `https://github.com/${siteConfig.organizationName}/${siteConfig.projectName}`;
   const link = (to, version) => {
     const useQuickStart = ['next', 'latest'].includes(version) || +version >= 6;

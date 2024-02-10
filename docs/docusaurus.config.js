@@ -5,7 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+const path = require('node:path');
+/** @type string[] */
+const versions = require('./versions.json');
 const pkg = require('../packages/core/package.json');
+
 const packages = [
   'core',
   'knex',
@@ -21,6 +25,67 @@ const packages = [
   'postgresql',
   'seeder',
 ].map(d => ({ path: `packages/${d}` }));
+
+const docsFooterLinks = {
+  title: 'Docs',
+  items: [
+    { label: 'Quick Start', to: 'docs/quick-start' },
+    { label: 'Quick Start', to: 'docs/guide/type-safety' },
+    { label: 'Getting Started', to: 'docs/guide' },
+    { label: 'Migration from v5 to v6', to: 'docs/upgrading-v5-to-v6' },
+    { label: 'Version 5.9 docs', to: 'docs/5.9/installation' },
+  ],
+};
+
+/** @type {import('@docusaurus/plugin-content-docs').PluginOptions} */
+const docsPluginOptions = {
+  sidebarPath: require.resolve('./sidebars.js'),
+  editUrl: 'https://github.com/mikro-orm/mikro-orm/edit/master/docs/',
+  showLastUpdateAuthor: true,
+  showLastUpdateTime: true,
+  remarkPlugins: [
+    [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
+  ],
+};
+
+/** @type {import('docusaurus-plugin-typedoc-api/lib/types').DocusaurusPluginTypeDocApiOptions} */
+const docusaurusPluginTypedocApiOptions = {
+  projectRoot: `${__dirname}/..`,
+  changelogs: true,
+  packages,
+  exclude: ['**/node_modules/*'],
+  readmes: false,
+  typedocOptions: {
+    readme: 'none',
+    tsconfig: '../tsconfig.json',
+    excludeExternals: true,
+    excludePrivate: true,
+    excludeProtected: true,
+    excludeInternal: true,
+    skipErrorChecking: true,
+    externalPattern: '**/node_modules/*',
+    cleanOutputDir: true,
+  },
+};
+
+if (!!process.env.MIKRO_ORM_DOCS_TESTING) {
+  // Always include the latest version, and the earliest version.
+  const includedVersions = new Set([
+    versions[0],
+    versions.at(-1),
+  ]);
+  // Include whatever other versions are featured in the footer.
+  docsFooterLinks.items.forEach(({to}) => {
+    const versionPath = path.dirname(path.relative('docs', to));
+    if (!versions.includes(versionPath)) {
+      return;
+    }
+    includedVersions.add(versionPath);
+  });
+  includedVersions.add('current');
+
+  docusaurusPluginTypedocApiOptions.onlyIncludeVersions = docsPluginOptions.onlyIncludeVersions = Array.from(includedVersions);
+}
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
@@ -106,15 +171,7 @@ module.exports = {
     footer: {
       style: 'dark',
       links: [
-        {
-          title: 'Docs',
-          items: [
-            { label: 'Quick Start', to: 'docs/quick-start' },
-            { label: 'Getting Started', to: 'docs/guide' },
-            { label: 'Migration from v5 to v6', to: 'docs/upgrading-v5-to-v6' },
-            { label: 'Version 5.9 docs', to: 'docs/5.9/installation' },
-          ],
-        },
+        docsFooterLinks,
         {
           title: 'Community',
           items: [
@@ -149,15 +206,7 @@ module.exports = {
     [
       '@docusaurus/preset-classic',
       {
-        docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/mikro-orm/mikro-orm/edit/master/docs/',
-          showLastUpdateAuthor: true,
-          showLastUpdateTime: true,
-          remarkPlugins: [
-            [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
-          ],
-        },
+        docs: docsPluginOptions,
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
@@ -168,24 +217,7 @@ module.exports = {
   plugins: [
     [
       'docusaurus-plugin-typedoc-api',
-      {
-        projectRoot: `${__dirname}/..`,
-        changelogs: true,
-        packages,
-        exclude: ['**/node_modules/*'],
-        readmes: false,
-        typedocOptions: {
-          readme: 'none',
-          tsconfig: '../tsconfig.json',
-          excludeExternals: true,
-          excludePrivate: true,
-          excludeProtected: true,
-          excludeInternal: true,
-          skipErrorChecking: true,
-          externalPattern: '**/node_modules/*',
-          cleanOutputDir: true,
-        },
-      },
+      docusaurusPluginTypedocApiOptions,
     ],
     [
       '@docusaurus/plugin-client-redirects',
