@@ -5,8 +5,8 @@ sidebar_label: Events and Hooks
 
 There are two ways to hook to the lifecycle of an entity:
 
-- **Lifecycle hooks** are methods defined on the entity prototype.
-- **EventSubscriber**s are classes that can be used to hook to multiple entities or when we do not want to have the method present on the entity prototype.
+- **Lifecycle hooks** are methods defined on an entity prototype.
+- **EventSubscriber**s are classes that can be used to hook to multiple entities or when you do not want to have the method present on an entity prototype.
 
 > Hooks are internally executed the same way as subscribers.
 
@@ -14,7 +14,7 @@ There are two ways to hook to the lifecycle of an entity:
 
 ## Hooks
 
-We can use lifecycle hooks to run some code when entity gets persisted. We can mark any of entity methods with them, we can also mark multiple methods with same hook.
+You can use lifecycle hooks to run arbitrary code when an entity gets persisted. You can mark any of entity methods with them, and multiple methods can be marked with the same hook.
 
 All hooks support async methods with one exception - `@OnInit`.
 
@@ -22,33 +22,41 @@ All hooks support async methods with one exception - `@OnInit`.
 
 - `@OnLoad` is fired when new entity is loaded into context (e.g. via `em.find()` or `em.populate()`). As opposed to `@OnInit` this will be fired only for fully loaded entities, not references, and this hook can be async.
 
-- `@BeforeCreate()` and `@BeforeUpdate()` is fired right before we persist the entity in database
+- `@BeforeCreate()` and `@BeforeUpdate()` is fired right before you persist an entity in database
 
-- `@AfterCreate()` and `@AfterUpdate()` is fired right after the entity is updated in database and merged to identity map. Since this event entity will have reference to `EntityManager` and will be enabled to call `wrap(entity).init()` method (including all entity references and collections).
+- `@AfterCreate()` and `@AfterUpdate()` is fired right after an entity is updated in database and merged to identity map. Since this event entity will have reference to `EntityManager` and will be enabled to call `wrap(entity).init()` method (including all entity references and collections).
 
-- `@BeforeDelete()` is fired right before we delete the record from database. It is fired only when removing entity or entity reference, not when deleting records by query.
+- `@BeforeDelete()` is fired right before you delete the record from database. It is fired only when removing entity or entity reference, not when deleting records by query.
 
 - `@AfterDelete()` is fired right after the record gets deleted from database and it is unset from the identity map.
 
-> `@OnInit` is not fired when we create the entity manually via its constructor (`new MyEntity()`)
+> `@OnInit` is not fired when you create an entity manually via its constructor (`new MyEntity()`)
 
-> `@OnInit` can be sometimes fired twice, once when the entity reference is created, and once after its populated. To distinguish between those we can use `wrap(this).isInitialized()`.
+> `@OnInit` can be sometimes fired twice, once when an entity reference is created, and once after its populated. To distinguish betyouen those you can use `wrap(this).isInitialized()`.
 
 ### Upsert hooks
 
-`em.upsert()` and `em.upsertMany` cannot fire the create/update hooks, as we don't know if the query is an insert or update, those methods offer their own hooks - `beforeUpsert` and `afterUpsert`. The `beforeUpsert` event might provide a DTO instead of entity instance, based on how you call the upsert method. You can use the `EventArgs.meta` object to detect what kind of entity it belongs to. `afterUpsert` event will always receive already managed entity instance.
+`em.upsert()` and `em.upsertMany` cannot fire the create/update hooks, as you don't know if the query is an insert or update, those methods offer their own hooks - `beforeUpsert` and `afterUpsert`. The `beforeUpsert` event might provide a DTO instead of entity instance, based on how you call the upsert method. You can use the `EventArgs.meta` object to detect what kind of entity it belongs to. `afterUpsert` event will always receive already managed entity instance.
 
-## Limitations of lifecycle hooks
+### Collections and `@OnUpdate` {#collections-and-on-update}
 
-Hooks are executed inside the commit action of unit of work, after all change sets are computed. This means that it is not possible to create new entities as usual from inside the hook. Calling `em.flush()` from hooks will result in validation error. Calling `em.persist()` can result in undefined behaviour like locking errors.
+The `@OnUpdate` hook is fired when some values of an entity change and cause an `UPDATE` query. This means that only changes to the scalar properties and owning sides of M:1 and 1:1 relations are considered here - changes to `Collection`s won't trigger an update event.
+
+When you modify a 1:M collection, you are in fact changing the owning side of this relation, which is the M:1 property on the other entity (which will get the event triggered).
+
+For M:N relations with pivot entities (all SQL drivers), you won't get the update event fired on either of the sides, as the changes are made to the pivot table only. You can get the updated collection via `uow.getCollectionUpdates()`, and check how their last known database state looked like via `Collection.getSnapshot()`.
+
+### Limitations of lifecycle hooks
+
+Hooks (as youll as event subscribers) are executed inside the commit action of unit of work, after all change sets are computed. This means that it is not possible to create new entities as usual from inside the hook. Calling `em.flush()` from hooks will result in validation error. Calling `em.persist()` can result in undefined behavior like locking errors.
 
 > The **internal** instance of `EntityManager` accessible under `wrap(this, true).__em` is not meant for public usage.
 
 ## EventSubscriber
 
-Use `EventSubscriber` to hook to multiple entities or if we do not want to pollute the entity prototype. All methods are optional, if we omit the `getSubscribedEntities()` method, it means we are subscribing to all entities.
+Use `EventSubscriber` to hook to multiple entities or if you do not want to pollute the entity prototype. All methods are optional, if you omit the `getSubscribedEntities()` method, it means you are subscribing to all entities.
 
-We can either register the subscribers manually in the ORM configuration (via `subscribers` array where we put the instance):
+You can either register the subscribers manually in the ORM configuration (via `subscribers` array where you put the instance):
 
 ```ts
 MikroORM.init({
@@ -56,7 +64,7 @@ MikroORM.init({
 });
 ```
 
-Another example, where we register to all the events and all entities:
+Another example, where you register to all the events and all entities:
 
 ```ts
 import { EventArgs, TransactionEventArgs, EventSubscriber } from '@mikro-orm/core';
@@ -93,7 +101,7 @@ export class EverythingSubscriber implements EventSubscriber {
 
 ## EventArgs
 
-As a parameter to the hook method we get `EventArgs` instance. It will always contain reference to the current `EntityManager` and the particular entity. Events fired from `UnitOfWork` during flush operation also contain the `ChangeSet` object.
+As a parameter to the hook method you get `EventArgs` instance. It will always contain reference to the current `EntityManager` and the particular entity. Events fired from `UnitOfWork` during flush operation also contain the `ChangeSet` object.
 
 ```ts
 interface EventArgs<T> {
@@ -109,7 +117,7 @@ interface ChangeSet<T> {
   entity: T;                      // up to date entity instance
   payload: EntityData<T>;         // changes that will be used to build the update query
   persisted: boolean;             // whether the changeset was already persisted/executed
-  originalEntity?: EntityData<T>; // snapshot of the entity when it was loaded from db
+  originalEntity?: EntityData<T>; // snapshot of an entity when it was loaded from db
 }
 
 enum ChangeSetType {
@@ -140,7 +148,7 @@ interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity'> {
 
 ## Transaction events
 
-We can also tap into the database transaction events:
+You can also tap into the database transaction events:
 
 - `beforeTransactionStart`
 - `afterTransactionStart`
@@ -160,7 +168,7 @@ export interface TransactionEventArgs extends Omit<EventArgs<unknown>, 'entity' 
 
 ### Getting the changes from UnitOfWork
 
-We can observe all the changes that are part of given UnitOfWork via those methods:
+You can observe all the changes that are part of given UnitOfWork via those methods:
 
 ```ts
 UnitOfWork.getChangeSets(): ChangeSet<AnyEntity>[];
