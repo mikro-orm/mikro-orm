@@ -54,7 +54,7 @@ const orm = await MikroORM.init<PostgreSqlDriver>({
 console.log(orm.em); // access EntityManager via `em` property
 ```
 
-> Read more about all the possible configuration options in [Advanced Configuration](configuration.md) section.
+> Read more about all the possible configuration options in [Advanced Configuration](./configuration.md) section.
 
 We can also provide paths where we store our entities via `entities` array. Internally it uses [`globby`](https://github.com/sindresorhus/globby) so we can use [globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns), including negative globs.
 
@@ -70,7 +70,7 @@ If we are experiencing problems with folder based discovery, try using `mikro-or
 
 > Since v4, we can also use file globs, like `./dist/app/**/entities/*.entity.js`.
 
-We can also set the configuration via [environment variables](configuration.md#using-environment-variables).
+We can also set the configuration via [environment variables](./configuration.md#using-environment-variables).
 
 > We can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. The object will be deeply merged, overriding all internally used options.
 
@@ -113,7 +113,7 @@ const orm = await MikroORM.init<PostgreSqlDriver>({
 });
 ```
 
-Read more about the differences in [Metadata Providers section](metadata-providers.md).
+Read more about the differences in [Metadata Providers section](./metadata-providers.md).
 
 ```ts
 const orm = await MikroORM.init<PostgreSqlDriver>({
@@ -127,12 +127,12 @@ const orm = await MikroORM.init<PostgreSqlDriver>({
 
 > For `ts-morph` discovery to work in production, we need to deploy `.d.ts` declaration files. Be sure to enable `compilerOptions.declaration` in our `tsconfig.json`.
 
-We can also use different [metadata provider](metadata-providers.md) or even write custom one:
+We can also use different [metadata provider](./metadata-providers.md) or even write custom one:
 
 - `ReflectMetadataProvider` that uses `reflect-metadata` instead of `ts-morph`
 - `JavaScriptMetadataProvider` that allows us to manually provide the entity schema (mainly for Vanilla JS)
 
-> Using [`EntitySchema`](entity-schema.md) is another way to define our entities, which is better suited than using `JavaScriptMetadataProvider`.
+> Using [`EntitySchema`](./entity-schema.md) is another way to define our entities, which is better suited than using `JavaScriptMetadataProvider`.
 
 ```ts
 const orm = await MikroORM.init<PostgreSqlDriver>({
@@ -160,7 +160,7 @@ app.use((req, res, next) => {
 > app.use((ctx, next) => RequestContext.createAsync(orm.em, next));
 > ```
 
-More info about `RequestContext` is described [here](identity-map.md#request-context).
+More info about `RequestContext` is described [here](./identity-map#request-context).
 
 ## Setting up the Commandline Tool
 
@@ -295,4 +295,4 @@ To verify our setup, we can use `mikro-orm debug` command.
 
 > Note: When importing a dump file we need `multipleStatements: true` in our configuration. Please check the configuration documentation for more information.
 
-Now we can start [defining our entities](defining-entities.md).
+Now we can start [defining our entities](./defining-entities.md).

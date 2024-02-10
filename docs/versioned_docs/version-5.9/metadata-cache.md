@@ -4,7 +4,7 @@ title: Metadata Cache
 
 > In v4 and later versions, we need to explicitly install `@mikro-orm/reflection` to use `TsMorphMetadataProvider`.
 
-MikroORM allows different ways to [obtain entity metadata](metadata-providers.md). One way is to use [`ts-morph`](https://github.com/dsherret/ts-morph) to read TypeScript source files of all entities to be able to detect all types. This process can be performance heavy and time-consuming. For this reason, metadata cache is automatically enabled for `TsMorphMetadataProvider`. It can be optionally enabled for the other metadata providers, but it should not be needed.
+MikroORM allows different ways to [obtain entity metadata](./metadata-providers.md). One way is to use [`ts-morph`](https://github.com/dsherret/ts-morph) to read TypeScript source files of all entities to be able to detect all types. This process can be performance heavy and time-consuming. For this reason, metadata cache is automatically enabled for `TsMorphMetadataProvider`. It can be optionally enabled for the other metadata providers, but it should not be needed.
 
 After the discovery process ends, all metadata will be cached. By default, `FileCacheAdapter` will be used to store the cache inside `./temp` folder to JSON files.
 

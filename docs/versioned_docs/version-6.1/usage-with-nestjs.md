@@ -42,9 +42,9 @@ Once the installation process is completed, we can import the `MikroOrmModule` i
 export class AppModule {}
 ```
 
-The `forRoot()` method accepts the same configuration object as `init()` from the MikroORM package. Check [this page](configuration.md) for the complete configuration documentation.
+The `forRoot()` method accepts the same configuration object as `init()` from the MikroORM package. Check [this page](./configuration.md) for the complete configuration documentation.
 
-Alternatively we can [configure the CLI](quick-start.md#setting-up-the-commandline-tool) by creating a configuration file `mikro-orm.config.ts` and then call the `forRoot()` without any arguments. This won't work when you use a build tools that use tree shaking.
+Alternatively we can [configure the CLI](./quick-start.md#setting-up-the-commandline-tool) by creating a configuration file `mikro-orm.config.ts` and then call the `forRoot()` without any arguments. This won't work when you use a build tools that use tree shaking.
 
 ```ts
 @Module({
@@ -78,7 +78,7 @@ export class MyService {
 
 ## Repositories
 
-MikroORM supports the repository design pattern. For every entity we can create a repository. Read the complete [documentation on repositories here](repositories.md). To define which repositories shall be registered in the current scope you can use the `forFeature()` method. For example, in this way:
+MikroORM supports the repository design pattern. For every entity we can create a repository. Read the complete [documentation on repositories here](./repositories.md). To define which repositories shall be registered in the current scope you can use the `forFeature()` method. For example, in this way:
 
 > You should **not** register your base entities via `forFeature()`, as there are no repositories for those. On the other hand, base entities need to be part of the list in `forRoot()` (or in the ORM config in general).
 
@@ -194,7 +194,7 @@ With that option specified, every entity registered through the `forFeature()` m
 
 > Before v6, `@CreateRequestContext()` was called `@UseRequestContext()`.
 
-As mentioned in the [docs](identity-map.md), we need a clean state for each request. That is handled automatically thanks to the `RequestContext` helper registered via middleware.
+As mentioned in the [docs](./identity-map.md), we need a clean state for each request. That is handled automatically thanks to the `RequestContext` helper registered via middleware.
 
 But middlewares are executed only for regular HTTP request handles, what if we need a request scoped method outside of that? One example of that is queue handlers or scheduled tasks.
 
@@ -231,7 +231,7 @@ export class MyService {
 }
 ```
 
-Another thing to look out for how you combine them with other decorators. For example if you use it in combination with NestJS's "[BullJS queues module](https://docs.nestjs.com/techniques/queues)", a safe bet is to extract the part of the code that needs a clean [docs](identity-map.md), either in a new method or inject a separate service.
+Another thing to look out for how you combine them with other decorators. For example if you use it in combination with NestJS's "[BullJS queues module](https://docs.nestjs.com/techniques/queues)", a safe bet is to extract the part of the code that needs a clean [docs](./identity-map.md), either in a new method or inject a separate service.
 
 ```ts
 @Processor({

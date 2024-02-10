@@ -39,7 +39,7 @@ export class Book {
 }
 ```
 
-You can also specify how operations on given entity should [cascade](cascading.md) to the referred entity.
+You can also specify how operations on given entity should [cascade](./cascading.md) to the referred entity.
 
 ## OneToMany
 
@@ -66,9 +66,9 @@ export class Author {
 }
 ```
 
-As you can see, OneToMany is the inverse side of ManyToOne (which is the owning side). More about how collections work can be found on [collections page](collections.md).
+As you can see, OneToMany is the inverse side of ManyToOne (which is the owning side). More about how collections work can be found on [collections page](./collections.md).
 
-You can also specify how operations on given entity should [cascade](cascading.md) to the referred entities. There is also more aggressive remove mode called [Orphan Removal](cascading.md#orphan-removal) (`books4` example).
+You can also specify how operations on given entity should [cascade](./cascading.md) to the referred entities. There is also more aggressive remove mode called [Orphan Removal](./cascading.md#orphan-removal) (`books4` example).
 
 ## OneToOne
 
@@ -112,7 +112,7 @@ export class User {
 }
 ```
 
-As you can see, relationships can be also self-referencing (all of them. OneToOne also supports [Orphan Removal](cascading.md#orphan-removal).
+As you can see, relationships can be also self-referencing (all of them. OneToOne also supports [Orphan Removal](./cascading.md#orphan-removal).
 
 ## ManyToMany
 
@@ -159,4 +159,4 @@ export class BookTag {
 }
 ```
 
-Again, more information about how collections work can be found on [collections page](collections.md).
+Again, more information about how collections work can be found on [collections page](./collections.md).

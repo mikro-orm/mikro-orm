@@ -14,7 +14,7 @@ This process can be a bit slow as well as memory consuming, mainly because `ts-m
 
 > You can specify the path to `tsconfig.json` manually via `discovery: { tsConfigPath: '...' }`.
 
-After the discovery process ends, all [metadata will be cached](metadata-cache.md). By default, `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files.
+After the discovery process ends, all [metadata will be cached](./metadata-cache.md). By default, `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files.
 
 > You can generate production cache via CLI command `mikro-orm cache:generate`.
 
@@ -121,4 +121,4 @@ await MikroORM.init({
 });
 ```
 
-You can read more about it in [Usage with JavaScript section](usage-with-js.md).
+You can read more about it in [Usage with JavaScript section](./usage-with-js.md).

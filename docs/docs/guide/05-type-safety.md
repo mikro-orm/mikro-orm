@@ -269,7 +269,7 @@ export class Article {
 }
 ```
 
-Another way is to use `toReference()` method available as part of [`WrappedEntity` interface](entity-helper.md#wrappedentity-and-wrap-helper):
+Another way is to use `toReference()` method available as part of [`WrappedEntity` interface](../entity-helper.md#wrappedentity-and-wrap-helper):
 
 ```ts
 const author = new User(...)

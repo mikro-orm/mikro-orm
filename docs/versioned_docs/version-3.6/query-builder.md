@@ -18,7 +18,7 @@ console.log(qb.getParams());
 const res1 = await qb.execute();
 ```
 
-`QueryBuilder` also supports [smart query conditions](query-conditions.md).
+`QueryBuilder` also supports [smart query conditions](./query-conditions.md).
 
 ## Using Knex.js
 
@@ -139,7 +139,7 @@ console.log(qb.getQuery());
 // order by `e1`.`tags` asc
 ```
 
-This is currently available only for filtering (`where`) and sorting (`orderBy`), only the root entity will be selected. To populate its relationships, you can use [EntityLoader](nested-populate.md).
+This is currently available only for filtering (`where`) and sorting (`orderBy`), only the root entity will be selected. To populate its relationships, you can use [EntityLoader](./nested-populate.md).
 
 ## Explicit Joining
 

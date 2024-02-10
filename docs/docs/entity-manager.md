@@ -73,7 +73,7 @@ em.remove(em.getReference(Book, 2));
 author.books.add(em.getReference(Book, 3));
 ```
 
-The concept can be combined with the so-called `Reference` wrapper for added type safety as described in the [Type-safe Relations section](./type-safe-relations.md).
+The concept can be combined with the so-called `Reference` wrapper for added type safety as described in the [Type-safe Relations section](type-safe-relations.md).
 
 ## Entity state and `WrappedEntity`
 
@@ -191,7 +191,7 @@ const users = await em.find(User, [1, 2, 3, 4, 5]);
 const user1 = await em.findOne(User, 1);
 ```
 
-As we can see in the fifth example, one can also use operators like `$and`, `$or`, `$gte`, `$gt`, `$lte`, `$lt`, `$in`, `$nin`, `$eq`, `$ne`, `$like`, `$re` and `$fulltext`. More about that can be found in [Query Conditions](query-conditions.md) section.
+As we can see in the fifth example, one can also use operators like `$and`, `$or`, `$gte`, `$gt`, `$lte`, `$lt`, `$in`, `$nin`, `$eq`, `$ne`, `$like`, `$re` and `$fulltext`. More about that can be found in [Query Conditions](./query-conditions.md) section.
 
 #### Using custom classes in `FilterQuery`
 

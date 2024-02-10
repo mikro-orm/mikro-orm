@@ -2613,19 +2613,17 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 582,
-							"name": "length",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "intrinsic",
-								"name": "number"
-							}
+					"getSignature": {
+						"id": 582,
+						"name": "length",
+						"kind": 524288,
+						"kindString": "Get signature",
+						"flags": {},
+						"type": {
+							"type": "intrinsic",
+							"name": "number"
 						}
-					]
+					}
 				},
 				{
 					"id": 583,
@@ -3803,23 +3801,21 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 681,
-							"name": "length",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "intrinsic",
-								"name": "number"
-							},
-							"inheritedFrom": {
-								"type": "reference",
-								"name": "ArrayCollection.length"
-							}
+					"getSignature": {
+						"id": 681,
+						"name": "length",
+						"kind": 524288,
+						"kindString": "Get signature",
+						"flags": {},
+						"type": {
+							"type": "intrinsic",
+							"name": "number"
+						},
+						"inheritedFrom": {
+							"type": "reference",
+							"name": "ArrayCollection.length"
 						}
-					],
+					},
 					"inheritedFrom": {
 						"type": "reference",
 						"id": 581,
@@ -33233,5 +33229,6 @@
 			"line": 1,
 			"character": 0
 		}
-	]
+	],
+	"symbolIdMap": {}
 }

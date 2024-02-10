@@ -12,7 +12,7 @@ MikroORM.init({
 });
 ```
 
-We can also use folder based discovery by providing list of paths to the entities we want to discover (globs are supported as well). This way we also need to specify `entitiesTs`, where we point the paths to the TS source files instead of the JS compiled files (see more at [Metadata Providers](metadata-providers.md)).
+We can also use folder based discovery by providing list of paths to the entities we want to discover (globs are supported as well). This way we also need to specify `entitiesTs`, where we point the paths to the TS source files instead of the JS compiled files (see more at [Metadata Providers](./metadata-providers.md)).
 
 > The `entitiesTs` option is used when running the app via `ts-node`, as the ORM needs to discover the TS files. Always specify this option if you use folder/file based discovery.
 
@@ -54,7 +54,7 @@ MikroORM.init({
 
 > If you disable `discovery.alwaysAnalyseProperties` option, you will need to explicitly provide `nullable` and `ref` parameters (where applicable).
 
-Read more about this in [Metadata Providers](metadata-providers.md) sections.
+Read more about this in [Metadata Providers](./metadata-providers.md) sections.
 
 ### Adjusting default type mapping
 
@@ -218,7 +218,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Installation](quick-start.md) and [Read Connections](read-connections.md) sections.
+Read more about this in [Installation](./quick-start.md) and [Read Connections](./read-connections.md) sections.
 
 ### Using short-lived tokens
 
@@ -259,7 +259,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Naming Strategy](naming-strategy.md) section.
+Read more about this in [Naming Strategy](./naming-strategy.md) section.
 
 ## Auto-join of 1:1 owners
 
@@ -375,7 +375,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Repositories](repositories.md) section.
+Read more about this in [Repositories](./repositories.md) section.
 
 ## Strict Mode and property validation
 
@@ -417,7 +417,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Debugging](logging.md) section.
+Read more about this in [Debugging](./logging.md) section.
 
 ## Custom Fail Handler
 
@@ -431,7 +431,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Entity Manager](entity-manager.md#handling-not-found-entities) docs.
+Read more about this in [Entity Manager](./entity-manager.md#handling-not-found-entities) docs.
 
 ## Schema Generator
 
@@ -464,7 +464,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Migrations](migrations.md) section.
+Read more about this in [Migrations](./migrations.md) section.
 
 ## Seeder
 
@@ -496,7 +496,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Metadata Cache](metadata-cache.md) section.
+Read more about this in [Metadata Cache](./metadata-cache.md) section.
 
 ## Importing database dump files (MySQL and PostgreSQL)
 

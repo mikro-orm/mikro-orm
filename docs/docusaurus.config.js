@@ -172,6 +172,8 @@ module.exports = {
         projectRoot: `${__dirname}/..`,
         changelogs: true,
         packages,
+        exclude: ['**/node_modules/*'],
+        readmes: false,
         typedocOptions: {
           readme: 'none',
           tsconfig: '../tsconfig.json',
@@ -179,6 +181,7 @@ module.exports = {
           excludePrivate: true,
           excludeProtected: true,
           excludeInternal: true,
+          skipErrorChecking: true,
           externalPattern: '**/node_modules/*',
           cleanOutputDir: true,
         },
