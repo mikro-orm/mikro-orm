@@ -317,7 +317,7 @@ export class ChangeSetPersister {
     options = this.propagateSchemaFromMetadata(meta, options, {
       fields: primaryKeys,
     });
-    const res = await this.driver.find<T>(meta.className, { $or } as FilterQuery<T>, options);
+    const res = await this.driver.find<T>(meta.root.className, { $or } as FilterQuery<T>, options);
 
     if (res.length !== changeSets.length) {
       const compare = (a: Dictionary, b: Dictionary, keys: string[]) => keys.every(k => a[k] === b[k]);
