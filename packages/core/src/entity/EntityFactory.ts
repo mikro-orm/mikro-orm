@@ -328,11 +328,6 @@ export class EntityFactory {
     const type = meta.root.discriminatorMap![value];
     meta = type ? this.metadata.find(type)! : meta;
 
-    // `prop.userDefined` is either `undefined` or `false`
-    if (prop.userDefined === false) {
-      delete data[prop.name];
-    }
-
     return meta;
   }
 
