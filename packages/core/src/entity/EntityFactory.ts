@@ -306,7 +306,7 @@ export class EntityFactory {
     const schema = this.driver.getSchemaName(meta, options);
 
     if (meta.simplePK) {
-      return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0]] as Primary<T>, schema);
+      return this.unitOfWork.getById<T>(meta.className, data[meta.primaryKeys[0]] as Primary<T>, schema);
     }
 
     if (!Array.isArray(data) && meta.primaryKeys.some(pk => data[pk] == null)) {
@@ -315,7 +315,7 @@ export class EntityFactory {
 
     const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta);
 
-    return this.unitOfWork.getById<T>(meta.name!, pks, schema);
+    return this.unitOfWork.getById<T>(meta.className, pks, schema);
   }
 
   private processDiscriminatorColumn<T extends object>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> {

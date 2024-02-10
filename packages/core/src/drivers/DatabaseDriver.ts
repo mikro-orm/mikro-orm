@@ -364,7 +364,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
           const operator = Object.keys(data[prop.name] as Dictionary).some(f => Utils.isOperator(f) && !['$exists', '$ne', '$eq'].includes(f));
 
           if (operator) {
-            throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.name!, prop.name, data);
+            throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.className, prop.name, data);
           }
 
           if (prop.object && where) {

@@ -385,7 +385,7 @@ export class EntityLoader {
   }
 
   private mergePrimaryCondition<Entity>(ids: Entity[], pk: FilterKey<Entity>, options: EntityLoaderOptions<Entity>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform): FilterQuery<Entity> {
-    const cond1 = QueryHelper.processWhere({ where: { [pk]: { $in: ids } }, entityName: meta.name!, metadata, platform, convertCustomTypes: !options.convertCustomTypes });
+    const cond1 = QueryHelper.processWhere({ where: { [pk]: { $in: ids } }, entityName: meta.className, metadata, platform, convertCustomTypes: !options.convertCustomTypes });
 
     return options.where![pk]
       ? { $and: [cond1, options.where] } as FilterQuery<any>

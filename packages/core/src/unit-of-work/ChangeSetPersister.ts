@@ -385,7 +385,7 @@ export class ChangeSetPersister {
     options = this.propagateSchemaFromMetadata(meta, options, {
       fields: Utils.unique(reloadProps.map(prop => prop.name)),
     });
-    const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } } as FilterQuery<T>, options);
+    const data = await this.driver.find<T>(meta.className, { [pk]: { $in: pks } } as FilterQuery<T>, options);
     const map = new Map<string, Dictionary>();
     data.forEach(item => map.set(Utils.getCompositeKeyHash(item, meta, true, this.platform, true), item));
 

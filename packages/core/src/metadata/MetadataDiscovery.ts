@@ -102,11 +102,11 @@ export class MetadataDiscovery {
     const discovered = new MetadataStorage();
 
     this.discovered
-      .filter(meta => meta.name)
-      .sort((a, b) => b.name!.localeCompare(a.name!))
+      .filter(meta => meta.root.name)
+      .sort((a, b) => b.root.name!.localeCompare(a.root.name!))
       .forEach(meta => {
         this.platform.validateMetadata(meta);
-        discovered.set(meta.name!, meta);
+        discovered.set(meta.className, meta);
       });
 
     return discovered;
@@ -120,7 +120,7 @@ export class MetadataDiscovery {
     }
 
     // ignore base entities (not annotated with @Entity)
-    const filtered = discovered.filter(meta => meta.name);
+    const filtered = discovered.filter(meta => meta.root.name);
     // sort so we discover entities first to get around issues with nested embeddables
     filtered.sort((a, b) => !a.embeddable === !b.embeddable ? 0 : (a.embeddable ? 1 : -1));
     filtered.forEach(meta => this.initSingleTableInheritance(meta, filtered));
@@ -577,7 +577,7 @@ export class MetadataDiscovery {
     }
 
     meta.forceConstructor = this.shouldForceConstructorUsage(meta);
-    this.validator.validateEntityDefinition(this.metadata, meta.name!, this.config.get('discovery'));
+    this.validator.validateEntityDefinition(this.metadata, meta.className, this.config.get('discovery'));
 
     for (const prop of Object.values(meta.properties)) {
       this.initNullability(prop);
@@ -725,7 +725,7 @@ export class MetadataDiscovery {
       }
     }
 
-    data.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.name!, targetType + '_inverse', true);
+    data.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.className, targetType + '_inverse', true);
     data.properties[targetType + '_inverse'] = this.definePivotProperty(prop, targetType + '_inverse', targetType, meta.name + '_owner', false);
 
     return this.metadata.set(data.className, data);
