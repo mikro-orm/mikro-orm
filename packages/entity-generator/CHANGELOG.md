@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.1](https://github.com/mikro-orm/mikro-orm/compare/v6.1.0...v6.1.1) (2024-02-10)
+
+
+### Features
+
+* **entity-generator:** support functions in extension hooks ([#5218](https://github.com/mikro-orm/mikro-orm/issues/5218)) ([b28321c](https://github.com/mikro-orm/mikro-orm/commit/b28321c14a848dcc5528044d5a4c0fe2a5bab6ba))
+
+
+
+
+
 # [6.1.0](https://github.com/mikro-orm/mikro-orm/compare/v6.0.7...v6.1.0) (2024-02-04)
 
 

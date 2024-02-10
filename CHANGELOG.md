@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.1](https://github.com/mikro-orm/mikro-orm/compare/v6.1.0...v6.1.1) (2024-02-10)
+
+
+### Bug Fixes
+
+* **core:** consider star populates on nested positions only for one level ([65d1575](https://github.com/mikro-orm/mikro-orm/commit/65d15753774aa5e61fbefaf86d9004ac206bec19)), closes [#5213](https://github.com/mikro-orm/mikro-orm/issues/5213)
+* **core:** do not enforce `discriminatorColumn` type ([d2a016e](https://github.com/mikro-orm/mikro-orm/commit/d2a016eccceec59de5b9ee62e6905110951f4d92)), closes [#5224](https://github.com/mikro-orm/mikro-orm/issues/5224)
+* **core:** fix change detection on STI entities ([3c43251](https://github.com/mikro-orm/mikro-orm/commit/3c43251d900f2b7bccd4117fd8cd57b1904232c8)), closes [#5224](https://github.com/mikro-orm/mikro-orm/issues/5224)
+* **core:** fix optimistic locking on STI entities ([36ad806](https://github.com/mikro-orm/mikro-orm/commit/36ad8066858ad8cbfd6af5fc3bcf6e0c87dbf020)), closes [#5224](https://github.com/mikro-orm/mikro-orm/issues/5224)
+* **core:** respect star in `parent.*` populate hints ([39910ab](https://github.com/mikro-orm/mikro-orm/commit/39910abb4d263c614868fcd4edc91cf12042ae32)), closes [#5213](https://github.com/mikro-orm/mikro-orm/issues/5213)
+* **postgres:** declare dependency on `postgres-array` ([e73fd1a](https://github.com/mikro-orm/mikro-orm/commit/e73fd1a2ec92534c2889255132fb95129de1bb23))
+* **postgres:** fix parsing of date properties inside object emebddables ([760ec77](https://github.com/mikro-orm/mikro-orm/commit/760ec77b1f852103f878998bb2c76edce1fb5c77)), closes [#5216](https://github.com/mikro-orm/mikro-orm/issues/5216)
+* **reflection:** only validate known types to allow using type aliases ([d6b93be](https://github.com/mikro-orm/mikro-orm/commit/d6b93bee537e3e1b05756fda39c9bc320c93d4c1)), closes [#5221](https://github.com/mikro-orm/mikro-orm/issues/5221)
+
+
+### Features
+
+* **entity-generator:** support functions in extension hooks ([#5218](https://github.com/mikro-orm/mikro-orm/issues/5218)) ([b28321c](https://github.com/mikro-orm/mikro-orm/commit/b28321c14a848dcc5528044d5a4c0fe2a5bab6ba))
+
+
+
+
+
 # [6.1.0](https://github.com/mikro-orm/mikro-orm/compare/v6.0.7...v6.1.0) (2024-02-04)
 
 

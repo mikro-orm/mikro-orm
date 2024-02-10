@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.1](https://github.com/mikro-orm/mikro-orm/compare/v6.1.0...v6.1.1) (2024-02-10)
+
+
+### Bug Fixes
+
+* **postgres:** declare dependency on `postgres-array` ([e73fd1a](https://github.com/mikro-orm/mikro-orm/commit/e73fd1a2ec92534c2889255132fb95129de1bb23))
+* **postgres:** fix parsing of date properties inside object emebddables ([760ec77](https://github.com/mikro-orm/mikro-orm/commit/760ec77b1f852103f878998bb2c76edce1fb5c77)), closes [#5216](https://github.com/mikro-orm/mikro-orm/issues/5216)
+
+
+
+
+
 # [6.1.0](https://github.com/mikro-orm/mikro-orm/compare/v6.0.7...v6.1.0) (2024-02-04)
 
 
