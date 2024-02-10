@@ -551,3 +551,7 @@ The `Reference.load()` method allowed two signatures, one to ensure the entity i
 ## `em.insert()` respects required properties
 
 `em.insert()` will now require you to pass all non-optional properties just like `em.create()` already did. Some properties might be defined as required for TS, but we have a default value for them (either runtime, or database one) - for such we can use `OptionalProps` symbol (or the new `Opt` type) to specify which properties should be considered as optional.
+
+## `.env` files are no longer automatically loaded
+
+Previously, if there was a `.env` file in your root directory, it was automatically loaded. Now instead of loading, it is only checked for the ORM env vars (those prefixed with `MIKRO_ORM_`) and all the others are ignored. If you want to access all your env vars defined in the `.env` file, call `dotenv.register()` yourself in your app (or possibly in your ORM config file).
