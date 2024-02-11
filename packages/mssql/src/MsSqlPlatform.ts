@@ -1,4 +1,4 @@
-import { AbstractSqlPlatform, type IndexDef, raw } from '@mikro-orm/knex';
+import { AbstractSqlPlatform, type IndexDef, JsonProperty, raw, Utils } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
 import { MsSqlSchemaHelper } from './MsSqlSchemaHelper';
@@ -29,7 +29,6 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return value.toISOString().substring(0, 10);
   }
 
-  // TODO verify
   override convertsJsonAutomatically(): boolean {
     return false;
   }
@@ -78,6 +77,11 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override quoteValue(value: any): string {
+    /* istanbul ignore if */
+    if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
+      return SqlString.escape(JSON.stringify(value), true, this.timezone);
+    }
+
     if (value instanceof Buffer) {
       return `0x${value.toString('hex')}`;
     }
