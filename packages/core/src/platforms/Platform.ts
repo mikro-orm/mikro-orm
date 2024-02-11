@@ -353,6 +353,10 @@ export abstract class Platform {
     return parseJsonSafe(value);
   }
 
+  convertDateToJSValue(value: string | Date): string {
+    return value as string;
+  }
+
   convertIntervalToJSValue(value: string): unknown {
     return value;
   }

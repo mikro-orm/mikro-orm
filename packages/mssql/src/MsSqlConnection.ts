@@ -1,4 +1,10 @@
-import { AbstractSqlConnection, type Knex } from '@mikro-orm/knex';
+import {
+  AbstractSqlConnection,
+  type IsolationLevel,
+  type Knex,
+  type TransactionEventBroadcaster,
+  Utils,
+} from '@mikro-orm/knex';
 import type { Dictionary } from '@mikro-orm/core';
 
 export class MsSqlConnection extends AbstractSqlConnection {
@@ -8,29 +14,46 @@ export class MsSqlConnection extends AbstractSqlConnection {
     this.connected = true;
   }
 
-  override async connect(): Promise<void> {
-    this.createKnex();
-
-    try {
-      const dbName = this.platform.quoteIdentifier(this.config.get('dbName'));
-      await this.execute(`use ${dbName}`);
-    } catch {
-      // the db might not exist
-    }
-  }
-
   getDefaultClientUrl(): string {
     return 'mssql://sa@localhost:1433';
   }
 
   override getConnectionOptions(): Knex.MsSqlConnectionConfig {
-    const config = super.getConnectionOptions() as Dictionary;
+    const config = super.getConnectionOptions() as Knex.MsSqlConnectionConfig;
+    const overrides = {
+      options: {
+        enableArithAbort: true,
+        fallbackToDefaultDb: true,
+      },
+    } satisfies Knex.MsSqlConnectionConfig | Dictionary;
+    Utils.mergeConfig(config, overrides);
 
-    config.options ??= {};
-    config.options.enableArithAbort ??= true;
-    delete config.database;
+    return config;
+  }
 
-    return config as Knex.MsSqlConnectionConfig;
+  override async begin(options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
+    if (!options.ctx) {
+      if (options.isolationLevel) {
+        this.logQuery(`set transaction isolation level ${options.isolationLevel}`);
+      }
+
+      this.logQuery('begin');
+    }
+
+    return super.begin(options);
+  }
+
+  override async commit(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    this.logQuery('commit');
+    return super.commit(ctx, eventBroadcaster);
+  }
+
+  override async rollback(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    if (eventBroadcaster?.isTopLevel()) {
+      this.logQuery('rollback');
+    }
+
+    return super.rollback(ctx, eventBroadcaster);
   }
 
   protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {

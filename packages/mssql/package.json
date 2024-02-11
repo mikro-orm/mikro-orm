@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@mikro-orm/knex": "6.1.1",
-    "mssql": "10.0.2",
+    "tedious": "16.7.0",
     "tsqlstring": "1.0.1"
   },
   "devDependencies": {

@@ -449,7 +449,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
-  async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}, transform?: (sql: string) => string): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.find<T>(entityName)?.root;
@@ -471,8 +471,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     let sql = `insert into ${tableName} `;
     sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : `(${this.platform.quoteIdentifier(pks[0])})`;
 
-    if (this.platform.usesOutputStatement()) {
-      const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
+    if (meta && this.platform.usesOutputStatement()) {
+      const returningProps = meta.props
+        .filter(prop => prop.persist !== false && prop.defaultRaw || prop.autoincrement || prop.generated)
+        .filter(prop => !(prop.name in data[0]) || Utils.isRawSql(data[0][prop.name]));
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       sql += returningFields.length > 0 ? ` output ${returningFields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}` : '';
     }
@@ -547,6 +549,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       /* istanbul ignore next */
       sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
+    }
+
+    if (transform) {
+      sql = transform(sql);
     }
 
     const res = await this.execute<QueryResult<T>>(sql, params, 'run', options.ctx);

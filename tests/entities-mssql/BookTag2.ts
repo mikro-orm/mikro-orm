@@ -1,11 +1,11 @@
-import { BigIntType, Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
 export class BookTag2 {
 
-  @PrimaryKey({ type: BigIntType })
-  id!: string;
+  @PrimaryKey()
+  id!: bigint;
 
   @Property({ length: 50 })
   name: string;

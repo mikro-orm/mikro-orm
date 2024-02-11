@@ -1,12 +1,10 @@
-import type { SchemaGenerator, SqlEntityManager } from '@mikro-orm/knex';
-import { AbstractSqlPlatform, SqlSchemaGenerator } from '@mikro-orm/knex';
+import { AbstractSqlPlatform } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
 import { MsSqlSchemaHelper } from './MsSqlSchemaHelper';
 import { MsSqlExceptionConverter } from './MsSqlExceptionConverter';
-import type { IDatabaseDriver } from '@mikro-orm/core';
+import type { IDatabaseDriver, EntityManager, MikroORM } from '@mikro-orm/core';
 import { MsSqlSchemaGenerator } from './MsSqlSchemaGenerator';
-import { EntityManager, MikroORM } from '@mikro-orm/core';
 
 // TODO check what methods are needed
 export class MsSqlPlatform extends AbstractSqlPlatform {
@@ -21,6 +19,14 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override usesOutputStatement(): boolean {
     return true;
+  }
+
+  override convertDateToJSValue(value: string | Date): string {
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    return value.toISOString().substring(0, 10);
   }
 
   // TODO verify
