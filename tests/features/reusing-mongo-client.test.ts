@@ -19,6 +19,7 @@ test('should allow reusing mongo connection', async () => {
 
   await expect(orm.em.find(Author, {})).resolves.toHaveLength(0);
   await orm2.close(); // closing orm2 will make orm1 disconnect too as they share mongo client
-  await expect(orm.isConnected()).resolves.toBe(true);
-  await expect(orm.em.find(Author, {})).rejects.toThrow('Client must be connected before running operations');
+  await expect(orm.isConnected()).resolves.toBe(false);
+  // this works now as we correctly detect the broken connection (as asserted above) and reconnect automatically
+  // await expect(orm.em.find(Author, {})).resolves.toEqual([]);
 });

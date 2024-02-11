@@ -4,10 +4,13 @@ import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseD
 import { Utils } from './Utils';
 import { ReferenceKind, type QueryOrder, type QueryOrderKeys } from '../enums';
 import { Reference } from '../entity/Reference';
+import { helper } from '../entity/wrap';
+import { RawQueryFragment } from '../utils/RawQueryFragment';
+import { CursorError } from '../errors';
 
 /**
- * As an alternative to the offset based pagination with `limit` and `offset`, we can paginate based on a cursor.
- * A cursor is an opaque string that defines specific place in ordered entity graph. You can use `em.findByCursor()`
+ * As an alternative to the offset-based pagination with `limit` and `offset`, we can paginate based on a cursor.
+ * A cursor is an opaque string that defines a specific place in ordered entity graph. You can use `em.findByCursor()`
  * to access those options. Under the hood, it will call `em.find()` and `em.count()` just like the `em.findAndCount()`
  * method, but will use the cursor options instead.
  *
@@ -33,7 +36,7 @@ import { Reference } from '../entity/Reference';
  * });
  * ```
  *
- * The `Cursor` object provides following interface:
+ * The `Cursor` object provides the following interface:
  *
  * ```ts
  * Cursor<User> {
@@ -52,7 +55,12 @@ import { Reference } from '../entity/Reference';
  * }
  * ```
  */
-export class Cursor<Entity extends object, Hint extends string = never, Fields extends string = '*'> {
+export class Cursor<
+  Entity extends object,
+  Hint extends string = never,
+  Fields extends string = '*',
+  Excludes extends string = never,
+> {
 
   readonly hasPrevPage: boolean;
   readonly hasNextPage: boolean;
@@ -60,9 +68,9 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
   private readonly definition: (readonly [EntityKey<Entity>, QueryOrder])[];
 
   constructor(
-    readonly items: Loaded<Entity, Hint, Fields>[],
+    readonly items: Loaded<Entity, Hint, Fields, Excludes>[],
     readonly totalCount: number,
-    options: FindByCursorOptions<Entity, Hint, Fields>,
+    options: FindByCursorOptions<Entity, Hint, Fields, Excludes>,
     meta: EntityMetadata<Entity>,
   ) {
     const { first, last, before, after, orderBy, overfetch } = options;
@@ -100,9 +108,9 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
   }
 
   /**
-   * Computes the cursor value for given entity.
+   * Computes the cursor value for a given entity.
    */
-  from(entity: Entity | Loaded<Entity, Hint, Fields>) {
+  from(entity: Entity | Loaded<Entity, Hint, Fields, Excludes>) {
     const processEntity = <T extends object> (entity: T, prop: EntityKey<T>, direction: QueryOrderKeys<T>, object = false) => {
       if (Utils.isPlainObject(direction)) {
         const value = Utils.keys(direction).reduce((o, key) => {
@@ -112,17 +120,27 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
         return ({ [prop]: value });
       }
 
-      if (object) {
-        return ({ [prop]: entity[prop] });
+      if (entity[prop] == null) {
+        throw CursorError.entityNotPopulated(entity, prop);
       }
 
-      return entity[prop];
+      let value: unknown = entity[prop];
+
+      if (Utils.isEntity(value, true)) {
+        value = helper(value).getPrimaryKey();
+      }
+
+      if (object) {
+        return ({ [prop]: value });
+      }
+
+      return value;
     };
     const value = this.definition.map(([key, direction]) => processEntity(entity as Entity, key, direction));
     return Cursor.encode(value);
   }
 
-  * [Symbol.iterator](): IterableIterator<Loaded<Entity, Hint, Fields>> {
+  * [Symbol.iterator](): IterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     for (const item of this.items) {
       yield item;
     }
@@ -150,10 +168,24 @@ export class Cursor<Entity extends object, Hint extends string = never, Fields e
 
   static getDefinition<Entity extends object>(meta: EntityMetadata<Entity>, orderBy: OrderDefinition<Entity>) {
     return Utils.asArray(orderBy).flatMap(order => {
-      return Utils.keys(order)
-        .map(key => meta.properties[key as EntityKey<Entity>])
-        .filter(prop => [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))
-        .map(prop => [prop.name, order[prop.name] as QueryOrder] as const);
+      const ret: [EntityKey, QueryOrder][] = [];
+
+      for (const key of Utils.keys(order)) {
+        if (RawQueryFragment.isKnownFragment(key)) {
+          ret.push([key as EntityKey, order[key] as QueryOrder]);
+          continue;
+        }
+
+        const prop = meta.properties[key];
+
+        if (!prop || !([ReferenceKind.SCALAR, ReferenceKind.EMBEDDED, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))) {
+          continue;
+        }
+
+        ret.push([prop.name as EntityKey, order[prop.name] as QueryOrder]);
+      }
+
+      return ret;
     });
   }
 

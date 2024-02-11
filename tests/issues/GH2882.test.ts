@@ -1,7 +1,7 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, wrap } from '@mikro-orm/sqlite';
 
 @Entity()
-export class Parent {
+class Parent {
 
   @PrimaryKey()
   id!: number;
@@ -47,7 +47,7 @@ describe('GH issue 2882', () => {
     await orm.em.fork().persistAndFlush(p);
 
     const parent = await orm.em.findOneOrFail(Parent, p.id, { populate: ['children'] });
-    expect(wrap(parent, true).__em.id).toBe(1);
+    expect(wrap(parent, true).__em?.id).toBe(1);
 
     await orm.em.transactional(async em => {
       const parent = await em.findOneOrFail(Parent, p.id);
@@ -55,11 +55,11 @@ describe('GH issue 2882', () => {
     });
 
     expect(parent.children).toHaveLength(1);
-    expect(wrap(parent.children[0], true).__em.id).toBe(1);
+    expect(wrap(parent.children[0], true).__em?.id).toBe(1);
     await orm.em.find(Child, {});
 
     expect(parent.children).toHaveLength(1);
-    expect(wrap(parent.children[0], true).__em.id).toBe(1);
+    expect(wrap(parent.children[0], true).__em?.id).toBe(1);
   });
 
 });

@@ -44,7 +44,7 @@ test(`GH issue 2703`, async () => {
   const u = await orm.em.findOneOrFail(User, user, { populate: ['orders'] });
   const mock = mockLogger(orm);
   await orm.em.removeAndFlush(u);
-  expect(mock).toBeCalledTimes(3);
+  expect(mock).toHaveBeenCalledTimes(3);
   expect(mock.mock.calls[0][0]).toMatch('begin');
   expect(mock.mock.calls[1][0]).toMatch('delete from `user` where `id` in (1)');
   expect(mock.mock.calls[2][0]).toMatch('commit');

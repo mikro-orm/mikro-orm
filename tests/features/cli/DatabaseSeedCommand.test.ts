@@ -38,20 +38,20 @@ describe('DatabaseSeedCommand', () => {
     const mockOption = jest.fn();
     const args = { option: mockOption };
     cmd.builder(args as any);
-    expect(mockOption).toBeCalledWith('c', {
+    expect(mockOption).toHaveBeenCalledWith('c', {
       alias: 'class',
       type: 'string',
       desc: 'Seeder class to run',
     });
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
-    expect(seed).toBeCalledTimes(1);
-    expect(seed).toBeCalledWith((orm.config.get('seeder').defaultSeeder));
-    expect(closeSpy).toBeCalledTimes(1);
+    expect(seed).toHaveBeenCalledTimes(1);
+    expect(seed).toHaveBeenCalledWith((orm.config.get('seeder').defaultSeeder));
+    expect(closeSpy).toHaveBeenCalledTimes(1);
 
     await expect(cmd.handler({ class: 'TestSeeder' } as any)).resolves.toBeUndefined();
-    expect(seed).toBeCalledTimes(2);
-    expect(seed).toBeCalledWith(('TestSeeder'));
-    expect(closeSpy).toBeCalledTimes(2);
+    expect(seed).toHaveBeenCalledTimes(2);
+    expect(seed).toHaveBeenCalledWith(('TestSeeder'));
+    expect(closeSpy).toHaveBeenCalledTimes(2);
   });
 
 });

@@ -1,0 +1,1647 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Cars {
+
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+
+  @PrimaryKey({ length: 255 })
+  carBrand!: string;
+
+  @PrimaryKey({ columnType: 'year' })
+  carYear!: unknown;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class FashionableColors {
+
+  [PrimaryKeyProp]?: ['year', 'color'];
+
+  @PrimaryKey({ columnType: 'year' })
+  year!: unknown;
+
+  @PrimaryKey({ length: 255 })
+  color!: string;
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+@Entity()
+@Index({ name: 'favorites_idx', properties: ['favoriteColor', 'favoriteBook'] })
+@Unique({ name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] })
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  favorite?: FashionableColors;
+
+  @Property({ length: 255, nullable: true, persist: false })
+  favoriteCarBrand?: string;
+
+  @Property({ columnType: 'year', nullable: true, persist: false })
+  favoriteCarYear?: unknown;
+
+  @Property({ length: 255, nullable: true, persist: false })
+  favoriteColor?: string;
+
+  @Property({ length: 255, nullable: true })
+  favoriteBook?: string;
+
+}
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Cars {
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+  carBrand!: string;
+  carYear!: unknown;
+}
+
+export const CarsSchema = new EntitySchema({
+  class: Cars,
+  properties: {
+    carBrand: { primary: true, type: 'string', length: 255 },
+    carYear: { primary: true, type: 'unknown', columnType: 'year' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class FashionableColors {
+  [PrimaryKeyProp]?: ['year', 'color'];
+  year!: unknown;
+  color!: string;
+}
+
+export const FashionableColorsSchema = new EntitySchema({
+  class: FashionableColors,
+  properties: {
+    year: { primary: true, type: 'unknown', columnType: 'year' },
+    color: { primary: true, type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  favorite?: FashionableColors;
+  favoriteCarBrand?: string;
+  favoriteCarYear?: unknown;
+  favoriteColor?: string;
+  favoriteBook?: string;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  indexes: [
+    { name: 'favorites_idx', properties: ['favoriteColor', 'favoriteBook'] },
+  ],
+  uniques: [
+    { name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] },
+  ],
+  properties: {
+    userId: { primary: true, type: 'number' },
+    favorite: {
+      kind: 'm:1',
+      entity: () => FashionableColors,
+      fieldNames: [
+        'favorite_car_year',
+        'favorite_color'
+      ],
+      nullable: true,
+      index: 'fk_users_fashionable_colors1_idx',
+    },
+    favoriteCarBrand: { type: 'string', length: 255, nullable: true, persist: false },
+    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
+    favoriteColor: { type: 'string', length: 255, nullable: true, persist: false },
+    favoriteBook: { type: 'string', length: 255, nullable: true },
+  },
+});
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Cars {
+
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+
+  @PrimaryKey({ length: 255 })
+  carBrand!: string;
+
+  @PrimaryKey({ columnType: 'year' })
+  carYear!: unknown;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class FashionableColors {
+
+  [PrimaryKeyProp]?: ['year', 'color'];
+
+  @PrimaryKey({ columnType: 'year' })
+  year!: unknown;
+
+  @PrimaryKey({ length: 255 })
+  color!: string;
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Ref, Unique } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+@Entity()
+@Index({ name: 'favorites_idx', properties: ['favoriteColor', 'favoriteBook'] })
+@Unique({ name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] })
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  favorite?: Ref<FashionableColors>;
+
+  @Property({ length: 255, nullable: true, persist: false })
+  favoriteCarBrand?: string;
+
+  @Property({ columnType: 'year', nullable: true, persist: false })
+  favoriteCarYear?: unknown;
+
+  @Property({ length: 255, nullable: true, persist: false })
+  favoriteColor?: string;
+
+  @Property({ length: 255, nullable: true })
+  favoriteBook?: string;
+
+}
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Cars {
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+  carBrand!: string;
+  carYear!: unknown;
+}
+
+export const CarsSchema = new EntitySchema({
+  class: Cars,
+  properties: {
+    carBrand: { primary: true, type: 'string', length: 255 },
+    carYear: { primary: true, type: 'unknown', columnType: 'year' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class FashionableColors {
+  [PrimaryKeyProp]?: ['year', 'color'];
+  year!: unknown;
+  color!: string;
+}
+
+export const FashionableColorsSchema = new EntitySchema({
+  class: FashionableColors,
+  properties: {
+    year: { primary: true, type: 'unknown', columnType: 'year' },
+    color: { primary: true, type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  favorite?: Ref<FashionableColors>;
+  favoriteCarBrand?: string;
+  favoriteCarYear?: unknown;
+  favoriteColor?: string;
+  favoriteBook?: string;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  indexes: [
+    { name: 'favorites_idx', properties: ['favoriteColor', 'favoriteBook'] },
+  ],
+  uniques: [
+    { name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] },
+  ],
+  properties: {
+    userId: { primary: true, type: 'number' },
+    favorite: {
+      kind: 'm:1',
+      entity: () => FashionableColors,
+      ref: true,
+      fieldNames: [
+        'favorite_car_year',
+        'favorite_color'
+      ],
+      nullable: true,
+      index: 'fk_users_fashionable_colors1_idx',
+    },
+    favoriteCarBrand: { type: 'string', length: 255, nullable: true, persist: false },
+    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
+    favoriteColor: { type: 'string', length: 255, nullable: true, persist: false },
+    favoriteBook: { type: 'string', length: 255, nullable: true },
+  },
+});
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Cars {
+
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+
+  @PrimaryKey({ length: 255 })
+  carBrand!: string;
+
+  @PrimaryKey({ columnType: 'year' })
+  carYear!: unknown;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+@Entity()
+export class FashionableColors {
+
+  [PrimaryKeyProp]?: ['year', 'color'];
+
+  @PrimaryKey({ columnType: 'year' })
+  year!: unknown;
+
+  @PrimaryKey({ length: 255 })
+  color!: string;
+
+  @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
+  favoriteInverse = new Collection<Users>(this);
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+@Entity()
+@Index({ name: 'favorites_idx', properties: ['favoriteColor', 'favoriteBook'] })
+@Unique({ name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] })
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  favorite?: FashionableColors;
+
+  @Property({ length: 255, nullable: true, persist: false })
+  favoriteCarBrand?: string;
+
+  @Property({ columnType: 'year', nullable: true, persist: false })
+  favoriteCarYear?: unknown;
+
+  @Property({ length: 255, nullable: true, persist: false })
+  favoriteColor?: string;
+
+  @Property({ length: 255, nullable: true })
+  favoriteBook?: string;
+
+}
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Cars {
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+  carBrand!: string;
+  carYear!: unknown;
+}
+
+export const CarsSchema = new EntitySchema({
+  class: Cars,
+  properties: {
+    carBrand: { primary: true, type: 'string', length: 255 },
+    carYear: { primary: true, type: 'unknown', columnType: 'year' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+export class FashionableColors {
+  [PrimaryKeyProp]?: ['year', 'color'];
+  year!: unknown;
+  color!: string;
+  favoriteInverse = new Collection<Users>(this);
+}
+
+export const FashionableColorsSchema = new EntitySchema({
+  class: FashionableColors,
+  properties: {
+    year: { primary: true, type: 'unknown', columnType: 'year' },
+    color: { primary: true, type: 'string', length: 255 },
+    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  favorite?: FashionableColors;
+  favoriteCarBrand?: string;
+  favoriteCarYear?: unknown;
+  favoriteColor?: string;
+  favoriteBook?: string;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  indexes: [
+    { name: 'favorites_idx', properties: ['favoriteColor', 'favoriteBook'] },
+  ],
+  uniques: [
+    { name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] },
+  ],
+  properties: {
+    userId: { primary: true, type: 'number' },
+    favorite: {
+      kind: 'm:1',
+      entity: () => FashionableColors,
+      fieldNames: [
+        'favorite_car_year',
+        'favorite_color'
+      ],
+      nullable: true,
+      index: 'fk_users_fashionable_colors1_idx',
+    },
+    favoriteCarBrand: { type: 'string', length: 255, nullable: true, persist: false },
+    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
+    favoriteColor: { type: 'string', length: 255, nullable: true, persist: false },
+    favoriteBook: { type: 'string', length: 255, nullable: true },
+  },
+});
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Cars {
+
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+
+  @PrimaryKey({ length: 255 })
+  carBrand!: string;
+
+  @PrimaryKey({ columnType: 'year' })
+  carYear!: unknown;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+@Entity()
+export class FashionableColors {
+
+  [PrimaryKeyProp]?: ['year', 'color'];
+
+  @PrimaryKey({ columnType: 'year' })
+  year!: unknown;
+
+  @PrimaryKey({ length: 255 })
+  color!: string;
+
+  @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
+  favoriteInverse = new Collection<Users>(this);
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Ref, Unique } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+@Entity()
+@Index({ name: 'favorites_idx', properties: ['favoriteColor', 'favoriteBook'] })
+@Unique({ name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] })
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  favorite?: Ref<FashionableColors>;
+
+  @Property({ length: 255, nullable: true, persist: false })
+  favoriteCarBrand?: string;
+
+  @Property({ columnType: 'year', nullable: true, persist: false })
+  favoriteCarYear?: unknown;
+
+  @Property({ length: 255, nullable: true, persist: false })
+  favoriteColor?: string;
+
+  @Property({ length: 255, nullable: true })
+  favoriteBook?: string;
+
+}
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Cars {
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+  carBrand!: string;
+  carYear!: unknown;
+}
+
+export const CarsSchema = new EntitySchema({
+  class: Cars,
+  properties: {
+    carBrand: { primary: true, type: 'string', length: 255 },
+    carYear: { primary: true, type: 'unknown', columnType: 'year' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+export class FashionableColors {
+  [PrimaryKeyProp]?: ['year', 'color'];
+  year!: unknown;
+  color!: string;
+  favoriteInverse = new Collection<Users>(this);
+}
+
+export const FashionableColorsSchema = new EntitySchema({
+  class: FashionableColors,
+  properties: {
+    year: { primary: true, type: 'unknown', columnType: 'year' },
+    color: { primary: true, type: 'string', length: 255 },
+    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  favorite?: Ref<FashionableColors>;
+  favoriteCarBrand?: string;
+  favoriteCarYear?: unknown;
+  favoriteColor?: string;
+  favoriteBook?: string;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  indexes: [
+    { name: 'favorites_idx', properties: ['favoriteColor', 'favoriteBook'] },
+  ],
+  uniques: [
+    { name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] },
+  ],
+  properties: {
+    userId: { primary: true, type: 'number' },
+    favorite: {
+      kind: 'm:1',
+      entity: () => FashionableColors,
+      ref: true,
+      fieldNames: [
+        'favorite_car_year',
+        'favorite_color'
+      ],
+      nullable: true,
+      index: 'fk_users_fashionable_colors1_idx',
+    },
+    favoriteCarBrand: { type: 'string', length: 255, nullable: true, persist: false },
+    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
+    favoriteColor: { type: 'string', length: 255, nullable: true, persist: false },
+    favoriteBook: { type: 'string', length: 255, nullable: true },
+  },
+});
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Cars {
+
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+
+  @PrimaryKey({ length: 255 })
+  carBrand!: string;
+
+  @PrimaryKey({ columnType: 'year' })
+  carYear!: unknown;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class FashionableColors {
+
+  [PrimaryKeyProp]?: ['year', 'color'];
+
+  @PrimaryKey({ columnType: 'year' })
+  year!: unknown;
+
+  @PrimaryKey({ length: 255 })
+  color!: string;
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+@Entity()
+@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  favorite?: FashionableColors;
+
+  @Property({ length: 255, nullable: true })
+  favoriteBook?: string;
+
+}
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Cars {
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+  carBrand!: string;
+  carYear!: unknown;
+}
+
+export const CarsSchema = new EntitySchema({
+  class: Cars,
+  properties: {
+    carBrand: { primary: true, type: 'string', length: 255 },
+    carYear: { primary: true, type: 'unknown', columnType: 'year' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class FashionableColors {
+  [PrimaryKeyProp]?: ['year', 'color'];
+  year!: unknown;
+  color!: string;
+}
+
+export const FashionableColorsSchema = new EntitySchema({
+  class: FashionableColors,
+  properties: {
+    year: { primary: true, type: 'unknown', columnType: 'year' },
+    color: { primary: true, type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  favorite?: FashionableColors;
+  favoriteBook?: string;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  indexes: [
+    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+  ],
+  uniques: [
+    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+  ],
+  properties: {
+    userId: { primary: true, type: 'number' },
+    favorite: {
+      kind: 'm:1',
+      entity: () => FashionableColors,
+      fieldNames: [
+        'favorite_car_year',
+        'favorite_color'
+      ],
+      nullable: true,
+      index: 'fk_users_fashionable_colors1_idx',
+    },
+    favoriteBook: { type: 'string', length: 255, nullable: true },
+  },
+});
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Cars {
+
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+
+  @PrimaryKey({ length: 255 })
+  carBrand!: string;
+
+  @PrimaryKey({ columnType: 'year' })
+  carYear!: unknown;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class FashionableColors {
+
+  [PrimaryKeyProp]?: ['year', 'color'];
+
+  @PrimaryKey({ columnType: 'year' })
+  year!: unknown;
+
+  @PrimaryKey({ length: 255 })
+  color!: string;
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Ref, Unique } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+@Entity()
+@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  favorite?: Ref<FashionableColors>;
+
+  @Property({ length: 255, nullable: true })
+  favoriteBook?: string;
+
+}
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Cars {
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+  carBrand!: string;
+  carYear!: unknown;
+}
+
+export const CarsSchema = new EntitySchema({
+  class: Cars,
+  properties: {
+    carBrand: { primary: true, type: 'string', length: 255 },
+    carYear: { primary: true, type: 'unknown', columnType: 'year' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class FashionableColors {
+  [PrimaryKeyProp]?: ['year', 'color'];
+  year!: unknown;
+  color!: string;
+}
+
+export const FashionableColorsSchema = new EntitySchema({
+  class: FashionableColors,
+  properties: {
+    year: { primary: true, type: 'unknown', columnType: 'year' },
+    color: { primary: true, type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  favorite?: Ref<FashionableColors>;
+  favoriteBook?: string;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  indexes: [
+    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+  ],
+  uniques: [
+    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+  ],
+  properties: {
+    userId: { primary: true, type: 'number' },
+    favorite: {
+      kind: 'm:1',
+      entity: () => FashionableColors,
+      ref: true,
+      fieldNames: [
+        'favorite_car_year',
+        'favorite_color'
+      ],
+      nullable: true,
+      index: 'fk_users_fashionable_colors1_idx',
+    },
+    favoriteBook: { type: 'string', length: 255, nullable: true },
+  },
+});
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Cars {
+
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+
+  @PrimaryKey({ length: 255 })
+  carBrand!: string;
+
+  @PrimaryKey({ columnType: 'year' })
+  carYear!: unknown;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+@Entity()
+export class FashionableColors {
+
+  [PrimaryKeyProp]?: ['year', 'color'];
+
+  @PrimaryKey({ columnType: 'year' })
+  year!: unknown;
+
+  @PrimaryKey({ length: 255 })
+  color!: string;
+
+  @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
+  favoriteInverse = new Collection<Users>(this);
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+@Entity()
+@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  favorite?: FashionableColors;
+
+  @Property({ length: 255, nullable: true })
+  favoriteBook?: string;
+
+}
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Cars {
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+  carBrand!: string;
+  carYear!: unknown;
+}
+
+export const CarsSchema = new EntitySchema({
+  class: Cars,
+  properties: {
+    carBrand: { primary: true, type: 'string', length: 255 },
+    carYear: { primary: true, type: 'unknown', columnType: 'year' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+export class FashionableColors {
+  [PrimaryKeyProp]?: ['year', 'color'];
+  year!: unknown;
+  color!: string;
+  favoriteInverse = new Collection<Users>(this);
+}
+
+export const FashionableColorsSchema = new EntitySchema({
+  class: FashionableColors,
+  properties: {
+    year: { primary: true, type: 'unknown', columnType: 'year' },
+    color: { primary: true, type: 'string', length: 255 },
+    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  favorite?: FashionableColors;
+  favoriteBook?: string;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  indexes: [
+    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+  ],
+  uniques: [
+    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+  ],
+  properties: {
+    userId: { primary: true, type: 'number' },
+    favorite: {
+      kind: 'm:1',
+      entity: () => FashionableColors,
+      fieldNames: [
+        'favorite_car_year',
+        'favorite_color'
+      ],
+      nullable: true,
+      index: 'fk_users_fashionable_colors1_idx',
+    },
+    favoriteBook: { type: 'string', length: 255, nullable: true },
+  },
+});
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Cars {
+
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+
+  @PrimaryKey({ length: 255 })
+  carBrand!: string;
+
+  @PrimaryKey({ columnType: 'year' })
+  carYear!: unknown;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+@Entity()
+export class FashionableColors {
+
+  [PrimaryKeyProp]?: ['year', 'color'];
+
+  @PrimaryKey({ columnType: 'year' })
+  year!: unknown;
+
+  @PrimaryKey({ length: 255 })
+  color!: string;
+
+  @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
+  favoriteInverse = new Collection<Users>(this);
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Ref, Unique } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+@Entity()
+@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  favorite?: Ref<FashionableColors>;
+
+  @Property({ length: 255, nullable: true })
+  favoriteBook?: string;
+
+}
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Cars {
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+  carBrand!: string;
+  carYear!: unknown;
+}
+
+export const CarsSchema = new EntitySchema({
+  class: Cars,
+  properties: {
+    carBrand: { primary: true, type: 'string', length: 255 },
+    carYear: { primary: true, type: 'unknown', columnType: 'year' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+export class FashionableColors {
+  [PrimaryKeyProp]?: ['year', 'color'];
+  year!: unknown;
+  color!: string;
+  favoriteInverse = new Collection<Users>(this);
+}
+
+export const FashionableColorsSchema = new EntitySchema({
+  class: FashionableColors,
+  properties: {
+    year: { primary: true, type: 'unknown', columnType: 'year' },
+    color: { primary: true, type: 'string', length: 255 },
+    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  favorite?: Ref<FashionableColors>;
+  favoriteBook?: string;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  indexes: [
+    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+  ],
+  uniques: [
+    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+  ],
+  properties: {
+    userId: { primary: true, type: 'number' },
+    favorite: {
+      kind: 'm:1',
+      entity: () => FashionableColors,
+      ref: true,
+      fieldNames: [
+        'favorite_car_year',
+        'favorite_color'
+      ],
+      nullable: true,
+      index: 'fk_users_fashionable_colors1_idx',
+    },
+    favoriteBook: { type: 'string', length: 255, nullable: true },
+  },
+});
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Cars {
+
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+
+  @PrimaryKey({ length: 255 })
+  carBrand!: string;
+
+  @PrimaryKey({ columnType: 'year' })
+  carYear!: unknown;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class FashionableColors {
+
+  [PrimaryKeyProp]?: ['year', 'color'];
+
+  @PrimaryKey({ columnType: 'year' })
+  year!: unknown;
+
+  @PrimaryKey({ length: 255 })
+  color!: string;
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+@Entity()
+@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  favorite?: FashionableColors;
+
+  @Property({ columnType: 'year', nullable: true, persist: false })
+  favoriteCarYear?: unknown;
+
+  @Property({ length: 255, nullable: true })
+  favoriteBook?: string;
+
+}
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Cars {
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+  carBrand!: string;
+  carYear!: unknown;
+}
+
+export const CarsSchema = new EntitySchema({
+  class: Cars,
+  properties: {
+    carBrand: { primary: true, type: 'string', length: 255 },
+    carYear: { primary: true, type: 'unknown', columnType: 'year' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class FashionableColors {
+  [PrimaryKeyProp]?: ['year', 'color'];
+  year!: unknown;
+  color!: string;
+}
+
+export const FashionableColorsSchema = new EntitySchema({
+  class: FashionableColors,
+  properties: {
+    year: { primary: true, type: 'unknown', columnType: 'year' },
+    color: { primary: true, type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  favorite?: FashionableColors;
+  favoriteCarYear?: unknown;
+  favoriteBook?: string;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  indexes: [
+    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+  ],
+  uniques: [
+    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+  ],
+  properties: {
+    userId: { primary: true, type: 'number' },
+    favorite: {
+      kind: 'm:1',
+      entity: () => FashionableColors,
+      fieldNames: [
+        'favorite_car_year',
+        'favorite_color'
+      ],
+      nullable: true,
+      index: 'fk_users_fashionable_colors1_idx',
+    },
+    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
+    favoriteBook: { type: 'string', length: 255, nullable: true },
+  },
+});
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Cars {
+
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+
+  @PrimaryKey({ length: 255 })
+  carBrand!: string;
+
+  @PrimaryKey({ columnType: 'year' })
+  carYear!: unknown;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class FashionableColors {
+
+  [PrimaryKeyProp]?: ['year', 'color'];
+
+  @PrimaryKey({ columnType: 'year' })
+  year!: unknown;
+
+  @PrimaryKey({ length: 255 })
+  color!: string;
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Ref, Unique } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+@Entity()
+@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  favorite?: Ref<FashionableColors>;
+
+  @Property({ columnType: 'year', nullable: true, persist: false })
+  favoriteCarYear?: unknown;
+
+  @Property({ length: 255, nullable: true })
+  favoriteBook?: string;
+
+}
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Cars {
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+  carBrand!: string;
+  carYear!: unknown;
+}
+
+export const CarsSchema = new EntitySchema({
+  class: Cars,
+  properties: {
+    carBrand: { primary: true, type: 'string', length: 255 },
+    carYear: { primary: true, type: 'unknown', columnType: 'year' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class FashionableColors {
+  [PrimaryKeyProp]?: ['year', 'color'];
+  year!: unknown;
+  color!: string;
+}
+
+export const FashionableColorsSchema = new EntitySchema({
+  class: FashionableColors,
+  properties: {
+    year: { primary: true, type: 'unknown', columnType: 'year' },
+    color: { primary: true, type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  favorite?: Ref<FashionableColors>;
+  favoriteCarYear?: unknown;
+  favoriteBook?: string;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  indexes: [
+    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+  ],
+  uniques: [
+    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+  ],
+  properties: {
+    userId: { primary: true, type: 'number' },
+    favorite: {
+      kind: 'm:1',
+      entity: () => FashionableColors,
+      ref: true,
+      fieldNames: [
+        'favorite_car_year',
+        'favorite_color'
+      ],
+      nullable: true,
+      index: 'fk_users_fashionable_colors1_idx',
+    },
+    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
+    favoriteBook: { type: 'string', length: 255, nullable: true },
+  },
+});
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Cars {
+
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+
+  @PrimaryKey({ length: 255 })
+  carBrand!: string;
+
+  @PrimaryKey({ columnType: 'year' })
+  carYear!: unknown;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+@Entity()
+export class FashionableColors {
+
+  [PrimaryKeyProp]?: ['year', 'color'];
+
+  @PrimaryKey({ columnType: 'year' })
+  year!: unknown;
+
+  @PrimaryKey({ length: 255 })
+  color!: string;
+
+  @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
+  favoriteInverse = new Collection<Users>(this);
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+@Entity()
+@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  favorite?: FashionableColors;
+
+  @Property({ columnType: 'year', nullable: true, persist: false })
+  favoriteCarYear?: unknown;
+
+  @Property({ length: 255, nullable: true })
+  favoriteBook?: string;
+
+}
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Cars {
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+  carBrand!: string;
+  carYear!: unknown;
+}
+
+export const CarsSchema = new EntitySchema({
+  class: Cars,
+  properties: {
+    carBrand: { primary: true, type: 'string', length: 255 },
+    carYear: { primary: true, type: 'unknown', columnType: 'year' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+export class FashionableColors {
+  [PrimaryKeyProp]?: ['year', 'color'];
+  year!: unknown;
+  color!: string;
+  favoriteInverse = new Collection<Users>(this);
+}
+
+export const FashionableColorsSchema = new EntitySchema({
+  class: FashionableColors,
+  properties: {
+    year: { primary: true, type: 'unknown', columnType: 'year' },
+    color: { primary: true, type: 'string', length: 255 },
+    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  favorite?: FashionableColors;
+  favoriteCarYear?: unknown;
+  favoriteBook?: string;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  indexes: [
+    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+  ],
+  uniques: [
+    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+  ],
+  properties: {
+    userId: { primary: true, type: 'number' },
+    favorite: {
+      kind: 'm:1',
+      entity: () => FashionableColors,
+      fieldNames: [
+        'favorite_car_year',
+        'favorite_color'
+      ],
+      nullable: true,
+      index: 'fk_users_fashionable_colors1_idx',
+    },
+    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
+    favoriteBook: { type: 'string', length: 255, nullable: true },
+  },
+});
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Cars {
+
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+
+  @PrimaryKey({ length: 255 })
+  carBrand!: string;
+
+  @PrimaryKey({ columnType: 'year' })
+  carYear!: unknown;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+@Entity()
+export class FashionableColors {
+
+  [PrimaryKeyProp]?: ['year', 'color'];
+
+  @PrimaryKey({ columnType: 'year' })
+  year!: unknown;
+
+  @PrimaryKey({ length: 255 })
+  color!: string;
+
+  @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
+  favoriteInverse = new Collection<Users>(this);
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Ref, Unique } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+@Entity()
+@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
+  favorite?: Ref<FashionableColors>;
+
+  @Property({ columnType: 'year', nullable: true, persist: false })
+  favoriteCarYear?: unknown;
+
+  @Property({ length: 255, nullable: true })
+  favoriteBook?: string;
+
+}
+",
+]
+`;
+
+exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Cars {
+  [PrimaryKeyProp]?: ['carBrand', 'carYear'];
+  carBrand!: string;
+  carYear!: unknown;
+}
+
+export const CarsSchema = new EntitySchema({
+  class: Cars,
+  properties: {
+    carBrand: { primary: true, type: 'string', length: 255 },
+    carYear: { primary: true, type: 'unknown', columnType: 'year' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+export class FashionableColors {
+  [PrimaryKeyProp]?: ['year', 'color'];
+  year!: unknown;
+  color!: string;
+  favoriteInverse = new Collection<Users>(this);
+}
+
+export const FashionableColorsSchema = new EntitySchema({
+  class: FashionableColors,
+  properties: {
+    year: { primary: true, type: 'unknown', columnType: 'year' },
+    color: { primary: true, type: 'string', length: 255 },
+    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  favorite?: Ref<FashionableColors>;
+  favoriteCarYear?: unknown;
+  favoriteBook?: string;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  indexes: [
+    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+  ],
+  uniques: [
+    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+  ],
+  properties: {
+    userId: { primary: true, type: 'number' },
+    favorite: {
+      kind: 'm:1',
+      entity: () => FashionableColors,
+      ref: true,
+      fieldNames: [
+        'favorite_car_year',
+        'favorite_color'
+      ],
+      nullable: true,
+      index: 'fk_users_fashionable_colors1_idx',
+    },
+    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
+    favoriteBook: { type: 'string', length: 255, nullable: true },
+  },
+});
+",
+]
+`;

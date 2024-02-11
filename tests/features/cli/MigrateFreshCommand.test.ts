@@ -42,24 +42,24 @@ describe('MigrateUpCommand', () => {
     const cmd = MigrationCommandFactory.create('fresh');
 
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
-    expect(dropSchema).toBeCalledTimes(1);
-    expect(up).toBeCalledTimes(1);
-    expect(seed).toBeCalledTimes(0);
-    expect(closeSpy).toBeCalledTimes(1);
+    expect(dropSchema).toHaveBeenCalledTimes(1);
+    expect(up).toHaveBeenCalledTimes(1);
+    expect(seed).toHaveBeenCalledTimes(0);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
 
     await expect(cmd.handler({ seed: '' } as any)).resolves.toBeUndefined();
-    expect(dropSchema).toBeCalledTimes(2);
-    expect(up).toBeCalledTimes(2);
-    expect(seed).toBeCalledTimes(1);
-    expect(seed).toBeCalledWith(orm.config.get('seeder').defaultSeeder);
-    expect(closeSpy).toBeCalledTimes(2);
+    expect(dropSchema).toHaveBeenCalledTimes(2);
+    expect(up).toHaveBeenCalledTimes(2);
+    expect(seed).toHaveBeenCalledTimes(1);
+    expect(seed).toHaveBeenCalledWith(orm.config.get('seeder').defaultSeeder);
+    expect(closeSpy).toHaveBeenCalledTimes(2);
 
     await expect(cmd.handler({ seed: 'UsersSeeder' } as any)).resolves.toBeUndefined();
-    expect(dropSchema).toBeCalledTimes(3);
-    expect(up).toBeCalledTimes(3);
-    expect(seed).toBeCalledTimes(2);
-    expect(seed).toBeCalledWith('UsersSeeder');
-    expect(closeSpy).toBeCalledTimes(3);
+    expect(dropSchema).toHaveBeenCalledTimes(3);
+    expect(up).toHaveBeenCalledTimes(3);
+    expect(seed).toHaveBeenCalledTimes(2);
+    expect(seed).toHaveBeenCalledWith('UsersSeeder');
+    expect(closeSpy).toHaveBeenCalledTimes(3);
   });
 
 });

@@ -19,10 +19,10 @@ export class CLIHelper {
 
   static async getORM(warnWhenNoEntities?: boolean, opts: Partial<Options> = {}): Promise<MikroORM> {
     const options = await CLIHelper.getConfiguration(warnWhenNoEntities, opts);
-    options.set('allowGlobalContext', true);
-    options.set('debug', !!process.env.MIKRO_ORM_VERBOSE);
     const settings = await ConfigurationLoader.getSettings();
-    options.getLogger().setDebugMode(false);
+    options.set('allowGlobalContext', true);
+    options.set('debug', !!settings.verbose);
+    options.getLogger().setDebugMode(!!settings.verbose);
 
     if (settings.useTsNode) {
       options.set('tsNode', true);

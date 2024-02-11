@@ -1,5 +1,6 @@
 import type { Dictionary, EntityKey, ExpandProperty } from './typings';
 import type { Transaction } from './connections';
+import type { LogContext } from './logging';
 
 export enum FlushMode {
   /** The `EntityManager` delays the flush until the current Transaction is committed. */
@@ -97,6 +98,7 @@ export enum QueryFlag {
   CONVERT_CUSTOM_TYPES = 'CONVERT_CUSTOM_TYPES',
   INCLUDE_LAZY_FORMULAS = 'INCLUDE_LAZY_FORMULAS',
   AUTO_JOIN_ONE_TO_ONE_OWNER = 'AUTO_JOIN_ONE_TO_ONE_OWNER',
+  INFER_POPULATE = 'INFER_POPULATE',
   IDENTITY_INSERT = 'IDENTITY_INSERT', // mssql only
 }
 
@@ -128,8 +130,8 @@ export enum LoadStrategy {
   JOINED = 'joined'
 }
 
-export enum Dataloader {
-  OFF = 0,
+export enum DataloaderType {
+  NONE = 0,
   REFERENCE = 1,
   COLLECTION = 2,
   ALL = 3,
@@ -190,6 +192,7 @@ export interface TransactionOptions {
   clear?: boolean;
   flushMode?: FlushMode;
   ignoreNestedTransactions?: boolean;
+  loggerContext?: LogContext;
 }
 
 export abstract class PlainObject {

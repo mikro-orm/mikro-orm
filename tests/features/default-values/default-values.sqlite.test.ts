@@ -48,7 +48,7 @@ describe('default values in sqlite', () => {
     await orm.em.persistAndFlush(a);
 
     // sqlite needs to reload via separate select query (inside tx, so 4 in total)
-    expect(mock).toBeCalledTimes(3);
+    expect(mock).toHaveBeenCalledTimes(3);
     expect(a.foo1).toBe(50);
     expect(a.foo2).toBe(50);
     expect(a.foo3).toBe(50);

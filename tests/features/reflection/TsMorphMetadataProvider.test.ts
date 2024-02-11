@@ -53,7 +53,7 @@ describe('TsMorphMetadataProvider', () => {
       connect: false,
     };
     const error = `Source file './entities-compiled-error/FooBar.ts' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`;
-    await expect(MikroORM.init(options)).rejects.toThrowError(error);
+    await expect(MikroORM.init(options)).rejects.toThrow(error);
   });
 
   test('should load entities', async () => {
@@ -110,15 +110,15 @@ describe('TsMorphMetadataProvider', () => {
   test('should ignore entity without path', async () => {
     const provider = new TsMorphMetadataProvider({} as any);
     const initProperties = jest.spyOn(TsMorphMetadataProvider.prototype, 'initProperties' as any);
-    expect(initProperties).toBeCalledTimes(0);
+    expect(initProperties).toHaveBeenCalledTimes(0);
     provider.loadEntityMetadata({} as any, 'name');
-    expect(initProperties).toBeCalledTimes(0);
+    expect(initProperties).toHaveBeenCalledTimes(0);
   });
 
   test('should throw when source file not found', async () => {
     const provider = new TsMorphMetadataProvider({} as any);
     const error = `Source file './path/to/entity.ts' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`;
-    expect(() => provider.getExistingSourceFile('./path/to/entity.js')).toThrowError(error);
+    expect(() => provider.getExistingSourceFile('./path/to/entity.js')).toThrow(error);
   });
 
 });

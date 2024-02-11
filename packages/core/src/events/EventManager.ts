@@ -1,4 +1,4 @@
-import type { AnyEntity, AsyncFunction, EntityMetadata } from '../typings';
+import type { AnyEntity, AsyncFunction, EntityKey, EntityMetadata } from '../typings';
 import type { EventArgs, EventSubscriber, FlushEventArgs, TransactionEventArgs } from './EventSubscriber';
 import { Utils } from '../utils';
 import { EventType, EventTypeMap, type TransactionEventType } from '../enums';
@@ -37,7 +37,8 @@ export class EventManager {
     meta ??= (entity as AnyEntity)?.__meta;
     const hooks = (meta?.hooks[event] || []) as AsyncFunction[];
     listeners.push(...hooks.map(hook => {
-      const handler = typeof hook === 'function' ? hook : entity[hook!] as AsyncFunction;
+      const prototypeHook = meta?.prototype[hook as unknown as EntityKey<T>];
+      const handler = typeof hook === 'function' ? hook : entity[hook!] ?? prototypeHook as AsyncFunction;
       return handler!.bind(entity);
     }));
 

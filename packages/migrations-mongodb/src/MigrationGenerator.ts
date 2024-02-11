@@ -1,6 +1,6 @@
-import { ensureDir, writeFile } from 'fs-extra';
-import { Utils, type IMigrationGenerator, type MigrationsOptions, type NamingStrategy } from '@mikro-orm/core';
+import { type IMigrationGenerator, type MigrationsOptions, type NamingStrategy, Utils } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
+import { ensureDir, writeFile } from 'fs-extra';
 
 /* istanbul ignore next */
 export abstract class MigrationGenerator implements IMigrationGenerator {
@@ -21,7 +21,7 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
     const className = this.namingStrategy.classToMigrationName(timestamp, name);
     const fileName = `${this.options.fileName!(timestamp, name)}.${this.options.emit}`;
     const ret = this.generateMigrationFile(className, diff);
-    await writeFile(path + '/' + fileName, ret);
+    await writeFile(path + '/' + fileName, ret, { flush: true });
 
     return [ret, fileName];
   }

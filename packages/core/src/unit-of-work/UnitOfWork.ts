@@ -56,7 +56,7 @@ export class UnitOfWork {
     this.platform = this.em.getPlatform();
     this.eventManager = this.em.getEventManager();
     this.comparator = this.em.getComparator();
-    this.changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.metadata, this.platform, this.em.config);
+    this.changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.metadata, this.platform, this.em.config, this.em);
     this.changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.getValidator(), this.em.config);
   }
 
@@ -172,7 +172,7 @@ export class UnitOfWork {
       hash = Utils.getPrimaryKeyHash(keys);
     }
 
-    schema ??= meta.schema;
+    schema ??= meta.schema ?? this.em.config.get('schema');
 
     if (schema) {
       hash = `${schema}:${hash}`;
@@ -307,7 +307,8 @@ export class UnitOfWork {
   }
 
   remove<T extends object>(entity: T, visited?: Set<AnyEntity>, options: { cascade?: boolean } = {}): void {
-    if (helper(entity).__managed) {
+    // allow removing not managed entities if they are not part of the persist stack
+    if (helper(entity).__managed || !this.persistStack.has(entity)) {
       this.removeStack.add(entity);
       this.queuedActions.add(helper(entity).__meta.className);
     } else {
@@ -617,19 +618,13 @@ export class UnitOfWork {
     }).filter(i => i) as string[];
 
     const compoundUniqueHashes = wrapped.__meta.uniques.map(unique => {
-      const props = Utils.asArray(unique.properties);
+      const props = Utils.asArray<EntityKey<T>>(unique.properties);
 
       if (props.every(prop => entity[prop] != null)) {
         return Utils.getPrimaryKeyHash(props.map(p => {
           const prop = wrapped.__meta.properties[p];
           return prop.kind === ReferenceKind.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name as EntityKey]!).getSerializedPrimaryKey();
         }) as any);
-      }
-
-      if (props.every(prop => wrapped.__originalEntityData?.[prop] != null)) {
-        return Utils.getPrimaryKeyHash(props.map(p => {
-          return wrapped.__originalEntityData![p];
-        }) as string[]);
       }
 
       return undefined;

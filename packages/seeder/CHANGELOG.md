@@ -3,6 +3,94 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.1](https://github.com/mikro-orm/mikro-orm/compare/v6.1.0...v6.1.1) (2024-02-10)
+
+**Note:** Version bump only for package @mikro-orm/seeder
+
+
+
+
+
+# [6.1.0](https://github.com/mikro-orm/mikro-orm/compare/v6.0.7...v6.1.0) (2024-02-04)
+
+**Note:** Version bump only for package @mikro-orm/seeder
+
+
+
+
+
+## [6.0.7](https://github.com/mikro-orm/mikro-orm/compare/v6.0.6...v6.0.7) (2024-01-30)
+
+**Note:** Version bump only for package @mikro-orm/seeder
+
+
+
+
+
+## [6.0.6](https://github.com/mikro-orm/mikro-orm/compare/v6.0.5...v6.0.6) (2024-01-29)
+
+**Note:** Version bump only for package @mikro-orm/seeder
+
+
+
+
+
+## [6.0.5](https://github.com/mikro-orm/mikro-orm/compare/v6.0.4...v6.0.5) (2024-01-18)
+
+**Note:** Version bump only for package @mikro-orm/seeder
+
+
+
+
+
+## [6.0.4](https://github.com/mikro-orm/mikro-orm/compare/v6.0.3...v6.0.4) (2024-01-15)
+
+**Note:** Version bump only for package @mikro-orm/seeder
+
+
+
+
+
+## [6.0.3](https://github.com/mikro-orm/mikro-orm/compare/v6.0.2...v6.0.3) (2024-01-13)
+
+**Note:** Version bump only for package @mikro-orm/seeder
+
+
+
+
+
+## [6.0.2](https://github.com/mikro-orm/mikro-orm/compare/v6.0.1...v6.0.2) (2024-01-09)
+
+**Note:** Version bump only for package @mikro-orm/seeder
+
+
+
+
+
+## [6.0.1](https://github.com/mikro-orm/mikro-orm/compare/v6.0.0...v6.0.1) (2024-01-08)
+
+**Note:** Version bump only for package @mikro-orm/seeder
+
+
+
+
+
+# [6.0.0](https://github.com/mikro-orm/mikro-orm/compare/v5.9.7...v6.0.0) (2024-01-08)
+
+
+### Bug Fixes
+
+* **core:** ensure propagation and change-tracking works with `useDefineForClassFields` ([#4730](https://github.com/mikro-orm/mikro-orm/issues/4730)) ([83f24aa](https://github.com/mikro-orm/mikro-orm/commit/83f24aa3fc065fdfa50ae3df6af5ea14516018e1)), closes [#4216](https://github.com/mikro-orm/mikro-orm/issues/4216)
+
+
+### Features
+
+* **core:** remove static require calls ([#3814](https://github.com/mikro-orm/mikro-orm/issues/3814)) ([b58f476](https://github.com/mikro-orm/mikro-orm/commit/b58f4763995738cad11d08665b239443f9fb4499)), closes [#3743](https://github.com/mikro-orm/mikro-orm/issues/3743)
+
+
+
+
+
 ## [5.9.2](https://github.com/mikro-orm/mikro-orm/compare/v5.9.1...v5.9.2) (2023-11-02)
 
 **Note:** Version bump only for package @mikro-orm/seeder

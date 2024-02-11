@@ -9,6 +9,7 @@ import {
   type GetRepository,
   type QueryResult,
   type FilterQuery,
+  type LoggingOptions,
 } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from './AbstractSqlDriver';
 import { QueryBuilder } from './query';
@@ -17,22 +18,21 @@ import type { SqlEntityRepository } from './SqlEntityRepository';
 /**
  * @inheritDoc
  */
-export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> extends EntityManager<D> {
+export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriver> extends EntityManager<Driver> {
 
   /**
    * Creates a QueryBuilder instance
    */
-  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, alias?: string, type?: ConnectionType): QueryBuilder<T> {
+  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, alias?: string, type?: ConnectionType, loggerContext?: LoggingOptions): QueryBuilder<T> {
     const context = this.getContext();
-
-    return new QueryBuilder<T>(entityName, this.getMetadata(), this.getDriver(), context.getTransactionContext(), alias, type, context);
+    return new QueryBuilder<T>(entityName, this.getMetadata(), this.getDriver(), context.getTransactionContext(), alias, type, context, loggerContext ?? context.loggerContext);
   }
 
   /**
    * Shortcut for `createQueryBuilder()`
    */
-  qb<T extends object>(entityName: EntityName<T>, alias?: string, type?: ConnectionType) {
-    return this.createQueryBuilder(entityName, alias, type);
+  qb<T extends object>(entityName: EntityName<T>, alias?: string, type?: ConnectionType, loggerContext?: LoggingOptions) {
+    return this.createQueryBuilder(entityName, alias, type, loggerContext);
   }
 
   /**
@@ -42,8 +42,8 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
     return this.getConnection(type).getKnex();
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<T> {
-    return this.getDriver().execute(queryOrKnex, params, method, this.getContext(false).getTransactionContext());
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', loggerContext?: LoggingOptions): Promise<T> {
+    return this.getDriver().execute(queryOrKnex, params, method, this.getContext(false).getTransactionContext(), loggerContext);
   }
 
   override getRepository<T extends object, U extends EntityRepository<T> = SqlEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {

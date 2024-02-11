@@ -1,8 +1,6 @@
 import { inspect } from 'util';
 import type {
   AddEager,
-  AutoPath,
-  ConnectionType,
   Dictionary,
   EntityClass,
   EntityKey,
@@ -13,11 +11,12 @@ import type {
   Ref,
 } from '../typings';
 import type { EntityFactory } from './EntityFactory';
-import { Dataloader, type  LockMode  } from '../enums';
+import { DataloaderType } from '../enums';
 import { helper, wrap } from './wrap';
 import { DataloaderUtils, Utils } from '../utils';
+import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
 
-export class Reference<T> {
+export class Reference<T extends object> {
 
   constructor(private entity: T) {
     this.set(entity);
@@ -40,23 +39,23 @@ export class Reference<T> {
     }
   }
 
-  static create<T>(entity: T | Ref<T>): Ref<T> {
+  static create<T extends object>(entity: T | Ref<T>): Ref<T> {
     const unwrapped = Reference.unwrapReference(entity);
-    const ref = helper(entity).toReference() as Ref<T>;
+    const ref = helper(entity).toReference() as Reference<T>;
 
     if (unwrapped !== ref.unwrap()) {
-      ref.set(unwrapped as T);
+      ref.set(unwrapped);
     }
 
-    return ref;
+    return ref as Ref<T>;
   }
 
-  static createFromPK<T>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): Ref<T> {
+  static createFromPK<T extends object>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): Ref<T> {
     const ref = this.createNakedFromPK(entityType, pk, options);
     return helper(ref).toReference();
   }
 
-  static createNakedFromPK<T>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): T {
+  static createNakedFromPK<T extends object>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): T {
     const factory = entityType.prototype.__factory as EntityFactory;
     const entity = factory.createReference(entityType, pk, {
       merge: false,
@@ -74,7 +73,7 @@ export class Reference<T> {
   /**
    * Checks whether the argument is instance of `Reference` wrapper.
    */
-  static isReference<T>(data: any): data is Reference<T> {
+  static isReference<T extends object>(data: any): data is Reference<T> {
     return data && !!data.__reference;
   }
 
@@ -92,45 +91,53 @@ export class Reference<T> {
   /**
    * Returns wrapped entity.
    */
-  static unwrapReference<T>(ref: T | Reference<T> | ScalarReference<T>): T {
+  static unwrapReference<T extends object>(ref: T | Reference<T> | ScalarReference<T> | Ref<T>): T {
     return Reference.isReference<T>(ref) ? (ref as Reference<T>).unwrap() : ref as T;
   }
 
   /**
-   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
-   * Returns the entity.
+   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded). Returns the entity.
+   * If the entity is not found in the database (e.g. it was deleted in the meantime, or currently active filters disallow loading of it)
+   * the method returns `null`. Use `loadOrFail()` if you want an error to be thrown in such a case.
    */
-  async load<TT extends T, P extends string = never>(options?: LoadReferenceOptions<T, P>): Promise<Loaded<TT, P>>;
+  async load<TT extends T, P extends string = never, F extends string = '*', E extends string = never>(options: LoadReferenceOptions<TT, P, F, E> = {}): Promise<Loaded<TT, P, F, E> | null> {
+    if (!this.isInitialized() || options.refresh) {
+      const wrapped = helper(this.entity as TT & object);
 
-  /**
-   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
-   * Returns the requested property instead of the whole entity.
-   */
-  async load<K extends keyof T>(prop: K): Promise<T[K]>;
+      if (!wrapped.__em) {
+        return this.entity as Loaded<TT, P, F, E>;
+      }
 
-  /**
-   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
-   * Returns either the whole entity, or the requested property.
-   */
-  async load<TT extends T, K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P> | K): Promise<Loaded<TT, P> | T[K]> {
-    const opts: Dictionary = typeof options === 'object' ? options : { prop: options } as LoadReferenceOptions<T, P>;
+      if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.REFERENCE].includes(DataloaderUtils.getDataloaderType(wrapped.__em.config.get('dataloader')))) {
+        // eslint-disable-next-line dot-notation
+        return wrapped.__em!['refLoader'].load([this, options as any]);
+      }
 
-    if (opts.dataloader ?? (DataloaderUtils.getDataloaderType(helper(this.entity).__em.config.get('dataloader')) > Dataloader.REFERENCE)) {
-      return helper(this.entity).__em.refLoader.load(this);
+      return wrapped.init(options);
     }
 
-    if (!this.isInitialized() || opts.refresh) {
-      await helper(this.entity).init(undefined, opts?.populate, opts?.lockMode, opts?.connectionType);
-    }
-
-    if (opts.prop) {
-      return this.entity[opts.prop as EntityKey];
-    }
-
-    return this.entity as Loaded<TT, P>;
+    return this.entity as Loaded<TT, P, F, E>;
   }
 
-  set<TT extends T>(entity: TT | Ref<TT>): void {
+  /**
+   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
+   * Returns the entity or throws an error just like `em.findOneOrFail()` (and respects the same config options).
+   */
+  async loadOrFail<TT extends T, P extends string = never, F extends string = '*', E extends string = never>(options: LoadReferenceOrFailOptions<TT, P, F, E> = {}): Promise<Loaded<TT, P, F, E>> {
+    const ret = await this.load(options);
+
+    if (!ret) {
+      const wrapped = helper(this.entity);
+      options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
+      const entityName = this.entity.constructor.name;
+      const where = wrapped.getPrimaryKey() as any;
+      throw options.failHandler!(entityName, where);
+    }
+
+    return ret;
+  }
+
+  private set<TT extends T>(entity: TT | Ref<TT>): void {
     this.entity = Reference.unwrapReference(entity as T & object);
     delete helper(this.entity).__reference;
   }
@@ -149,6 +156,11 @@ export class Reference<T> {
 
   getProperty<K extends keyof T>(prop: K): T[K] {
     return this.getEntity()[prop];
+  }
+
+  async loadProperty<TT extends T, P extends string = never, K extends keyof TT = keyof TT>(prop: K, options?: LoadReferenceOrFailOptions<TT, P>): Promise<Loaded<TT, P>[K]> {
+    await this.loadOrFail(options);
+    return (this.getEntity() as TT)[prop] as Loaded<TT, P>[K];
   }
 
   isInitialized(): boolean {
@@ -191,7 +203,7 @@ export class ScalarReference<Value> {
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
    * Returns either the whole entity, or the requested property.
    */
-  async load(options?: Omit<LoadReferenceOptions<any, any>, 'populate'>): Promise<Value | undefined> {
+  async load(options?: Omit<LoadReferenceOptions<any, any>, 'populate' | 'fields' | 'exclude'>): Promise<Value | undefined> {
     const opts: Dictionary = typeof options === 'object' ? options : { prop: options } as LoadReferenceOptions<any, any>;
 
     if (!this.initialized || opts.refresh) {
@@ -247,11 +259,11 @@ Object.defineProperties(ScalarReference.prototype, {
   get: { get() { return () => this.value; } },
 });
 
-export interface LoadReferenceOptions<T, P extends string = never> {
-  populate?: readonly AutoPath<T, P>[] | AutoPath<T, P>;
-  lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
-  connectionType?: ConnectionType;
-  refresh?: boolean;
+export interface LoadReferenceOptions<T extends object, P extends string = never, F extends string = '*', E extends string = never> extends FindOneOptions<T, P, F, E> {
+  dataloader?: boolean;
+}
+
+export interface LoadReferenceOrFailOptions<T extends object, P extends string = never, F extends string = '*', E extends string = never> extends FindOneOrFailOptions<T, P, F, E> {
   dataloader?: boolean;
 }
 
@@ -294,7 +306,7 @@ export function ref<T, PKV extends Primary<T> = Primary<T>>(entityOrType?: T | R
     return pk as null;
   }
 
-  return Reference.createFromPK<T>(entityOrType as EntityClass<T>, pk as PKV);
+  return Reference.createFromPK(entityOrType as EntityClass<T>, pk as PKV) as Ref<T>;
 }
 
 /**

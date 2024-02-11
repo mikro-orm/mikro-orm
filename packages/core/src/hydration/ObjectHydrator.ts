@@ -76,8 +76,8 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
 
       if (prop.customType) {
-        context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
-        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
+        context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType!.convertToJSValue(val, this.platform));
+        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType!.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
         ret.push(
           `    if (convertCustomTypes) {`,
@@ -137,6 +137,7 @@ export class ObjectHydrator extends Hydrator {
     const hydrateToOne = (prop: EntityProperty, dataKey: string, entityKey: string) => {
       const ret: string[] = [];
 
+      const method = type === 'reference' ? 'createReference' : 'create';
       const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
       ret.push(`  if (data${dataKey} === null) {\n    entity${entityKey} = ${nullVal};`);
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
@@ -151,9 +152,9 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    } else if (data${dataKey} && typeof data${dataKey} === 'object') {`);
 
       if (prop.ref) {
-        ret.push(`      entity${entityKey} = Reference.create(factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema }));`);
+        ret.push(`      entity${entityKey} = Reference.create(factory.${method}('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema }));`);
       } else {
-        ret.push(`      entity${entityKey} = factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });`);
+        ret.push(`      entity${entityKey} = factory.${method}('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });`);
       }
 
       ret.push(`    }`);
@@ -171,7 +172,7 @@ export class ObjectHydrator extends Hydrator {
       }
 
       if (prop.customType?.ensureComparable(meta, prop)) {
-        context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
+        context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType!.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
         ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
         ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}.__helper.getPrimaryKey());`);

@@ -2,7 +2,7 @@ import { Entity, helper, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro
 import { v4 } from 'uuid';
 
 @Entity()
-export class Address {
+class Address {
 
   @PrimaryKey({ type: 'uuid' })
   id = v4();
@@ -13,7 +13,7 @@ export class Address {
 }
 
 @Entity()
-export class Contact {
+class Contact {
 
   @PrimaryKey({ type: 'uuid' })
   id = v4();
@@ -27,7 +27,7 @@ export class Contact {
 }
 
 @Entity()
-export class Employee {
+class Employee {
 
   @PrimaryKey({ type: 'uuid' })
   id = v4();

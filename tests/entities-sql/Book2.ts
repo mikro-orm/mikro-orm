@@ -36,7 +36,7 @@ export class Book2 {
   @PrimaryKey({ name: 'uuid_pk', type: t.uuid })
   uuid = v4();
 
-  @Property({ defaultRaw: 'current_timestamp(3)', length: 3 })
+  @Property({ default: sql.now(3), length: 3 })
   createdAt = new Date();
 
   @Index({ type: 'fulltext' })

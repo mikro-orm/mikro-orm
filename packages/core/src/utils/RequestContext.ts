@@ -1,8 +1,9 @@
 import { AsyncLocalStorage } from 'async_hooks';
 import type { EntityManager } from '../EntityManager';
+import { type LoggingOptions } from '../logging/Logger';
 
 /**
- * Uses `AsyncLocalStorage` to create async context that holds current EM fork.
+ * Uses `AsyncLocalStorage` to create async context that holds the current EM fork.
  */
 export class RequestContext {
 
@@ -47,9 +48,9 @@ export class RequestContext {
     const forks = new Map<string, EntityManager>();
 
     if (Array.isArray(em)) {
-      em.forEach(em => forks.set(em.name, em.fork({ useContext: true, schema: options.schema })));
+      em.forEach(em => forks.set(em.name, em.fork({ useContext: true, ...options })));
     } else {
-      forks.set(em.name, em.fork({ useContext: true, schema: options.schema }));
+      forks.set(em.name, em.fork({ useContext: true, ...options }));
     }
 
     return new RequestContext(forks);
@@ -59,4 +60,5 @@ export class RequestContext {
 
 export interface CreateContextOptions {
   schema?: string;
+  loggerContext?: LoggingOptions;
 }

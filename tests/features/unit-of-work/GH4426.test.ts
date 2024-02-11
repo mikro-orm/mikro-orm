@@ -26,8 +26,7 @@ beforeAll(async () => {
     dbName: ':memory:',
   });
 
-  const generator = orm.schema;
-  await generator.createSchema();
+  await orm.schema.createSchema();
 });
 
 afterAll(async () => {
@@ -40,5 +39,5 @@ test('4426', async () => {
 
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock).not.toBeCalled();
+  expect(mock).not.toHaveBeenCalled();
 });

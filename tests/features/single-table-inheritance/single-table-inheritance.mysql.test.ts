@@ -147,16 +147,6 @@ describe('single table inheritance in mysql', () => {
     expect(users2.map(u => [u.type, u.lastName])).toEqual([[Type.Employee, '1'], [Type.Employee, '2']]);
   });
 
-  test('generated discriminator column', async () => {
-    const meta = orm.getMetadata().get(BaseUser2.name);
-    const prop = meta.properties[meta.discriminatorColumn!];
-    await createEntities();
-    prop.userDefined = false;
-    const users = await orm.em.find(BaseUser2, { type: Type.Employee }, { orderBy: { lastName: 'asc', firstName: 'asc' } });
-    expect(users.map(u => [u.type, u.lastName])).toEqual([[undefined, '1'], [undefined, '2']]);
-    prop.userDefined = undefined; // revert back
-  });
-
   test('STI in m:1 and 1:1 relations', async () => {
     await createEntities();
     const owner = await orm.em.findOneOrFail(CompanyOwner2, { firstName: 'Bruce' });

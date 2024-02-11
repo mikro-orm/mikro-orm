@@ -83,30 +83,18 @@ describe('GH issue 4423', () => {
 
   test('The owning side is in the main entity, This one chooses the wrong column of the pivot table', async () => {
     const mock = mockLogger(orm);
-    await orm.em.find(
-      Task,
-      {},
-      {
-        populate: ['managers'],
-      },
-    );
-    expect(mock.mock.calls[1][0]).toMatch(
-      "select `u1`.*, `t0`.`manager_id` as `fk__manager_id`, `t0`.`task_id` as `fk__task_id` from `task_managers` as `t0` inner join `user` as `u1` on `t0`.`manager_id` = `u1`.`id` and `u1`.`type` = 'manager' where `t0`.`task_id` in (1)",
-    );
+    await orm.em.findAll(Task, {
+      populate: ['managers'],
+    });
+    expect(mock.mock.calls[0][0]).toMatch("select `t0`.*, `m1`.`id` as `m1__id`, `m1`.`name` as `m1__name`, `m1`.`type` as `m1__type`, `m1`.`favorite_task_id` as `m1__favorite_task_id` from `task` as `t0` left join `task_managers` as `t2` on `t0`.`id` = `t2`.`task_id` left join `user` as `m1` on `t2`.`manager_id` = `m1`.`id` and `m1`.`type` = 'manager'");
   });
 
   test('The owning side is in the relation, This one works normally', async () => {
     const mock = mockLogger(orm);
-    await orm.em.find(
-      Manager,
-      {},
-      {
-        populate: ['tasks'],
-      },
-    );
+    await orm.em.findAll(Manager, {
+      populate: ['tasks'],
+    });
 
-    expect(mock.mock.calls[1][0]).toMatch(
-      'select `t1`.*, `t0`.`manager_id` as `fk__manager_id`, `t0`.`task_id` as `fk__task_id` from `task_managers` as `t0` inner join `task` as `t1` on `t0`.`task_id` = `t1`.`id` where `t0`.`manager_id` in (1)',
-    );
+    expect(mock.mock.calls[0][0]).toMatch("select `m0`.*, `t1`.`id` as `t1__id`, `t1`.`name` as `t1__name` from `user` as `m0` left join `task_managers` as `t2` on `m0`.`id` = `t2`.`manager_id` left join `task` as `t1` on `t2`.`task_id` = `t1`.`id` where `m0`.`type` = 'manager'");
   });
 });

@@ -50,17 +50,31 @@ export abstract class AbstractSqlConnection extends Connection {
     return this.client;
   }
 
+  /**
+   * @inheritDoc
+   */
   override async close(force?: boolean): Promise<void> {
     await super.close(force);
     await this.getKnex().destroy();
   }
 
+  /**
+   * @inheritDoc
+   */
   async isConnected(): Promise<boolean> {
+    const check = await this.checkConnection();
+    return check.ok;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  async checkConnection(): Promise<{ ok: boolean; reason?: string; error?: Error }> {
     try {
       await this.getKnex().raw('select 1');
-      return true;
-    } catch {
-      return false;
+      return { ok: true };
+    } catch (error: any) {
+      return { ok: false, reason: error.message, error };
     }
   }
 
@@ -126,7 +140,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, logging?: LoggingOptions): Promise<T> {
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, loggerContext?: LoggingOptions): Promise<T> {
     await this.ensureConnection();
 
     if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(queryOrKnex)) {
@@ -137,7 +151,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     const formatted = this.platform.formatQuery(queryOrKnex, params);
-    const sql = this.getSql(queryOrKnex, formatted, logging);
+    const sql = this.getSql(queryOrKnex, formatted, loggerContext);
     return this.executeQuery<T>(sql, async () => {
       const query = this.getKnex().raw(formatted);
 
@@ -147,7 +161,7 @@ export abstract class AbstractSqlConnection extends Connection {
 
       const res = await query;
       return this.transformRawResult<T>(res, method);
-    }, { query: queryOrKnex, params, ...logging });
+    }, { query: queryOrKnex, params, ...loggerContext });
   }
 
   /**

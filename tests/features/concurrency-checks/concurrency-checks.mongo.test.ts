@@ -73,7 +73,7 @@ describe('optimistic locking - concurrency check (mongo)', () => {
     mock.mockReset();
 
     test.other = 'asd';
-    await expect(orm.em.flush()).rejects.toThrowError(`The optimistic lock on entity ConcurrencyCheckUser failed`);
+    await expect(orm.em.flush()).rejects.toThrow(`The optimistic lock on entity ConcurrencyCheckUser failed`);
 
     mock.mockReset();
 
@@ -131,7 +131,7 @@ describe('optimistic locking - concurrency check (mongo)', () => {
 
     test1.other = 'asd';
     test2.other = 'lololol';
-    await expect(orm.em.flush()).rejects.toThrowError(`The optimistic lock on entity ConcurrencyCheckUser failed`);
+    await expect(orm.em.flush()).rejects.toThrow(`The optimistic lock on entity ConcurrencyCheckUser failed`);
 
     mock.mockReset();
 

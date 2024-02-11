@@ -8,7 +8,7 @@ import type { Configuration } from '../utils/Configuration';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import {
   ArrayType, BigIntType, BlobType, Uint8ArrayType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
-  TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType,
+  TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType, IntervalType,
 } from '../types';
 import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
@@ -207,6 +207,10 @@ export abstract class Platform {
     return `varchar(${column.length ?? 255})`;
   }
 
+  getIntervalTypeDeclarationSQL(column: { length?: number }): string {
+    return 'interval' + (column.length ? `(${column.length})` : '');
+  }
+
   getTextTypeDeclarationSQL(_column: { length?: number }): string {
     return `text`;
   }
@@ -254,8 +258,9 @@ export abstract class Platform {
     }
 
     switch (this.extractSimpleType(type)) {
-      case 'string': return Type.getType(StringType);
+      case 'string':
       case 'varchar': return Type.getType(StringType);
+      case 'interval': return Type.getType(IntervalType);
       case 'text': return Type.getType(TextType);
       case 'number': return Type.getType(IntegerType);
       case 'bigint': return Type.getType(BigIntType);
@@ -274,6 +279,7 @@ export abstract class Platform {
       case 'uuid': return Type.getType(UuidType);
       case 'date': return Type.getType(DateType);
       case 'datetime': return Type.getType(DateTimeType);
+      case 'timestamp': return Type.getType(DateTimeType);
       case 'time': return Type.getType(TimeType);
       case 'object':
       case 'json': return Type.getType(JsonType);
@@ -314,7 +320,7 @@ export abstract class Platform {
     return path;
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
     return path.join('.');
   }
 
@@ -345,6 +351,18 @@ export abstract class Platform {
 
   convertJsonToJSValue(value: unknown): unknown {
     return parseJsonSafe(value);
+  }
+
+  convertIntervalToJSValue(value: string): unknown {
+    return value;
+  }
+
+  convertIntervalToDatabaseValue(value: unknown): unknown {
+    return value;
+  }
+
+  parseDate(value: string | number): Date {
+    return new Date(value);
   }
 
   getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
@@ -381,6 +399,49 @@ export abstract class Platform {
 
   quoteValue(value: any): string {
     return value;
+  }
+
+  formatQuery(sql: string, params: readonly any[]): string {
+    if (params.length === 0) {
+      return sql;
+    }
+
+    // fast string replace without regexps
+    let j = 0;
+    let pos = 0;
+    let ret = '';
+
+    if (sql[0] === '?') {
+      if (sql[1] === '?') {
+        ret += this.quoteIdentifier(params[j++]);
+        pos = 2;
+      } else {
+        ret += this.quoteValue(params[j++]);
+        pos = 1;
+      }
+    }
+
+    while (pos < sql.length) {
+      const idx = sql.indexOf('?', pos + 1);
+
+      if (idx === -1) {
+        ret += sql.substring(pos, sql.length);
+        break;
+      }
+
+      if (sql.substring(idx - 1, idx + 1) === '\\?') {
+        ret += sql.substring(pos, idx - 1) + '?';
+        pos = idx + 1;
+      } else if (sql.substring(idx, idx + 2) === '??') {
+        ret += sql.substring(pos, idx) + this.quoteIdentifier(params[j++]);
+        pos = idx + 2;
+      } else {
+        ret += sql.substring(pos, idx) + this.quoteValue(params[j++]);
+        pos = idx + 1;
+      }
+    }
+
+    return ret;
   }
 
   cloneEmbeddable<T>(data: T): T {
@@ -434,9 +495,21 @@ export abstract class Platform {
     return false;
   }
 
-  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, includeFormulas = true): boolean {
+  isPopulated<T>(key: string, populate: PopulateOptions<T>[] | boolean): boolean {
+    return populate === true || (populate !== false && populate.some(p => p.field === key || p.all));
+  }
+
+  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, exclude?: string[], includeFormulas = true): boolean {
+    if (exclude?.includes(prop.name)) {
+      return false;
+    }
+
+    if (exclude?.find(k => k.startsWith(`${prop.name}.`) && !this.isPopulated(prop.name, populate))) {
+      return false;
+    }
+
     if (prop.formula) {
-      return includeFormulas && (!prop.lazy || populate === true || (populate !== false && populate.some(p => p.field === prop.name || p.all)));
+      return includeFormulas && (!prop.lazy || this.isPopulated(prop.name, populate));
     }
 
     if (prop.persist === false) {

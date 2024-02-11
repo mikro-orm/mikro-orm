@@ -3,7 +3,7 @@ export interface CacheAdapter {
   /**
    * Gets the items under `name` key from the cache.
    */
-  get<T = any>(name: string): T | Promise<T> | undefined;
+  get<T = any>(name: string): T | Promise<T | undefined> | undefined;
 
   /**
    * Sets the item to the cache. `origin` is used for cache invalidation and should reflect the change in data.

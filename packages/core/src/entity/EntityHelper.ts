@@ -126,13 +126,13 @@ export class EntityHelper {
               },
               set(val) {
                 this.__helper.__data[prop.name] = val;
-                this.__helper.__touched = true;
+                this.__helper.__touched = !this.__helper.hydrator.isRunning();
               },
               enumerable: true,
               configurable: true,
             });
             this.__helper.__data[prop.name] = val;
-            this.__helper.__touched = true;
+            this.__helper.__touched = !this.__helper.hydrator.isRunning();
           },
           configurable: true,
         });
@@ -155,7 +155,7 @@ export class EntityHelper {
 
       if (showEM) {
         if (helper(this).__em) {
-          name += ` [managed by ${helper(this).__em.id}]`;
+          name += ` [managed by ${helper(this).__em!.id}]`;
         } else {
           name += ` [not managed]`;
         }
@@ -183,9 +183,9 @@ export class EntityHelper {
 
         // when propagation from inside hydration, we set the FK to the entity data immediately
         if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
-          wrapped.__originalEntityData[prop.name] = helper(wrapped.__data[prop.name]).getPrimaryKey(true);
+          wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(wrapped.__data[prop.name], prop.targetMeta!.primaryKeys, true);
         } else {
-          wrapped.__touched = true;
+          wrapped.__touched = !hydrator.isRunning();
         }
 
         EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
@@ -251,7 +251,7 @@ export class EntityHelper {
     }
   }
 
-  static ensurePropagation<T>(entity: T) {
+  static ensurePropagation<T extends object>(entity: T) {
     if ((entity as Dictionary).__gettersDefined) {
       return;
     }

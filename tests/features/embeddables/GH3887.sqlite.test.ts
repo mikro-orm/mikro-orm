@@ -1,9 +1,9 @@
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/better-sqlite';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, MikroORM, sql } from '@mikro-orm/better-sqlite';
 
 @Embeddable()
 class NestedTime {
 
-  @Property({ defaultRaw: 'current_timestamp' })
+  @Property({ default: sql.now() })
   timestamp!: Date;
 
 }
@@ -11,7 +11,7 @@ class NestedTime {
 @Embeddable()
 class Time {
 
-  @Property({ defaultRaw: 'current_timestamp' })
+  @Property({ default: sql.now() })
   timestamp!: Date;
 
   @Embedded(() => NestedTime)

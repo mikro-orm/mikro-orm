@@ -21,6 +21,12 @@ export interface NamingStrategy {
   propertyToColumnName(propertyName: string, object?: boolean): string;
 
   /**
+   * Return a name of the entity class based on database table name (used in `EntityGenerator`).
+   * Default implementation ignores the schema name.
+   */
+  getEntityName(tableName: string, schemaName?: string): string;
+
+  /**
    * Return a property for a column name (used in `EntityGenerator`).
    */
   columnNameToProperty(columnName: string): string;

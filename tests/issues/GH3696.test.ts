@@ -2,7 +2,7 @@ import { FullTextType, MikroORM, Collection, Entity, Index, ManyToMany, PrimaryK
 
 @Entity()
 @Unique({ properties: ['name'] })
-export class Artist {
+class Artist {
 
   @PrimaryKey()
   id!: number;
@@ -23,7 +23,7 @@ export class Artist {
 }
 
 @Entity()
-export class Song {
+class Song {
 
   @PrimaryKey()
   id!: number;

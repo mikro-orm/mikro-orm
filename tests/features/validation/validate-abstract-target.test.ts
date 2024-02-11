@@ -22,5 +22,5 @@ test('validates missing @Entity() decorator', async () => {
   await expect(MikroORM.init({
     entities: [B],
     dbName: ':memory:',
-  })).rejects.toThrowError('B.a targets abstract entity A. Maybe you forgot to put @Entity() decorator on the A class?');
+  })).rejects.toThrow('B.a targets abstract entity A. Maybe you forgot to put @Entity() decorator on the A class?');
 });

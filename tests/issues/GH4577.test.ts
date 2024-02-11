@@ -1,4 +1,4 @@
-import { Entity, helper, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
 import { v4 } from 'uuid';
 import { mockLogger } from '../helpers';
@@ -39,5 +39,5 @@ it('4577', async () => {
   const mock = mockLogger(orm);
   await orm.em.flush();
   await orm.em.flush();
-  expect(mock).not.toBeCalled();
+  expect(mock).not.toHaveBeenCalled();
 });

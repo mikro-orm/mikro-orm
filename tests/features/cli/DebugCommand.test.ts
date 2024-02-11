@@ -1,11 +1,10 @@
-import { MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
+import { MongoDriver } from '@mikro-orm/mongodb';
 
 (global as any).process.env.FORCE_COLOR = 0;
 
 import {
   Configuration,
   ConfigurationLoader,
-  IDatabaseDriver,
   Utils,
 } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
@@ -32,7 +31,7 @@ describe('DebugCommand', () => {
     getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver } as any, false));
     getConfigPaths.mockResolvedValue(['./path/orm-config.ts']);
     await expect(cmd.handler()).resolves.toBeUndefined();
-    expect(dumpDependencies).toBeCalledTimes(1);
+    expect(dumpDependencies).toHaveBeenCalledTimes(1);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
       [' - searched config paths:'],
@@ -46,7 +45,7 @@ describe('DebugCommand', () => {
     getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver, tsNode: true, entities: ['./dist/entities-1', './dist/entities-2'], entitiesTs: ['./src/entities-1', './src/entities-2'] } as any, false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler()).resolves.toBeUndefined();
-    expect(dumpDependencies).toBeCalledTimes(2);
+    expect(dumpDependencies).toHaveBeenCalledTimes(2);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
       [' - ts-node enabled'],
@@ -66,7 +65,7 @@ describe('DebugCommand', () => {
     getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver, tsNode: false, entities: [FooBar, FooBaz] } as any, false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler()).resolves.toBeUndefined();
-    expect(dumpDependencies).toBeCalledTimes(3);
+    expect(dumpDependencies).toHaveBeenCalledTimes(3);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
       [' - ts-node enabled'],
@@ -81,7 +80,7 @@ describe('DebugCommand', () => {
     getConfiguration.mockRejectedValueOnce(new Error('test error message'));
     dump.mock.calls.length = 0;
     await expect(cmd.handler()).resolves.toBeUndefined();
-    expect(dumpDependencies).toBeCalledTimes(4);
+    expect(dumpDependencies).toHaveBeenCalledTimes(4);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
       [' - ts-node enabled'],
@@ -93,7 +92,7 @@ describe('DebugCommand', () => {
     globbyMock.mockResolvedValue(false);
     dump.mock.calls.length = 0;
     await expect(cmd.handler()).resolves.toBeUndefined();
-    expect(dumpDependencies).toBeCalledTimes(5);
+    expect(dumpDependencies).toHaveBeenCalledTimes(5);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
       [' - ts-node enabled'],
@@ -113,7 +112,7 @@ describe('DebugCommand', () => {
     const connectionMock = jest.spyOn(CLIHelper, 'isDBConnected');
     connectionMock.mockImplementation(async () => false);
     await expect(cmd.handler()).resolves.toBeUndefined();
-    expect(dumpDependencies).toBeCalledTimes(6);
+    expect(dumpDependencies).toHaveBeenCalledTimes(6);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
       [' - searched config paths:'],

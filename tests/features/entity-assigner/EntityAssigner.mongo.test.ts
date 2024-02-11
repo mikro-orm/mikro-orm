@@ -21,6 +21,8 @@ describe('EntityAssignerMongo', () => {
     expect(book.author).toBe(jon);
     // @ts-expect-error unknown property
     book.assign({ title: 'Better Book2 1', author: god, notExisting: true });
+    const partial = { title: 'Better Book2 1', author: god } as Partial<Book>;
+    book.assign({ ...partial, title: 'foo' });
     expect(book.author).toBe(god);
     expect((book as any).notExisting).toBe(true);
     await orm.em.persistAndFlush(god);
@@ -54,8 +56,8 @@ describe('EntityAssignerMongo', () => {
     assign(book, { tags: [wrap(tag2).toObject()] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
     expect(book.tags.isDirty()).toBe(true);
-    expect(() => assign(book, { tags: [false] } as any)).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [ false ]`);
-    expect(() => assign(book, { publisher: [{ foo: 'bar' }] } as EntityData<Book>)).toThrowError(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
+    expect(() => assign(book, { tags: [false] } as any)).toThrow(`Invalid collection values provided for 'Book.tags' in Book.assign(): [ false ]`);
+    expect(() => assign(book, { publisher: [{ foo: 'bar' }] } as EntityData<Book>)).toThrow(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
   });
 
   test('#assign() should ignore undefined properties', async () => {

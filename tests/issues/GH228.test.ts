@@ -2,7 +2,7 @@ import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sq
 import { mockLogger } from '../helpers';
 
 @Entity()
-export class B {
+class B {
 
   @PrimaryKey({ type: 'number' })
   id!: number;

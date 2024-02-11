@@ -5,9 +5,18 @@ export class EntitySchemaSourceFile extends SourceFile {
 
   override generate(): string {
     this.coreImports.add('EntitySchema');
-    let ret = `export class ${this.meta.className} {\n`;
+    let ret = `export `;
+    if (this.meta.abstract) {
+      ret += `abstract `;
+    }
+    ret += `class ${this.meta.className}`;
+    if (this.meta.extends) {
+      this.entityImports.add(this.meta.extends);
+      ret += ` extends ${this.meta.extends}`;
+    }
+    ret += ' {\n';
     const enumDefinitions: string[] = [];
-    const optionalProperties: EntityProperty<any>[] = [];
+    const eagerProperties: EntityProperty<any>[] = [];
     const primaryProps: EntityProperty<any>[] = [];
     const props: string[] = [];
 
@@ -19,8 +28,8 @@ export class EntitySchemaSourceFile extends SourceFile {
         enumDefinitions.push(this.getEnumClassDefinition(enumClassName, prop.items as string[], 2));
       }
 
-      if (!prop.nullable && typeof prop.default !== 'undefined') {
-        optionalProperties.push(prop);
+      if (prop.eager) {
+        eagerProperties.push(prop);
       }
 
       if (prop.primary && (!['id', '_id', 'uuid'].includes(prop.name) || this.meta.compositePK)) {
@@ -39,10 +48,10 @@ export class EntitySchemaSourceFile extends SourceFile {
       }
     }
 
-    if (optionalProperties.length > 0) {
-      this.coreImports.add('OptionalProps');
-      const optionalPropertyNames = optionalProperties.map(prop => `'${prop.name}'`).sort();
-      ret += `${' '.repeat(2)}[OptionalProps]?: ${optionalPropertyNames.join(' | ')};\n`;
+    if (eagerProperties.length > 0) {
+      this.coreImports.add('EagerProps');
+      const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
+      ret += `${' '.repeat(2)}[EagerProps]?: ${eagerPropertyNames.join(' | ')};\n`;
     }
 
     ret += `${props.join('')}}\n`;
@@ -62,7 +71,7 @@ export class EntitySchemaSourceFile extends SourceFile {
     ret += `export const ${this.meta.className}Schema = new EntitySchema({\n`;
     ret += `  class: ${this.meta.className},\n`;
 
-    if (this.meta.tableName !== this.namingStrategy.classToTableName(this.meta.className)) {
+    if (this.meta.tableName && this.meta.tableName !== this.namingStrategy.classToTableName(this.meta.className)) {
       ret += `  tableName: ${this.quote(this.meta.tableName)},\n`;
     }
 
@@ -74,15 +83,23 @@ export class EntitySchemaSourceFile extends SourceFile {
     if (this.meta.indexes.length > 0) {
       ret += `  indexes: [\n`;
       this.meta.indexes.forEach(index => {
+        if (index.expression) {
+          ret += `    { name: '${index.name}', expression: ${this.quote(index.expression)} },\n`;
+          return;
+        }
         const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
         ret += `    { name: '${index.name}', properties: [${properties.join(', ')}] },\n`;
       });
       ret += `  ],\n`;
     }
 
-    if (this.meta.indexes.length > 0) {
+    if (this.meta.uniques.length > 0) {
       ret += `  uniques: [\n`;
       this.meta.uniques.forEach(index => {
+        if (index.expression) {
+          ret += `    { name: '${index.name}', expression: ${this.quote(index.expression)} },\n`;
+          return;
+        }
         const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
         ret += `    { name: '${index.name}', properties: [${properties.join(', ')}] },\n`;
       });
@@ -92,10 +109,10 @@ export class EntitySchemaSourceFile extends SourceFile {
     ret += `  properties: {\n`;
     Object.values(this.meta.properties).forEach(prop => {
       const options = this.getPropertyOptions(prop);
-      let def = '{ ' + Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ') + ' }';
+      let def = this.serializeObject(options);
 
       if (def.length > 80) {
-        def = '{\n' + Object.entries(options).map(([opt, val]) => `      ${opt}: ${val}`).join(',\n') + ',\n    }';
+        def = this.serializeObject(options, 2);
       }
       //
       ret += `    ${prop.name}: ${def},\n`;
@@ -106,10 +123,6 @@ export class EntitySchemaSourceFile extends SourceFile {
     return ret;
   }
 
-  override getBaseName() {
-    return this.meta.className + '.ts';
-  }
-
   private getPropertyOptions(prop: EntityProperty): Dictionary {
     const options = {} as Dictionary;
 
@@ -117,7 +130,7 @@ export class EntitySchemaSourceFile extends SourceFile {
       options.primary = true;
     }
 
-    if (prop.kind !== ReferenceKind.SCALAR) {
+    if (typeof prop.kind !== 'undefined' && prop.kind !== ReferenceKind.SCALAR) {
       options.kind = this.quote(prop.kind);
     }
 
@@ -125,15 +138,21 @@ export class EntitySchemaSourceFile extends SourceFile {
       this.getManyToManyDecoratorOptions(options, prop);
     } else if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this.getOneToManyDecoratorOptions(options, prop);
-    } else if (prop.kind !== ReferenceKind.SCALAR) {
-      this.getForeignKeyDecoratorOptions(options, prop);
-    } else {
+    } else if (prop.kind === ReferenceKind.SCALAR || typeof prop.kind === 'undefined') {
       this.getScalarPropertyDecoratorOptions(options, prop);
+    } else if (prop.kind === ReferenceKind.EMBEDDED) {
+      this.getEmbeddedPropertyDeclarationOptions(options, prop);
+    } else {
+      this.getForeignKeyDecoratorOptions(options, prop);
     }
 
     if (prop.enum) {
       options.enum = true;
       options.items = `() => ${prop.type}`;
+    }
+
+    if (prop.formula) {
+      options.formula = `${prop.formula}`;
     }
 
     this.getCommonDecoratorOptions(options, prop);

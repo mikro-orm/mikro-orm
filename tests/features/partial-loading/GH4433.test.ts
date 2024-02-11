@@ -124,7 +124,6 @@ test(`GH issue 4433 (select-in) - populate + field`, async () => {
   ]);
 });
 
-
 test(`GH issue 4433 (select-in) - only id`, async () => {
   const result = await orm.em.fork().find(
     A,

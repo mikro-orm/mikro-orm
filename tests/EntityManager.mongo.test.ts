@@ -1,5 +1,6 @@
+/* eslint-disable dot-notation */
 import { ObjectId } from 'bson';
-import type { EntityProperty, Selected } from '@mikro-orm/core';
+import type { EntityProperty } from '@mikro-orm/core';
 import {
   Collection,
   Configuration,
@@ -26,7 +27,7 @@ describe('EntityManagerMongo', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMongo(true));
+  beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => orm.schema.clearDatabase());
 
   afterAll(async () => {
@@ -91,8 +92,8 @@ describe('EntityManagerMongo', () => {
     const fullTextBooks = (await booksRepository.find({ $fulltext: 'life wall' }))!;
     expect(fullTextBooks.length).toBe(4);
 
-    await expect(booksRepository.find({ title: { $fulltext: 'life wall' } })).rejects.toThrowError('Full text search is only supported on the top level of the query object.');
-    await expect(booksRepository.find({ author: { name: { $fulltext: 'god' } } })).rejects.toThrowError('Full text search is only supported on the top level of the query object.');
+    await expect(booksRepository.find({ title: { $fulltext: 'life wall' } })).rejects.toThrow('Full text search is only supported on the top level of the query object.');
+    await expect(booksRepository.find({ author: { name: { $fulltext: 'god' } } })).rejects.toThrow('Full text search is only supported on the top level of the query object.');
 
     // count test
     const count = await authorRepository.count();
@@ -286,15 +287,15 @@ describe('EntityManagerMongo', () => {
 
   test(`entity.init() and collection.init() works only for managed entities`, async () => {
     const author = new Author('a', 'b');
-    await expect(wrap(author).init()).rejects.toThrowError('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
-    await expect(author.books.init()).rejects.toThrowError('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+    await expect(wrap(author).init()).rejects.toThrow('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+    await expect(author.books.init()).rejects.toThrow('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
   });
 
   test(`persisting 1:1 created via assign from inverse (gh #210)`, async () => {
     expect(() => wrap(new FooBaz()).assign({
       name: 'fz',
       bar: { name: 'fb' },
-    })).toThrowError('To use assign() on not managed entities, explicitly provide EM instance: wrap(entity).assign(data, { em: orm.em })');
+    })).toThrow('To use assign() on not managed entities, explicitly provide EM instance: wrap(entity).assign(data, { em: orm.em })');
 
     const baz = wrap(new FooBaz()).assign({
       name: 'fz',
@@ -416,44 +417,7 @@ describe('EntityManagerMongo', () => {
 
   test('should throw when trying to merge entity without id', async () => {
     const author = new Author('test', 'test');
-    expect(() => orm.em.merge(author)).toThrowError(`You cannot merge entity 'Author' without identifier!`);
-  });
-
-  test('transactions', async () => {
-    const god1 = new Author('God1', 'hello@heaven1.god');
-    await orm.em.begin({ readPreference: 'secondary' });
-    await orm.em.persist(god1).flush();
-    await orm.em.rollback();
-    const res1 = await orm.em.findOne(Author, { name: 'God1' });
-    expect(res1).toBeNull();
-
-    await orm.em.begin();
-    const god2 = new Author('God2', 'hello@heaven2.god');
-    orm.em.persist(god2);
-    await orm.em.commit();
-    const res2 = await orm.em.findOne(Author, { name: 'God2' });
-    expect(res2).not.toBeNull();
-
-    await orm.em.transactional(async em => {
-      const god3 = new Author('God3', 'hello@heaven3.god');
-      em.persist(god3);
-    });
-    const res3 = await orm.em.findOne(Author, { name: 'God3' });
-    expect(res3).not.toBeNull();
-
-    const err = new Error('Test');
-
-    try {
-      await orm.em.transactional(async em => {
-        const god4 = new Author('God4', 'hello@heaven4.god');
-        em.persist(god4);
-        throw err;
-      });
-    } catch (e) {
-      expect(e).toBe(err);
-      const res4 = await orm.em.findOne(Author, { name: 'God4' });
-      expect(res4).toBeNull();
-    }
+    expect(() => orm.em.merge(author)).toThrow(`You cannot merge entity 'Author' without identifier!`);
   });
 
   test('fork', async () => {
@@ -472,16 +436,16 @@ describe('EntityManagerMongo', () => {
 
     const spy = jest.spyOn(EntityManager.prototype, 'getContext');
     const fork2 = orm.em.fork({ disableContextResolution: true });
-    expect(spy).toBeCalledTimes(2);
+    expect(spy).toHaveBeenCalledTimes(2);
 
     const fork3 = orm.em.fork({ disableContextResolution: false });
-    expect(spy).toBeCalledTimes(5);
+    expect(spy).toHaveBeenCalledTimes(5);
   });
 
   test('findOne with empty where will throw', async () => {
-    await expect(orm.em.findOne(Author, {})).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne(Author, undefined!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne(Author, null!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne(Author, {})).rejects.toThrow(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne(Author, undefined!)).rejects.toThrow(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne(Author, null!)).rejects.toThrow(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
   });
 
   test('findOne should initialize entity that is already in IM', async () => {
@@ -527,7 +491,7 @@ describe('EntityManagerMongo', () => {
 
     const newGod = (await orm.em.findOne(Author, god.id))!;
     const books = await orm.em.find(Book, {});
-    await wrap(newGod).init(false);
+    await wrap(newGod).init();
 
     for (const book of books) {
       expect(book.toJSON()).toMatchObject({
@@ -573,25 +537,19 @@ describe('EntityManagerMongo', () => {
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 }, { orderBy: {} })).toBeNull();
     expect(driver.getPlatform().usesPivotTable()).toBe(false);
     expect(driver.getPlatform().usesImplicitTransactions()).toBe(false);
-    await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables');
-    await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
-    await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
+    await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrow('MongoDriver does not use pivot tables');
+    await expect(driver.getConnection().execute('')).rejects.toThrow('MongoConnection does not support generic execute method');
+    await expect(driver.getConnection().execute('')).rejects.toThrow('MongoConnection does not support generic execute method');
     expect(driver.getConnection().getCollection(BookTag).collectionName).toBe('book-tag');
     expect(orm.em.getCollection(BookTag).collectionName).toBe('book-tag');
     expect(orm.em.getRepository(BookTag).getCollection().collectionName).toBe('book-tag');
 
     expect(() => driver.getPlatform().generateCustomOrder('foo', [1, 2, 3])).toThrow();
 
-    const conn = driver.getConnection();
-    const ctx = await conn.begin();
-    const first = await driver.nativeInsert<Publisher>(Publisher.name, { name: 'test 123', type: PublisherType.GLOBAL }, { ctx });
-    await conn.commit(ctx);
+    const first = await driver.nativeInsert<Publisher>(Publisher.name, { name: 'test 123', type: PublisherType.GLOBAL });
     await driver.nativeUpdate<Publisher>(Publisher.name, first.insertId, { name: 'test 456' });
     await driver.nativeUpdateMany<Publisher>(Publisher.name, [first.insertId], [{ name: 'test 789' }]);
-
-    await conn.transactional(async ctx => {
-      await driver.nativeDelete(Publisher.name, first.insertId, { ctx });
-    });
+    await driver.nativeDelete(Publisher.name, first.insertId);
 
     // multi inserts
     const res = await driver.nativeInsertMany(Publisher.name, [
@@ -781,10 +739,10 @@ describe('EntityManagerMongo', () => {
     expect(book1.tags.toJSON()).toEqual([wrap(tag1).toJSON(), wrap(tag3).toJSON()]);
 
     // ensure we don't have separate update queries for collection sync
-    expect(mock.mock.calls).toHaveLength(5);
-    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('book-tag').insertMany(`);
-    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('author').insertMany(`);
-    expect(mock.mock.calls[3][0]).toMatch(`db.getCollection('books-table').insertMany(`);
+    expect(mock.mock.calls).toHaveLength(3);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('book-tag').insertMany(`);
+    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('author').insertMany(`);
+    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('books-table').insertMany(`);
     orm.em.clear();
 
     // test inverse side
@@ -806,9 +764,9 @@ describe('EntityManagerMongo', () => {
     let tags = await orm.em.find(BookTag, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
-    expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
-    expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
-    expect(() => tags[0].books.contains(book1)).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
+    expect(() => tags[0].books.getItems()).toThrow(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
+    expect(() => tags[0].books.remove(book1, book2)).toThrow(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
+    expect(() => tags[0].books.contains(book1)).toThrow(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
 
     // test M:N lazy load
     orm.em.clear();
@@ -829,10 +787,10 @@ describe('EntityManagerMongo', () => {
     expect(wrap(book.tags.getItems()[0]).isInitialized()).toBe(false);
     const initSpy = jest.spyOn(Collection.prototype, 'init');
     const items2 = await book.tags.loadItems();
-    expect(initSpy).toBeCalledTimes(1);
+    expect(initSpy).toHaveBeenCalledTimes(1);
     expect(book.tags.getItems()).toEqual(items2);
     const items3 = await book.tags.loadItems();
-    expect(initSpy).toBeCalledTimes(1);
+    expect(initSpy).toHaveBeenCalledTimes(1);
     expect(items3).toEqual(items2);
 
     // test collection CRUD
@@ -1480,8 +1438,8 @@ describe('EntityManagerMongo', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
-    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
+    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author' does not have property 'tests'`);
+    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author' does not have property 'tests'`);
   });
 
   test('many to many collection does have fixed order', async () => {
@@ -1700,13 +1658,11 @@ describe('EntityManagerMongo', () => {
     expect(a1.toJSON()).toMatchObject({ favouriteAuthor: a1.id });
 
     // check fired queries
-    expect(mock.mock.calls.length).toBe(6);
-    expect(mock.mock.calls[0][0]).toMatch(/db\.begin\(\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: '.*', name: '.*', email: '.*', termsAccepted: .* } ], { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'b1', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b2', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b3', author: ObjectId\('.*'\) } ], { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { favouriteAuthor: ObjectId\('.*'\), updatedAt: ISODate\('.*'\) } }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[4][0]).toMatch(/db\.commit\(\);/);
-    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('author'\)\.find\(.*\)\.toArray\(\);/);
+    expect(mock.mock.calls.length).toBe(4);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: '.*', name: '.*', email: '.*', termsAccepted: .* } ], {}\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'b1', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b2', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b3', author: ObjectId\('.*'\) } ], {}\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { favouriteAuthor: ObjectId\('.*'\), updatedAt: ISODate\('.*'\) } }, {}\);/);
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('author'\)\.find\(.*\)\.toArray\(\);/);
   });
 
   test('self referencing via another entity M:1 (1 step)', async () => {
@@ -1883,7 +1839,7 @@ describe('EntityManagerMongo', () => {
     expect(book.tags).not.toBeInstanceOf(Collection);
     expect(book.tags).toEqual(['0000007b5c9c61c332380f78', tag]);
     orm.em.persist(book);
-    await expect(orm.em.flush()).rejects.toThrowError(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given. If you are using Object.assign(entity, data), use em.assign(entity, data) instead.`);
+    await expect(orm.em.flush()).rejects.toThrow(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given. If you are using Object.assign(entity, data), use em.assign(entity, data) instead.`);
 
     wrap(book).assign({ tags: ['0000007b5c9c61c332380f78', tag] }, { em: orm.em });
     expect(book.tags).toBeInstanceOf(Collection);
@@ -1895,25 +1851,21 @@ describe('EntityManagerMongo', () => {
     expect(book.tags.isDirty()).toBe(true);
 
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(/db\.begin\(\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\(.*\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall\.st', termsAccepted: false } ], { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'B123', author: ObjectId\('.*'\) } ], { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[3][0]).toMatch(/db\.commit\(\);/);
-    expect(mock.mock.calls[4][0]).toMatch(/db\.begin\(\);/);
-    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('books-table'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { tags: \[ ObjectId\('0000007b5c9c61c332380f78'\), ObjectId\('0000007b5c9c61c332380f79'\) ] } }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[6][0]).toMatch(/db\.commit\(\);/);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\(.*\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall\.st', termsAccepted: false } ], {}\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'B123', author: ObjectId\('.*'\) } ], {}\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { tags: \[ ObjectId\('0000007b5c9c61c332380f78'\), ObjectId\('0000007b5c9c61c332380f79'\) ] } }, {}\);/);
   });
 
   test('automatically fix PK in collection instead of entity when flushing (m:n)', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     const book = new Book('B123', author);
-    expect(() => book.tags.set(['0000007b5c9c61c332380f78' as any])).toThrowError(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given.`);
+    expect(() => book.tags.set(['0000007b5c9c61c332380f78' as any])).toThrow(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given.`);
   });
 
   test('automatically map raw results to entities when setting collection items', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const bookData = { title: 'Bible', author: god.id };
-    expect(() => god.books.add(bookData as any)).toThrowError(`Entity of type Book expected for property Author.books, { title: 'Bible', author: undefined } of type object given.`);
+    expect(() => god.books.add(bookData as any)).toThrow(`Entity of type Book expected for property Author.books, { title: 'Bible', author: undefined } of type object given.`);
   });
 
   test('allow undefined value in nullable properties', async () => {
@@ -1950,31 +1902,31 @@ describe('EntityManagerMongo', () => {
     expect(ref._id).toBeInstanceOf(ObjectId);
     expect(ref.unwrap()).toBeInstanceOf(Author);
     expect(wrap(ref.unwrap()).isInitialized()).toBe(false);
-    expect(() => ref.getEntity()).toThrowError(`Reference<Author> ${ref.id} not initialized`);
-    expect(() => ref.getProperty('email')).toThrowError(`Reference<Author> ${ref.id} not initialized`);
+    expect(() => ref.getEntity()).toThrow(`Reference<Author> ${ref.id} not initialized`);
+    expect(() => ref.getProperty('email')).toThrow(`Reference<Author> ${ref.id} not initialized`);
 
     const ref2 = Reference.create(author);
     const ref3 = Reference.create(ref2);
     expect(ref2).toBe(ref3);
 
     expect(ref3.unwrap()).toBe(author);
-    ref3.set(author2);
+    ref3['set'](author2);
     expect(ref3.unwrap()).toBe(author2);
     expect(ref3.id).toBe(author2.id);
-    ref3.set(Reference.create(author));
+    ref3['set'](Reference.create(author));
     expect(ref3.id).toBe(author.id);
 
-    const ent = await ref.load();
+    const ent = await ref.loadOrFail();
     expect(ent).toBeInstanceOf(Author);
     expect(wrap(ent).isInitialized()).toBe(true);
     orm.em.clear();
 
     const ref4 = orm.em.getReference(Author, author.id, { wrapped: true });
     expect(ref4.isInitialized()).toBe(false);
-    await expect(ref4.load('name')).resolves.toBe('God');
+    await expect(ref4.loadProperty('name')).resolves.toBe('God');
     expect(ref4.isInitialized()).toBe(true);
     expect(ref4.getProperty('name')).toBe('God');
-    await expect(ref4.load('email')).resolves.toBe('hello@heaven.god');
+    await expect(ref4.loadProperty('email')).resolves.toBe('hello@heaven.god');
     expect(wrap(ref4, true).__populated).toBeUndefined();
     ref4.populated(false);
     expect(wrap(ref4, true).__populated).toBe(false);
@@ -2019,8 +1971,8 @@ describe('EntityManagerMongo', () => {
     author.age = 30;
     await orm.em.persistAndFlush(author);
 
-    expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[1][0]).toMatch(/\[90m\[query] \[39mdb\[0m.\[0mgetCollection\(\[33m'author'\[39m\)\[0m.\[0minsertMany\(\[ \{ createdAt: ISODate\('.*'\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall.st', age: 30, termsAccepted: false } ], \{ session: '\[ClientSession]' }\);\[90m \[took \d+ ms]\[39m/);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch(/\[90m\[query] \[39mdb\[0m.\[0mgetCollection\(\[33m'author'\[39m\)\[0m.\[0minsertMany\(\[ \{ createdAt: ISODate\('.*'\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall.st', age: 30, termsAccepted: false } ], \{}\);\[90m \[took \d+ ms]\[39m/);
 
     Object.assign(orm.config.getLogger(), { highlighter: new NullHighlighter() });
   });
@@ -2032,10 +1984,10 @@ describe('EntityManagerMongo', () => {
 
     const a1 = await orm.em.findOneOrFail(Author, author.id);
     expect(a1).not.toBeNull();
-    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79')).rejects.toThrowError(`Author not found ('0000007b5c9c61c332380f79')`);
-    await expect(orm.em.findOneOrFail(Author, { name: 'test' })).rejects.toThrowError('Author not found ({ name: \'test\' })');
-    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79', { failHandler: () => new Error('Test') })).rejects.toThrowError('Test');
-    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79', { failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Author');
+    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79')).rejects.toThrow(`Author not found ('0000007b5c9c61c332380f79')`);
+    await expect(orm.em.findOneOrFail(Author, { name: 'test' })).rejects.toThrow('Author not found ({ name: \'test\' })');
+    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79', { failHandler: () => new Error('Test') })).rejects.toThrow('Test');
+    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79', { failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrow('Failed: Author');
   });
 
   test('setting optional boolean to false', async () => {
@@ -2074,7 +2026,7 @@ describe('EntityManagerMongo', () => {
 
     let tag = await orm.em.findOneOrFail(BookTag, tag1.id, { populate: ['books'] });
     const err = 'You cannot modify inverse side of M:N collection BookTag.books when the owning side is not initialized. Consider working with the owning side instead (Book.tags).';
-    expect(() => tag.books.add(orm.em.getReference(Book, book4.id))).toThrowError(err);
+    expect(() => tag.books.add(orm.em.getReference(Book, book4.id))).toThrow(err);
     orm.em.clear();
 
     tag = await orm.em.findOneOrFail(BookTag, tag1.id, { populate: ['books'] });
@@ -2248,8 +2200,8 @@ describe('EntityManagerMongo', () => {
     book.metaArray.push('c');
     await orm.em.flush();
 
-    expect(mock.mock.calls[1][0]).toMatch(`'$set': { metaArray: [ 'a', 'b' ] }`);
-    expect(mock.mock.calls[4][0]).toMatch(`'$set': { metaArray: [ 'a', 'b', 'c' ] }`);
+    expect(mock.mock.calls[0][0]).toMatch(`'$set': { metaArray: [ 'a', 'b' ] }`);
+    expect(mock.mock.calls[1][0]).toMatch(`'$set': { metaArray: [ 'a', 'b', 'c' ] }`);
 
     const b1 = await orm.em.findOne(Book, { metaArray: 'a' });
     expect(b1).not.toBeNull();
@@ -2307,7 +2259,7 @@ describe('EntityManagerMongo', () => {
       host: 'foo',
       dbName: 'bar',
       driver: MongoDriver,
-    })).rejects.toThrowError('Mongo driver does not support `host` options, use `clientUrl` instead!');
+    })).rejects.toThrow('Mongo driver does not support `host` options, use `clientUrl` instead!');
   });
 
   test('validation for `_id` PK field name', async () => {
@@ -2316,7 +2268,7 @@ describe('EntityManagerMongo', () => {
       entities: [schema],
       dbName: 'bar',
       driver: MongoDriver,
-    })).rejects.toThrowError(`WrongPrimaryKeyEntity.id has wrong field name, '_id' is required in current driver`);
+    })).rejects.toThrow(`WrongPrimaryKeyEntity.id has wrong field name, '_id' is required in current driver`);
   });
 
   test('GH #4431', async () => {

@@ -54,7 +54,6 @@ describe('GH issue 1111', () => {
     await orm.schema.ensureDatabase();
   });
 
-
   beforeEach(async () => {
     await orm.schema.dropSchema();
     await orm.schema.createSchema();

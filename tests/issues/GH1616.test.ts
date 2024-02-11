@@ -1,7 +1,7 @@
 import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Embeddable()
-export class D {
+class D {
 
   @Property({ type: 'boolean', nullable: true })
   test?: boolean = false;
@@ -9,7 +9,7 @@ export class D {
 }
 
 @Embeddable()
-export class C {
+class C {
 
   @Embedded(() => D, { object: true, nullable: false })
   d!: D;
@@ -17,7 +17,7 @@ export class C {
 }
 
 @Embeddable()
-export class B {
+class B {
 
   @Embedded(() => C, { object: true, nullable: false })
   c!: C;
@@ -28,7 +28,7 @@ export class B {
 }
 
 @Entity()
-export class A {
+class A {
 
   @PrimaryKey()
   id!: number;

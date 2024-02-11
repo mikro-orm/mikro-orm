@@ -19,6 +19,7 @@ test('allow signed primary key when explicitly specified', async () => {
   const orm = await MikroORM.init({
     dbName: 'mikro_orm_signed_primary_key',
     entities: [Article],
+    connect: false,
   });
 
   expect(await orm.schema.getCreateSchemaSQL({ wrap: false })).toBe(

@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import type { Collection } from './Collection';
+import { Collection } from './Collection';
 import type { EntityManager } from '../EntityManager';
 import type { Platform } from '../platforms/Platform';
 import type {
@@ -21,6 +21,7 @@ import { Reference } from './Reference';
 import { ReferenceKind, SCALAR_TYPES } from '../enums';
 import { EntityValidator } from './EntityValidator';
 import { helper, wrap } from './wrap';
+import { EntityHelper } from './EntityHelper';
 
 const validator = new EntityValidator(false);
 
@@ -37,6 +38,7 @@ export class EntityAssigner {
       return entity as any;
     }
 
+    EntityHelper.ensurePropagation(entity);
     opts.visited ??= new Set();
     opts.visited.add(entity);
     const wrapped = helper(entity);
@@ -73,14 +75,19 @@ export class EntityAssigner {
       throw new Error(`You must pass a non-${value} value to the property ${propName} of entity ${(entity as Dictionary).constructor.name}.`);
     }
 
-    if (prop && Utils.isCollection(entity[propName as keyof T])) {
-      return EntityAssigner.assignCollection<T>(entity, entity[propName as keyof T] as unknown as Collection<AnyEntity>, value, prop, options.em, options);
+    // create collection instance if its missing so old items can be deleted with orphan removal
+    if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop?.kind) && entity[prop.name] == null) {
+      entity[prop.name] = Collection.create(entity, prop.name, undefined, helper(entity).isInitialized()) as EntityValue<T>;
+    }
+
+    if (prop && Utils.isCollection(entity[prop.name])) {
+      return EntityAssigner.assignCollection<T>(entity, entity[prop.name] as unknown as Collection<AnyEntity>, value, prop, options.em, options);
     }
 
     const customType = prop?.customType;
 
     if (options.convertCustomTypes && customType && prop.kind === ReferenceKind.SCALAR && !Utils.isEntity(data)) {
-      value = prop.customType.convertToJSValue(value, options.platform);
+      value = customType.convertToJSValue(value, options.platform);
     }
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop?.kind) && value != null) {
@@ -115,7 +122,7 @@ export class EntityAssigner {
     }
 
     if (prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType) && (prop.setter || !prop.getter)) {
-      return entity[propName as keyof T] = validator.validateProperty(prop, value, entity);
+      return entity[prop.name] = validator.validateProperty(prop, value, entity);
     }
 
     if (prop.kind === ReferenceKind.EMBEDDED && EntityAssigner.validateEM(options.em)) {
@@ -124,7 +131,7 @@ export class EntityAssigner {
 
     if (options.mergeObjectProperties && Utils.isPlainObject(entity[propName as EntityKey]) && Utils.isPlainObject(value)) {
       entity[propName as EntityKey<T>] ??= {} as EntityValue<T>;
-      Utils.merge(entity[propName as EntityKey<T>], value);
+      entity[propName as EntityKey<T>] = Utils.merge({}, entity[propName as EntityKey<T>], value);
     } else if (!prop || prop.setter || !prop.getter) {
       entity[propName as EntityKey<T>] = value;
     }

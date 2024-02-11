@@ -524,16 +524,17 @@ describe('Utils', () => {
     warnSpy.mockImplementationOnce(i => i);
     const ret = Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found' });
     expect(ret).toBeUndefined();
-    expect(warnSpy).toBeCalledWith('not found');
+    expect(warnSpy).toHaveBeenCalledWith('not found');
 
     const requireFromSpy = jest.spyOn(Utils, 'requireFrom');
     requireFromSpy.mockImplementationOnce(() => { throw new Error('some other issue'); });
     expect(() => {
       return Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found', allowError: 'Cannot find module' });
-    }).toThrowError('some other issue');
+    }).toThrow('some other issue');
   });
 
   test('getPrimaryKeyCond', () => {
+    // @ts-expect-error no PK so this correctly fails compilation
     expect(Utils.getPrimaryKeyCond({ a: null }, ['a'])).toBe(null);
   });
 

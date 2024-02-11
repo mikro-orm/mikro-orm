@@ -67,6 +67,7 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
       orderBy: { id: 'asc' },
     });
     expect(cursor1).toBeInstanceOf(Cursor);
+    expect(cursor1.length).toBe(3);
     expect(cursor1.items).toMatchObject([
       { id: 1, name: 'User 1' },
       { id: 2, name: 'User 2' },

@@ -1,8 +1,16 @@
-import { ReferenceKind, Utils, ValidationError, type Dictionary, type EntityMetadata, type MetadataStorage, type EntityKey } from '@mikro-orm/core';
+import {
+  type Dictionary,
+  type EntityKey,
+  type EntityMetadata,
+  type MetadataStorage,
+  RawQueryFragment,
+  ReferenceKind,
+  Utils,
+  ValidationError,
+} from '@mikro-orm/core';
 import { ObjectCriteriaNode } from './ObjectCriteriaNode';
 import { ArrayCriteriaNode } from './ArrayCriteriaNode';
 import { ScalarCriteriaNode } from './ScalarCriteriaNode';
-import { CriteriaNode } from './CriteriaNode';
 import type { ICriteriaNode } from '../typings';
 
 /**
@@ -11,7 +19,7 @@ import type { ICriteriaNode } from '../typings';
 export class CriteriaNodeFactory {
 
   static createNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
-    const customExpression = CriteriaNode.isCustomExpression(key || '');
+    const customExpression = RawQueryFragment.isKnownFragment(key || '');
     const scalar = Utils.isPrimaryKey(payload) || Utils.isRawSql(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
 
     if (Array.isArray(payload) && !scalar) {
@@ -36,7 +44,11 @@ export class CriteriaNodeFactory {
     const node = new ArrayCriteriaNode<T>(metadata, entityName, parent, key);
     node.payload = payload.map((item, index) => {
       const n = this.createNode(metadata, entityName, item, node);
-      n.index = key === '$and' ? index : undefined; // we care about branching only for $and
+
+      // we care about branching only for $and
+      if (key === '$and' && payload.length > 1) {
+        n.index = index;
+      }
 
       return n;
     });
@@ -73,18 +85,27 @@ export class CriteriaNodeFactory {
       return this.createNode(metadata, entityName, map, node, key);
     }
 
-    const operator = Object.keys(payload[key]).some(f => Utils.isOperator(f));
+    // array operators can be used on embedded properties
+    const allowedOperators = ['$contains', '$contained', '$overlap'];
+    const operator = Object.keys(payload[key]).some(f => Utils.isOperator(f) && !allowedOperators.includes(f));
 
     if (operator) {
       throw ValidationError.cannotUseOperatorsInsideEmbeddables(entityName, prop.name, payload);
     }
 
     const map = Object.keys(payload[key]).reduce((oo, k) => {
-      if (!prop.embeddedProps[k]) {
+      if (!prop.embeddedProps[k] && !allowedOperators.includes(k)) {
         throw ValidationError.invalidEmbeddableQuery(entityName, k, prop.type);
       }
 
-      oo[prop.embeddedProps[k].name] = payload[key][k];
+      if (prop.embeddedProps[k]) {
+        oo[prop.embeddedProps[k].name] = payload[key][k];
+      } else if (typeof payload[key][k] === 'object') {
+        oo[k] = JSON.stringify(payload[key][k]);
+      } else {
+        oo[k] = payload[key][k];
+      }
+
       return oo;
     }, {} as Dictionary);
 

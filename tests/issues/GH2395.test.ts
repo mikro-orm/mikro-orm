@@ -1,7 +1,7 @@
 import { Cascade, Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity()
-export class Parent {
+class Parent {
 
   @PrimaryKey()
   id!: number;
@@ -18,7 +18,7 @@ export class Parent {
 }
 
 @Entity()
-export class Child {
+class Child {
 
   @PrimaryKey()
   id!: number;
@@ -29,7 +29,7 @@ export class Child {
 }
 
 @Entity()
-export class Child2 {
+class Child2 {
 
   @PrimaryKey()
   id!: number;

@@ -17,7 +17,8 @@ export class SerializationContext<T> {
 
   constructor(private readonly config: Configuration,
               private readonly populate: PopulateOptions<T>[] = [],
-              private readonly fields?: string[]) {}
+              private readonly fields?: Set<string>,
+              private readonly exclude?: string[]) {}
 
   /**
    * Returns true when there is a cycle detected.
@@ -103,9 +104,10 @@ export class SerializationContext<T> {
       return true;
     }
 
-    let fields: string[] = this.fields;
+    let fields: string[] = [...this.fields];
 
     for (const segment of this.path) {
+      /* istanbul ignore next */
       if (fields.length === 0) {
         return true;
       }

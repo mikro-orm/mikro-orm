@@ -19,7 +19,7 @@ const orm = await MikroORM.init({
 
 ## Custom driver
 
-If you want to use database that is not currently supported, you can implement your own driver. More information about how to create one can be [found here](custom-driver.md). Then provide the driver class via `driver` configuration option:
+If you want to use database that is not currently supported, you can implement your own driver. More information about how to create one can be [found here](./custom-driver.md). Then provide the driver class via `driver` configuration option:
 
 ```typescript
 import { MyCustomDriver } from './MyCustomDriver.ts';
@@ -109,7 +109,7 @@ For more examples of how to work with `QueryBuilder`, take a look at `QueryBuild
 
 ## Transactions
 
-When you call `EntityManager#flush()`, all computed changes are queried [inside a database transaction](unit-of-work.md) by default, so you do not have to handle transactions manually.
+When you call `EntityManager#flush()`, all computed changes are queried [inside a database transaction](./unit-of-work.md) by default, so you do not have to handle transactions manually.
 
 When you need to explicitly handle the transaction, you can use `beginTransaction/commit/rollback` methods on both `MySqlDriver` and their shortcuts on `EntityManager`.
 

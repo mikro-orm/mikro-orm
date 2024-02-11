@@ -4,6 +4,7 @@ import { EntityAssigner, type AssignOptions } from './EntityAssigner';
 import type { EntityLoaderOptions } from './EntityLoader';
 import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer';
 import { helper } from './wrap';
+import type { FindOneOptions } from '../drivers/IDatabaseDriver';
 
 export abstract class BaseEntity {
 
@@ -53,8 +54,13 @@ export abstract class BaseEntity {
     return EntityAssigner.assign(this as Entity, data as any, options) as any;
   }
 
-  init<Entity extends this = this, Populate extends string = never>(populated = true): Promise<Loaded<Entity, Populate>> {
-    return helper(this as Entity).init<Populate>(populated);
+  init<
+    Entity extends this = this,
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(options?: FindOneOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
+    return helper(this as Entity).init(options);
   }
 
   getSchema(): string | undefined {

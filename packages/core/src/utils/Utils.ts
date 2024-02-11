@@ -18,7 +18,7 @@ import type {
   IMetadataStorage,
   Primary,
 } from '../typings';
-import { GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
+import { ARRAY_OPERATORS, GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
 import type { Collection } from '../entity/Collection';
 import type { Platform } from '../platforms';
 import { helper } from '../entity/wrap';
@@ -346,6 +346,7 @@ export class Utils {
             return;
           }
 
+          /* istanbul ignore next */
           if (!(key in target)) {
             Object.assign(target, { [key]: {} });
           }
@@ -429,27 +430,13 @@ export class Utils {
   /**
    * Renames object key, keeps order of properties.
    */
-  static renameKey<T>(payload: T, from: string | keyof T, to: string, recursive = false): void {
-    if (Utils.isObject(payload)) {
-      if ((from as string) in payload && !(to in payload)) {
-        Object.keys(payload).forEach(key => {
-          const value = payload[key];
-          delete payload[key];
-          payload[from === key ? to : key as keyof T] = value;
-        }, payload);
-      }
-
-      if (recursive) {
-        Object.keys(payload).forEach(key => {
-          Utils.renameKey(payload[key], from, to, recursive);
-        });
-      }
-
-      return;
-    }
-
-    if (recursive && Array.isArray(payload)) {
-      payload.forEach(item => Utils.renameKey(item, from, to, recursive));
+  static renameKey<T>(payload: T, from: string | keyof T, to: string): void {
+    if (Utils.isObject(payload) && (from as string) in payload && !(to in payload)) {
+      Object.keys(payload).forEach(key => {
+        const value = payload[key];
+        delete payload[key];
+        payload[from === key ? to : key as keyof T] = value;
+      }, payload);
     }
   }
 
@@ -464,6 +451,7 @@ export class Utils {
     try {
       return tokenize(func.toString(), { tolerant: true });
     } catch {
+      /* istanbul ignore next */
       return [];
     }
   }
@@ -496,7 +484,7 @@ export class Utils {
 
       if (inside === 2 && token.type === 'Punctuator' && token.value === '{') {
         ret.push(ObjectBindingPattern as unknown as string);
-        i += 2;
+        i = tokens.findIndex((t, idx) => idx > i + 2 && t.type === 'Punctuator' && t.value === '}');
         continue;
       }
 
@@ -592,6 +580,7 @@ export class Utils {
   }
 
   static getPrimaryKeyValues<T>(entity: T, primaryKeys: string[], allowScalar = false, convertCustomTypes = false) {
+    /* istanbul ignore next */
     if (entity == null) {
       return entity;
     }
@@ -634,6 +623,28 @@ export class Utils {
     }
 
     return cond;
+  }
+
+  /**
+   * Maps nested FKs from `[1, 2, 3]` to `[1, [2, 3]]`.
+   */
+  static mapFlatCompositePrimaryKey(fk: Primary<any>[], prop: EntityProperty, fieldNames = prop.fieldNames, idx = 0): Primary<any> | Primary<any>[] {
+    if (!prop.targetMeta) {
+      return fk[idx++];
+    }
+
+    const parts: Primary<any>[] = [];
+
+    for (const pk of prop.targetMeta.getPrimaryProps()) {
+      parts.push(this.mapFlatCompositePrimaryKey(fk, pk, fieldNames, idx));
+      idx += pk.fieldNames.length;
+    }
+
+    if (parts.length < 2) {
+      return parts[0];
+    }
+
+    return parts;
   }
 
   static getPrimaryKeyCondFromArray<T extends object>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
@@ -721,6 +732,12 @@ export class Utils {
     }
 
     return classOrName.name as string;
+  }
+
+  static extractChildElements(items: string[], prefix: string, allSymbol?: string) {
+    return items
+      .filter(field => field === allSymbol || field.startsWith(`${prefix}.`))
+      .map(field => field === allSymbol ? allSymbol : field.substring(prefix.length + 1));
   }
 
   /**
@@ -977,6 +994,10 @@ export class Utils {
     return key in GroupOperator;
   }
 
+  static isArrayOperator(key: PropertyKey): boolean {
+    return ARRAY_OPERATORS.includes(key as string);
+  }
+
   static hasNestedKey(object: unknown, key: string): boolean {
     if (!object) {
       return false;
@@ -1152,7 +1173,7 @@ export class Utils {
     return ret;
   }
 
-  static setPayloadProperty<T>(entity: EntityDictionary<T>, meta: EntityMetadata<T>, prop: EntityProperty<T>, value: unknown, idx: number[] = []): void {
+  static setPayloadProperty<T>(entity: EntityDictionary<T>, meta: EntityMetadata<T>, prop: EntityProperty<T>, value: unknown, idx: number[]): void {
     function isObjectProperty(prop: EntityProperty): boolean {
       return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop.object || !!prop.array;
     }
@@ -1260,12 +1281,16 @@ export class Utils {
     return typeof value === 'object' && !!value && '__raw' in value;
   }
 
-  static primaryKeyToObject<T>(meta: EntityMetadata<T>, primaryKey: Primary<T> | T) {
+  static primaryKeyToObject<T>(meta: EntityMetadata<T>, primaryKey: Primary<T> | T, visible?: (keyof T)[]) {
     const pks = meta.compositePK && Utils.isPlainObject(primaryKey) ? Object.values(primaryKey) : Utils.asArray(primaryKey);
     const pkProps = meta.getPrimaryProps();
 
     return meta.primaryKeys.reduce((o, pk, idx) => {
       const pkProp = pkProps[idx];
+
+      if (visible && !visible.includes(pkProp.name)) {
+        return o;
+      }
 
       if (Utils.isPlainObject(pks[idx]) && pkProp.targetMeta) {
         o[pk] = Utils.getOrderedPrimaryKeys(pks[idx], pkProp.targetMeta) as any;

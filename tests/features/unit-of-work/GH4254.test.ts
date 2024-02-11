@@ -1,4 +1,4 @@
-import { Cascade, Entity, LoadStrategy, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Cascade, Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()

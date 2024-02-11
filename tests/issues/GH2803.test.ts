@@ -56,7 +56,7 @@ describe('GH issue 2803', () => {
     const mock = mockLogger(orm, ['query']);
     const ret = await orm.em.find(Book, {}, { populate: ['tags'] });
     expect(ret[0].tags).toHaveLength(3);
-    expect(mock).toBeCalledTimes(1);
+    expect(mock).toHaveBeenCalledTimes(1);
   });
 
 });

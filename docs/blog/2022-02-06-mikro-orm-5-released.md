@@ -21,6 +21,8 @@ The next major version of MikroORM has been just released. The title says: Stric
 
 > This time it took almost a year to get here – initial work on v5 started [back in March 2021](https://github.com/mikro-orm/mikro-orm/issues/1623).
 
+<!--truncate-->
+
 ### In case you don’t know…
 
 If you never heard of [MikroORM](https://github.com/mikro-orm/mikro-orm), it’s a TypeScript data-mapper ORM with Unit of Work and Identity Map. It supports MongoDB, MySQL, PostgreSQL, and SQLite drivers currently. Key features of the ORM are:

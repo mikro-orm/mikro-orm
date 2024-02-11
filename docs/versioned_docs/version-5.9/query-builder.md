@@ -29,7 +29,7 @@ console.log(qb.getParams());
 const res1 = await qb.execute();
 ```
 
-`QueryBuilder` also supports [smart query conditions](query-conditions.md).
+`QueryBuilder` also supports [smart query conditions](./query-conditions.md).
 
 ## Executing the Query
 
@@ -157,7 +157,7 @@ console.log(qb.getQuery());
 // order by `e1`.`tags` asc
 ```
 
-This is currently available only for filtering (`where`) and sorting (`orderBy`), only the root entity will be selected. To populate its relationships, you can use [`em.populate()`](nested-populate.md). If your populated references are _not_ wrapped (methods like `.unwrap()` are `undefined`, make sure that property was defined with `{ wrappedEntity: true }` as described in [Defining Entities](defining-entities.md).
+This is currently available only for filtering (`where`) and sorting (`orderBy`), only the root entity will be selected. To populate its relationships, you can use [`em.populate()`](./nested-populate.md). If your populated references are _not_ wrapped (methods like `.unwrap()` are `undefined`, make sure that property was defined with `{ wrappedEntity: true }` as described in [Defining Entities](./defining-entities.md).
 
 ## Explicit Joining
 

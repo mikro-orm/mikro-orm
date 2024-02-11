@@ -5,21 +5,21 @@ title: Defining Entities
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-Entities are simple javascript objects (so called POJO) without restrictions and without the need to extend base classes. Using [entity constructors](entity-constructors.md) works as well - they are never executed for managed entities (loaded from database). Every entity is required to have a primary key.
+Entities are simple javascript objects (so called POJO) without restrictions and without the need to extend base classes. Using [entity constructors](./entity-constructors.md) works as well - they are never executed for managed entities (loaded from database). Every entity is required to have a primary key.
 
 Entities can be defined in two ways:
 
-- Decorated classes - the attributes of the entity, as well as each property are provided via decorators. We use `@Entity()` decorator on the class. Entity properties are decorated either with `@Property` decorator, or with one of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`. Check out the full [decorator reference](decorators.md).
-- `EntitySchema` helper - With `EntitySchema` helper we define the schema programmatically. We can use regular classes as well as interfaces. This approach also allows to re-use partial entity definitions (e.g. traits/mixins). Read more about this in [Defining Entities via EntitySchema section](entity-schema.md).
+- Decorated classes - the attributes of the entity, as well as each property are provided via decorators. We use `@Entity()` decorator on the class. Entity properties are decorated either with `@Property` decorator, or with one of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`. Check out the full [decorator reference](./decorators.md).
+- `EntitySchema` helper - With `EntitySchema` helper we define the schema programmatically. We can use regular classes as well as interfaces. This approach also allows to re-use partial entity definitions (e.g. traits/mixins). Read more about this in [Defining Entities via EntitySchema section](./entity-schema.md).
 
 Moreover, how the metadata extraction from decorators happens is controlled via `MetadataProvider`. Two main metadata providers are:
 
 - `ReflectMetadataProvider` - uses `reflect-metadata` to read the property types. Faster but simpler and more verbose.
 - `TsMorphMetadataProvider` - uses `ts-morph` to read the type information from the TypeScript compiled API. Heavier (requires full TS as a dependency), but allows DRY entity definition. With `ts-morph` we are able to extract the type as it is defined in the code, including interface names, as well as optionality of properties.
 
-Read more about them in the [Metadata Providers section](metadata-providers.md).
+Read more about them in the [Metadata Providers section](./metadata-providers.md).
 
-> Current set of decorators in MikroORM is designed to work with the `tsc`. Using `babel` is also possible, but requires some additional setup. Read more about it [here](usage-with-babel.md). For notes about `webpack`, read the [deployment section](deployment.md).
+> Current set of decorators in MikroORM is designed to work with the `tsc`. Using `babel` is also possible, but requires some additional setup. Read more about it [here](./usage-with-babel.md). For notes about `webpack`, read the [deployment section](./deployment.md).
 >
 > `ts-morph` is compatible only with the `tsc` approach.
 
@@ -283,9 +283,9 @@ export const AuthorSchema = new EntitySchema<Author>({
   </TabItem>
 </Tabs>
 
-More information about modelling relationships can be found on [modelling relationships page](relationships.md).
+More information about modelling relationships can be found on [modelling relationships page](./relationships.md).
 
-For an example of Vanilla JavaScript usage, take a look [here](usage-with-js.md).
+For an example of Vanilla JavaScript usage, take a look [here](./usage-with-js.md).
 
 ## Optional Properties
 
@@ -977,7 +977,7 @@ We can define custom types by extending `Type` abstract class. It has 4 optional
 
   Gets the SQL declaration snippet for a field of this type.
 
-More information can be found in [Custom Types](custom-types.md) section.
+More information can be found in [Custom Types](./custom-types.md) section.
 
 ## Lazy scalar properties
 
@@ -1141,7 +1141,7 @@ Starting with MikroORM 4.2, there is no limitation for entity file names. It is 
 
 We can define our own base entity with properties that are required on all entities, like primary key and created/updated time. Single table inheritance is also supported.
 
-Read more about this topic in [Inheritance Mapping](inheritance-mapping.md) section.
+Read more about this topic in [Inheritance Mapping](./inheritance-mapping.md) section.
 
 > If you are initializing the ORM via `entities` option, you need to specify all your base entities as well.
 
@@ -1471,7 +1471,7 @@ values={[
 @Entity()
 export class Book {
 
-  @PrimaryKey({ type: 'uuid', defaultRaw: 'uuid_generate_v4()' })
+  @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   uuid: string;
 
   @Property()
@@ -1490,7 +1490,7 @@ export class Book {
 @Entity()
 export class Book {
 
-  @PrimaryKey({ type: 'uuid', defaultRaw: 'uuid_generate_v4()' })
+  @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   uuid: string;
 
   @Property()
@@ -1515,7 +1515,7 @@ export class Book {
 export const BookSchema = new EntitySchema<Book>({
   class: Book,
   properties: {
-    uuid: { type: 'uuid', defaultRaw: 'uuid_generate_v4()', primary: true },
+    uuid: { type: 'uuid', defaultRaw: 'gen_random_uuid()', primary: true },
     title: { type: 'string' },
     author: { entity: () => Author, reference: 'm:1' },
   },
@@ -1575,7 +1575,7 @@ properties: {
   </TabItem>
 </Tabs>
 
-If you want to use native `bigint`s, read the following guide: [Using native BigInt PKs](using-bigint-pks.md).
+If you want to use native `bigint`s, read the following guide: [Using native BigInt PKs](./using-bigint-pks.md).
 
 ### Example of Mongo entity
 
@@ -1682,4 +1682,4 @@ const book = new Book();
 console.log(book.isInitialized()); // true
 ```
 
-Having the entities set up, we can now start [using entity manager](entity-manager.md) and [repositories](repositories.md) as described in following sections.
+Having the entities set up, we can now start [using entity manager](./entity-manager.md) and [repositories](./repositories.md) as described in following sections.

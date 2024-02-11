@@ -23,7 +23,7 @@ export abstract class Connection {
     if (options) {
       this.options = options;
     } else {
-      const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool'] as const;
+      const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool', 'schema'] as const;
       this.options = props.reduce((o, i) => {
         (o[i] as any) = this.config.get(i);
         return o;
@@ -40,6 +40,11 @@ export abstract class Connection {
    * Are we connected to the database
    */
   abstract isConnected(): Promise<boolean>;
+
+  /**
+   * Are we connected to the database
+   */
+  abstract checkConnection(): Promise<{ ok: boolean; reason?: string; error?: Error }>;
 
   /**
    * Closes the database connection (aka disconnect)
@@ -92,6 +97,11 @@ export abstract class Connection {
       this.options.user = ret.user = this.options.user ?? decodeURIComponent(url.username);
       this.options.password = ret.password = this.options.password ?? decodeURIComponent(url.password);
       this.options.dbName = ret.database = this.options.dbName ?? decodeURIComponent(url.pathname).replace(/^\//, '');
+
+      if (this.options.schema || url.searchParams.has('schema')) {
+        this.options.schema = ret.schema = this.options.schema ?? decodeURIComponent(url.searchParams.get('schema')!);
+        this.config.set('schema', ret.schema);
+      }
     } else {
       const url = new URL(this.config.getClientUrl());
       this.options.host = ret.host = this.options.host ?? this.config.get('host', decodeURIComponent(url.hostname));
@@ -107,8 +117,12 @@ export abstract class Connection {
   getClientUrl(): string {
     const options = this.getConnectionOptions();
     const url = new URL(this.config.getClientUrl(true));
+    const password = options.password ? ':*****' : '';
+    const schema = options.schema && options.schema !== this.platform.getDefaultSchemaName()
+      ? `?schema=${options.schema}`
+      : '';
 
-    return `${url.protocol}//${options.user}${options.password ? ':*****' : ''}@${options.host}:${options.port}`;
+    return `${url.protocol}//${options.user}${password}@${options.host}:${options.port}${schema}`;
   }
 
   setMetadata(metadata: MetadataStorage): void {
@@ -170,6 +184,7 @@ export interface ConnectionConfig {
   user?: string;
   password?: string | (() => MaybePromise<string> | MaybePromise<DynamicPassword>);
   database?: string;
+  schema?: string;
 }
 
 export type Transaction<T = any> = T;

@@ -13,7 +13,7 @@ exports[`changing PK column type [postgres] (GH 1480) changing PK type: 0. creat
 
 exports[`changing PK column type [postgres] (GH 1480) changing PK type: 1. change PK type from text to int 1`] = `
 {
-  "down": "alter table "user" alter column "id" type varchar using ("id"::varchar);
+  "down": "alter table "user" alter column "id" type varchar(255) using ("id"::varchar(255));
 
 ",
   "up": "alter table "user" alter column "id" type int using ("id"::int);

@@ -12,7 +12,7 @@ import {
 import { randomUUID } from 'crypto';
 
 @Entity()
-export class Question {
+class Question {
 
   [OptionalProps]?: 'createdAt';
 
@@ -31,7 +31,7 @@ export class Question {
 }
 
 @Entity()
-export class Answer {
+class Answer {
 
   [OptionalProps]?: 'createdAt' | 'question';
 

@@ -2,7 +2,6 @@ import {
   Collection,
   Entity,
   ManyToOne,
-  NotNullConstraintViolationException,
   OneToMany,
   OptionalProps,
   PrimaryKey,
@@ -113,7 +112,7 @@ test('GH issue 3543 without orphan removal builds correct query', async () => {
   }, { populate: ['*'] });
 
   // disconnecting the relation without orphan removal throws, as it means nulling it on the owning side, which would fail as it is a non-null PK column
-  expect(() => order.events.removeAll()).toThrowError(
+  expect(() => order.events.removeAll()).toThrow(
     'Removing items from collection Order.events without `orphanRemoval: true` would break non-null constraint on the owning side. You have several options: \n' +
     ' - add `orphanRemoval: true` to the collection options\n' +
     ' - add `deleteRule: \'cascade\'` to the owning side options\n' +

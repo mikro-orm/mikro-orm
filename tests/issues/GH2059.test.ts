@@ -4,7 +4,7 @@ import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Propert
 class Category {
 
   @PrimaryKey()
-  id!: number;
+  id!: bigint;
 
   @Property()
   name: string;
@@ -70,7 +70,7 @@ describe('GH issue 2059', () => {
     expect(categories[0].children[0].children[0].name).toBe('A11');
     await categories[0].children[0].children[0].children.init();
     expect(categories[0].children[0].children[0].children[0].name).toBe('A111');
-    expect(wrap(categories[0]).toObject().children[0].children[0].children).toEqual([4]);
+    expect(wrap(categories[0]).toObject().children[0].children[0].children).toEqual(['4']);
     expect(wrap(categories[0]).toObject()).toMatchObject({
       name: 'A',
       children: [

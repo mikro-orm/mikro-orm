@@ -1,5 +1,6 @@
 import { Utils } from '../utils/Utils';
 import type {
+  Constructor,
   Dictionary,
   EntityData,
   EntityKey,
@@ -30,6 +31,7 @@ export interface FactoryOptions {
   merge?: boolean;
   refresh?: boolean;
   convertCustomTypes?: boolean;
+  recomputeSnapshot?: boolean;
   schema?: string;
 }
 
@@ -54,7 +56,7 @@ export class EntityFactory {
   }
 
   create<T extends object, P extends string = string>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
-    data = Reference.unwrapReference(data);
+    data = Reference.unwrapReference(data as T);
     options.initialized ??= true;
 
     if ((data as Dictionary).__entity) {
@@ -116,6 +118,10 @@ export class EntityFactory {
         newEntity: options.newEntity,
         loaded: options.initialized,
       });
+
+      if (options.recomputeSnapshot) {
+        wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
+      }
     }
 
     if (this.eventManager.hasListeners(EventType.onInit, meta2)) {
@@ -201,16 +207,10 @@ export class EntityFactory {
     const schema = this.driver.getSchemaName(meta, options);
 
     if (Array.isArray(id)) {
-      // composite FK as PK needs to be wrapped for `getPrimaryKeyCondFromArray` to work correctly
-      if (!meta.compositePK && meta.getPrimaryProps()[0].kind !== ReferenceKind.SCALAR) {
-        id = [id] as Primary<T>[];
-      }
-
       id = Utils.getPrimaryKeyCondFromArray(id, meta);
     }
 
     const pks = Utils.getOrderedPrimaryKeys<T>(id, meta);
-
     const exists = this.unitOfWork.getById<T>(entityName, pks as Primary<T>, schema);
 
     if (exists) {
@@ -245,7 +245,7 @@ export class EntityFactory {
 
       options.initialized = options.newEntity || options.initialized;
       const params = this.extractConstructorParams<T>(meta, data, options);
-      const Entity = meta.class;
+      const Entity = meta.class as Constructor<T>;
 
       // creates new instance via constructor as this is the new entity
       const entity = new Entity(...params);
@@ -295,23 +295,27 @@ export class EntityFactory {
     } else {
       this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, this.driver.getSchemaName(meta, options));
     }
-    Utils.keys(data).forEach(key => helper(entity)?.__loadedProperties.add(key as string));
+
+    Utils.keys(data).forEach(key => {
+      helper(entity)?.__loadedProperties.add(key as string);
+      helper(entity)?.__serializationContext.fields?.add(key as string);
+    });
   }
 
   private findEntity<T extends object>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T | undefined {
     const schema = this.driver.getSchemaName(meta, options);
 
     if (meta.simplePK) {
-      return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0]] as Primary<T>, schema);
+      return this.unitOfWork.getById<T>(meta.className, data[meta.primaryKeys[0]] as Primary<T>, schema);
     }
 
-    if (meta.primaryKeys.some(pk => data[pk] == null)) {
+    if (!Array.isArray(data) && meta.primaryKeys.some(pk => data[pk] == null)) {
       return undefined;
     }
 
     const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta);
 
-    return this.unitOfWork.getById<T>(meta.name!, pks, schema);
+    return this.unitOfWork.getById<T>(meta.className, pks, schema);
   }
 
   private processDiscriminatorColumn<T extends object>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> {
@@ -319,15 +323,10 @@ export class EntityFactory {
       return meta;
     }
 
-    const prop = meta.properties[meta.root.discriminatorColumn];
+    const prop = meta.properties[meta.root.discriminatorColumn as EntityKey<T>];
     const value = data[prop.name] as string;
     const type = meta.root.discriminatorMap![value];
     meta = type ? this.metadata.find(type)! : meta;
-
-    // `prop.userDefined` is either `undefined` or `false`
-    if (prop.userDefined === false) {
-      delete data[prop.name];
-    }
 
     return meta;
   }
@@ -384,7 +383,19 @@ export class EntityFactory {
       }
 
       if (!meta.properties[k]) {
-        return data;
+        const tmp = { ...data };
+
+        for (const prop of meta.props) {
+          if (options.convertCustomTypes && prop.customType && tmp[prop.name] != null) {
+            tmp[prop.name] = prop.customType.convertToJSValue(tmp[prop.name], this.platform) as any;
+          }
+        }
+
+        return tmp;
+      }
+
+      if (options.convertCustomTypes && meta.properties[k].customType && data[k] != null) {
+        return meta.properties[k].customType!.convertToJSValue(data[k], this.platform);
       }
 
       return data[k];

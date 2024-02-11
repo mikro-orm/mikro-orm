@@ -1,4 +1,4 @@
-import { Entity, helper, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
 @Entity({ tableName: 'something' })

@@ -1,0 +1,80 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RefToPivotTable: mysql-entity-dump 1`] = `
+[
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { SenderEmails } from './SenderEmails';
+
+@Entity()
+export class EmailMessagesLog {
+
+  [PrimaryKeyProp]?: 'logId';
+
+  @PrimaryKey()
+  logId!: number;
+
+  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'cascade', index: 'fk_email_messages_log_sender_emails1_idx' })
+  sender!: SenderEmails;
+
+  @ManyToOne({ entity: () => Emails, updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_email_messages_log_emails1_idx' })
+  recepient!: Emails;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Emails {
+
+  [PrimaryKeyProp]?: 'emailId';
+
+  @PrimaryKey()
+  emailId!: number;
+
+  @Unique({ name: 'email_UNIQUE' })
+  @Property({ length: 255 })
+  email!: string;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { SenderEmails } from './SenderEmails';
+
+@Entity()
+export class Sender {
+
+  [PrimaryKeyProp]?: 'senderId';
+
+  @PrimaryKey({ columnType: 'smallint' })
+  senderId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Emails, pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
+  emails = new Collection<Emails>(this);
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Sender } from './Sender';
+
+@Entity()
+export class SenderEmails {
+
+  [PrimaryKeyProp]?: ['sender', 'email'];
+
+  @ManyToOne({ entity: () => Sender, fieldName: 'sender_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  sender!: Sender;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', primary: true, index: 'fk_sender_emails_emails1_idx' })
+  email!: Emails;
+
+}
+",
+]
+`;

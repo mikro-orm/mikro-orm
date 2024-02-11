@@ -1,5 +1,6 @@
 import { Embeddable, Embedded, Entity, PrimaryKey, Property, Type } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
+import { mockLogger } from '../../helpers';
 
 class Point {
 
@@ -84,8 +85,10 @@ afterAll(async () => {
 });
 
 test('GH #4824', async () => {
+  const mock = mockLogger(orm);
   const user = await orm.em.findOne(User, {
     id: 1,
   });
   expect(user).toBeNull();
+  expect(mock.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` where `u0`.`id` = 1 limit 1');
 });

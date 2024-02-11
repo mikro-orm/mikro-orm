@@ -7,7 +7,7 @@ export enum WithEnumArrayValue {
 }
 
 @Entity()
-export class WithEnumArray {
+class WithEnumArray {
 
   @PrimaryKey()
   id!: number;

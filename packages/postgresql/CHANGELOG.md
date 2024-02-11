@@ -3,6 +3,123 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.1](https://github.com/mikro-orm/mikro-orm/compare/v6.1.0...v6.1.1) (2024-02-10)
+
+
+### Bug Fixes
+
+* **postgres:** declare dependency on `postgres-array` ([e73fd1a](https://github.com/mikro-orm/mikro-orm/commit/e73fd1a2ec92534c2889255132fb95129de1bb23))
+* **postgres:** fix parsing of date properties inside object emebddables ([760ec77](https://github.com/mikro-orm/mikro-orm/commit/760ec77b1f852103f878998bb2c76edce1fb5c77)), closes [#5216](https://github.com/mikro-orm/mikro-orm/issues/5216)
+
+
+
+
+
+# [6.1.0](https://github.com/mikro-orm/mikro-orm/compare/v6.0.7...v6.1.0) (2024-02-04)
+
+
+### Bug Fixes
+
+* **postgres:** improve diffing of native postgres enums ([49d6b4d](https://github.com/mikro-orm/mikro-orm/commit/49d6b4d561196c7c1e0c6f94e6cc1ee1966b9178)), closes [#5108](https://github.com/mikro-orm/mikro-orm/issues/5108)
+
+
+### Features
+
+* **core:** allow mapping array columns to arrays of objects via `ArrayType` ([#5204](https://github.com/mikro-orm/mikro-orm/issues/5204)) ([42cc9cc](https://github.com/mikro-orm/mikro-orm/commit/42cc9ccf4639d430d8d1cc60bb5c3385b0e501f2)), closes [#5188](https://github.com/mikro-orm/mikro-orm/issues/5188)
+
+
+
+
+
+## [6.0.7](https://github.com/mikro-orm/mikro-orm/compare/v6.0.6...v6.0.7) (2024-01-30)
+
+
+### Features
+
+* **postgres:** add support for `interval` type ([659a613](https://github.com/mikro-orm/mikro-orm/commit/659a613f802b7c47f94ee2729425c8576b20146a)), closes [#5181](https://github.com/mikro-orm/mikro-orm/issues/5181)
+
+
+
+
+
+## [6.0.6](https://github.com/mikro-orm/mikro-orm/compare/v6.0.5...v6.0.6) (2024-01-29)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [6.0.5](https://github.com/mikro-orm/mikro-orm/compare/v6.0.4...v6.0.5) (2024-01-18)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [6.0.4](https://github.com/mikro-orm/mikro-orm/compare/v6.0.3...v6.0.4) (2024-01-15)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [6.0.3](https://github.com/mikro-orm/mikro-orm/compare/v6.0.2...v6.0.3) (2024-01-13)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [6.0.2](https://github.com/mikro-orm/mikro-orm/compare/v6.0.1...v6.0.2) (2024-01-09)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [6.0.1](https://github.com/mikro-orm/mikro-orm/compare/v6.0.0...v6.0.1) (2024-01-08)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+# [6.0.0](https://github.com/mikro-orm/mikro-orm/compare/v5.9.7...v6.0.0) (2024-01-08)
+
+
+### Bug Fixes
+
+* **core:** refactor mapping of `Date` properties ([#4391](https://github.com/mikro-orm/mikro-orm/issues/4391)) ([3a80369](https://github.com/mikro-orm/mikro-orm/commit/3a8036928ce36d31a2005b7e5133cf825b84a1b5)), closes [#4362](https://github.com/mikro-orm/mikro-orm/issues/4362) [#4360](https://github.com/mikro-orm/mikro-orm/issues/4360) [#1476](https://github.com/mikro-orm/mikro-orm/issues/1476)
+* **core:** rework pivot table joining ([#4438](https://github.com/mikro-orm/mikro-orm/issues/4438)) ([0506d36](https://github.com/mikro-orm/mikro-orm/commit/0506d36dc1e5bad16aeefee8419717e0054c6764)), closes [#4423](https://github.com/mikro-orm/mikro-orm/issues/4423)
+* **entity-generator:** use index expressions for complex indexes (e.g. conditional) ([64a39f8](https://github.com/mikro-orm/mikro-orm/commit/64a39f82c7d391d28e28c639512a810c516f08a9)), closes [#4911](https://github.com/mikro-orm/mikro-orm/issues/4911)
+* **postgres:** allow using array operators (e.g. `@>`) with object arrays ([ca8795a](https://github.com/mikro-orm/mikro-orm/commit/ca8795af7efe9c7e3dbe65cbd7df59c01f44fe1c)), closes [#4973](https://github.com/mikro-orm/mikro-orm/issues/4973)
+* **postgres:** parse timestamp dates less than year 100 ([e774d40](https://github.com/mikro-orm/mikro-orm/commit/e774d4092eb13d81772701f7d8e35ada55fb4d45)), closes [#5071](https://github.com/mikro-orm/mikro-orm/issues/5071)
+* **postgres:** respect column length in down migrations ([d49d13c](https://github.com/mikro-orm/mikro-orm/commit/d49d13c9db9d4374558217ee7af12a605313db5c)), closes [#5048](https://github.com/mikro-orm/mikro-orm/issues/5048)
+
+
+### Features
+
+* **core:** add `MikroORM.initSync()` helper ([#4166](https://github.com/mikro-orm/mikro-orm/issues/4166)) ([8b1a1fa](https://github.com/mikro-orm/mikro-orm/commit/8b1a1fa324db9227f5caae35fb2d8ab6a2b76e8a)), closes [#4164](https://github.com/mikro-orm/mikro-orm/issues/4164)
+* **core:** add `sql.now()`, `sql.lower()` and `sql.upper()` functions ([#5044](https://github.com/mikro-orm/mikro-orm/issues/5044)) ([016fe63](https://github.com/mikro-orm/mikro-orm/commit/016fe63e0e0db448a31da00c4690fc5c5ae59069))
+* **core:** add support for indexes on JSON properties ([#4735](https://github.com/mikro-orm/mikro-orm/issues/4735)) ([82c8629](https://github.com/mikro-orm/mikro-orm/commit/82c8629d5e96a8552890cd17eb485ca3020156dc)), closes [#1230](https://github.com/mikro-orm/mikro-orm/issues/1230)
+* **core:** allow extending `EntityManager` ([#5064](https://github.com/mikro-orm/mikro-orm/issues/5064)) ([6c363e7](https://github.com/mikro-orm/mikro-orm/commit/6c363e7666ddf713ae601d1c9325c5b7f4523fbe))
+* **core:** re-export the core package from all drivers ([#3816](https://github.com/mikro-orm/mikro-orm/issues/3816)) ([175c059](https://github.com/mikro-orm/mikro-orm/commit/175c05912d3f53eac0788ecd32002cb9a30e7cfa))
+* **core:** remove static require calls ([#3814](https://github.com/mikro-orm/mikro-orm/issues/3814)) ([b58f476](https://github.com/mikro-orm/mikro-orm/commit/b58f4763995738cad11d08665b239443f9fb4499)), closes [#3743](https://github.com/mikro-orm/mikro-orm/issues/3743)
+* **core:** require explicitly marked raw queries via `raw()` helper ([#4197](https://github.com/mikro-orm/mikro-orm/issues/4197)) ([9c1b205](https://github.com/mikro-orm/mikro-orm/commit/9c1b205f4cb9fede6330360982f23cf6ef37f346))
+* **postgres:** add support for native enums ([#4296](https://github.com/mikro-orm/mikro-orm/issues/4296)) ([8515380](https://github.com/mikro-orm/mikro-orm/commit/8515380b7d54aabdef89098139d533ae15adc91b)), closes [#2764](https://github.com/mikro-orm/mikro-orm/issues/2764)
+* **postgres:** add support for weighted tsvectors and a custom regconfig ([#3805](https://github.com/mikro-orm/mikro-orm/issues/3805)) ([a0e2c7f](https://github.com/mikro-orm/mikro-orm/commit/a0e2c7f4063d0774afd608a178b0e1edc220c3d5)), closes [/github.com/mikro-orm/mikro-orm/pull/3317#issuecomment-1330035868](https://github.com//github.com/mikro-orm/mikro-orm/pull/3317/issues/issuecomment-1330035868) [/github.com/mikro-orm/mikro-orm/pull/3317#issuecomment-1330555809](https://github.com//github.com/mikro-orm/mikro-orm/pull/3317/issues/issuecomment-1330555809) [/github.com/mikro-orm/mikro-orm/pull/3317#issuecomment-1279882693](https://github.com//github.com/mikro-orm/mikro-orm/pull/3317/issues/issuecomment-1279882693)
+* **sql:** add native support for generated columns ([#4884](https://github.com/mikro-orm/mikro-orm/issues/4884)) ([a928291](https://github.com/mikro-orm/mikro-orm/commit/a928291335f6867e02ed948afb5c9abd17975dba))
+
+
+
+
+
 ## [5.9.2](https://github.com/mikro-orm/mikro-orm/compare/v5.9.1...v5.9.2) (2023-11-02)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

@@ -1,11 +1,9 @@
-import { Entity, MikroORM, PrimaryKey, Property, wrap, HiddenProps } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property, wrap, Hidden } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 @Entity()
 export class EntityWithHiddenProp {
-
-  [HiddenProps]?: 'hiddenProp';
 
   @PrimaryKey()
   id!: number;
@@ -14,7 +12,7 @@ export class EntityWithHiddenProp {
   notHiddenProp: string = 'foo';
 
   @Property({ hidden: true })
-  hiddenProp: string = 'hidden prop';
+  hiddenProp: Hidden<string> = 'hidden prop';
 
 }
 

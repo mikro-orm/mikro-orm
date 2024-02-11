@@ -2,7 +2,7 @@ import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/sql
 import { v4 } from 'uuid';
 
 @Entity()
-export class B {
+class B {
 
   @PrimaryKey()
   id: string = v4();
@@ -13,7 +13,7 @@ export class B {
 }
 
 @Entity()
-export class A {
+class A {
 
   @PrimaryKey()
   id!: string;

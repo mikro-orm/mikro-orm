@@ -1,6 +1,6 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 
-export class Test {
+class Test {
 
   id!: string;
   createdAt!: Date;
@@ -14,7 +14,7 @@ export const TestSchema = new EntitySchema<Test>({
       primary: true,
       type: String,
       columnType: 'uuid',
-      defaultRaw: 'uuid_generate_v4()',
+      defaultRaw: 'gen_random_uuid()',
     },
     createdAt: {
       type: Date,
@@ -33,7 +33,7 @@ describe('GH issue 755', () => {
       dbName: ':memory:',
     };
     const err = `Entity Test has wrong index definition: 'created_at' does not exist. You need to use property name, not column name.`;
-    await expect(MikroORM.init(options)).rejects.toThrowError(err);
+    await expect(MikroORM.init(options)).rejects.toThrow(err);
   });
 
 });

@@ -132,7 +132,7 @@ const users = await orm.em.find(User, [1, 2, 3, 4, 5]);
 const user1 = await orm.em.findOne(User, 1);
 ```
 
-As you can see in the fifth example, one can also use operators like `$and`, `$or`, `$gte`, `$gt`, `$lte`, `$lt`, `$in`, `$nin`, `$eq`, `$ne`, `$like`, `$re`. More about that can be found in [Query Conditions](query-conditions.md) section.
+As you can see in the fifth example, one can also use operators like `$and`, `$or`, `$gte`, `$gt`, `$lte`, `$lt`, `$in`, `$nin`, `$eq`, `$ne`, `$like`, `$re`. More about that can be found in [Query Conditions](./query-conditions.md) section.
 
 #### Mitigating `Type instantiation is excessively deep and possibly infinite.ts(2589)` error
 

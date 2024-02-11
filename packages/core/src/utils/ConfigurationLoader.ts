@@ -3,18 +3,19 @@ import { pathExists, pathExistsSync, realpath } from 'fs-extra';
 import { isAbsolute, join } from 'path';
 import { platform } from 'os';
 import { fileURLToPath } from 'url';
-import type { IDatabaseDriver } from '../drivers';
+import type { EntityManagerType, IDatabaseDriver } from '../drivers';
 import { Configuration, type Options } from './Configuration';
 import { Utils } from './Utils';
 import type { Dictionary } from '../typings';
 import { colors } from '../logging/colors';
+import type { EntityManager } from '../EntityManager';
 
 /**
  * @internal
  */
 export class ConfigurationLoader {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
     await this.commonJSCompat(options);
     this.registerDotenv(options);
     const paths = await this.getConfigPaths();
@@ -77,8 +78,9 @@ export class ConfigurationLoader {
     settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
     settings.alwaysAllowTs = process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS != null ? bool(process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS) : settings.alwaysAllowTs;
+    settings.verbose = process.env.MIKRO_ORM_CLI_VERBOSE != null ? bool(process.env.MIKRO_ORM_CLI_VERBOSE) : settings.verbose;
 
-    if (process.env.MIKRO_ORM_CLI?.endsWith('.ts')) {
+    if (process.env.MIKRO_ORM_CLI_CONFIG?.endsWith('.ts')) {
       settings.useTsNode = true;
     }
 
@@ -95,8 +97,8 @@ export class ConfigurationLoader {
     const paths: string[] = [];
     const settings = await ConfigurationLoader.getSettings();
 
-    if (process.env.MIKRO_ORM_CLI) {
-      paths.push(process.env.MIKRO_ORM_CLI);
+    if (process.env.MIKRO_ORM_CLI_CONFIG) {
+      paths.push(process.env.MIKRO_ORM_CLI_CONFIG);
     }
 
     paths.push(...(settings.configPaths || []));
@@ -159,7 +161,15 @@ export class ConfigurationLoader {
   static registerDotenv<D extends IDatabaseDriver>(options?: Options<D> | Configuration<D>): void {
     const baseDir = options instanceof Configuration ? options.get('baseDir') : options?.baseDir;
     const path = process.env.MIKRO_ORM_ENV ?? ((baseDir ?? process.cwd()) + '/.env');
-    dotenv.config({ path });
+    const env = {} as Dictionary;
+    dotenv.config({ path, processEnv: env });
+
+    // only propagate known env vars
+    for (const key of Object.keys(env)) {
+      if (key.startsWith('MIKRO_ORM_')) {
+        process.env[key] ??= env[key]; // respect user provided values
+      }
+    }
   }
 
   static loadEnvironmentVars<D extends IDatabaseDriver>(): Partial<Options<D>> {
@@ -216,7 +226,7 @@ export class ConfigurationLoader {
     read(ret, 'MIKRO_ORM_ENSURE_INDEXES', 'ensureIndexes', bool);
     read(ret, 'MIKRO_ORM_IMPLICIT_TRANSACTIONS', 'implicitTransactions', bool);
     read(ret, 'MIKRO_ORM_DEBUG', 'debug', bool);
-    read(ret, 'MIKRO_ORM_VERBOSE', 'verbose', bool);
+    read(ret, 'MIKRO_ORM_COLORS', 'colors', bool);
 
     ret.discovery = {};
     read(ret.discovery, 'MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES', 'warnWhenNoEntities', bool);
@@ -326,6 +336,7 @@ export class ConfigurationLoader {
 
 export interface Settings {
   alwaysAllowTs?: boolean;
+  verbose?: boolean;
   useTsNode?: boolean;
   tsConfigPath?: string;
   configPaths?: string[];

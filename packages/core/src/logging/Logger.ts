@@ -57,12 +57,12 @@ export interface LoggerOptions {
 }
 
 /**
- * Logger options to modify format output and overrides, including a label and additional properties that can be accessed by custom loggers
+ * Logger options to modify format output and overrides, including a label and additional properties that can be accessed by custom loggers.
  *
- * Differs from {@link LoggerOptions} in terms of how they are used; this type is primarily a public type meant to be used within methods like `EntityManager.Find`
+ * Differs from {@apilink LoggerOptions} in terms of how they are used; this type is primarily a public type meant to be used within methods like `em.find()`.
  *
  * @example
- * await em.findOne(User, 1, { loggerContext: { label: 'user middleware' } };
+ * await em.findOne(User, 1, { logger: { label: 'user middleware' } };
  * // [query] (user middleware) select * from user where id = 1;
  */
-export type LoggingOptions = Pick<LogContext, 'label' | 'enabled' | 'debugMode'> & Dictionary;
+export type LoggingOptions = Pick<LogContext, 'label' | 'enabled' | 'debugMode'>;

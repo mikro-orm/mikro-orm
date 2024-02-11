@@ -98,7 +98,7 @@ test('json property hydration 1/2', async () => {
 
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock).not.toBeCalled();
+  expect(mock).not.toHaveBeenCalled();
 });
 
 test('json property hydration 2/2', async () => {
@@ -120,5 +120,5 @@ test('json property hydration 2/2', async () => {
 
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock).not.toBeCalled();
+  expect(mock).not.toHaveBeenCalled();
 });

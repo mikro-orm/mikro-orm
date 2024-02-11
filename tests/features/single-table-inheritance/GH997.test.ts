@@ -98,18 +98,20 @@ describe('GH issue 997', () => {
       .orderBy({ type: QueryOrder.ASC })
       .getResult();
 
-    const parents = await orm.em.populate(results as Child1[], ['qaInfo.parent', 'rel']);
+    const parent = await orm.em.populate(results[0] as Child1, ['qaInfo.parent', 'rel']);
 
-    expect(parents[0]).toBeInstanceOf(Child1);
-    expect(parents[0].type).toBe('Child1');
-    expect(parents[0].qaInfo.length).toBe(0);
-    expect((parents[0] as Child1).rel.length).toBe(3);
-    expect((parents[0] as Child1).rel[0]).toBeInstanceOf(Child1Specific);
-    expect((parents[0] as Child1).rel[0].child1).toBeInstanceOf(Child1);
-    expect((parents[0] as Child1).rel[1]).toBeInstanceOf(Child1Specific);
-    expect((parents[0] as Child1).rel[1].child1).toBeInstanceOf(Child1);
-    expect((parents[0] as Child1).rel[2]).toBeInstanceOf(Child1Specific);
-    expect((parents[0] as Child1).rel[2].child1).toBeInstanceOf(Child1);
+    expect(parent).toBeInstanceOf(Child1);
+    expect(parent.type).toBe('Child1');
+    expect(parent.qaInfo.length).toBe(0);
+    expect((parent as Child1).rel.length).toBe(3);
+    expect((parent as Child1).rel[0]).toBeInstanceOf(Child1Specific);
+    expect((parent as Child1).rel[0].child1).toBeInstanceOf(Child1);
+    expect((parent as Child1).rel[1]).toBeInstanceOf(Child1Specific);
+    expect((parent as Child1).rel[1].child1).toBeInstanceOf(Child1);
+    expect((parent as Child1).rel[2]).toBeInstanceOf(Child1Specific);
+    expect((parent as Child1).rel[2].child1).toBeInstanceOf(Child1);
+
+    const parents = await orm.em.populate(results as Child1[], ['qaInfo.parent', 'rel']);
     expect(parents[1]).toBeInstanceOf(Child2);
     expect(parents[1].type).toBe('Child2');
     expect(parents[1].qaInfo.length).toBe(3);

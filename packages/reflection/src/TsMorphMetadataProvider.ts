@@ -59,8 +59,28 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return prop.type;
   }
 
+  private cleanUpTypeTags(type: string): string {
+    const genericTags = [/Opt<(.*?)>/, /Hidden<(.*?)>/];
+    const intersectionTags = [
+      '{ [__optional]?: 1 | undefined; }',
+      '{ [__hidden]?: 1 | undefined; }',
+    ];
+
+    for (const tag of genericTags) {
+      type = type.replace(tag, '$1');
+    }
+
+    for (const tag of intersectionTags) {
+      type = type.replace(' & ' + tag, '');
+      type = type.replace(tag + ' & ', '');
+    }
+
+    return type;
+  }
+
   private initPropertyType(meta: EntityMetadata, prop: EntityProperty): void {
-    const { type, optional } = this.readTypeFromSource(meta, prop);
+    const { type: typeRaw, optional } = this.readTypeFromSource(meta, prop);
+    const type = this.cleanUpTypeTags(typeRaw);
     prop.type = type;
     prop.runtimeType = type as 'string';
 
@@ -116,7 +136,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     let type = typeName;
     const union = type.split(' | ');
-    const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined');
+    const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined') || tsType.isNullable();
     type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
 
     prop.array ??= type.endsWith('[]') || !!type.match(/Array<(.*)>/);
@@ -153,7 +173,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     // `{ object?: import("...").Entity | undefined; } & import("...").Reference<Entity>`
     // `{ node?: ({ id?: number | undefined; } & import("...").Reference<import("...").Entity>) | undefined; } & import("...").Reference<Entity>`
     // the regexp is looking for the `wrapper`, possible prefixed with `.` or wrapped in parens.
-    const type = prop.type.replace(/import\(.*\)\./g, '');
+    const type = prop.type
+      .replace(/import\(.*\)\./g, '')
+      .replace(/\{ .* } & ([\w &]+)/g, '$1');
     const m = type.match(new RegExp(`(?:^|[.( ])${wrapper}<(\\w+),?.*>(?:$|[) ])`));
 
     if (!m) {

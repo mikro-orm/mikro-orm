@@ -186,7 +186,7 @@ npx mikro-orm migration:up --only 2019101923                  # apply a single m
 npx mikro-orm migration:down --to 0                           # migrate down all migrations
 ```
 
-> To run TS migration files, we will need to [enable `useTsNode` flag](installation.md#setting-up-the-commandline-tool) in our `package.json`.
+> To run TS migration files, we will need to [enable `useTsNode` flag](./installation.md#setting-up-the-commandline-tool) in our `package.json`.
 
 For the `migration:fresh` command we can specify `--seed` to seed the database after migrating.
 

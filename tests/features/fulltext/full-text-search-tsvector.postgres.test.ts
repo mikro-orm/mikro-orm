@@ -1,5 +1,5 @@
 import { Entity, Index, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver, WeightedFullTextValue, SchemaGenerator, FullTextType } from '@mikro-orm/postgresql';
+import { FullTextType, PostgreSqlDriver, WeightedFullTextValue } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
 const createWeightedValue = (book: Book): WeightedFullTextValue => ({ A: book.title!, B: book.description! });
@@ -41,7 +41,6 @@ export class Book {
 describe('full text search tsvector in postgres', () => {
 
   let orm: MikroORM<PostgreSqlDriver>;
-  let generator: SchemaGenerator;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
@@ -49,10 +48,9 @@ describe('full text search tsvector in postgres', () => {
       dbName: `mikro_orm_test_tsvector`,
       driver: PostgreSqlDriver,
     });
-    generator = orm.schema;
-    await generator.ensureDatabase();
-    await generator.execute('drop table if exists book');
-    await generator.createSchema();
+    await orm.schema.ensureDatabase();
+    await orm.schema.execute('drop table if exists book');
+    await orm.schema.createSchema();
   });
 
   beforeEach(() => orm.schema.clearDatabase());
@@ -169,7 +167,7 @@ describe('full text search tsvector in postgres', () => {
     // throw an error when an invalid object is passed
     book.searchableTitleWeighted = { E: 'invalid weight' } as any;
 
-    expect(orm.em.flush()).rejects.toThrowError('Weight should be one of A, B, C, D.');
+    expect(orm.em.flush()).rejects.toThrow('Weight should be one of A, B, C, D.');
   });
 
   test('should find entities with custom regconfig', async () => {

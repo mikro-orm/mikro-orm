@@ -25,5 +25,5 @@ test('validates @Property() decorator targeting entity type', async () => {
   await expect(MikroORM.init({
     entities: [A, B],
     dbName: ':memory:',
-  })).rejects.toThrowError('B.a is defined as scalar @Property(), but its type is a discovered entity A. Maybe you want to use @ManyToOne() decorator instead?');
+  })).rejects.toThrow('B.a is defined as scalar @Property(), but its type is a discovered entity A. Maybe you want to use @ManyToOne() decorator instead?');
 });

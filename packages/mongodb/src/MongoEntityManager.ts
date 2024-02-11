@@ -6,7 +6,7 @@ import type { MongoEntityRepository } from './MongoEntityRepository';
 /**
  * @inheritDoc
  */
-export class MongoEntityManager<D extends MongoDriver = MongoDriver> extends EntityManager<D> {
+export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extends EntityManager<Driver> {
 
   /**
    * Shortcut to driver's aggregate method. Available in MongoDriver only.
@@ -37,7 +37,7 @@ export class MongoEntityManager<D extends MongoDriver = MongoDriver> extends Ent
   /**
    * @inheritDoc
    */
-  override async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions & MongoTransactionOptions = {}): Promise<T> {
+  override async transactional<T>(cb: (em: Driver[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions & MongoTransactionOptions = {}): Promise<T> {
     return super.transactional(cb, options);
   }
 

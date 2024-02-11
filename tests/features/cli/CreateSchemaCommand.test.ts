@@ -46,32 +46,32 @@ describe('CreateSchemaCommand', () => {
     expect(showHelpMock.mock.calls.length).toBe(1);
 
     expect(createSchema.mock.calls.length).toBe(0);
-    expect(closeSpy).toBeCalledTimes(0);
+    expect(closeSpy).toHaveBeenCalledTimes(0);
     await expect(cmd.handler({ run: true } as any)).resolves.toBeUndefined();
     expect(seed.mock.calls.length).toBe(0);
     expect(createSchema.mock.calls.length).toBe(1);
-    expect(closeSpy).toBeCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
 
     expect(getCreateSchemaSQL.mock.calls.length).toBe(0);
     await expect(cmd.handler({ dump: true } as any)).resolves.toBeUndefined();
-    expect(getCreateSchemaSQL).toBeCalledTimes(1);
-    expect(getCreateSchemaSQL).toBeCalledWith({ wrap: undefined, dump: true });
+    expect(getCreateSchemaSQL).toHaveBeenCalledTimes(1);
+    expect(getCreateSchemaSQL).toHaveBeenCalledWith({ wrap: undefined, dump: true });
     expect(seed.mock.calls.length).toBe(0);
-    expect(closeSpy).toBeCalledTimes(2);
+    expect(closeSpy).toHaveBeenCalledTimes(2);
 
     expect(seed.mock.calls.length).toBe(0);
     await expect(cmd.handler({ run: true, fkChecks: true, seed: '' } as any)).resolves.toBeUndefined();
     expect(createSchema.mock.calls.length).toBe(2);
-    expect(createSchema).toBeCalledWith({ run: true, wrap: false, seed: '', fkChecks: true });
+    expect(createSchema).toHaveBeenCalledWith({ run: true, wrap: false, seed: '', fkChecks: true });
     expect(seed.mock.calls.length).toBe(1);
-    expect(seed).toBeCalledWith(orm.config.get('seeder').defaultSeeder);
-    expect(closeSpy).toBeCalledTimes(3);
+    expect(seed).toHaveBeenCalledWith(orm.config.get('seeder').defaultSeeder);
+    expect(closeSpy).toHaveBeenCalledTimes(3);
 
     await expect(cmd.handler({ run: true, seed: 'UsersSeeder' } as any)).resolves.toBeUndefined();
     expect(createSchema.mock.calls.length).toBe(3);
     expect(seed.mock.calls.length).toBe(2);
-    expect(seed).toBeCalledWith('UsersSeeder');
-    expect(closeSpy).toBeCalledTimes(4);
+    expect(seed).toHaveBeenCalledWith('UsersSeeder');
+    expect(closeSpy).toHaveBeenCalledTimes(4);
   });
 
 });

@@ -52,9 +52,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     this.logger = this.config.getLogger();
   }
 
-  abstract find<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F>): Promise<EntityData<T>[]>;
+  abstract find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F, E>): Promise<EntityData<T>[]>;
 
-  abstract findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F>): Promise<EntityData<T> | null>;
+  abstract findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null>;
 
   abstract nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
@@ -71,11 +71,12 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   abstract count<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
 
   createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
-    return new EntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
+    const EntityManagerClass = this.config.get('entityManager', EntityManager);
+    return new EntityManagerClass(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
   /* istanbul ignore next */
-  async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<EntityData<T>[]> {
+  async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
     throw new Error(`Virtual entities are not supported by ${this.constructor.name} driver.`);
   }
 
@@ -88,7 +89,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>, pivotJoin?: boolean): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any, any>, pivotJoin?: boolean): Promise<Dictionary<T[]>> {
     throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
@@ -171,7 +172,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.dependencies;
   }
 
-  protected processCursorOptions<T extends object, P extends string>(meta: EntityMetadata<T>, options: FindOptions<T, P, any>, orderBy: OrderDefinition<T>): { orderBy: OrderDefinition<T>[]; where: FilterQuery<T> } {
+  protected processCursorOptions<T extends object, P extends string>(meta: EntityMetadata<T>, options: FindOptions<T, P, any, any>, orderBy: OrderDefinition<T>): { orderBy: OrderDefinition<T>[]; where: FilterQuery<T> } {
     const { first, last, before, after, overfetch } = options;
     const limit = first || last;
     const isLast = !first && !!last;
@@ -189,12 +190,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         def = Cursor.for<T>(meta, def, orderBy);
       }
 
+      /* istanbul ignore next */
       const offsets = def ? Cursor.decode(def as string) as Dictionary[] : [];
 
       if (definition.length === offsets.length) {
         return this.createCursorCondition<T>(definition, offsets, inverse);
       }
 
+      /* istanbul ignore next */
       return {} as FilterQuery<T>;
     };
 
@@ -230,7 +233,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     };
   }
 
-  protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse = false): FilterQuery<T> {
+  /* istanbul ignore next */
+  protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse: boolean): FilterQuery<T> {
     const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
       if (Utils.isPlainObject(direction)) {
         const value = Utils.keys(direction).reduce((o, key) => {
@@ -286,7 +290,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         return;
       }
 
-      if (prop.embeddedProps && (prop.object || object)) {
+      if (prop.embeddedProps && (object || prop.object)) {
         const copy = data[k];
         delete data[k];
 
@@ -315,12 +319,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, { fromQuery: true, key: k, mode: 'query-data' });
       }
 
-      if (prop.hasConvertToDatabaseValueSQL && !this.platform.isRaw(data[k])) {
+      if (prop.hasConvertToDatabaseValueSQL && !prop.object && !this.platform.isRaw(data[k])) {
         const quoted = this.platform.quoteValue(data[k]);
-        const sql = prop.customType.convertToDatabaseValueSQL!(quoted, this.platform);
+        const sql = prop.customType!.convertToDatabaseValueSQL!(quoted, this.platform);
         data[k] = raw(sql.replace(/\?/g, '\\?'));
       }
 
+      /* istanbul ignore next */
       if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
         data[k] = JSON.stringify(data[k]);
       }
@@ -334,6 +339,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   protected inlineEmbeddables<T extends object>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
+    /* istanbul ignore next */
     if (data == null) {
       return;
     }
@@ -358,7 +364,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
           const operator = Object.keys(data[prop.name] as Dictionary).some(f => Utils.isOperator(f) && !['$exists', '$ne', '$eq'].includes(f));
 
           if (operator) {
-            throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.name!, prop.name, data);
+            throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.className, prop.name, data);
           }
 
           if (prop.object && where) {
@@ -380,6 +386,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
             // we might be using some native JSON operator, e.g. with mongodb's `$geoWithin` or `$exists`
             if (props[kk]) {
+              /* istanbul ignore next */
               inline(data[prop.name], props[kk] || props[parentPropName], [prop.name]);
             } else if (props[parentPropName]) {
               data[`${prop.name}.${kk}` as keyof T] = (data[prop.name] as Dictionary)[kk];

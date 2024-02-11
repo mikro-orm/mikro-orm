@@ -6,7 +6,7 @@ title: Frequently Asked Questions
 
 There are two ways:
 
-- [Schema Generator](./schema-generator.md)
+- [Schema Generator](schema-generator.md)
 - [Migrations](./migrations.md)
 
 ```sh
@@ -60,7 +60,7 @@ You should model your M:N relation transparently, via 1:m and m:1 properties. Mo
 
 ### You cannot call `em.flush()` from inside lifecycle hook handlers
 
-You might see this validation error even if you do not use hooks. If that happens, the reason is usually because you do not have [request context](identity-map.md) set up properly, and you are reusing one `EntityManager` instance.
+You might see this validation error even if you do not use hooks. If that happens, the reason is usually because you do not have [request context](./identity-map) set up properly, and you are reusing one `EntityManager` instance.
 
 ### Column is being created with JSON type while the TS type is `string/Date/number/...`
 

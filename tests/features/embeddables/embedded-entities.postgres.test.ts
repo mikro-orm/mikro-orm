@@ -149,8 +149,8 @@ describe('embedded entities in postgresql', () => {
       kind: ReferenceKind.EMBEDDED,
       type: 'Address2',
     });
-    expect(orm.getMetadata().get('User').properties.addr_street).toMatchObject({
-      name: 'addr_street',
+    expect(orm.getMetadata().get('User').properties.address2_street).toMatchObject({
+      name: 'address2_street',
       kind: ReferenceKind.SCALAR,
       type: 'string',
       nullable: true,
@@ -160,8 +160,8 @@ describe('embedded entities in postgresql', () => {
       kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
-    expect(orm.getMetadata().get('User').properties.street).toMatchObject({
-      name: 'street',
+    expect(orm.getMetadata().get('User').properties.address4_street).toMatchObject({
+      name: 'address4_street',
       kind: ReferenceKind.SCALAR,
       type: 'string',
     });
@@ -178,7 +178,13 @@ describe('embedded entities in postgresql', () => {
     user.email = 'test';
     expect(user.addresses).toEqual([]);
     const address1 = new Address1('Downing street 13A', 10, '10A', 'London 4A', 'UK 4A');
-    const address2 = { street: 'Downing street 23A', number: 20, postalCode: '20A', city: 'London 24A', country: 'UK 24A' };
+    const address2 = {
+      street: 'Downing street 23A',
+      number: 20,
+      postalCode: '20A',
+      city: 'London 24A',
+      country: 'UK 24A',
+    };
 
     orm.em.assign(user, { addresses: [address1] });
     expect(user.addresses).toEqual([address1]);
@@ -280,8 +286,8 @@ describe('embedded entities in postgresql', () => {
     expect(u3.address1.city).toBe('London 1');
     expect(u3.address1.postalCode).toBe('123');
     expect(u3).toBe(u1);
-    const err = "Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { '$or': [ [Object], [Object] ] } })";
-    await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
+    const err = 'Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { \'$or\': [ [Object], [Object] ] } })';
+    await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrow(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
     expect(mock.mock.calls[10][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."address4"->>\'postal_code\' = $1 limit $2');
@@ -482,6 +488,31 @@ describe('embedded entities in postgresql', () => {
       'lower((address4->>\'city\')::text) = \'prague\' and ' +
       '(address4->>\'city\')::text = \'Prague\' and ' +
       '(address4->>\'postal_code\')::text = \'12000\'');
+  });
+
+  test('array operators', async () => {
+    await createUser();
+    const qb = orm.em.createQueryBuilder(User).select('*').where({
+      addresses: { $contains: [{ street: 'Downing street 13A' }] },
+    });
+    expect(qb.getFormattedQuery()).toBe(`select "u0".* from "user" as "u0" where "u0"."addresses" @> '[{"street":"Downing street 13A"}]'`);
+    const res = await qb;
+    expect(res[0].addresses).toEqual([
+      {
+        street: 'Downing street 13A',
+        number: 10,
+        postalCode: '10A',
+        city: 'London 4A',
+        country: 'UK 4A',
+      },
+      {
+        street: 'Downing street 13B',
+        number: 10,
+        postalCode: '10B',
+        city: 'London 4B',
+        country: 'UK 4B',
+      },
+    ]);
   });
 
 });

@@ -1,47 +1,86 @@
 import {
+  Cascade,
   DateType,
   DecimalType,
-  ReferenceKind,
-  UnknownType,
-  Utils,
   type Dictionary,
+  type EmbeddableOptions,
   type EntityMetadata,
   type EntityOptions,
   type EntityProperty,
+  type GenerateOptions,
   type NamingStrategy,
-  type Platform,
   type OneToOneOptions,
+  type Platform,
+  ReferenceKind,
+  UnknownType,
+  Utils,
 } from '@mikro-orm/core';
+
+/**
+ * @see https://github.com/tc39/proposal-regexp-unicode-property-escapes#other-examples
+ */
+const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$\u200C\u200D\p{ID_Continue}])*$/u;
 
 export class SourceFile {
 
   protected readonly coreImports = new Set<string>();
   protected readonly entityImports = new Set<string>();
 
-  constructor(protected readonly meta: EntityMetadata,
-              protected readonly namingStrategy: NamingStrategy,
-              protected readonly platform: Platform,
-              protected readonly esmImport: boolean) { }
+  constructor(
+    protected readonly meta: EntityMetadata,
+    protected readonly namingStrategy: NamingStrategy,
+    protected readonly platform: Platform,
+    protected readonly options: GenerateOptions,
+  ) { }
 
   generate(): string {
-    this.coreImports.add('Entity');
-    let ret = `@Entity(${this.getCollectionDecl()})\n`;
+    let ret = '';
+    if (this.meta.embeddable || this.meta.collection) {
+      if (this.meta.embeddable) {
+        this.coreImports.add('Embeddable');
+        ret += `@Embeddable(${this.getEmbeddableDeclOptions()})\n`;
+      } else {
+        this.coreImports.add('Entity');
+        ret += `@Entity(${this.getEntityDeclOptions()})\n`;
+      }
+    }
 
     this.meta.indexes.forEach(index => {
       this.coreImports.add('Index');
-      const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
+
+      if (index.expression) {
+        ret += `@Index({ name: '${index.name}', expression: ${this.quote(index.expression)} })\n`;
+        return;
+      }
+
+      const properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
       ret += `@Index({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
     });
 
     this.meta.uniques.forEach(index => {
       this.coreImports.add('Unique');
+
+      if (index.expression) {
+        ret += `@Unique({ name: '${index.name}', expression: ${this.quote(index.expression)} })\n`;
+        return;
+      }
+
       const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
       ret += `@Unique({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
     });
 
-    ret += `export class ${this.meta.className} {`;
+    ret += `export `;
+    if (this.meta.abstract) {
+      ret += `abstract `;
+    }
+    ret += `class ${this.meta.className}`;
+    if (this.meta.extends) {
+      this.entityImports.add(this.meta.extends);
+      ret += ` extends ${this.meta.extends}`;
+    }
+    ret += ' {';
     const enumDefinitions: string[] = [];
-    const optionalProperties: EntityProperty<any>[] = [];
+    const eagerProperties: EntityProperty<any>[] = [];
     const primaryProps: EntityProperty<any>[] = [];
     let classBody = '\n';
     Object.values(this.meta.properties).forEach(prop => {
@@ -61,8 +100,8 @@ export class SourceFile {
         enumDefinitions.push(this.getEnumClassDefinition(enumClassName, prop.items as string[], 2));
       }
 
-      if (!prop.nullable && typeof prop.default !== 'undefined') {
-          optionalProperties.push(prop);
+      if (prop.eager) {
+        eagerProperties.push(prop);
       }
 
       if (prop.primary && (!['id', '_id', 'uuid'].includes(prop.name) || this.meta.compositePK)) {
@@ -81,18 +120,21 @@ export class SourceFile {
       }
     }
 
-    if (optionalProperties.length > 0) {
-      this.coreImports.add('OptionalProps');
-      const optionalPropertyNames = optionalProperties.map(prop => `'${prop.name}'`).sort();
-      ret += `\n\n${' '.repeat(2)}[OptionalProps]?: ${optionalPropertyNames.join(' | ')};`;
+    if (eagerProperties.length > 0) {
+      this.coreImports.add('EagerProps');
+      const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
+      ret += `\n\n${' '.repeat(2)}[EagerProps]?: ${eagerPropertyNames.join(' | ')};`;
     }
 
     ret += `${classBody}}\n`;
-    const imports = [`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`];
-    const entityImportExtension = this.esmImport ? '.js' : '';
+    const imports = [];
+    if (this.coreImports.size > 0) {
+      imports.push(`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`);
+    }
+    const entityImportExtension = this.options.esmImport ? '.js' : '';
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
     entityImports.sort().forEach(entity => {
-      imports.push(`import { ${entity} } from './${entity}${entityImportExtension}';`);
+      imports.push(`import { ${entity} } from './${this.options.fileName!(entity)}${entityImportExtension}';`);
     });
 
     ret = `${imports.join('\n')}\n\n${ret}`;
@@ -103,8 +145,8 @@ export class SourceFile {
     return ret;
   }
 
-  getBaseName() {
-    return this.meta.className + '.ts';
+  getBaseName(extension = '.ts') {
+    return `${this.options.fileName!(this.meta.className)}${extension}`;
   }
 
   protected quote(val: string) {
@@ -115,10 +157,16 @@ export class SourceFile {
   protected getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
 
+    let hiddenType = '';
+    if (prop.hidden) {
+      this.coreImports.add('Hidden');
+      hiddenType += ' & Hidden';
+    }
+
     if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
       this.coreImports.add('Collection');
       this.entityImports.add(prop.type);
-      return `${padding}${prop.name} = new Collection<${prop.type}>(this);\n`;
+      return `${padding}${prop.name}${hiddenType ? `: Collection<${prop.type}>${hiddenType}` : ''} = new Collection<${prop.type}>(this);\n`;
     }
 
     // string defaults are usually things like SQL functions, but can be also enums, for that `useDefault` should be true
@@ -129,13 +177,23 @@ export class SourceFile {
     if (prop.ref) {
       this.coreImports.add('Ref');
       this.entityImports.add(prop.type);
-      return `${padding}${prop.name}${optional}: Ref<${prop.type}>;\n`;
+      return `${padding}${prop.name}${optional}: Ref<${prop.type}>${hiddenType};\n`;
     }
 
-    const ret = `${prop.name}${optional}: ${prop.type}`;
+    let ret = `${prop.name}${optional}: ${prop.type}`;
+
+    if (prop.kind === ReferenceKind.EMBEDDED && prop.array) {
+      ret += '[]';
+    }
+    ret += hiddenType;
+
+    if (useDefault || (optional !== '?' && typeof prop.default === 'string')) {
+      this.coreImports.add('Opt');
+      ret += ' & Opt';
+    }
 
     if (!useDefault) {
-      return `${padding + ret};\n`;
+      return `${padding}${ret};\n`;
     }
 
     if (prop.enum && typeof prop.default === 'string') {
@@ -158,7 +216,27 @@ export class SourceFile {
     return ret;
   }
 
-  private getCollectionDecl() {
+  protected serializeObject(options: {}, spaces?: number): string {
+    const sep = typeof spaces === 'undefined' ? ', ' : `,\n${' '.repeat(spaces)}`;
+    const doIndent = typeof spaces !== 'undefined';
+    if (Array.isArray(options)) {
+      return `[${doIndent ? `\n${' '.repeat(spaces)}` : ''}${options.map(val => `${doIndent ? ' '.repeat(spaces) : ''}${this.serializeValue(val, doIndent ? spaces + 2 : undefined)}`).join(sep)}${doIndent ? `\n${' '.repeat(spaces + 2)}` : ''}]`;
+    }
+    return `{${doIndent ? `\n${' '.repeat(spaces)}` : ' '}${Object.entries(options).map(
+      ([opt, val]) => {
+        return `${doIndent ? ' '.repeat(spaces + 2) : ''}${identifierRegex.test(opt) ? opt : JSON.stringify(opt)}: ${this.serializeValue(val, doIndent ? spaces + 2 : undefined)}`;
+      },
+    ).join(sep) }${doIndent ? `,\n${' '.repeat(spaces + 2)}` : ' '}}`;
+  }
+
+  protected serializeValue(val: unknown, spaces?: number) {
+    if (typeof val === 'object' && val !== null) {
+      return this.serializeObject(val, spaces);
+    }
+    return val;
+  }
+
+  private getEntityDeclOptions() {
     const options: EntityOptions<unknown> = {};
 
     if (this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className)) {
@@ -169,11 +247,54 @@ export class SourceFile {
       options.schema = this.quote(this.meta.schema);
     }
 
+    if (typeof this.meta.expression === 'string') {
+      options.expression = this.quote(this.meta.expression);
+    } else if (typeof this.meta.expression === 'function') {
+      options.expression = `${this.meta.expression}`;
+    }
+
+    if (this.meta.comment) {
+      options.comment = this.quote(this.meta.comment);
+    }
+
+    if (this.meta.readonly && !this.meta.virtual) {
+      options.readonly = this.meta.readonly;
+    }
+    if (this.meta.virtual) {
+      options.virtual = this.meta.virtual;
+    }
+
+    return this.getCollectionDecl(options);
+  }
+
+  private getEmbeddableDeclOptions() {
+    const options: EmbeddableOptions = {};
+    return this.getCollectionDecl(options);
+  }
+
+  private getCollectionDecl(options: EntityOptions<unknown> | EmbeddableOptions) {
+    if (this.meta.abstract) {
+      options.abstract = true;
+    }
+
+    if (this.meta.discriminatorValue) {
+      options.discriminatorValue = typeof this.meta.discriminatorValue === 'string' ? this.quote(this.meta.discriminatorValue) : this.meta.discriminatorValue;
+    }
+
+    if (this.meta.discriminatorColumn) {
+      options.discriminatorColumn = this.quote(this.meta.discriminatorColumn);
+    }
+
+    if (this.meta.discriminatorMap) {
+      options.discriminatorMap = Object.fromEntries(Object.entries(this.meta.discriminatorMap)
+        .map(([discriminatorValue, className]) => [discriminatorValue, this.quote(className)]));
+    }
+
     if (!Utils.hasObjectKeys(options)) {
       return '';
     }
 
-    return `{ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} }`;
+    return this.serializeObject(options);
   }
 
   private getPropertyDecorator(prop: EntityProperty, padLeft: number): string {
@@ -186,10 +307,12 @@ export class SourceFile {
       this.getManyToManyDecoratorOptions(options, prop);
     } else if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this.getOneToManyDecoratorOptions(options, prop);
-    } else if (prop.kind !== ReferenceKind.SCALAR) {
-      this.getForeignKeyDecoratorOptions(options, prop);
-    } else {
+    } else if (prop.kind === ReferenceKind.SCALAR || typeof prop.kind === 'undefined') {
       this.getScalarPropertyDecoratorOptions(options, prop);
+    } else if (prop.kind === ReferenceKind.EMBEDDED) {
+      this.getEmbeddedPropertyDeclarationOptions(options, prop);
+    } else {
+      this.getForeignKeyDecoratorOptions(options, prop);
     }
 
     if (prop.enum) {
@@ -200,11 +323,15 @@ export class SourceFile {
     const indexes = this.getPropertyIndexes(prop, options);
     decorator = [...indexes.sort(), decorator].map(d => padding + d).join('\n');
 
-    if (!Utils.hasObjectKeys(options)) {
-      return `${decorator}()\n`;
+    const decoratorArgs = [];
+    if (prop.formula) {
+      decoratorArgs.push(`${prop.formula}`);
+    }
+    if (Utils.hasObjectKeys(options)) {
+      decoratorArgs.push(`${this.serializeObject(options)}`);
     }
 
-    return `${decorator}({ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} })\n`;
+    return `${decorator}(${decoratorArgs.join(', ')})\n`;
   }
 
   protected getPropertyIndexes(prop: EntityProperty, options: Dictionary): string[] {
@@ -248,8 +375,37 @@ export class SourceFile {
   }
 
   protected getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
+    if (this.options.scalarTypeInDecorator && prop.kind === ReferenceKind.SCALAR && !prop.enum) {
+      options.type = this.quote(prop.type);
+    }
+
     if (prop.nullable && !prop.mappedBy) {
       options.nullable = true;
+    }
+
+    if (prop.persist === false) {
+      options.persist = false;
+    }
+
+    (['onCreate', 'onUpdate', 'serializer'] as const)
+      .filter(key => typeof prop[key] === 'function')
+      .forEach(key => options[key] = `${prop[key]}`);
+
+    if (typeof prop.serializedName === 'string') {
+      options.serializedName = this.quote(prop.serializedName);
+    }
+
+    (['hidden', 'version', 'concurrencyCheck', 'eager', 'lazy', 'orphanRemoval'] as const)
+      .filter(key => prop[key])
+      .forEach(key => options[key] = true);
+
+    if (prop.cascade && (prop.cascade.length !== 1 || prop.cascade[0] !== Cascade.PERSIST)) {
+      this.coreImports.add('Cascade');
+      options.cascade = `[${prop.cascade.map(value => 'Cascade.' + value.toUpperCase()).join(', ')}]`;
+    }
+
+    if (typeof prop.comment === 'string') {
+      options.comment = this.quote(prop.comment);
     }
 
     if (prop.default == null) {
@@ -271,12 +427,6 @@ export class SourceFile {
   }
 
   protected getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
-    let t = prop.type;
-
-    if (t === 'Date') {
-      t = 'datetime';
-    }
-
     if (prop.fieldNames[0] !== this.namingStrategy.propertyToColumnName(prop.name)) {
       options.fieldName = `'${prop.fieldNames[0]}'`;
     }
@@ -285,6 +435,12 @@ export class SourceFile {
     // in the decorator so return early.
     if (prop.enum) {
       return;
+    }
+
+    let t = prop.type;
+
+    if (t === 'Date') {
+      t = 'datetime';
     }
 
     const mappedType1 = this.platform.getMappedType(t);
@@ -312,6 +468,15 @@ export class SourceFile {
       assign('precision');
       assign('scale');
     }
+    if (prop.autoincrement) {
+      if (!prop.primary || !['number', 'bigint'].includes(t) || this.meta.getPrimaryProps().length !== 1) {
+        options.autoincrement = true;
+      }
+    } else {
+      if (prop.primary && ['number', 'bigint'].includes(t) && this.meta.getPrimaryProps().length === 1) {
+        options.autoincrement = false;
+      }
+    }
   }
 
   protected getManyToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
@@ -327,6 +492,11 @@ export class SourceFile {
       options.pivotTable = this.quote(prop.pivotTable);
     }
 
+    if (prop.pivotEntity && prop.pivotEntity !== prop.pivotTable) {
+      this.entityImports.add(prop.pivotEntity);
+      options.pivotEntity = `() => ${prop.pivotEntity}`;
+    }
+
     if (prop.joinColumns.length === 1) {
       options.joinColumn = this.quote(prop.joinColumns[0]);
     } else {
@@ -338,6 +508,13 @@ export class SourceFile {
     } else {
       options.inverseJoinColumns = `[${prop.inverseJoinColumns.map(this.quote).join(', ')}]`;
     }
+
+    if (prop.fixedOrder) {
+      options.fixedOrder = true;
+      if (prop.fixedOrderColumn && prop.fixedOrderColumn !== this.namingStrategy.referenceColumnName()) {
+        options.fixedOrderColumn = this.quote(prop.fixedOrderColumn);
+      }
+    }
   }
 
   protected getOneToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
@@ -346,9 +523,27 @@ export class SourceFile {
     options.mappedBy = this.quote(prop.mappedBy);
   }
 
+  protected getEmbeddedPropertyDeclarationOptions(options: Dictionary, prop: EntityProperty) {
+    this.coreImports.add('Embedded');
+    this.entityImports.add(prop.type);
+    options.entity = `() => ${prop.type}`;
+
+    if (prop.array) {
+      options.array = true;
+    }
+
+    if (prop.object) {
+      options.object = true;
+    }
+
+    if (prop.prefix === false || typeof prop.prefix === 'string') {
+      options.prefix = prop.prefix;
+    }
+  }
+
   protected getForeignKeyDecoratorOptions(options: OneToOneOptions<any, any>, prop: EntityProperty) {
     const parts = prop.referencedTableName.split('.', 2);
-    const className = this.namingStrategy.getClassName(parts.length > 1 ? parts[1] : parts[0], '_');
+    const className = this.namingStrategy.getEntityName(...parts.reverse() as [string, string]);
     this.entityImports.add(className);
     options.entity = `() => ${className}`;
 
@@ -361,8 +556,14 @@ export class SourceFile {
       return;
     }
 
-    if (prop.fieldNames[0] !== this.namingStrategy.joinKeyColumnName(prop.name, prop.referencedColumnNames[0])) {
-      options.fieldName = this.quote(prop.fieldNames[0]);
+    if (prop.fieldNames.length === 1) {
+      if (prop.fieldNames[0] !== this.namingStrategy.joinKeyColumnName(prop.name, prop.referencedColumnNames[0])) {
+        options.fieldName = this.quote(prop.fieldNames[0]);
+      }
+    } else {
+      if (prop.fieldNames.length > 1 && prop.fieldNames.some((fieldName, i) => fieldName !== this.namingStrategy.joinKeyColumnName(prop.name, prop.referencedColumnNames[i]))) {
+        options.fieldNames = prop.fieldNames.map(fieldName => this.quote(fieldName));
+      }
     }
 
     if (!['no action', 'restrict'].includes(prop.updateRule!.toLowerCase())) {
@@ -395,12 +596,20 @@ export class SourceFile {
       return '@ManyToMany';
     }
 
+    if (prop.kind === ReferenceKind.EMBEDDED) {
+      return '@Embedded';
+    }
+
     if (prop.primary) {
       return '@PrimaryKey';
     }
 
     if (prop.enum) {
       return '@Enum';
+    }
+
+    if (prop.formula) {
+      return '@Formula';
     }
 
     return '@Property';

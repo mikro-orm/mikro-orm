@@ -1,7 +1,7 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/better-sqlite';
 
 @Entity()
-export class SomeMany {
+class SomeMany {
 
   @PrimaryKey()
   id!: number;
@@ -15,7 +15,7 @@ export class SomeMany {
 }
 
 @Entity()
-export class Test {
+class Test {
 
   @PrimaryKey()
   id!: number;

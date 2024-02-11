@@ -18,7 +18,7 @@ export class ReflectMetadataProvider extends MetadataProvider {
       } else if (prop.entity) {
         const tmp = prop.entity();
         prop.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
-      } else if (!prop.type) {
+      } else {
         this.initPropertyType(meta, prop);
       }
     }
@@ -27,7 +27,7 @@ export class ReflectMetadataProvider extends MetadataProvider {
   protected initPropertyType(meta: EntityMetadata, prop: EntityProperty) {
     const type = Reflect.getMetadata('design:type', meta.prototype, prop.name);
 
-    if (!type || (type === Object && prop.kind !== ReferenceKind.SCALAR)) {
+    if (!prop.type && (!type || (type === Object && prop.kind !== ReferenceKind.SCALAR))) {
       throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`);
     }
 
@@ -36,17 +36,18 @@ export class ReflectMetadataProvider extends MetadataProvider {
     // If there are explicitly provided `columnTypes`, we use those instead for the inference, this way
     // we can have things like `columnType: 'timestamp'` be respected as `type: 'Date'`.
     if (prop.kind === ReferenceKind.SCALAR && type === Object && !prop.columnTypes) {
-      prop.type = 'any';
+      prop.type ??= 'any';
       return;
     }
 
-    prop.type = type.name;
+    let typeName = type?.name;
 
-    if (prop.type && ['string', 'number', 'boolean', 'array', 'object'].includes(prop.type.toLowerCase())) {
-      prop.type = prop.type.toLowerCase();
+    if (typeName && ['string', 'number', 'boolean', 'array', 'object'].includes(typeName.toLowerCase())) {
+      typeName = typeName.toLowerCase();
     }
 
-    prop.runtimeType = prop.type as 'string';
+    prop.type ??= typeName;
+    prop.runtimeType = typeName;
   }
 
 }

@@ -1,5 +1,5 @@
 import type { EntityMetadata, EntityName, EntityProperty } from '../typings';
-import { Utils } from '../utils';
+import { type MetadataDiscoveryOptions, Utils } from '../utils';
 import { MetadataError } from '../errors';
 import { ReferenceKind } from '../enums';
 import type { MetadataStorage } from './MetadataStorage';
@@ -20,7 +20,7 @@ export class MetadataValidator {
     }
   }
 
-  validateEntityDefinition<T>(metadata: MetadataStorage, name: string): void {
+  validateEntityDefinition<T>(metadata: MetadataStorage, name: string, options: MetadataDiscoveryOptions): void {
     const meta = metadata.get<T>(name);
 
     if (meta.virtual || meta.expression) {
@@ -43,6 +43,7 @@ export class MetadataValidator {
     }
 
     this.validateVersionField(meta);
+    this.validateDuplicateFieldNames(meta, options);
     this.validateIndexes(meta, meta.indexes ?? [], 'index');
     this.validateIndexes(meta, meta.uniques ?? [], 'unique');
 
@@ -56,14 +57,14 @@ export class MetadataValidator {
     }
   }
 
-  validateDiscovered(discovered: EntityMetadata[], warnWhenNoEntities?: boolean, checkDuplicateTableNames?: boolean, checkDuplicateEntities = true): void {
-    if (discovered.length === 0 && warnWhenNoEntities) {
+  validateDiscovered(discovered: EntityMetadata[], options: MetadataDiscoveryOptions): void {
+    if (discovered.length === 0 && options.warnWhenNoEntities) {
       throw MetadataError.noEntityDiscovered();
     }
 
     const duplicates = Utils.findDuplicates(discovered.map(meta => meta.className));
 
-    if (duplicates.length > 0 && checkDuplicateEntities) {
+    if (duplicates.length > 0 && options.checkDuplicateEntities) {
       throw MetadataError.duplicateEntityDiscovered(duplicates);
     }
 
@@ -73,12 +74,12 @@ export class MetadataValidator {
       return (meta.schema ? '.' + meta.schema : '') + tableName;
     }));
 
-    if (duplicateTableNames.length > 0 && checkDuplicateTableNames && checkDuplicateEntities) {
+    if (duplicateTableNames.length > 0 && options.checkDuplicateTableNames && options.checkDuplicateEntities) {
       throw MetadataError.duplicateEntityDiscovered(duplicateTableNames, 'table names');
     }
 
     // validate we found at least one entity (not just abstract/base entities)
-    if (discovered.filter(meta => meta.name).length === 0 && warnWhenNoEntities) {
+    if (discovered.filter(meta => meta.name).length === 0 && options.warnWhenNoEntities) {
       throw MetadataError.onlyAbstractEntitiesDiscovered();
     }
 
@@ -163,7 +164,7 @@ export class MetadataValidator {
     }
 
     // inverse side is not defined as owner
-    if (inverse.inversedBy) {
+    if (inverse.inversedBy || inverse.owner) {
       throw MetadataError.fromWrongOwnership(meta, prop, 'inversedBy');
     }
   }
@@ -202,11 +203,32 @@ export class MetadataValidator {
 
   private validateIndexes(meta: EntityMetadata, indexes: { properties: string | string[] }[], type: 'index' | 'unique'): void {
     for (const index of indexes) {
-      for (const prop of Utils.asArray(index.properties)) {
-        if (!meta.properties[prop] && !meta.props.some(p => prop.startsWith(p.name + '.'))) {
-          throw MetadataError.unknownIndexProperty(meta, prop, type);
+      for (const propName of Utils.asArray(index.properties)) {
+        const prop = meta.root.properties[propName];
+
+        if (!prop && !Object.values(meta.root.properties).some(p => propName.startsWith(p.name + '.'))) {
+          throw MetadataError.unknownIndexProperty(meta, propName, type);
         }
       }
+    }
+  }
+
+  private validateDuplicateFieldNames(meta: EntityMetadata, options: MetadataDiscoveryOptions): void {
+    const candidates = Object.values(meta.properties)
+      .filter(prop => prop.persist !== false && !prop.inherited && prop.fieldNames?.length === 1 && (prop.kind !== ReferenceKind.EMBEDDED || prop.object))
+      .map(prop => prop.fieldNames[0]);
+    const duplicates = Utils.findDuplicates(candidates);
+
+    if (duplicates.length > 0 && options.checkDuplicateFieldNames) {
+      const pairs = duplicates.flatMap(name => {
+        return Object.values(meta.properties)
+          .filter(p => p.fieldNames?.[0] === name)
+          .map(prop => {
+            return [prop.embedded ? prop.embedded.join('.') : prop.name, prop.fieldNames[0]] as [string, string];
+          });
+      });
+
+      throw MetadataError.duplicateFieldName(meta.className, pairs);
     }
   }
 

@@ -4,23 +4,26 @@
   "private": true,
   "scripts": {
     "start": "docusaurus start",
+    "serve": "docusaurus serve",
+    "clear": "docusaurus clear",
     "build": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus.mjs build",
     "swizzle": "docusaurus swizzle",
     "deploy": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus.mjs deploy",
     "prettier": "prettier --write 'docs/**/*.md' 'blog/**/*.md' 'versioned_docs/**/*.md'"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.0.0",
-    "@docusaurus/plugin-client-redirects": "^3.0.0",
-    "@docusaurus/preset-classic": "^3.0.0",
-    "@docusaurus/remark-plugin-npm2yarn": "^3.0.0",
+    "@docusaurus/core": "^3.1.1",
+    "@docusaurus/plugin-client-redirects": "^3.1.1",
+    "@docusaurus/preset-classic": "^3.1.1",
+    "@docusaurus/remark-plugin-npm2yarn": "^3.1.1",
+    "@giscus/react": "^2.4.0",
     "@mdx-js/react": "^3.0.0",
-    "classnames": "^2.3.2",
-    "docusaurus-plugin-typedoc-api": "patch:docusaurus-plugin-typedoc-api@npm%3A4.0.1#~/.yarn/patches/docusaurus-plugin-typedoc-api-npm-4.0.1-9b34eb7636.patch",
-    "prism-react-renderer": "^2.1.0",
+    "classnames": "^2.5.1",
+    "docusaurus-plugin-typedoc-api": "^4.1.0",
+    "prism-react-renderer": "^2.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.3"
   },
   "browserslist": {
     "production": [
@@ -35,8 +38,10 @@
     ]
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "^3.0.0",
-    "@docusaurus/types": "^3.0.0",
-    "prettier": "^2.8.4"
+    "@docusaurus/module-type-aliases": "^3.1.1",
+    "@docusaurus/types": "^3.1.1",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "prettier": "^3.1.1"
   }
 }

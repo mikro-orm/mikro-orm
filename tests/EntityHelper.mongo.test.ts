@@ -2,7 +2,7 @@ import { ObjectId } from 'bson';
 import { inspect } from 'util';
 
 import type { AnyEntity, MikroORM } from '@mikro-orm/core';
-import { Reference, serialize, wrap } from '@mikro-orm/core';
+import { ref, Reference, serialize, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { Author, Book, Publisher, Test } from './entities';
 import { initORMMongo } from './bootstrap';
@@ -62,7 +62,7 @@ describe('EntityHelperMongo', () => {
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
     god.favouriteAuthor = god;
-    bible.publisher = Reference.create(new Publisher('Publisher 1'));
+    bible.publisher = ref(new Publisher('Publisher 1'));
     await orm.em.persistAndFlush(bible);
     orm.em.clear();
 
@@ -74,7 +74,7 @@ describe('EntityHelperMongo', () => {
     expect(json.favouriteAuthor).toBe(god.id); // self reference will be ignored even when explicitly populated
     expect(json.books![0]).toMatchObject({
       author: { name: bible.author.name },
-      publisher: { name: (await bible.publisher.load()).name },
+      publisher: { name: (await bible.publisher.loadOrFail()).name },
     });
     expect(json.books[0].author.books).toBeInstanceOf(Array); // even the cycle is there, as it is explicitly populated path
     expect(json.books[0].author.books).toHaveLength(1);
@@ -86,7 +86,7 @@ describe('EntityHelperMongo', () => {
     expect(wrap(god, true).__touched).toBe(false); // propagation is not working on not managed entities when `useDefineForClassFields` is enabled
     expect(god.isTouched()).toBe(false); // propagation is not working on not managed entities when `useDefineForClassFields` is enabled
     god.populated();
-    await expect(god.populate(['favouriteAuthor'])).rejects.toThrowError('Entity Author is not managed.');
+    await expect(god.populate(['favouriteAuthor'])).rejects.toThrow('Entity Author is not managed.');
     expect(wrap(god, true).__populated).toBe(true);
     expect(wrap(god, true).__platform).toBe(orm.em.getDriver().getPlatform());
 
@@ -192,8 +192,10 @@ describe('EntityHelperMongo', () => {
   });
 
   test('custom inspect shows get/set props', async () => {
-    const bar = orm.em.create(FooBar, { name: 'bar' } as any);
-    bar.baz = orm.em.create(FooBaz, { name: 'baz' } as any);
+    const bar = orm.em.create(FooBar, {
+      name: 'bar',
+      baz: { name: 'baz' },
+    });
     let actual = inspect(bar);
 
     expect(actual).toBe('FooBar {\n' +
@@ -228,7 +230,7 @@ describe('EntityHelperMongo', () => {
     god.favouriteAuthor = god;
     delete god.createdAt;
     delete (god as any).updatedAt;
-    bible.publisher = Reference.create(new Publisher('Publisher 1'));
+    bible.publisher = ref(new Publisher('Publisher 1'));
     actual = inspect(god);
 
     expect(actual).toBe('Author {\n' +
@@ -275,7 +277,7 @@ describe('EntityHelperMongo', () => {
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
     god.favouriteAuthor = god;
-    bible.publisher = Reference.create(new Publisher('Publisher 1'));
+    bible.publisher = ref(new Publisher('Publisher 1'));
     await orm.em.persistAndFlush(bible);
     orm.em.clear();
 

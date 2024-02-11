@@ -52,6 +52,7 @@ test('upsert and insert both correctly serialize json', async () => {
   const orm = await MikroORM.init({
     dbName: 'mikro_orm_4051',
     entities: [Article1, Article2],
+    connect: false,
   });
 
   expect(await orm.schema.getCreateSchemaSQL({ wrap: false })).toBe(

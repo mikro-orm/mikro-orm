@@ -13,7 +13,7 @@ import {
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
-export class Order {
+class Order {
 
   @PrimaryKey()
   id!: number;
@@ -33,7 +33,7 @@ export class Order {
 }
 
 @Entity()
-export class Product {
+class Product {
 
   @PrimaryKey()
   id!: number;
@@ -55,7 +55,7 @@ export class Product {
 }
 
 @Entity()
-export class OrderItem {
+class OrderItem {
 
   [OptionalProps]?: 'amount';
 
@@ -150,9 +150,9 @@ describe('custom pivot entity for m:n with additional properties (auto-discovere
     products = await orm.em.find(Product, {});
     expect(products[0].orders.isInitialized()).toBe(false);
     expect(products[0].orders.isDirty()).toBe(false);
-    expect(() => products[0].orders.getItems()).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
-    expect(() => products[0].orders.remove(order1, order2)).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
-    expect(() => products[0].orders.contains(order1)).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
+    expect(() => products[0].orders.getItems()).toThrow(/Collection<Order> of entity Product\[\d+] not initialized/);
+    expect(() => products[0].orders.remove(order1, order2)).toThrow(/Collection<Order> of entity Product\[\d+] not initialized/);
+    expect(() => products[0].orders.contains(order1)).toThrow(/Collection<Order> of entity Product\[\d+] not initialized/);
 
     // test M:N lazy load
     orm.em.clear();

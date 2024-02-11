@@ -1,13 +1,15 @@
 import { inspect } from 'util';
 import { Utils } from './Utils';
-import type { Dictionary, EntityKey, AnyString } from '../typings';
+import type { AnyString, Dictionary, EntityKey } from '../typings';
 
 export class RawQueryFragment {
 
   static #rawQueryCache = new Map<string, RawQueryFragment>();
   static #index = 0;
+  static cloneRegistry?: Set<string>;
 
-  #used = false;
+  #assigned = false;
+  #used = 0;
   readonly #key: string;
 
   constructor(
@@ -31,23 +33,36 @@ export class RawQueryFragment {
 
   toString() {
     RawQueryFragment.#rawQueryCache.set(this.#key, this);
+    this.#used++;
     return this.#key;
   }
 
   /** @internal */
-  use() {
-    if (this.#used) {
+  assign() {
+    if (this.#assigned) {
       throw new Error(`Cannot reassign already used RawQueryFragment: '${this.sql}'`);
     }
 
-    this.#used = true;
+    this.#assigned = true;
   }
 
   clone(): RawQueryFragment {
+    RawQueryFragment.cloneRegistry?.add(this.#key);
     return new RawQueryFragment(this.sql, this.params);
   }
 
-  static isKnownFragment(key: string) {
+  /**
+   * @internal allows testing we don't leak memory, as the raw fragments cache needs to be cleared automatically
+   */
+  static checkCacheSize() {
+    return this.#rawQueryCache.size;
+  }
+
+  static isKnownFragment(key: string | RawQueryFragment) {
+    if (key instanceof RawQueryFragment) {
+      return true;
+    }
+
     return this.#rawQueryCache.has(key);
   }
 
@@ -59,10 +74,24 @@ export class RawQueryFragment {
     const raw = this.#rawQueryCache.get(key);
 
     if (raw && cleanup) {
-      this.#rawQueryCache.delete(key);
+      this.remove(key);
     }
 
     return raw;
+  }
+
+  static remove(key: string) {
+    const raw = this.#rawQueryCache.get(key);
+
+    if (!raw) {
+      return;
+    }
+
+    raw.#used--;
+
+    if (raw.#used <= 0) {
+      this.#rawQueryCache.delete(key);
+    }
   }
 
   /* istanbul ignore next */
@@ -178,4 +207,15 @@ export function sql(sql: readonly string[], ...values: unknown[]) {
   }, ''), values);
 }
 
+export function createSqlFunction<T extends object, R = string>(func: string, key: string | ((alias: string) => string)): R {
+  if (typeof key === 'string') {
+    return raw<T, R>(`${func}(${key})`);
+  }
+
+  return raw<T, R>(a => `${func}(${(key(a))})`);
+}
+
 sql.ref = <T extends object>(...keys: string[]) => raw<T, RawQueryFragment>('??', [keys.join('.')]);
+sql.now = (length?: number) => raw<Date, string>('current_timestamp' + (length == null ? '' : `(${length})`));
+sql.lower = <T extends object>(key: string | ((alias: string) => string)) => createSqlFunction('lower', key);
+sql.upper = <T extends object>(key: string | ((alias: string) => string)) => createSqlFunction('upper', key);

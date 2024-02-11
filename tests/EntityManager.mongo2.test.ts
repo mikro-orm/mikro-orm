@@ -12,6 +12,25 @@ describe('EntityManagerMongo2', () => {
   beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => orm.schema.clearDatabase());
 
+  test('isConnected()', async () => {
+    expect(await orm.isConnected()).toBe(true);
+    expect(await orm.checkConnection()).toEqual({
+      ok: true,
+    });
+    await orm.close(true);
+    expect(await orm.isConnected()).toBe(false);
+    expect(await orm.checkConnection()).toMatchObject({
+      ok: false,
+      error: expect.any(Error),
+      reason: 'Client must be connected before running operations',
+    });
+    await orm.connect();
+    expect(await orm.isConnected()).toBe(true);
+    expect(await orm.checkConnection()).toEqual({
+      ok: true,
+    });
+  });
+
   test('loaded references and collections', async () => {
     const pub = new Publisher('Publisher 123');
     const god = new Author('God', 'hello@heaven.god');
@@ -115,7 +134,7 @@ describe('EntityManagerMongo2', () => {
     expect(tags).toHaveLength(5);
     expect(books[0].tags).toHaveLength(5);
     expect(tags.map(t => t.name)).toEqual(['tag 11-06', 'tag 11-07', 'tag 11-08', 'tag 11-09', 'tag 11-10']);
-    expect(() => books[0].tags.add(orm.em.create(BookTag, { name: 'new' }))).toThrowError('You cannot modify collection Book.tags as it is marked as readonly.');
+    expect(() => books[0].tags.add(orm.em.create(BookTag, { name: 'new' }))).toThrow('You cannot modify collection Book.tags as it is marked as readonly.');
     expect(wrap(books[0]).toObject()).toMatchObject({
       tags: books[0].tags.getItems().map(t => ({ name: t.name })),
     });
@@ -208,9 +227,10 @@ describe('EntityManagerMongo2', () => {
     orm.em.clear();
 
     let ent = await orm.em.findOneOrFail(Publisher, publisher.id);
-    await expect(ent.tests.loadCount()).resolves.toBe(3);
+    // eager loaded tests are type safe as we use `EagerProps` symbol
+    await expect(ent.tests.$.loadCount()).resolves.toBe(3);
     await ent.tests.init();
-    await expect(ent.tests.loadCount()).resolves.toBe(3);
+    await expect(ent.tests.$.loadCount()).resolves.toBe(3);
     orm.em.clear();
 
     ent = await orm.em.findOneOrFail(Publisher, publisher.id, { populate: ['tests'] as const });

@@ -65,7 +65,7 @@ npx mikro-orm migration:up --only 2019101923                  # apply a single m
 npx mikro-orm migration:down --to 0                           # migrate down all migrations
 ```
 
-> To run TS migration files, you will need to [enable `useTsNode` flag](installation.md) in your `package.json`.
+> To run TS migration files, you will need to [enable `useTsNode` flag](./installation.md) in your `package.json`.
 
 ## Using the Migrator programmatically
 

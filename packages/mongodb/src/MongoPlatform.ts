@@ -13,6 +13,7 @@ export class MongoPlatform extends Platform {
 
   override setConfig(config: Configuration) {
     config.set('autoJoinOneToOneOwner', false);
+    config.set('loadStrategy', 'select-in');
     config.get('discovery').inferDefaultValues = false;
     super.setConfig(config);
   }
@@ -82,8 +83,8 @@ export class MongoPlatform extends Platform {
     return ret;
   }
 
-  override shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
-    if (super.shouldHaveColumn(prop, populate)) {
+  override shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[], exclude?: string[]): boolean {
+    if (super.shouldHaveColumn(prop, populate, exclude)) {
       return true;
     }
 

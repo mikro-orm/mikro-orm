@@ -56,11 +56,11 @@ describe('GH issue 3051', () => {
 
     expect(jonSnow).not.toBeNull();
 
-    await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { strict: true })).rejects.toThrowError(`Wrong number of Book entities found for query { author: ${jonSnow.id}n }, expected exactly one`);
-    await expect(orm.em.findOneOrFail(Book, { title: 'b4' })).rejects.toThrowError('Book not found ({ title: \'b4\' })');
-    await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { strict: true, failHandler: () => new Error('Test') })).rejects.toThrowError('Test');
-    await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { strict: true, failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Book');
-    await expect(orm.em.findOneOrFail(Book, { title: 'b4' }, { strict: true, failHandler: () => new Error('Test') })).rejects.toThrowError('Test');
-    await expect(orm.em.findOneOrFail(Book, { title: 'b4' }, { strict: true, failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Book');
+    await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { strict: true })).rejects.toThrow(`Wrong number of Book entities found for query { author: ${jonSnow.id}n }, expected exactly one`);
+    await expect(orm.em.findOneOrFail(Book, { title: 'b4' })).rejects.toThrow('Book not found ({ title: \'b4\' })');
+    await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { strict: true, failHandler: () => new Error('Test') })).rejects.toThrow('Test');
+    await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { strict: true, failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrow('Failed: Book');
+    await expect(orm.em.findOneOrFail(Book, { title: 'b4' }, { strict: true, failHandler: () => new Error('Test') })).rejects.toThrow('Test');
+    await expect(orm.em.findOneOrFail(Book, { title: 'b4' }, { strict: true, failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrow('Failed: Book');
   });
 });

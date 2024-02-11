@@ -123,7 +123,7 @@ describe('Migrator', () => {
     getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
     const migrator = new Migrator(orm.em);
     const err = 'Initial migration cannot be created, as some migrations already exist';
-    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrowError(err);
+    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrow(err);
   });
 
   test('initial migration cannot be created if tables already exist', async () => {
@@ -138,7 +138,7 @@ describe('Migrator', () => {
     schemaMock.mockReturnValueOnce([{ name: 'author2' } as DatabaseTable, { name: 'book2' } as DatabaseTable]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: author2, book2`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err2);
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err2);
   });
 
   test('initial migration cannot be created if no entity metadata is found', async () => {
@@ -147,7 +147,7 @@ describe('Migrator', () => {
     const metadataMock = jest.spyOn(MetadataStorage.prototype, 'getAll');
     metadataMock.mockReturnValueOnce({});
     const err3 = `No entities found`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err3);
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err3);
   });
 
   test('do not log a migration if the schema does not exist yet', async () => {
@@ -164,7 +164,7 @@ describe('Migrator', () => {
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration1 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).not.toBeCalledWith('Migration20191013214813.ts');
+    expect(logMigrationMock).not.toHaveBeenCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
     await remove(process.cwd() + '/temp/migrations-123/' + migration1.fileName);
   });
@@ -178,7 +178,7 @@ describe('Migrator', () => {
 
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration2 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).toBeCalledWith({ name: 'Migration20191013214813.ts', context: null });
+    expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
     await remove(process.cwd() + '/temp/migrations-123/' + migration2.fileName);
   });
@@ -204,13 +204,13 @@ describe('Migrator', () => {
     downMock.mockImplementationOnce(() => void 0 as any);
     const migrator = new Migrator(orm.em);
     await migrator.up();
-    expect(upMock).toBeCalledTimes(1);
-    expect(downMock).toBeCalledTimes(0);
+    expect(upMock).toHaveBeenCalledTimes(1);
+    expect(downMock).toHaveBeenCalledTimes(0);
     await orm.em.begin();
     await migrator.down({ transaction: orm.em.getTransactionContext() });
     await orm.em.commit();
-    expect(upMock).toBeCalledTimes(1);
-    expect(downMock).toBeCalledTimes(1);
+    expect(upMock).toHaveBeenCalledTimes(1);
+    expect(downMock).toHaveBeenCalledTimes(1);
     upMock.mockRestore();
   });
 
@@ -288,7 +288,7 @@ describe('Migrator', () => {
     const spy1 = jest.spyOn(Migration.prototype, 'addSql');
     mock.mock.calls.length = 0;
     await runner.run(migration1, 'up');
-    expect(spy1).toBeCalledWith('select 1 + 1');
+    expect(spy1).toHaveBeenCalledWith('select 1 + 1');
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('set names utf8mb4;');
@@ -451,9 +451,9 @@ describe('Migrator - with explicit migrations', () => {
 
     const spy1 = jest.spyOn(Migration.prototype, 'addSql');
     await migrator.up();
-    expect(spy1).toBeCalledWith('select 1 + 1');
+    expect(spy1).toHaveBeenCalledWith('select 1 + 1');
     await migrator.down();
-    expect(spy1).toBeCalledWith('select 1 - 1');
+    expect(spy1).toHaveBeenCalledWith('select 1 - 1');
     const calls = mock.mock.calls.map(call => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')

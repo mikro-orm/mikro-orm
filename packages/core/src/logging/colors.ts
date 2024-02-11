@@ -1,4 +1,11 @@
-const enabled = () => !process.env.NO_COLOR && !process.env.MIKRO_ORM_NO_COLOR && process.env.FORCE_COLOR !== '0';
+/* istanbul ignore file */
+
+const bool = (v?: string) => v && ['true', 't', '1'].includes(v.toLowerCase());
+const boolIfDefined = (v?: string) => v != null ? bool(v) : true;
+const enabled = () => !bool(process.env.NO_COLOR)
+  && !bool(process.env.MIKRO_ORM_NO_COLOR)
+  && boolIfDefined(process.env.FORCE_COLOR)
+  && boolIfDefined(process.env.MIKRO_ORM_COLORS);
 const wrap = (fn: (text: string) => string) => (text: string) => enabled() ? fn(text) : text;
 
 /** @internal */

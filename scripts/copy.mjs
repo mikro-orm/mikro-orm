@@ -18,15 +18,15 @@ const options = process.argv.slice(2).reduce((args, arg) => {
   return args;
 }, {});
 
-function copy(filename, from, to) {
-  copyFileSync(resolve(from, filename), resolve(to, filename));
+function copy(filename, from, to, newFilename = filename) {
+  copyFileSync(resolve(from, filename), resolve(to, newFilename));
 }
 
 function rewrite(path, replacer) {
   try {
     const file = readFileSync(path).toString();
     const replaced = replacer(file);
-    writeFileSync(path, replaced);
+    writeFileSync(path, replaced, { flush: true });
   } catch {
     // not found
   }
@@ -45,8 +45,9 @@ async function getRootVersion(bump = true) {
   if (bump) {
     const parts = rootVersion.split('.');
     const inc = bump ? 1 : 0;
+    const canary = String(options.canary).toLowerCase();
 
-    switch (options.canary?.toLowerCase()) {
+    switch (canary) {
       case 'major': {
         parts[0] = `${+parts[0] + inc}`;
         parts[1] = 0;
@@ -121,7 +122,7 @@ if (options.canary) {
   // eslint-disable-next-line no-console
   console.info(`canary: setting version to ${nextVersion}`);
 
-  writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
+  writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`, { flush: true });
 }
 
 if (options['pin-versions']) {
@@ -137,7 +138,7 @@ if (options['pin-versions']) {
   // eslint-disable-next-line no-console
   console.info(`pin-versions: version ${version}`, pkgJson.dependencies);
 
-  writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
+  writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`, { flush: true });
 }
 
 copy('README.md', root, target);
@@ -146,6 +147,8 @@ copy('package.json', process.cwd(), target);
 
 if (resolve(process.cwd()) === resolve(root, 'packages/cli')) {
   copy('esm.cmd', resolve(process.cwd(), 'src'), target);
+  copy('cli.js', target, target, 'cli');
+  copy('esm.js', target, target, 'esm');
 }
 
 rewrite(resolve(target, 'package.json'), pkg => {

@@ -189,7 +189,7 @@ describe('CLIHelper', () => {
 
   test('gets ORM configuration [no mikro-orm.config]', async () => {
     delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT;
-    await expect(CLIHelper.getConfiguration()).rejects.toThrowError(`MikroORM config file not found in ['./src/mikro-orm.config.js', './mikro-orm.config.js']`);
+    await expect(CLIHelper.getConfiguration()).rejects.toThrow(`MikroORM config file not found in ['./src/mikro-orm.config.js', './mikro-orm.config.js']`);
 
     process.env.MIKRO_ORM_ENV = __dirname + '/../../mikro-orm.env';
     await expect(CLIHelper.getConfiguration()).resolves.toBeInstanceOf(Configuration);
@@ -197,7 +197,7 @@ describe('CLIHelper', () => {
 
   test('disallows global install of CLI package', async () => {
     delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI;
-    await expect(CLIHelper.getConfiguration()).rejects.toThrowError(`@mikro-orm/cli needs to be installed as a local dependency!`);
+    await expect(CLIHelper.getConfiguration()).rejects.toThrow(`@mikro-orm/cli needs to be installed as a local dependency!`);
   });
 
   test('disallows version mismatch of ORM packages', async () => {
@@ -213,7 +213,7 @@ describe('CLIHelper', () => {
     const spy2 = jest.spyOn(ConfigurationLoader, 'getORMPackageVersion');
     spy2.mockResolvedValueOnce('1.2.3');
 
-    await expect(ConfigurationLoader.checkPackageVersion()).rejects.toThrowError(`Bad @mikro-orm/weird-package version 1.2.3.
+    await expect(ConfigurationLoader.checkPackageVersion()).rejects.toThrow(`Bad @mikro-orm/weird-package version 1.2.3.
 All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (5.0.0).
 Only exceptions are packages that don't live in the 'mikro-orm' repository: nestjs, sql-highlighter, mongo-highlighter.
 Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`);
@@ -298,7 +298,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
       return (path as string).endsWith(Utils.normalizePath(process.cwd() + '/mikro-orm.config.ts'));
     });
     pkg['mikro-orm'].useTsNode = true;
-    await expect(CLIHelper.getORM()).rejects.toThrowError('No entities were discovered');
+    await expect(CLIHelper.getORM()).rejects.toThrow('No entities were discovered');
     const orm = await CLIHelper.getORM(false);
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.config.get('tsNode')).toBe(true);
@@ -458,9 +458,9 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     (global as any).process.argv = ['npx', 'mikro-orm', 'debug', '--config', './override3/orm-config.ts'];
     await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./override3/orm-config.ts']);
     (global as any).process.argv = ['node', 'start.js'];
-    (global as any).process.env.MIKRO_ORM_CLI = './override/orm-config.ts';
+    (global as any).process.env.MIKRO_ORM_CLI_CONFIG = './override/orm-config.ts';
     await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./override/orm-config.ts', './src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
-    delete (global as any).process.env.MIKRO_ORM_CLI;
+    delete (global as any).process.env.MIKRO_ORM_CLI_CONFIG;
     await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./src/mikro-orm.config.js', './mikro-orm.config.js']);
 
     (global as any).process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS = '1';

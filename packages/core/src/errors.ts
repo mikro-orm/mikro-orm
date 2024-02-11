@@ -131,6 +131,14 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
 }
 
+export class CursorError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
+
+  static entityNotPopulated(entity: AnyEntity, prop: string): ValidationError {
+    return new CursorError(`Cannot create cursor, value for '${entity.constructor.name}.${prop}' is missing.`);
+  }
+
+}
+
 export class OptimisticLockError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
 
   static notVersioned(meta: EntityMetadata): OptimisticLockError {
@@ -224,16 +232,16 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`Duplicate ${subject} are not allowed: ${paths.join(', ')}`);
   }
 
+  static duplicateFieldName(className: string, names: [string, string][]): MetadataError {
+    return new MetadataError(`Duplicate fieldNames are not allowed: ${names.map(n => `${className}.${n[0]} (fieldName: '${n[1]}')`).join(', ')}`);
+  }
+
   static multipleDecorators(entityName: string, propertyName: string): MetadataError {
     return new MetadataError(`Multiple property decorators used on '${entityName}.${propertyName}' property`);
   }
 
   static missingMetadata(entity: string): MetadataError {
     return new MetadataError(`Metadata for entity ${entity} not found`);
-  }
-
-  static conflictingPropertyName(className: string, name: string, embeddedName: string): MetadataError {
-    return new MetadataError(`Property ${className}:${name} is being overwritten by its child property ${embeddedName}:${name}. Consider using a prefix to overcome this issue.`);
   }
 
   static invalidPrimaryKey(meta: EntityMetadata, prop: EntityProperty, requiredName: string) {

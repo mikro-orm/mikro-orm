@@ -2,7 +2,6 @@ import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
 import type {
   AnyEntity,
-  ConnectionType,
   Dictionary,
   EntityData,
   EntityDictionary,
@@ -11,7 +10,6 @@ import type {
   EntityValue,
   EntityKey,
   IWrappedEntityInternal,
-  Populate,
   PopulateOptions,
   Primary,
   AutoPath,
@@ -29,12 +27,12 @@ import { EntityTransformer } from '../serialization/EntityTransformer';
 import { EntityAssigner, type AssignOptions } from './EntityAssigner';
 import type { EntityLoaderOptions } from './EntityLoader';
 import { Utils } from '../utils/Utils';
-import type { LockMode } from '../enums';
 import { ValidationError } from '../errors';
 import type { EntityIdentifier } from './EntityIdentifier';
 import { helper } from './wrap';
 import type { SerializationContext } from '../serialization/SerializationContext';
 import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer';
+import type { FindOneOptions } from '../drivers/IDatabaseDriver';
 
 export class WrappedEntity<Entity extends object> {
 
@@ -96,6 +94,10 @@ export class WrappedEntity<Entity extends object> {
     return this.__touched;
   }
 
+  isManaged(): boolean {
+    return !!this.__managed;
+  }
+
   populated(populated: boolean | undefined = true): void {
     this.__populated = populated;
   }
@@ -133,24 +135,27 @@ export class WrappedEntity<Entity extends object> {
     return EntityAssigner.assign(this.entity, data as any, options) as any;
   }
 
-  async init<P extends Populate<Entity> = Populate<Entity>>(populated = true, populate?: P, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Entity> {
+  async init<
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(options?: FindOneOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
     if (!this.__em) {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
-    await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate, connectionType, schema: this.__schema });
-
-    return this.entity;
+    return this.__em.findOne(this.entity.constructor.name, this.entity, { ...options, refresh: true, schema: this.__schema });
   }
 
   async populate<Hint extends string = never>(
-    populate: AutoPath<Entity, Hint>[] | false,
+    populate: AutoPath<Entity, Hint, '*'>[] | false,
     options: EntityLoaderOptions<Entity> = {},
   ): Promise<Loaded<Entity, Hint>> {
     if (!this.__em) {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
+    // @ts-ignore hard to type
     await this.__em.populate(this.entity, populate, options);
 
     return this.entity as Loaded<Entity, Hint>;

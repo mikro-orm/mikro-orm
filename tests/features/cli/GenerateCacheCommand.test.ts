@@ -19,7 +19,7 @@ describe('GenerateCacheCommand', () => {
     const mockOption = jest.fn();
     const args = { option: mockOption };
     cmd.builder(args as any);
-    expect(mockOption).toBeCalledWith('ts-node', {
+    expect(mockOption).toHaveBeenCalledWith('ts-node', {
       alias: 'ts',
       type: 'boolean',
       desc: `Use ts-node to generate '.ts' cache`,

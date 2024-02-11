@@ -16,7 +16,7 @@ export class Book {
 }
 ```
 
-`bigint` can fit larger numbers than JavaScript number, for this reason it is mapped to a string. If we want to map it to a number anyway, we can implement [custom type](custom-types.md) that will do so. Similarly, we can define one to use the native `bigint` type:
+`bigint` can fit larger numbers than JavaScript number, for this reason it is mapped to a string. If we want to map it to a number anyway, we can implement [custom type](./custom-types.md) that will do so. Similarly, we can define one to use the native `bigint` type:
 
 ```ts
 export class NativeBigIntType extends BigIntType {

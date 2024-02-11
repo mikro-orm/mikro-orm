@@ -91,7 +91,7 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     line.barAudit2.nestedAudit1.created = new Date(1698010995740);
     line.barAudit2.nestedAudit1.updatedAt = new Date(1698010995740);
     await orm.em.fork().persistAndFlush(line);
-    expect(mock).toBeCalledTimes(3);
+    expect(mock).toHaveBeenCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch('insert into `my_entity` (`foo_audit1_updated_at`, `foo_audit1_created`, `foo_audit1_nested_audit1_updated_at`, `foo_audit1_nested_audit1_created`, `bar_audit2`) values (1698010995740, 1698010995740, 1698010995740, 1698010995740, \'{"updatedAt":"2023-10-22T21:43:15.740Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"updatedAt":"2023-10-22T21:43:15.740Z","created":"2023-10-22T21:43:15.740Z"}}\') returning `id`');
     mock.mockReset();
 
@@ -102,7 +102,7 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
 
     line = await orm.em.findOneOrFail(MyEntity, line.id);
 
-    expect(mock).toBeCalledTimes(1);
+    expect(mock).toHaveBeenCalledTimes(1);
     expect(mock.mock.calls[0][0]).toMatch('select `m0`.* from `my_entity` as `m0` where `m0`.`id` = 1 limit 1');
     mock.mockReset();
 
@@ -112,25 +112,25 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     expect(!!line.barAudit2.updatedAt).toBeTruthy();
 
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     jest.useFakeTimers();
     jest.setSystemTime(new Date(1698010995749));
     const tmp1 = line.fooAudit1.archived = new Date(1698010995749);
     await orm.em.flush();
-    expect(mock).toBeCalledTimes(3);
+    expect(mock).toHaveBeenCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `foo_audit1_archivedAt` = 1698010995749, `foo_audit1_updated_at` = 1698010995749, `foo_audit1_nested_audit1_updated_at` = 1698010995749, `bar_audit2` = \'{"updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z"}}\' where `id` = 1');
     mock.mockReset();
 
     const tmp2 = line.barAudit2.archived = new Date(1698010995750);
     await orm.em.flush();
-    expect(mock).toBeCalledTimes(3);
+    expect(mock).toHaveBeenCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `bar_audit2` = \'{"archivedAt":"2023-10-22T21:43:15.750Z","updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z"}}\' where `id` = 1');
     mock.mockReset();
 
     const tmp3 = line.barAudit2.nestedAudit1.archived = new Date(1698010995751);
     await orm.em.flush();
-    expect(mock).toBeCalledTimes(3);
+    expect(mock).toHaveBeenCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `bar_audit2` = \'{"archivedAt":"2023-10-22T21:43:15.750Z","updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"archivedAt":"2023-10-22T21:43:15.751Z","updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z"}}\' where `id` = 1');
     mock.mockRestore();
 
@@ -138,6 +138,8 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     expect(line2.fooAudit1.archived).toEqual(tmp1);
     expect(line2.barAudit2.archived).toEqual(tmp2);
     expect(line2.barAudit2.nestedAudit1.archived).toEqual(tmp3);
+
+    jest.useRealTimers();
   });
 
 });

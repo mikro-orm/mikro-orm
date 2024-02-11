@@ -114,7 +114,7 @@ describe('Migrator (sqlite)', () => {
     getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
     const migrator = new Migrator(orm.em);
     const err = 'Initial migration cannot be created, as some migrations already exist';
-    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrowError(err);
+    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrow(err);
 
     getExecutedMigrationsMock.mockResolvedValueOnce([]);
     const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
@@ -127,16 +127,16 @@ describe('Migrator (sqlite)', () => {
     schemaMock.mockReturnValueOnce([{ name: 'author4' } as DatabaseTable, { name: 'book4' } as DatabaseTable]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: author4, book4`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err2);
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err2);
 
     metadataMock.mockReturnValueOnce({});
     const err3 = `No entities found`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err3);
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err3);
 
     schemaMock.mockReturnValueOnce([]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const migration1 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).not.toBeCalledWith('Migration20191013214813.ts');
+    expect(logMigrationMock).not.toHaveBeenCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
     const outOfSync = await migrator.checkMigrationNeeded();
     expect(outOfSync).toBe(false);
@@ -144,7 +144,7 @@ describe('Migrator (sqlite)', () => {
 
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration2 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).toBeCalledWith({ name: 'Migration20191013214813.ts', context: null });
+    expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
     await remove(process.cwd() + '/temp/migrations-3/' + migration2.fileName);
   });
@@ -169,11 +169,11 @@ describe('Migrator (sqlite)', () => {
     downMock.mockImplementationOnce(() => void 0 as any);
     const migrator = new Migrator(orm.em);
     await migrator.up();
-    expect(upMock).toBeCalledTimes(1);
-    expect(downMock).toBeCalledTimes(0);
+    expect(upMock).toHaveBeenCalledTimes(1);
+    expect(downMock).toHaveBeenCalledTimes(0);
     await migrator.down();
-    expect(upMock).toBeCalledTimes(1);
-    expect(downMock).toBeCalledTimes(1);
+    expect(upMock).toHaveBeenCalledTimes(1);
+    expect(downMock).toHaveBeenCalledTimes(1);
     upMock.mockRestore();
     downMock.mockRestore();
   });
@@ -217,7 +217,7 @@ describe('Migrator (sqlite)', () => {
     const spy1 = jest.spyOn(Migration.prototype, 'addSql');
     mock.mock.calls.length = 0;
     await runner.run(migration1, 'up');
-    expect(spy1).toBeCalledWith('select 1 + 1');
+    expect(spy1).toHaveBeenCalledWith('select 1 + 1');
     expect(mock.mock.calls).toHaveLength(5);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('pragma foreign_keys = off;');
@@ -226,7 +226,7 @@ describe('Migrator (sqlite)', () => {
     expect(mock.mock.calls[4][0]).toMatch('commit');
     mock.mock.calls.length = 0;
 
-    await expect(runner.run(migration1, 'down')).rejects.toThrowError('This migration cannot be reverted');
+    await expect(runner.run(migration1, 'down')).rejects.toThrow('This migration cannot be reverted');
     const executed = await migrator.getExecutedMigrations();
     expect(executed).toEqual([]);
 

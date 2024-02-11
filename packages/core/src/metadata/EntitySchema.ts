@@ -7,13 +7,23 @@ import {
   type Dictionary,
   type EntityName,
   type EntityProperty,
-  type ExcludeFunctions,
+  type CleanKeys,
   type ExpandProperty,
   type IsNever,
+  type EntityClass,
 } from '../typings';
 import type {
-  EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
-  SerializedPrimaryKeyOptions, UniqueOptions,
+  EmbeddedOptions,
+  EnumOptions,
+  IndexOptions,
+  ManyToManyOptions,
+  ManyToOneOptions,
+  OneToManyOptions,
+  OneToOneOptions,
+  PrimaryKeyOptions,
+  PropertyOptions,
+  SerializedPrimaryKeyOptions,
+  UniqueOptions,
 } from '../decorators';
 import type { EntityRepository } from '../entity/EntityRepository';
 import { BaseEntity } from '../entity/BaseEntity';
@@ -35,9 +45,9 @@ export type EntitySchemaProperty<Target, Owner> =
 type OmitBaseProps<Entity, Base> = IsNever<Base> extends true ? Entity : Omit<Entity, keyof Base>;
 export type EntitySchemaMetadata<Entity, Base = never> =
   & Omit<Partial<EntityMetadata<Entity>>, 'name' | 'properties' | 'extends'>
-  & ({ name: string } | { class: Constructor<Entity>; name?: string })
+  & ({ name: string } | { class: EntityClass<Entity>; name?: string })
   & { extends?: string | EntitySchema<Base> }
-  & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as ExcludeFunctions<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
+  & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as CleanKeys<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
 
 export class EntitySchema<Entity = any, Base = never> {
 
@@ -225,11 +235,11 @@ export class EntitySchema<Entity = any, Base = never> {
     this.addProperty(name, type, prop);
   }
 
-  addIndex<T>(options: Required<Omit<IndexOptions<T>, 'name' | 'type' | 'options' | 'expression'>> & { name?: string; expression?: string; options?: Dictionary }): void {
+  addIndex(options: IndexOptions<Entity>): void {
     this._meta.indexes.push(options as any);
   }
 
-  addUnique<T>(options: Required<Omit<UniqueOptions<T>, 'name' | 'options' | 'expression'>> & { name?: string; options?: Dictionary }): void {
+  addUnique(options: UniqueOptions<Entity>): void {
     this._meta.uniques.push(options as any);
   }
 
@@ -241,7 +251,7 @@ export class EntitySchema<Entity = any, Base = never> {
     this._meta.extends = base as string;
   }
 
-  setClass(proto: Constructor<Entity>) {
+  setClass(proto: EntityClass<Entity>) {
     this._meta.class = proto;
     this._meta.prototype = proto.prototype;
     this._meta.className = proto.name;
@@ -295,7 +305,7 @@ export class EntitySchema<Entity = any, Base = never> {
     this.initProperties();
     this.initPrimaryKeys();
     this._meta.props = Object.values(this._meta.properties);
-    this._meta.relations = this._meta.props.filter(prop => prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED);
+    this._meta.relations = this._meta.props.filter(prop => typeof prop.kind !== 'undefined' && prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED);
     this.initialized = true;
 
     return this;
@@ -348,7 +358,7 @@ export class EntitySchema<Entity = any, Base = never> {
       this._meta.simplePK = !this._meta.compositePK && pks[0].kind === ReferenceKind.SCALAR && !pks[0].customType;
     }
 
-    if (pks.length === 1 && pks[0].type === 'number') {
+    if (pks.length === 1 && ['number', 'bigint'].includes(pks[0].type)) {
       pks[0].autoincrement ??= true;
     }
 

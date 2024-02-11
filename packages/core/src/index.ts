@@ -9,6 +9,8 @@ export {
   GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, MigrationDiff, GenerateOptions, FilterObject,
   IEntityGenerator, ISeedManager, EntityClassGroup, OptionalProps, EagerProps, HiddenProps, RequiredEntityData, CheckCallback, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,
   UmzugMigration, MigrateOptions, MigrationResult, MigrationRow, EntityKey, EntityValue, FilterKey, Opt, EntityType, FromEntityType, Selected, IsSubset,
+  EntityProps, ExpandProperty, ExpandScalar, FilterItemValue, ExpandQuery, Scalar, ExpandHint, Hidden, FilterValue, MergeLoaded, MergeSelected, Config, DefineConfig, TypeConfig,
+  ClearDatabaseOptions, CreateSchemaOptions, EnsureDatabaseOptions, UpdateSchemaOptions, DropSchemaOptions, RefreshDatabaseOptions, AutoPath, UnboxArray, MetadataProcessor,
 } from './typings';
 export * from './enums';
 export * from './errors';

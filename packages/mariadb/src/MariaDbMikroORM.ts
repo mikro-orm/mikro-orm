@@ -1,24 +1,32 @@
-import { defineConfig, MikroORM, type Options, type IDatabaseDriver } from '@mikro-orm/core';
+import {
+  defineConfig,
+  MikroORM,
+  type Options,
+  type IDatabaseDriver,
+  type EntityManager,
+  type EntityManagerType,
+} from '@mikro-orm/core';
 import { MariaDbDriver } from './MariaDbDriver';
+import type { SqlEntityManager } from '@mikro-orm/knex';
 
 /**
  * @inheritDoc
  */
-export class MariaDbMikroORM extends MikroORM<MariaDbDriver> {
+export class MariaDbMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<MariaDbDriver, EM> {
 
   private static DRIVER = MariaDbDriver;
 
   /**
    * @inheritDoc
    */
-  static override async init<D extends IDatabaseDriver = MariaDbDriver>(options?: Options<D>): Promise<MikroORM<D>> {
+  static override async init<D extends IDatabaseDriver = MariaDbDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager>(options?: Options<D, EM>): Promise<MikroORM<D, EM>> {
     return super.init(options);
   }
 
   /**
    * @inheritDoc
    */
-  static override initSync<D extends IDatabaseDriver = MariaDbDriver>(options: Options<D>): MikroORM<D> {
+  static override initSync<D extends IDatabaseDriver = MariaDbDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager>(options: Options<D, EM>): MikroORM<D, EM> {
     return super.initSync(options);
   }
 

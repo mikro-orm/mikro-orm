@@ -32,14 +32,14 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F>): Promise<EntityData<T>[]>;
+  find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F, E>): Promise<EntityData<T>[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F>): Promise<EntityData<T> | null>;
+  findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null>;
 
-  findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<EntityData<T>[]>;
+  findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]>;
 
   nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
@@ -62,7 +62,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
    */
-  loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any>, pivotJoin?: boolean): Promise<Dictionary<T[]>>;
+  loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any, any>, pivotJoin?: boolean): Promise<Dictionary<T[]>>;
 
   getPlatform(): Platform;
 
@@ -90,23 +90,35 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
 }
 
-export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<T, P, '*'>;
+export type EntityField<T, P extends string = '*'> = keyof T | '*' | AutoPath<T, P, '*'>;
 
 export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
 
-export interface FindOptions<T, P extends string = never, F extends string = never> {
+export interface FindAllOptions<T, P extends string = never, F extends string = '*', E extends string = never> extends FindOptions<T, P, F, E> {
   where?: FilterQuery<T>;
-  populate?: Populate<T, P>;
-  populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
-  fields?: readonly AutoPath<T, F, '*'>[];
-  orderBy?: OrderDefinition<T>;
+}
+
+export type FilterOptions = Dictionary<boolean | Dictionary> | string[] | boolean;
+
+export interface FindOptions<
+  Entity,
+  Hint extends string = never,
+  Fields extends string = '*',
+  Excludes extends string = never,
+> {
+  populate?: Populate<Entity, Hint>;
+  populateWhere?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`;
+  populateOrderBy?: OrderDefinition<Entity>;
+  fields?: readonly AutoPath<Entity, Fields, '*'>[];
+  exclude?: readonly AutoPath<Entity, Excludes>[];
+  orderBy?: OrderDefinition<Entity>;
   cache?: boolean | number | [string, number];
   limit?: number;
   offset?: number;
   /** Fetch items `before` this cursor. */
-  before?: string | { startCursor: string | null } | FilterObject<T>;
+  before?: string | { startCursor: string | null } | FilterObject<Entity>;
   /** Fetch items `after` this cursor. */
-  after?: string | { endCursor: string | null } | FilterObject<T>;
+  after?: string | { endCursor: string | null } | FilterObject<Entity>;
   /** Fetch `first` N items. */
   first?: number;
   /** Fetch `last` N items. */
@@ -120,11 +132,11 @@ export interface FindOptions<T, P extends string = never, F extends string = nev
   flags?: QueryFlag[];
   /** sql only */
   groupBy?: string | string[];
-  having?: QBFilterQuery<T>;
+  having?: QBFilterQuery<Entity>;
   /** sql only */
   strategy?: LoadStrategy | `${LoadStrategy}`;
   flushMode?: FlushMode | `${FlushMode}`;
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
   /** sql only */
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   /** sql only */
@@ -141,15 +153,15 @@ export interface FindOptions<T, P extends string = never, F extends string = nev
   logging?: LoggingOptions;
 }
 
-export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = never> extends Omit<FindOptions<T, P, F>, 'limit' | 'offset'> {
+export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = '*', E extends string = never> extends Omit<FindOptions<T, P, F, E>, 'limit' | 'offset'> {
 }
 
-export interface FindOneOptions<T extends object, P extends string = never, F extends string = never> extends Omit<FindOptions<T, P, F>, 'limit' | 'lockMode'> {
+export interface FindOneOptions<T extends object, P extends string = never, F extends string = '*', E extends string = never> extends Omit<FindOptions<T, P, F, E>, 'limit' | 'lockMode'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
 }
 
-export interface FindOneOrFailOptions<T extends object, P extends string = never, F extends string = never> extends FindOneOptions<T, P, F> {
+export interface FindOneOrFailOptions<T extends object, P extends string = never, F extends string = '*', E extends string = never> extends FindOneOptions<T, P, F, E> {
   failHandler?: (entityName: string, where: Dictionary | IPrimaryKey | any) => Error;
   strict?: boolean;
 }
@@ -178,7 +190,7 @@ export interface UpsertManyOptions<Entity> extends UpsertOptions<Entity> {
 }
 
 export interface CountOptions<T extends object, P extends string = never>  {
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
   schema?: string;
   groupBy?: string | readonly string[];
   having?: QBFilterQuery<T>;
@@ -192,26 +204,29 @@ export interface CountOptions<T extends object, P extends string = never>  {
   comments?: string | string[];
   /** sql only */
   hintComments?: string | string[];
+  loggerContext?: LogContext;
+  logging?: LoggingOptions;
 }
 
 export interface UpdateOptions<T> {
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
   schema?: string;
   ctx?: Transaction;
 }
 
 export interface DeleteOptions<T> extends DriverMethodOptions {
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
 }
 
 export interface NativeDeleteOptions<T> extends DriverMethodOptions {
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
 }
 
 export interface LockOptions extends DriverMethodOptions {
   lockMode?: LockMode;
   lockVersion?: number | Date;
   lockTableAliases?: string[];
+  logging?: LoggingOptions;
 }
 
 export interface DriverMethodOptions {

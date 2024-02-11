@@ -1,4 +1,6 @@
 import { Client } from 'pg';
+import parseDate from 'postgres-date';
+import PostgresInterval, { type IPostgresInterval } from 'postgres-interval';
 import { raw, ALIAS_REPLACEMENT, JsonProperty, Utils, type EntityProperty, Type, type SimpleColumnMeta, type Dictionary } from '@mikro-orm/core';
 import { AbstractSqlPlatform, type IndexDef } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
@@ -46,6 +48,18 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   override getDefaultDateTimeLength(): number {
     return 6; // timestamptz actually means timestamptz(6)
+  }
+
+  override convertIntervalToJSValue(value: string): unknown {
+    return PostgresInterval(value);
+  }
+
+  override convertIntervalToDatabaseValue(value: IPostgresInterval): unknown {
+    if (Utils.isObject(value) && 'toPostgres' in value && typeof value.toPostgres === 'function') {
+      return value.toPostgres();
+    }
+
+    return value;
   }
 
   override getTimeTypeDeclarationSQL(): string {
@@ -185,7 +199,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'jsonb';
   }
 
-  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
+  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
     const first = path.shift();
     const last = path.pop();
     const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${first}` : first!);
@@ -194,12 +208,18 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       boolean: 'bool',
     } as Dictionary;
     const cast = (key: string) => raw(type in types ? `(${key})::${types[type]}` : key);
+    let lastOperator = '->>';
 
-    if (path.length === 0) {
-      return cast(`${root}->>'${last}'`);
+    // force `->` for operator payloads with array values
+    if (Utils.isPlainObject(value) && Object.keys(value).every(key => Utils.isArrayOperator(key) && Array.isArray(value[key]))) {
+      lastOperator = '->';
     }
 
-    return cast(`${root}->${path.map(a => this.quoteValue(a)).join('->')}->>'${last}'`);
+    if (path.length === 0) {
+      return cast(`${root}${lastOperator}'${last}'`);
+    }
+
+    return cast(`${root}->${path.map(a => this.quoteValue(a)).join('->')}${lastOperator}'${last}'`);
   }
 
   override getJsonIndexDefinition(index: IndexDef): string[] {
@@ -323,6 +343,22 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     return '';
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override parseDate(value: string | number): Date {
+    // postgres-date returns `null` for a JS ISO string which has the `T` separator
+    if (typeof value === 'string' && value.charAt(10) === 'T') {
+      return new Date(value);
+    }
+
+    if (typeof value === 'number') {
+      return new Date(value);
+    }
+
+    return parseDate(value) as Date;
   }
 
 }

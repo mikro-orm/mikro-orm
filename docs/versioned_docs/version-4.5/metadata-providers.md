@@ -25,7 +25,7 @@ If you use folder-based discovery, you should specify paths to the compiled enti
 
 > When running via `node`, `.d.ts` files are used to obtain the type, so we need to ship them in the production build. TS source files are no longer needed (since v4). Be sure to enable `compilerOptions.declaration` in your `tsconfig.json`.
 
-After the discovery process ends, all [metadata will be cached](metadata-cache.md). By default, `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files.
+After the discovery process ends, all [metadata will be cached](./metadata-cache.md). By default, `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files.
 
 > You can generate production cache via CLI command `mikro-orm cache:generate`.
 
@@ -121,7 +121,7 @@ You might have to install additional typings, one example is use of `ObjectId` i
 
 ## JavaScriptMetadataProvider
 
-> `JavaScriptMetadataProvider` is deprecated, [use `EntitySchema` instead](entity-schema.md).
+> `JavaScriptMetadataProvider` is deprecated, [use `EntitySchema` instead](./entity-schema.md).
 
 This provider should be used only if you are not using TypeScript at all and therefore you do not use decorators to annotate your properties. It will require you to specify the whole schema manually.
 
@@ -132,4 +132,4 @@ await MikroORM.init({
 });
 ```
 
-You can read more about it in [Usage with JavaScript section](usage-with-js.md).
+You can read more about it in [Usage with JavaScript section](./usage-with-js.md).

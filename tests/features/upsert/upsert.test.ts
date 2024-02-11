@@ -17,6 +17,8 @@ import {
   OptionalProps,
   Utils,
   IDatabaseDriver,
+  AfterUpsert,
+  BeforeUpsert,
 } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 import { PLATFORMS } from '../../bootstrap';
@@ -27,6 +29,7 @@ export class Author {
   [OptionalProps]?: 'foo';
 
   static id = 1;
+  static hooks = [] as string[];
 
   @PrimaryKey({ name: '_id' })
   id: number = Author.id++;
@@ -49,6 +52,16 @@ export class Author {
   constructor(email: string, age: number) {
     this.email = email;
     this.age = age;
+  }
+
+  @BeforeUpsert()
+  beforeUpsert() {
+    Author.hooks.push('beforeUpsert');
+  }
+
+  @AfterUpsert()
+  afterUpsert() {
+    Author.hooks.push('afterUpsert');
   }
 
 }
@@ -165,6 +178,7 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     await orm.schema.clearDatabase();
     Author.id = Book.id = FooBar.id = 1;
     Subscriber.log.length = 0;
+    Author.hooks.length = 0;
   });
 
   afterAll(() => orm.close());
@@ -195,11 +209,11 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     expect(mock.mock.calls).toMatchSnapshot();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     author.age = 123;
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
 
     orm.em.clear();
     const authors = await orm.em.find(Author, {}, { orderBy: { email: 'asc' } });
@@ -214,7 +228,7 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     expect(author22).toBe(authors[1]);
     expect(author32).toBe(authors[2]);
     expect(author22.age).toBe(321);
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
     await orm.em.flush();
     await orm.em.refresh(author22);
     expect(author22.age).toBe(321);
@@ -224,11 +238,11 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     expect(mock.mock.calls).toMatchSnapshot();
     mock.mockReset();
     await orm.em.flush();
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
 
     fooBars[0].propName = '12345';
     await orm.em.flush();
-    expect(mock).toBeCalled();
+    expect(mock).toHaveBeenCalled();
 
     orm.em.clear();
     const fooBarsReloaded = await orm.em.find(FooBar, {}, { orderBy: { name: 'asc' } });
@@ -243,7 +257,7 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     expect(fooBar22).toBe(fooBarsReloaded[1]);
     expect(fooBar32).toBe(fooBarsReloaded[2]);
     expect(fooBar22.propName).toBe('12345');
-    expect(mock).not.toBeCalled();
+    expect(mock).not.toHaveBeenCalled();
     await orm.em.flush();
     await orm.em.refresh(fooBar22);
     expect(fooBar22.propName).toBe('12345');
@@ -258,6 +272,14 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     const author2 = await orm.em.upsert(Author, { id: 2, email: 'a2', age: 42 }); // inserts
     const author3 = await orm.em.upsert(Author, { id: 3, email: 'a3', age: 43 }); // inserts
 
+    expect(Author.hooks).toEqual([
+      'beforeUpsert',
+      'afterUpsert',
+      'beforeUpsert',
+      'afterUpsert',
+      'beforeUpsert',
+      'afterUpsert',
+    ]);
     expect(Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
       ['beforeUpsert', 'Object'],
       ['onInit', 'Author'],
@@ -335,7 +357,7 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     }
 
     const entities = await orm.em.upsertMany(Author, data, { batchSize: 100 });
-    expect(mock).toBeCalledTimes(orm.em.getPlatform().usesReturningStatement() ? 10 : 20);
+    expect(mock).toHaveBeenCalledTimes(orm.em.getPlatform().usesReturningStatement() ? 10 : 20);
     expect(entities).toHaveLength(1000);
   });
 

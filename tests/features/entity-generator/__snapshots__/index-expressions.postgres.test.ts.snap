@@ -1,0 +1,101 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`4911 1`] = `
+[
+  "import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+@Unique({ name: 'dcim_device_unique_name_site', expression: 'CREATE UNIQUE INDEX dcim_device_unique_name_site ON public.dcim_device USING btree (lower((name)::text), site_id) WHERE (tenant_id IS NULL)' })
+@Unique({ name: 'dcim_device_unique_name_site_tenant', expression: 'CREATE UNIQUE INDEX dcim_device_unique_name_site_tenant ON public.dcim_device USING btree (lower((name)::text), site_id, tenant_id)' })
+@Unique({ name: 'dcim_device_unique_rack_position_face', expression: 'CREATE UNIQUE INDEX dcim_device_unique_rack_position_face ON public.dcim_device USING btree (rack_id, "position", face)' })
+@Unique({ name: 'dcim_device_unique_virtual_chassis_vc_position', properties: ['virtualChassisId', 'vcPosition'] })
+export class DcimDevice {
+
+  @Property({ length: 6, nullable: true })
+  created?: Date;
+
+  @PrimaryKey({ autoincrement: false })
+  id!: bigint;
+
+  @Property({ nullable: true })
+  name?: string;
+
+  @Property({ nullable: true })
+  _name?: string;
+
+  @Index({ name: 'dcim_device_asset_tag_8dac1079_like' })
+  @Unique({ name: 'dcim_device_asset_tag_key' })
+  @Property({ nullable: true })
+  assetTag?: string;
+
+  @Property({ columnType: 'numeric(10,0)', nullable: true })
+  position?: string;
+
+  @Property()
+  face!: string;
+
+  @Property({ columnType: 'smallint', nullable: true })
+  vcPosition?: number;
+
+  @Property({ columnType: 'smallint', nullable: true })
+  vcPriority?: number;
+
+  @Index({ name: 'dcim_device_cluster_id_cf852f78' })
+  @Property({ nullable: true })
+  clusterId?: bigint;
+
+  @Index({ name: 'dcim_device_device_role_id_682e8188' })
+  @Property()
+  roleId!: bigint;
+
+  @Index({ name: 'dcim_device_device_type_id_d61b4086' })
+  @Property()
+  deviceTypeId!: bigint;
+
+  @Index({ name: 'dcim_device_location_id_11a7bedb' })
+  @Property({ nullable: true })
+  locationId?: bigint;
+
+  @Index({ name: 'dcim_device_platform_id_468138f1' })
+  @Property({ nullable: true })
+  platformId?: bigint;
+
+  @Unique({ name: 'dcim_device_primary_ip4_id_key' })
+  @Property({ fieldName: 'primary_ip4_id', nullable: true })
+  primaryIp4Id?: bigint;
+
+  @Unique({ name: 'dcim_device_primary_ip6_id_key' })
+  @Property({ fieldName: 'primary_ip6_id', nullable: true })
+  primaryIp6Id?: bigint;
+
+  @Index({ name: 'dcim_device_rack_id_23bde71f' })
+  @Property({ nullable: true })
+  rackId?: bigint;
+
+  @Index({ name: 'dcim_device_site_id_ff897cf6' })
+  @Property()
+  siteId!: bigint;
+
+  @Index({ name: 'dcim_device_tenant_id_dcea7969' })
+  @Property({ nullable: true })
+  tenantId?: bigint;
+
+  @Index({ name: 'dcim_device_virtual_chassis_id_aed51693' })
+  @Property({ nullable: true })
+  virtualChassisId?: bigint;
+
+  @Property()
+  airflow!: string;
+
+  @Index({ name: 'dcim_device_config_template_id_316328c4' })
+  @Property({ nullable: true })
+  configTemplateId?: bigint;
+
+  @Index({ name: 'dcim_device_oob_ip_id_key' })
+  @Property({ nullable: true })
+  oobIpId?: bigint;
+
+}
+",
+]
+`;

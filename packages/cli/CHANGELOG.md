@@ -3,6 +3,103 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.1](https://github.com/mikro-orm/mikro-orm/compare/v6.1.0...v6.1.1) (2024-02-10)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+# [6.1.0](https://github.com/mikro-orm/mikro-orm/compare/v6.0.7...v6.1.0) (2024-02-04)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [6.0.7](https://github.com/mikro-orm/mikro-orm/compare/v6.0.6...v6.0.7) (2024-01-30)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [6.0.6](https://github.com/mikro-orm/mikro-orm/compare/v6.0.5...v6.0.6) (2024-01-29)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [6.0.5](https://github.com/mikro-orm/mikro-orm/compare/v6.0.4...v6.0.5) (2024-01-18)
+
+
+### Bug Fixes
+
+* **cli:** try to respect windows ESM binary ([57e91e2](https://github.com/mikro-orm/mikro-orm/commit/57e91e2d9a2ac6fbe51e503e9208fc300e6b0d13)), closes [#5147](https://github.com/mikro-orm/mikro-orm/issues/5147)
+
+
+
+
+
+## [6.0.4](https://github.com/mikro-orm/mikro-orm/compare/v6.0.3...v6.0.4) (2024-01-15)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [6.0.3](https://github.com/mikro-orm/mikro-orm/compare/v6.0.2...v6.0.3) (2024-01-13)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [6.0.2](https://github.com/mikro-orm/mikro-orm/compare/v6.0.1...v6.0.2) (2024-01-09)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [6.0.1](https://github.com/mikro-orm/mikro-orm/compare/v6.0.0...v6.0.1) (2024-01-08)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+# [6.0.0](https://github.com/mikro-orm/mikro-orm/compare/v5.9.7...v6.0.0) (2024-01-08)
+
+
+### Bug Fixes
+
+* **cli:** support `mikro-orm-esm` on windows ([341bed8](https://github.com/mikro-orm/mikro-orm/commit/341bed80376f888dcd396a42e99a8b9eb6ed12ea))
+
+
+### Features
+
+* **core:** add `GeneratedCacheAdapter` for production usage ([#4167](https://github.com/mikro-orm/mikro-orm/issues/4167)) ([bd478af](https://github.com/mikro-orm/mikro-orm/commit/bd478affd81f61f9aab8b94752d897ef871e1f0a)), closes [#4164](https://github.com/mikro-orm/mikro-orm/issues/4164)
+* **core:** add `MikroORM.initSync()` helper ([#4166](https://github.com/mikro-orm/mikro-orm/issues/4166)) ([8b1a1fa](https://github.com/mikro-orm/mikro-orm/commit/8b1a1fa324db9227f5caae35fb2d8ab6a2b76e8a)), closes [#4164](https://github.com/mikro-orm/mikro-orm/issues/4164)
+* **core:** allow overriding ORM config path via `--config` ([#3924](https://github.com/mikro-orm/mikro-orm/issues/3924)) ([2c929e0](https://github.com/mikro-orm/mikro-orm/commit/2c929e06ffab996fa23664a19c7429305868b5c1))
+* **core:** re-export the core package from all drivers ([#3816](https://github.com/mikro-orm/mikro-orm/issues/3816)) ([175c059](https://github.com/mikro-orm/mikro-orm/commit/175c05912d3f53eac0788ecd32002cb9a30e7cfa))
+* **core:** remove static require calls ([#3814](https://github.com/mikro-orm/mikro-orm/issues/3814)) ([b58f476](https://github.com/mikro-orm/mikro-orm/commit/b58f4763995738cad11d08665b239443f9fb4499)), closes [#3743](https://github.com/mikro-orm/mikro-orm/issues/3743)
+* **core:** rework serialization rules to always respect populate hint ([#4203](https://github.com/mikro-orm/mikro-orm/issues/4203)) ([32d7c5f](https://github.com/mikro-orm/mikro-orm/commit/32d7c5f79fc7c8796e5ad24d3f89484a0a5d537a)), closes [#4138](https://github.com/mikro-orm/mikro-orm/issues/4138) [#4199](https://github.com/mikro-orm/mikro-orm/issues/4199)
+* **entity-generator:** allow local and global configuration of all options ([#4965](https://github.com/mikro-orm/mikro-orm/issues/4965)) ([2876b8a](https://github.com/mikro-orm/mikro-orm/commit/2876b8a74560e60605ff0de2feaba0d29c28d4aa))
+
+
+
+
+
 ## [5.9.2](https://github.com/mikro-orm/mikro-orm/compare/v5.9.1...v5.9.2) (2023-11-02)
 
 **Note:** Version bump only for package @mikro-orm/cli

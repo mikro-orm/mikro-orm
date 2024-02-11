@@ -52,54 +52,11 @@ export abstract class AbstractSqlPlatform extends Platform {
     return escape(value, true, this.timezone);
   }
 
-  formatQuery(sql: string, params: readonly any[]): string {
-    if (params.length === 0) {
-      return sql;
-    }
-
-    // fast string replace without regexps
-    let j = 0;
-    let pos = 0;
-    let ret = '';
-
-    if (sql[0] === '?') {
-      if (sql[1] === '?') {
-        ret += this.quoteIdentifier(params[j++]);
-        pos = 2;
-      } else {
-        ret += this.quoteValue(params[j++]);
-        pos = 1;
-      }
-    }
-
-    while (pos < sql.length) {
-      const idx = sql.indexOf('?', pos + 1);
-
-      if (idx === -1) {
-        ret += sql.substring(pos, sql.length);
-        break;
-      }
-
-      if (sql.substring(idx - 1, idx + 1) === '\\?') {
-        ret += sql.substring(pos, idx - 1) + '?';
-        pos = idx + 1;
-      } else if (sql.substring(idx, idx + 2) === '??') {
-        ret += sql.substring(pos, idx) + this.quoteIdentifier(params[j++]);
-        pos = idx + 2;
-      } else {
-        ret += sql.substring(pos, idx) + this.quoteValue(params[j++]);
-        pos = idx + 1;
-      }
-    }
-
-    return ret;
-  }
-
   override getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {
     return this.getSearchJsonPropertyKey(path.split('->'), type, aliased);
   }
 
-  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
+  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
     const [a, ...b] = path;
     const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
 
@@ -133,6 +90,13 @@ export abstract class AbstractSqlPlatform extends Platform {
       ret += `when ${escapedColumn} = ${this.quoteValue(v)} then ${i} `;
     });
     return ret + 'else null end)';
+  }
+
+  /**
+   * @internal
+   */
+  getOrderByExpression(column: string, direction: string): string[] {
+    return [ `${column} ${direction.toLowerCase()}` ];
   }
 
 }

@@ -154,7 +154,7 @@ describe('GH issue 1175', () => {
           const user = new User(username);
           em.persist(user);
 
-          await expect(em.flush()).rejects.toThrowError(
+          await expect(em.flush()).rejects.toThrow(
             /^insert.+duplicate key value/,
           );
           expect(afterCreate).toHaveBeenCalledTimes(0);
@@ -186,7 +186,7 @@ describe('GH issue 1175', () => {
             em.persist(user);
           });
 
-          await expect(work).rejects.toThrowError(/^insert.+duplicate key value/);
+          await expect(work).rejects.toThrow(/^insert.+duplicate key value/);
           expect(afterCreate).toHaveBeenCalledTimes(0);
           expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
           expect(afterCommitCreate).toHaveBeenCalledTimes(0);
@@ -241,7 +241,7 @@ describe('GH issue 1175', () => {
                 });
               });
             };
-            await expect(work()).rejects.toThrowError(/^insert.+duplicate key value/);
+            await expect(work()).rejects.toThrow(/^insert.+duplicate key value/);
             expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
             expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: undefined }));
             expect(afterTransactionStart).toHaveBeenCalledTimes(1);
@@ -268,7 +268,7 @@ describe('GH issue 1175', () => {
                 });
               });
             };
-            await expect(work()).rejects.toThrowError(/^insert.+duplicate key value/);
+            await expect(work()).rejects.toThrow(/^insert.+duplicate key value/);
             expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
             expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: undefined }));
             expect(afterTransactionStart).toHaveBeenCalledTimes(1);
@@ -295,7 +295,7 @@ describe('GH issue 1175', () => {
                 em.persist(user);
               });
             };
-            await expect(work()).rejects.toThrowError(/^insert.+duplicate key value/);
+            await expect(work()).rejects.toThrow(/^insert.+duplicate key value/);
             expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
             expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: undefined }));
             expect(afterTransactionStart).toHaveBeenCalledTimes(1);
@@ -337,7 +337,7 @@ describe('GH issue 1175', () => {
             }
           };
 
-          await expect(work()).rejects.toThrowError(/^insert.+duplicate key value/);
+          await expect(work()).rejects.toThrow(/^insert.+duplicate key value/);
           expect(afterCreate).toHaveBeenCalledTimes(0);
           expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
           expect(afterCommitCreate).toHaveBeenCalledTimes(0);
@@ -380,7 +380,7 @@ describe('GH issue 1175', () => {
           const user = new User(username);
           em.persist(user);
 
-          await expect(em.flush()).rejects.toThrowError(
+          await expect(em.flush()).rejects.toThrow(
             /^COMMIT.+duplicate key value/,
           );
           expect(afterCreate).toHaveBeenCalledTimes(1);
@@ -414,7 +414,7 @@ describe('GH issue 1175', () => {
             });
           };
 
-          await expect(work()).rejects.toThrowError(/^COMMIT.+duplicate key value/);
+          await expect(work()).rejects.toThrow(/^COMMIT.+duplicate key value/);
           expect(afterCreate).toHaveBeenCalledTimes(1);
           expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
           expect(afterCommitCreate).toHaveBeenCalledTimes(0);
@@ -469,7 +469,7 @@ describe('GH issue 1175', () => {
                 });
               });
             };
-            await expect(work()).rejects.toThrowError(/^COMMIT.+duplicate key value/);
+            await expect(work()).rejects.toThrow(/^COMMIT.+duplicate key value/);
             expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
             expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: undefined }));
             expect(afterTransactionStart).toHaveBeenCalledTimes(1);
@@ -496,7 +496,7 @@ describe('GH issue 1175', () => {
                 });
               });
             };
-            await expect(work()).rejects.toThrowError(/^COMMIT.+duplicate key value/);
+            await expect(work()).rejects.toThrow(/^COMMIT.+duplicate key value/);
             expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
             expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: undefined }));
             expect(afterTransactionStart).toHaveBeenCalledTimes(1);
@@ -523,7 +523,7 @@ describe('GH issue 1175', () => {
                 em.persist(user);
               });
             };
-            await expect(work()).rejects.toThrowError(/^COMMIT.+duplicate key value/);
+            await expect(work()).rejects.toThrow(/^COMMIT.+duplicate key value/);
             expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
             expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: undefined }));
             expect(afterTransactionStart).toHaveBeenCalledTimes(1);
@@ -565,7 +565,7 @@ describe('GH issue 1175', () => {
             }
           };
 
-          await expect(work()).rejects.toThrowError(/^COMMIT.+duplicate key value/);
+          await expect(work()).rejects.toThrow(/^COMMIT.+duplicate key value/);
           expect(afterCreate).toHaveBeenCalledTimes(1);
           expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
           expect(afterCommitCreate).toHaveBeenCalledTimes(0);
@@ -635,7 +635,7 @@ describe('GH issue 1175', () => {
         const user = new Entity1175(username);
         em.persist(user);
 
-        await expect(em.flush()).rejects.toThrowError(
+        await expect(em.flush()).rejects.toThrow(
           /^E11000 duplicate key error/,
         );
         expect(afterCreate).toHaveBeenCalledTimes(0);
@@ -667,7 +667,7 @@ describe('GH issue 1175', () => {
           em.persist(user);
         });
 
-        await expect(work).rejects.toThrowError(/^E11000 duplicate key error/);
+        await expect(work).rejects.toThrow(/^E11000 duplicate key error/);
         expect(afterCreate).toHaveBeenCalledTimes(0);
         expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
         expect(afterCommitCreate).toHaveBeenCalledTimes(0);
@@ -687,7 +687,7 @@ describe('GH issue 1175', () => {
               });
             });
           };
-          await expect(work()).rejects.toThrowError(/Transaction already in progress/);
+          await expect(work()).rejects.toThrow(/Transaction already in progress/);
           expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
           expect(afterCreate).toHaveBeenCalledTimes(0);
           expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
@@ -725,7 +725,7 @@ describe('GH issue 1175', () => {
           }
         };
 
-        await expect(work()).rejects.toThrowError(/^E11000 duplicate key error/);
+        await expect(work()).rejects.toThrow(/^E11000 duplicate key error/);
         expect(afterCreate).toHaveBeenCalledTimes(0);
         expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
         expect(afterCommitCreate).toHaveBeenCalledTimes(0);

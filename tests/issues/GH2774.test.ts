@@ -1,7 +1,7 @@
 import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Embeddable()
-export class Nested {
+class Nested {
 
   @Property({ nullable: true })
   value: string | null = null;
@@ -9,7 +9,7 @@ export class Nested {
 }
 
 @Embeddable()
-export class Name {
+class Name {
 
   @Property({ nullable: true })
   value: string | null = null;
@@ -20,7 +20,7 @@ export class Name {
 }
 
 @Entity()
-export class User {
+class User {
 
   @PrimaryKey()
   id!: number;

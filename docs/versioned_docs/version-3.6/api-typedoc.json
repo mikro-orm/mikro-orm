@@ -4187,19 +4187,17 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 746,
-							"name": "length",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "intrinsic",
-								"name": "number"
-							}
-						}
-					]
+					"getSignature": {
+                          "id": 746,
+                          "name": "length",
+                          "kind": 524288,
+                          "kindString": "Get signature",
+                          "flags": {},
+                          "type": {
+                              "type": "intrinsic",
+                              "name": "number"
+                          }
+                      }
 				},
 				{
 					"id": 747,
@@ -6082,23 +6080,21 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 873,
-							"name": "length",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "intrinsic",
-								"name": "number"
-							},
-							"inheritedFrom": {
-								"type": "reference",
-								"name": "ArrayCollection.length"
-							}
-						}
-					],
+					"getSignature": {
+                        "id": 873,
+                        "name": "length",
+                        "kind": 524288,
+                        "kindString": "Get signature",
+                        "flags": {},
+                        "type": {
+                            "type": "intrinsic",
+                            "name": "number"
+                        },
+                        "inheritedFrom": {
+                            "type": "reference",
+                            "name": "ArrayCollection.length"
+                        }
+                    },
 					"inheritedFrom": {
 						"type": "reference",
 						"id": 745,
@@ -23765,27 +23761,25 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 3966,
-							"name": "meta",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "reference",
-								"id": 142,
-								"typeArguments": [
-									{
-										"type": "reference",
-										"id": 3885,
-										"name": "T"
-									}
-								],
-								"name": "EntityMetadata"
-							}
-						}
-					]
+					"getSignature": {
+                        "id": 3966,
+                        "name": "meta",
+                        "kind": 524288,
+                        "kindString": "Get signature",
+                        "flags": {},
+                        "type": {
+                            "type": "reference",
+                            "id": 142,
+                            "typeArguments": [
+                                {
+                                    "type": "reference",
+                                    "id": 3885,
+                                    "name": "T"
+                                }
+                            ],
+                            "name": "EntityMetadata"
+                        }
+                    }
 				},
 				{
 					"id": 3967,
@@ -23800,19 +23794,17 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 3968,
-							"name": "name",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "intrinsic",
-								"name": "string"
-							}
-						}
-					]
+					"getSignature": {
+                        "id": 3968,
+                        "name": "name",
+                        "kind": 524288,
+                        "kindString": "Get signature",
+                        "flags": {},
+                        "type": {
+                            "type": "intrinsic",
+                            "name": "string"
+                        }
+                    }
 				},
 				{
 					"id": 3897,
@@ -33735,43 +33727,41 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 946,
-							"name": "__em",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "union",
-								"types": [
-									{
-										"type": "intrinsic",
-										"name": "undefined"
-									},
-									{
-										"type": "reference",
-										"id": 960,
-										"typeArguments": [
-											{
-												"type": "reference",
-												"id": 2486,
-												"typeArguments": [
-													{
-														"type": "reference",
-														"id": 2844,
-														"name": "Connection"
-													}
-												],
-												"name": "IDatabaseDriver"
-											}
-										],
-										"name": "EntityManager"
-									}
-								]
-							}
-						}
-					]
+					"getSignature": {
+                        "id": 946,
+                        "name": "__em",
+                        "kind": 524288,
+                        "kindString": "Get signature",
+                        "flags": {},
+                        "type": {
+                            "type": "union",
+                            "types": [
+                                {
+                                    "type": "intrinsic",
+                                    "name": "undefined"
+                                },
+                                {
+                                    "type": "reference",
+                                    "id": 960,
+                                    "typeArguments": [
+                                        {
+                                            "type": "reference",
+                                            "id": 2486,
+                                            "typeArguments": [
+                                                {
+                                                    "type": "reference",
+                                                    "id": 2844,
+                                                    "name": "Connection"
+                                                }
+                                            ],
+                                            "name": "IDatabaseDriver"
+                                        }
+                                    ],
+                                    "name": "EntityManager"
+                                }
+                            ]
+                        }
+                    }
 				},
 				{
 					"id": 947,
@@ -33786,94 +33776,93 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 948,
-							"name": "__internal",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "reflection",
-								"declaration": {
-									"id": 949,
-									"name": "__type",
-									"kind": 65536,
-									"kindString": "Type literal",
-									"flags": {},
-									"children": [
-										{
-											"id": 951,
-											"name": "metadata",
-											"kind": 1024,
-											"kindString": "Property",
-											"flags": {},
-											"sources": [
-												{
-													"fileName": "lib/entity/Reference.ts",
-													"line": 106,
-													"character": 42
-												}
-											],
-											"type": {
-												"type": "reference",
-												"name": "MetadataStorage"
-											}
-										},
-										{
-											"id": 950,
-											"name": "platform",
-											"kind": 1024,
-											"kindString": "Property",
-											"flags": {},
-											"sources": [
-												{
-													"fileName": "lib/entity/Reference.ts",
-													"line": 106,
-													"character": 22
-												}
-											],
-											"type": {
-												"type": "reference",
-												"id": 2989,
-												"name": "Platform"
-											}
-										},
-										{
-											"id": 952,
-											"name": "validator",
-											"kind": 1024,
-											"kindString": "Property",
-											"flags": {},
-											"sources": [
-												{
-													"fileName": "lib/entity/Reference.ts",
-													"line": 106,
-													"character": 69
-												}
-											],
-											"type": {
-												"type": "reference",
-												"id": 357,
-												"name": "EntityValidator"
-											}
-										}
-									],
-									"groups": [
-										{
-											"title": "Properties",
-											"kind": 1024,
-											"children": [
-												951,
-												950,
-												952
-											]
-										}
-									]
-								}
-							}
-						}
-					]
+					"getSignature": {
+                        "id": 948,
+                        "name": "__internal",
+                        "kind": 524288,
+                        "kindString": "Get signature",
+                        "flags": {},
+                        "type": {
+                            "type": "reflection",
+                            "declaration": {
+                                "id": 949,
+                                "name": "__type",
+                                "kind": 65536,
+                                "kindString": "Type literal",
+                                "flags": {},
+                                "children": [
+                                    {
+                                        "id": 951,
+                                        "name": "metadata",
+                                        "kind": 1024,
+                                        "kindString": "Property",
+                                        "flags": {},
+                                        "sources": [
+                                            {
+                                                "fileName": "lib/entity/Reference.ts",
+                                                "line": 106,
+                                                "character": 42
+                                            }
+                                        ],
+                                        "type": {
+                                            "type": "reference",
+                                            "name": "MetadataStorage"
+                                        }
+                                    },
+                                    {
+                                        "id": 950,
+                                        "name": "platform",
+                                        "kind": 1024,
+                                        "kindString": "Property",
+                                        "flags": {},
+                                        "sources": [
+                                            {
+                                                "fileName": "lib/entity/Reference.ts",
+                                                "line": 106,
+                                                "character": 22
+                                            }
+                                        ],
+                                        "type": {
+                                            "type": "reference",
+                                            "id": 2989,
+                                            "name": "Platform"
+                                        }
+                                    },
+                                    {
+                                        "id": 952,
+                                        "name": "validator",
+                                        "kind": 1024,
+                                        "kindString": "Property",
+                                        "flags": {},
+                                        "sources": [
+                                            {
+                                                "fileName": "lib/entity/Reference.ts",
+                                                "line": 106,
+                                                "character": 69
+                                            }
+                                        ],
+                                        "type": {
+                                            "type": "reference",
+                                            "id": 357,
+                                            "name": "EntityValidator"
+                                        }
+                                    }
+                                ],
+                                "groups": [
+                                    {
+                                        "title": "Properties",
+                                        "kind": 1024,
+                                        "children": [
+                                            951,
+                                            950,
+                                            952
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+
 				},
 				{
 					"id": 957,
@@ -33888,19 +33877,17 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 958,
-							"name": "__lazyInitialized",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "intrinsic",
-								"name": "boolean"
-							}
-						}
-					]
+					"getSignature": {
+                        "id": 958,
+                        "name": "__lazyInitialized",
+                        "kind": 524288,
+                        "kindString": "Get signature",
+                        "flags": {},
+                        "type": {
+                            "type": "intrinsic",
+                            "name": "boolean"
+                        }
+                    }
 				},
 				{
 					"id": 953,
@@ -33915,26 +33902,24 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 954,
-							"name": "__meta",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "reference",
-								"id": 142,
-								"typeArguments": [
-									{
-										"type": "intrinsic",
-										"name": "any"
-									}
-								],
-								"name": "EntityMetadata"
-							}
-						}
-					]
+					"getSignature": {
+                        "id": 954,
+                        "name": "__meta",
+                        "kind": 524288,
+                        "kindString": "Get signature",
+                        "flags": {},
+                        "type": {
+                            "type": "reference",
+                            "id": 142,
+                            "typeArguments": [
+                                {
+                                    "type": "intrinsic",
+                                    "name": "any"
+                                }
+                            ],
+                            "name": "EntityMetadata"
+                        }
+                    }
 				},
 				{
 					"id": 955,
@@ -33949,19 +33934,17 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 956,
-							"name": "__populated",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "intrinsic",
-								"name": "boolean"
-							}
-						}
-					]
+					"getSignature": {
+                        "id": 956,
+                        "name": "__populated",
+                        "kind": 524288,
+                        "kindString": "Get signature",
+                        "flags": {},
+                        "type": {
+                            "type": "intrinsic",
+                            "name": "boolean"
+                        }
+                    }
 				},
 				{
 					"id": 939,
@@ -33976,27 +33959,25 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 940,
-							"name": "__primaryKey",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "reference",
-								"id": 12,
-								"typeArguments": [
-									{
-										"type": "reference",
-										"id": 912,
-										"name": "T"
-									}
-								],
-								"name": "Primary"
-							}
-						}
-					]
+					"getSignature": {
+                        "id": 940,
+                        "name": "__primaryKey",
+                        "kind": 524288,
+                        "kindString": "Get signature",
+                        "flags": {},
+                        "type": {
+                            "type": "reference",
+                            "id": 12,
+                            "typeArguments": [
+                                {
+                                    "type": "reference",
+                                    "id": 912,
+                                    "name": "T"
+                                }
+                            ],
+                            "name": "Primary"
+                        }
+                    }
 				},
 				{
 					"id": 941,
@@ -34011,30 +33992,28 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 942,
-							"name": "__primaryKeys",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "array",
-								"elementType": {
-									"type": "reference",
-									"id": 12,
-									"typeArguments": [
-										{
-											"type": "reference",
-											"id": 912,
-											"name": "T"
-										}
-									],
-									"name": "Primary"
-								}
-							}
-						}
-					]
+					"getSignature": {
+                        "id": 942,
+                        "name": "__primaryKeys",
+                        "kind": 524288,
+                        "kindString": "Get signature",
+                        "flags": {},
+                        "type": {
+                            "type": "array",
+                            "elementType": {
+                                "type": "reference",
+                                "id": 12,
+                                "typeArguments": [
+                                    {
+                                        "type": "reference",
+                                        "id": 912,
+                                        "name": "T"
+                                    }
+                                ],
+                                "name": "Primary"
+                            }
+                        }
+                    }
 				},
 				{
 					"id": 943,
@@ -34049,19 +34028,17 @@
 							"character": 6
 						}
 					],
-					"getSignature": [
-						{
-							"id": 944,
-							"name": "__uuid",
-							"kind": 524288,
-							"kindString": "Get signature",
-							"flags": {},
-							"type": {
-								"type": "intrinsic",
-								"name": "string"
-							}
-						}
-					]
+					"getSignature": {
+                        "id": 944,
+                        "name": "__uuid",
+                        "kind": 524288,
+                        "kindString": "Get signature",
+                        "flags": {},
+                        "type": {
+                            "type": "intrinsic",
+                            "name": "string"
+                        }
+                    }
 				},
 				{
 					"id": 916,
@@ -68056,5 +68033,6 @@
 			"line": 1,
 			"character": 0
 		}
-	]
+	],
+    "symbolIdMap": {}
 }

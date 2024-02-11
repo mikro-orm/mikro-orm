@@ -1,14 +1,14 @@
 import { CriteriaNode } from './CriteriaNode';
-import type { IQueryBuilder } from '../typings';
+import type { IQueryBuilder, ICriteriaNodeProcessOptions } from '../typings';
 
 /**
  * @internal
  */
 export class ArrayCriteriaNode<T extends object> extends CriteriaNode<T> {
 
-  override process(qb: IQueryBuilder<T>, alias?: string): any {
+  override process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
     return this.payload.map((node: CriteriaNode<T>) => {
-      return node.process(qb, alias);
+      return node.process(qb, options);
     });
   }
 

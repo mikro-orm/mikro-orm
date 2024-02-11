@@ -15,10 +15,13 @@ import type {
   MergeSelected,
   FromEntityType,
   IsSubset,
+  MergeLoaded,
+  ArrayElement,
 } from '../typings';
 import type {
   CountOptions,
   DeleteOptions,
+  FindAllOptions,
   FindByCursorOptions,
   FindOneOptions,
   FindOneOrFailOptions,
@@ -43,21 +46,23 @@ export class EntityRepository<Entity extends object> {
    */
   async findOne<
     Hint extends string = never,
-    Fields extends string = never,
-  >(where: FilterQuery<Entity>, options?: FindOneOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields> | null> {
-    return this.getEntityManager().findOne<Entity, Hint, Fields>(this.entityName, where, options);
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(where: FilterQuery<Entity>, options?: FindOneOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
+    return this.getEntityManager().findOne<Entity, Hint, Fields, Excludes>(this.entityName, where, options);
   }
 
   /**
-   * Finds first entity matching your `where` query. If nothing found, it will throw an error.
+   * Finds first entity matching your `where` query. If nothing is found, it will throw an error.
    * You can override the factory for creating this method via `options.failHandler` locally
    * or via `Configuration.findOneOrFailHandler` globally.
    */
   async findOneOrFail<
     Hint extends string = never,
-    Fields extends string = never,
-  >(where: FilterQuery<Entity>, options?: FindOneOrFailOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>> {
-    return this.getEntityManager().findOneOrFail<Entity, Hint, Fields>(this.entityName, where, options);
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(where: FilterQuery<Entity>, options?: FindOneOrFailOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes>> {
+    return this.getEntityManager().findOneOrFail<Entity, Hint, Fields, Excludes>(this.entityName, where, options);
   }
 
   /**
@@ -112,7 +117,7 @@ export class EntityRepository<Entity extends object> {
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
   async upsertMany(entitiesOrData?: EntityData<Entity>[] | Entity[], options?: NativeInsertUpdateOptions<Entity>): Promise<Entity[]> {
-    return this.getEntityManager().upsertMany<Entity>(this.entityName, entitiesOrData, options);
+    return this.getEntityManager().upsertMany(this.entityName, entitiesOrData, options);
   }
 
   /**
@@ -120,20 +125,22 @@ export class EntityRepository<Entity extends object> {
    */
   async find<
     Hint extends string = never,
-    Fields extends string = never,
-  >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
-    return this.getEntityManager().find<Entity, Hint, Fields>(this.entityName, where as FilterQuery<Entity>, options);
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
+    return this.getEntityManager().find(this.entityName, where as FilterQuery<Entity>, options);
   }
 
   /**
    * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
-   * where first element is the array of entities and the second is the count.
+   * where first element is the array of entities, and the second is the count.
    */
   async findAndCount<
     Hint extends string = never,
-    Fields extends string = never,
-  >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields>): Promise<[Loaded<Entity, Hint, Fields>[], number]> {
-    return this.getEntityManager().findAndCount<Entity, Hint, Fields>(this.entityName, where, options);
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(where: FilterQuery<Entity>, options?: FindOptions<Entity, Hint, Fields, Excludes>): Promise<[Loaded<Entity, Hint, Fields, Excludes>[], number]> {
+    return this.getEntityManager().findAndCount(this.entityName, where, options);
   }
 
   /**
@@ -141,9 +148,10 @@ export class EntityRepository<Entity extends object> {
    */
   async findByCursor<
     Hint extends string = never,
-    Fields extends string = never,
-  >(where: FilterQuery<Entity>, options?: FindByCursorOptions<Entity, Hint, Fields>): Promise<Cursor<Entity, Hint, Fields>> {
-    return this.getEntityManager().findByCursor<Entity, Hint, Fields>(this.entityName, where, options);
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(where: FilterQuery<Entity>, options: FindByCursorOptions<Entity, Hint, Fields, Excludes>): Promise<Cursor<Entity, Hint, Fields, Excludes>> {
+    return this.getEntityManager().findByCursor(this.entityName, where, options);
   }
 
   /**
@@ -151,16 +159,17 @@ export class EntityRepository<Entity extends object> {
    */
   async findAll<
     Hint extends string = never,
-    Fields extends string = never,
-  >(options?: FindOptions<Entity, Hint, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
-    return this.getEntityManager().find<Entity, Hint, Fields>(this.entityName, {} as FilterQuery<Entity>, options);
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(options?: FindAllOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
+    return this.getEntityManager().findAll(this.entityName, options);
   }
 
   /**
    * @inheritDoc EntityManager.insert
    */
   async insert(data: Entity | RequiredEntityData<Entity>, options?: NativeInsertUpdateOptions<Entity>): Promise<Primary<Entity>> {
-    return this.getEntityManager().insert<Entity>(this.entityName, data, options);
+    return this.getEntityManager().insert(this.entityName, data, options);
   }
 
   /**
@@ -221,19 +230,23 @@ export class EntityRepository<Entity extends object> {
   }
 
   /**
-   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
+   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all the specified entities.
    */
   async populate<
+    Ent extends Entity | Entity[],
     Hint extends string = never,
-    Fields extends string = never,
-  >(entities: Entity | Entity[], populate: AutoPath<Entity, Hint>[] | false, options?: EntityLoaderOptions<Entity, Fields>): Promise<Loaded<Entity, Hint, Fields>[]> {
+    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(entities: Ent, populate: AutoPath<Entity, Hint, '*'>[] | false, options?: EntityLoaderOptions<Entity, Fields, Excludes>): Promise<Ent extends object[] ? MergeLoaded<ArrayElement<Ent>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Ent, Naked, Hint, Fields, Excludes>> {
     this.validateRepositoryType(entities, 'populate');
-    return this.getEntityManager().populate(entities as Entity, populate, options);
+    // @ts-ignore hard to type
+    return this.getEntityManager().populate(entities, populate, options);
   }
 
   /**
    * Creates new instance of given entity and populates it with given data.
-   * The entity constructor will be used unless you provide `{ managed: true }` in the options parameter.
+   * The entity constructor will be used unless you provide `{ managed: true }` in the `options` parameter.
    * The constructor will be given parameters based on the defined constructor of the entity. If the constructor
    * parameter matches a property name, its value will be extracted from `data`. If no matching property exists,
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<Entity>)` and

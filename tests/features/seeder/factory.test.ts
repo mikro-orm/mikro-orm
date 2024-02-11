@@ -66,14 +66,14 @@ describe('Factory', () => {
     const project = new ProjectFactory(orm.em).makeOne();
     expect(project).toBeInstanceOf(Project);
     expect(project.id).toBeUndefined();
-    expect(persistSpy).toBeCalled();
-    expect(flushSpy).not.toBeCalled();
+    expect(persistSpy).toHaveBeenCalled();
+    expect(flushSpy).not.toHaveBeenCalled();
   });
 
   test('that a factory can create a single instance of an entity and save it in the database', async () => {
     const projectSaved = await new ProjectFactory(orm.em).createOne();
-    expect(persistSpy).toBeCalled();
-    expect(flushSpy).toBeCalled();
+    expect(persistSpy).toHaveBeenCalled();
+    expect(flushSpy).toHaveBeenCalled();
     expect(projectSaved).toBeInstanceOf(Project);
     expect(projectSaved.id).toBeDefined();
   });
@@ -81,15 +81,15 @@ describe('Factory', () => {
   test('that a factory can make multiple instances of an entity without saving them in the database', async () => {
     const projects = new ProjectFactory(orm.em).make(5);
     expect(projects).toBeInstanceOf(Array);
-    expect(persistSpy).toBeCalledTimes(1);
-    expect(flushSpy).not.toBeCalled();
+    expect(persistSpy).toHaveBeenCalledTimes(1);
+    expect(flushSpy).not.toHaveBeenCalled();
     expect(projects.length).toBe(5);
   });
 
   test('that a factory can create multiple instances of an entity and save them in the database', async () => {
     const projectSaved = await new ProjectFactory(orm.em).create(5);
-    expect(persistSpy).toBeCalledTimes(1);
-    expect(flushSpy).toBeCalledTimes(1);
+    expect(persistSpy).toHaveBeenCalledTimes(1);
+    expect(flushSpy).toHaveBeenCalledTimes(1);
     expect(projectSaved).toBeInstanceOf(Array);
     expect(projectSaved.length).toBe(5);
   });

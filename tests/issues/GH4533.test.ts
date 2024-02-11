@@ -15,7 +15,7 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity({ tableName: 'core_users' })
-export class User {
+class User {
 
   @PrimaryKey()
   id!: number;
@@ -33,7 +33,7 @@ export class User {
 }
 
 @Entity({ tableName: 'core_roles' })
-export class Role {
+class Role {
 
   @PrimaryKey()
   id!: number;

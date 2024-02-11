@@ -39,11 +39,11 @@ const author = repo.create('Author', { name: 'name', email: 'email' }); // insta
 await repo.persistAndFlush(author);
 ```
 
-You can optionally use custom class for entity instances. Read more about this approach in [Defining Entities via EntitySchema section](entity-schema.md).
+You can optionally use custom class for entity instances. Read more about this approach in [Defining Entities via EntitySchema section](./entity-schema.md).
 
 # Classes and Decorators
 
-Entities are simple javascript objects (so called POJO), decorated with `@Entity` decorator. No real restrictions are made, you do not have to extend any base class, you are more than welcome to [use entity constructors](entity-constructors.md), just do not forget to specify primary key with `@PrimaryKey` decorator.
+Entities are simple javascript objects (so called POJO), decorated with `@Entity` decorator. No real restrictions are made, you do not have to extend any base class, you are more than welcome to [use entity constructors](./entity-constructors.md), just do not forget to specify primary key with `@PrimaryKey` decorator.
 
 ```typescript title="./entities/Book.ts"
 @Entity()
@@ -138,9 +138,9 @@ export class Author {
 }
 ```
 
-More information about modelling relationships can be found on [modelling relationships page](relationships.md).
+More information about modelling relationships can be found on [modelling relationships page](./relationships.md).
 
-If you want to define your entity in Vanilla JavaScript, take a look [here](usage-with-js.md).
+If you want to define your entity in Vanilla JavaScript, take a look [here](./usage-with-js.md).
 
 ### Optional Properties
 
@@ -277,7 +277,7 @@ You can define custom types by extending `Type` abstract class. It has 4 optiona
 
   Gets the SQL declaration snippet for a field of this type.
 
-More information can be found in [Custom Types](custom-types.md) section.
+More information can be found in [Custom Types](./custom-types.md) section.
 
 ## Virtual Properties
 
@@ -408,7 +408,7 @@ export class Book {
 }
 ```
 
-If you want to use native `bigint`s, read the following guide: [Using native BigInt PKs](using-bigint-pks.md).
+If you want to use native `bigint`s, read the following guide: [Using native BigInt PKs](./using-bigint-pks.md).
 
 ### Example of Mongo entity
 
@@ -451,4 +451,4 @@ export class Book {
 export interface Book extends WrappedEntity<Book, 'id'> { };
 ```
 
-With your entities set up, you can start [using entity manager](entity-manager.md) and [repositories](repositories.md) as described in following sections.
+With your entities set up, you can start [using entity manager](./entity-manager.md) and [repositories](./repositories.md) as described in following sections.

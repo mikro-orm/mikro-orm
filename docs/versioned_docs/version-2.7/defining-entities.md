@@ -2,7 +2,7 @@
 title: Defining entities
 ---
 
-Entities are simple javascript objects (so called POJO), decorated with `@Entity` decorator. No real restrictions are made, you do not have to extend any base class, you are more than welcome to [use entity constructors](entity-constructors.md), just do not forget to specify primary key with `@PrimaryKey` decorator.
+Entities are simple javascript objects (so called POJO), decorated with `@Entity` decorator. No real restrictions are made, you do not have to extend any base class, you are more than welcome to [use entity constructors](./entity-constructors.md), just do not forget to specify primary key with `@PrimaryKey` decorator.
 
 ```typescript title="./entities/Book.ts"
 @Entity()
@@ -97,9 +97,9 @@ export class Author {
 export interface Author extends IEntity { }
 ```
 
-More information about how collections work can be found on [collections page](collections.md).
+More information about how collections work can be found on [collections page](./collections.md).
 
-If you want to define your entity in Vanilla JavaScript, take a look [here](usage-with-js.md).
+If you want to define your entity in Vanilla JavaScript, take a look [here](./usage-with-js.md).
 
 ## Entity file names
 
@@ -145,4 +145,4 @@ For SQL drivers, you will want to define your primary key as `id: number` instea
 id: number;
 ```
 
-With your entities set up, you can start [using entity manager](entity-manager.md) and [repositories](repositories.md) as described in following sections.
+With your entities set up, you can start [using entity manager](./entity-manager.md) and [repositories](./repositories.md) as described in following sections.

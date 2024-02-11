@@ -1,0 +1,3845 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Countries {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ columnType: 'char(2)' })
+  code!: unknown;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+
+@Entity()
+@Index({ name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['countries', 'productId'] })
+export class ProductCountryMap {
+
+  [PrimaryKeyProp]?: ['product', 'countries'];
+
+  @Property({ columnType: 'char(2)', persist: false })
+  country!: unknown;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  product!: Products;
+
+  @Index({ name: 'fk_product_country_map_products1' })
+  @Property({ persist: false })
+  productId!: number;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  countries!: Countries;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
+
+@Entity()
+export class ProductSellers {
+
+  [PrimaryKeyProp]?: ['seller', 'product'];
+
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  seller!: Sellers;
+
+  @Property({ persist: false })
+  sellerId!: number;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  product!: Products;
+
+  @Index({ name: 'fk_product_sellers_products1' })
+  @Property({ persist: false })
+  productId!: number;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+}
+",
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Products {
+
+  [PrimaryKeyProp]?: 'productId';
+
+  @PrimaryKey()
+  productId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  currentPrice!: string;
+
+  @Property({ default: 0 })
+  currentQuantity: number & Opt = 0;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Sales {
+
+  [PrimaryKeyProp]?: 'saleId';
+
+  @PrimaryKey()
+  saleId!: number;
+
+  @Property({ columnType: 'char(2)', persist: false })
+  country!: unknown;
+
+  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  seller!: ProductSellers;
+
+  @Property({ persist: false })
+  sellerId!: number;
+
+  @Index({ name: 'product_id_idx' })
+  @Property({ persist: false })
+  productId!: number;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  singularPrice!: string;
+
+  @Property({ default: 1 })
+  quantitySold: number & Opt = 1;
+
+  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  productCountryMap!: ProductCountryMap;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Sellers {
+
+  [PrimaryKeyProp]?: 'sellerId';
+
+  @PrimaryKey()
+  sellerId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Countries {
+  [PrimaryKeyProp]?: 'code';
+  code!: unknown;
+}
+
+export const CountriesSchema = new EntitySchema({
+  class: Countries,
+  properties: {
+    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class ProductCountryMap {
+  [PrimaryKeyProp]?: ['product', 'countries'];
+  country!: unknown;
+  product!: Products;
+  productId!: number;
+  isCurrentlyAllowed: boolean & Opt = false;
+  countries!: Countries;
+}
+
+export const ProductCountryMapSchema = new EntitySchema({
+  class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
+  ],
+  properties: {
+    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+      index: 'fk_product_country_map_products1',
+    },
+    productId: { type: 'number', persist: false, index: 'fk_product_country_map_products1' },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    countries: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class ProductSellers {
+  [PrimaryKeyProp]?: ['seller', 'product'];
+  seller!: Sellers;
+  sellerId!: number;
+  product!: Products;
+  productId!: number;
+  isCurrentlyAllowed: boolean & Opt = false;
+}
+
+export const ProductSellersSchema = new EntitySchema({
+  class: ProductSellers,
+  properties: {
+    seller: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Sellers,
+      fieldName: 'seller_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    sellerId: { type: 'number', persist: false },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_product_sellers_products1',
+    },
+    productId: { type: 'number', persist: false, index: 'fk_product_sellers_products1' },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Products {
+  [PrimaryKeyProp]?: 'productId';
+  productId!: number;
+  name!: string;
+  currentPrice!: string;
+  currentQuantity: number & Opt = 0;
+}
+
+export const ProductsSchema = new EntitySchema({
+  class: Products,
+  properties: {
+    productId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    currentQuantity: { type: 'number', default: 0 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Sales {
+  [PrimaryKeyProp]?: 'saleId';
+  saleId!: number;
+  country!: unknown;
+  seller!: ProductSellers;
+  sellerId!: number;
+  productId!: number;
+  singularPrice!: string;
+  quantitySold: number & Opt = 1;
+  productCountryMap!: ProductCountryMap;
+}
+
+export const SalesSchema = new EntitySchema({
+  class: Sales,
+  properties: {
+    saleId: { primary: true, type: 'number' },
+    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    seller: {
+      kind: 'm:1',
+      entity: () => ProductSellers,
+      fieldNames: [
+        'seller_id',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_sellers1_idx',
+    },
+    sellerId: { type: 'number', persist: false },
+    productId: { type: 'number', persist: false, index: 'product_id_idx' },
+    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    quantitySold: { type: 'number', default: 1 },
+    productCountryMap: {
+      kind: 'm:1',
+      entity: () => ProductCountryMap,
+      fieldNames: [
+        'country',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_country_map1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Sellers {
+  [PrimaryKeyProp]?: 'sellerId';
+  sellerId!: number;
+  name!: string;
+}
+
+export const SellersSchema = new EntitySchema({
+  class: Sellers,
+  properties: {
+    sellerId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+  },
+});
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Countries {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ columnType: 'char(2)' })
+  code!: unknown;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+
+@Entity()
+@Index({ name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['countries', 'productId'] })
+export class ProductCountryMap {
+
+  [PrimaryKeyProp]?: ['product', 'countries'];
+
+  @Property({ columnType: 'char(2)', persist: false })
+  country!: unknown;
+
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  product!: Ref<Products>;
+
+  @Index({ name: 'fk_product_country_map_products1' })
+  @Property({ persist: false })
+  productId!: number;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  countries!: Ref<Countries>;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
+
+@Entity()
+export class ProductSellers {
+
+  [PrimaryKeyProp]?: ['seller', 'product'];
+
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  seller!: Ref<Sellers>;
+
+  @Property({ persist: false })
+  sellerId!: number;
+
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  product!: Ref<Products>;
+
+  @Index({ name: 'fk_product_sellers_products1' })
+  @Property({ persist: false })
+  productId!: number;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+}
+",
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Products {
+
+  [PrimaryKeyProp]?: 'productId';
+
+  @PrimaryKey()
+  productId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  currentPrice!: string;
+
+  @Property({ default: 0 })
+  currentQuantity: number & Opt = 0;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Sales {
+
+  [PrimaryKeyProp]?: 'saleId';
+
+  @PrimaryKey()
+  saleId!: number;
+
+  @Property({ columnType: 'char(2)', persist: false })
+  country!: unknown;
+
+  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  seller!: Ref<ProductSellers>;
+
+  @Property({ persist: false })
+  sellerId!: number;
+
+  @Index({ name: 'product_id_idx' })
+  @Property({ persist: false })
+  productId!: number;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  singularPrice!: string;
+
+  @Property({ default: 1 })
+  quantitySold: number & Opt = 1;
+
+  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  productCountryMap!: Ref<ProductCountryMap>;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Sellers {
+
+  [PrimaryKeyProp]?: 'sellerId';
+
+  @PrimaryKey()
+  sellerId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Countries {
+  [PrimaryKeyProp]?: 'code';
+  code!: unknown;
+}
+
+export const CountriesSchema = new EntitySchema({
+  class: Countries,
+  properties: {
+    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+
+export class ProductCountryMap {
+  [PrimaryKeyProp]?: ['product', 'countries'];
+  country!: unknown;
+  product!: Ref<Products>;
+  productId!: number;
+  isCurrentlyAllowed: boolean & Opt = false;
+  countries!: Ref<Countries>;
+}
+
+export const ProductCountryMapSchema = new EntitySchema({
+  class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
+  ],
+  properties: {
+    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      ref: true,
+      fieldName: 'product_id',
+      index: 'fk_product_country_map_products1',
+    },
+    productId: { type: 'number', persist: false, index: 'fk_product_country_map_products1' },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    countries: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      ref: true,
+      fieldName: 'country',
+    },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
+
+export class ProductSellers {
+  [PrimaryKeyProp]?: ['seller', 'product'];
+  seller!: Ref<Sellers>;
+  sellerId!: number;
+  product!: Ref<Products>;
+  productId!: number;
+  isCurrentlyAllowed: boolean & Opt = false;
+}
+
+export const ProductSellersSchema = new EntitySchema({
+  class: ProductSellers,
+  properties: {
+    seller: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Sellers,
+      ref: true,
+      fieldName: 'seller_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    sellerId: { type: 'number', persist: false },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      ref: true,
+      fieldName: 'product_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_product_sellers_products1',
+    },
+    productId: { type: 'number', persist: false, index: 'fk_product_sellers_products1' },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Products {
+  [PrimaryKeyProp]?: 'productId';
+  productId!: number;
+  name!: string;
+  currentPrice!: string;
+  currentQuantity: number & Opt = 0;
+}
+
+export const ProductsSchema = new EntitySchema({
+  class: Products,
+  properties: {
+    productId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    currentQuantity: { type: 'number', default: 0 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+export class Sales {
+  [PrimaryKeyProp]?: 'saleId';
+  saleId!: number;
+  country!: unknown;
+  seller!: Ref<ProductSellers>;
+  sellerId!: number;
+  productId!: number;
+  singularPrice!: string;
+  quantitySold: number & Opt = 1;
+  productCountryMap!: Ref<ProductCountryMap>;
+}
+
+export const SalesSchema = new EntitySchema({
+  class: Sales,
+  properties: {
+    saleId: { primary: true, type: 'number' },
+    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    seller: {
+      kind: 'm:1',
+      entity: () => ProductSellers,
+      ref: true,
+      fieldNames: [
+        'seller_id',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_sellers1_idx',
+    },
+    sellerId: { type: 'number', persist: false },
+    productId: { type: 'number', persist: false, index: 'product_id_idx' },
+    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    quantitySold: { type: 'number', default: 1 },
+    productCountryMap: {
+      kind: 'm:1',
+      entity: () => ProductCountryMap,
+      ref: true,
+      fieldNames: [
+        'country',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_country_map1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Sellers {
+  [PrimaryKeyProp]?: 'sellerId';
+  sellerId!: number;
+  name!: string;
+}
+
+export const SellersSchema = new EntitySchema({
+  class: Sellers,
+  properties: {
+    sellerId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+  },
+});
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+
+@Entity()
+export class Countries {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ columnType: 'char(2)' })
+  code!: unknown;
+
+  @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'countries' })
+  countriesInverse = new Collection<ProductCountryMap>(this);
+
+}
+",
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+import { Sales } from './Sales';
+
+@Entity()
+@Index({ name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['countries', 'productId'] })
+export class ProductCountryMap {
+
+  [PrimaryKeyProp]?: ['product', 'countries'];
+
+  @Property({ columnType: 'char(2)', persist: false })
+  country!: unknown;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  product!: Products;
+
+  @Index({ name: 'fk_product_country_map_products1' })
+  @Property({ persist: false })
+  productId!: number;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  countries!: Countries;
+
+  @OneToMany({ entity: () => Sales, mappedBy: 'productCountryMap' })
+  productCountryMapInverse = new Collection<Sales>(this);
+
+}
+",
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sales } from './Sales';
+import { Sellers } from './Sellers';
+
+@Entity()
+export class ProductSellers {
+
+  [PrimaryKeyProp]?: ['seller', 'product'];
+
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  seller!: Sellers;
+
+  @Property({ persist: false })
+  sellerId!: number;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  product!: Products;
+
+  @Index({ name: 'fk_product_sellers_products1' })
+  @Property({ persist: false })
+  productId!: number;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
+  sellerInverse = new Collection<Sales>(this);
+
+}
+",
+  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Products {
+
+  [PrimaryKeyProp]?: 'productId';
+
+  @PrimaryKey()
+  productId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  currentPrice!: string;
+
+  @Property({ default: 0 })
+  currentQuantity: number & Opt = 0;
+
+  @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
+  productInverse = new Collection<ProductSellers>(this);
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Sales {
+
+  [PrimaryKeyProp]?: 'saleId';
+
+  @PrimaryKey()
+  saleId!: number;
+
+  @Property({ columnType: 'char(2)', persist: false })
+  country!: unknown;
+
+  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  seller!: ProductSellers;
+
+  @Property({ persist: false })
+  sellerId!: number;
+
+  @Index({ name: 'product_id_idx' })
+  @Property({ persist: false })
+  productId!: number;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  singularPrice!: string;
+
+  @Property({ default: 1 })
+  quantitySold: number & Opt = 1;
+
+  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  productCountryMap!: ProductCountryMap;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Sellers {
+
+  [PrimaryKeyProp]?: 'sellerId';
+
+  @PrimaryKey()
+  sellerId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
+  sellerInverse = new Collection<ProductSellers>(this);
+
+}
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+
+export class Countries {
+  [PrimaryKeyProp]?: 'code';
+  code!: unknown;
+  countriesInverse = new Collection<ProductCountryMap>(this);
+}
+
+export const CountriesSchema = new EntitySchema({
+  class: Countries,
+  properties: {
+    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    countriesInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'countries' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Sales } from './Sales';
+
+export class ProductCountryMap {
+  [PrimaryKeyProp]?: ['product', 'countries'];
+  country!: unknown;
+  product!: Products;
+  productId!: number;
+  isCurrentlyAllowed: boolean & Opt = false;
+  countries!: Countries;
+  productCountryMapInverse = new Collection<Sales>(this);
+}
+
+export const ProductCountryMapSchema = new EntitySchema({
+  class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
+  ],
+  properties: {
+    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+      index: 'fk_product_country_map_products1',
+    },
+    productId: { type: 'number', persist: false, index: 'fk_product_country_map_products1' },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    countries: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    productCountryMapInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'productCountryMap' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Sales } from './Sales';
+
+export class ProductSellers {
+  [PrimaryKeyProp]?: ['seller', 'product'];
+  seller!: Sellers;
+  sellerId!: number;
+  product!: Products;
+  productId!: number;
+  isCurrentlyAllowed: boolean & Opt = false;
+  sellerInverse = new Collection<Sales>(this);
+}
+
+export const ProductSellersSchema = new EntitySchema({
+  class: ProductSellers,
+  properties: {
+    seller: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Sellers,
+      fieldName: 'seller_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    sellerId: { type: 'number', persist: false },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_product_sellers_products1',
+    },
+    productId: { type: 'number', persist: false, index: 'fk_product_sellers_products1' },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+export class Products {
+  [PrimaryKeyProp]?: 'productId';
+  productId!: number;
+  name!: string;
+  currentPrice!: string;
+  currentQuantity: number & Opt = 0;
+  productInverse = new Collection<ProductSellers>(this);
+}
+
+export const ProductsSchema = new EntitySchema({
+  class: Products,
+  properties: {
+    productId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    currentQuantity: { type: 'number', default: 0 },
+    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Sales {
+  [PrimaryKeyProp]?: 'saleId';
+  saleId!: number;
+  country!: unknown;
+  seller!: ProductSellers;
+  sellerId!: number;
+  productId!: number;
+  singularPrice!: string;
+  quantitySold: number & Opt = 1;
+  productCountryMap!: ProductCountryMap;
+}
+
+export const SalesSchema = new EntitySchema({
+  class: Sales,
+  properties: {
+    saleId: { primary: true, type: 'number' },
+    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    seller: {
+      kind: 'm:1',
+      entity: () => ProductSellers,
+      fieldNames: [
+        'seller_id',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_sellers1_idx',
+    },
+    sellerId: { type: 'number', persist: false },
+    productId: { type: 'number', persist: false, index: 'product_id_idx' },
+    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    quantitySold: { type: 'number', default: 1 },
+    productCountryMap: {
+      kind: 'm:1',
+      entity: () => ProductCountryMap,
+      fieldNames: [
+        'country',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_country_map1_idx',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+export class Sellers {
+  [PrimaryKeyProp]?: 'sellerId';
+  sellerId!: number;
+  name!: string;
+  sellerInverse = new Collection<ProductSellers>(this);
+}
+
+export const SellersSchema = new EntitySchema({
+  class: Sellers,
+  properties: {
+    sellerId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+  },
+});
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+
+@Entity()
+export class Countries {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ columnType: 'char(2)' })
+  code!: unknown;
+
+  @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'countries' })
+  countriesInverse = new Collection<ProductCountryMap>(this);
+
+}
+",
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+import { Sales } from './Sales';
+
+@Entity()
+@Index({ name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['countries', 'productId'] })
+export class ProductCountryMap {
+
+  [PrimaryKeyProp]?: ['product', 'countries'];
+
+  @Property({ columnType: 'char(2)', persist: false })
+  country!: unknown;
+
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  product!: Ref<Products>;
+
+  @Index({ name: 'fk_product_country_map_products1' })
+  @Property({ persist: false })
+  productId!: number;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  countries!: Ref<Countries>;
+
+  @OneToMany({ entity: () => Sales, mappedBy: 'productCountryMap' })
+  productCountryMapInverse = new Collection<Sales>(this);
+
+}
+",
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sales } from './Sales';
+import { Sellers } from './Sellers';
+
+@Entity()
+export class ProductSellers {
+
+  [PrimaryKeyProp]?: ['seller', 'product'];
+
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  seller!: Ref<Sellers>;
+
+  @Property({ persist: false })
+  sellerId!: number;
+
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  product!: Ref<Products>;
+
+  @Index({ name: 'fk_product_sellers_products1' })
+  @Property({ persist: false })
+  productId!: number;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
+  sellerInverse = new Collection<Sales>(this);
+
+}
+",
+  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Products {
+
+  [PrimaryKeyProp]?: 'productId';
+
+  @PrimaryKey()
+  productId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  currentPrice!: string;
+
+  @Property({ default: 0 })
+  currentQuantity: number & Opt = 0;
+
+  @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
+  productInverse = new Collection<ProductSellers>(this);
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Sales {
+
+  [PrimaryKeyProp]?: 'saleId';
+
+  @PrimaryKey()
+  saleId!: number;
+
+  @Property({ columnType: 'char(2)', persist: false })
+  country!: unknown;
+
+  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  seller!: Ref<ProductSellers>;
+
+  @Property({ persist: false })
+  sellerId!: number;
+
+  @Index({ name: 'product_id_idx' })
+  @Property({ persist: false })
+  productId!: number;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  singularPrice!: string;
+
+  @Property({ default: 1 })
+  quantitySold: number & Opt = 1;
+
+  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  productCountryMap!: Ref<ProductCountryMap>;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Sellers {
+
+  [PrimaryKeyProp]?: 'sellerId';
+
+  @PrimaryKey()
+  sellerId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
+  sellerInverse = new Collection<ProductSellers>(this);
+
+}
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+
+export class Countries {
+  [PrimaryKeyProp]?: 'code';
+  code!: unknown;
+  countriesInverse = new Collection<ProductCountryMap>(this);
+}
+
+export const CountriesSchema = new EntitySchema({
+  class: Countries,
+  properties: {
+    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    countriesInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'countries' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+import { Sales } from './Sales';
+
+export class ProductCountryMap {
+  [PrimaryKeyProp]?: ['product', 'countries'];
+  country!: unknown;
+  product!: Ref<Products>;
+  productId!: number;
+  isCurrentlyAllowed: boolean & Opt = false;
+  countries!: Ref<Countries>;
+  productCountryMapInverse = new Collection<Sales>(this);
+}
+
+export const ProductCountryMapSchema = new EntitySchema({
+  class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
+  ],
+  properties: {
+    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      ref: true,
+      fieldName: 'product_id',
+      index: 'fk_product_country_map_products1',
+    },
+    productId: { type: 'number', persist: false, index: 'fk_product_country_map_products1' },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    countries: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      ref: true,
+      fieldName: 'country',
+    },
+    productCountryMapInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'productCountryMap' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sales } from './Sales';
+import { Sellers } from './Sellers';
+
+export class ProductSellers {
+  [PrimaryKeyProp]?: ['seller', 'product'];
+  seller!: Ref<Sellers>;
+  sellerId!: number;
+  product!: Ref<Products>;
+  productId!: number;
+  isCurrentlyAllowed: boolean & Opt = false;
+  sellerInverse = new Collection<Sales>(this);
+}
+
+export const ProductSellersSchema = new EntitySchema({
+  class: ProductSellers,
+  properties: {
+    seller: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Sellers,
+      ref: true,
+      fieldName: 'seller_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    sellerId: { type: 'number', persist: false },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      ref: true,
+      fieldName: 'product_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_product_sellers_products1',
+    },
+    productId: { type: 'number', persist: false, index: 'fk_product_sellers_products1' },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+export class Products {
+  [PrimaryKeyProp]?: 'productId';
+  productId!: number;
+  name!: string;
+  currentPrice!: string;
+  currentQuantity: number & Opt = 0;
+  productInverse = new Collection<ProductSellers>(this);
+}
+
+export const ProductsSchema = new EntitySchema({
+  class: Products,
+  properties: {
+    productId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    currentQuantity: { type: 'number', default: 0 },
+    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+export class Sales {
+  [PrimaryKeyProp]?: 'saleId';
+  saleId!: number;
+  country!: unknown;
+  seller!: Ref<ProductSellers>;
+  sellerId!: number;
+  productId!: number;
+  singularPrice!: string;
+  quantitySold: number & Opt = 1;
+  productCountryMap!: Ref<ProductCountryMap>;
+}
+
+export const SalesSchema = new EntitySchema({
+  class: Sales,
+  properties: {
+    saleId: { primary: true, type: 'number' },
+    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    seller: {
+      kind: 'm:1',
+      entity: () => ProductSellers,
+      ref: true,
+      fieldNames: [
+        'seller_id',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_sellers1_idx',
+    },
+    sellerId: { type: 'number', persist: false },
+    productId: { type: 'number', persist: false, index: 'product_id_idx' },
+    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    quantitySold: { type: 'number', default: 1 },
+    productCountryMap: {
+      kind: 'm:1',
+      entity: () => ProductCountryMap,
+      ref: true,
+      fieldNames: [
+        'country',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_country_map1_idx',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+export class Sellers {
+  [PrimaryKeyProp]?: 'sellerId';
+  sellerId!: number;
+  name!: string;
+  sellerInverse = new Collection<ProductSellers>(this);
+}
+
+export const SellersSchema = new EntitySchema({
+  class: Sellers,
+  properties: {
+    sellerId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+  },
+});
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Countries {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ columnType: 'char(2)' })
+  code!: unknown;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+
+@Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
+export class ProductCountryMap {
+
+  [PrimaryKeyProp]?: ['country', 'product'];
+
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  country!: Countries;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  product!: Products;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+}
+",
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
+
+@Entity()
+export class ProductSellers {
+
+  [PrimaryKeyProp]?: ['seller', 'product'];
+
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  seller!: Sellers;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  product!: Products;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+}
+",
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Products {
+
+  [PrimaryKeyProp]?: 'productId';
+
+  @PrimaryKey()
+  productId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  currentPrice!: string;
+
+  @Property({ default: 0 })
+  currentQuantity: number & Opt = 0;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+export class Sales {
+
+  [PrimaryKeyProp]?: 'saleId';
+
+  @PrimaryKey()
+  saleId!: number;
+
+  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  country!: ProductCountryMap;
+
+  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  seller!: ProductSellers;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  singularPrice!: string;
+
+  @Property({ default: 1 })
+  quantitySold: number & Opt = 1;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Sellers {
+
+  [PrimaryKeyProp]?: 'sellerId';
+
+  @PrimaryKey()
+  sellerId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Countries {
+  [PrimaryKeyProp]?: 'code';
+  code!: unknown;
+}
+
+export const CountriesSchema = new EntitySchema({
+  class: Countries,
+  properties: {
+    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class ProductCountryMap {
+  [PrimaryKeyProp]?: ['country', 'product'];
+  country!: Countries;
+  product!: Products;
+  isCurrentlyAllowed: boolean & Opt = false;
+}
+
+export const ProductCountryMapSchema = new EntitySchema({
+  class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
+  properties: {
+    country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+      index: 'fk_product_country_map_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class ProductSellers {
+  [PrimaryKeyProp]?: ['seller', 'product'];
+  seller!: Sellers;
+  product!: Products;
+  isCurrentlyAllowed: boolean & Opt = false;
+}
+
+export const ProductSellersSchema = new EntitySchema({
+  class: ProductSellers,
+  properties: {
+    seller: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Sellers,
+      fieldName: 'seller_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_product_sellers_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Products {
+  [PrimaryKeyProp]?: 'productId';
+  productId!: number;
+  name!: string;
+  currentPrice!: string;
+  currentQuantity: number & Opt = 0;
+}
+
+export const ProductsSchema = new EntitySchema({
+  class: Products,
+  properties: {
+    productId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    currentQuantity: { type: 'number', default: 0 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Sales {
+  [PrimaryKeyProp]?: 'saleId';
+  saleId!: number;
+  country!: ProductCountryMap;
+  seller!: ProductSellers;
+  singularPrice!: string;
+  quantitySold: number & Opt = 1;
+}
+
+export const SalesSchema = new EntitySchema({
+  class: Sales,
+  indexes: [
+    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+  ],
+  properties: {
+    saleId: { primary: true, type: 'number' },
+    country: {
+      kind: 'm:1',
+      entity: () => ProductCountryMap,
+      fieldNames: [
+        'country',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_country_map1_idx',
+    },
+    seller: {
+      kind: 'm:1',
+      entity: () => ProductSellers,
+      fieldNames: [
+        'seller_id',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_sellers1_idx',
+    },
+    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    quantitySold: { type: 'number', default: 1 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Sellers {
+  [PrimaryKeyProp]?: 'sellerId';
+  sellerId!: number;
+  name!: string;
+}
+
+export const SellersSchema = new EntitySchema({
+  class: Sellers,
+  properties: {
+    sellerId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+  },
+});
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Countries {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ columnType: 'char(2)' })
+  code!: unknown;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+
+@Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
+export class ProductCountryMap {
+
+  [PrimaryKeyProp]?: ['country', 'product'];
+
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  country!: Ref<Countries>;
+
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  product!: Ref<Products>;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+}
+",
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
+
+@Entity()
+export class ProductSellers {
+
+  [PrimaryKeyProp]?: ['seller', 'product'];
+
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  seller!: Ref<Sellers>;
+
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  product!: Ref<Products>;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+}
+",
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Products {
+
+  [PrimaryKeyProp]?: 'productId';
+
+  @PrimaryKey()
+  productId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  currentPrice!: string;
+
+  @Property({ default: 0 })
+  currentQuantity: number & Opt = 0;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+export class Sales {
+
+  [PrimaryKeyProp]?: 'saleId';
+
+  @PrimaryKey()
+  saleId!: number;
+
+  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  country!: Ref<ProductCountryMap>;
+
+  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  seller!: Ref<ProductSellers>;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  singularPrice!: string;
+
+  @Property({ default: 1 })
+  quantitySold: number & Opt = 1;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Sellers {
+
+  [PrimaryKeyProp]?: 'sellerId';
+
+  @PrimaryKey()
+  sellerId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Countries {
+  [PrimaryKeyProp]?: 'code';
+  code!: unknown;
+}
+
+export const CountriesSchema = new EntitySchema({
+  class: Countries,
+  properties: {
+    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+
+export class ProductCountryMap {
+  [PrimaryKeyProp]?: ['country', 'product'];
+  country!: Ref<Countries>;
+  product!: Ref<Products>;
+  isCurrentlyAllowed: boolean & Opt = false;
+}
+
+export const ProductCountryMapSchema = new EntitySchema({
+  class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
+  properties: {
+    country: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      ref: true,
+      fieldName: 'country',
+    },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      ref: true,
+      fieldName: 'product_id',
+      index: 'fk_product_country_map_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
+
+export class ProductSellers {
+  [PrimaryKeyProp]?: ['seller', 'product'];
+  seller!: Ref<Sellers>;
+  product!: Ref<Products>;
+  isCurrentlyAllowed: boolean & Opt = false;
+}
+
+export const ProductSellersSchema = new EntitySchema({
+  class: ProductSellers,
+  properties: {
+    seller: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Sellers,
+      ref: true,
+      fieldName: 'seller_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      ref: true,
+      fieldName: 'product_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_product_sellers_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Products {
+  [PrimaryKeyProp]?: 'productId';
+  productId!: number;
+  name!: string;
+  currentPrice!: string;
+  currentQuantity: number & Opt = 0;
+}
+
+export const ProductsSchema = new EntitySchema({
+  class: Products,
+  properties: {
+    productId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    currentQuantity: { type: 'number', default: 0 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+export class Sales {
+  [PrimaryKeyProp]?: 'saleId';
+  saleId!: number;
+  country!: Ref<ProductCountryMap>;
+  seller!: Ref<ProductSellers>;
+  singularPrice!: string;
+  quantitySold: number & Opt = 1;
+}
+
+export const SalesSchema = new EntitySchema({
+  class: Sales,
+  indexes: [
+    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+  ],
+  properties: {
+    saleId: { primary: true, type: 'number' },
+    country: {
+      kind: 'm:1',
+      entity: () => ProductCountryMap,
+      ref: true,
+      fieldNames: [
+        'country',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_country_map1_idx',
+    },
+    seller: {
+      kind: 'm:1',
+      entity: () => ProductSellers,
+      ref: true,
+      fieldNames: [
+        'seller_id',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_sellers1_idx',
+    },
+    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    quantitySold: { type: 'number', default: 1 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Sellers {
+  [PrimaryKeyProp]?: 'sellerId';
+  sellerId!: number;
+  name!: string;
+}
+
+export const SellersSchema = new EntitySchema({
+  class: Sellers,
+  properties: {
+    sellerId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+  },
+});
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+
+@Entity()
+export class Countries {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ columnType: 'char(2)' })
+  code!: unknown;
+
+  @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'country' })
+  countryInverse = new Collection<ProductCountryMap>(this);
+
+}
+",
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+import { Sales } from './Sales';
+
+@Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
+export class ProductCountryMap {
+
+  [PrimaryKeyProp]?: ['country', 'product'];
+
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  country!: Countries;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  product!: Products;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @OneToMany({ entity: () => Sales, mappedBy: 'country' })
+  countryInverse = new Collection<Sales>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sales } from './Sales';
+import { Sellers } from './Sellers';
+
+@Entity()
+export class ProductSellers {
+
+  [PrimaryKeyProp]?: ['seller', 'product'];
+
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  seller!: Sellers;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  product!: Products;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
+  sellerInverse = new Collection<Sales>(this);
+
+}
+",
+  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Products {
+
+  [PrimaryKeyProp]?: 'productId';
+
+  @PrimaryKey()
+  productId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  currentPrice!: string;
+
+  @Property({ default: 0 })
+  currentQuantity: number & Opt = 0;
+
+  @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
+  productInverse = new Collection<ProductSellers>(this);
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+export class Sales {
+
+  [PrimaryKeyProp]?: 'saleId';
+
+  @PrimaryKey()
+  saleId!: number;
+
+  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  country!: ProductCountryMap;
+
+  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  seller!: ProductSellers;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  singularPrice!: string;
+
+  @Property({ default: 1 })
+  quantitySold: number & Opt = 1;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Sellers {
+
+  [PrimaryKeyProp]?: 'sellerId';
+
+  @PrimaryKey()
+  sellerId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
+  sellerInverse = new Collection<ProductSellers>(this);
+
+}
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+
+export class Countries {
+  [PrimaryKeyProp]?: 'code';
+  code!: unknown;
+  countryInverse = new Collection<ProductCountryMap>(this);
+}
+
+export const CountriesSchema = new EntitySchema({
+  class: Countries,
+  properties: {
+    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    countryInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'country' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Sales } from './Sales';
+
+export class ProductCountryMap {
+  [PrimaryKeyProp]?: ['country', 'product'];
+  country!: Countries;
+  product!: Products;
+  isCurrentlyAllowed: boolean & Opt = false;
+  countryInverse = new Collection<Sales>(this);
+}
+
+export const ProductCountryMapSchema = new EntitySchema({
+  class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
+  properties: {
+    country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+      index: 'fk_product_country_map_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    countryInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Sales } from './Sales';
+
+export class ProductSellers {
+  [PrimaryKeyProp]?: ['seller', 'product'];
+  seller!: Sellers;
+  product!: Products;
+  isCurrentlyAllowed: boolean & Opt = false;
+  sellerInverse = new Collection<Sales>(this);
+}
+
+export const ProductSellersSchema = new EntitySchema({
+  class: ProductSellers,
+  properties: {
+    seller: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Sellers,
+      fieldName: 'seller_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_product_sellers_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+export class Products {
+  [PrimaryKeyProp]?: 'productId';
+  productId!: number;
+  name!: string;
+  currentPrice!: string;
+  currentQuantity: number & Opt = 0;
+  productInverse = new Collection<ProductSellers>(this);
+}
+
+export const ProductsSchema = new EntitySchema({
+  class: Products,
+  properties: {
+    productId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    currentQuantity: { type: 'number', default: 0 },
+    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Sales {
+  [PrimaryKeyProp]?: 'saleId';
+  saleId!: number;
+  country!: ProductCountryMap;
+  seller!: ProductSellers;
+  singularPrice!: string;
+  quantitySold: number & Opt = 1;
+}
+
+export const SalesSchema = new EntitySchema({
+  class: Sales,
+  indexes: [
+    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+  ],
+  properties: {
+    saleId: { primary: true, type: 'number' },
+    country: {
+      kind: 'm:1',
+      entity: () => ProductCountryMap,
+      fieldNames: [
+        'country',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_country_map1_idx',
+    },
+    seller: {
+      kind: 'm:1',
+      entity: () => ProductSellers,
+      fieldNames: [
+        'seller_id',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_sellers1_idx',
+    },
+    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    quantitySold: { type: 'number', default: 1 },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+export class Sellers {
+  [PrimaryKeyProp]?: 'sellerId';
+  sellerId!: number;
+  name!: string;
+  sellerInverse = new Collection<ProductSellers>(this);
+}
+
+export const SellersSchema = new EntitySchema({
+  class: Sellers,
+  properties: {
+    sellerId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+  },
+});
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+
+@Entity()
+export class Countries {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ columnType: 'char(2)' })
+  code!: unknown;
+
+  @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'country' })
+  countryInverse = new Collection<ProductCountryMap>(this);
+
+}
+",
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+import { Sales } from './Sales';
+
+@Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
+export class ProductCountryMap {
+
+  [PrimaryKeyProp]?: ['country', 'product'];
+
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  country!: Ref<Countries>;
+
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  product!: Ref<Products>;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @OneToMany({ entity: () => Sales, mappedBy: 'country' })
+  countryInverse = new Collection<Sales>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sales } from './Sales';
+import { Sellers } from './Sellers';
+
+@Entity()
+export class ProductSellers {
+
+  [PrimaryKeyProp]?: ['seller', 'product'];
+
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  seller!: Ref<Sellers>;
+
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  product!: Ref<Products>;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
+  sellerInverse = new Collection<Sales>(this);
+
+}
+",
+  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Products {
+
+  [PrimaryKeyProp]?: 'productId';
+
+  @PrimaryKey()
+  productId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  currentPrice!: string;
+
+  @Property({ default: 0 })
+  currentQuantity: number & Opt = 0;
+
+  @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
+  productInverse = new Collection<ProductSellers>(this);
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+export class Sales {
+
+  [PrimaryKeyProp]?: 'saleId';
+
+  @PrimaryKey()
+  saleId!: number;
+
+  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  country!: Ref<ProductCountryMap>;
+
+  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  seller!: Ref<ProductSellers>;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  singularPrice!: string;
+
+  @Property({ default: 1 })
+  quantitySold: number & Opt = 1;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Sellers {
+
+  [PrimaryKeyProp]?: 'sellerId';
+
+  @PrimaryKey()
+  sellerId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
+  sellerInverse = new Collection<ProductSellers>(this);
+
+}
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+
+export class Countries {
+  [PrimaryKeyProp]?: 'code';
+  code!: unknown;
+  countryInverse = new Collection<ProductCountryMap>(this);
+}
+
+export const CountriesSchema = new EntitySchema({
+  class: Countries,
+  properties: {
+    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    countryInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'country' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+import { Sales } from './Sales';
+
+export class ProductCountryMap {
+  [PrimaryKeyProp]?: ['country', 'product'];
+  country!: Ref<Countries>;
+  product!: Ref<Products>;
+  isCurrentlyAllowed: boolean & Opt = false;
+  countryInverse = new Collection<Sales>(this);
+}
+
+export const ProductCountryMapSchema = new EntitySchema({
+  class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
+  properties: {
+    country: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      ref: true,
+      fieldName: 'country',
+    },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      ref: true,
+      fieldName: 'product_id',
+      index: 'fk_product_country_map_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    countryInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sales } from './Sales';
+import { Sellers } from './Sellers';
+
+export class ProductSellers {
+  [PrimaryKeyProp]?: ['seller', 'product'];
+  seller!: Ref<Sellers>;
+  product!: Ref<Products>;
+  isCurrentlyAllowed: boolean & Opt = false;
+  sellerInverse = new Collection<Sales>(this);
+}
+
+export const ProductSellersSchema = new EntitySchema({
+  class: ProductSellers,
+  properties: {
+    seller: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Sellers,
+      ref: true,
+      fieldName: 'seller_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      ref: true,
+      fieldName: 'product_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_product_sellers_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+export class Products {
+  [PrimaryKeyProp]?: 'productId';
+  productId!: number;
+  name!: string;
+  currentPrice!: string;
+  currentQuantity: number & Opt = 0;
+  productInverse = new Collection<ProductSellers>(this);
+}
+
+export const ProductsSchema = new EntitySchema({
+  class: Products,
+  properties: {
+    productId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    currentQuantity: { type: 'number', default: 0 },
+    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+export class Sales {
+  [PrimaryKeyProp]?: 'saleId';
+  saleId!: number;
+  country!: Ref<ProductCountryMap>;
+  seller!: Ref<ProductSellers>;
+  singularPrice!: string;
+  quantitySold: number & Opt = 1;
+}
+
+export const SalesSchema = new EntitySchema({
+  class: Sales,
+  indexes: [
+    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+  ],
+  properties: {
+    saleId: { primary: true, type: 'number' },
+    country: {
+      kind: 'm:1',
+      entity: () => ProductCountryMap,
+      ref: true,
+      fieldNames: [
+        'country',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_country_map1_idx',
+    },
+    seller: {
+      kind: 'm:1',
+      entity: () => ProductSellers,
+      ref: true,
+      fieldNames: [
+        'seller_id',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_sellers1_idx',
+    },
+    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    quantitySold: { type: 'number', default: 1 },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+export class Sellers {
+  [PrimaryKeyProp]?: 'sellerId';
+  sellerId!: number;
+  name!: string;
+  sellerInverse = new Collection<ProductSellers>(this);
+}
+
+export const SellersSchema = new EntitySchema({
+  class: Sellers,
+  properties: {
+    sellerId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+  },
+});
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Countries {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ columnType: 'char(2)' })
+  code!: unknown;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+
+@Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
+export class ProductCountryMap {
+
+  [PrimaryKeyProp]?: ['country', 'product'];
+
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  country!: Countries;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  product!: Products;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+}
+",
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
+
+@Entity()
+export class ProductSellers {
+
+  [PrimaryKeyProp]?: ['seller', 'product'];
+
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  seller!: Sellers;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  product!: Products;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+}
+",
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Products {
+
+  [PrimaryKeyProp]?: 'productId';
+
+  @PrimaryKey()
+  productId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  currentPrice!: string;
+
+  @Property({ default: 0 })
+  currentQuantity: number & Opt = 0;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+export class Sales {
+
+  [PrimaryKeyProp]?: 'saleId';
+
+  @PrimaryKey()
+  saleId!: number;
+
+  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  country!: ProductCountryMap;
+
+  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  seller!: ProductSellers;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  singularPrice!: string;
+
+  @Property({ default: 1 })
+  quantitySold: number & Opt = 1;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Sellers {
+
+  [PrimaryKeyProp]?: 'sellerId';
+
+  @PrimaryKey()
+  sellerId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Countries {
+  [PrimaryKeyProp]?: 'code';
+  code!: unknown;
+}
+
+export const CountriesSchema = new EntitySchema({
+  class: Countries,
+  properties: {
+    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class ProductCountryMap {
+  [PrimaryKeyProp]?: ['country', 'product'];
+  country!: Countries;
+  product!: Products;
+  isCurrentlyAllowed: boolean & Opt = false;
+}
+
+export const ProductCountryMapSchema = new EntitySchema({
+  class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
+  properties: {
+    country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+      index: 'fk_product_country_map_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class ProductSellers {
+  [PrimaryKeyProp]?: ['seller', 'product'];
+  seller!: Sellers;
+  product!: Products;
+  isCurrentlyAllowed: boolean & Opt = false;
+}
+
+export const ProductSellersSchema = new EntitySchema({
+  class: ProductSellers,
+  properties: {
+    seller: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Sellers,
+      fieldName: 'seller_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_product_sellers_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Products {
+  [PrimaryKeyProp]?: 'productId';
+  productId!: number;
+  name!: string;
+  currentPrice!: string;
+  currentQuantity: number & Opt = 0;
+}
+
+export const ProductsSchema = new EntitySchema({
+  class: Products,
+  properties: {
+    productId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    currentQuantity: { type: 'number', default: 0 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Sales {
+  [PrimaryKeyProp]?: 'saleId';
+  saleId!: number;
+  country!: ProductCountryMap;
+  seller!: ProductSellers;
+  singularPrice!: string;
+  quantitySold: number & Opt = 1;
+}
+
+export const SalesSchema = new EntitySchema({
+  class: Sales,
+  indexes: [
+    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+  ],
+  properties: {
+    saleId: { primary: true, type: 'number' },
+    country: {
+      kind: 'm:1',
+      entity: () => ProductCountryMap,
+      fieldNames: [
+        'country',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_country_map1_idx',
+    },
+    seller: {
+      kind: 'm:1',
+      entity: () => ProductSellers,
+      fieldNames: [
+        'seller_id',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_sellers1_idx',
+    },
+    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    quantitySold: { type: 'number', default: 1 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Sellers {
+  [PrimaryKeyProp]?: 'sellerId';
+  sellerId!: number;
+  name!: string;
+}
+
+export const SellersSchema = new EntitySchema({
+  class: Sellers,
+  properties: {
+    sellerId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+  },
+});
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Countries {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ columnType: 'char(2)' })
+  code!: unknown;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+
+@Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
+export class ProductCountryMap {
+
+  [PrimaryKeyProp]?: ['country', 'product'];
+
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  country!: Ref<Countries>;
+
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  product!: Ref<Products>;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+}
+",
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
+
+@Entity()
+export class ProductSellers {
+
+  [PrimaryKeyProp]?: ['seller', 'product'];
+
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  seller!: Ref<Sellers>;
+
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  product!: Ref<Products>;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+}
+",
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Products {
+
+  [PrimaryKeyProp]?: 'productId';
+
+  @PrimaryKey()
+  productId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  currentPrice!: string;
+
+  @Property({ default: 0 })
+  currentQuantity: number & Opt = 0;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+export class Sales {
+
+  [PrimaryKeyProp]?: 'saleId';
+
+  @PrimaryKey()
+  saleId!: number;
+
+  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  country!: Ref<ProductCountryMap>;
+
+  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  seller!: Ref<ProductSellers>;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  singularPrice!: string;
+
+  @Property({ default: 1 })
+  quantitySold: number & Opt = 1;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Sellers {
+
+  [PrimaryKeyProp]?: 'sellerId';
+
+  @PrimaryKey()
+  sellerId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Countries {
+  [PrimaryKeyProp]?: 'code';
+  code!: unknown;
+}
+
+export const CountriesSchema = new EntitySchema({
+  class: Countries,
+  properties: {
+    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+
+export class ProductCountryMap {
+  [PrimaryKeyProp]?: ['country', 'product'];
+  country!: Ref<Countries>;
+  product!: Ref<Products>;
+  isCurrentlyAllowed: boolean & Opt = false;
+}
+
+export const ProductCountryMapSchema = new EntitySchema({
+  class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
+  properties: {
+    country: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      ref: true,
+      fieldName: 'country',
+    },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      ref: true,
+      fieldName: 'product_id',
+      index: 'fk_product_country_map_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
+
+export class ProductSellers {
+  [PrimaryKeyProp]?: ['seller', 'product'];
+  seller!: Ref<Sellers>;
+  product!: Ref<Products>;
+  isCurrentlyAllowed: boolean & Opt = false;
+}
+
+export const ProductSellersSchema = new EntitySchema({
+  class: ProductSellers,
+  properties: {
+    seller: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Sellers,
+      ref: true,
+      fieldName: 'seller_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      ref: true,
+      fieldName: 'product_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_product_sellers_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Products {
+  [PrimaryKeyProp]?: 'productId';
+  productId!: number;
+  name!: string;
+  currentPrice!: string;
+  currentQuantity: number & Opt = 0;
+}
+
+export const ProductsSchema = new EntitySchema({
+  class: Products,
+  properties: {
+    productId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    currentQuantity: { type: 'number', default: 0 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+export class Sales {
+  [PrimaryKeyProp]?: 'saleId';
+  saleId!: number;
+  country!: Ref<ProductCountryMap>;
+  seller!: Ref<ProductSellers>;
+  singularPrice!: string;
+  quantitySold: number & Opt = 1;
+}
+
+export const SalesSchema = new EntitySchema({
+  class: Sales,
+  indexes: [
+    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+  ],
+  properties: {
+    saleId: { primary: true, type: 'number' },
+    country: {
+      kind: 'm:1',
+      entity: () => ProductCountryMap,
+      ref: true,
+      fieldNames: [
+        'country',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_country_map1_idx',
+    },
+    seller: {
+      kind: 'm:1',
+      entity: () => ProductSellers,
+      ref: true,
+      fieldNames: [
+        'seller_id',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_sellers1_idx',
+    },
+    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    quantitySold: { type: 'number', default: 1 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Sellers {
+  [PrimaryKeyProp]?: 'sellerId';
+  sellerId!: number;
+  name!: string;
+}
+
+export const SellersSchema = new EntitySchema({
+  class: Sellers,
+  properties: {
+    sellerId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+  },
+});
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+
+@Entity()
+export class Countries {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ columnType: 'char(2)' })
+  code!: unknown;
+
+  @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'country' })
+  countryInverse = new Collection<ProductCountryMap>(this);
+
+}
+",
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+import { Sales } from './Sales';
+
+@Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
+export class ProductCountryMap {
+
+  [PrimaryKeyProp]?: ['country', 'product'];
+
+  @ManyToOne({ entity: () => Countries, fieldName: 'country', primary: true })
+  country!: Countries;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  product!: Products;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @OneToMany({ entity: () => Sales, mappedBy: 'country' })
+  countryInverse = new Collection<Sales>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sales } from './Sales';
+import { Sellers } from './Sellers';
+
+@Entity()
+export class ProductSellers {
+
+  [PrimaryKeyProp]?: ['seller', 'product'];
+
+  @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  seller!: Sellers;
+
+  @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  product!: Products;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
+  sellerInverse = new Collection<Sales>(this);
+
+}
+",
+  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Products {
+
+  [PrimaryKeyProp]?: 'productId';
+
+  @PrimaryKey()
+  productId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  currentPrice!: string;
+
+  @Property({ default: 0 })
+  currentQuantity: number & Opt = 0;
+
+  @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
+  productInverse = new Collection<ProductSellers>(this);
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+export class Sales {
+
+  [PrimaryKeyProp]?: 'saleId';
+
+  @PrimaryKey()
+  saleId!: number;
+
+  @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  country!: ProductCountryMap;
+
+  @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  seller!: ProductSellers;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  singularPrice!: string;
+
+  @Property({ default: 1 })
+  quantitySold: number & Opt = 1;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Sellers {
+
+  [PrimaryKeyProp]?: 'sellerId';
+
+  @PrimaryKey()
+  sellerId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
+  sellerInverse = new Collection<ProductSellers>(this);
+
+}
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+
+export class Countries {
+  [PrimaryKeyProp]?: 'code';
+  code!: unknown;
+  countryInverse = new Collection<ProductCountryMap>(this);
+}
+
+export const CountriesSchema = new EntitySchema({
+  class: Countries,
+  properties: {
+    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    countryInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'country' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Sales } from './Sales';
+
+export class ProductCountryMap {
+  [PrimaryKeyProp]?: ['country', 'product'];
+  country!: Countries;
+  product!: Products;
+  isCurrentlyAllowed: boolean & Opt = false;
+  countryInverse = new Collection<Sales>(this);
+}
+
+export const ProductCountryMapSchema = new EntitySchema({
+  class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
+  properties: {
+    country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+      index: 'fk_product_country_map_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    countryInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Sales } from './Sales';
+
+export class ProductSellers {
+  [PrimaryKeyProp]?: ['seller', 'product'];
+  seller!: Sellers;
+  product!: Products;
+  isCurrentlyAllowed: boolean & Opt = false;
+  sellerInverse = new Collection<Sales>(this);
+}
+
+export const ProductSellersSchema = new EntitySchema({
+  class: ProductSellers,
+  properties: {
+    seller: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Sellers,
+      fieldName: 'seller_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_product_sellers_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+export class Products {
+  [PrimaryKeyProp]?: 'productId';
+  productId!: number;
+  name!: string;
+  currentPrice!: string;
+  currentQuantity: number & Opt = 0;
+  productInverse = new Collection<ProductSellers>(this);
+}
+
+export const ProductsSchema = new EntitySchema({
+  class: Products,
+  properties: {
+    productId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    currentQuantity: { type: 'number', default: 0 },
+    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Sales {
+  [PrimaryKeyProp]?: 'saleId';
+  saleId!: number;
+  country!: ProductCountryMap;
+  seller!: ProductSellers;
+  singularPrice!: string;
+  quantitySold: number & Opt = 1;
+}
+
+export const SalesSchema = new EntitySchema({
+  class: Sales,
+  indexes: [
+    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+  ],
+  properties: {
+    saleId: { primary: true, type: 'number' },
+    country: {
+      kind: 'm:1',
+      entity: () => ProductCountryMap,
+      fieldNames: [
+        'country',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_country_map1_idx',
+    },
+    seller: {
+      kind: 'm:1',
+      entity: () => ProductSellers,
+      fieldNames: [
+        'seller_id',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_sellers1_idx',
+    },
+    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    quantitySold: { type: 'number', default: 1 },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+export class Sellers {
+  [PrimaryKeyProp]?: 'sellerId';
+  sellerId!: number;
+  name!: string;
+  sellerInverse = new Collection<ProductSellers>(this);
+}
+
+export const SellersSchema = new EntitySchema({
+  class: Sellers,
+  properties: {
+    sellerId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+  },
+});
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+
+@Entity()
+export class Countries {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ columnType: 'char(2)' })
+  code!: unknown;
+
+  @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'country' })
+  countryInverse = new Collection<ProductCountryMap>(this);
+
+}
+",
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+import { Sales } from './Sales';
+
+@Entity()
+@Index({ name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] })
+@Index({ name: 'primary_reindex_idx', properties: ['country', 'product'] })
+export class ProductCountryMap {
+
+  [PrimaryKeyProp]?: ['country', 'product'];
+
+  @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
+  country!: Ref<Countries>;
+
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
+  product!: Ref<Products>;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @OneToMany({ entity: () => Sales, mappedBy: 'country' })
+  countryInverse = new Collection<Sales>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sales } from './Sales';
+import { Sellers } from './Sellers';
+
+@Entity()
+export class ProductSellers {
+
+  [PrimaryKeyProp]?: ['seller', 'product'];
+
+  @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  seller!: Ref<Sellers>;
+
+  @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
+  product!: Ref<Products>;
+
+  @Property({ default: false })
+  isCurrentlyAllowed: boolean & Opt = false;
+
+  @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
+  sellerInverse = new Collection<Sales>(this);
+
+}
+",
+  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Products {
+
+  [PrimaryKeyProp]?: 'productId';
+
+  @PrimaryKey()
+  productId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  currentPrice!: string;
+
+  @Property({ default: 0 })
+  currentQuantity: number & Opt = 0;
+
+  @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
+  productInverse = new Collection<ProductSellers>(this);
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+export class Sales {
+
+  [PrimaryKeyProp]?: 'saleId';
+
+  @PrimaryKey()
+  saleId!: number;
+
+  @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
+  country!: Ref<ProductCountryMap>;
+
+  @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
+  seller!: Ref<ProductSellers>;
+
+  @Property({ columnType: 'numeric(10,2)' })
+  singularPrice!: string;
+
+  @Property({ default: 1 })
+  quantitySold: number & Opt = 1;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+@Entity()
+export class Sellers {
+
+  [PrimaryKeyProp]?: 'sellerId';
+
+  @PrimaryKey()
+  sellerId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
+  sellerInverse = new Collection<ProductSellers>(this);
+
+}
+",
+]
+`;
+
+exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+
+export class Countries {
+  [PrimaryKeyProp]?: 'code';
+  code!: unknown;
+  countryInverse = new Collection<ProductCountryMap>(this);
+}
+
+export const CountriesSchema = new EntitySchema({
+  class: Countries,
+  properties: {
+    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    countryInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'country' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
+import { Sales } from './Sales';
+
+export class ProductCountryMap {
+  [PrimaryKeyProp]?: ['country', 'product'];
+  country!: Ref<Countries>;
+  product!: Ref<Products>;
+  isCurrentlyAllowed: boolean & Opt = false;
+  countryInverse = new Collection<Sales>(this);
+}
+
+export const ProductCountryMapSchema = new EntitySchema({
+  class: ProductCountryMap,
+  indexes: [
+    { name: 'full_idx', properties: ['country', 'product', 'isCurrentlyAllowed'] },
+    { name: 'primary_reindex_idx', properties: ['country', 'product'] },
+  ],
+  properties: {
+    country: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      ref: true,
+      fieldName: 'country',
+    },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      ref: true,
+      fieldName: 'product_id',
+      index: 'fk_product_country_map_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    countryInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sales } from './Sales';
+import { Sellers } from './Sellers';
+
+export class ProductSellers {
+  [PrimaryKeyProp]?: ['seller', 'product'];
+  seller!: Ref<Sellers>;
+  product!: Ref<Products>;
+  isCurrentlyAllowed: boolean & Opt = false;
+  sellerInverse = new Collection<Sales>(this);
+}
+
+export const ProductSellersSchema = new EntitySchema({
+  class: ProductSellers,
+  properties: {
+    seller: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Sellers,
+      ref: true,
+      fieldName: 'seller_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    product: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Products,
+      ref: true,
+      fieldName: 'product_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_product_sellers_products1',
+    },
+    isCurrentlyAllowed: { type: 'boolean', default: false },
+    sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+  },
+});
+",
+  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+export class Products {
+  [PrimaryKeyProp]?: 'productId';
+  productId!: number;
+  name!: string;
+  currentPrice!: string;
+  currentQuantity: number & Opt = 0;
+  productInverse = new Collection<ProductSellers>(this);
+}
+
+export const ProductsSchema = new EntitySchema({
+  class: Products,
+  properties: {
+    productId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    currentQuantity: { type: 'number', default: 0 },
+    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
+
+export class Sales {
+  [PrimaryKeyProp]?: 'saleId';
+  saleId!: number;
+  country!: Ref<ProductCountryMap>;
+  seller!: Ref<ProductSellers>;
+  singularPrice!: string;
+  quantitySold: number & Opt = 1;
+}
+
+export const SalesSchema = new EntitySchema({
+  class: Sales,
+  indexes: [
+    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+  ],
+  properties: {
+    saleId: { primary: true, type: 'number' },
+    country: {
+      kind: 'm:1',
+      entity: () => ProductCountryMap,
+      ref: true,
+      fieldNames: [
+        'country',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_country_map1_idx',
+    },
+    seller: {
+      kind: 'm:1',
+      entity: () => ProductSellers,
+      ref: true,
+      fieldNames: [
+        'seller_id',
+        'product_id'
+      ],
+      updateRule: 'cascade',
+      index: 'fk_sales_product_sellers1_idx',
+    },
+    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
+    quantitySold: { type: 'number', default: 1 },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
+
+export class Sellers {
+  [PrimaryKeyProp]?: 'sellerId';
+  sellerId!: number;
+  name!: string;
+  sellerInverse = new Collection<ProductSellers>(this);
+}
+
+export const SellersSchema = new EntitySchema({
+  class: Sellers,
+  properties: {
+    sellerId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+  },
+});
+",
+]
+`;

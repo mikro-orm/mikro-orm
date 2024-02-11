@@ -4,7 +4,7 @@ import { BigIntType } from '@mikro-orm/postgresql';
 @Entity({ tableName: 'user' })
 class User {
 
-  @PrimaryKey({ type: new BigIntType('number') })
+  @PrimaryKey({ type: BigIntType })
   id!: number;
 
   @ManyToOne('Member', { fieldName: 'ownerMemberId', nullable: true, ref: true })
@@ -29,7 +29,7 @@ class Member {
 @Entity({ tableName: 'member_user' })
 class MemberUser {
 
-  @PrimaryKey({ type: new BigIntType('string') })
+  @PrimaryKey({ type: BigIntType })
   id!: string;
 
   @ManyToOne(() => Member, { fieldName: 'memberId', ref: true })

@@ -32,4 +32,5 @@ afterAll(async () => {
 test(`GH issue 1352`, async () => {
   const foo = orm.em.create(Foo, { bar: 'baz' });
   orm.em.assign(foo, { createdAt: new Date() });
+  expect(orm.getMetadata().get(Foo).properties.createdAt.type).toBe('Date');
 });

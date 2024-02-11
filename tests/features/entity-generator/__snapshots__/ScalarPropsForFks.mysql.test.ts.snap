@@ -1,0 +1,1092 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ScalarPropsForFks generate entities with columns for all foreign key properties [mysql]: mysql-entity-composite-fk-prop-always-dump 1`] = `
+[
+  "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Author2 } from './Author2';
+
+@Entity()
+export class Address2 {
+
+  [PrimaryKeyProp]?: 'author';
+
+  @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  author!: Author2;
+
+  @Property({ persist: false })
+  authorId!: number;
+
+  @Property({ length: 255 })
+  value!: string;
+
+}
+",
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+
+@Entity()
+@Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
+@Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
+export class Author2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  createdAt!: Date & Opt;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  updatedAt!: Date & Opt;
+
+  @Index({ name: 'custom_idx_name_123' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Index({ name: 'custom_email_index_name' })
+  @Unique({ name: 'custom_email_unique_name' })
+  @Property({ length: 255 })
+  email!: string;
+
+  @Property({ nullable: true })
+  age?: number;
+
+  @Index({ name: 'author2_terms_accepted_index' })
+  @Property({ default: false })
+  termsAccepted: boolean & Opt = false;
+
+  @Property({ nullable: true })
+  optional?: boolean;
+
+  @Property({ columnType: 'text', nullable: true })
+  identities?: string;
+
+  @Index({ name: 'author2_born_index' })
+  @Property({ columnType: 'date', nullable: true })
+  born?: string;
+
+  @Index({ name: 'born_time_idx' })
+  @Property({ columnType: 'time', nullable: true })
+  bornTime?: string;
+
+  @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
+  favouriteBook?: Book2;
+
+  @Index({ name: 'author2_favourite_book_uuid_pk_index' })
+  @Property({ length: 36, nullable: true, persist: false })
+  favouriteBookUuidPk?: string;
+
+  @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteAuthor?: Author2;
+
+  @Index({ name: 'author2_favourite_author_id_index' })
+  @Property({ nullable: true, persist: false })
+  favouriteAuthorId?: number;
+
+  @Property({ columnType: 'json', nullable: true })
+  identity?: any;
+
+  @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
+  authorToFriend = new Collection<Author2>(this);
+
+  @ManyToMany({ entity: () => Author2, joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
+  following = new Collection<Author2>(this);
+
+}
+",
+  "import { Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class BaseUser2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 100 })
+  firstName!: string;
+
+  @Property({ length: 100 })
+  lastName!: string;
+
+  @Index({ name: 'base_user2_type_index' })
+  @Enum({ items: () => BaseUser2Type })
+  type!: BaseUser2Type;
+
+  @Property({ length: 255, nullable: true })
+  ownerProp?: string;
+
+  @ManyToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteEmployee?: BaseUser2;
+
+  @Index({ name: 'base_user2_favourite_employee_id_index' })
+  @Property({ nullable: true, persist: false })
+  favouriteEmployeeId?: number;
+
+  @OneToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteManager?: BaseUser2;
+
+  @Unique({ name: 'base_user2_favourite_manager_id_unique' })
+  @Property({ nullable: true, persist: false })
+  favouriteManagerId?: number;
+
+  @Unique({ name: 'base_user2_employee_prop_unique' })
+  @Property({ nullable: true })
+  employeeProp?: number;
+
+  @Property({ length: 255, nullable: true })
+  managerProp?: string;
+
+}
+
+export enum BaseUser2Type {
+  EMPLOYEE = 'employee',
+  MANAGER = 'manager',
+  OWNER = 'owner',
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class BookTag2 {
+
+  @PrimaryKey()
+  id!: bigint;
+
+  @Property({ length: 50 })
+  name!: string;
+
+}
+",
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Author2 } from './Author2';
+import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
+
+@Entity()
+export class Book2 {
+
+  [PrimaryKeyProp]?: 'uuidPk';
+
+  @PrimaryKey({ length: 36 })
+  uuidPk!: string;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  createdAt!: Date & Opt;
+
+  @Index({ name: 'book2_title_index' })
+  @Property({ length: 255, nullable: true })
+  title?: string;
+
+  @Property({ columnType: 'text', nullable: true })
+  perex?: string;
+
+  @Property({ columnType: 'numeric(8,2)', nullable: true })
+  price?: string;
+
+  @Property({ columnType: 'double', nullable: true })
+  double?: number;
+
+  @Property({ columnType: 'json', nullable: true })
+  meta?: any;
+
+  @ManyToOne({ entity: () => Author2 })
+  author!: Author2;
+
+  @Index({ name: 'book2_author_id_index' })
+  @Property({ persist: false })
+  authorId!: number;
+
+  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
+  publisher?: Publisher2;
+
+  @Index({ name: 'book2_publisher_id_index' })
+  @Property({ nullable: true, persist: false })
+  publisherId?: number;
+
+  @Property({ length: 255, nullable: true, default: 'lol' })
+  foo?: string;
+
+  @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
+  bookToTagUnordered = new Collection<BookTag2>(this);
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
+
+@Entity({ tableName: 'book2_tags' })
+export class Book2Tags {
+
+  [PrimaryKeyProp]?: 'order';
+
+  @PrimaryKey()
+  order!: number;
+
+  @ManyToOne({ entity: () => Book2, updateRule: 'cascade', deleteRule: 'cascade' })
+  book2!: Book2;
+
+  @Index({ name: 'book2_tags_book2_uuid_pk_index' })
+  @Property({ fieldName: 'book2_uuid_pk', length: 36, persist: false })
+  book2UuidPk!: string;
+
+  @ManyToOne({ entity: () => BookTag2, updateRule: 'cascade', deleteRule: 'cascade' })
+  bookTag2!: BookTag2;
+
+  @Index({ name: 'book2_tags_book_tag2_id_index' })
+  @Property({ fieldName: 'book_tag2_id', persist: false })
+  bookTag2Id!: bigint;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Car2 } from './Car2';
+
+@Entity()
+export class CarOwner2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
+  car!: Car2;
+
+  @Property({ length: 100, persist: false })
+  carName!: string;
+
+  @Property({ persist: false })
+  carYear!: number;
+
+}
+",
+  "import { Entity, Index, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Car2 {
+
+  [PrimaryKeyProp]?: ['name', 'year'];
+
+  @Index({ name: 'car2_name_index' })
+  @PrimaryKey({ length: 100 })
+  name!: string;
+
+  @Index({ name: 'car2_year_index' })
+  @PrimaryKey()
+  year!: number;
+
+  @Property()
+  price!: number;
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Test2 } from './Test2';
+
+@Entity()
+export class Configuration2 {
+
+  [PrimaryKeyProp]?: ['property', 'test'];
+
+  @PrimaryKey({ length: 255 })
+  property!: string;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
+  test!: Test2;
+
+  @Index({ name: 'configuration2_test_id_index' })
+  @Property({ persist: false })
+  testId!: number;
+
+  @Property({ length: 255 })
+  value!: string;
+
+}
+",
+  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+
+@Entity()
+export class Dummy2 {
+
+  @PrimaryKey()
+  id!: number;
+
+}
+",
+  "import { Entity, OneToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { FooBaz2 } from './FooBaz2';
+
+@Entity()
+export class FooBar2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ fieldName: 'name with space', length: 255, nullable: true })
+  nameWithSpace?: string;
+
+  @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  baz?: FooBaz2;
+
+  @Unique({ name: 'foo_bar2_baz_id_unique' })
+  @Property({ nullable: true, persist: false })
+  bazId?: number;
+
+  @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  fooBar?: FooBar2;
+
+  @Unique({ name: 'foo_bar2_foo_bar_id_unique' })
+  @Property({ nullable: true, persist: false })
+  fooBarId?: number;
+
+  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  version!: Date & Opt;
+
+  @Property({ length: 65535, nullable: true })
+  blob?: Buffer;
+
+  @Property({ length: 65535, nullable: true })
+  blob2?: Buffer;
+
+  @Property({ columnType: 'text', nullable: true })
+  array?: string;
+
+  @Property({ columnType: 'json', nullable: true })
+  objectProperty?: any;
+
+}
+",
+  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class FooBaz2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  version!: Date & Opt;
+
+}
+",
+  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
+
+@Entity()
+export class FooParam2 {
+
+  [PrimaryKeyProp]?: ['bar', 'baz'];
+
+  @ManyToOne({ entity: () => FooBar2, updateRule: 'cascade', primary: true })
+  bar!: FooBar2;
+
+  @Index({ name: 'foo_param2_bar_id_index' })
+  @Property({ persist: false })
+  barId!: number;
+
+  @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
+  baz!: FooBaz2;
+
+  @Index({ name: 'foo_param2_baz_id_index' })
+  @Property({ persist: false })
+  bazId!: number;
+
+  @Property({ length: 255 })
+  value!: string;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  version!: Date & Opt;
+
+}
+",
+  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Publisher2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255, default: 'asd' })
+  name!: string & Opt;
+
+  @Enum({ items: () => Publisher2Type, default: 'local' })
+  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
+
+  @Enum({ items: () => Publisher2Type2, default: 'LOCAL' })
+  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+
+  @Property({ columnType: 'tinyint', nullable: true })
+  enum1?: number;
+
+  @Property({ columnType: 'tinyint', nullable: true })
+  enum2?: number;
+
+  @Property({ columnType: 'tinyint', nullable: true })
+  enum3?: number;
+
+  @Enum({ items: () => Publisher2Enum4, nullable: true })
+  enum4?: Publisher2Enum4;
+
+  @Enum({ items: () => Publisher2Enum5, nullable: true })
+  enum5?: Publisher2Enum5;
+
+}
+
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+
+export enum Publisher2Enum4 {
+  A = 'a',
+  B = 'b',
+  C = 'c',
+}
+
+export enum Publisher2Enum5 {
+  A = 'a',
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
+
+@Entity({ tableName: 'publisher2_tests' })
+export class Publisher2Tests {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade' })
+  publisher2!: Publisher2;
+
+  @Index({ name: 'publisher2_tests_publisher2_id_index' })
+  @Property({ fieldName: 'publisher2_id', persist: false })
+  publisher2Id!: number;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
+  test2!: Test2;
+
+  @Index({ name: 'publisher2_tests_test2_id_index' })
+  @Property({ fieldName: 'test2_id', persist: false })
+  test2Id!: number;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Sandwich {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property()
+  price!: number;
+
+}
+",
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { FooBar2 } from './FooBar2';
+
+@Entity()
+export class Test2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255, nullable: true })
+  name?: string;
+
+  @OneToOne({ entity: () => Book2, deleteRule: 'set null', nullable: true })
+  book?: Book2;
+
+  @Unique({ name: 'test2_book_uuid_pk_unique' })
+  @Property({ length: 36, nullable: true, persist: false })
+  bookUuidPk?: string;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  parent?: Test2;
+
+  @Index({ name: 'test2_parent_id_index' })
+  @Property({ nullable: true, persist: false })
+  parentId?: number;
+
+  @Property({ default: 1 })
+  version: number & Opt = 1;
+
+  @Unique({ name: 'test2_foo___bar_unique' })
+  @Property({ fieldName: 'foo___bar', nullable: true, persist: false })
+  fooBar?: number;
+
+  @Property({ fieldName: 'foo___baz', nullable: true })
+  fooBaz?: number;
+
+  @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  fooBar2?: FooBar2;
+
+  @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
+  bars = new Collection<FooBar2>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Car2 } from './Car2';
+import { Sandwich } from './Sandwich';
+
+@Entity()
+export class User2 {
+
+  [PrimaryKeyProp]?: ['firstName', 'lastName'];
+
+  @PrimaryKey({ length: 100 })
+  firstName!: string;
+
+  @PrimaryKey({ length: 100 })
+  lastName!: string;
+
+  @Property({ nullable: true })
+  foo?: number;
+
+  @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteCar?: Car2;
+
+  @Property({ length: 100, nullable: true, persist: false })
+  favouriteCarName?: string;
+
+  @Property({ nullable: true, persist: false })
+  favouriteCarYear?: number;
+
+  @ManyToMany({ entity: () => Car2, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumns: ['car2_name', 'car2_year'] })
+  cars = new Collection<Car2>(this);
+
+  @ManyToMany({ entity: () => Sandwich, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumn: 'sandwich_id' })
+  sandwiches = new Collection<Sandwich>(this);
+
+}
+",
+]
+`;
+
+exports[`ScalarPropsForFks generate entities with columns for some foreign key properties [mysql]: mysql-entity-composite-fk-prop-smart-dump 1`] = `
+[
+  "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Author2 } from './Author2';
+
+@Entity()
+export class Address2 {
+
+  [PrimaryKeyProp]?: 'author';
+
+  @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  author!: Author2;
+
+  @Property({ length: 255 })
+  value!: string;
+
+}
+",
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+
+@Entity()
+@Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
+@Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
+export class Author2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  createdAt!: Date & Opt;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  updatedAt!: Date & Opt;
+
+  @Index({ name: 'custom_idx_name_123' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Index({ name: 'custom_email_index_name' })
+  @Unique({ name: 'custom_email_unique_name' })
+  @Property({ length: 255 })
+  email!: string;
+
+  @Property({ nullable: true })
+  age?: number;
+
+  @Index({ name: 'author2_terms_accepted_index' })
+  @Property({ default: false })
+  termsAccepted: boolean & Opt = false;
+
+  @Property({ nullable: true })
+  optional?: boolean;
+
+  @Property({ columnType: 'text', nullable: true })
+  identities?: string;
+
+  @Index({ name: 'author2_born_index' })
+  @Property({ columnType: 'date', nullable: true })
+  born?: string;
+
+  @Index({ name: 'born_time_idx' })
+  @Property({ columnType: 'time', nullable: true })
+  bornTime?: string;
+
+  @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
+  favouriteBook?: Book2;
+
+  @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteAuthor?: Author2;
+
+  @Property({ columnType: 'json', nullable: true })
+  identity?: any;
+
+  @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
+  authorToFriend = new Collection<Author2>(this);
+
+  @ManyToMany({ entity: () => Author2, joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
+  following = new Collection<Author2>(this);
+
+}
+",
+  "import { Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class BaseUser2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 100 })
+  firstName!: string;
+
+  @Property({ length: 100 })
+  lastName!: string;
+
+  @Index({ name: 'base_user2_type_index' })
+  @Enum({ items: () => BaseUser2Type })
+  type!: BaseUser2Type;
+
+  @Property({ length: 255, nullable: true })
+  ownerProp?: string;
+
+  @ManyToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteEmployee?: BaseUser2;
+
+  @OneToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteManager?: BaseUser2;
+
+  @Unique({ name: 'base_user2_employee_prop_unique' })
+  @Property({ nullable: true })
+  employeeProp?: number;
+
+  @Property({ length: 255, nullable: true })
+  managerProp?: string;
+
+}
+
+export enum BaseUser2Type {
+  EMPLOYEE = 'employee',
+  MANAGER = 'manager',
+  OWNER = 'owner',
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class BookTag2 {
+
+  @PrimaryKey()
+  id!: bigint;
+
+  @Property({ length: 50 })
+  name!: string;
+
+}
+",
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Author2 } from './Author2';
+import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
+
+@Entity()
+export class Book2 {
+
+  [PrimaryKeyProp]?: 'uuidPk';
+
+  @PrimaryKey({ length: 36 })
+  uuidPk!: string;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  createdAt!: Date & Opt;
+
+  @Index({ name: 'book2_title_index' })
+  @Property({ length: 255, nullable: true })
+  title?: string;
+
+  @Property({ columnType: 'text', nullable: true })
+  perex?: string;
+
+  @Property({ columnType: 'numeric(8,2)', nullable: true })
+  price?: string;
+
+  @Property({ columnType: 'double', nullable: true })
+  double?: number;
+
+  @Property({ columnType: 'json', nullable: true })
+  meta?: any;
+
+  @ManyToOne({ entity: () => Author2 })
+  author!: Author2;
+
+  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
+  publisher?: Publisher2;
+
+  @Property({ length: 255, nullable: true, default: 'lol' })
+  foo?: string;
+
+  @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
+  bookToTagUnordered = new Collection<BookTag2>(this);
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
+
+@Entity({ tableName: 'book2_tags' })
+export class Book2Tags {
+
+  [PrimaryKeyProp]?: 'order';
+
+  @PrimaryKey()
+  order!: number;
+
+  @ManyToOne({ entity: () => Book2, updateRule: 'cascade', deleteRule: 'cascade' })
+  book2!: Book2;
+
+  @ManyToOne({ entity: () => BookTag2, updateRule: 'cascade', deleteRule: 'cascade' })
+  bookTag2!: BookTag2;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Car2 } from './Car2';
+
+@Entity()
+export class CarOwner2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
+  car!: Car2;
+
+}
+",
+  "import { Entity, Index, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Car2 {
+
+  [PrimaryKeyProp]?: ['name', 'year'];
+
+  @Index({ name: 'car2_name_index' })
+  @PrimaryKey({ length: 100 })
+  name!: string;
+
+  @Index({ name: 'car2_year_index' })
+  @PrimaryKey()
+  year!: number;
+
+  @Property()
+  price!: number;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Test2 } from './Test2';
+
+@Entity()
+export class Configuration2 {
+
+  [PrimaryKeyProp]?: ['property', 'test'];
+
+  @PrimaryKey({ length: 255 })
+  property!: string;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
+  test!: Test2;
+
+  @Property({ length: 255 })
+  value!: string;
+
+}
+",
+  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+
+@Entity()
+export class Dummy2 {
+
+  @PrimaryKey()
+  id!: number;
+
+}
+",
+  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { FooBaz2 } from './FooBaz2';
+
+@Entity()
+export class FooBar2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ fieldName: 'name with space', length: 255, nullable: true })
+  nameWithSpace?: string;
+
+  @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  baz?: FooBaz2;
+
+  @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  fooBar?: FooBar2;
+
+  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  version!: Date & Opt;
+
+  @Property({ length: 65535, nullable: true })
+  blob?: Buffer;
+
+  @Property({ length: 65535, nullable: true })
+  blob2?: Buffer;
+
+  @Property({ columnType: 'text', nullable: true })
+  array?: string;
+
+  @Property({ columnType: 'json', nullable: true })
+  objectProperty?: any;
+
+}
+",
+  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class FooBaz2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  version!: Date & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
+
+@Entity()
+export class FooParam2 {
+
+  [PrimaryKeyProp]?: ['bar', 'baz'];
+
+  @ManyToOne({ entity: () => FooBar2, updateRule: 'cascade', primary: true })
+  bar!: FooBar2;
+
+  @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
+  baz!: FooBaz2;
+
+  @Property({ length: 255 })
+  value!: string;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  version!: Date & Opt;
+
+}
+",
+  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Publisher2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255, default: 'asd' })
+  name!: string & Opt;
+
+  @Enum({ items: () => Publisher2Type, default: 'local' })
+  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
+
+  @Enum({ items: () => Publisher2Type2, default: 'LOCAL' })
+  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+
+  @Property({ columnType: 'tinyint', nullable: true })
+  enum1?: number;
+
+  @Property({ columnType: 'tinyint', nullable: true })
+  enum2?: number;
+
+  @Property({ columnType: 'tinyint', nullable: true })
+  enum3?: number;
+
+  @Enum({ items: () => Publisher2Enum4, nullable: true })
+  enum4?: Publisher2Enum4;
+
+  @Enum({ items: () => Publisher2Enum5, nullable: true })
+  enum5?: Publisher2Enum5;
+
+}
+
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+
+export enum Publisher2Enum4 {
+  A = 'a',
+  B = 'b',
+  C = 'c',
+}
+
+export enum Publisher2Enum5 {
+  A = 'a',
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
+
+@Entity({ tableName: 'publisher2_tests' })
+export class Publisher2Tests {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade' })
+  publisher2!: Publisher2;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
+  test2!: Test2;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Sandwich {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property()
+  price!: number;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { FooBar2 } from './FooBar2';
+
+@Entity()
+export class Test2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255, nullable: true })
+  name?: string;
+
+  @OneToOne({ entity: () => Book2, deleteRule: 'set null', nullable: true })
+  book?: Book2;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  parent?: Test2;
+
+  @Property({ default: 1 })
+  version: number & Opt = 1;
+
+  @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  fooBar?: FooBar2;
+
+  @Property({ fieldName: 'foo___baz', nullable: true })
+  fooBaz?: number;
+
+  @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
+  bars = new Collection<FooBar2>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Car2 } from './Car2';
+import { Sandwich } from './Sandwich';
+
+@Entity()
+export class User2 {
+
+  [PrimaryKeyProp]?: ['firstName', 'lastName'];
+
+  @PrimaryKey({ length: 100 })
+  firstName!: string;
+
+  @PrimaryKey({ length: 100 })
+  lastName!: string;
+
+  @Property({ nullable: true })
+  foo?: number;
+
+  @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteCar?: Car2;
+
+  @Property({ length: 100, nullable: true, persist: false })
+  favouriteCarName?: string;
+
+  @Property({ nullable: true, persist: false })
+  favouriteCarYear?: number;
+
+  @ManyToMany({ entity: () => Car2, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumns: ['car2_name', 'car2_year'] })
+  cars = new Collection<Car2>(this);
+
+  @ManyToMany({ entity: () => Sandwich, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumn: 'sandwich_id' })
+  sandwiches = new Collection<Sandwich>(this);
+
+}
+",
+]
+`;

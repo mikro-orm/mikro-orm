@@ -5,6 +5,7 @@ import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { helper, type Collection, type EntityValidator } from '../entity';
 import type { Platform } from '../platforms';
 import { ReferenceKind } from '../enums';
+import type { EntityManager } from '../EntityManager';
 
 export class ChangeSetComputer {
 
@@ -14,7 +15,8 @@ export class ChangeSetComputer {
               private readonly collectionUpdates: Set<Collection<AnyEntity>>,
               private readonly metadata: MetadataStorage,
               private readonly platform: Platform,
-              private readonly config: Configuration) {
+              private readonly config: Configuration,
+              private readonly em: EntityManager) {
     this.comparator = this.config.getComparator(this.metadata);
   }
 
@@ -84,12 +86,12 @@ export class ChangeSetComputer {
    */
   private processPropertyInitializers<T>(entity: T, prop: EntityProperty<T>, type: ChangeSetType, map: Map<T, [string, unknown][]>, nested?: boolean): void {
     if (prop.onCreate && type === ChangeSetType.CREATE && entity[prop.name] == null) {
-      entity[prop.name] = prop.onCreate(entity);
+      entity[prop.name] = prop.onCreate(entity, this.em);
     }
 
     if (prop.onUpdate && type === ChangeSetType.UPDATE) {
       const pairs = map.get(entity) ?? [];
-      pairs.push([prop.name, prop.onUpdate(entity)]);
+      pairs.push([prop.name, prop.onUpdate(entity, this.em)]);
       map.set(entity, pairs);
     }
 

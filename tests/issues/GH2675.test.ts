@@ -1,7 +1,7 @@
 import { Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, wrap } from '@mikro-orm/postgresql';
 
 @Entity()
-export class A {
+class A {
 
   @PrimaryKey()
   id!: number;
@@ -9,7 +9,7 @@ export class A {
 }
 
 @Entity()
-export class B {
+class B {
 
   @PrimaryKey()
   id!: number;

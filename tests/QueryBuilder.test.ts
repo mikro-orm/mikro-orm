@@ -1,5 +1,14 @@
 import { inspect } from 'util';
-import { LockMode, MikroORM, QueryFlag, QueryOrder, raw, sql, UnderscoreNamingStrategy } from '@mikro-orm/core';
+import {
+  LockMode,
+  MikroORM,
+  QueryFlag,
+  QueryOrder,
+  raw,
+  RawQueryFragment,
+  sql,
+  UnderscoreNamingStrategy,
+} from '@mikro-orm/core';
 import { CriteriaNode, QueryBuilder, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { v4 } from 'uuid';
@@ -24,6 +33,7 @@ describe('QueryBuilder', () => {
       },
     }, true);
   });
+  afterEach(() => expect(RawQueryFragment.checkCacheSize()).toBe(0));
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -48,7 +58,7 @@ describe('QueryBuilder', () => {
     expect(qb2.getFormattedQuery()).toBe('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = \'test 123\' and `e0`.`type` = \'global\' order by (point(location_latitude, location_longitude) <@> point(53.46, 9.9)) asc');
 
     // trying to modify finalized QB will throw
-    expect(() => qb2.where('foo = 123')).toThrowError('This QueryBuilder instance is already finalized, clone it first if you want to modify it.');
+    expect(() => qb2.where('foo = 123')).toThrow('This QueryBuilder instance is already finalized, clone it first if you want to modify it.');
   });
 
   test('select query picks read replica', async () => {
@@ -56,7 +66,7 @@ describe('QueryBuilder', () => {
     qb.select('*').where({ name: 'test 123', type: PublisherType.GLOBAL });
     const spy = jest.spyOn(MySqlDriver.prototype, 'getConnection');
     await qb.execute();
-    expect(spy).toBeCalledWith('read');
+    expect(spy).toHaveBeenCalledWith('read');
   });
 
   test('insert query picks write replica', async () => {
@@ -64,7 +74,7 @@ describe('QueryBuilder', () => {
     qb.insert({ name: 'test 123', type: PublisherType.GLOBAL });
     const spy = jest.spyOn(MySqlDriver.prototype, 'getConnection');
     await qb.execute('run');
-    expect(spy).toBeCalledWith('write');
+    expect(spy).toHaveBeenCalledWith('write');
   });
 
   test('select where is null', async () => {
@@ -260,6 +270,7 @@ describe('QueryBuilder', () => {
       .populate([{ field: 'asd' }])
       .setFlag(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)
       .limit(2, 1);
+    expect(qb.hasFlag(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)).toBe(true);
     const sql = 'select `fz`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `fz` left join `foo_bar2` as `e1` on `fz`.`id` = `e1`.`baz_id` limit ? offset ?';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual([2, 1]);
@@ -268,7 +279,7 @@ describe('QueryBuilder', () => {
   test('validation of unknown alias', async () => {
     const qb = orm.em.createQueryBuilder(FooBar2, 'fb1');
     qb.select('*').joinAndSelect('fb1.baz', 'fz');
-    expect(() => qb.join('fb0.baz', 'b')).toThrowError(`Trying to join 'baz' with alias 'fb0', but 'fb0' is not a known alias. Available aliases are: 'fb1', 'fz'.`);
+    expect(() => qb.join('fb0.baz', 'b')).toThrow(`Trying to join 'baz' with alias 'fb0', but 'fb0' is not a known alias. Available aliases are: 'fb1', 'fz'.`);
   });
 
   test('complex select with mapping of joined results', async () => {
@@ -276,7 +287,7 @@ describe('QueryBuilder', () => {
     qb.select('*').joinAndSelect('fb1.baz', 'fz');
 
     const err = `Trying to join 'fz.fooBar', but 'fooBar' is not a defined relation on FooBaz2`;
-    expect(() => qb.leftJoinAndSelect('fz.fooBar', 'fb2')).toThrowError(err);
+    expect(() => qb.leftJoinAndSelect('fz.fooBar', 'fb2')).toThrow(err);
 
     qb.leftJoinAndSelect('fz.bar', 'fb2')
       .where({ 'fz.name': 'baz' })
@@ -393,7 +404,7 @@ describe('QueryBuilder', () => {
       .leftJoin('a.books', 'b', {
         [sql`json_contains(b.meta, ${{ 'b.foo': 'bar' }})`]: [],
         [raw('json_contains(`b`.`meta`, ?) = ?', [{ 'b.foo': 'bar' }, false])]: [],
-        [raw('lower(??)', ['b.title'])]: '321',
+        [sql.lower(a => `${a}.title`)]: '321',
       })
       .where({ 'b.title': 'test 123' });
     expect(qb.getQuery()).toEqual('select `a`.*, `b`.* from `author2` as `a` ' +
@@ -401,7 +412,7 @@ describe('QueryBuilder', () => {
       'on `a`.`id` = `b`.`author_id` ' +
       'and json_contains(b.meta, ?) ' +
       'and json_contains(`b`.`meta`, ?) = ? ' +
-      'and lower(`b`.`title`) = ? ' +
+      'and lower(b.title) = ? ' +
       'where `b`.`title` = ?');
     expect(qb.getParams()).toEqual([{ 'b.foo': 'bar' }, { 'b.foo': 'bar' }, false, '321', 'test 123']);
     expect(qb.getFormattedQuery()).toEqual('select `a`.*, `b`.* from `author2` as `a` ' +
@@ -409,7 +420,7 @@ describe('QueryBuilder', () => {
       'on `a`.`id` = `b`.`author_id` ' +
       'and json_contains(b.meta, \'{\\"b.foo\\":\\"bar\\"}\') ' +
       'and json_contains(`b`.`meta`, \'{\\"b.foo\\":\\"bar\\"}\') = false ' +
-      'and lower(`b`.`title`) = \'321\' ' +
+      'and lower(b.title) = \'321\' ' +
       "where `b`.`title` = 'test 123'");
   });
 
@@ -811,7 +822,7 @@ describe('QueryBuilder', () => {
 
   test('select with unsupported operator', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
-    expect(() => qb.select('*').where({ $test: { foo: 'bar' } })).toThrowError('Trying to query by not existing property Test2.$test');
+    expect(() => qb.select('*').where({ $test: { foo: 'bar' } })).toThrow('Trying to query by not existing property Test2.$test');
   });
 
   test('select distinct id with left join', async () => {
@@ -1318,20 +1329,20 @@ describe('QueryBuilder', () => {
   test('select with deep where with invalid property throws error', async () => {
     const qb0 = orm.em.createQueryBuilder(Book2);
     const err = 'Trying to query by not existing property Author2.undefinedName';
-    expect(() => qb0.select('*').where({ author: { undefinedName: 'Jon Snow' } }).getQuery()).toThrowError(err);
+    expect(() => qb0.select('*').where({ author: { undefinedName: 'Jon Snow' } }).getQuery()).toThrow(err);
   });
 
   test('pessimistic locking requires active transaction', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ name: '...' });
-    expect(() => qb.setLockMode(LockMode.NONE)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE_OR_FAIL)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_PARTIAL_WRITE)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ_OR_FAIL)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_PARTIAL_READ)).toThrowError('An open transaction is required for this operation');
-    expect(() => qb.setLockMode(LockMode.OPTIMISTIC).getQuery()).toThrowError('The optimistic lock on entity Author2 failed');
+    expect(() => qb.setLockMode(LockMode.NONE)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE_OR_FAIL)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_PARTIAL_WRITE)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ_OR_FAIL)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_PARTIAL_READ)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.OPTIMISTIC).getQuery()).toThrow('The optimistic lock on entity Author2 failed');
   });
 
   test('insert query', async () => {
@@ -1499,20 +1510,20 @@ describe('QueryBuilder', () => {
 
   test('trying to call qb.update/delete() after qb.where() will throw', async () => {
     const err1 = 'You are trying to call `qb.where().update()`. Calling `qb.update()` before `qb.where()` is required.';
-    expect(() => orm.em.qb(Publisher2).where({ id: 123, type: PublisherType.LOCAL }).update({ name: 'test 123', type: PublisherType.GLOBAL })).toThrowError(err1);
-    expect(() => orm.em.qb(Book2).where({ uuid: { $in: ['1', '2', '3'] }, author: 123 }).update({ author: 321 })).toThrowError(err1);
-    expect(() => orm.em.qb(FooParam2).where({ bar: { baz: 123 } }).update({ value: 'test 123' })).toThrowError(err1);
+    expect(() => orm.em.qb(Publisher2).where({ id: 123, type: PublisherType.LOCAL }).update({ name: 'test 123', type: PublisherType.GLOBAL })).toThrow(err1);
+    expect(() => orm.em.qb(Book2).where({ uuid: { $in: ['1', '2', '3'] }, author: 123 }).update({ author: 321 })).toThrow(err1);
+    expect(() => orm.em.qb(FooParam2).where({ bar: { baz: 123 } }).update({ value: 'test 123' })).toThrow(err1);
 
     expect(() => orm.em.qb(Author2).where({
       $or: [
         { email: 'value1' },
         { name: { $in: ['value2'], $ne: 'value3' } },
       ],
-    }).update({ name: '123' })).toThrowError(err1);
+    }).update({ name: '123' })).toThrow(err1);
 
     const qb2 = orm.em.createQueryBuilder(FooParam2);
     const err2 = 'You are trying to call `qb.where().delete()`. Calling `qb.delete()` before `qb.where()` is required.';
-    expect(() => qb2.where({ bar: { baz: 123 } }).delete()).toThrowError(err2);
+    expect(() => qb2.where({ bar: { baz: 123 } }).delete()).toThrow(err2);
   });
 
   test('update query with or condition and auto-joining', async () => {
@@ -2086,7 +2097,7 @@ describe('QueryBuilder', () => {
     expect(res4[0].books).toHaveLength(1);
     expect(res4[0].books[0]).toMatchObject({
       title: 'foo 1',
-      price: '123.00',
+      price: 123.00,
       priceTaxed: '146.3700',
     });
     expect(res4[0].books[0].tags).toHaveLength(3);
@@ -2108,6 +2119,7 @@ describe('QueryBuilder', () => {
     const node = new CriteriaNode(orm.em.getMetadata(), Author2.name);
     node.payload = { foo: 123 };
     expect(node.process({} as any)).toBe(node.payload);
+    expect(node.willAutoJoin({} as any)).toBe(false);
     expect(inspect(node)).toBe(`CriteriaNode { entityName: 'Author2', payload: { foo: 123 } }`);
   });
 
@@ -2116,6 +2128,8 @@ describe('QueryBuilder', () => {
     node.payload = { foo: 123 };
     const qb = orm.em.createQueryBuilder(Author2, 'a');
     expect(qb.getAliasForJoinPath(node.getPath())).toBe('a');
+    expect(qb.getAliasForJoinPath(Author2.name)).toBe('a');
+    expect(qb.getAliasForJoinPath()).toBe('a');
   });
 
   test('pivot joining of m:n when target entity is null (GH issue 548)', async () => {
@@ -2203,13 +2217,13 @@ describe('QueryBuilder', () => {
   test('order by asc nulls first', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.select('*').orderBy({ name: QueryOrder.ASC_NULLS_FIRST });
-    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by `e0`.`name` asc nulls first');
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by `e0`.`name` is not null, `e0`.`name` asc');
   });
 
   test('order by nulls last', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.select('*').orderBy({ name: QueryOrder.DESC_NULLS_LAST, type: QueryOrder.ASC_NULLS_LAST });
-    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by `e0`.`name` desc nulls last, `e0`.`type` asc nulls last');
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by `e0`.`name` is null, `e0`.`name` desc, `e0`.`type` is null, `e0`.`type` asc');
   });
 
   test('order by custom expression', async () => {
@@ -2272,6 +2286,20 @@ describe('QueryBuilder', () => {
   });
 
   test('branching to-many relations (#2677)', async () => {
+    // no branching as there is only one item in $and array
+    const qb0 = orm.em.createQueryBuilder(Book2);
+    qb0.select('*').where({
+      $and: [
+        { tags: { name: 'tag1' } },
+      ],
+    }).orderBy({ tags: { name: 1 } });
+    expect(qb0.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `e0` ' +
+      'left join `book2_tags` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
+      'where `e1`.`name` = ? ' +
+      'order by `e1`.`name` asc');
+
     // branching as its m:n
     const qb1 = orm.em.createQueryBuilder(Book2);
     qb1.select('*').where({
@@ -2896,14 +2924,14 @@ describe('QueryBuilder', () => {
       expect(res4[0].books).toHaveLength(1);
       expect(res4[0].books[0]).toMatchObject({
         title: 'foo 1',
-        price: '123.00',
+        price: 123.00,
         priceTaxed: '146.3700',
       });
       expect(res4[0].books[0].tags).toHaveLength(3);
       pg.em.clear();
 
       const qb5 = pg.em.createQueryBuilder(Author2, 'a');
-      expect(() => qb5.leftJoinLateralAndSelect('a.books', 'sub', { author: sql.ref('a.id') })).toThrowError('Lateral join can be used only with a sub-query.');
+      expect(() => qb5.leftJoinLateralAndSelect('a.books', 'sub', { author: sql.ref('a.id') })).toThrow('Lateral join can be used only with a sub-query.');
       pg.em.clear();
     }
 
@@ -3062,8 +3090,7 @@ describe('QueryBuilder', () => {
       .hintComment('test 456')
       .where({ favouriteBook: { $in: ['1', '2', '3'] } })
       .getFormattedQuery();
-    // works only with select queries
-    expect(sql3).toBe("update `my_schema`.`author2` set `name` = '...' where `favourite_book_uuid_pk` in ('1', '2', '3')");
+    expect(sql3).toBe("/* test 123 */ /* test 456 */ update `my_schema`.`author2` set `name` = '...' where `favourite_book_uuid_pk` in ('1', '2', '3')");
   });
 
   test('$or operator inside auto-joined relation', async () => {

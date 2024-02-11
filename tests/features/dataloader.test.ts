@@ -16,8 +16,9 @@ import {
   helper,
   Primary,
   SimpleLogger,
-  Dataloader,
+  DataloaderType,
   serialize,
+  Filter,
 } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
@@ -26,6 +27,7 @@ enum PublisherType {
   GLOBAL = 'global',
 }
 
+@Filter({ name: 'young', cond: { age: { $lt: 80 } }, default: true })
 @Entity()
 class Author {
 
@@ -34,6 +36,9 @@ class Author {
 
   @Property()
   name: string;
+
+  @Property()
+  age: number;
 
   @Property()
   email: string;
@@ -55,11 +60,12 @@ class Author {
   @OneToMany(() => Chat, chat => chat.owner)
   ownedChats: Collection<Chat> = new Collection<Chat>(this);
 
-  constructor({ id, name, email }: { id?: number; name: string; email: string }) {
+  constructor({ id, name, age, email }: { id?: number; name: string; age: number; email: string }) {
     if (id) {
       this.id = id;
     }
     this.name = name;
+    this.age = age;
     this.email = email;
   }
 
@@ -162,19 +168,17 @@ class Message {
 
 async function populateDatabase(em: MikroORM['em']) {
   const authors = [
-    new Author({ id : 1, name: 'a', email: 'a@a.com' }),
-    new Author({ id: 2, name: 'b', email: 'b@b.com' }),
-    new Author({ id: 3, name: 'c', email: 'c@c.com' }),
-    new Author({ id: 4, name: 'd', email:  'd@d.com' }),
-    new Author({ id: 5, name: 'e', email: 'e@e.com' }),
+    new Author({ id : 1, name: 'a', age: 31, email: 'a@a.com' }),
+    new Author({ id: 2, name: 'b', age: 47, email: 'b@b.com' }),
+    new Author({ id: 3, name: 'c', age: 26, email: 'c@c.com' }),
+    new Author({ id: 4, name: 'd', age: 87, email:  'd@d.com' }),
+    new Author({ id: 5, name: 'e', age: 39, email: 'e@e.com' }),
   ];
-  authors[0].friends.add([authors[1], authors[3], authors[4]]);
   authors[0].friends.add([authors[1], authors[3], authors[4]]);
   authors[1].friends.add([authors[0]]);
   authors[2].friends.add([authors[3]]);
   authors[3].friends.add([authors[0], authors[2]]);
   authors[4].friends.add([authors[0]]);
-  authors[0].buddies.add([authors[1], authors[3], authors[4]]);
   authors[0].buddies.add([authors[1], authors[3], authors[4]]);
   authors[1].buddies.add([authors[0]]);
   authors[2].buddies.add([authors[3]]);
@@ -270,17 +274,17 @@ describe('Dataloader', () => {
 
   afterAll(async () => orm.close(true));
 
-  test('groupPrimaryKeysByEntity', () => {
-    const map = DataloaderUtils.groupPrimaryKeysByEntity([
-      orm.em.getReference(Author, 1, { wrapped: true }),
-      orm.em.getReference(Author, 2, { wrapped: true }),
-      orm.em.getReference(Book, 3, { wrapped: true }),
-    ] as Ref<any>[]);
+  test('groupPrimaryKeysByEntityAndOpts', () => {
+    const map = DataloaderUtils.groupPrimaryKeysByEntityAndOpts([
+      [orm.em.getReference(Author, 1, { wrapped: true })],
+      [orm.em.getReference(Author, 2, { wrapped: true })],
+      [orm.em.getReference(Book, 3, { wrapped: true })],
+    ] as [Ref<any>][]);
     expect(Array.from(map.keys()).length).toBe(2);
-    expect(map.has(orm.em.getMetadata().get('Author'))).toBe(true);
-    expect(map.has(orm.em.getMetadata().get('Book'))).toBe(true);
-    const authorIds = Array.from(map.get(orm.em.getMetadata().get('Author'))!.values());
-    const bookIds = Array.from(map.get(orm.em.getMetadata().get('Book'))!.values());
+    expect(map.has('Author|{}')).toBe(true);
+    expect(map.has('Book|{}')).toBe(true);
+    const authorIds = Array.from(map.get('Author|{}')!.values());
+    const bookIds = Array.from(map.get('Book|{}')!.values());
     expect(authorIds.length).toBe(2);
     expect(bookIds.length).toBe(1);
     expect(authorIds.includes(1)).toBe(true);
@@ -291,7 +295,7 @@ describe('Dataloader', () => {
   test('getRefBatchLoadFn', async () => {
     const refBatchLoadFn = DataloaderUtils.getRefBatchLoadFn(orm.em);
     const mock = mockLogger(orm);
-    const res = await refBatchLoadFn(getReferences(orm.em));
+    const res = await refBatchLoadFn(getReferences(orm.em).map(ref => [ref]));
     await orm.em.flush();
     expect(mock.mock.calls).toMatchSnapshot();
     expect(res.length).toBe(8);
@@ -318,29 +322,76 @@ describe('Dataloader', () => {
     expect(serialize(refsA)).toEqual(serialize(refsB));
   });
 
-  test('Dataloader can be globally enabled for References', async () => {
-    const orm = await MikroORM.init({
-      dbName: ':memory:',
-      dataloader: Dataloader.ALL,
-      entities: [Author, Book, Chat, Message],
-      loggerFactory: options => new SimpleLogger(options),
-    });
-    await orm.schema.createSchema();
-    await populateDatabase(orm.em);
-
-    const refs = getReferences(orm.em);
-    const mock = mockLogger(orm);
-    await Promise.all(refs.map(ref => ref.load()));
+  test('Reference.load with prop', async () => {
+    const refsA = getReferences(orm.em).slice(0, 2);
+    const refsB = getReferences(orm.em).slice(0, 2);
+    const resA = await Promise.all(refsA.map(ref => ref.loadProperty('age')));
+    const resB = await Promise.all(refsB.map(ref => ref.loadProperty('age', { dataloader: true })));
     await orm.em.flush();
-    expect(mock.mock.calls).toMatchSnapshot();
+    expect(resA).toEqual(resB);
+  });
 
-    await orm.close(true);
+  test('Reference.load with populate', async () => {
+    const refsA = getReferences(orm.em).slice(0, 2);
+    const refsB = getReferences(orm.em).slice(0, 2);
+    const resA = await Promise.all(refsA.map(ref => ref.load({ populate: ['books'] })));
+    const resB = await Promise.all(refsB.map(ref => ref.load({ populate: ['books'], dataloader: true })));
+    await orm.em.flush();
+    expect(serialize(resA)).toEqual(serialize(resB));
+  });
+
+  test('Dataloader can be globally enabled for References with true, DataloaderType.ALL, DataloaderType.REFERENCE', async () => {
+    async function getRefs(dataloader: DataloaderType | boolean) {
+      const orm = await MikroORM.init({
+        dbName: ':memory:',
+        dataloader,
+        entities: [Author, Book, Chat, Message],
+        loggerFactory: options => new SimpleLogger(options),
+      });
+      await orm.schema.createSchema();
+      await populateDatabase(orm.em);
+      const refs = getReferences(orm.em);
+      const mock = mockLogger(orm);
+      await Promise.all(refs.map(ref => ref.load()));
+      await orm.em.flush();
+      await orm.close(true);
+      return mock.mock.calls;
+    }
+
+    const res = structuredClone(await getRefs(DataloaderType.ALL));
+    expect(res).toMatchSnapshot();
+    expect(await getRefs(true)).toEqual(res);
+    expect(await getRefs(DataloaderType.REFERENCE)).toEqual(res);
+  });
+
+  test('Dataloader should not be globally enabled for References with false, DataloaderType.NONE, DataloaderType.COLLECTION', async () => {
+    async function getRefs(dataloader: DataloaderType | boolean) {
+      const orm = await MikroORM.init({
+        dbName: ':memory:',
+        dataloader,
+        entities: [Author, Book, Chat, Message],
+        loggerFactory: options => new SimpleLogger(options),
+      });
+      await orm.schema.createSchema();
+      await populateDatabase(orm.em);
+      const refs = getReferences(orm.em);
+      const mock = mockLogger(orm);
+      await Promise.all(refs.map(ref => ref.load()));
+      await orm.em.flush();
+      await orm.close(true);
+      return mock.mock.calls;
+    }
+
+    const res = structuredClone(await getRefs(DataloaderType.NONE));
+    expect(res).toMatchSnapshot();
+    expect(await getRefs(false)).toEqual(res);
+    expect(await getRefs(DataloaderType.COLLECTION)).toEqual(res);
   });
 
   test('Reference dataloader can be disabled per-query', async () => {
     const orm = await MikroORM.init({
       dbName: ':memory:',
-      dataloader: Dataloader.ALL,
+      dataloader: DataloaderType.ALL,
       entities: [Author, Book, Chat, Message],
       loggerFactory: options => new SimpleLogger(options),
     });
@@ -356,13 +407,14 @@ describe('Dataloader', () => {
     await orm.close(true);
   });
 
-  test('groupInversedOrMappedKeysByEntity', async () => {
+  test('groupInversedOrMappedKeysByEntityAndOpts', async () => {
     const collections = await getCollections(orm.em);
     expect(collections).toBeDefined();
 
-    const map = DataloaderUtils.groupInversedOrMappedKeysByEntity(collections);
-    expect(Array.from(map.keys()).map(({ className }) => className)).toEqual(['Book', 'Author', 'Chat', 'Message']);
-    const mapObj = Array.from(map.entries()).reduce<Record<string, Record<string, number[]>>>((acc, [{ className }, filterMap]) => {
+    const map = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collections.map(col => [col]));
+    expect(Array.from(map.keys()).map(key => key.substring(0, key.indexOf('|')))).toEqual(['Book', 'Author', 'Chat', 'Message']);
+    const mapObj = Array.from(map.entries()).reduce<Record<string, Record<string, number[]>>>((acc, [key, filterMap]) => {
+      const className = key.substring(0, key.indexOf('|'));
       acc[className] = Array.from(filterMap.entries()).reduce<Record<string, number[]>>((acc, [prop, set]) => {
         acc[prop] = Array.from(set.values());
         return acc;
@@ -377,23 +429,23 @@ describe('Dataloader', () => {
     });
   });
 
-  test('entitiesMapToQueries', async () => {
+  test('entitiesAndOptsMapToQueries', async () => {
     const map = new Map([
-      [orm.em.getMetadata().get('Book'), new Map([
+      ['Book|{}', new Map([
         ['author', new Set<Primary<any>>([1, 2, 3])],
         ['publisher', new Set<Primary<any>>([1, 2])],
       ])],
-      [orm.em.getMetadata().get('Author'), new Map([
+      ['Author|{}', new Map([
         ['buddiesInverse', new Set<Primary<any>>([1, 2, 3])],
       ])],
-      [orm.em.getMetadata().get('Chat'), new Map([
+      ['Chat|{}', new Map([
         ['owner', new Set<Primary<any>>([1, 2, 3])],
       ])],
-      [orm.em.getMetadata().get('Message'), new Map([
+      ['Message|{}', new Map([
         ['chat', new Set<Primary<any>>([{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }])],
       ])],
     ]);
-    const queries = DataloaderUtils.entitiesMapToQueries(map, orm.em);
+    const queries = DataloaderUtils.entitiesAndOptsMapToQueries(map, orm.em);
     expect(queries).toHaveLength(4);
     for (const query of queries) {
       expect(query instanceof Promise).toBeTruthy();
@@ -401,36 +453,37 @@ describe('Dataloader', () => {
   });
 
   test('getColFilter', async () => {
-    const promises = DataloaderUtils.entitiesMapToQueries(new Map([
-      [orm.em.getMetadata().get('Book'), new Map([
+    const promises = DataloaderUtils.entitiesAndOptsMapToQueries(new Map([
+      ['Book|{}', new Map([
         ['author', new Set<Primary<any>>([1, 2, 3])],
         ['publisher', new Set<Primary<any>>([1, 2])],
       ])],
-      [orm.em.getMetadata().get('Author'), new Map([
+      ['Author|{}', new Map([
         ['buddiesInverse', new Set<Primary<any>>([1, 2, 3])],
       ])],
-      [orm.em.getMetadata().get('Chat'), new Map([
+      ['Chat|{}', new Map([
         ['owner', new Set<Primary<any>>([1, 2, 3])],
       ])],
-      [orm.em.getMetadata().get('Message'), new Map([
+      ['Message|{}', new Map([
         ['chat', new Set<Primary<any>>([{ owner: 1, recipient: 2 }, { owner: 1, recipient: 3 }])],
       ])],
     ]), orm.em);
-    const results = (await Promise.all(promises)).flat();
+    const resultsMap = new Map(await Promise.all(promises));
 
     const collections = await getCollections(orm.em);
     for (const collection of collections) {
-      const filtered = results.filter(DataloaderUtils.getColFilter(collection));
+      const key = `${collection.property.targetMeta!.className}|{}`;
+      const entities = resultsMap.get(key)!;
+      const filtered = entities.filter(DataloaderUtils.getColFilter(collection));
       expect(filtered.map((el: any) => el.id)).toEqual((await collection.loadItems()).map((el: any) => el.id));
     }
-    expect(true).toBeTruthy();
   });
 
   test('getColBatchLoadFn', async () => {
     const refBatchLoadFn = DataloaderUtils.getColBatchLoadFn(orm.em);
     const collections = await getCollections(orm.em);
     const mock = mockLogger(orm);
-    const res = await refBatchLoadFn(collections);
+    const res = await refBatchLoadFn(collections.map(col => [col]));
     await orm.em.flush();
     expect(mock.mock.calls).toMatchSnapshot();
     expect(res.length).toBe(collections.length);
@@ -455,29 +508,130 @@ describe('Dataloader', () => {
     }
   });
 
-  test('Dataloader can be globally enabled for Collections', async () => {
-    const orm = await MikroORM.init({
-      dbName: ':memory:',
-      dataloader: Dataloader.ALL,
-      entities: [Author, Book, Chat, Message],
-      loggerFactory: options => new SimpleLogger(options),
-    });
-    await orm.schema.createSchema();
-    await populateDatabase(orm.em);
-
-    const cols = await getCollections(orm.em);
+  test('Collection.load with orderBy', async () => {
+    const colsA = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    const colsB = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    await Promise.all(colsA.map(col => col.loadItems({ orderBy: { title: QueryOrder.ASC } })));
     const mock = mockLogger(orm);
-    await Promise.all(cols.map(col => col.load()));
+    await Promise.all(colsB.map(col => col.load({ orderBy: { title: QueryOrder.ASC }, dataloader: true })));
     await orm.em.flush();
     expect(mock.mock.calls).toMatchSnapshot();
+    expect(colsA.length).toBe(colsB.length);
+    for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
+      expect(colA.isInitialized()).toBe(true);
+      expect(colB.isInitialized()).toBe(true);
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+    }
+  });
 
-    await orm.close(true);
+  test('Collection.load with where', async () => {
+    const colsA = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    const colsB = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    await Promise.all(colsA.map(col => col.loadItems({ where: { title: [ 'One', 'Two', 'Six' ] } })));
+    const mock = mockLogger(orm);
+    await Promise.all(colsB.map(col => col.load({ where: { title: [ 'One', 'Two', 'Six' ] }, dataloader: true })));
+    await orm.em.flush();
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(colsA.length).toBe(colsB.length);
+    for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
+      expect(colA.isInitialized()).toBe(true);
+      expect(colB.isInitialized()).toBe(true);
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+    }
+  });
+
+  test('Collection.load with populate', async () => {
+    const colsA = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    const colsB = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    await Promise.all(colsA.map(col => col.loadItems({ populate: [ 'publisher' ] })));
+    const mock = mockLogger(orm);
+    await Promise.all(colsB.map(col => col.load({ populate: [ 'publisher' ], dataloader: true })));
+    await orm.em.flush();
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(colsA.length).toBe(colsB.length);
+    for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
+      expect(colA.isInitialized()).toBe(true);
+      expect(colB.isInitialized()).toBe(true);
+      for (const book of colB.getItems()) {
+        expect(book.publisher!.isInitialized()).toBeTruthy();
+      }
+      expect(colB.isInitialized()).toBe(true);
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+    }
+  });
+
+  test('Collection.load with wildcard populate', async () => {
+    const colsA = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    const colsB = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
+    await Promise.all(colsA.map(col => col.loadItems({ populate: [ '*' ] })));
+    const mock = mockLogger(orm);
+    await Promise.all(colsB.map(col => col.load({ populate: [ '*' ], dataloader: true })));
+    await orm.em.flush();
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(colsA.length).toBe(colsB.length);
+    for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
+      expect(colA.isInitialized()).toBe(true);
+      expect(colB.isInitialized()).toBe(true);
+      for (const book of colB.getItems()) {
+        expect(book.publisher!.isInitialized()).toBeTruthy();
+      }
+      expect(colB.isInitialized()).toBe(true);
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+    }
+  });
+
+  test('Dataloader can be globally enabled for Collections with true, DataloaderType.ALL, DataloaderType.COLLECTION', async () => {
+    async function getCols(dataloader: DataloaderType | boolean) {
+      const orm = await MikroORM.init({
+        dbName: ':memory:',
+        dataloader,
+        entities: [Author, Book, Chat, Message],
+        loggerFactory: options => new SimpleLogger(options),
+      });
+      await orm.schema.createSchema();
+      await populateDatabase(orm.em);
+      const cols = await getCollections(orm.em);
+      const mock = mockLogger(orm);
+      await Promise.all(cols.map(col => col.load()));
+      await orm.em.flush();
+      await orm.close(true);
+      return mock.mock.calls;
+    }
+
+    const res = structuredClone(await getCols(DataloaderType.ALL));
+    expect(res).toMatchSnapshot();
+    expect(await getCols(true)).toEqual(res);
+    expect(await getCols(DataloaderType.COLLECTION)).toEqual(res);
+  });
+
+  test('Dataloader should not be globally enabled for Collections with false, DataloaderType.NONE, DataloaderType.REFERENCE', async () => {
+    async function getCols(dataloader: DataloaderType | boolean) {
+      const orm = await MikroORM.init({
+        dbName: ':memory:',
+        dataloader,
+        entities: [Author, Book, Chat, Message],
+        loggerFactory: options => new SimpleLogger(options),
+      });
+      await orm.schema.createSchema();
+      await populateDatabase(orm.em);
+      const cols = await getCollections(orm.em);
+      const mock = mockLogger(orm);
+      await Promise.all(cols.map(col => col.load()));
+      await orm.em.flush();
+      await orm.close(true);
+      return mock.mock.calls;
+    }
+
+    const res = structuredClone(await getCols(DataloaderType.NONE));
+    expect(res).toMatchSnapshot();
+    expect(await getCols(false)).toEqual(res);
+    expect(await getCols(DataloaderType.REFERENCE)).toEqual(res);
   });
 
   test('Collection dataloader can be disabled per-query', async () => {
     const orm = await MikroORM.init({
       dbName: ':memory:',
-      dataloader: Dataloader.ALL,
+      dataloader: DataloaderType.ALL,
       entities: [Author, Book, Chat, Message],
       loggerFactory: options => new SimpleLogger(options),
     });
@@ -494,8 +648,8 @@ describe('Dataloader', () => {
   });
 
   test('getDataloaderType', async () => {
-    expect(DataloaderUtils.getDataloaderType(true)).toEqual(Dataloader.ALL);
-    expect(DataloaderUtils.getDataloaderType(false)).toEqual(Dataloader.OFF);
-    expect(DataloaderUtils.getDataloaderType(Dataloader.COLLECTION)).toEqual(Dataloader.COLLECTION);
+    expect(DataloaderUtils.getDataloaderType(true)).toEqual(DataloaderType.ALL);
+    expect(DataloaderUtils.getDataloaderType(false)).toEqual(DataloaderType.NONE);
+    expect(DataloaderUtils.getDataloaderType(DataloaderType.COLLECTION)).toEqual(DataloaderType.COLLECTION);
   });
 });

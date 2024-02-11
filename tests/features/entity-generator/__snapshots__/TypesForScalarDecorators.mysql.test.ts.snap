@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TypesForScalarDecorators: dump 1`] = `
+[
+  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey({ type: 'number' })
+  userId!: number;
+
+  @Property({ length: 255, type: 'string' })
+  username!: string;
+
+  @Property({ type: 'bigint' })
+  views!: bigint;
+
+  @Property({ type: 'boolean' })
+  enabled!: boolean;
+
+  @Property({ length: 0, type: 'Date', defaultRaw: \`CURRENT_TIMESTAMP\` })
+  createdAt!: Date & Opt;
+
+}
+",
+]
+`;

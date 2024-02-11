@@ -61,11 +61,10 @@ describe('Migrator (postgres)', () => {
       extensions: [Migrator],
     });
 
-    const schemaGenerator = orm.schema;
-    await schemaGenerator.refreshDatabase();
-    await schemaGenerator.execute('alter table "custom"."book2" add column "foo" varchar null default \'lol\';');
-    await schemaGenerator.execute('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
-    await schemaGenerator.execute('alter table "custom"."test2" add column "path" polygon null default null;');
+    await orm.schema.refreshDatabase();
+    await orm.schema.execute('alter table "custom"."book2" add column "foo" varchar null default \'lol\';');
+    await orm.schema.execute('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
+    await orm.schema.execute('alter table "custom"."test2" add column "path" polygon null default null;');
     await remove(process.cwd() + '/temp/migrations-456');
   });
   beforeEach(() => orm.config.resetServiceCache());
@@ -190,7 +189,7 @@ describe('Migrator (postgres)', () => {
     getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
     const migrator = orm.migrator;
     const err = 'Initial migration cannot be created, as some migrations already exist';
-    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrowError(err);
+    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrow(err);
 
     getExecutedMigrationsMock.mockResolvedValueOnce([]);
     const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
@@ -206,22 +205,22 @@ describe('Migrator (postgres)', () => {
     ]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: custom.author2, custom.book2`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err2);
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err2);
 
     metadataMock.mockReturnValueOnce({});
     const err3 = `No entities found`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err3);
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err3);
 
     schemaMock.mockReturnValueOnce([]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const migration1 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).not.toBeCalledWith('Migration20191013214813.ts');
+    expect(logMigrationMock).not.toHaveBeenCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
     await remove(process.cwd() + '/temp/migrations-456/' + migration1.fileName);
 
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
     const migration2 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).toBeCalledWith({ name: 'Migration20191013214813.ts', context: null });
+    expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
     await remove(process.cwd() + '/temp/migrations-456/' + migration2.fileName);
   });
@@ -260,13 +259,13 @@ describe('Migrator (postgres)', () => {
     downMock.mockImplementationOnce(() => void 0 as any);
     const migrator = orm.migrator;
     await migrator.up();
-    expect(upMock).toBeCalledTimes(1);
-    expect(downMock).toBeCalledTimes(0);
+    expect(upMock).toHaveBeenCalledTimes(1);
+    expect(downMock).toHaveBeenCalledTimes(0);
     await orm.em.begin();
     await migrator.down({ transaction: orm.em.getTransactionContext() });
     await orm.em.commit();
-    expect(upMock).toBeCalledTimes(1);
-    expect(downMock).toBeCalledTimes(1);
+    expect(upMock).toHaveBeenCalledTimes(1);
+    expect(downMock).toHaveBeenCalledTimes(1);
     upMock.mockRestore();
   });
 
@@ -306,7 +305,7 @@ describe('Migrator (postgres)', () => {
     const spy1 = jest.spyOn(Migration.prototype, 'addSql');
     mock.mock.calls.length = 0;
     await runner.run(migration1, 'up');
-    expect(spy1).toBeCalledWith('select 1 + 1');
+    expect(spy1).toHaveBeenCalledWith('select 1 + 1');
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('set names \'utf8\';');
@@ -316,7 +315,7 @@ describe('Migrator (postgres)', () => {
     expect(mock.mock.calls[5][0]).toMatch('commit');
     mock.mock.calls.length = 0;
 
-    await expect(runner.run(migration1, 'down')).rejects.toThrowError('This migration cannot be reverted');
+    await expect(runner.run(migration1, 'down')).rejects.toThrow('This migration cannot be reverted');
     const executed = await migrator.getExecutedMigrations();
     expect(executed).toEqual([]);
 

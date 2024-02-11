@@ -3,7 +3,7 @@ import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '
 type SquadType = 'GROUND' | 'AIR';
 
 @Entity()
-export class Soldier {
+class Soldier {
 
   @PrimaryKey()
   id!: number;
@@ -20,7 +20,7 @@ export class Soldier {
 }
 
 @Entity()
-export class Squad {
+class Squad {
 
   @PrimaryKey()
   id!: number;

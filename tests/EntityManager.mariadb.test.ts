@@ -18,10 +18,22 @@ describe('EntityManagerMariaDb', () => {
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
+    expect(await orm.checkConnection()).toEqual({
+      ok: true,
+    });
     await orm.close(true);
     expect(await orm.isConnected()).toBe(false);
+    const check = await orm.checkConnection();
+    expect(check).toMatchObject({
+      ok: false,
+      error: expect.any(Error),
+      reason: 'Unable to acquire a connection',
+    });
     await orm.connect();
     expect(await orm.isConnected()).toBe(true);
+    expect(await orm.checkConnection()).toEqual({
+      ok: true,
+    });
   });
 
   test('getConnectionOptions()', async () => {
@@ -96,9 +108,9 @@ describe('EntityManagerMariaDb', () => {
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
     const err1 = /insert into `not_existing` \(`foo`\) values \('bar'\) - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test_\w+\.not_existing' doesn't exist/;
-    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
+    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
     const err2 = /delete from `not_existing` - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test_\w+\.not_existing' doesn't exist/;
-    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
+    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
   });
 
   test('should load entities', async () => {

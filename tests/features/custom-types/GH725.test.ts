@@ -1,5 +1,4 @@
-import { EntitySchema, MikroORM, Type, ValidationError } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { EntitySchema, MikroORM, sql, Type, ValidationError } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
@@ -18,10 +17,6 @@ export class DateTime {
 }
 
 type Maybe<T> = T | null | undefined;
-
-export type TimestampTypeOptions = {
-  hasTimeZone: boolean;
-};
 
 export class DateTimeType extends Type<Maybe<DateTime>, Maybe<Date>> {
 
@@ -71,15 +66,15 @@ export const TestSchema = new EntitySchema<Test>({
       primary: true,
       type: String,
       columnType: 'uuid',
-      defaultRaw: 'uuid_generate_v4()',
+      defaultRaw: 'gen_random_uuid()',
     },
     uuid: {
       type: String,
       columnType: 'uuid',
-      defaultRaw: 'uuid_generate_v4()',
+      defaultRaw: 'gen_random_uuid()',
     },
     createdAt: {
-      defaultRaw: 'now()',
+      default: sql.now(),
       type: DateTimeType,
     },
     updatedAt: {
@@ -109,13 +104,12 @@ export const TestSchema2 = new EntitySchema<Test2>({
 describe('GH issue 725', () => {
 
   test('mapping values from returning statement to custom types', async () => {
-    const orm = await MikroORM.init<AbstractSqlDriver>({
+    const orm = await MikroORM.init({
       entities: [TestSchema],
-      dbName: `mikro_orm_test_gh_725`,
+      dbName: 'mikro_orm_test_gh_725',
       driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
-    await orm.schema.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
     await orm.schema.dropSchema();
     await orm.schema.createSchema();
 
@@ -146,7 +140,7 @@ describe('GH issue 725', () => {
   });
 
   test('validation when trying to persist not discovered entity', async () => {
-    const orm = await MikroORM.init<AbstractSqlDriver>({
+    const orm = await MikroORM.init({
       entities: [TestSchema2],
       dbName: `:memory:`,
       driver: SqliteDriver,
@@ -154,7 +148,7 @@ describe('GH issue 725', () => {
 
     const test = new Test2();
     const err = `Trying to persist not discovered entity of type Test2. Entity with this name was discovered, but not the prototype you are passing to the ORM. If using EntitySchema, be sure to point to the implementation via \`class\`.`;
-    expect(() => orm.em.persist(test)).toThrowError(err);
+    expect(() => orm.em.persist(test)).toThrow(err);
     await orm.close();
   });
 

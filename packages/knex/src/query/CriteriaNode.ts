@@ -1,6 +1,14 @@
 import { inspect } from 'util';
-import { ReferenceKind, Utils, type Dictionary, type EntityProperty, type MetadataStorage, type EntityKey } from '@mikro-orm/core';
-import type { ICriteriaNode, IQueryBuilder } from '../typings';
+import {
+  type Dictionary,
+  type EntityKey,
+  type EntityProperty,
+  type MetadataStorage,
+  RawQueryFragment,
+  ReferenceKind,
+  Utils,
+} from '@mikro-orm/core';
+import type { ICriteriaNode, ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings';
 
 /**
  * Helper for working with deeply nested where/orderBy/having criteria. Uses composite pattern to build tree from the payload.
@@ -32,14 +40,14 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
         const isProp = this.prop || meta.props.find(prop => (prop.fieldNames || []).includes(k));
 
         // do not validate if the key is prefixed or type casted (e.g. `k::text`)
-        if (validate && !isProp && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k) && !CriteriaNode.isCustomExpression(k)) {
+        if (validate && !isProp && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k) && !RawQueryFragment.isKnownFragment(k)) {
           throw new Error(`Trying to query by not existing property ${entityName}.${k}`);
         }
       });
     }
   }
 
-  process(qb: IQueryBuilder<T>, alias?: string): any {
+  process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
     return this.payload;
   }
 
@@ -58,7 +66,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
   shouldRename(payload: any): boolean {
     const type = this.prop ? this.prop.kind : null;
     const composite = this.prop?.joinColumns ? this.prop.joinColumns.length > 1 : false;
-    const customExpression = CriteriaNode.isCustomExpression(this.key!);
+    const customExpression = RawQueryFragment.isKnownFragment(this.key!);
     const scalar = payload === null || Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
     const plainObject = Utils.isPlainObject(payload);
     const keys = plainObject ? Object.keys(payload) : [];
@@ -115,7 +123,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
       return false;
     }
 
-    const customExpression = CriteriaNode.isCustomExpression(this.key);
+    const customExpression = RawQueryFragment.isKnownFragment(this.key);
     const scalar = this.payload === null || Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || customExpression;
     const operator = Utils.isObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
 
@@ -126,6 +134,10 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     return `${path}[pivot]`;
   }
 
+  aliased(field: string, alias?: string) {
+    return alias ? `${alias}.${field}` : field;
+  }
+
   /** @ignore */
   [inspect.custom]() {
     const o: Dictionary = {};
@@ -134,10 +146,6 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
       .forEach(k => o[k] = this[k]);
 
     return `${this.constructor.name} ${inspect(o)}`;
-  }
-
-  static isCustomExpression(field: string): boolean {
-    return !!field.match(/[ ?<>=()]|^\d/);
   }
 
 }

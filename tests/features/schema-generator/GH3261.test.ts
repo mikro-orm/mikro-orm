@@ -39,5 +39,5 @@ test('retry limit to 3 when ensureIndex() fails', async () => {
   }];
   await expect(
     orm.schema.ensureIndexes(),
-  ).rejects.toThrowError(/Failed to create indexes:/);
+  ).rejects.toThrow(/Failed to create indexes:/);
 });

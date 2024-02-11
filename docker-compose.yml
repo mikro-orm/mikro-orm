@@ -10,7 +10,7 @@ services:
     restart: always
 
   mysql8:
-    image: mysql:8.2-oracle
+    image: mysql:8.3-oracle
     restart: unless-stopped
     ports:
       - "3308:3306"
@@ -27,7 +27,7 @@ services:
       - mysql8:/var/lib/mysql
 
   mariadb:
-    image: mariadb:11.1
+    image: mariadb:11.2
     ports:
       - "3309:3306"
     environment:
@@ -41,6 +41,15 @@ services:
       - "5432:5432"
     volumes:
       - postgre:/var/lib/postgresql/data
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+  postgis:
+    image: imresamu/postgis:16-3.4
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgis:/var/lib/postgresql/data
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
 
@@ -62,6 +71,10 @@ volumes:
       type: tmpfs
       device: tmpfs
   postgre:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+  postgis:
     driver_opts:
       type: tmpfs
       device: tmpfs

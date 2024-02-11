@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import { BigIntType, EnumType, Utils, type Connection, type Dictionary } from '@mikro-orm/core';
+import { BigIntType, EnumType, Utils, type Connection, type Dictionary, RawQueryFragment } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 import type { CheckDef, Column, IndexDef, Table, TableDifference } from '../typings';
@@ -100,16 +100,21 @@ export abstract class SchemaHelper {
     return `alter table ${tableReference} rename column ${oldColumnName} to ${columnName}`;
   }
 
-  getCreateIndexSQL(tableName: string, index: IndexDef): string {
-    /* istanbul ignore if */
-    if (index.expression) {
+  getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
+    /* istanbul ignore next */
+    if (index.expression && !partialExpression) {
       return index.expression;
     }
 
     tableName = this.platform.quoteIdentifier(tableName);
     const keyName = this.platform.quoteIdentifier(index.keyName);
+    const sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
 
-    return `create index ${keyName} on ${tableName} (${index.columnNames.map(c => this.platform.quoteIdentifier(c)).join(', ')})`;
+    if (index.expression && partialExpression) {
+      return `${sql}(${index.expression})`;
+    }
+
+    return `${sql}(${index.columnNames.map(c => this.platform.quoteIdentifier(c)).join(', ')})`;
   }
 
   getDropIndexSQL(tableName: string, index: IndexDef): string {
@@ -132,7 +137,7 @@ export abstract class SchemaHelper {
     return pkIndex?.keyName !== defaultName;
   }
 
-  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
+  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>, alter?: boolean) {
     const compositePK = fromTable.getPrimaryKey()?.composite;
 
     if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
@@ -183,6 +188,10 @@ export abstract class SchemaHelper {
   }
 
   getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
+    return '';
+  }
+
+  getPostAlterTable(tableDiff: TableDifference, safe: boolean): string {
     return '';
   }
 
@@ -253,6 +262,12 @@ export abstract class SchemaHelper {
   normalizeDefaultValue(defaultValue: string, length?: number, defaultValues: Dictionary<string[]> = {}): string | number {
     if (defaultValue == null) {
       return defaultValue;
+    }
+
+    const raw = RawQueryFragment.getKnownFragment(defaultValue);
+
+    if (raw) {
+      return this.platform.formatQuery(raw.sql, raw.params);
     }
 
     const genericValue = defaultValue.replace(/\(\d+\)/, '(?)').toLowerCase();

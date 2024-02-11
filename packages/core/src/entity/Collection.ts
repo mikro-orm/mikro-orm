@@ -1,11 +1,9 @@
 import type {
   AnyEntity,
-  ConnectionType,
   Dictionary,
   EntityData,
   EntityDTO,
   EntityKey,
-  EntityMetadata,
   EntityValue,
   FilterKey,
   FilterQuery,
@@ -17,12 +15,12 @@ import type {
 import { ArrayCollection } from './ArrayCollection';
 import { DataloaderUtils, Utils } from '../utils';
 import { ValidationError } from '../errors';
-import { type LockMode, type QueryOrderMap, ReferenceKind, Dataloader } from '../enums';
+import { type QueryOrderMap, ReferenceKind, DataloaderType } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
-import type { FindOptions } from '../drivers/IDatabaseDriver';
+import type { FindOptions, CountOptions } from '../drivers/IDatabaseDriver';
 import { helper } from './wrap';
-import type { LoggingOptions } from '../logging/Logger';
+import type { EntityLoaderOptions } from './EntityLoader';
 
 export interface MatchingOptions<T extends object, P extends string = never> extends FindOptions<T, P> {
   where?: FilterQuery<T>;
@@ -32,10 +30,11 @@ export interface MatchingOptions<T extends object, P extends string = never> ext
 
 export class Collection<T extends object, O extends object = object> extends ArrayCollection<T, O> {
 
-  private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
   private readonly?: boolean;
   private _populated?: boolean;
   private _em?: unknown;
+  // this is for some reason needed for TS, otherwise it can fail with `Type instantiation is excessively deep and possibly infinite.`
+  private _snapshot?: T[];
 
   constructor(owner: O, items?: T[], initialized = true) {
     super(owner as unknown as O & AnyEntity, items);
@@ -61,8 +60,11 @@ export class Collection<T extends object, O extends object = object> extends Arr
    * Ensures the collection is loaded first (without reloading it if it already is loaded).
    * Returns the Collection instance (itself), works the same as `Reference.load()`.
    */
-  async load<TT extends T, P extends string = never>(options: InitOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
-    if (!this.isInitialized(true)) {
+  async load<TT extends T, P extends string = never>(options: InitCollectionOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
+    if (this.isInitialized(true) && !options.refresh) {
+      const em = this.getEntityManager(this.items, false);
+      await em?.populate(this.items, options.populate as any, options as any);
+    } else {
       await this.init(options);
     }
 
@@ -72,7 +74,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * Initializes the collection and returns the items
    */
-  async loadItems<TT extends T, P extends string = never>(options?: InitOptions<TT, P>): Promise<Loaded<TT, P>[]> {
+  async loadItems<TT extends T, P extends string = never>(options?: InitCollectionOptions<TT, P>): Promise<Loaded<TT, P>[]> {
     await this.load(options);
     return super.getItems() as Loaded<TT, P>[];
   }
@@ -83,41 +85,30 @@ export class Collection<T extends object, O extends object = object> extends Arr
    */
   override async loadCount(options: LoadCountOptions<T> | boolean = {}): Promise<number> {
     options = typeof options === 'boolean' ? { refresh: options } : options;
+    const { refresh, where, ...countOptions } = options;
 
-    if (!options.refresh && !options.where && Utils.isDefined(this._count)) {
+    if (!refresh && !where && Utils.isDefined(this._count)) {
       return this._count!;
     }
 
-    const em = this.getEntityManager();
-    const pivotMeta = em.getMetadata().find(this.property.pivotEntity)!;
-    const where = this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta);
+    const em = this.getEntityManager()!;
 
     if (!em.getPlatform().usesPivotTable() && this.property.kind === ReferenceKind.MANY_TO_MANY && this.property.owner) {
       return this._count = this.length;
     }
 
-    if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
-      const count = await em.count(this.property.type, where, {
-        populate: [{ field: this.property.pivotEntity } as any],
-      });
+    const cond = this.createLoadCountCondition(where ?? {} as FilterQuery<T>);
+    const count = await em.count(this.property.type, cond, countOptions as any);
 
-      if (!options.where) {
-        this._count = count;
-      }
-
-      return count;
-    }
-
-    const count = await em.count(this.property.type, where);
-
-    if (!options.where) {
+    if (!where) {
       this._count = count;
     }
+
     return count;
   }
 
   async matching<TT extends T, P extends string = never>(options: MatchingOptions<T, P>): Promise<Loaded<TT, P>[]> {
-    const em = this.getEntityManager();
+    const em = this.getEntityManager()!;
     const { where, ctx, ...opts } = options;
     opts.orderBy = this.createOrderBy(opts.orderBy);
     let items: Loaded<TT, P>[];
@@ -127,7 +118,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
       const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, opts.orderBy, ctx, options);
       items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<TT>) => em.merge(this.property.type, item, { convertCustomTypes: true })) as any;
     } else {
-      items = await em.find(this.property.type, this.createCondition(where), opts) as any;
+      items = await em.find(this.property.type, this.createCondition(where), opts as any) as any;
     }
 
     if (options.store) {
@@ -166,25 +157,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
     this.cancelOrphanRemoval(unwrapped);
   }
 
-  override set<TT extends T>(items: Iterable<TT | Reference<TT>>): void {
-    if (!this.initialized) {
-      this.initialized = true;
-      this.snapshot = undefined;
-    }
-
-    super.set(items as T[]);
-    this.setDirty();
-  }
-
-  /**
-   * @internal
-   */
-  override hydrate(items: T[], forcePropagate?: boolean): void {
-    this.initialized = true;
-    super.hydrate(items);
-    this.takeSnapshot(forcePropagate);
-  }
-
   /**
    * @inheritDoc
    */
@@ -209,13 +181,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
         em.getUnitOfWork().scheduleOrphanRemoval(item);
       }
     }
-  }
-
-  /**
-   * @inheritDoc
-   */
-  override removeAll(): void {
-    this.set([]);
   }
 
   override contains<TT extends T>(item: TT | Reference<TT>, check = true): boolean {
@@ -311,7 +276,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     this._populated = populated;
   }
 
-  async init<TT extends T, P extends string = never>(options: InitOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
+  async init<TT extends T, P extends string = never>(options: InitCollectionOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
     if (this.dirty) {
       const items = [...this.items];
       this.dirty = false;
@@ -321,22 +286,25 @@ export class Collection<T extends object, O extends object = object> extends Arr
       return this as unknown as LoadedCollection<Loaded<TT, P>>;
     }
 
-    const em = this.getEntityManager();
+    const em = this.getEntityManager()!;
 
-    if (options.dataloader ?? (DataloaderUtils.getDataloaderType(em.config.get('dataloader')) > Dataloader.COLLECTION)) {
+    if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(DataloaderUtils.getDataloaderType(em.config.get('dataloader')))) {
       const order = [...this.items]; // copy order of references
       const customOrder = !!options.orderBy;
-      const items: TT[] = await this.getEntityManager().colLoader.load(this);
+      // eslint-disable-next-line dot-notation
+      const items: TT[] = await em['colLoader'].load([this, options]);
+
       if (!customOrder) {
         this.reorderItems(items, order);
       }
 
       this.items.clear();
       let i = 0;
-      items.forEach(item => {
+
+      for (const item of items) {
         this.items.add(item);
         this[i++] = item;
-      });
+      }
 
       this.initialized = true;
       this.dirty = false;
@@ -345,48 +313,35 @@ export class Collection<T extends object, O extends object = object> extends Arr
     }
 
     const populate = Array.isArray(options.populate)
-      ? options.populate.map(f => `${this.property.name}.${f}`)
+      ? options.populate.map(f => f === '*' ? f : `${this.property.name}.${f}`)
       : [`${this.property.name}${options.ref ? ':ref' : ''}`];
     const schema = this.property.targetMeta!.schema === '*'
       ? helper(this.owner).__schema
       : undefined;
-    await em.populate(this.owner, populate, {
+    await em.populate(this.owner as TT[], populate, {
       ...options,
       refresh: true,
       connectionType: options.connectionType,
       schema,
-      where: { [this.property.name]: options.where },
-      orderBy: { [this.property.name]: options.orderBy },
+      where: { [this.property.name]: options.where } as FilterQuery<TT>,
+      orderBy: { [this.property.name]: options.orderBy } as QueryOrderMap<TT>,
     });
 
     return this as unknown as LoadedCollection<Loaded<TT, P>>;
   }
 
-  /**
-   * @internal
-   */
-  takeSnapshot(forcePropagate?: boolean): void {
-    this.snapshot = [...this.items];
-    this.setDirty(false);
-
-    if (this.property.owner || forcePropagate) {
-      this.items.forEach(item => {
-        this.propagate(item, 'takeSnapshot');
-      });
-    }
-  }
-
-  /**
-   * @internal
-   */
-  getSnapshot() {
-    return this.snapshot;
-  }
-
-  private getEntityManager(items: T[] = [], required = true) {
-    let em = this._em ?? helper(this.owner).__em;
+  private getEntityManager(items: Iterable<T> = [], required = true) {
+    const wrapped = helper(this.owner);
+    let em = (this._em ?? wrapped.__em) as typeof wrapped.__em;
 
     if (!em) {
+      for (const i of this.items) {
+        if (i && helper(i).__em) {
+          em = helper(i).__em;
+          break;
+        }
+      }
+
       for (const i of items) {
         if (i && helper(i).__em) {
           em = helper(i).__em;
@@ -437,16 +392,13 @@ export class Collection<T extends object, O extends object = object> extends Arr
     }
   }
 
-  private createLoadCountCondition(cond: FilterQuery<T>, pivotMeta?: EntityMetadata) {
+  private createLoadCountCondition(cond: FilterQuery<T>) {
     const wrapped = helper(this.owner);
     const val = wrapped.__meta.compositePK ? { $in: wrapped.__primaryKeys } : wrapped.getPrimaryKey();
     const dict = cond as Dictionary;
 
     if (this.property.kind === ReferenceKind.ONE_TO_MANY) {
       dict[this.property.mappedBy] = val;
-    } else if (pivotMeta && this.property.owner && !this.property.inversedBy) {
-      const key = `${this.property.pivotEntity}.${pivotMeta.relations[0].name}`;
-      dict[key] = val;
     } else {
       const key = this.property.owner ? this.property.inversedBy : this.property.mappedBy;
       dict[key] = val;
@@ -529,18 +481,13 @@ Object.defineProperties(Collection.prototype, {
   get: { get() { return () => this; } },
 });
 
-export interface InitOptions<T, P extends string = never> {
+export interface InitCollectionOptions<T, P extends string = never, F extends string = '*', E extends string = never> extends EntityLoaderOptions<T, F, E>{
   dataloader?: boolean;
   populate?: Populate<T, P>;
   ref?: boolean; // populate only references, works only with M:N collections that use pivot table
-  orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
-  where?: FilterQuery<T>;
-  lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
-  connectionType?: ConnectionType;
-  logging?: LoggingOptions;
 }
 
-export interface LoadCountOptions<T> {
+export interface LoadCountOptions<T extends object> extends CountOptions<T, '*'> {
   refresh?: boolean;
   where?: FilterQuery<T>;
 }

@@ -14,7 +14,7 @@ class RunScheduleEntity {
 }
 
 @Entity()
-export class AEntity {
+class AEntity {
 
   @PrimaryKey()
   id!: number;
@@ -43,25 +43,25 @@ test('4295', async () => {
   const mock = mockLogger(orm);
   await orm.em.findOne(AEntity, { id: 1 }, { cache: 1000 });
   await orm.em.flush();
-  expect(mock).toBeCalledTimes(1);
+  expect(mock).toHaveBeenCalledTimes(1);
 
   mock.mockReset();
   orm.em.clear();
 
   await orm.em.findOne(AEntity, { id: 1 }, { cache: 1000 });
   await orm.em.flush();
-  expect(mock).toBeCalledTimes(0);
+  expect(mock).toHaveBeenCalledTimes(0);
 
   orm.em.clear();
 
   await orm.em.find(AEntity, {}, { cache: 1000 });
   await orm.em.flush();
-  expect(mock).toBeCalledTimes(1);
+  expect(mock).toHaveBeenCalledTimes(1);
 
   mock.mockReset();
   orm.em.clear();
 
   await orm.em.find(AEntity, {}, { cache: 1000 });
   await orm.em.flush();
-  expect(mock).toBeCalledTimes(0);
+  expect(mock).toHaveBeenCalledTimes(0);
 });

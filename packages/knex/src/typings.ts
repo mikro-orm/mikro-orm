@@ -1,5 +1,17 @@
 import type { Knex } from 'knex';
-import type { CheckCallback, Dictionary, EntityProperty, GroupOperator, RawQueryFragment, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
+import type {
+  CheckCallback,
+  Dictionary,
+  EntityProperty,
+  GroupOperator,
+  RawQueryFragment,
+  QBFilterQuery,
+  QueryOrderMap,
+  Type,
+  QueryFlag,
+  AnyEntity,
+  EntityName,
+} from '@mikro-orm/core';
 import type { JoinType, QueryType } from './query/enums';
 import type { DatabaseSchema, DatabaseTable } from './schema';
 
@@ -131,6 +143,7 @@ export interface IQueryBuilder<T> {
   _fields?: Field<T>[];
   select(fields: Field<T> | Field<T>[], distinct?: boolean): this;
   addSelect(fields: string | string[]): this;
+  from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T> | IQueryBuilder<T>, aliasName?: string): IQueryBuilder<T>;
   insert(data: any): this;
   update(data: any): this;
   delete(cond?: QBFilterQuery): this;
@@ -152,9 +165,20 @@ export interface IQueryBuilder<T> {
   orderBy(orderBy: QueryOrderMap<T>): this;
   groupBy(fields: (string | keyof T) | (string | keyof T)[]): this;
   having(cond?: QBFilterQuery | string, params?: any[]): this;
-  getAliasForJoinPath(path: string): string | undefined;
+  getAliasForJoinPath(path: string, options?: ICriteriaNodeProcessOptions): string | undefined;
+  getJoinForPath(path?: string, options?: ICriteriaNodeProcessOptions): JoinOptions | undefined;
   getNextAlias(entityName?: string): string;
   clone(reset?: boolean): IQueryBuilder<T>;
+  setFlag(flag: QueryFlag): this;
+  unsetFlag(flag: QueryFlag): this;
+  hasFlag(flag: QueryFlag): boolean;
+}
+
+export interface ICriteriaNodeProcessOptions {
+  alias?: string;
+  matchPopulateJoins?: boolean;
+  ignoreBranching?: boolean;
+  preferNoBranch?: boolean;
 }
 
 export interface ICriteriaNode<T extends object> {
@@ -164,7 +188,7 @@ export interface ICriteriaNode<T extends object> {
   payload: any;
   prop?: EntityProperty;
   index?: number;
-  process(qb: IQueryBuilder<T>, alias?: string): any;
+  process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any;
   shouldInline(payload: any): boolean;
   willAutoJoin(qb: IQueryBuilder<T>, alias?: string): boolean;
   shouldRename(payload: any): boolean;

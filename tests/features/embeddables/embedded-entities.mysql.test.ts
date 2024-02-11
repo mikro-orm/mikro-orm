@@ -129,8 +129,8 @@ describe('embedded entities in mysql', () => {
       kind: ReferenceKind.EMBEDDED,
       type: 'Address2',
     });
-    expect(orm.getMetadata().get('User').properties.addr_street).toMatchObject({
-      name: 'addr_street',
+    expect(orm.getMetadata().get('User').properties.address2_street).toMatchObject({
+      name: 'address2_street',
       kind: ReferenceKind.SCALAR,
       type: 'string',
       nullable: true,
@@ -140,8 +140,8 @@ describe('embedded entities in mysql', () => {
       kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
-    expect(orm.getMetadata().get('User').properties.street).toMatchObject({
-      name: 'street',
+    expect(orm.getMetadata().get('User').properties.address4_street).toMatchObject({
+      name: 'address4_street',
       kind: ReferenceKind.SCALAR,
       type: 'string',
     });
@@ -221,7 +221,7 @@ describe('embedded entities in mysql', () => {
     expect(u3.address1.postalCode).toBe('123');
     expect(u3).toBe(u1);
     const err = `Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { '$or': [ [Object], [Object] ] } })`;
-    await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
+    await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrow(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
     expect(mock.mock.calls[10][0]).toMatch('select `u0`.* from `user` as `u0` where json_extract(`u0`.`address4`, \'$.postal_code\') = ? limit ?');
@@ -296,7 +296,7 @@ describe('embedded entities in mysql', () => {
   });
 
   test('should throw error with colliding definition of inlined embeddables without prefix', async () => {
-    const err = `Property UserWithCity:city is being overwritten by its child property address1:city. Consider using a prefix to overcome this issue.`;
+    const err = `Duplicate fieldNames are not allowed: UserWithCity.city (fieldName: 'city'), UserWithCity.address1.city (fieldName: 'city')`;
     await expect(MikroORM.init({
       entities: [Address1, UserWithCity],
       dbName: `mikro_orm_test_embeddables`,

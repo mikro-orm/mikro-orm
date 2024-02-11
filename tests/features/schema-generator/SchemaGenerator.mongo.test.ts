@@ -36,13 +36,13 @@ describe('SchemaGenerator', () => {
 
     await orm.schema.refreshDatabase();
 
-    expect(dropCollections).toBeCalledTimes(1);
-    expect(createCollection).toBeCalledTimes(1);
+    expect(dropCollections).toHaveBeenCalledTimes(1);
+    expect(createCollection).toHaveBeenCalledTimes(1);
 
     await orm.schema.refreshDatabase({ ensureIndexes: false });
 
-    expect(dropCollections).toBeCalledTimes(2);
-    expect(createCollection).toBeCalledTimes(2);
+    expect(dropCollections).toHaveBeenCalledTimes(2);
+    expect(createCollection).toHaveBeenCalledTimes(2);
 
     createCollection.mockRestore();
     dropCollections.mockRestore();
@@ -52,7 +52,7 @@ describe('SchemaGenerator', () => {
     const spy = jest.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
     spy.mockImplementation();
     await orm.schema.updateSchema();
-    expect(spy).toBeCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(1);
     spy.mockRestore();
   });
 
@@ -65,12 +65,12 @@ describe('SchemaGenerator', () => {
     meta.properties.name.nullable = true;
     await orm.schema.ensureIndexes();
 
-    expect(dropIndexesSpy).toBeCalledWith(
+    expect(dropIndexesSpy).toHaveBeenCalledWith(
       expect.objectContaining({
       collectionsWithFailedIndexes: ['foo-baz'],
     }));
 
-    expect(ensureIndexesSpy).toBeCalledTimes(3);
+    expect(ensureIndexesSpy).toHaveBeenCalledTimes(3);
 
     dropIndexesSpy.mockRestore();
     ensureIndexesSpy.mockRestore();

@@ -137,25 +137,7 @@ create unique index "user_profile2_username_unique" on "user" (("profile2"->>'us
 "
 `;
 
-exports[`embedded entities in postgres schema: nested embeddables 2 1`] = `
-"drop index "user_profile1_identity_links_meta_bar_index";
-drop index "user_profile1_identity_links_metas_bar_index";
-drop index "user_profile2_identity_email_unique";
-drop index "user_profile2_identity_links_meta_bar_index";
-drop index "user_profile2_identity_links_metas_bar_index";
-drop index "user_profile2_identity_meta_bar_index";
-drop index "user_profile2_username_unique";
-
-create index "user_profile1_identity_links_meta_bar_index" on "user" (("profile1_identity_links"->'meta'->>'bar'));
-create index "user_profile1_identity_links_metas_bar_index" on "user" (("profile1_identity_links"->'metas'->>'bar'));
-create unique index "user_profile2_identity_email_unique" on "user" (("profile2"->'identity'->>'email'));
-create index "user_profile2_identity_links_meta_bar_index" on "user" (("profile2"->'identity'->'links'->'meta'->>'bar'));
-create index "user_profile2_identity_links_metas_bar_index" on "user" (("profile2"->'identity'->'links'->'metas'->>'bar'));
-create index "user_profile2_identity_meta_bar_index" on "user" (("profile2"->'identity'->'meta'->>'bar'));
-create unique index "user_profile2_username_unique" on "user" (("profile2"->>'username'));
-
-"
-`;
+exports[`embedded entities in postgres schema: nested embeddables 2 1`] = `""`;
 
 exports[`embedded entities in postgres schema: nested embeddables 3 1`] = `
 "drop table if exists "user" cascade;

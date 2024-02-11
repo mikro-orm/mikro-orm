@@ -1,4 +1,13 @@
-import type { EntityMetadata, ISchemaGenerator } from '../typings';
+import type {
+  ClearDatabaseOptions,
+  DropSchemaOptions,
+  EntityMetadata,
+  ISchemaGenerator,
+  UpdateSchemaOptions,
+  CreateSchemaOptions,
+  RefreshDatabaseOptions,
+  EnsureDatabaseOptions,
+} from '../typings';
 import { CommitOrderCalculator } from '../unit-of-work/CommitOrderCalculator';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
@@ -23,24 +32,24 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
     this.connection = this.driver.getConnection() as ReturnType<D['getConnection']>;
   }
 
-  async createSchema(): Promise<void> {
+  async createSchema(options?: CreateSchemaOptions): Promise<void> {
     this.notImplemented();
   }
 
   /**
    * Returns true if the database was created.
    */
-  async ensureDatabase(): Promise<boolean> {
+  async ensureDatabase(options?: EnsureDatabaseOptions): Promise<boolean> {
     this.notImplemented();
   }
 
-  async refreshDatabase(): Promise<void> {
+  async refreshDatabase(options?: RefreshDatabaseOptions): Promise<void> {
     await this.ensureDatabase();
     await this.dropSchema();
-    await this.createSchema();
+    await this.createSchema(options);
   }
 
-  async clearDatabase(options?: { schema?: string }): Promise<void> {
+  async clearDatabase(options?: ClearDatabaseOptions): Promise<void> {
     for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
       await this.driver.nativeDelete(meta.className, {}, options);
     }
@@ -59,27 +68,27 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
     this.config.set('allowGlobalContext', allowGlobalContext);
   }
 
-  async getCreateSchemaSQL(): Promise<string> {
+  async getCreateSchemaSQL(options?: CreateSchemaOptions): Promise<string> {
     this.notImplemented();
   }
 
-  async dropSchema(): Promise<void> {
+  async dropSchema(options?: DropSchemaOptions): Promise<void> {
     this.notImplemented();
   }
 
-  async getDropSchemaSQL(): Promise<string> {
+  async getDropSchemaSQL(options?: Omit<DropSchemaOptions, 'dropDb'>): Promise<string> {
     this.notImplemented();
   }
 
-  async updateSchema(): Promise<void> {
+  async updateSchema(options?: UpdateSchemaOptions): Promise<void> {
     this.notImplemented();
   }
 
-  async getUpdateSchemaSQL(): Promise<string> {
+  async getUpdateSchemaSQL(options?: UpdateSchemaOptions): Promise<string> {
     this.notImplemented();
   }
 
-  async getUpdateSchemaMigrationSQL(): Promise<{ up: string; down: string }> {
+  async getUpdateSchemaMigrationSQL(options?: UpdateSchemaOptions): Promise<{ up: string; down: string }> {
     this.notImplemented();
   }
 

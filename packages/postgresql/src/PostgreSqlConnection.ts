@@ -1,4 +1,5 @@
 import TypeOverrides from 'pg/lib/type-overrides';
+import array from 'postgres-array';
 import type { Dictionary } from '@mikro-orm/core';
 import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
 
@@ -16,8 +17,20 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
 
   override getConnectionOptions(): Knex.PgConnectionConfig {
     const ret = super.getConnectionOptions() as Knex.PgConnectionConfig;
+    // use `select typname, oid, typarray from pg_type order by oid` to get the list of OIDs
     const types = new TypeOverrides();
-    [1082, 1114, 1184].forEach(oid => types.setTypeParser(oid, str => str)); // date, timestamp, timestamptz type
+    [
+      1082, // date
+      1114, // timestamp
+      1184, // timestamptz
+      1186, // interval
+    ].forEach(oid => types.setTypeParser(oid, str => str));
+    [
+      1182, // date[]
+      1115, // timestamp[]
+      1185, // timestamptz[]
+      1187, // interval[]
+    ].forEach(oid => types.setTypeParser(oid, str => array.parse(str)));
     ret.types = types as any;
 
     return ret;

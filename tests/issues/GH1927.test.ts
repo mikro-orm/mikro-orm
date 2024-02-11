@@ -2,7 +2,7 @@ import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Propert
 import { mockLogger } from '../helpers';
 
 @Entity()
-export class Author {
+class Author {
 
   @PrimaryKey()
   id!: number;
@@ -20,7 +20,7 @@ export class Author {
 }
 
 @Entity()
-export class Book {
+class Book {
 
   @PrimaryKey()
   id!: number;

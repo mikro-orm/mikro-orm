@@ -319,7 +319,7 @@ export class ChangeSetPersister {
     options = this.propagateSchemaFromMetadata(meta, options, {
       fields: primaryKeys,
     });
-    const res = await this.driver.find<T>(meta.className, { $or } as FilterQuery<T>, options);
+    const res = await this.driver.find<T>(meta.root.className, { $or } as FilterQuery<T>, options);
 
     if (res.length !== changeSets.length) {
       const compare = (a: Dictionary, b: Dictionary, keys: string[]) => keys.every(k => a[k] === b[k]);
@@ -387,7 +387,7 @@ export class ChangeSetPersister {
     options = this.propagateSchemaFromMetadata(meta, options, {
       fields: Utils.unique(reloadProps.map(prop => prop.name)),
     });
-    const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } } as FilterQuery<T>, options);
+    const data = await this.driver.find<T>(meta.className, { [pk]: { $in: pks } } as FilterQuery<T>, options);
     const map = new Map<string, Dictionary>();
     data.forEach(item => map.set(Utils.getCompositeKeyHash(item, meta, true, this.platform, true), item));
 
@@ -430,7 +430,7 @@ export class ChangeSetPersister {
    * No need to handle composite keys here as they need to be set upfront.
    * We do need to map to the change set payload too, as it will be used in the originalEntityData for new entities.
    */
-  mapReturnedValues<T extends object>(entity: T, payload: EntityDictionary<T>, row: Dictionary | undefined, meta: EntityMetadata<T>, override = false): void {
+  mapReturnedValues<T extends object>(entity: T, payload: EntityDictionary<T>, row: Dictionary | undefined, meta: EntityMetadata<T>): void {
     if (this.usesReturningStatement && row && Utils.hasObjectKeys(row)) {
       const mapped = this.comparator.mapResult<T>(meta.className, row as EntityDictionary<T>);
       this.hydrator.hydrate(entity, meta, mapped, this.factory, 'full', false, true);

@@ -12,6 +12,7 @@ import type {
   EntityKey,
 } from '../typings';
 import type { Type, types } from '../types';
+import type { EntityManager } from '../EntityManager';
 
 export function Property<T extends object>(options: PropertyOptions<T> = {}) {
   return function (target: any, propertyName: string) {
@@ -101,12 +102,12 @@ export type PropertyOptions<Owner> = {
    * Automatically set the property value when entity gets created, executed during flush operation.
    * @param entity
    */
-  onCreate?: (entity: Owner) => any;
+  onCreate?: (entity: Owner, em: EntityManager) => any;
   /**
    * Automatically update the property value every time entity gets updated, executed during flush operation.
    * @param entity
    */
-  onUpdate?: (entity: Owner) => any;
+  onUpdate?: (entity: Owner, em: EntityManager) => any;
   /**
    * Specify default column value for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
    * This is a runtime value, assignable to the entity property. (SQL only)

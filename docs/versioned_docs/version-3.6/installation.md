@@ -41,7 +41,7 @@ const orm = await MikroORM.init({
 console.log(orm.em); // access EntityManager via `em` property
 ```
 
-> Read more about all the possible configuration options in [Advanced Configuration](configuration.md) section.
+> Read more about all the possible configuration options in [Advanced Configuration](./configuration.md) section.
 
 You can also provide paths where you store your entities via `entitiesDirs` array. Internally it uses [`globby`](https://github.com/sindresorhus/globby) so you can use [globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns).
 
@@ -93,7 +93,7 @@ If you encounter this, you have basically two options:
 
 ## Entity Discovery in TypeScript
 
-Internally, `MikroORM` uses [`ts-morph` to perform analysis](metadata-providers.md) of source files of entities to sniff types of all properties. This process can be slow if your project contains lots of files. To speed up the discovery process a bit, you can provide more accurate paths where your entity source files are:
+Internally, `MikroORM` uses [`ts-morph` to perform analysis](./metadata-providers.md) of source files of entities to sniff types of all properties. This process can be slow if your project contains lots of files. To speed up the discovery process a bit, you can provide more accurate paths where your entity source files are:
 
 ```typescript
 const orm = await MikroORM.init({
@@ -103,7 +103,7 @@ const orm = await MikroORM.init({
 });
 ```
 
-You can also use different [metadata provider](metadata-providers.md) or even write custom one:
+You can also use different [metadata provider](./metadata-providers.md) or even write custom one:
 
 - `ReflectMetadataProvider` that uses `reflect-metadata` instead of `ts-morph`
 - `JavaScriptMetadataProvider` that allows you to manually provide the entity schema (mainly for Vanilla JS)
@@ -193,6 +193,6 @@ app.use((req, res, next) => {
 });
 ```
 
-More info about `RequestContext` is described [here](identity-map.md#request-context).
+More info about `RequestContext` is described [here](./identity-map#request-context).
 
-Now you can start [defining your entities](defining-entities.md) (in one of the `entitiesDirs` folders).
+Now you can start [defining your entities](./defining-entities.md) (in one of the `entitiesDirs` folders).

@@ -14,7 +14,7 @@ import {
 } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'users' })
-export class UserEntity {
+class UserEntity {
 
   @PrimaryKey({ type: 'number' })
   id!: number;
@@ -32,7 +32,7 @@ export class UserEntity {
 }
 
 @Entity({ tableName: 'tenants' })
-export class TenantEntity {
+class TenantEntity {
 
   [OptionalProps]?: 'isEnabled';
 

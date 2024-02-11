@@ -48,7 +48,7 @@ describe('default values in postgres', () => {
     await orm.em.persistAndFlush(a);
 
     // postgres uses returning clause, so just a single insert query (inside tx, so 3 in total)
-    expect(mock).toBeCalledTimes(3);
+    expect(mock).toHaveBeenCalledTimes(3);
     expect(a.foo1).toBe(50);
     expect(a.foo2).toBe(50);
     expect(a.foo3).toBe(50);

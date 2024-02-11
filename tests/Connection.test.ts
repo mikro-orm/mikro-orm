@@ -27,16 +27,20 @@ class CustomConnection extends Connection {
     return false;
   }
 
+  async checkConnection(): Promise<{ ok: boolean; reason?: string; error?: Error }> {
+    return { ok: false, reason: 'foo' };
+  }
+
 }
 
 describe('Connection', () => {
 
   test('by default it throws when trying to use transactions', async () => {
     const conn = new CustomConnection(new Configuration({ driver: MongoDriver }, false));
-    await expect(conn.transactional(async () => void 0)).rejects.toThrowError('Transactions are not supported by current driver');
-    await expect(conn.begin()).rejects.toThrowError('Transactions are not supported by current driver');
-    await expect(conn.commit({} as any)).rejects.toThrowError('Transactions are not supported by current driver');
-    await expect(conn.rollback({} as any)).rejects.toThrowError('Transactions are not supported by current driver');
+    await expect(conn.transactional(async () => void 0)).rejects.toThrow('Transactions are not supported by current driver');
+    await expect(conn.begin()).rejects.toThrow('Transactions are not supported by current driver');
+    await expect(conn.commit({} as any)).rejects.toThrow('Transactions are not supported by current driver');
+    await expect(conn.rollback({} as any)).rejects.toThrow('Transactions are not supported by current driver');
   });
 
   test('special characters in username and password', async () => {

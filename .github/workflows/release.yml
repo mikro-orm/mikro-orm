@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Cancel Workflow Action
-        uses: styfle/cancel-workflow-action@0.12.0
+        uses: styfle/cancel-workflow-action@0.12.1
         with:
           access_token: ${{ github.token }}
 
@@ -45,8 +45,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
-          cache-dependency-path: 'yarn.lock'
 
       - name: Enable corepack
         run: |
@@ -89,8 +87,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'yarn'
-          cache-dependency-path: 'yarn.lock'
 
       - name: Enable corepack
         run: |

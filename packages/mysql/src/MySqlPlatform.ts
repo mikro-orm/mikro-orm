@@ -1,4 +1,8 @@
-import { AbstractSqlPlatform, type IndexDef } from '@mikro-orm/knex';
+import {
+  AbstractSqlPlatform,
+  type IndexDef,
+  QueryOrder,
+} from '@mikro-orm/knex';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
 import { Utils, type SimpleColumnMeta, type Dictionary, type Type, type TransformContext } from '@mikro-orm/core';
@@ -86,6 +90,26 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     const quotedIndexName = this.quoteIdentifier(indexName);
 
     return `alter table ${quotedTableName} add fulltext index ${quotedIndexName}(${quotedColumnNames.join(',')})`;
+  }
+
+  private readonly ORDER_BY_NULLS_TRANSLATE = {
+    [QueryOrder.asc_nulls_first]: 'is not null',
+    [QueryOrder.asc_nulls_last]: 'is null',
+    [QueryOrder.desc_nulls_first]: 'is not null',
+    [QueryOrder.desc_nulls_last]: 'is null',
+  } as const;
+
+  override getOrderByExpression(column: string, direction: string): string[] {
+    const ret: string[] = [];
+    const dir = direction.toLowerCase() as keyof typeof this.ORDER_BY_NULLS_TRANSLATE;
+
+    if (dir in this.ORDER_BY_NULLS_TRANSLATE) {
+      ret.push(`${column} ${this.ORDER_BY_NULLS_TRANSLATE[dir]}`);
+    }
+
+    ret.push(`${column} ${dir.replace(/(\s|nulls|first|last)*/gi, '')}`);
+
+    return ret;
   }
 
 }

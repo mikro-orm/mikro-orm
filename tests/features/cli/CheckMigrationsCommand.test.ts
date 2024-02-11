@@ -37,16 +37,16 @@ describe('CheckMigrationCommand', () => {
 
     const mockExit = jest.spyOn(process, 'exit').mockImplementationOnce(() => { throw new Error('Mock'); });
 
-    await expect(cmd.handler({} as any)).rejects.toThrowError('Mock');
+    await expect(cmd.handler({} as any)).rejects.toThrow('Mock');
     expect(checkMigrationMock.mock.calls.length).toBe(1);
-    expect(closeSpy).toBeCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
     expect(dumpMock).toHaveBeenLastCalledWith('Changes detected. Please create migration to update schema.');
-    expect(mockExit).toBeCalledTimes(1);
+    expect(mockExit).toHaveBeenCalledTimes(1);
 
     checkMigrationMock.mockImplementationOnce(async () => false);
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(checkMigrationMock.mock.calls.length).toBe(2);
-    expect(closeSpy).toBeCalledTimes(2);
+    expect(closeSpy).toHaveBeenCalledTimes(2);
     expect(dumpMock).toHaveBeenLastCalledWith('No changes required, schema is up-to-date');
   });
 });

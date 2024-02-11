@@ -1,11 +1,11 @@
-import { Entity, ManyToOne, PrimaryKey, Property, Ref, Reference, SimpleLogger, Unique } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, Ref, Reference, SimpleLogger, sql, Unique } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
 @Entity()
 class B {
 
-  @PrimaryKey({ type: 'uuid', defaultRaw: 'uuid_generate_v4()' })
+  @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   id!: string;
 
   @ManyToOne(() => D, { deleteRule: 'cascade', ref: true })
@@ -14,7 +14,7 @@ class B {
   @Property({ unique: true })
   order!: number;
 
-  @Property({ length: 6, defaultRaw: 'now()', onUpdate: () => new Date() })
+  @Property({ length: 6, default: sql.now(), onUpdate: () => new Date() })
   updatedAt: Date = new Date();
 
 }
@@ -23,13 +23,13 @@ class B {
 @Unique({ properties: ['tenantWorkflowId'] })
 class D {
 
-  @PrimaryKey({ type: 'uuid', defaultRaw: 'uuid_generate_v4()' })
+  @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   id!: string;
 
   @Property()
   tenantWorkflowId!: number;
 
-  @Property({ length: 6, defaultRaw: 'now()', onUpdate: () => new Date() })
+  @Property({ length: 6, default: sql.now(), onUpdate: () => new Date() })
   updatedAt: Date = new Date();
 
   @Property({ nullable: true })
@@ -47,7 +47,6 @@ beforeAll(async () => {
   });
 
   await orm.schema.ensureDatabase();
-  await orm.schema.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
   await orm.schema.refreshDatabase();
 });
 

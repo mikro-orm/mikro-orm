@@ -36,30 +36,30 @@ describe('DropSchemaCommand', () => {
     expect(showHelpMock.mock.calls.length).toBe(1);
 
     expect(dropSchema.mock.calls.length).toBe(0);
-    expect(closeSpy).toBeCalledTimes(0);
+    expect(closeSpy).toHaveBeenCalledTimes(0);
     await expect(cmd.handler({ run: true } as any)).resolves.toBeUndefined();
     expect(dropSchema.mock.calls.length).toBe(1);
-    expect(closeSpy).toBeCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
 
     await expect(cmd.handler({ run: true, dropMigrationsTable: true } as any)).resolves.toBeUndefined();
     expect(dropSchema.mock.calls.length).toBe(2);
     expect(dropSchema.mock.calls[1][0]).toEqual({ wrap: undefined, dropMigrationsTable: true, run: true });
-    expect(closeSpy).toBeCalledTimes(2);
+    expect(closeSpy).toHaveBeenCalledTimes(2);
 
     expect(getDropSchemaSQL.mock.calls.length).toBe(0);
     await expect(cmd.handler({ dump: true } as any)).resolves.toBeUndefined();
     expect(getDropSchemaSQL.mock.calls.length).toBe(1);
-    expect(closeSpy).toBeCalledTimes(3);
+    expect(closeSpy).toHaveBeenCalledTimes(3);
 
     await expect(cmd.handler({ dump: true, dropMigrationsTable: true } as any)).resolves.toBeUndefined();
     expect(getDropSchemaSQL.mock.calls.length).toBe(2);
     expect(getDropSchemaSQL.mock.calls[1][0]).toEqual({ wrap: undefined, dropMigrationsTable: true, dump: true });
-    expect(closeSpy).toBeCalledTimes(4);
+    expect(closeSpy).toHaveBeenCalledTimes(4);
 
     await expect(cmd.handler({ run: true, dropDb: true } as any)).resolves.toBeUndefined();
     expect(dropSchema.mock.calls.length).toBe(3);
     expect(dropSchema.mock.calls[2][0]).toEqual({ wrap: undefined, dropMigrationsTable: undefined, dropDb: true, run: true });
-    expect(closeSpy).toBeCalledTimes(5);
+    expect(closeSpy).toHaveBeenCalledTimes(5);
   });
 
 });

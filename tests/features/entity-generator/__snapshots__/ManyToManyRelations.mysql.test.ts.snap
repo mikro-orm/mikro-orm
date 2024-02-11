@@ -1,0 +1,3786 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false readOnlyPivotTables=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+@Unique({ name: 'user_id__order_id_unique', properties: ['user', 'order'] })
+export class CompletedOrders {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Emails {
+
+  [PrimaryKeyProp]?: 'emailId';
+
+  @PrimaryKey()
+  emailId!: number;
+
+  @Unique({ name: 'address_UNIQUE' })
+  @Property({ length: 255 })
+  address!: string;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Flags {
+
+  [PrimaryKeyProp]?: 'flagId';
+
+  @PrimaryKey({ autoincrement: false })
+  flagId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Orders {
+
+  [PrimaryKeyProp]?: 'orderId';
+
+  @PrimaryKey()
+  orderId!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailAvatars {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  email!: Emails;
+
+  @Property({ length: 255 })
+  avatarUrl!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailFlags {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  email!: Emails;
+
+  @OneToOne({ entity: () => Flags, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  flag!: Flags & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailOrders {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  email!: Emails;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmails {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  email!: Emails;
+
+  @Property({ default: false })
+  isVerified: boolean & Opt = false;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Flags } from './Flags';
+import { Orders } from './Orders';
+
+@Entity()
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
+  userFlags = new Collection<Flags>(this);
+
+  @ManyToMany({ entity: () => Orders, pivotTable: 'user_orders', joinColumn: 'user_id', inverseJoinColumn: 'order_id', fixedOrder: true, fixedOrderColumn: 'priority' })
+  userOrders = new Collection<Orders>(this);
+
+}
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false readOnlyPivotTables=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class CompletedOrders {
+  id!: number;
+  user!: Users;
+  order!: Orders;
+}
+
+export const CompletedOrdersSchema = new EntitySchema({
+  class: CompletedOrders,
+  uniques: [
+    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
+  ],
+  properties: {
+    id: { primary: true, type: 'number' },
+    user: {
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      index: 'fk_completed_orders_users1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_completed_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Emails {
+  [PrimaryKeyProp]?: 'emailId';
+  emailId!: number;
+  address!: string;
+}
+
+export const EmailsSchema = new EntitySchema({
+  class: Emails,
+  properties: {
+    emailId: { primary: true, type: 'number' },
+    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Flags {
+  [PrimaryKeyProp]?: 'flagId';
+  flagId!: number;
+  name!: string;
+}
+
+export const FlagsSchema = new EntitySchema({
+  class: Flags,
+  properties: {
+    flagId: { primary: true, type: 'number', autoincrement: false },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Orders {
+  [PrimaryKeyProp]?: 'orderId';
+  orderId!: number;
+  name!: string;
+}
+
+export const OrdersSchema = new EntitySchema({
+  class: Orders,
+  properties: {
+    orderId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailAvatars {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  avatarUrl!: string;
+}
+
+export const UserEmailAvatarsSchema = new EntitySchema({
+  class: UserEmailAvatars,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_avatars_emails1_idx',
+    },
+    avatarUrl: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailFlags {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  flag!: Flags & Opt;
+}
+
+export const UserEmailFlagsSchema = new EntitySchema({
+  class: UserEmailFlags,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_flags_emails1_idx',
+    },
+    flag: {
+      kind: '1:1',
+      entity: () => Flags,
+      fieldName: 'flag_id',
+      defaultRaw: \`1\`,
+      index: 'fk_user_email_flags_flags1_idx',
+      unique: 'flag_id_UNIQUE',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailOrders {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  order!: Orders;
+}
+
+export const UserEmailOrdersSchema = new EntitySchema({
+  class: UserEmailOrders,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_orders_emails1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_user_email_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmails {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  isVerified: boolean & Opt = false;
+}
+
+export const UserEmailsSchema = new EntitySchema({
+  class: UserEmails,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_user_emails_emails1_idx',
+    },
+    isVerified: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Flags } from './Flags';
+import { Orders } from './Orders';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  name!: string;
+  userFlags = new Collection<Flags>(this);
+  userOrders = new Collection<Orders>(this);
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  properties: {
+    userId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userFlags: {
+      kind: 'm:n',
+      entity: () => Flags,
+      pivotTable: 'user_flags',
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'flag_id',
+    },
+    userOrders: {
+      kind: 'm:n',
+      entity: () => Orders,
+      pivotTable: 'user_orders',
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'order_id',
+      fixedOrder: true,
+      fixedOrderColumn: 'priority',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false readOnlyPivotTables=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+@Unique({ name: 'user_id__order_id_unique', properties: ['user', 'order'] })
+export class CompletedOrders {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Emails {
+
+  [PrimaryKeyProp]?: 'emailId';
+
+  @PrimaryKey()
+  emailId!: number;
+
+  @Unique({ name: 'address_UNIQUE' })
+  @Property({ length: 255 })
+  address!: string;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Flags {
+
+  [PrimaryKeyProp]?: 'flagId';
+
+  @PrimaryKey({ autoincrement: false })
+  flagId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Orders {
+
+  [PrimaryKeyProp]?: 'orderId';
+
+  @PrimaryKey()
+  orderId!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailAvatars {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  email!: Emails;
+
+  @Property({ length: 255 })
+  avatarUrl!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailFlags {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  email!: Emails;
+
+  @OneToOne({ entity: () => Flags, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  flag!: Flags & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailOrders {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  email!: Emails;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmails {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  email!: Emails;
+
+  @Property({ default: false })
+  isVerified: boolean & Opt = false;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Orders } from './Orders';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
+import { UserEmails } from './UserEmails';
+
+@Entity()
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_avatars', pivotEntity: () => UserEmailAvatars, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
+  userEmailAvatars = new Collection<Emails>(this);
+
+  @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_flags', pivotEntity: () => UserEmailFlags, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
+  userEmailFlags = new Collection<Emails>(this);
+
+  @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_orders', pivotEntity: () => UserEmailOrders, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
+  userEmailOrders = new Collection<Emails>(this);
+
+  @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
+  userEmails = new Collection<Emails>(this);
+
+  @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
+  userFlags = new Collection<Flags>(this);
+
+  @ManyToMany({ entity: () => Orders, pivotTable: 'user_orders', joinColumn: 'user_id', inverseJoinColumn: 'order_id', fixedOrder: true, fixedOrderColumn: 'priority' })
+  userOrders = new Collection<Orders>(this);
+
+}
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false readOnlyPivotTables=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class CompletedOrders {
+  id!: number;
+  user!: Users;
+  order!: Orders;
+}
+
+export const CompletedOrdersSchema = new EntitySchema({
+  class: CompletedOrders,
+  uniques: [
+    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
+  ],
+  properties: {
+    id: { primary: true, type: 'number' },
+    user: {
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      index: 'fk_completed_orders_users1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_completed_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Emails {
+  [PrimaryKeyProp]?: 'emailId';
+  emailId!: number;
+  address!: string;
+}
+
+export const EmailsSchema = new EntitySchema({
+  class: Emails,
+  properties: {
+    emailId: { primary: true, type: 'number' },
+    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Flags {
+  [PrimaryKeyProp]?: 'flagId';
+  flagId!: number;
+  name!: string;
+}
+
+export const FlagsSchema = new EntitySchema({
+  class: Flags,
+  properties: {
+    flagId: { primary: true, type: 'number', autoincrement: false },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Orders {
+  [PrimaryKeyProp]?: 'orderId';
+  orderId!: number;
+  name!: string;
+}
+
+export const OrdersSchema = new EntitySchema({
+  class: Orders,
+  properties: {
+    orderId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailAvatars {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  avatarUrl!: string;
+}
+
+export const UserEmailAvatarsSchema = new EntitySchema({
+  class: UserEmailAvatars,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_avatars_emails1_idx',
+    },
+    avatarUrl: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailFlags {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  flag!: Flags & Opt;
+}
+
+export const UserEmailFlagsSchema = new EntitySchema({
+  class: UserEmailFlags,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_flags_emails1_idx',
+    },
+    flag: {
+      kind: '1:1',
+      entity: () => Flags,
+      fieldName: 'flag_id',
+      defaultRaw: \`1\`,
+      index: 'fk_user_email_flags_flags1_idx',
+      unique: 'flag_id_UNIQUE',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailOrders {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  order!: Orders;
+}
+
+export const UserEmailOrdersSchema = new EntitySchema({
+  class: UserEmailOrders,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_orders_emails1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_user_email_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmails {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  isVerified: boolean & Opt = false;
+}
+
+export const UserEmailsSchema = new EntitySchema({
+  class: UserEmails,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_user_emails_emails1_idx',
+    },
+    isVerified: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Orders } from './Orders';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  name!: string;
+  userEmailAvatars = new Collection<Emails>(this);
+  userEmailFlags = new Collection<Emails>(this);
+  userEmailOrders = new Collection<Emails>(this);
+  userEmails = new Collection<Emails>(this);
+  userFlags = new Collection<Flags>(this);
+  userOrders = new Collection<Orders>(this);
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  properties: {
+    userId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userEmailAvatars: {
+      kind: 'm:n',
+      entity: () => Emails,
+      pivotTable: 'user_email_avatars',
+      pivotEntity: () => UserEmailAvatars,
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'email_id',
+      persist: false,
+    },
+    userEmailFlags: {
+      kind: 'm:n',
+      entity: () => Emails,
+      pivotTable: 'user_email_flags',
+      pivotEntity: () => UserEmailFlags,
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'email_id',
+      persist: false,
+    },
+    userEmailOrders: {
+      kind: 'm:n',
+      entity: () => Emails,
+      pivotTable: 'user_email_orders',
+      pivotEntity: () => UserEmailOrders,
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'email_id',
+      persist: false,
+    },
+    userEmails: {
+      kind: 'm:n',
+      entity: () => Emails,
+      pivotTable: 'user_emails',
+      pivotEntity: () => UserEmails,
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'email_id',
+      persist: false,
+    },
+    userFlags: {
+      kind: 'm:n',
+      entity: () => Flags,
+      pivotTable: 'user_flags',
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'flag_id',
+    },
+    userOrders: {
+      kind: 'm:n',
+      entity: () => Orders,
+      pivotTable: 'user_orders',
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'order_id',
+      fixedOrder: true,
+      fixedOrderColumn: 'priority',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true readOnlyPivotTables=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+@Unique({ name: 'user_id__order_id_unique', properties: ['user', 'order'] })
+export class CompletedOrders {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Emails {
+
+  [PrimaryKeyProp]?: 'emailId';
+
+  @PrimaryKey()
+  emailId!: number;
+
+  @Unique({ name: 'address_UNIQUE' })
+  @Property({ length: 255 })
+  address!: string;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Flags {
+
+  [PrimaryKeyProp]?: 'flagId';
+
+  @PrimaryKey({ autoincrement: false })
+  flagId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Orders {
+
+  [PrimaryKeyProp]?: 'orderId';
+
+  @PrimaryKey()
+  orderId!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailAvatars {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  email!: Emails;
+
+  @Property({ length: 255 })
+  avatarUrl!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailFlags {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  email!: Emails;
+
+  @OneToOne({ entity: () => Flags, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  flag!: Flags & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailOrders {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  email!: Emails;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmails {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  email!: Emails;
+
+  @Property({ default: false })
+  isVerified: boolean & Opt = false;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+export class UserOrders {
+
+  [PrimaryKeyProp]?: ['user', 'order'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  order!: Orders;
+
+  @Unique({ name: 'priority_UNIQUE' })
+  @Property({ autoincrement: true })
+  priority!: number;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Flags } from './Flags';
+
+@Entity()
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
+  userFlags = new Collection<Flags>(this);
+
+}
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true readOnlyPivotTables=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class CompletedOrders {
+  id!: number;
+  user!: Users;
+  order!: Orders;
+}
+
+export const CompletedOrdersSchema = new EntitySchema({
+  class: CompletedOrders,
+  uniques: [
+    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
+  ],
+  properties: {
+    id: { primary: true, type: 'number' },
+    user: {
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      index: 'fk_completed_orders_users1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_completed_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Emails {
+  [PrimaryKeyProp]?: 'emailId';
+  emailId!: number;
+  address!: string;
+}
+
+export const EmailsSchema = new EntitySchema({
+  class: Emails,
+  properties: {
+    emailId: { primary: true, type: 'number' },
+    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Flags {
+  [PrimaryKeyProp]?: 'flagId';
+  flagId!: number;
+  name!: string;
+}
+
+export const FlagsSchema = new EntitySchema({
+  class: Flags,
+  properties: {
+    flagId: { primary: true, type: 'number', autoincrement: false },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Orders {
+  [PrimaryKeyProp]?: 'orderId';
+  orderId!: number;
+  name!: string;
+}
+
+export const OrdersSchema = new EntitySchema({
+  class: Orders,
+  properties: {
+    orderId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailAvatars {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  avatarUrl!: string;
+}
+
+export const UserEmailAvatarsSchema = new EntitySchema({
+  class: UserEmailAvatars,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_avatars_emails1_idx',
+    },
+    avatarUrl: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailFlags {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  flag!: Flags & Opt;
+}
+
+export const UserEmailFlagsSchema = new EntitySchema({
+  class: UserEmailFlags,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_flags_emails1_idx',
+    },
+    flag: {
+      kind: '1:1',
+      entity: () => Flags,
+      fieldName: 'flag_id',
+      defaultRaw: \`1\`,
+      index: 'fk_user_email_flags_flags1_idx',
+      unique: 'flag_id_UNIQUE',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailOrders {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  order!: Orders;
+}
+
+export const UserEmailOrdersSchema = new EntitySchema({
+  class: UserEmailOrders,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_orders_emails1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_user_email_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmails {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  isVerified: boolean & Opt = false;
+}
+
+export const UserEmailsSchema = new EntitySchema({
+  class: UserEmails,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_user_emails_emails1_idx',
+    },
+    isVerified: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserOrders {
+  [PrimaryKeyProp]?: ['user', 'order'];
+  user!: Users;
+  order!: Orders;
+  priority!: number;
+}
+
+export const UserOrdersSchema = new EntitySchema({
+  class: UserOrders,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    order: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_user_orders_orders1_idx',
+    },
+    priority: { type: 'number', autoincrement: true, unique: 'priority_UNIQUE' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Flags } from './Flags';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  name!: string;
+  userFlags = new Collection<Flags>(this);
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  properties: {
+    userId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userFlags: {
+      kind: 'm:n',
+      entity: () => Flags,
+      pivotTable: 'user_flags',
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'flag_id',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true readOnlyPivotTables=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+@Unique({ name: 'user_id__order_id_unique', properties: ['user', 'order'] })
+export class CompletedOrders {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Emails {
+
+  [PrimaryKeyProp]?: 'emailId';
+
+  @PrimaryKey()
+  emailId!: number;
+
+  @Unique({ name: 'address_UNIQUE' })
+  @Property({ length: 255 })
+  address!: string;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Flags {
+
+  [PrimaryKeyProp]?: 'flagId';
+
+  @PrimaryKey({ autoincrement: false })
+  flagId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Orders {
+
+  [PrimaryKeyProp]?: 'orderId';
+
+  @PrimaryKey()
+  orderId!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailAvatars {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  email!: Emails;
+
+  @Property({ length: 255 })
+  avatarUrl!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailFlags {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  email!: Emails;
+
+  @OneToOne({ entity: () => Flags, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  flag!: Flags & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailOrders {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  email!: Emails;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmails {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  email!: Emails;
+
+  @Property({ default: false })
+  isVerified: boolean & Opt = false;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+export class UserOrders {
+
+  [PrimaryKeyProp]?: ['user', 'order'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  order!: Orders;
+
+  @Unique({ name: 'priority_UNIQUE' })
+  @Property({ autoincrement: true })
+  priority!: number;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Flags } from './Flags';
+
+@Entity()
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
+  userFlags = new Collection<Flags>(this);
+
+}
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true readOnlyPivotTables=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class CompletedOrders {
+  id!: number;
+  user!: Users;
+  order!: Orders;
+}
+
+export const CompletedOrdersSchema = new EntitySchema({
+  class: CompletedOrders,
+  uniques: [
+    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
+  ],
+  properties: {
+    id: { primary: true, type: 'number' },
+    user: {
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      index: 'fk_completed_orders_users1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_completed_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Emails {
+  [PrimaryKeyProp]?: 'emailId';
+  emailId!: number;
+  address!: string;
+}
+
+export const EmailsSchema = new EntitySchema({
+  class: Emails,
+  properties: {
+    emailId: { primary: true, type: 'number' },
+    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Flags {
+  [PrimaryKeyProp]?: 'flagId';
+  flagId!: number;
+  name!: string;
+}
+
+export const FlagsSchema = new EntitySchema({
+  class: Flags,
+  properties: {
+    flagId: { primary: true, type: 'number', autoincrement: false },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Orders {
+  [PrimaryKeyProp]?: 'orderId';
+  orderId!: number;
+  name!: string;
+}
+
+export const OrdersSchema = new EntitySchema({
+  class: Orders,
+  properties: {
+    orderId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailAvatars {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  avatarUrl!: string;
+}
+
+export const UserEmailAvatarsSchema = new EntitySchema({
+  class: UserEmailAvatars,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_avatars_emails1_idx',
+    },
+    avatarUrl: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailFlags {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  flag!: Flags & Opt;
+}
+
+export const UserEmailFlagsSchema = new EntitySchema({
+  class: UserEmailFlags,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_flags_emails1_idx',
+    },
+    flag: {
+      kind: '1:1',
+      entity: () => Flags,
+      fieldName: 'flag_id',
+      defaultRaw: \`1\`,
+      index: 'fk_user_email_flags_flags1_idx',
+      unique: 'flag_id_UNIQUE',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailOrders {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  order!: Orders;
+}
+
+export const UserEmailOrdersSchema = new EntitySchema({
+  class: UserEmailOrders,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_orders_emails1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_user_email_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmails {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  isVerified: boolean & Opt = false;
+}
+
+export const UserEmailsSchema = new EntitySchema({
+  class: UserEmails,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_user_emails_emails1_idx',
+    },
+    isVerified: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserOrders {
+  [PrimaryKeyProp]?: ['user', 'order'];
+  user!: Users;
+  order!: Orders;
+  priority!: number;
+}
+
+export const UserOrdersSchema = new EntitySchema({
+  class: UserOrders,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    order: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_user_orders_orders1_idx',
+    },
+    priority: { type: 'number', autoincrement: true, unique: 'priority_UNIQUE' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Flags } from './Flags';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  name!: string;
+  userFlags = new Collection<Flags>(this);
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  properties: {
+    userId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userFlags: {
+      kind: 'm:n',
+      entity: () => Flags,
+      pivotTable: 'user_flags',
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'flag_id',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false readOnlyPivotTables=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+@Unique({ name: 'user_id__order_id_unique', properties: ['user', 'order'] })
+export class CompletedOrders {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { UserEmails } from './UserEmails';
+
+@Entity()
+export class Emails {
+
+  [PrimaryKeyProp]?: 'emailId';
+
+  @PrimaryKey()
+  emailId!: number;
+
+  @Unique({ name: 'address_UNIQUE' })
+  @Property({ length: 255 })
+  address!: string;
+
+  @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
+  emailInverse = new Collection<UserEmails>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { UserEmailFlags } from './UserEmailFlags';
+import { Users } from './Users';
+
+@Entity()
+export class Flags {
+
+  [PrimaryKeyProp]?: 'flagId';
+
+  @PrimaryKey({ autoincrement: false })
+  flagId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
+  flagInverse?: UserEmailFlags;
+
+  @ManyToMany({ entity: () => Users, mappedBy: 'userFlags' })
+  userFlagsInverse = new Collection<Users>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { UserEmailOrders } from './UserEmailOrders';
+import { Users } from './Users';
+
+@Entity()
+export class Orders {
+
+  [PrimaryKeyProp]?: 'orderId';
+
+  @PrimaryKey()
+  orderId!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
+  orderInverse = new Collection<UserEmailOrders>(this);
+
+  @ManyToMany({ entity: () => Users, mappedBy: 'userOrders' })
+  userOrdersInverse = new Collection<Users>(this);
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailAvatars {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  email!: Emails;
+
+  @Property({ length: 255 })
+  avatarUrl!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailFlags {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  email!: Emails;
+
+  @OneToOne({ entity: () => Flags, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  flag!: Flags & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailOrders {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  email!: Emails;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmails {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  email!: Emails;
+
+  @Property({ default: false })
+  isVerified: boolean & Opt = false;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Flags } from './Flags';
+import { Orders } from './Orders';
+import { UserEmails } from './UserEmails';
+
+@Entity()
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
+  userFlags = new Collection<Flags>(this);
+
+  @ManyToMany({ entity: () => Orders, pivotTable: 'user_orders', joinColumn: 'user_id', inverseJoinColumn: 'order_id', fixedOrder: true, fixedOrderColumn: 'priority' })
+  userOrders = new Collection<Orders>(this);
+
+  @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
+  userInverse = new Collection<UserEmails>(this);
+
+}
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false readOnlyPivotTables=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class CompletedOrders {
+  id!: number;
+  user!: Users;
+  order!: Orders;
+}
+
+export const CompletedOrdersSchema = new EntitySchema({
+  class: CompletedOrders,
+  uniques: [
+    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
+  ],
+  properties: {
+    id: { primary: true, type: 'number' },
+    user: {
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      index: 'fk_completed_orders_users1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_completed_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmails } from './UserEmails';
+
+export class Emails {
+  [PrimaryKeyProp]?: 'emailId';
+  emailId!: number;
+  address!: string;
+  emailInverse = new Collection<UserEmails>(this);
+}
+
+export const EmailsSchema = new EntitySchema({
+  class: Emails,
+  properties: {
+    emailId: { primary: true, type: 'number' },
+    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+export class Flags {
+  [PrimaryKeyProp]?: 'flagId';
+  flagId!: number;
+  name!: string;
+  flagInverse?: UserEmailFlags;
+  userFlagsInverse = new Collection<Users>(this);
+}
+
+export const FlagsSchema = new EntitySchema({
+  class: Flags,
+  properties: {
+    flagId: { primary: true, type: 'number', autoincrement: false },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
+    userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmailOrders } from './UserEmailOrders';
+import { Users } from './Users';
+
+export class Orders {
+  [PrimaryKeyProp]?: 'orderId';
+  orderId!: number;
+  name!: string;
+  orderInverse = new Collection<UserEmailOrders>(this);
+  userOrdersInverse = new Collection<Users>(this);
+}
+
+export const OrdersSchema = new EntitySchema({
+  class: Orders,
+  properties: {
+    orderId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+    orderInverse: { kind: '1:m', entity: () => UserEmailOrders, mappedBy: 'order' },
+    userOrdersInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userOrders' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailAvatars {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  avatarUrl!: string;
+}
+
+export const UserEmailAvatarsSchema = new EntitySchema({
+  class: UserEmailAvatars,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_avatars_emails1_idx',
+    },
+    avatarUrl: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailFlags {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  flag!: Flags & Opt;
+}
+
+export const UserEmailFlagsSchema = new EntitySchema({
+  class: UserEmailFlags,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_flags_emails1_idx',
+    },
+    flag: {
+      kind: '1:1',
+      entity: () => Flags,
+      fieldName: 'flag_id',
+      defaultRaw: \`1\`,
+      index: 'fk_user_email_flags_flags1_idx',
+      unique: 'flag_id_UNIQUE',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailOrders {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  order!: Orders;
+}
+
+export const UserEmailOrdersSchema = new EntitySchema({
+  class: UserEmailOrders,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_orders_emails1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_user_email_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmails {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  isVerified: boolean & Opt = false;
+}
+
+export const UserEmailsSchema = new EntitySchema({
+  class: UserEmails,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_user_emails_emails1_idx',
+    },
+    isVerified: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Flags } from './Flags';
+import { Orders } from './Orders';
+import { UserEmails } from './UserEmails';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  name!: string;
+  userFlags = new Collection<Flags>(this);
+  userOrders = new Collection<Orders>(this);
+  userInverse = new Collection<UserEmails>(this);
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  properties: {
+    userId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userFlags: {
+      kind: 'm:n',
+      entity: () => Flags,
+      pivotTable: 'user_flags',
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'flag_id',
+    },
+    userOrders: {
+      kind: 'm:n',
+      entity: () => Orders,
+      pivotTable: 'user_orders',
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'order_id',
+      fixedOrder: true,
+      fixedOrderColumn: 'priority',
+    },
+    userInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'user' },
+  },
+});
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false readOnlyPivotTables=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+@Unique({ name: 'user_id__order_id_unique', properties: ['user', 'order'] })
+export class CompletedOrders {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { UserEmails } from './UserEmails';
+import { Users } from './Users';
+
+@Entity()
+export class Emails {
+
+  [PrimaryKeyProp]?: 'emailId';
+
+  @PrimaryKey()
+  emailId!: number;
+
+  @Unique({ name: 'address_UNIQUE' })
+  @Property({ length: 255 })
+  address!: string;
+
+  @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
+  emailInverse = new Collection<UserEmails>(this);
+
+  @ManyToMany({ entity: () => Users, mappedBy: 'userEmailAvatars', persist: false })
+  userEmailAvatarsInverse = new Collection<Users>(this);
+
+  @ManyToMany({ entity: () => Users, mappedBy: 'userEmailFlags', persist: false })
+  userEmailFlagsInverse = new Collection<Users>(this);
+
+  @ManyToMany({ entity: () => Users, mappedBy: 'userEmailOrders', persist: false })
+  userEmailOrdersInverse = new Collection<Users>(this);
+
+  @ManyToMany({ entity: () => Users, mappedBy: 'userEmails', persist: false })
+  userEmailsInverse = new Collection<Users>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { UserEmailFlags } from './UserEmailFlags';
+import { Users } from './Users';
+
+@Entity()
+export class Flags {
+
+  [PrimaryKeyProp]?: 'flagId';
+
+  @PrimaryKey({ autoincrement: false })
+  flagId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
+  flagInverse?: UserEmailFlags;
+
+  @ManyToMany({ entity: () => Users, mappedBy: 'userFlags' })
+  userFlagsInverse = new Collection<Users>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { UserEmailOrders } from './UserEmailOrders';
+import { Users } from './Users';
+
+@Entity()
+export class Orders {
+
+  [PrimaryKeyProp]?: 'orderId';
+
+  @PrimaryKey()
+  orderId!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
+  orderInverse = new Collection<UserEmailOrders>(this);
+
+  @ManyToMany({ entity: () => Users, mappedBy: 'userOrders' })
+  userOrdersInverse = new Collection<Users>(this);
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailAvatars {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  email!: Emails;
+
+  @Property({ length: 255 })
+  avatarUrl!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailFlags {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  email!: Emails;
+
+  @OneToOne({ entity: () => Flags, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  flag!: Flags & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailOrders {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  email!: Emails;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmails {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  email!: Emails;
+
+  @Property({ default: false })
+  isVerified: boolean & Opt = false;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Orders } from './Orders';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
+import { UserEmails } from './UserEmails';
+
+@Entity()
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_avatars', pivotEntity: () => UserEmailAvatars, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
+  userEmailAvatars = new Collection<Emails>(this);
+
+  @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_flags', pivotEntity: () => UserEmailFlags, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
+  userEmailFlags = new Collection<Emails>(this);
+
+  @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_orders', pivotEntity: () => UserEmailOrders, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
+  userEmailOrders = new Collection<Emails>(this);
+
+  @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
+  userEmails = new Collection<Emails>(this);
+
+  @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
+  userFlags = new Collection<Flags>(this);
+
+  @ManyToMany({ entity: () => Orders, pivotTable: 'user_orders', joinColumn: 'user_id', inverseJoinColumn: 'order_id', fixedOrder: true, fixedOrderColumn: 'priority' })
+  userOrders = new Collection<Orders>(this);
+
+  @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
+  userInverse = new Collection<UserEmails>(this);
+
+}
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false readOnlyPivotTables=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class CompletedOrders {
+  id!: number;
+  user!: Users;
+  order!: Orders;
+}
+
+export const CompletedOrdersSchema = new EntitySchema({
+  class: CompletedOrders,
+  uniques: [
+    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
+  ],
+  properties: {
+    id: { primary: true, type: 'number' },
+    user: {
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      index: 'fk_completed_orders_users1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_completed_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmails } from './UserEmails';
+import { Users } from './Users';
+
+export class Emails {
+  [PrimaryKeyProp]?: 'emailId';
+  emailId!: number;
+  address!: string;
+  emailInverse = new Collection<UserEmails>(this);
+  userEmailAvatarsInverse = new Collection<Users>(this);
+  userEmailFlagsInverse = new Collection<Users>(this);
+  userEmailOrdersInverse = new Collection<Users>(this);
+  userEmailsInverse = new Collection<Users>(this);
+}
+
+export const EmailsSchema = new EntitySchema({
+  class: Emails,
+  properties: {
+    emailId: { primary: true, type: 'number' },
+    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+    userEmailAvatarsInverse: {
+      kind: 'm:n',
+      entity: () => Users,
+      mappedBy: 'userEmailAvatars',
+      persist: false,
+    },
+    userEmailFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userEmailFlags', persist: false },
+    userEmailOrdersInverse: {
+      kind: 'm:n',
+      entity: () => Users,
+      mappedBy: 'userEmailOrders',
+      persist: false,
+    },
+    userEmailsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userEmails', persist: false },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+export class Flags {
+  [PrimaryKeyProp]?: 'flagId';
+  flagId!: number;
+  name!: string;
+  flagInverse?: UserEmailFlags;
+  userFlagsInverse = new Collection<Users>(this);
+}
+
+export const FlagsSchema = new EntitySchema({
+  class: Flags,
+  properties: {
+    flagId: { primary: true, type: 'number', autoincrement: false },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
+    userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmailOrders } from './UserEmailOrders';
+import { Users } from './Users';
+
+export class Orders {
+  [PrimaryKeyProp]?: 'orderId';
+  orderId!: number;
+  name!: string;
+  orderInverse = new Collection<UserEmailOrders>(this);
+  userOrdersInverse = new Collection<Users>(this);
+}
+
+export const OrdersSchema = new EntitySchema({
+  class: Orders,
+  properties: {
+    orderId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+    orderInverse: { kind: '1:m', entity: () => UserEmailOrders, mappedBy: 'order' },
+    userOrdersInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userOrders' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailAvatars {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  avatarUrl!: string;
+}
+
+export const UserEmailAvatarsSchema = new EntitySchema({
+  class: UserEmailAvatars,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_avatars_emails1_idx',
+    },
+    avatarUrl: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailFlags {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  flag!: Flags & Opt;
+}
+
+export const UserEmailFlagsSchema = new EntitySchema({
+  class: UserEmailFlags,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_flags_emails1_idx',
+    },
+    flag: {
+      kind: '1:1',
+      entity: () => Flags,
+      fieldName: 'flag_id',
+      defaultRaw: \`1\`,
+      index: 'fk_user_email_flags_flags1_idx',
+      unique: 'flag_id_UNIQUE',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailOrders {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  order!: Orders;
+}
+
+export const UserEmailOrdersSchema = new EntitySchema({
+  class: UserEmailOrders,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_orders_emails1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_user_email_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmails {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  isVerified: boolean & Opt = false;
+}
+
+export const UserEmailsSchema = new EntitySchema({
+  class: UserEmails,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_user_emails_emails1_idx',
+    },
+    isVerified: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Orders } from './Orders';
+import { UserEmails } from './UserEmails';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  name!: string;
+  userEmailAvatars = new Collection<Emails>(this);
+  userEmailFlags = new Collection<Emails>(this);
+  userEmailOrders = new Collection<Emails>(this);
+  userEmails = new Collection<Emails>(this);
+  userFlags = new Collection<Flags>(this);
+  userOrders = new Collection<Orders>(this);
+  userInverse = new Collection<UserEmails>(this);
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  properties: {
+    userId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userEmailAvatars: {
+      kind: 'm:n',
+      entity: () => Emails,
+      pivotTable: 'user_email_avatars',
+      pivotEntity: () => UserEmailAvatars,
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'email_id',
+      persist: false,
+    },
+    userEmailFlags: {
+      kind: 'm:n',
+      entity: () => Emails,
+      pivotTable: 'user_email_flags',
+      pivotEntity: () => UserEmailFlags,
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'email_id',
+      persist: false,
+    },
+    userEmailOrders: {
+      kind: 'm:n',
+      entity: () => Emails,
+      pivotTable: 'user_email_orders',
+      pivotEntity: () => UserEmailOrders,
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'email_id',
+      persist: false,
+    },
+    userEmails: {
+      kind: 'm:n',
+      entity: () => Emails,
+      pivotTable: 'user_emails',
+      pivotEntity: () => UserEmails,
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'email_id',
+      persist: false,
+    },
+    userFlags: {
+      kind: 'm:n',
+      entity: () => Flags,
+      pivotTable: 'user_flags',
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'flag_id',
+    },
+    userOrders: {
+      kind: 'm:n',
+      entity: () => Orders,
+      pivotTable: 'user_orders',
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'order_id',
+      fixedOrder: true,
+      fixedOrderColumn: 'priority',
+    },
+    userInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'user' },
+  },
+});
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true readOnlyPivotTables=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+@Unique({ name: 'user_id__order_id_unique', properties: ['user', 'order'] })
+export class CompletedOrders {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { UserEmails } from './UserEmails';
+
+@Entity()
+export class Emails {
+
+  [PrimaryKeyProp]?: 'emailId';
+
+  @PrimaryKey()
+  emailId!: number;
+
+  @Unique({ name: 'address_UNIQUE' })
+  @Property({ length: 255 })
+  address!: string;
+
+  @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
+  emailInverse = new Collection<UserEmails>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { UserEmailFlags } from './UserEmailFlags';
+import { Users } from './Users';
+
+@Entity()
+export class Flags {
+
+  [PrimaryKeyProp]?: 'flagId';
+
+  @PrimaryKey({ autoincrement: false })
+  flagId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
+  flagInverse?: UserEmailFlags;
+
+  @ManyToMany({ entity: () => Users, mappedBy: 'userFlags' })
+  userFlagsInverse = new Collection<Users>(this);
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { UserOrders } from './UserOrders';
+
+@Entity()
+export class Orders {
+
+  [PrimaryKeyProp]?: 'orderId';
+
+  @PrimaryKey()
+  orderId!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToMany({ entity: () => UserOrders, mappedBy: 'order' })
+  orderInverse = new Collection<UserOrders>(this);
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailAvatars {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  email!: Emails;
+
+  @Property({ length: 255 })
+  avatarUrl!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailFlags {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  email!: Emails;
+
+  @OneToOne({ entity: () => Flags, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  flag!: Flags & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailOrders {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  email!: Emails;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmails {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  email!: Emails;
+
+  @Property({ default: false })
+  isVerified: boolean & Opt = false;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+export class UserOrders {
+
+  [PrimaryKeyProp]?: ['user', 'order'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  order!: Orders;
+
+  @Unique({ name: 'priority_UNIQUE' })
+  @Property({ autoincrement: true })
+  priority!: number;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Flags } from './Flags';
+import { UserOrders } from './UserOrders';
+
+@Entity()
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
+  userFlags = new Collection<Flags>(this);
+
+  @OneToMany({ entity: () => UserOrders, mappedBy: 'user' })
+  userInverse = new Collection<UserOrders>(this);
+
+}
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true readOnlyPivotTables=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class CompletedOrders {
+  id!: number;
+  user!: Users;
+  order!: Orders;
+}
+
+export const CompletedOrdersSchema = new EntitySchema({
+  class: CompletedOrders,
+  uniques: [
+    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
+  ],
+  properties: {
+    id: { primary: true, type: 'number' },
+    user: {
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      index: 'fk_completed_orders_users1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_completed_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmails } from './UserEmails';
+
+export class Emails {
+  [PrimaryKeyProp]?: 'emailId';
+  emailId!: number;
+  address!: string;
+  emailInverse = new Collection<UserEmails>(this);
+}
+
+export const EmailsSchema = new EntitySchema({
+  class: Emails,
+  properties: {
+    emailId: { primary: true, type: 'number' },
+    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+export class Flags {
+  [PrimaryKeyProp]?: 'flagId';
+  flagId!: number;
+  name!: string;
+  flagInverse?: UserEmailFlags;
+  userFlagsInverse = new Collection<Users>(this);
+}
+
+export const FlagsSchema = new EntitySchema({
+  class: Flags,
+  properties: {
+    flagId: { primary: true, type: 'number', autoincrement: false },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
+    userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserOrders } from './UserOrders';
+
+export class Orders {
+  [PrimaryKeyProp]?: 'orderId';
+  orderId!: number;
+  name!: string;
+  orderInverse = new Collection<UserOrders>(this);
+}
+
+export const OrdersSchema = new EntitySchema({
+  class: Orders,
+  properties: {
+    orderId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+    orderInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'order' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailAvatars {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  avatarUrl!: string;
+}
+
+export const UserEmailAvatarsSchema = new EntitySchema({
+  class: UserEmailAvatars,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_avatars_emails1_idx',
+    },
+    avatarUrl: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailFlags {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  flag!: Flags & Opt;
+}
+
+export const UserEmailFlagsSchema = new EntitySchema({
+  class: UserEmailFlags,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_flags_emails1_idx',
+    },
+    flag: {
+      kind: '1:1',
+      entity: () => Flags,
+      fieldName: 'flag_id',
+      defaultRaw: \`1\`,
+      index: 'fk_user_email_flags_flags1_idx',
+      unique: 'flag_id_UNIQUE',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailOrders {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  order!: Orders;
+}
+
+export const UserEmailOrdersSchema = new EntitySchema({
+  class: UserEmailOrders,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_orders_emails1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_user_email_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmails {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  isVerified: boolean & Opt = false;
+}
+
+export const UserEmailsSchema = new EntitySchema({
+  class: UserEmails,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_user_emails_emails1_idx',
+    },
+    isVerified: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserOrders {
+  [PrimaryKeyProp]?: ['user', 'order'];
+  user!: Users;
+  order!: Orders;
+  priority!: number;
+}
+
+export const UserOrdersSchema = new EntitySchema({
+  class: UserOrders,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    order: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_user_orders_orders1_idx',
+    },
+    priority: { type: 'number', autoincrement: true, unique: 'priority_UNIQUE' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Flags } from './Flags';
+import { UserOrders } from './UserOrders';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  name!: string;
+  userFlags = new Collection<Flags>(this);
+  userInverse = new Collection<UserOrders>(this);
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  properties: {
+    userId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userFlags: {
+      kind: 'm:n',
+      entity: () => Flags,
+      pivotTable: 'user_flags',
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'flag_id',
+    },
+    userInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'user' },
+  },
+});
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true readOnlyPivotTables=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+@Unique({ name: 'user_id__order_id_unique', properties: ['user', 'order'] })
+export class CompletedOrders {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', index: 'fk_completed_orders_users1_idx' })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_completed_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { UserEmails } from './UserEmails';
+
+@Entity()
+export class Emails {
+
+  [PrimaryKeyProp]?: 'emailId';
+
+  @PrimaryKey()
+  emailId!: number;
+
+  @Unique({ name: 'address_UNIQUE' })
+  @Property({ length: 255 })
+  address!: string;
+
+  @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
+  emailInverse = new Collection<UserEmails>(this);
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { UserEmailFlags } from './UserEmailFlags';
+import { Users } from './Users';
+
+@Entity()
+export class Flags {
+
+  [PrimaryKeyProp]?: 'flagId';
+
+  @PrimaryKey({ autoincrement: false })
+  flagId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
+  flagInverse?: UserEmailFlags;
+
+  @ManyToMany({ entity: () => Users, mappedBy: 'userFlags' })
+  userFlagsInverse = new Collection<Users>(this);
+
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { UserOrders } from './UserOrders';
+
+@Entity()
+export class Orders {
+
+  [PrimaryKeyProp]?: 'orderId';
+
+  @PrimaryKey()
+  orderId!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToMany({ entity: () => UserOrders, mappedBy: 'order' })
+  orderInverse = new Collection<UserOrders>(this);
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailAvatars {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
+  email!: Emails;
+
+  @Property({ length: 255 })
+  avatarUrl!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailFlags {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_flags_emails1_idx' })
+  email!: Emails;
+
+  @OneToOne({ entity: () => Flags, fieldName: 'flag_id', defaultRaw: \`1\`, index: 'fk_user_email_flags_flags1_idx', unique: 'flag_id_UNIQUE' })
+  flag!: Flags & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmailOrders {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_orders_emails1_idx' })
+  email!: Emails;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', index: 'fk_user_email_orders_orders1_idx' })
+  order!: Orders;
+
+}
+",
+  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
+
+@Entity()
+export class UserEmails {
+
+  [PrimaryKeyProp]?: ['user', 'email'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
+  email!: Emails;
+
+  @Property({ default: false })
+  isVerified: boolean & Opt = false;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
+
+@Entity()
+export class UserOrders {
+
+  [PrimaryKeyProp]?: ['user', 'order'];
+
+  @ManyToOne({ entity: () => Users, fieldName: 'user_id', primary: true })
+  user!: Users;
+
+  @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
+  order!: Orders;
+
+  @Unique({ name: 'priority_UNIQUE' })
+  @Property({ autoincrement: true })
+  priority!: number;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Flags } from './Flags';
+import { UserOrders } from './UserOrders';
+
+@Entity()
+export class Users {
+
+  [PrimaryKeyProp]?: 'userId';
+
+  @PrimaryKey()
+  userId!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
+  userFlags = new Collection<Flags>(this);
+
+  @OneToMany({ entity: () => UserOrders, mappedBy: 'user' })
+  userInverse = new Collection<UserOrders>(this);
+
+}
+",
+]
+`;
+
+exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true readOnlyPivotTables=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class CompletedOrders {
+  id!: number;
+  user!: Users;
+  order!: Orders;
+}
+
+export const CompletedOrdersSchema = new EntitySchema({
+  class: CompletedOrders,
+  uniques: [
+    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
+  ],
+  properties: {
+    id: { primary: true, type: 'number' },
+    user: {
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      index: 'fk_completed_orders_users1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_completed_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmails } from './UserEmails';
+
+export class Emails {
+  [PrimaryKeyProp]?: 'emailId';
+  emailId!: number;
+  address!: string;
+  emailInverse = new Collection<UserEmails>(this);
+}
+
+export const EmailsSchema = new EntitySchema({
+  class: Emails,
+  properties: {
+    emailId: { primary: true, type: 'number' },
+    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Users } from './Users';
+
+export class Flags {
+  [PrimaryKeyProp]?: 'flagId';
+  flagId!: number;
+  name!: string;
+  flagInverse?: UserEmailFlags;
+  userFlagsInverse = new Collection<Users>(this);
+}
+
+export const FlagsSchema = new EntitySchema({
+  class: Flags,
+  properties: {
+    flagId: { primary: true, type: 'number', autoincrement: false },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
+    userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserOrders } from './UserOrders';
+
+export class Orders {
+  [PrimaryKeyProp]?: 'orderId';
+  orderId!: number;
+  name!: string;
+  orderInverse = new Collection<UserOrders>(this);
+}
+
+export const OrdersSchema = new EntitySchema({
+  class: Orders,
+  properties: {
+    orderId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+    orderInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'order' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailAvatars {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  avatarUrl!: string;
+}
+
+export const UserEmailAvatarsSchema = new EntitySchema({
+  class: UserEmailAvatars,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_avatars_emails1_idx',
+    },
+    avatarUrl: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailFlags {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  flag!: Flags & Opt;
+}
+
+export const UserEmailFlagsSchema = new EntitySchema({
+  class: UserEmailFlags,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_flags_emails1_idx',
+    },
+    flag: {
+      kind: '1:1',
+      entity: () => Flags,
+      fieldName: 'flag_id',
+      defaultRaw: \`1\`,
+      index: 'fk_user_email_flags_flags1_idx',
+      unique: 'flag_id_UNIQUE',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmailOrders {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  order!: Orders;
+}
+
+export const UserEmailOrdersSchema = new EntitySchema({
+  class: UserEmailOrders,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      index: 'fk_user_email_orders_emails1_idx',
+    },
+    order: {
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      index: 'fk_user_email_orders_orders1_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserEmails {
+  [PrimaryKeyProp]?: ['user', 'email'];
+  user!: Users;
+  email!: Emails;
+  isVerified: boolean & Opt = false;
+}
+
+export const UserEmailsSchema = new EntitySchema({
+  class: UserEmails,
+  properties: {
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+    },
+    email: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Emails,
+      fieldName: 'email_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_user_emails_emails1_idx',
+    },
+    isVerified: { type: 'boolean', default: false },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class UserOrders {
+  [PrimaryKeyProp]?: ['user', 'order'];
+  user!: Users;
+  order!: Orders;
+  priority!: number;
+}
+
+export const UserOrdersSchema = new EntitySchema({
+  class: UserOrders,
+  properties: {
+    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    order: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Orders,
+      fieldName: 'order_id',
+      updateRule: 'cascade',
+      deleteRule: 'cascade',
+      index: 'fk_user_orders_orders1_idx',
+    },
+    priority: { type: 'number', autoincrement: true, unique: 'priority_UNIQUE' },
+  },
+});
+",
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Flags } from './Flags';
+import { UserOrders } from './UserOrders';
+
+export class Users {
+  [PrimaryKeyProp]?: 'userId';
+  userId!: number;
+  name!: string;
+  userFlags = new Collection<Flags>(this);
+  userInverse = new Collection<UserOrders>(this);
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  properties: {
+    userId: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userFlags: {
+      kind: 'm:n',
+      entity: () => Flags,
+      pivotTable: 'user_flags',
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'flag_id',
+    },
+    userInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'user' },
+  },
+});
+",
+]
+`;

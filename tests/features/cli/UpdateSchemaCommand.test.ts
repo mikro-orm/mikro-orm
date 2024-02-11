@@ -36,15 +36,15 @@ describe('UpdateSchemaCommand', () => {
     expect(showHelpMock.mock.calls.length).toBe(1);
 
     expect(updateSchema.mock.calls.length).toBe(0);
-    expect(closeSpy).toBeCalledTimes(0);
+    expect(closeSpy).toHaveBeenCalledTimes(0);
     await expect(cmd.handler({ run: true } as any)).resolves.toBeUndefined();
     expect(updateSchema.mock.calls.length).toBe(1);
-    expect(closeSpy).toBeCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
 
     expect(getUpdateSchemaSQL.mock.calls.length).toBe(0);
     await expect(cmd.handler({ dump: true } as any)).resolves.toBeUndefined();
     expect(getUpdateSchemaSQL.mock.calls.length).toBe(1);
-    expect(closeSpy).toBeCalledTimes(2);
+    expect(closeSpy).toHaveBeenCalledTimes(2);
   });
 
 });

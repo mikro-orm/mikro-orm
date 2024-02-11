@@ -50,5 +50,5 @@ test('4078', async () => {
   await orm.em.findOneOrFail(Contract, 1);
   const mock = mockLogger(orm);
   await orm.em.flush();
-  expect(mock).not.toBeCalled();
+  expect(mock).not.toHaveBeenCalled();
 });

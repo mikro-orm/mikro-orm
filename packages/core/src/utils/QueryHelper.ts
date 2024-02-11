@@ -10,7 +10,7 @@ import type {
   FilterKey,
   FilterQuery,
 } from '../typings';
-import { ARRAY_OPERATORS, GroupOperator, ReferenceKind } from '../enums';
+import { GroupOperator, ReferenceKind } from '../enums';
 import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { JsonType } from '../types/JsonType';
@@ -241,7 +241,7 @@ export class QueryHelper {
       }, {} as FilterQuery<T>);
     }
 
-    if (Array.isArray(cond) && !(key && ARRAY_OPERATORS.includes(key))) {
+    if (Array.isArray(cond) && !(key && Utils.isArrayOperator(key))) {
       return (cond as FilterQuery<T>[]).map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as unknown as FilterQuery<T>;
     }
 
@@ -249,7 +249,7 @@ export class QueryHelper {
       return cond;
     }
 
-    return prop.customType.convertToDatabaseValue(cond, platform, { fromQuery, key, mode: 'query' });
+    return prop.customType!.convertToDatabaseValue(cond, platform, { fromQuery, key, mode: 'query' });
   }
 
   private static isSupportedOperator(key: string): boolean {
@@ -272,7 +272,7 @@ export class QueryHelper {
 
     const operatorObject = Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k));
     const type = operatorObject ? typeof Object.values(value)[0] : typeof value;
-    const k = platform.getSearchJsonPropertyKey(path, type, alias) as FilterKey<T>;
+    const k = platform.getSearchJsonPropertyKey(path, type, alias, value) as FilterKey<T>;
     o[k] = value as any;
 
     return o;

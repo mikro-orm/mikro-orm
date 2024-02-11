@@ -89,7 +89,7 @@ test('should handle rollback in real transaction', async () => {
     throw new Error('roll me back');
   }, { ignoreNestedTransactions: true });
 
-  await expect(transaction).rejects.toThrowError('roll me back');
+  await expect(transaction).rejects.toThrow('roll me back');
 
   const count = await orm.em.count(Example);
 
@@ -124,7 +124,7 @@ test('should handle rollback in no-op transaction', async () => {
     throw new Error('should not get here');
   }, { ignoreNestedTransactions: true });
 
-  await expect(transaction).rejects.toThrowError('roll me back');
+  await expect(transaction).rejects.toThrow('roll me back');
 
   const count = await orm.em.count(Example);
 

@@ -9,10 +9,10 @@ import type { Constructor, EntityMetadata, EntityName, IEntityGenerator, IMigrat
 /**
  * Helper class for bootstrapping the MikroORM.
  */
-export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
+export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager> {
 
   /** The global EntityManager instance. If you are using `RequestContext` helper, it will automatically pick the request specific context under the hood */
-  em!: D[typeof EntityManagerType] & EntityManager;
+  em!: EM;
   readonly config: Configuration<D>;
   private metadata!: MetadataStorage;
   private readonly driver: D;
@@ -23,13 +23,13 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Initialize the ORM, load entity metadata, create EntityManager and connect to the database.
    * If you omit the `options` parameter, your CLI config will be used.
    */
-  static async init<D extends IDatabaseDriver = IDatabaseDriver>(options?: Options<D>): Promise<MikroORM<D>> {
+  static async init<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager>(options?: Options<D, EM>): Promise<MikroORM<D, EM>> {
     ConfigurationLoader.registerDotenv(options);
     const coreVersion = await ConfigurationLoader.checkPackageVersion();
     const env = ConfigurationLoader.loadEnvironmentVars<D>();
 
     if (!options) {
-      options = (await ConfigurationLoader.getConfiguration<D>()).getAll();
+      options = (await ConfigurationLoader.getConfiguration<D, EM>()).getAll();
     }
 
     options = Utils.mergeConfig(options, env);
@@ -71,7 +71,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * - no support for folder based discovery
    * - no check for mismatched package versions
    */
-  static initSync<D extends IDatabaseDriver = IDatabaseDriver>(options: Options<D>): MikroORM<D> {
+  static initSync<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager>(options: Options<D, EM>): MikroORM<D, EM> {
     ConfigurationLoader.registerDotenv(options);
     const env = ConfigurationLoader.loadEnvironmentVars<D>();
     options = Utils.merge(options, env);
@@ -96,7 +96,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     return orm;
   }
 
-  constructor(options: Options<D> | Configuration<D>) {
+  constructor(options: Options<D, EM> | Configuration<D, EM>) {
     if (options instanceof Configuration) {
       this.config = options;
     } else {
@@ -125,12 +125,13 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     const dbName = this.config.get('dbName')!;
     const db = dbName + (clientUrl ? ' on ' + clientUrl : '');
 
+    if (this.config.get('ensureDatabase')) {
+      const options = this.config.get('ensureDatabase');
+      await this.schema.ensureDatabase(typeof options === 'boolean' ? {} : { ...options, forceCheck: true });
+    }
+
     if (await this.isConnected()) {
       this.logger.log('info', `MikroORM successfully connected to database ${colors.green(db)}`);
-
-      if (this.config.get('ensureDatabase')) {
-        await this.schema.ensureDatabase();
-      }
     } else {
       this.logger.error('info', `MikroORM failed to connect to database ${db}`);
     }
@@ -155,6 +156,13 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async isConnected(): Promise<boolean> {
     return this.driver.getConnection().isConnected();
+  }
+
+  /**
+   * Checks whether the database connection is active, returns .
+   */
+  async checkConnection(): Promise<{ ok: boolean; reason?: string; error?: Error }> {
+    return this.driver.getConnection().checkConnection();
   }
 
   /**
@@ -209,7 +217,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
   private createEntityManager(): void {
     this.driver.setMetadata(this.metadata);
-    this.em = this.driver.createEntityManager<D>();
+    this.em = this.driver.createEntityManager() as EM;
     (this.em as { global: boolean }).global = true;
     this.metadata.decorate(this.em);
     this.driver.setMetadata(this.metadata);
@@ -222,7 +230,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     entities = Utils.asArray(entities);
     const tmp = this.discovery.discoverReferences(entities);
     const options = this.config.get('discovery');
-    new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], options.warnWhenNoEntities, options.checkDuplicateTableNames);
+    new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], options);
     const metadata = this.discovery.processDiscoveredEntities(tmp);
     metadata.forEach(meta => this.metadata.set(meta.className, meta));
     this.metadata.decorate(this.em);

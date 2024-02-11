@@ -11,6 +11,7 @@ export class ArrayCollection<T extends object, O extends object> {
   protected readonly items = new Set<T>();
   protected initialized = true;
   protected dirty = false;
+  protected snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
   protected _count?: number;
   private _property?: EntityProperty;
 
@@ -39,7 +40,7 @@ export class ArrayCollection<T extends object, O extends object> {
     const meta = this.property.targetMeta!;
     const args = [...meta.toJsonParams.map(() => undefined)];
 
-    return this.getItems().map(item => wrap(item as TT).toJSON(...args));
+    return this.map(item => wrap(item as TT).toJSON(...args));
   }
 
   toJSON(): EntityDTO<T>[] {
@@ -80,6 +81,11 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   set(items: Iterable<T | Reference<T>>): void {
+    if (!this.initialized) {
+      this.initialized = true;
+      this.snapshot = undefined;
+    }
+
     if (this.compare(Utils.asArray(items).map(item => Reference.unwrapReference(item)))) {
       return;
     }
@@ -107,14 +113,16 @@ export class ArrayCollection<T extends object, O extends object> {
   /**
    * @internal
    */
-  hydrate(items: T[]): void {
+  hydrate(items: T[], forcePropagate?: boolean): void {
     for (let i = 0; i < this.items.size; i++) {
       delete this[i];
     }
 
+    this.initialized = true;
     this.items.clear();
     this._count = 0;
     this.add(items);
+    this.takeSnapshot(forcePropagate);
   }
 
   /**
@@ -148,15 +156,18 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   /**
-   * Remove all items from the collection. Note that removing items from collection does necessarily imply deleting the target entity,
+   * Remove all items from the collection. Note that removing items from collection does not necessarily imply deleting the target entity,
    * it means we are disconnecting the relation - removing items from collection, not removing entities from database - `Collection.remove()`
    * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
   removeAll(): void {
-    for (const item of this.items) {
-      this.remove(item);
+    if (!this.initialized) {
+      this.initialized = true;
+      this.snapshot = undefined;
     }
+
+    this.remove(this.items);
   }
 
   /**
@@ -338,6 +349,27 @@ export class ArrayCollection<T extends object, O extends object> {
   /**
    * @internal
    */
+  takeSnapshot(forcePropagate?: boolean): void {
+    this.snapshot = [...this.items];
+    this.setDirty(false);
+
+    if (this.property.owner || forcePropagate) {
+      this.items.forEach(item => {
+        this.propagate(item, 'takeSnapshot');
+      });
+    }
+  }
+
+  /**
+   * @internal
+   */
+  getSnapshot() {
+    return this.snapshot;
+  }
+
+  /**
+   * @internal
+   */
   get property(): EntityProperty { // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
     if (!this._property) {
       const meta = helper(this.owner).__meta;
@@ -433,7 +465,7 @@ export class ArrayCollection<T extends object, O extends object> {
   /** @ignore */
   [inspect.custom](depth: number) {
     const object = { ...this } as Dictionary;
-    const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized', '_em', 'readonly'];
+    const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_snapshot', '_lazyInitialized', '_em', 'readonly'];
     hidden.forEach(k => delete object[k]);
     const ret = inspect(object, { depth });
     const name = `${this.constructor.name}<${this.property?.type ?? 'unknown'}>`;

@@ -6,7 +6,7 @@ class TestEntity1 {
   id: string;
   customProp: CustomProp;
 
-  constructor(id: string, customProp: CustomProp) {
+  private constructor(id: string, customProp: CustomProp) {
     this.id = id;
     this.customProp = customProp;
   }
@@ -18,7 +18,7 @@ class TestEntity2 {
   id: string;
   customProp: CustomProp;
 
-  constructor(id: string, customProp: CustomProp) {
+  private constructor(id: string, customProp: CustomProp) {
     this.id = id;
     this.customProp = customProp;
   }
@@ -29,7 +29,7 @@ class CustomProp {
 
   someValue: string;
 
-  constructor(someValue: string) {
+  private constructor(someValue: string) {
     this.someValue = someValue;
   }
 
@@ -89,11 +89,8 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('preserve data fields that match pivot field', async () => {
-  const e1 = new TestEntity1('abc', new CustomProp('yyy'));
-  await orm.em.insert(TestEntity1, e1);
-
-  const e2 = new TestEntity2('def', new CustomProp('xxx'));
-  await orm.em.insert(TestEntity2, e2);
+  await orm.em.insert(TestEntity1, { id: 'abc', customProp: { someValue: 'yyy' } });
+  await orm.em.insert(TestEntity2, { id: 'def', customProp: { someValue: 'xxx' } });
 
   const mock = mockLogger(orm);
 
@@ -103,5 +100,5 @@ test('preserve data fields that match pivot field', async () => {
   await orm.em.findOne(TestEntity2, 'def');
   await orm.em.findOne(TestEntity2, 'def'); // should not trigger SQL query
 
-  expect(mock).toBeCalledTimes(2);
+  expect(mock).toHaveBeenCalledTimes(2);
 });

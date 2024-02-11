@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`4782: 0. create schema 1`] = `
+exports[`GH #4919: 0. create schema 1`] = `
 {
   "down": "drop table if exists "user" cascade;
 
@@ -11,7 +11,7 @@ exports[`4782: 0. create schema 1`] = `
 }
 `;
 
-exports[`4782: 1. rename column 1`] = `
+exports[`GH #4919: 1. rename column 1`] = `
 {
   "down": "alter table "user" drop column "canceled_at";
 alter table "user" drop column "arrived_at";
