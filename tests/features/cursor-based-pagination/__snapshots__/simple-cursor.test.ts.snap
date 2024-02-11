@@ -336,6 +336,174 @@ exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (i
 ]
 `;
 
+exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id asc) 1`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (4) [u0].* from [user] as [u0] order by [u0].[_id] asc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id asc) 2`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] > 3 order by [u0].[_id] asc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id asc) 3`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] > 6 order by [u0].[_id] asc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id asc) 4`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] > 9 order by [u0].[_id] asc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id asc) 5`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] > 49 order by [u0].[_id] asc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id asc) 6`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (2) [u0].* from [user] as [u0] where [u0].[_id] > 50 order by [u0].[_id] asc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id desc) 1`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (4) [u0].* from [user] as [u0] order by [u0].[_id] desc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id desc) 2`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] < 48 order by [u0].[_id] desc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id desc) 3`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] < 45 order by [u0].[_id] desc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id desc) 4`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] < 42 order by [u0].[_id] desc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id desc) 5`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] < 2 order by [u0].[_id] desc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id desc) 6`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (2) [u0].* from [user] as [u0] where [u0].[_id] < 1 order by [u0].[_id] desc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id asc) 1`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (4) [u0].* from [user] as [u0] order by [u0].[_id] desc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id asc) 2`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] < 48 order by [u0].[_id] desc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id asc) 3`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] < 45 order by [u0].[_id] desc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id asc) 4`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] < 42 order by [u0].[_id] desc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id asc) 5`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] < 2 order by [u0].[_id] desc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id asc) 6`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (2) [u0].* from [user] as [u0] where [u0].[_id] < 1 order by [u0].[_id] desc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id desc) 1`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (4) [u0].* from [user] as [u0] order by [u0].[_id] asc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id desc) 2`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] > 3 order by [u0].[_id] asc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id desc) 3`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] > 6 order by [u0].[_id] asc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id desc) 4`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] > 9 order by [u0].[_id] asc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id desc) 5`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] > 49 order by [u0].[_id] asc",
+]
+`;
+
+exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id desc) 6`] = `
+[
+  "[query] select count(*) as [count] from [user] as [u0]",
+  "[query] select top (2) [u0].* from [user] as [u0] where [u0].[_id] > 50 order by [u0].[_id] asc",
+]
+`;
+
 exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",

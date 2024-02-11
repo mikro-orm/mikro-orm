@@ -41,6 +41,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return 'time';
   }
 
+  override getBooleanTypeDeclarationSQL(): string {
+    return 'bit';
+  }
+
   override getRegExpOperator(): string {
     throw new Error('Not supported');
   }
@@ -68,7 +72,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return index.columnNames
       .map(column => {
         const [root, ...path] = column.split('.');
-        return `json_extract(${root}, '$.${path.join('.')}')`;
+        return `json_value(${root}, '$.${path.join('.')}')`;
       });
   }
 

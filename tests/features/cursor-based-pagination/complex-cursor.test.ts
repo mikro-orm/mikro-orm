@@ -33,12 +33,12 @@ export class User {
   @Property()
   termsAccepted!: boolean;
 
-  @ManyToOne(() => User, { ref: true, nullable: true })
+  @ManyToOne(() => User, { ref: true, nullable: true, deleteRule: 'no action', updateRule: 'no action' })
   bestFriend?: Ref<User>;
 
 }
 
-describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as const)('simple cursor based pagination (%s)', type => {
+describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('simple cursor based pagination (%s)', type => {
 
   let orm: MikroORM;
 
@@ -47,6 +47,10 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
 
     if (type === 'mysql') {
       options.port = 3308;
+    }
+
+    if (type === 'mssql') {
+      options.password = 'Root.Root';
     }
 
     orm = await MikroORM.init({
