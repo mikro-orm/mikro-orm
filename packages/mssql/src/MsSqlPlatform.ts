@@ -1,12 +1,26 @@
-import { AbstractSqlPlatform, type IndexDef, JsonProperty, raw, Utils } from '@mikro-orm/knex';
+import {
+  AbstractSqlPlatform,
+  type Dictionary,
+  type EntityMetadata,
+  type IDatabaseDriver,
+  type EntityManager,
+  type MikroORM,
+  type IndexDef,
+  JsonProperty,
+  raw,
+  Type,
+  Utils,
+  ALIAS_REPLACEMENT,
+  type Primary,
+  type IPrimaryKey,
+} from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
 import { MsSqlSchemaHelper } from './MsSqlSchemaHelper';
 import { MsSqlExceptionConverter } from './MsSqlExceptionConverter';
-import type { IDatabaseDriver, EntityManager, MikroORM } from '@mikro-orm/core';
 import { MsSqlSchemaGenerator } from './MsSqlSchemaGenerator';
+import { UnicodeString, UnicodeStringType } from './UnicodeStringType';
 
-// TODO check what methods are needed
 export class MsSqlPlatform extends AbstractSqlPlatform {
 
   protected override readonly schemaHelper: MsSqlSchemaHelper = new MsSqlSchemaHelper(this);
@@ -57,15 +71,44 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return 'nvarchar(max)';
   }
 
-  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
-    const [a, ...b] = path;
-    const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
-
-    if (aliased) {
-      return raw(alias => `json_value(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(quoteKey).join('.')}')`);
+  override getDefaultMappedType(type: string): Type<unknown> {
+    if (type === 'string') {
+      return Type.getType(UnicodeStringType);
     }
 
-    return raw(`json_value(${this.quoteIdentifier(a)}, '$.${b.map(quoteKey).join('.')}')`);
+    return super.getDefaultMappedType(type);
+  }
+
+  override validateMetadata(meta: EntityMetadata): void {
+    for (const prop of meta.props) {
+      if (
+        (prop.runtimeType === 'string' || ['string', 'nvarchar'].includes(prop.type))
+        && !prop.columnTypes[0].startsWith('varchar')
+      ) {
+        prop.customType ??= new UnicodeStringType();
+        prop.customType.prop = prop;
+        prop.customType.platform = this;
+        prop.customType.meta = meta;
+      }
+    }
+
+    return;
+  }
+
+  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
+    const [a, ...b] = path;
+    const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${a}` : a);
+    const types = {
+      boolean: 'bit',
+    } as Dictionary;
+    const cast = (key: string) => raw(type in types ? `cast(${key} as ${types[type]})` : key);
+    const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
+
+    if (path.length === 0) {
+      return cast(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
+    }
+
+    return cast(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
   }
 
   override getJsonIndexDefinition(index: IndexDef): string[] {
@@ -76,11 +119,31 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       });
   }
 
+  override normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | string): T {
+    if (data instanceof UnicodeString) {
+      return data.value as T;
+    }
+
+    return data as T;
+  }
+
   override quoteIdentifier(id: string): string {
     return `[${id.replace('.', `].[`)}]`;
   }
 
   override quoteValue(value: any): string {
+    if (Utils.isRawSql(value)) {
+      return this.formatQuery(value.sql, value.params ?? []);
+    }
+
+    if (this.isRaw(value)) {
+      return value;
+    }
+
+    if (value instanceof UnicodeString) {
+      return `N${SqlString.escape(value.value)}`;
+    }
+
     /* istanbul ignore if */
     if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
       return SqlString.escape(JSON.stringify(value), true, this.timezone);

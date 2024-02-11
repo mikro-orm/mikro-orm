@@ -42,6 +42,10 @@ function compareConstructors(a: any, b: any) {
   return false;
 }
 
+export function isRawSql(value: unknown): value is { sql: string; params: unknown[]; use: () => void } {
+  return typeof value === 'object' && !!value && '__raw' in value;
+}
+
 export function compareObjects(a: any, b: any) {
   // eslint-disable-next-line eqeqeq
   if (a === b || (a == null && b == null)) {
@@ -49,6 +53,10 @@ export function compareObjects(a: any, b: any) {
   }
 
   if (!a || !b || typeof a !== 'object' || typeof b !== 'object' || !compareConstructors(a, b)) {
+    return false;
+  }
+
+  if (isRawSql(a) && isRawSql(b)) {
     return false;
   }
 
@@ -1278,7 +1286,7 @@ export class Utils {
   }
 
   static isRawSql(value: unknown): value is { sql: string; params: unknown[]; use: () => void } {
-    return typeof value === 'object' && !!value && '__raw' in value;
+    return isRawSql(value);
   }
 
   static primaryKeyToObject<T>(meta: EntityMetadata<T>, primaryKey: Primary<T> | T, visible?: (keyof T)[]) {

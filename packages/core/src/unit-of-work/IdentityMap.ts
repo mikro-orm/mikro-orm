@@ -81,7 +81,15 @@ export class IdentityMap {
   private getPkHash<T>(item: T): string {
     const wrapped = (item as AnyEntity).__helper;
     const meta = wrapped.__meta as EntityMetadata<T>;
-    const pk = wrapped!.getPrimaryKey(true);
+    let pk = wrapped!.getPrimaryKey(true);
+
+    if (Utils.isRawSql(pk)) {
+      pk = wrapped!.getPrimaryKey();
+    }
+
+    if (pk && pk.valueOf !== Object.prototype.valueOf && typeof pk.valueOf === 'function') {
+      pk = pk.valueOf();
+    }
 
     if (pk == null) {
       return pk as string;

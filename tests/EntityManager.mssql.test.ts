@@ -378,15 +378,30 @@ describe('EntityManagerMsSql', () => {
     const god = new Author2('God', 'hello@heaven.god');
     god.identities = ['fb-123', 'pw-231', 'tw-321'];
     const bible = new Book2('Bible', god);
-    bible.meta = { category: 'god like', items: 3 };
+    bible.meta = { category: 'god like', items: 3, valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } };
     await orm.em.persistAndFlush(bible);
     orm.em.clear();
 
-    const g = (await orm.em.findOne(Author2, god.id, { populate: ['books'] }))!;
+    const g = await orm.em.findOneOrFail(Author2, god.id, { populate: ['books'] });
     expect(Array.isArray(g.identities)).toBe(true);
     expect(g.identities).toEqual(['fb-123', 'pw-231', 'tw-321']);
     expect(typeof g.books[0].meta).toBe('object');
-    expect(g.books[0].meta).toEqual({ category: 'god like', items: 3 });
+    expect(g.books[0].meta).toEqual({ category: 'god like', items: 3, valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } });
+    orm.em.clear();
+
+    const b1 = await orm.em.findOneOrFail(Book2, { meta: { category: 'god like' } });
+    const b2 = await orm.em.findOneOrFail(Book2, { meta: { category: 'god like', items: 3 } });
+    const b3 = await orm.em.findOneOrFail(Book2, { meta: { nested: { bar: 321 } } });
+    const b4 = await orm.em.findOneOrFail(Book2, { meta: { nested: { foo: '123', bar: 321 } } });
+    const b5 = await orm.em.findOneOrFail(Book2, { meta: { valid: true, nested: { foo: '123', bar: 321 } } });
+    const b6 = await orm.em.findOneOrFail(Book2, { meta: { valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59 } } } });
+    const b7 = await orm.em.findOneOrFail(Book2, { meta: { valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } } });
+    expect(b1).toBe(b2);
+    expect(b1).toBe(b3);
+    expect(b1).toBe(b4);
+    expect(b1).toBe(b5);
+    expect(b1).toBe(b6);
+    expect(b1).toBe(b7);
   });
 
   test('findOne should initialize entity that is already in IM', async () => {
@@ -658,8 +673,8 @@ describe('EntityManagerMsSql', () => {
   });
 
   test('populate OneToOne relation (default case)', async () => {
-    const bar = FooBar2.create('bar');
-    const baz = new FooBaz2('baz');
+    const bar = FooBar2.create('你好世界');
+    const baz = new FooBaz2('ěščřžýáíéůú');
     bar.baz = baz;
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
@@ -667,7 +682,14 @@ describe('EntityManagerMsSql', () => {
     const b1 = (await orm.em.findOne(FooBar2, { id: bar.id }, { populate: ['baz'], refresh: true }))!;
     expect(b1.baz).toBeInstanceOf(FooBaz2);
     expect(b1.baz!.id).toBe(baz.id);
-    expect(wrap(b1).toJSON()).toMatchObject({ baz: { id: baz.id, bar: bar.id, name: 'baz' } });
+    expect(wrap(b1).toJSON()).toMatchObject({
+      name: '你好世界',
+      baz: {
+        id: baz.id,
+        bar: bar.id,
+        name: 'ěščřžýáíéůú',
+      },
+    });
   });
 
   test('populate OneToOne relation on inverse side', async () => {
@@ -709,6 +731,9 @@ describe('EntityManagerMsSql', () => {
 
     const b1 = (await orm.em.findOne(Book2, { test: test.id }, { populate: ['test.config'] }))!;
     expect(b1.uuid).not.toBeNull();
+    expect(typeof b1.uuid).toBe('string');
+    expect(typeof wrap(b1).toJSON().uuid).toBe('string');
+    expect(typeof wrap(b1).toJSON().test?.book).toBe('string');
     expect(wrap(b1).toJSON()).toMatchObject({ test: { id: test.id, book: test.book.uuid, name: 't' } });
   });
 
@@ -1074,7 +1099,7 @@ describe('EntityManagerMsSql', () => {
 
     const mock = mockLogger(orm, ['query', 'query-params']);
     await orm.em.insert(Author2, { name: 'native name 1', email: 'native1@email.com' });
-    expect(mock.mock.calls[0][0]).toMatch(`insert into [author2] ([email], [name]) output inserted.[id], inserted.[created_at], inserted.[updated_at], inserted.[age], inserted.[terms_accepted] values ('native1@email.com', 'native name 1')`);
+    expect(mock.mock.calls[0][0]).toMatch(`insert into [author2] ([email], [name]) output inserted.[id], inserted.[created_at], inserted.[updated_at], inserted.[age], inserted.[terms_accepted] values (N'native1@email.com', N'native name 1')`);
     orm.config.set('debug', ['query']);
   });
 

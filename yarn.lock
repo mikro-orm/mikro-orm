@@ -1373,6 +1373,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mikro-orm/core@npm:^6.1.2":
+  version: 6.1.2
+  resolution: "@mikro-orm/core@npm:6.1.2"
+  dependencies:
+    dataloader: "npm:2.2.2"
+    dotenv: "npm:16.4.1"
+    esprima: "npm:4.0.1"
+    fs-extra: "npm:11.2.0"
+    globby: "npm:11.1.0"
+    mikro-orm: "npm:6.1.2"
+    reflect-metadata: "npm:0.2.1"
+  checksum: 10/6b085408111f0cffe2fe40f72e5ebe5451db3535a69de17b75107eb0d0cb3e1a4c26e3025a3d578ce9b37c751b16211beb00865163022db649907072a382f88e
+  languageName: node
+  linkType: hard
+
 "@mikro-orm/entity-generator@npm:^6.1.1, @mikro-orm/entity-generator@workspace:packages/entity-generator":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/entity-generator@workspace:packages/entity-generator"
@@ -1397,6 +1412,19 @@ __metadata:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
   linkType: soft
+
+"@mikro-orm/knex@npm:6.1.2":
+  version: 6.1.2
+  resolution: "@mikro-orm/knex@npm:6.1.2"
+  dependencies:
+    fs-extra: "npm:11.2.0"
+    knex: "npm:3.1.0"
+    sqlstring: "npm:2.3.3"
+  peerDependencies:
+    "@mikro-orm/core": ^6.0.0
+  checksum: 10/211dfdeb7f85c41c172e1ed48e648799a8359ca4e5ba3887decb8da6181950a082077ae25403ea02c19c353dd8a1756e2cefd38bdafe12946c1b6cfb48b64527
+  languageName: node
+  linkType: hard
 
 "@mikro-orm/mariadb@workspace:packages/mariadb":
   version: 0.0.0-use.local
@@ -1462,8 +1490,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/mssql@workspace:packages/mssql"
   dependencies:
-    "@mikro-orm/core": "npm:^6.1.1"
-    "@mikro-orm/knex": "npm:6.1.1"
+    "@mikro-orm/core": "npm:^6.1.2"
+    "@mikro-orm/knex": "npm:6.1.2"
     tedious: "npm:16.7.0"
     tsqlstring: "npm:1.0.1"
   peerDependencies:
@@ -8179,6 +8207,13 @@ __metadata:
   resolution: "mikro-orm@workspace:packages/mikro-orm"
   languageName: unknown
   linkType: soft
+
+"mikro-orm@npm:6.1.2":
+  version: 6.1.2
+  resolution: "mikro-orm@npm:6.1.2"
+  checksum: 10/de1beec44cb6948c53a86d76dd6bf80175db6bfa829d6d86443e136aa0b17133f2a113c0f595c1f65512581a52e0db54e9cf0d563fd17593c3481024804bbdc9
+  languageName: node
+  linkType: hard
 
 "mime-db@npm:1.52.0":
   version: 1.52.0
