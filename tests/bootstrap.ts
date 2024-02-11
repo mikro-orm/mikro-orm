@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import type { Options } from '@mikro-orm/core';
-import { LoadStrategy, MikroORM, ReflectMetadataProvider, Utils, SimpleLogger } from '@mikro-orm/core';
+import { LoadStrategy, MikroORM, ReflectMetadataProvider, SimpleLogger, Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -17,25 +17,25 @@ import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 import { MsSqlDriver } from '@mikro-orm/mssql';
 
 import {
+  Address2,
   Author2,
+  BaseUser2,
   Book2,
   BookTag2,
+  CarOwner2,
+  CompanyOwner2,
+  Configuration2,
+  Employee2,
   FooBar2,
   FooBaz2,
+  FooParam2,
+  Label2,
+  Manager2,
   Publisher2,
   Test2,
-  Label2,
-  Configuration2,
-  Address2,
-  FooParam2,
   User2,
-  CompanyOwner2,
-  BaseUser2,
-  Manager2,
-  Employee2,
-  CarOwner2,
 } from './entities-sql';
-import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, IdentitySchema } from './entities-schema';
+import { Author4, Book4, BookTag4, FooBar4, FooBaz4, IdentitySchema, Publisher4, Test4 } from './entities-schema';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
@@ -49,6 +49,7 @@ const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./
 export const PLATFORMS = {
   'mongo': MongoDriver,
   'mysql': MySqlDriver,
+  'mssql': MsSqlDriver,
   'mariadb': MariaDbDriver,
   'postgresql': PostgreSqlDriver,
   'sqlite': SqliteDriver,
@@ -197,8 +198,8 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
     ...additionalOptions,
   });
 
-  const schemaGenerator = orm.getSchemaGenerator();
-  await schemaGenerator.ensureDatabase();
+  await orm.schema.ensureDatabase();
+  // console.log(await orm.schema.getCreateSchemaSQL());
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/mssql-schema.sql');
 

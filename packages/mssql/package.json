@@ -46,11 +46,10 @@
     "node": ">= 18.12.0"
   },
   "scripts": {
-    "build": "yarn clean && yarn compile && yarn copy",
-    "postbuild": "yarn gen-esm-wrapper dist/index.js dist/index.mjs",
-    "clean": "rimraf ./dist",
-    "compile": "tsc -p tsconfig.build.json",
-    "copy": "ts-node -T ../../scripts/copy.ts"
+    "build": "yarn clean && yarn compile && yarn copy && yarn run -T gen-esm-wrapper dist/index.js dist/index.mjs",
+    "clean": "yarn run -T rimraf ./dist",
+    "compile": "yarn run -T tsc -p tsconfig.build.json",
+    "copy": "node ../../scripts/copy.mjs"
   },
   "publishConfig": {
     "access": "public"

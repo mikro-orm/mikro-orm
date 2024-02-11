@@ -1,4 +1,4 @@
-import { AbstractSqlPlatform } from '@mikro-orm/knex';
+import { AbstractSqlPlatform, type IndexDef, raw } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
 import { MsSqlSchemaHelper } from './MsSqlSchemaHelper';
@@ -52,6 +52,25 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override getJsonDeclarationSQL(): string {
     return 'nvarchar(max)';
+  }
+
+  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
+    const [a, ...b] = path;
+    const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
+
+    if (aliased) {
+      return raw(alias => `json_value(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(quoteKey).join('.')}')`);
+    }
+
+    return raw(`json_value(${this.quoteIdentifier(a)}, '$.${b.map(quoteKey).join('.')}')`);
+  }
+
+  override getJsonIndexDefinition(index: IndexDef): string[] {
+    return index.columnNames
+      .map(column => {
+        const [root, ...path] = column.split('.');
+        return `json_extract(${root}, '$.${path.join('.')}')`;
+      });
   }
 
   override quoteIdentifier(id: string): string {
