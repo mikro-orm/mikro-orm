@@ -101,6 +101,24 @@ describe('EntityGenerator', () => {
     await orm.close(true);
   });
 
+  test('generate EntitySchema with reference wrappers and named import [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {
+      entityGenerator: {
+        entitySchema: true,
+        identifiedReferences: true,
+        esmImport: true,
+      },
+    }, true);
+    const generator = orm.getEntityGenerator();
+    const dump = await generator.generate({ save: true, path: './temp/entities' });
+    expect(dump).toMatchSnapshot('mysql-entityschema-named-dump');
+    await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
+    await remove('./temp/entities');
+
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
+
   test('table name with underscore using entitySchema [mysql]', async () => {
     const orm = await initORMMySql('mysql', {
       entityGenerator: {
