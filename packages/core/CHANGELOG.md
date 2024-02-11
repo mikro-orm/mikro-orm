@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.2](https://github.com/mikro-orm/mikro-orm/compare/v6.1.1...v6.1.2) (2024-02-11)
+
+
+### Bug Fixes
+
+* **core:** allow multiple abstract levels for STI entities ([0c56118](https://github.com/mikro-orm/mikro-orm/commit/0c56118603c25a471a0c636912b976a4291290b3)), closes [#3745](https://github.com/mikro-orm/mikro-orm/issues/3745)
+* **core:** respect user provided env vars over those from `.env` file ([e25ca11](https://github.com/mikro-orm/mikro-orm/commit/e25ca11c20ebbf83946c9e29b9beee8d08cd97e3))
+
+
+### Features
+
+* **entity-generator:** add the ability to use custom and/or core base entity ([#5232](https://github.com/mikro-orm/mikro-orm/issues/5232)) ([066dac1](https://github.com/mikro-orm/mikro-orm/commit/066dac1828802dca82361146b6eae012386baeff))
+
+
+
+
+
 ## [6.1.1](https://github.com/mikro-orm/mikro-orm/compare/v6.1.0...v6.1.1) (2024-02-10)
 
 

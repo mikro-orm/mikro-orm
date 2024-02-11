@@ -791,6 +791,8 @@ export interface GenerateOptions {
   fileName?: (className: string) => string;
   onlyPurePivotTables?: boolean;
   readOnlyPivotTables?: boolean;
+  customBaseEntityName?: string;
+  useCoreBaseEntity?: boolean;
   onInitialMetadata?: MetadataProcessor;
   onProcessedMetadata?: MetadataProcessor;
 }

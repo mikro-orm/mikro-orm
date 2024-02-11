@@ -1,5 +1,5 @@
 import {
-  type EntityMetadata,
+  EntityMetadata,
   type EntityProperty,
   type GenerateOptions,
   type MikroORM,
@@ -107,6 +107,10 @@ export class EntityGenerator {
 
     if (options.identifiedReferences) {
       this.generateIdentifiedReferences(metadata);
+    }
+
+    if (options.customBaseEntityName) {
+      this.generateAndAttachCustomBaseEntity(metadata, options.customBaseEntityName);
     }
 
     // enforce schema usage in class names only on duplicates
@@ -273,6 +277,24 @@ export class EntityGenerator {
           prop.ref = true;
         }
       }
+    }
+  }
+
+  private generateAndAttachCustomBaseEntity(metadata: EntityMetadata[], customBaseEntityName: string) {
+    let baseClassExists = false;
+    for (const meta of metadata) {
+      if (meta.className === customBaseEntityName) {
+        baseClassExists = true;
+        continue;
+      }
+      meta.extends ??= customBaseEntityName;
+    }
+    if (!baseClassExists) {
+      metadata.push(new EntityMetadata({
+        className: customBaseEntityName,
+        abstract: true,
+        relations: [],
+      }));
     }
   }
 

@@ -18,7 +18,7 @@ import type {
   MigrationObject,
   EntityMetadata,
   EnsureDatabaseOptions,
-  MetadataProcessor,
+  GenerateOptions,
 } from '../typings';
 import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
@@ -122,6 +122,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       fileName: (className: string) => className,
       onlyPurePivotTables: false,
       readOnlyPivotTables: false,
+      useCoreBaseEntity: false,
     },
     metadataCache: {
       pretty: false,
@@ -585,24 +586,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
     ignoreSchema?: string[];
     managementDbName?: string;
   };
-  entityGenerator: {
-    baseDir?: string;
-    save?: boolean;
-    schema?: string;
-    skipTables?: string[];
-    skipColumns?: Record<string, string[]>;
-    bidirectionalRelations?: boolean;
-    identifiedReferences?: boolean;
-    entitySchema?: boolean;
-    esmImport?: boolean;
-    scalarTypeInDecorator?: boolean;
-    scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
-    fileName?: (className: string) => string;
-    onlyPurePivotTables?: boolean;
-    readOnlyPivotTables?: boolean;
-    onInitialMetadata?: MetadataProcessor;
-    onProcessedMetadata?: MetadataProcessor;
-  };
+  entityGenerator: GenerateOptions;
   metadataCache: {
     enabled?: boolean;
     combined?: boolean | string;

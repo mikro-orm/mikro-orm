@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.2](https://github.com/mikro-orm/mikro-orm/compare/v6.1.1...v6.1.2) (2024-02-11)
+
+
+### Features
+
+* **entity-generator:** add the ability to use custom and/or core base entity ([#5232](https://github.com/mikro-orm/mikro-orm/issues/5232)) ([066dac1](https://github.com/mikro-orm/mikro-orm/commit/066dac1828802dca82361146b6eae012386baeff))
+
+
+
+
+
 ## [6.1.1](https://github.com/mikro-orm/mikro-orm/compare/v6.1.0...v6.1.1) (2024-02-10)
 
 
