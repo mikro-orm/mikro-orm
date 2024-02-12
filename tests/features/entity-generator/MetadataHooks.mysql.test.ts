@@ -175,6 +175,14 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
       expect(entity.embeddable).toBeFalsy();
     }
 
+    if (entity.className === 'Book2') {
+      entity.properties.publisher.mapToPk = true;
+    }
+
+    if (entity.className === 'User2') {
+      entity.properties.favouriteCar.mapToPk = true;
+    }
+
     if (entity.className === 'Author2') {
       const authorToFriend = entity.properties.authorToFriend;
       expect(authorToFriend.kind).toBe(ReferenceKind.MANY_TO_MANY);

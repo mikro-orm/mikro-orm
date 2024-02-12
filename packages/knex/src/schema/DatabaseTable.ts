@@ -599,6 +599,7 @@ export class DatabaseTable {
     fkOptions.referencedColumnNames = fk.referencedColumnNames;
     fkOptions.updateRule = fk.updateRule?.toLowerCase();
     fkOptions.deleteRule = fk.deleteRule?.toLowerCase();
+    fkOptions.columnTypes = fk.columnNames.map(c => this.getColumn(c)!.type);
 
     const columnOptions: Partial<EntityProperty> = {};
     if (fk.columnNames.length === 1) {
