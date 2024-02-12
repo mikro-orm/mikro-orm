@@ -21,7 +21,7 @@ class Address1 {
   @Property({ nullable: true })
   street?: string;
 
-  @Property()
+  @Property({ type: 'double' })
   number?: number;
 
   @Property({ type: t.float, nullable: true })

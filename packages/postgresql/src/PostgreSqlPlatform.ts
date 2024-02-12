@@ -199,15 +199,17 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'jsonb';
   }
 
-  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
+  override getSearchJsonPropertyKey(path: string[], type: string | undefined | Type, aliased: boolean, value?: unknown): string {
     const first = path.shift();
     const last = path.pop();
     const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${first}` : first!);
+    type = typeof type === 'string' ? this.getMappedType(type).runtimeType : String(type);
     const types = {
       number: 'float8',
+      bigint: 'int8',
       boolean: 'bool',
     } as Dictionary;
-    const cast = (key: string) => raw(type in types ? `(${key})::${types[type]}` : key);
+    const cast = (key: string) => raw(type as string in types ? `(${key})::${types[type as string]}` : key);
     let lastOperator = '->>';
 
     // force `->` for operator payloads with array values
