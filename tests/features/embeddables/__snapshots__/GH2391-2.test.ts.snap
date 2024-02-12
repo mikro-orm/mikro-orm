@@ -8,10 +8,6 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
     ret.id = result.id;
     mapped.id = true;
   }
-  if (typeof result.foo_audit1 !== 'undefined') {
-    ret.fooAudit1 = result.foo_audit1;
-    mapped.foo_audit1 = true;
-  }
   if (typeof result.foo_audit1_archivedAt !== 'undefined') {
     if (result.foo_audit1_archivedAt == null || result.foo_audit1_archivedAt instanceof Date) {
       ret.foo_audit1_archived = result.foo_audit1_archivedAt;
@@ -35,10 +31,6 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
       ret.foo_audit1_created = parseDate(result.foo_audit1_created);
     }
     mapped.foo_audit1_created = true;
-  }
-  if (typeof result.foo_audit1_nested_audit1 !== 'undefined') {
-    ret.foo_audit1_nestedAudit1 = result.foo_audit1_nested_audit1;
-    mapped.foo_audit1_nested_audit1 = true;
   }
   if (typeof result.foo_audit1_nested_audit1_archivedAt !== 'undefined') {
     if (result.foo_audit1_nested_audit1_archivedAt == null || result.foo_audit1_nested_audit1_archivedAt instanceof Date) {

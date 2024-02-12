@@ -349,7 +349,7 @@ export class EntityComparator {
         lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : mapEmbeddedResult_${idx}(${propName(prop.fieldNames[0])});`);
         lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
-      } else {
+      } else if (prop.kind !== ReferenceKind.EMBEDDED) {
         lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
         lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])};`);
         lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
