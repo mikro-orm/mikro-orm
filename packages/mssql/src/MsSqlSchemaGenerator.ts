@@ -1,14 +1,19 @@
-import { SchemaGenerator } from '@mikro-orm/knex';
+import { type ClearDatabaseOptions, type MikroORM, SchemaGenerator } from '@mikro-orm/knex';
 
 export class MsSqlSchemaGenerator extends SchemaGenerator {
 
-  override async clearDatabase(options?: { schema?: string; truncate?: boolean }): Promise<void> {
+  static override register(orm: MikroORM): void {
+    orm.config.registerExtension('@mikro-orm/schema-generator', () => new MsSqlSchemaGenerator(orm.em));
+  }
+
+  override async clearDatabase(options?: ClearDatabaseOptions): Promise<void> {
     // truncate by default, so no value is considered as true
     /* istanbul ignore if */
     if (options?.truncate === false) {
       return super.clearDatabase(options);
     }
 
+    // https://stackoverflow.com/questions/253849/cannot-truncate-table-because-it-is-being-referenced-by-a-foreign-key-constraint
     for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
       const res = await this.driver.nativeDelete(meta.className, {}, options);
 
