@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.3](https://github.com/mikro-orm/mikro-orm/compare/v6.1.2...v6.1.3) (2024-02-13)
+
+
+### Features
+
+* **entity-generator:** support `mapToPk` option ([#5241](https://github.com/mikro-orm/mikro-orm/issues/5241)) ([3afaa29](https://github.com/mikro-orm/mikro-orm/commit/3afaa29704c5889e24806a6f2027a465c53e0f2e))
+
+
+
+
+
 ## [6.1.2](https://github.com/mikro-orm/mikro-orm/compare/v6.1.1...v6.1.2) (2024-02-11)
 
 
