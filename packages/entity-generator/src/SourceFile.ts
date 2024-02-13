@@ -190,6 +190,13 @@ export class SourceFile {
       return `${padding}${prop.name}${hiddenType ? `: Collection<${prop.type}>${hiddenType}` : ''} = new Collection<${prop.type}>(this);\n`;
     }
 
+    const propType = prop.mapToPk
+      ? (() => {
+          const runtimeTypes = prop.columnTypes.map(t => this.platform.getMappedType(t).runtimeType);
+          return runtimeTypes.length === 1 ? runtimeTypes[0] : this.serializeObject(runtimeTypes);
+        })()
+      : prop.type;
+
     // string defaults are usually things like SQL functions, but can be also enums, for that `useDefault` should be true
     const isEnumOrNonStringDefault = prop.enum || typeof prop.default !== 'string';
     const useDefault = prop.default != null && isEnumOrNonStringDefault;
@@ -197,11 +204,11 @@ export class SourceFile {
 
     if (prop.ref) {
       this.coreImports.add('Ref');
-      this.entityImports.add(prop.type);
-      return `${padding}${prop.name}${optional}: Ref<${prop.type}>${hiddenType};\n`;
+      this.entityImports.add(propType);
+      return `${padding}${prop.name}${optional}: Ref<${propType}>${hiddenType};\n`;
     }
 
-    let ret = `${prop.name}${optional}: ${prop.type}`;
+    let ret = `${prop.name}${optional}: ${propType}`;
 
     if (prop.kind === ReferenceKind.EMBEDDED && prop.array) {
       ret += '[]';
@@ -218,7 +225,7 @@ export class SourceFile {
     }
 
     if (prop.enum && typeof prop.default === 'string') {
-      return `${padding}${ret} = ${prop.type}.${prop.default.toUpperCase()};\n`;
+      return `${padding}${ret} = ${propType}.${prop.default.toUpperCase()};\n`;
     }
 
     return `${padding}${ret} = ${prop.default};\n`;
@@ -570,6 +577,10 @@ export class SourceFile {
 
     if (prop.ref) {
       options.ref = true;
+    }
+
+    if (prop.mapToPk) {
+      options.mapToPk = true;
     }
 
     if (prop.mappedBy) {

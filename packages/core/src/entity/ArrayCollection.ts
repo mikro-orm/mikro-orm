@@ -426,7 +426,7 @@ export class ArrayCollection<T extends object, O extends object> {
         helper(item).__pk = helper(item).getPrimaryKey()!;
       }
 
-      if (!prop2.nullable && prop2.updateRule !== 'cascade' && method === 'remove') {
+      if (!prop2.nullable && prop2.deleteRule !== 'cascade' && method === 'remove') {
         if (!this.property.orphanRemoval) {
           throw ValidationError.cannotRemoveFromCollectionWithoutOrphanRemoval(this.owner, this.property);
         }

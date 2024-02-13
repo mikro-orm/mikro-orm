@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.3](https://github.com/mikro-orm/mikro-orm/compare/v6.1.2...v6.1.3) (2024-02-13)
+
+
+### Bug Fixes
+
+* **core:** fix extra updates when embedded property name matches inner field name ([e008dab](https://github.com/mikro-orm/mikro-orm/commit/e008dabc3d22c011a67ac0d0004e67c200410557)), closes [#5240](https://github.com/mikro-orm/mikro-orm/issues/5240)
+* **core:** fix validation for removing items from 1:m collections ([34b8473](https://github.com/mikro-orm/mikro-orm/commit/34b8473d7056b864f0b4c7825f784368299edcfa)), closes [#5243](https://github.com/mikro-orm/mikro-orm/issues/5243)
+* **postgres:** implement casting for JSON queries on types like `double` or `bigint` ([b00eae6](https://github.com/mikro-orm/mikro-orm/commit/b00eae695aae3258e68799dc4e2101123eeac866)), closes [#5239](https://github.com/mikro-orm/mikro-orm/issues/5239)
+
+
+### Features
+
+* **entity-generator:** support `mapToPk` option ([#5241](https://github.com/mikro-orm/mikro-orm/issues/5241)) ([3afaa29](https://github.com/mikro-orm/mikro-orm/commit/3afaa29704c5889e24806a6f2027a465c53e0f2e))
+
+
+
+
+
 ## [6.1.2](https://github.com/mikro-orm/mikro-orm/compare/v6.1.1...v6.1.2) (2024-02-11)
 
 

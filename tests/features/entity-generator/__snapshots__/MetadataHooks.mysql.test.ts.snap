@@ -207,8 +207,8 @@ export class Book2 {
   @ManyToOne({ entity: () => Author2 })
   author!: Author2;
 
-  @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
-  publisher?: Publisher2;
+  @ManyToOne({ entity: () => Publisher2, mapToPk: true, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
+  publisher?: number;
 
   @Property({ length: 255, nullable: true, default: 'lol' })
   foo?: string;
@@ -578,8 +578,8 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
-  @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  favouriteCar?: Car2;
+  @OneToOne({ entity: () => Car2, mapToPk: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteCar?: [string, number];
 
   @ManyToMany({ entity: () => Car2, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumns: ['car2_name', 'car2_year'] })
   cars = new Collection<Car2>(this);
@@ -895,7 +895,7 @@ export class Book2 {
   double?: number;
   meta?: any;
   author!: Author2;
-  publisher?: Publisher2;
+  publisher?: number;
   foo?: string;
   bookToTagUnordered = new Collection<BookTag2>(this);
   favouriteBookInverse = new Collection<Author2>(this);
@@ -917,6 +917,7 @@ export const Book2Schema = new EntitySchema({
     publisher: {
       kind: 'm:1',
       entity: () => Publisher2,
+      mapToPk: true,
       updateRule: 'cascade',
       deleteRule: 'cascade',
       nullable: true,
@@ -1295,7 +1296,7 @@ export class User2 {
   firstName!: string;
   lastName!: string;
   foo?: number;
-  favouriteCar?: Car2;
+  favouriteCar?: [string, number];
   cars = new Collection<Car2>(this);
   sandwiches = new Collection<Sandwich>(this);
 }
@@ -1309,6 +1310,7 @@ export const User2Schema = new EntitySchema({
     favouriteCar: {
       kind: '1:1',
       entity: () => Car2,
+      mapToPk: true,
       updateRule: 'cascade',
       deleteRule: 'set null',
       nullable: true,

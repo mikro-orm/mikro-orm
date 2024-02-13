@@ -36,7 +36,7 @@ services:
       - mariadb:/var/lib/mysql
 
   postgre:
-    image: postgres:16.1
+    image: postgres:16.2
     ports:
       - "5432:5432"
     volumes:

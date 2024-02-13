@@ -5,10 +5,12 @@ abstract class User {
 
   id!: number;
   name: string;
+  email: Email;
   version!: number;
 
-  constructor(name: string) {
+  constructor(name: string, email: Email) {
     this.name = name;
+    this.email = email;
   }
 
 }
@@ -16,6 +18,21 @@ abstract class User {
 class Student extends User {}
 
 class Teacher extends User {}
+
+class Email {
+
+  static regExEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+  value: string;
+
+  constructor(value: string) {
+    if (!Email.regExEmail.test(value)) {
+      throw new Error('Invalid email');
+    }
+
+    this.value = value;
+  }
+
+}
 
 const userSchema = new EntitySchema<User>({
   class: User,
@@ -28,6 +45,11 @@ const userSchema = new EntitySchema<User>({
     },
     name: {
       type: String,
+    },
+    email: {
+      kind: 'embedded',
+      entity: () => Email,
+      prefix: false,
     },
     version: {
       type: Number,
@@ -48,6 +70,17 @@ const teacherSchema = new EntitySchema<Teacher, User>({
   discriminatorValue: 'teacher',
 });
 
+const emailSchema = new EntitySchema<Email>({
+  class: Email,
+  embeddable: true,
+  properties: {
+    value: {
+      fieldName: 'email',
+      type: String,
+    },
+  },
+});
+
 let orm: MikroORM;
 
 beforeAll(async () => {
@@ -60,19 +93,25 @@ beforeAll(async () => {
 afterAll(() => orm.close());
 
 test('optimistic locks and STI', async () => {
-  const teacher = new Teacher('John');
-  const student = new Student('Eric');
+  const teacher = new Teacher('John', new Email('john@foo.bar'));
+  const student = new Student('Eric', new Email('eric@foo.bar'));
   await orm.em.insertMany([teacher, student]);
   const res = await orm.em.find(User, {});
 
   expect(res[0]).toEqual({
     id: 1,
     name: 'John',
+    email: {
+      value: 'john@foo.bar',
+    },
     version: 1,
   });
   expect(res[1]).toEqual({
     id: 2,
     name: 'Eric',
+    email: {
+      value: 'eric@foo.bar',
+    },
     version: 1,
   });
 
@@ -88,3 +127,19 @@ test('optimistic locks and STI', async () => {
   expect(mock.mock.calls[2][0]).toMatch('update `user` set `name` = case when (`id` = 1) then \'new name 1\' when (`id` = 2) then \'new name 2\' else `name` end, `version` = `version` + 1 where `id` in (1, 2) returning `version`');
   expect(mock.mock.calls[3][0]).toMatch('commit');
 });
+
+// describe('Polymorphic versioned entities', async () => {
+//   test('Should not fail with OptimisticLockError', async () => {
+//       /**
+//        * When the previous transactional context ends, it leads to the
+//        * following exception:
+//        *
+//        * NotNullConstraintViolationException:
+//        * update "public"."User" set "email" = case when ("id" = 1)
+//        * then NULL when ("id" = 2) then NULL else "email" end,
+//        * "version" = "version" + 1 where "id" in (1, 2)
+//        * returning "version" - null value in column "email" of
+//        * relation "User" violates not-null constraint
+//        */
+//   });
+// });

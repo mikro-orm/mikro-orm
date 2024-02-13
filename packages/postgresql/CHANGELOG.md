@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.3](https://github.com/mikro-orm/mikro-orm/compare/v6.1.2...v6.1.3) (2024-02-13)
+
+
+### Bug Fixes
+
+* **postgres:** implement casting for JSON queries on types like `double` or `bigint` ([b00eae6](https://github.com/mikro-orm/mikro-orm/commit/b00eae695aae3258e68799dc4e2101123eeac866)), closes [#5239](https://github.com/mikro-orm/mikro-orm/issues/5239)
+
+
+
+
+
 ## [6.1.2](https://github.com/mikro-orm/mikro-orm/compare/v6.1.1...v6.1.2) (2024-02-11)
 
 **Note:** Version bump only for package @mikro-orm/postgresql
