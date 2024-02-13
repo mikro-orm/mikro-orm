@@ -15,7 +15,8 @@ import {
 export class MsSqlSchemaHelper extends SchemaHelper {
 
   static readonly DEFAULT_VALUES = {
-    0: ['0', 'false'],
+    true: ['1', 'true'],
+    false: ['0', 'false'],
   };
 
   override getManagementDbName(): string {
