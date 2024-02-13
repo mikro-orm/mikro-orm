@@ -60,7 +60,7 @@
   "dependencies": {
     "@mikro-orm/knex": "6.1.3",
     "fs-extra": "11.2.0",
-    "umzug": "3.6.1"
+    "umzug": "3.7.0"
   },
   "devDependencies": {
     "@mikro-orm/core": "^6.1.3"
