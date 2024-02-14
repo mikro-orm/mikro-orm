@@ -51,8 +51,20 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return `current_timestamp`;
   }
 
+  override getDateTimeTypeDeclarationSQL(column: { length?: number } = { length: 0 }): string {
+    return 'datetime2' + (column.length ? `(${column.length})` : '');
+  }
+
   override getTimeTypeDeclarationSQL(): string {
     return 'time';
+  }
+
+  override getFloatDeclarationSQL(): string {
+    return 'float(24)';
+  }
+
+  override getDoubleDeclarationSQL(): string {
+    return 'float(53)';
   }
 
   override getBooleanTypeDeclarationSQL(): string {
@@ -125,6 +137,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     }
 
     return data as T;
+  }
+
+  override supportsMultipleStatements(): boolean {
+    return true;
   }
 
   override quoteIdentifier(id: string): string {

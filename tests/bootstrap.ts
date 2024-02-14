@@ -184,7 +184,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
   return orm;
 }
 
-export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDriver>> = {}) {
+export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDriver>> = {}, createSchema = true) {
   const orm = await MikroORM.init({
     entities: ['entities-mssql'],
     dbName: `mikro_orm_test`,
@@ -198,10 +198,11 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
     ...additionalOptions,
   });
 
-  await orm.schema.ensureDatabase();
-  // console.log(await orm.schema.getCreateSchemaSQL());
-  const connection = orm.em.getConnection();
-  await connection.loadFile(__dirname + '/mssql-schema.sql');
+  if (createSchema) {
+    await orm.schema.ensureDatabase();
+    const connection = orm.em.getConnection();
+    await connection.loadFile(__dirname + '/mssql-schema.sql');
+  }
 
   Author2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
