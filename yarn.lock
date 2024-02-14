@@ -1326,7 +1326,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/core@npm:6.1.3, @mikro-orm/core@npm:^6.1.2, @mikro-orm/core@npm:^6.1.3, @mikro-orm/core@workspace:packages/core":
+"@mikro-orm/core@npm:6.1.3, @mikro-orm/core@npm:^6.1.3, @mikro-orm/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/core@workspace:packages/core"
   dependencies:
@@ -1351,19 +1351,6 @@ __metadata:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
   linkType: soft
-
-"@mikro-orm/knex@npm:6.1.2":
-  version: 6.1.2
-  resolution: "@mikro-orm/knex@npm:6.1.2"
-  dependencies:
-    fs-extra: "npm:11.2.0"
-    knex: "npm:3.1.0"
-    sqlstring: "npm:2.3.3"
-  peerDependencies:
-    "@mikro-orm/core": ^6.0.0
-  checksum: 10/211dfdeb7f85c41c172e1ed48e648799a8359ca4e5ba3887decb8da6181950a082077ae25403ea02c19c353dd8a1756e2cefd38bdafe12946c1b6cfb48b64527
-  languageName: node
-  linkType: hard
 
 "@mikro-orm/knex@npm:6.1.3, @mikro-orm/knex@workspace:packages/knex":
   version: 0.0.0-use.local
@@ -1442,8 +1429,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/mssql@workspace:packages/mssql"
   dependencies:
-    "@mikro-orm/core": "npm:^6.1.2"
-    "@mikro-orm/knex": "npm:6.1.2"
+    "@mikro-orm/core": "npm:^6.1.3"
+    "@mikro-orm/knex": "npm:6.1.3"
     tedious: "npm:16.7.0"
     tsqlstring: "npm:1.0.1"
   peerDependencies:
