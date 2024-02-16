@@ -505,6 +505,10 @@ export class SourceFile {
         options.autoincrement = false;
       }
     }
+
+    if (prop.generated) {
+      options.generated = typeof prop.generated === 'string' ? this.quote(prop.generated) : `${prop.generated}`;
+    }
   }
 
   protected getManyToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
@@ -608,6 +612,10 @@ export class SourceFile {
 
     if (prop.primary) {
       options.primary = true;
+    }
+
+    if (prop.generated) {
+      options.generated = typeof prop.generated === 'string' ? this.quote(prop.generated) : `${prop.generated}`;
     }
   }
 

@@ -606,6 +606,7 @@ export class DatabaseTable {
       const column = this.getColumn(fk.columnNames[0])!;
       columnOptions.default = this.getPropertyDefaultValue(schemaHelper, column, type);
       columnOptions.defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, type, true);
+      columnOptions.generated = column.generated;
       columnOptions.nullable = column.nullable;
       columnOptions.primary = column.primary;
       columnOptions.length = column.length;
@@ -658,6 +659,7 @@ export class DatabaseTable {
       name: prop,
       type,
       kind,
+      generated: column.generated,
       columnType: column.type,
       default: this.getPropertyDefaultValue(schemaHelper, column, type),
       defaultRaw: this.getPropertyDefaultValue(schemaHelper, column, type, true),
