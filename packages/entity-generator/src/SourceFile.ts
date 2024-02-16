@@ -204,7 +204,9 @@ export class SourceFile {
 
     if (prop.ref) {
       this.coreImports.add('Ref');
-      this.entityImports.add(propType);
+      if (typeof prop.kind === 'string' && prop.kind !== ReferenceKind.SCALAR) {
+        this.entityImports.add(propType);
+      }
       return `${padding}${prop.name}${optional}: Ref<${propType}>${hiddenType};\n`;
     }
 
