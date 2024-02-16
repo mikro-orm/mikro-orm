@@ -98,6 +98,10 @@ module.exports = {
   projectName: 'mikro-orm',
   scripts: ['/js/custom.js'],
   trailingSlash: false,
+  onBrokenLinks: 'throw',
+  onBrokenAnchors: 'throw',
+  onBrokenMarkdownLinks: 'throw',
+  onDuplicateRoutes: 'throw',
   themeConfig: {
     algolia: {
       apiKey: '83015544b5b03ca27af77c74a25d4868',

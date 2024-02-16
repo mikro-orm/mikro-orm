@@ -1947,7 +1947,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@docusaurus/mdx-loader@npm:3.1.1":
+"@docusaurus/mdx-loader@npm:3.1.1, @docusaurus/mdx-loader@npm:^3.1.1":
   version: 3.1.1
   resolution: "@docusaurus/mdx-loader@npm:3.1.1"
   dependencies:
@@ -2575,7 +2575,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mdx-js/react@npm:^3.0.0":
+"@mdx-js/react@npm:3.0.0, @mdx-js/react@npm:^3.0.0":
   version: 3.0.0
   resolution: "@mdx-js/react@npm:3.0.0"
   dependencies:
@@ -5186,18 +5186,19 @@ __metadata:
   resolution: "docs@workspace:."
   dependencies:
     "@docusaurus/core": "npm:^3.1.1"
+    "@docusaurus/mdx-loader": "npm:^3.1.1"
     "@docusaurus/module-type-aliases": "npm:^3.1.1"
     "@docusaurus/plugin-client-redirects": "npm:^3.1.1"
     "@docusaurus/preset-classic": "npm:^3.1.1"
     "@docusaurus/remark-plugin-npm2yarn": "npm:^3.1.1"
     "@docusaurus/types": "npm:^3.1.1"
     "@giscus/react": "npm:^2.4.0"
-    "@mdx-js/react": "npm:^3.0.0"
+    "@mdx-js/react": "npm:3.0.0"
     "@types/react": "npm:^18.2.55"
     "@types/react-dom": "npm:^18.2.19"
     classnames: "npm:^2.5.1"
-    docusaurus-plugin-typedoc-api: "npm:^4.1.0"
-    prettier: "npm:^3.1.1"
+    docusaurus-plugin-typedoc-api: "npm:^4.2.0"
+    prettier: "npm:^3.2.5"
     prism-react-renderer: "npm:^2.3.1"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
@@ -5205,9 +5206,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"docusaurus-plugin-typedoc-api@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "docusaurus-plugin-typedoc-api@npm:4.1.0"
+"docusaurus-plugin-typedoc-api@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "docusaurus-plugin-typedoc-api@npm:4.2.0"
   dependencies:
     "@docusaurus/plugin-content-docs": "npm:^3.1.0"
     "@docusaurus/types": "npm:^3.1.0"
@@ -5218,9 +5219,10 @@ __metadata:
     typedoc: "npm:^0.25.7"
   peerDependencies:
     "@docusaurus/core": ^3.0.0
+    "@docusaurus/mdx-loader": ^3.0.0
     react: ">=18.0.0"
     typescript: ^5.0.0
-  checksum: 10/cfcfc472606f883dc2a7a288607988a86e554e0c508bb72f0626012170c8e784d84009a743404ca4e23df7a209f6e16dcb748cc5de7df60f41367a7958c1d5fb
+  checksum: 10/e17f38a9a9fbd80f7ef39884c70592a02756f0176f8c1040b89283dc43d83f709d487e1cca9b728e60897a093e048b797f63575bf3f0f2c7d0f90e1edeea4470
   languageName: node
   linkType: hard
 
@@ -9767,12 +9769,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.1.1":
-  version: 3.1.1
-  resolution: "prettier@npm:3.1.1"
+"prettier@npm:^3.2.5":
+  version: 3.2.5
+  resolution: "prettier@npm:3.2.5"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10/26a249f321b97d26c04483f1bf2eeb22e082a76f4222a2c922bebdc60111691aad4ec3979610e83942e0b956058ec361d9e9c81c185172264eb6db9aa678082b
+  checksum: 10/d509f9da0b70e8cacc561a1911c0d99ec75117faed27b95cc8534cb2349667dee6351b0ca83fa9d5703f14127faa52b798de40f5705f02d843da133fc3aa416a
   languageName: node
   linkType: hard
 
