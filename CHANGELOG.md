@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.4](https://github.com/mikro-orm/mikro-orm/compare/v6.1.3...v6.1.4) (2024-02-16)
+
+
+### Bug Fixes
+
+* **core:** fix populating 1:1 inverse sides when virtual FK is not selected ([46cb6a1](https://github.com/mikro-orm/mikro-orm/commit/46cb6a1ec91fe2b11dc6c8a0045c36ed194cabc8)), closes [#5245](https://github.com/mikro-orm/mikro-orm/issues/5245)
+* **entity-generator:** use `Ref` wrapper on all lazy properties ([#5252](https://github.com/mikro-orm/mikro-orm/issues/5252)) ([50311cb](https://github.com/mikro-orm/mikro-orm/commit/50311cbdd66d289e7048c8d77b395a541a9f2605))
+* **query-builder:** fix caching of raw query fragments when `qb.getQuery()` is called ([f79a752](https://github.com/mikro-orm/mikro-orm/commit/f79a752eee23b555927610cf9d75739294302029)), closes [#5247](https://github.com/mikro-orm/mikro-orm/issues/5247)
+
+
+### Features
+
+* **entity-generator:** added support for generated columns ([#5250](https://github.com/mikro-orm/mikro-orm/issues/5250)) ([d2186da](https://github.com/mikro-orm/mikro-orm/commit/d2186da4ed3265d8667069c3ac0514843987cb2b))
+
+
+
+
+
 ## [6.1.3](https://github.com/mikro-orm/mikro-orm/compare/v6.1.2...v6.1.3) (2024-02-13)
 
 
