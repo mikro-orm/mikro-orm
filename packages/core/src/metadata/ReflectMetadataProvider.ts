@@ -27,7 +27,7 @@ export class ReflectMetadataProvider extends MetadataProvider {
   protected initPropertyType(meta: EntityMetadata, prop: EntityProperty) {
     const type = Reflect.getMetadata('design:type', meta.prototype, prop.name);
 
-    if (!prop.type && (!type || (type === Object && prop.kind !== ReferenceKind.SCALAR))) {
+    if (!prop.type && (!type || (type === Object && prop.kind !== ReferenceKind.SCALAR)) && !(prop.enum && (prop.items?.length ?? 0) > 0)) {
       throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`);
     }
 

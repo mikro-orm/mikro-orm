@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.4](https://github.com/mikro-orm/mikro-orm/compare/v6.1.3...v6.1.4) (2024-02-16)
+
+
+### Bug Fixes
+
+* **core:** fix populating 1:1 inverse sides when virtual FK is not selected ([46cb6a1](https://github.com/mikro-orm/mikro-orm/commit/46cb6a1ec91fe2b11dc6c8a0045c36ed194cabc8)), closes [#5245](https://github.com/mikro-orm/mikro-orm/issues/5245)
+
+
+
+
+
 ## [6.1.3](https://github.com/mikro-orm/mikro-orm/compare/v6.1.2...v6.1.3) (2024-02-13)
 
 

@@ -190,6 +190,7 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
 
       const authorInversed = entity.properties.authorInverse;
       authorInversed.orphanRemoval = true;
+      entity.properties.secondsSinceLastModified.ref = false;
     }
   });
 };
@@ -206,24 +207,32 @@ describe('MetadataHooks [mysql]', () => {
     await orm.close(true);
   });
 
-  test('metadata hooks with decorators', async () => {
-    const dump = await orm.entityGenerator.generate({
-      save: false,
-      bidirectionalRelations: true,
-      onInitialMetadata: initialMetadataProcessor,
-      onProcessedMetadata: processedMetadataProcessor,
-    });
-    expect(dump).toMatchSnapshot('mysql-defaults-dump');
-  });
+  describe.each([false, true])('identifiedReferences=%s', identifiedReferences => {
 
-  test('metadata hooks with entity schema', async () => {
-    const dump = await orm.entityGenerator.generate({
-      save: false,
-      bidirectionalRelations: true,
-      entitySchema: true,
-      onInitialMetadata: initialMetadataProcessor,
-      onProcessedMetadata: processedMetadataProcessor,
+    beforeEach(async () => {
+      orm.config.get('entityGenerator').identifiedReferences = identifiedReferences;
     });
-    expect(dump).toMatchSnapshot('mysql-EntitySchema-dump');
+
+    test('metadata hooks with decorators', async () => {
+      const dump = await orm.entityGenerator.generate({
+        save: false,
+        bidirectionalRelations: true,
+        onInitialMetadata: initialMetadataProcessor,
+        onProcessedMetadata: processedMetadataProcessor,
+      });
+      expect(dump).toMatchSnapshot('mysql-defaults-dump');
+    });
+
+    test('metadata hooks with entity schema', async () => {
+      const dump = await orm.entityGenerator.generate({
+        save: false,
+        bidirectionalRelations: true,
+        entitySchema: true,
+        onInitialMetadata: initialMetadataProcessor,
+        onProcessedMetadata: processedMetadataProcessor,
+      });
+      expect(dump).toMatchSnapshot('mysql-EntitySchema-dump');
+    });
+
   });
 });

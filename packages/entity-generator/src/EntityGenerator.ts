@@ -272,8 +272,8 @@ export class EntityGenerator {
 
   private generateIdentifiedReferences(metadata: EntityMetadata[]): void {
     for (const meta of metadata.filter(m => !m.pivotTable || this.referencedEntities.has(m))) {
-      for (const prop of meta.relations) {
-        if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+      for (const prop of Object.values(meta.properties)) {
+        if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) || prop.lazy) {
           prop.ref = true;
         }
       }

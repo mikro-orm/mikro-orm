@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.4](https://github.com/mikro-orm/mikro-orm/compare/v6.1.3...v6.1.4) (2024-02-16)
+
+
+### Bug Fixes
+
+* **entity-generator:** use `Ref` wrapper on all lazy properties ([#5252](https://github.com/mikro-orm/mikro-orm/issues/5252)) ([50311cb](https://github.com/mikro-orm/mikro-orm/commit/50311cbdd66d289e7048c8d77b395a541a9f2605))
+
+
+### Features
+
+* **entity-generator:** added support for generated columns ([#5250](https://github.com/mikro-orm/mikro-orm/issues/5250)) ([d2186da](https://github.com/mikro-orm/mikro-orm/commit/d2186da4ed3265d8667069c3ac0514843987cb2b))
+
+
+
+
+
 ## [6.1.3](https://github.com/mikro-orm/mikro-orm/compare/v6.1.2...v6.1.3) (2024-02-13)
 
 

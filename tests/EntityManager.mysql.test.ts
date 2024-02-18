@@ -1008,33 +1008,74 @@ describe('EntityManagerMySql', () => {
     expect(wrap(b1).toJSON()).toMatchObject({ baz: { id: baz.id, bar: bar.id, name: 'baz' } });
   });
 
-  test('populate OneToOne relation on inverse side', async () => {
+  test('populate OneToOne relation on inverse side (select-in)', async () => {
     const bar = FooBar2.create('bar');
+    bar.id = 2;
     const baz = new FooBaz2('baz');
+    baz.id = 3;
     bar.baz = baz;
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
-    const mock = mockLogger(orm, ['query']);
+    const mock = mockLogger(orm, ['query', 'query-params']);
 
     const b0 = (await orm.em.findOne(FooBaz2, { id: baz.id }, { strategy: 'select-in' }))!;
-    expect(mock.mock.calls[0][0]).toMatch('select `f0`.*, `f1`.`id` as `bar_id` from `foo_baz2` as `f0` left join `foo_bar2` as `f1` on `f0`.`id` = `f1`.`baz_id` where `f0`.`id` = ? limit ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `f0`.*, `f1`.`id` as `bar_id` from `foo_baz2` as `f0` left join `foo_bar2` as `f1` on `f0`.`id` = `f1`.`baz_id` where `f0`.`id` = 3 limit 1');
     expect(b0.bar).toBeDefined();
     expect(b0.bar).toBeInstanceOf(FooBar2);
     expect(wrap(b0.bar!).isInitialized()).toBe(false);
     orm.em.clear();
 
     const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, { populate: ['bar'], strategy: 'select-in' }))!;
-    expect(mock.mock.calls[1][0]).toMatch('select `f0`.*, `f1`.`id` as `bar_id` from `foo_baz2` as `f0` left join `foo_bar2` as `f1` on `f0`.`id` = `f1`.`baz_id` where `f0`.`id` = ? limit ?');
-    expect(mock.mock.calls[2][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
+    expect(mock.mock.calls[1][0]).toMatch('select `f0`.*, `f1`.`id` as `bar_id` from `foo_baz2` as `f0` left join `foo_bar2` as `f1` on `f0`.`id` = `f1`.`baz_id` where `f0`.`id` = 3 limit 1');
+    expect(mock.mock.calls[2][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where `f0`.`baz_id` in (3)');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
     expect(wrap(b1).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
     orm.em.clear();
 
     const b2 = (await orm.em.findOne(FooBaz2, { bar: bar.id }, { populate: ['bar'], strategy: 'select-in' }))!;
-    expect(mock.mock.calls[3][0]).toMatch('select `f0`.*, `f1`.`id` as `bar_id` from `foo_baz2` as `f0` left join `foo_bar2` as `f1` on `f0`.`id` = `f1`.`baz_id` where `f1`.`id` = ? limit ?');
-    expect(mock.mock.calls[4][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
+    expect(mock.mock.calls[3][0]).toMatch('select `f0`.*, `f1`.`id` as `bar_id` from `foo_baz2` as `f0` left join `foo_bar2` as `f1` on `f0`.`id` = `f1`.`baz_id` where `f1`.`id` = 2 limit 1');
+    expect(mock.mock.calls[4][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where `f0`.`baz_id` in (3)');
+    expect(b2.bar).toBeInstanceOf(FooBar2);
+    expect(b2.bar!.id).toBe(bar.id);
+    expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
+  });
+
+  test('populate OneToOne relation on inverse side (joined)', async () => {
+    const bar = FooBar2.create('bar');
+    bar.id = 2;
+    const baz = new FooBaz2('baz');
+    baz.id = 3;
+    bar.baz = baz;
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query', 'query-params']);
+
+    const b0 = (await orm.em.findOne(FooBaz2, { id: baz.id }, { strategy: 'joined' }))!;
+    expect(mock.mock.calls[0][0]).toMatch('select `f0`.*, `f1`.`id` as `bar_id` from `foo_baz2` as `f0` left join `foo_bar2` as `f1` on `f0`.`id` = `f1`.`baz_id` where `f0`.`id` = 3 limit 1');
+    expect(b0.bar).toBeDefined();
+    expect(b0.bar).toBeInstanceOf(FooBar2);
+    expect(wrap(b0.bar!).isInitialized()).toBe(false);
+    orm.em.clear();
+
+    const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, { populate: ['bar'], strategy: 'joined' }))!;
+    expect(mock.mock.calls[1][0]).toMatch('select `f0`.*, `b1`.`id` as `b1__id`, `b1`.`name` as `b1__name`, `b1`.`name with space` as `b1__name with space`, `b1`.`baz_id` as `b1__baz_id`, `b1`.`foo_bar_id` as `b1__foo_bar_id`, `b1`.`version` as `b1__version`, `b1`.`blob` as `b1__blob`, `b1`.`blob2` as `b1__blob2`, `b1`.`array` as `b1__array`, `b1`.`object_property` as `b1__object_property`, (select 123) as `b1__random`, `b1`.`id` as `bar_id` ' +
+      'from `foo_baz2` as `f0` ' +
+      'left join `foo_bar2` as `b1` on `f0`.`id` = `b1`.`baz_id` ' +
+      'where `f0`.`id` = 3 limit 1');
+    expect(b1.bar).toBeInstanceOf(FooBar2);
+    expect(b1.bar!.id).toBe(bar.id);
+    expect(wrap(b1).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
+    orm.em.clear();
+
+    const b2 = (await orm.em.findOne(FooBaz2, { bar: bar.id }, { populate: ['bar'], strategy: 'joined' }))!;
+    expect(mock.mock.calls[2][0]).toMatch('select `f0`.*, `b1`.`id` as `b1__id`, `b1`.`name` as `b1__name`, `b1`.`name with space` as `b1__name with space`, `b1`.`baz_id` as `b1__baz_id`, `b1`.`foo_bar_id` as `b1__foo_bar_id`, `b1`.`version` as `b1__version`, `b1`.`blob` as `b1__blob`, `b1`.`blob2` as `b1__blob2`, `b1`.`array` as `b1__array`, `b1`.`object_property` as `b1__object_property`, (select 123) as `b1__random`, `b1`.`id` as `bar_id` ' +
+      'from `foo_baz2` as `f0` ' +
+      'left join `foo_bar2` as `b1` on `f0`.`id` = `b1`.`baz_id` ' +
+      'left join `foo_bar2` as `f2` on `f0`.`id` = `f2`.`baz_id` ' +
+      'where `f2`.`id` = 2 limit 1');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });

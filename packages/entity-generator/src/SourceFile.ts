@@ -204,7 +204,9 @@ export class SourceFile {
 
     if (prop.ref) {
       this.coreImports.add('Ref');
-      this.entityImports.add(propType);
+      if (typeof prop.kind === 'string' && prop.kind !== ReferenceKind.SCALAR) {
+        this.entityImports.add(propType);
+      }
       return `${padding}${prop.name}${optional}: Ref<${propType}>${hiddenType};\n`;
     }
 
@@ -505,6 +507,10 @@ export class SourceFile {
         options.autoincrement = false;
       }
     }
+
+    if (prop.generated) {
+      options.generated = typeof prop.generated === 'string' ? this.quote(prop.generated) : `${prop.generated}`;
+    }
   }
 
   protected getManyToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
@@ -608,6 +614,10 @@ export class SourceFile {
 
     if (prop.primary) {
       options.primary = true;
+    }
+
+    if (prop.generated) {
+      options.generated = typeof prop.generated === 'string' ? this.quote(prop.generated) : `${prop.generated}`;
     }
   }
 

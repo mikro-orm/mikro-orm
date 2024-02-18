@@ -683,7 +683,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Returns raw interpolated query string with all the parameters inlined.
    */
   getFormattedQuery(): string {
-    const query = this.getKnexQuery().toSQL();
+    const query = this.toQuery()._sql;
     return this.platform.formatQuery(query.sql, query.bindings);
   }
 
@@ -770,7 +770,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.connectionType = 'write';
     }
 
-    const query = this.getKnexQuery().toSQL();
+    const query = this.toQuery()._sql;
     const cached = await this.em?.tryCache<T, U>(this.mainAlias.entityName, this._cache, ['qb.execute', query.sql, query.bindings, method]);
 
     if (cached?.data) {

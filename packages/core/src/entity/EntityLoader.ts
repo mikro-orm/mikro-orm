@@ -322,7 +322,7 @@ export class EntityLoader {
       fk = meta.properties[prop.mappedBy].name;
     }
 
-    if (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && populate.strategy !== LoadStrategy.JOINED && !this.em.config.get('autoJoinOneToOneOwner')) {
+    if (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner) {
       children.length = 0;
       fk = meta.properties[prop.mappedBy].name;
       children.push(...this.filterByReferences(entities, prop.name, options.refresh) as AnyEntity[]);
