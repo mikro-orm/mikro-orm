@@ -47,12 +47,16 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return false;
   }
 
+  override indexForeignKeys() {
+    return false;
+  }
+
   override getCurrentTimestampSQL(length: number): string {
     return `current_timestamp`;
   }
 
   override getDateTimeTypeDeclarationSQL(column: { length?: number } = { length: 0 }): string {
-    return 'datetime2' + (column.length ? `(${column.length})` : '');
+    return 'datetime2' + (column.length != null ? `(${column.length})` : '');
   }
 
   override getTimeTypeDeclarationSQL(): string {
@@ -83,12 +87,43 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return 'nvarchar(max)';
   }
 
+  override getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[] }): string {
+    if (column.items?.every(item => Utils.isString(item))) {
+      return 'varchar';
+    }
+
+    return `smallint`;
+  }
+
   override getDefaultMappedType(type: string): Type<unknown> {
     if (type === 'string') {
       return Type.getType(UnicodeStringType);
     }
 
-    return super.getDefaultMappedType(type);
+    const normalizedType = this.extractSimpleType(type);
+    const map = {
+      int: 'integer',
+      bit: 'boolean',
+      real: 'float',
+      uniqueidentifier: 'uuid',
+      nvarchar: 'text',
+      varbinary: 'blob',
+      datetime2: 'datetime',
+    } as Dictionary;
+
+    return super.getDefaultMappedType(map[normalizedType] ?? type);
+  }
+
+  override getDefaultSchemaName(): string | undefined {
+    return 'dbo';
+  }
+
+  override getVarcharTypeDeclarationSQL(column: { length?: number }): string {
+    return `nvarchar(${column.length ?? 255})`;
+  }
+
+  override getUuidTypeDeclarationSQL(column: { length?: number }): string {
+    return 'uniqueidentifier';
   }
 
   override validateMetadata(meta: EntityMetadata): void {
@@ -137,6 +172,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     }
 
     return data as T;
+  }
+
+  override supportsSelfReferencingForeignKeyCascade(): boolean {
+    return false;
   }
 
   override supportsMultipleStatements(): boolean {

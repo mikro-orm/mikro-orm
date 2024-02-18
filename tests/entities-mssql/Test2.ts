@@ -11,7 +11,7 @@ export class Test2 {
   @Property({ nullable: true })
   name?: string;
 
-  @OneToOne({ entity: () => Book2, cascade: [], nullable: true })
+  @OneToOne({ entity: () => Book2, cascade: [], deleteRule: 'no action', nullable: true })
   book?: Book2;
 
   @OneToMany(() => Configuration2, config => config.test)

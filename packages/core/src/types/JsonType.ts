@@ -37,7 +37,7 @@ export class JsonType extends Type<unknown, string | null> {
   }
 
   override get runtimeType(): string {
-    return 'object';
+    return 'unknown';
   }
 
 }

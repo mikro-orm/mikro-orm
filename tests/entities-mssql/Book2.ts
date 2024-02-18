@@ -14,8 +14,8 @@ export class Book2 {
 
   [OptionalProps]?: 'createdAt';
 
-  @PrimaryKey({ name: 'uuid_pk', length: 36 })
-  uuid: string = v4();
+  @PrimaryKey({ name: 'uuid_pk', type: 'uuid' })
+  uuid: string = v4().toUpperCase(); // FIXME
 
   @Property({ defaultRaw: 'current_timestamp', length: 3 })
   createdAt: Date = new Date();

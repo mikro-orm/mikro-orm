@@ -1,4 +1,4 @@
-import { type ClearDatabaseOptions, type MikroORM, SchemaGenerator } from '@mikro-orm/knex';
+import { type ClearDatabaseOptions, type DropSchemaOptions, type MikroORM, SchemaGenerator } from '@mikro-orm/knex';
 
 export class MsSqlSchemaGenerator extends SchemaGenerator {
 
@@ -26,6 +26,10 @@ export class MsSqlSchemaGenerator extends SchemaGenerator {
     }
 
     this.clearIdentityMap();
+  }
+
+  override async getDropSchemaSQL(options: Omit<DropSchemaOptions, 'dropDb'> = {}): Promise<string> {
+    return super.getDropSchemaSQL({ dropForeignKeys: true, ...options });
   }
 
 }

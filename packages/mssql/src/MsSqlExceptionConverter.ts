@@ -20,8 +20,15 @@ export class MsSqlExceptionConverter extends ExceptionConverter {
    * @link https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractPostgreSQLDriver.php
    */
   override convertException(exception: Error & Dictionary): DriverException {
-    // console.log(exception.number, typeof exception.number, exception.message);
-    switch (exception.number) {
+    let errno = exception.number;
+
+    if ('errors' in exception && Array.isArray(exception.errors) && typeof exception.errors[0] === 'object' && 'message' in exception.errors[0]) {
+      exception.message += '\n' + exception.errors.map(e => e.message).join('\n');
+      errno ??= exception.errors[0].number;
+      exception.lineNumber ??= exception.errors[0].lineNumber;
+    }
+
+    switch (errno) {
       case 515:
         return new NotNullConstraintViolationException(exception);
       case 102:

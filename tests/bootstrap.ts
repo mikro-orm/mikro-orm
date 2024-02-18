@@ -185,9 +185,10 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
 }
 
 export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDriver>> = {}, createSchema = true) {
+  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
   const orm = await MikroORM.init({
     entities: ['entities-mssql'],
-    dbName: `mikro_orm_test`,
+    dbName,
     baseDir: BASE_DIR,
     driver: MsSqlDriver,
     password: 'Root.Root',
@@ -199,9 +200,7 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
   });
 
   if (createSchema) {
-    await orm.schema.ensureDatabase();
-    const connection = orm.em.getConnection();
-    await connection.loadFile(__dirname + '/mssql-schema.sql');
+    await orm.schema.refreshDatabase();
   }
 
   Author2Subscriber.log.length = 0;

@@ -2,6 +2,7 @@ import {
   AbstractSqlConnection,
   type IsolationLevel,
   type Knex,
+  MonkeyPatchable,
   type TransactionEventBroadcaster,
   Utils,
 } from '@mikro-orm/knex';
@@ -10,8 +11,17 @@ import type { Dictionary } from '@mikro-orm/core';
 export class MsSqlConnection extends AbstractSqlConnection {
 
   override createKnex() {
+    this.patchKnex();
     this.client = this.createKnexClient('mssql');
     this.connected = true;
+  }
+
+  private patchKnex() {
+    const { MsSqlColumnCompiler } = MonkeyPatchable;
+
+    MsSqlColumnCompiler.prototype.enu = function (allowed: unknown[]) {
+      return `varchar(100) check (${this.formatter.wrap(this.args[0])} in ('${(allowed.join("', '"))}'))`;
+    };
   }
 
   getDefaultClientUrl(): string {

@@ -288,6 +288,10 @@ export abstract class Platform {
     }
   }
 
+  supportsSelfReferencingForeignKeyCascade(): boolean {
+    return true;
+  }
+
   supportsMultipleStatements(): boolean {
     return this.config.get('multipleStatements');
   }

@@ -14,9 +14,7 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
-  // disabled cascading due to https://stackoverflow.com/questions/27613117/introducing-foreign-key-constraint-may-cause-cycles-or-multiple-cascade-paths-s
-  // @ManyToMany({ entity: () => Car2, updateRule: 'no action', deleteRule: 'no action' })
-  @ManyToMany({ entity: () => Car2 })
+  @ManyToMany({ entity: () => Car2, updateRule: 'no action', deleteRule: 'no action' })
   cars = new Collection<Car2>(this);
 
   @ManyToMany(() => Sandwich)

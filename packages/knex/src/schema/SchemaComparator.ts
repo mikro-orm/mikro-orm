@@ -408,6 +408,10 @@ export class SchemaComparator {
       return true;
     }
 
+    if (key1.localTableName === key1.referencedTableName && !this.platform.supportsSelfReferencingForeignKeyCascade()) {
+      return false;
+    }
+
     const defaultRule = ['restrict', 'no action'];
     const rule = (key: ForeignKey, method: 'updateRule' | 'deleteRule') => {
       return (key[method] ?? defaultRule[0]).toLowerCase().replace(defaultRule[1], defaultRule[0]);

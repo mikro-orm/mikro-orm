@@ -13,10 +13,9 @@ export class DriverException extends Error {
 
   constructor(previous: Error) {
     super(previous.message);
-    Object.assign(this, previous);
     this.name = this.constructor.name;
-    this.stack += '\n\n' + 'previous ' + previous.stack;
     Object.getOwnPropertyNames(previous).forEach(k => (this as Dictionary)[k] = (previous as Dictionary)[k]);
+    Error.captureStackTrace(this, this.constructor);
   }
 
 }

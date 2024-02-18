@@ -24,7 +24,7 @@ describe('UnitOfWork', () => {
     // number instead of string will throw
     const author = new Author('test', 'test');
     Object.assign(author, { name: 111, email: 222 });
-    expect(() => computer.computeChangeSet(author)).toThrow(`Trying to set Author.name of type 'string' to '111' of type 'number'`);
+    expect(() => computer.computeChangeSet(author)).toThrow(`Trying to set Author.name of type 'string' to 111 of type 'number'`);
 
     // string date with unknown format will throw
     Object.assign(author, { name: '333', email: '444', createdAt: 'asd' });
@@ -33,7 +33,7 @@ describe('UnitOfWork', () => {
 
     // number bool with other value than 0/1 will throw
     Object.assign(author, { termsAccepted: 2 });
-    expect(() => computer.computeChangeSet(author)).toThrow(`Trying to set Author.termsAccepted of type 'boolean' to '2' of type 'number'`);
+    expect(() => computer.computeChangeSet(author)).toThrow(`Trying to set Author.termsAccepted of type 'boolean' to 2 of type 'number'`);
 
     // string date with correct format will be auto-corrected
     Object.assign(author, { name: '333', email: '444', createdAt: '2018-01-01', termsAccepted: 1 });
@@ -66,9 +66,9 @@ describe('UnitOfWork', () => {
     Object.assign(author, { age: 'asd' });
     expect(() => computer.computeChangeSet(author)).toThrow(`Trying to set Author.age of type 'number' to 'asd' of type 'string'`);
     Object.assign(author, { age: new Date() });
-    expect(() => computer.computeChangeSet(author)).toThrow(/Trying to set Author\.age of type 'number' to '.*' of type 'Date'/);
+    expect(() => computer.computeChangeSet(author)).toThrow(/Trying to set Author\.age of type 'number' to .* of type 'Date'/);
     Object.assign(author, { age: false });
-    expect(() => computer.computeChangeSet(author)).toThrow(`Trying to set Author.age of type 'number' to 'false' of type 'boolean'`);
+    expect(() => computer.computeChangeSet(author)).toThrow(`Trying to set Author.age of type 'number' to false of type 'boolean'`);
     author.age = 21;
 
     // missing collection instance in m:n and 1:m relations

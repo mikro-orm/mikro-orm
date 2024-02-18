@@ -169,7 +169,12 @@ export abstract class AbstractSqlConnection extends Connection {
    */
   async loadFile(path: string): Promise<void> {
     const buf = await readFile(path);
-    await this.getKnex().raw(buf.toString());
+
+    try {
+      await this.getKnex().raw(buf.toString());
+    } catch (e) {
+      throw this.platform.getExceptionConverter().convertException(e as Error);
+    }
   }
 
   protected createKnexClient(type: string): Knex {

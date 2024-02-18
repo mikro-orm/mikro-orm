@@ -14,6 +14,10 @@ describe('EntityManagerMsSql', () => {
 
   beforeAll(async () => orm = await initORMMsSql());
   beforeEach(async () => orm.getSchemaGenerator().clearDatabase({ truncate: false }));
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
 
   test('isConnected()', async () => {
     await expect(orm.isConnected()).resolves.toBe(true);
@@ -52,7 +56,8 @@ describe('EntityManagerMsSql', () => {
     await expect(driver.findOne(Book2.name, { double: 123 })).resolves.toBeNull();
     const author = await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
-    await expect(driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).resolves.not.toBeNull();
+    const uuid1 = v4();
+    await expect(driver.nativeInsert(Book2.name, { uuid: uuid1, author: author.insertId, tags: [tag.insertId] })).resolves.not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
     await expect(driver.getConnection().execute('select 1 as count', [], 'run')).resolves.toEqual({
@@ -83,7 +88,7 @@ describe('EntityManagerMsSql', () => {
     });
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
-    await expect(driver.find(BookTag2.name, { books: { $in: ['1'] } })).resolves.not.toBeNull();
+    await expect(driver.find(BookTag2.name, { books: { $in: [uuid1] } })).resolves.not.toBeNull();
 
     // multi inserts
     await driver.nativeInsert(Test2.name, { id: 1, name: 't1' });
@@ -1405,7 +1410,5 @@ describe('EntityManagerMsSql', () => {
       process.stdout.write(`delete test took ${took}\n`);
     }
   });
-
-  afterAll(async () => orm.close(true));
 
 });
