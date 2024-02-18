@@ -41,7 +41,10 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override getListTablesSQL(): string {
-    return `select table_name, table_schema as schema_name from information_schema.tables where table_type = 'base table'`;
+    return `select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment
+      from sysobjects t
+      inner join sys.tables t2 on t2.object_id = t.id
+      left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0`;
   }
 
   override normalizeDefaultValue(defaultValue: string, length: number, defaultValues: Dictionary<string[]> = {}, stripQuotes = false) {
@@ -71,18 +74,19 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       table_schema as schema_name,
       column_name as column_name,
       column_default as column_default,
-      --column_comment as column_comment,
-      is_nullable as is_nullable,
+      t4.value as column_comment,
+      ic.is_nullable as is_nullable,
       data_type as data_type,
-      --column_type as column_type,
-      --column_key as column_key,
-      --extra as extra,
-      --generation_expression as generation_expression,
+      --definition as generation_expression,
       numeric_precision as numeric_precision,
       numeric_scale as numeric_scale,
       coalesce(datetime_precision, character_maximum_length) length,
-      columnproperty(object_id(table_name), column_name, 'IsIdentity') is_identity
-      from information_schema.columns where table_schema = schema_name() and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))})
+      columnproperty(sc.object_id, column_name, 'IsIdentity') is_identity
+      from information_schema.columns ic
+      inner join sys.columns sc on sc.object_id = object_id(ic.table_schema + '.' + ic.table_name)
+      inner join sys.tables t2 on t2.object_id = object_id(ic.table_schema + '.' + ic.table_name)
+      left join sys.extended_properties t4 on t4.major_id = t2.object_id and t4.name = 'MS_Description' and t4.minor_id = sc.column_id
+      where table_schema = schema_name() and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))})
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql);
     const str = (val?: string | number) => val != null ? '' + val : val;
@@ -106,7 +110,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         autoincrement: increments,
         precision: col.numeric_precision,
         scale: col.numeric_scale,
-        // comment: col.column_comment,
+        comment: col.column_comment,
         // generated,
       });
     }
