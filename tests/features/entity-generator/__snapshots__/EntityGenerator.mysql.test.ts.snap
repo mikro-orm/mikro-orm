@@ -669,7 +669,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -1299,7 +1299,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -1835,7 +1835,7 @@ export class Test2 {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -2411,7 +2411,7 @@ export class Test2 {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -2996,7 +2996,7 @@ export class Test2 {
   @OneToOne({ entity: () => FooBar2, ref: true, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: Ref<FooBar2>;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -3504,7 +3504,7 @@ export class Test2 {
   @OneToOne({ entity: () => FooBar2, ref: true, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: Ref<FooBar2>;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -3551,7 +3551,7 @@ exports[`EntityGenerator numeric nullable columns with null default [mariadb]: m
 @Entity()
 export class Vrf {
 
-  @PrimaryKey()
+  @PrimaryKey({ unsigned: false })
   id!: number;
 
   @Property({ nullable: true })
@@ -3578,7 +3578,7 @@ exports[`EntityGenerator numeric nullable columns with null default [mysql]: mys
 @Entity()
 export class Vrf {
 
-  @PrimaryKey()
+  @PrimaryKey({ unsigned: false })
   id!: number;
 
   @Property({ nullable: true })
@@ -4008,7 +4008,7 @@ export class Publisher2Tests {
   publisher2!: Publisher2;
 
   @Index({ name: 'publisher2_tests_test2_id_index' })
-  @Property({ fieldName: 'test2_id' })
+  @Property({ fieldName: 'test2_id', unsigned: true })
   test2!: number;
 
 }

@@ -25,7 +25,7 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
 
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   country!: unknown;
 
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
@@ -104,7 +104,7 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   country!: unknown;
 
   @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
@@ -120,7 +120,7 @@ export class Sales {
   @Property({ columnType: 'numeric(10,2)' })
   singularPrice!: string;
 
-  @Property({ default: 1 })
+  @Property({ unsigned: true, default: 1 })
   quantitySold: number & Opt = 1;
 
   @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
@@ -181,7 +181,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    country: { type: 'unknown', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -270,7 +270,7 @@ export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
     saleId: { primary: true, type: 'number' },
-    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    country: { type: 'unknown', persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
@@ -284,7 +284,7 @@ export const SalesSchema = new EntitySchema({
     sellerId: { type: 'number', persist: false },
     productId: { type: 'number', persist: false, index: 'product_id_idx' },
     singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', default: 1 },
+    quantitySold: { type: 'number', unsigned: true, default: 1 },
     productCountryMap: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
@@ -342,7 +342,7 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
 
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   country!: unknown;
 
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
@@ -421,7 +421,7 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   country!: unknown;
 
   @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
@@ -437,7 +437,7 @@ export class Sales {
   @Property({ columnType: 'numeric(10,2)' })
   singularPrice!: string;
 
-  @Property({ default: 1 })
+  @Property({ unsigned: true, default: 1 })
   quantitySold: number & Opt = 1;
 
   @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
@@ -500,7 +500,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    country: { type: 'unknown', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -602,7 +602,7 @@ export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
     saleId: { primary: true, type: 'number' },
-    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    country: { type: 'unknown', persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
@@ -617,7 +617,7 @@ export const SalesSchema = new EntitySchema({
     sellerId: { type: 'number', persist: false },
     productId: { type: 'number', persist: false, index: 'product_id_idx' },
     singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', default: 1 },
+    quantitySold: { type: 'number', unsigned: true, default: 1 },
     productCountryMap: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
@@ -681,7 +681,7 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
 
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   country!: unknown;
 
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
@@ -771,7 +771,7 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   country!: unknown;
 
   @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
@@ -787,7 +787,7 @@ export class Sales {
   @Property({ columnType: 'numeric(10,2)' })
   singularPrice!: string;
 
-  @Property({ default: 1 })
+  @Property({ unsigned: true, default: 1 })
   quantitySold: number & Opt = 1;
 
   @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
@@ -857,7 +857,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    country: { type: 'unknown', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -953,7 +953,7 @@ export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
     saleId: { primary: true, type: 'number' },
-    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    country: { type: 'unknown', persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
@@ -967,7 +967,7 @@ export const SalesSchema = new EntitySchema({
     sellerId: { type: 'number', persist: false },
     productId: { type: 'number', persist: false, index: 'product_id_idx' },
     singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', default: 1 },
+    quantitySold: { type: 'number', unsigned: true, default: 1 },
     productCountryMap: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
@@ -1033,7 +1033,7 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
 
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   country!: unknown;
 
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
@@ -1123,7 +1123,7 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   country!: unknown;
 
   @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
@@ -1139,7 +1139,7 @@ export class Sales {
   @Property({ columnType: 'numeric(10,2)' })
   singularPrice!: string;
 
-  @Property({ default: 1 })
+  @Property({ unsigned: true, default: 1 })
   quantitySold: number & Opt = 1;
 
   @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
@@ -1211,7 +1211,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    country: { type: 'unknown', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1320,7 +1320,7 @@ export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
     saleId: { primary: true, type: 'number' },
-    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    country: { type: 'unknown', persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
@@ -1335,7 +1335,7 @@ export const SalesSchema = new EntitySchema({
     sellerId: { type: 'number', persist: false },
     productId: { type: 'number', persist: false, index: 'product_id_idx' },
     singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', default: 1 },
+    quantitySold: { type: 'number', unsigned: true, default: 1 },
     productCountryMap: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
@@ -1472,7 +1472,7 @@ export class Sales {
   @Property({ columnType: 'numeric(10,2)' })
   singularPrice!: string;
 
-  @Property({ default: 1 })
+  @Property({ unsigned: true, default: 1 })
   quantitySold: number & Opt = 1;
 
 }
@@ -1632,7 +1632,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', default: 1 },
+    quantitySold: { type: 'number', unsigned: true, default: 1 },
   },
 });
 ",
@@ -1755,7 +1755,7 @@ export class Sales {
   @Property({ columnType: 'numeric(10,2)' })
   singularPrice!: string;
 
-  @Property({ default: 1 })
+  @Property({ unsigned: true, default: 1 })
   quantitySold: number & Opt = 1;
 
 }
@@ -1932,7 +1932,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', default: 1 },
+    quantitySold: { type: 'number', unsigned: true, default: 1 },
   },
 });
 ",
@@ -2071,7 +2071,7 @@ export class Sales {
   @Property({ columnType: 'numeric(10,2)' })
   singularPrice!: string;
 
-  @Property({ default: 1 })
+  @Property({ unsigned: true, default: 1 })
   quantitySold: number & Opt = 1;
 
 }
@@ -2247,7 +2247,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', default: 1 },
+    quantitySold: { type: 'number', unsigned: true, default: 1 },
   },
 });
 ",
@@ -2389,7 +2389,7 @@ export class Sales {
   @Property({ columnType: 'numeric(10,2)' })
   singularPrice!: string;
 
-  @Property({ default: 1 })
+  @Property({ unsigned: true, default: 1 })
   quantitySold: number & Opt = 1;
 
 }
@@ -2582,7 +2582,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', default: 1 },
+    quantitySold: { type: 'number', unsigned: true, default: 1 },
   },
 });
 ",
@@ -2708,7 +2708,7 @@ export class Sales {
   @Property({ columnType: 'numeric(10,2)' })
   singularPrice!: string;
 
-  @Property({ default: 1 })
+  @Property({ unsigned: true, default: 1 })
   quantitySold: number & Opt = 1;
 
 }
@@ -2868,7 +2868,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', default: 1 },
+    quantitySold: { type: 'number', unsigned: true, default: 1 },
   },
 });
 ",
@@ -2991,7 +2991,7 @@ export class Sales {
   @Property({ columnType: 'numeric(10,2)' })
   singularPrice!: string;
 
-  @Property({ default: 1 })
+  @Property({ unsigned: true, default: 1 })
   quantitySold: number & Opt = 1;
 
 }
@@ -3168,7 +3168,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', default: 1 },
+    quantitySold: { type: 'number', unsigned: true, default: 1 },
   },
 });
 ",
@@ -3307,7 +3307,7 @@ export class Sales {
   @Property({ columnType: 'numeric(10,2)' })
   singularPrice!: string;
 
-  @Property({ default: 1 })
+  @Property({ unsigned: true, default: 1 })
   quantitySold: number & Opt = 1;
 
 }
@@ -3483,7 +3483,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', default: 1 },
+    quantitySold: { type: 'number', unsigned: true, default: 1 },
   },
 });
 ",
@@ -3625,7 +3625,7 @@ export class Sales {
   @Property({ columnType: 'numeric(10,2)' })
   singularPrice!: string;
 
-  @Property({ default: 1 })
+  @Property({ unsigned: true, default: 1 })
   quantitySold: number & Opt = 1;
 
 }
@@ -3818,7 +3818,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sellers1_idx',
     },
     singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', default: 1 },
+    quantitySold: { type: 'number', unsigned: true, default: 1 },
   },
 });
 ",

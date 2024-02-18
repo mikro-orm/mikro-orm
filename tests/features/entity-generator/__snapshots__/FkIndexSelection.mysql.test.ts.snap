@@ -48,13 +48,13 @@ export class Users {
   @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   favorite?: FashionableColors;
 
-  @Property({ length: 255, nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteCarBrand?: string;
 
-  @Property({ columnType: 'year', nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteCarYear?: unknown;
 
-  @Property({ length: 255, nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteColor?: string;
 
   @Property({ length: 255, nullable: true })
@@ -131,9 +131,9 @@ export const UsersSchema = new EntitySchema({
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
-    favoriteCarBrand: { type: 'string', length: 255, nullable: true, persist: false },
-    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
-    favoriteColor: { type: 'string', length: 255, nullable: true, persist: false },
+    favoriteCarBrand: { type: 'string', nullable: true, persist: false },
+    favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
+    favoriteColor: { type: 'string', nullable: true, persist: false },
     favoriteBook: { type: 'string', length: 255, nullable: true },
   },
 });
@@ -189,13 +189,13 @@ export class Users {
   @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   favorite?: Ref<FashionableColors>;
 
-  @Property({ length: 255, nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteCarBrand?: string;
 
-  @Property({ columnType: 'year', nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteCarYear?: unknown;
 
-  @Property({ length: 255, nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteColor?: string;
 
   @Property({ length: 255, nullable: true })
@@ -274,9 +274,9 @@ export const UsersSchema = new EntitySchema({
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
-    favoriteCarBrand: { type: 'string', length: 255, nullable: true, persist: false },
-    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
-    favoriteColor: { type: 'string', length: 255, nullable: true, persist: false },
+    favoriteCarBrand: { type: 'string', nullable: true, persist: false },
+    favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
+    favoriteColor: { type: 'string', nullable: true, persist: false },
     favoriteBook: { type: 'string', length: 255, nullable: true },
   },
 });
@@ -336,13 +336,13 @@ export class Users {
   @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   favorite?: FashionableColors;
 
-  @Property({ length: 255, nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteCarBrand?: string;
 
-  @Property({ columnType: 'year', nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteCarYear?: unknown;
 
-  @Property({ length: 255, nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteColor?: string;
 
   @Property({ length: 255, nullable: true })
@@ -422,9 +422,9 @@ export const UsersSchema = new EntitySchema({
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
-    favoriteCarBrand: { type: 'string', length: 255, nullable: true, persist: false },
-    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
-    favoriteColor: { type: 'string', length: 255, nullable: true, persist: false },
+    favoriteCarBrand: { type: 'string', nullable: true, persist: false },
+    favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
+    favoriteColor: { type: 'string', nullable: true, persist: false },
     favoriteBook: { type: 'string', length: 255, nullable: true },
   },
 });
@@ -484,13 +484,13 @@ export class Users {
   @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   favorite?: Ref<FashionableColors>;
 
-  @Property({ length: 255, nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteCarBrand?: string;
 
-  @Property({ columnType: 'year', nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteCarYear?: unknown;
 
-  @Property({ length: 255, nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteColor?: string;
 
   @Property({ length: 255, nullable: true })
@@ -572,9 +572,9 @@ export const UsersSchema = new EntitySchema({
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
-    favoriteCarBrand: { type: 'string', length: 255, nullable: true, persist: false },
-    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
-    favoriteColor: { type: 'string', length: 255, nullable: true, persist: false },
+    favoriteCarBrand: { type: 'string', nullable: true, persist: false },
+    favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
+    favoriteColor: { type: 'string', nullable: true, persist: false },
     favoriteBook: { type: 'string', length: 255, nullable: true },
   },
 });
@@ -1152,7 +1152,7 @@ export class Users {
   @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   favorite?: FashionableColors;
 
-  @Property({ columnType: 'year', nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteCarYear?: unknown;
 
   @Property({ length: 255, nullable: true })
@@ -1227,7 +1227,7 @@ export const UsersSchema = new EntitySchema({
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
-    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
+    favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
     favoriteBook: { type: 'string', length: 255, nullable: true },
   },
 });
@@ -1283,7 +1283,7 @@ export class Users {
   @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   favorite?: Ref<FashionableColors>;
 
-  @Property({ columnType: 'year', nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteCarYear?: unknown;
 
   @Property({ length: 255, nullable: true })
@@ -1360,7 +1360,7 @@ export const UsersSchema = new EntitySchema({
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
-    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
+    favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
     favoriteBook: { type: 'string', length: 255, nullable: true },
   },
 });
@@ -1420,7 +1420,7 @@ export class Users {
   @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   favorite?: FashionableColors;
 
-  @Property({ columnType: 'year', nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteCarYear?: unknown;
 
   @Property({ length: 255, nullable: true })
@@ -1498,7 +1498,7 @@ export const UsersSchema = new EntitySchema({
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
-    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
+    favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
     favoriteBook: { type: 'string', length: 255, nullable: true },
   },
 });
@@ -1558,7 +1558,7 @@ export class Users {
   @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   favorite?: Ref<FashionableColors>;
 
-  @Property({ columnType: 'year', nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favoriteCarYear?: unknown;
 
   @Property({ length: 255, nullable: true })
@@ -1638,7 +1638,7 @@ export const UsersSchema = new EntitySchema({
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
-    favoriteCarYear: { type: 'unknown', columnType: 'year', nullable: true, persist: false },
+    favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
     favoriteBook: { type: 'string', length: 255, nullable: true },
   },
 });

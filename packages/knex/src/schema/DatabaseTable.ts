@@ -667,6 +667,7 @@ export class DatabaseTable {
       primary: column.primary && persist,
       autoincrement: column.autoincrement,
       fieldName: column.name,
+      unsigned: column.unsigned,
       length: column.length,
       precision: column.precision,
       scale: column.scale,

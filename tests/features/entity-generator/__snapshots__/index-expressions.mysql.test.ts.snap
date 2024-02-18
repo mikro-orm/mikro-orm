@@ -14,7 +14,7 @@ export class DcimDevice {
   @Property({ length: 0, nullable: true })
   created?: Date;
 
-  @PrimaryKey({ autoincrement: false })
+  @PrimaryKey({ unsigned: false, autoincrement: false })
   id!: bigint;
 
   @Property({ length: 255, nullable: true })

@@ -15,7 +15,7 @@ export class Users {
   @Property({ length: 255, type: 'string' })
   username!: string;
 
-  @Property({ type: 'bigint' })
+  @Property({ unsigned: true, type: 'bigint' })
   views!: bigint;
 
   @Property({ type: 'boolean' })

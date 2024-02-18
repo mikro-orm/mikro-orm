@@ -459,7 +459,7 @@ export class Test2 {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -1013,7 +1013,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -1544,7 +1544,7 @@ export class Test2 extends BaseEntity {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -2124,7 +2124,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -2670,7 +2670,7 @@ export class Test2 extends BaseUser2 {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -3242,7 +3242,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -3774,7 +3774,7 @@ export class Test2 extends CustomBase {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -4354,7 +4354,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -4881,7 +4881,7 @@ export class Test2 extends BaseEntity {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -5435,7 +5435,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -5966,7 +5966,7 @@ export class Test2 extends BaseEntity {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -6546,7 +6546,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -7092,7 +7092,7 @@ export class Test2 extends BaseUser2 {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -7664,7 +7664,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -8196,7 +8196,7 @@ export class Test2 extends CustomBase {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -8776,7 +8776,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -9303,7 +9303,7 @@ export class Test2 {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -9857,7 +9857,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -10388,7 +10388,7 @@ export class Test2 extends BaseEntity {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -10968,7 +10968,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -11514,7 +11514,7 @@ export class Test2 extends BaseUser2 {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -12086,7 +12086,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -12618,7 +12618,7 @@ export class Test2 extends CustomBase {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -13198,7 +13198,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -13725,7 +13725,7 @@ export class Test2 extends BaseEntity {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -14279,7 +14279,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -14810,7 +14810,7 @@ export class Test2 extends BaseEntity {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -15390,7 +15390,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -15936,7 +15936,7 @@ export class Test2 extends BaseUser2 {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -16508,7 +16508,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -17040,7 +17040,7 @@ export class Test2 extends CustomBase {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -17620,7 +17620,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,

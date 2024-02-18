@@ -22,7 +22,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'countries';
 
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   country!: unknown;
 
   @OneToOne({ entity: () => Countries, fieldName: 'country', primary: true })
@@ -43,11 +43,11 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_countries_idx' })
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   userCountry!: unknown;
 
   @Index({ name: 'fk_users_countries1_idx' })
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   userCountryBorn!: unknown;
 
   @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
@@ -91,7 +91,7 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    country: { type: 'unknown', persist: false },
     countries: { primary: true, kind: '1:1', entity: () => Countries, fieldName: 'country' },
   },
 });
@@ -112,18 +112,8 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'number' },
-    userCountry: {
-      type: 'unknown',
-      columnType: 'char(2)',
-      persist: false,
-      index: 'fk_users_countries_idx',
-    },
-    userCountryBorn: {
-      type: 'unknown',
-      columnType: 'char(2)',
-      persist: false,
-      index: 'fk_users_countries1_idx',
-    },
+    userCountry: { type: 'unknown', persist: false, index: 'fk_users_countries_idx' },
+    userCountryBorn: { type: 'unknown', persist: false, index: 'fk_users_countries1_idx' },
     fkUserCountry: {
       kind: 'm:1',
       entity: () => Countries,
@@ -172,7 +162,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'countries';
 
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   country!: unknown;
 
   @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
@@ -193,11 +183,11 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_countries_idx' })
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   userCountry!: unknown;
 
   @Index({ name: 'fk_users_countries1_idx' })
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   userCountryBorn!: unknown;
 
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })
@@ -242,7 +232,7 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    country: { type: 'unknown', persist: false },
     countries: {
       primary: true,
       kind: '1:1',
@@ -271,18 +261,8 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'number' },
-    userCountry: {
-      type: 'unknown',
-      columnType: 'char(2)',
-      persist: false,
-      index: 'fk_users_countries_idx',
-    },
-    userCountryBorn: {
-      type: 'unknown',
-      columnType: 'char(2)',
-      persist: false,
-      index: 'fk_users_countries1_idx',
-    },
+    userCountry: { type: 'unknown', persist: false, index: 'fk_users_countries_idx' },
+    userCountryBorn: { type: 'unknown', persist: false, index: 'fk_users_countries1_idx' },
     fkUserCountry: {
       kind: 'm:1',
       entity: () => Countries,
@@ -346,7 +326,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'countries';
 
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   country!: unknown;
 
   @OneToOne({ entity: () => Countries, fieldName: 'country', primary: true })
@@ -370,11 +350,11 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_countries_idx' })
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   userCountry!: unknown;
 
   @Index({ name: 'fk_users_countries1_idx' })
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   userCountryBorn!: unknown;
 
   @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
@@ -427,7 +407,7 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    country: { type: 'unknown', persist: false },
     countries: { primary: true, kind: '1:1', entity: () => Countries, fieldName: 'country' },
     legalUserCountriesInverse: { kind: '1:m', entity: () => Users, mappedBy: 'legalUserCountries' },
   },
@@ -449,18 +429,8 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'number' },
-    userCountry: {
-      type: 'unknown',
-      columnType: 'char(2)',
-      persist: false,
-      index: 'fk_users_countries_idx',
-    },
-    userCountryBorn: {
-      type: 'unknown',
-      columnType: 'char(2)',
-      persist: false,
-      index: 'fk_users_countries1_idx',
-    },
+    userCountry: { type: 'unknown', persist: false, index: 'fk_users_countries_idx' },
+    userCountryBorn: { type: 'unknown', persist: false, index: 'fk_users_countries1_idx' },
     fkUserCountry: {
       kind: 'm:1',
       entity: () => Countries,
@@ -521,7 +491,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'countries';
 
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   country!: unknown;
 
   @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
@@ -545,11 +515,11 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_countries_idx' })
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   userCountry!: unknown;
 
   @Index({ name: 'fk_users_countries1_idx' })
-  @Property({ columnType: 'char(2)', persist: false })
+  @Property({ persist: false })
   userCountryBorn!: unknown;
 
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })
@@ -609,7 +579,7 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { type: 'unknown', columnType: 'char(2)', persist: false },
+    country: { type: 'unknown', persist: false },
     countries: {
       primary: true,
       kind: '1:1',
@@ -639,18 +609,8 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'number' },
-    userCountry: {
-      type: 'unknown',
-      columnType: 'char(2)',
-      persist: false,
-      index: 'fk_users_countries_idx',
-    },
-    userCountryBorn: {
-      type: 'unknown',
-      columnType: 'char(2)',
-      persist: false,
-      index: 'fk_users_countries1_idx',
-    },
+    userCountry: { type: 'unknown', persist: false, index: 'fk_users_countries_idx' },
+    userCountryBorn: { type: 'unknown', persist: false, index: 'fk_users_countries1_idx' },
     fkUserCountry: {
       kind: 'm:1',
       entity: () => Countries,

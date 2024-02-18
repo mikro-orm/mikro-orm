@@ -72,7 +72,7 @@ export class Author2 {
   favouriteBook?: Book2;
 
   @Index({ name: 'author2_favourite_book_uuid_pk_index' })
-  @Property({ length: 36, nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favouriteBookUuidPk?: string;
 
   @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -226,7 +226,7 @@ export class Book2Tags {
   book2!: Book2;
 
   @Index({ name: 'book2_tags_book2_uuid_pk_index' })
-  @Property({ fieldName: 'book2_uuid_pk', length: 36, persist: false })
+  @Property({ fieldName: 'book2_uuid_pk', persist: false })
   book2UuidPk!: string;
 
   @ManyToOne({ entity: () => BookTag2, updateRule: 'cascade', deleteRule: 'cascade' })
@@ -253,7 +253,7 @@ export class CarOwner2 {
   @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
   car!: Car2;
 
-  @Property({ length: 100, persist: false })
+  @Property({ persist: false })
   carName!: string;
 
   @Property({ persist: false })
@@ -520,7 +520,7 @@ export class Test2 {
   book?: Book2;
 
   @Unique({ name: 'test2_book_uuid_pk_unique' })
-  @Property({ length: 36, nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   bookUuidPk?: string;
 
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -537,7 +537,7 @@ export class Test2 {
   @Property({ fieldName: 'foo___bar', nullable: true, persist: false })
   fooBar?: number;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -569,7 +569,7 @@ export class User2 {
   @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteCar?: Car2;
 
-  @Property({ length: 100, nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favouriteCarName?: string;
 
   @Property({ nullable: true, persist: false })
@@ -1045,7 +1045,7 @@ export class Test2 {
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -1074,7 +1074,7 @@ export class User2 {
   @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteCar?: Car2;
 
-  @Property({ length: 100, nullable: true, persist: false })
+  @Property({ nullable: true, persist: false })
   favouriteCarName?: string;
 
   @Property({ nullable: true, persist: false })

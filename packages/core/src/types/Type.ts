@@ -42,7 +42,7 @@ export abstract class Type<JSType = string, DBType = JSType> {
 
   /**
    * How should the raw database values be compared? Used in `EntityComparator`.
-   * Possible values: string | number | boolean | date | any | buffer | array
+   * Possible values: string | number | bigint | boolean | date | any | buffer | array
    */
   compareAsType(): string {
     return 'any';

@@ -1064,7 +1064,7 @@ export class UserOrders {
   order!: Orders;
 
   @Unique({ name: 'priority_UNIQUE' })
-  @Property({ autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true })
   priority!: number;
 
 }
@@ -1318,7 +1318,12 @@ export const UserOrdersSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
-    priority: { type: 'number', autoincrement: true, unique: 'priority_UNIQUE' },
+    priority: {
+      type: 'number',
+      unsigned: true,
+      autoincrement: true,
+      unique: 'priority_UNIQUE',
+    },
   },
 });
 ",
@@ -1516,7 +1521,7 @@ export class UserOrders {
   order!: Orders;
 
   @Unique({ name: 'priority_UNIQUE' })
-  @Property({ autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true })
   priority!: number;
 
 }
@@ -1770,7 +1775,12 @@ export const UserOrdersSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
-    priority: { type: 'number', autoincrement: true, unique: 'priority_UNIQUE' },
+    priority: {
+      type: 'number',
+      unsigned: true,
+      autoincrement: true,
+      unique: 'priority_UNIQUE',
+    },
   },
 });
 ",
@@ -2995,7 +3005,7 @@ export class UserOrders {
   order!: Orders;
 
   @Unique({ name: 'priority_UNIQUE' })
-  @Property({ autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true })
   priority!: number;
 
 }
@@ -3264,7 +3274,12 @@ export const UserOrdersSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
-    priority: { type: 'number', autoincrement: true, unique: 'priority_UNIQUE' },
+    priority: {
+      type: 'number',
+      unsigned: true,
+      autoincrement: true,
+      unique: 'priority_UNIQUE',
+    },
   },
 });
 ",
@@ -3481,7 +3496,7 @@ export class UserOrders {
   order!: Orders;
 
   @Unique({ name: 'priority_UNIQUE' })
-  @Property({ autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true })
   priority!: number;
 
 }
@@ -3750,7 +3765,12 @@ export const UserOrdersSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_user_orders_orders1_idx',
     },
-    priority: { type: 'number', autoincrement: true, unique: 'priority_UNIQUE' },
+    priority: {
+      type: 'number',
+      unsigned: true,
+      autoincrement: true,
+      unique: 'priority_UNIQUE',
+    },
   },
 });
 ",

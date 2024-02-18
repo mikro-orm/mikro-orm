@@ -30,7 +30,7 @@ export class Users {
   lastName!: string;
 
   @Property({ length: 200, generated: () => "concat(\`first_name\`,_utf8mb4\\\\' \\\\',\`last_name\`) virtual" })
-  fullName!: string;
+  fullName!: string & Opt;
 
   @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
@@ -76,7 +76,7 @@ export class Users {
   lastName!: string;
 
   @Property({ length: 200, generated: 'concat(\`first_name\`,_utf8mb4\\' \\',\`last_name\`) virtual' })
-  fullName!: string;
+  fullName!: string & Opt;
 
   @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
@@ -114,7 +114,7 @@ export class Users {
   id!: number;
   firstName!: string;
   lastName!: string;
-  fullName!: string;
+  fullName!: string & Opt;
   createdAt!: Date & Opt;
   dateOfBirth!: string;
   ageAtCreation?: AllowedAgesAtCreation;
@@ -170,7 +170,7 @@ export class Users {
   id!: number;
   firstName!: string;
   lastName!: string;
-  fullName!: string;
+  fullName!: string & Opt;
   createdAt!: Date & Opt;
   dateOfBirth!: string;
   ageAtCreation?: AllowedAgesAtCreation;
