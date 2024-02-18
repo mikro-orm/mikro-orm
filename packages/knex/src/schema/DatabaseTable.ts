@@ -83,7 +83,7 @@ export class DatabaseTable {
   }
 
   addColumnFromProperty(prop: EntityProperty, meta: EntityMetadata, config: Configuration) {
-    prop.fieldNames.forEach((field, idx) => {
+    prop.fieldNames?.forEach((field, idx) => {
       const type = prop.enum ? 'enum' : prop.columnTypes[idx];
       const mappedType = this.platform.getMappedType(type);
 
