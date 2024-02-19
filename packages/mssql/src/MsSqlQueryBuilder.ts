@@ -28,6 +28,7 @@ export class MsSqlQueryBuilder<T extends AnyEntity<T> = AnyEntity> extends Query
       return {
         ...res,
         sql: `set identity_insert ${table} on; ${res.sql}; set identity_insert ${table} off;`,
+        toNative: () => res.toNative(),
       };
     };
   }

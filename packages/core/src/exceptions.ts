@@ -16,6 +16,7 @@ export class DriverException extends Error {
     this.name = this.constructor.name;
     Object.getOwnPropertyNames(previous).forEach(k => (this as Dictionary)[k] = (previous as Dictionary)[k]);
     Error.captureStackTrace(this, this.constructor);
+    this.stack! += '\n\n' + previous.stack!.split('\n').filter(l => l.trim().startsWith('at ')).join('\n');
   }
 
 }
