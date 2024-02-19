@@ -21,6 +21,7 @@ import { Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
 import { Reference } from '../entity/Reference';
 import { SerializationContext } from './SerializationContext';
+import { RawQueryFragment } from '../utils/RawQueryFragment';
 
 function isVisible<T extends object>(meta: EntityMetadata<T>, propName: EntityKey<T>, options: SerializeOptions<T, any, any>): boolean {
   if (Array.isArray(options.populate) && options.populate?.find(item => item === propName || item.startsWith(propName + '.') || item === '*')) {
@@ -91,6 +92,10 @@ export class EntitySerializer {
 
         if (options.skipNull && Utils.isPlainObject(val)) {
           Utils.dropUndefinedProperties(val, null);
+        }
+
+        if (val instanceof RawQueryFragment) {
+          throw new Error(`Trying to serialize raw SQL fragment: '${val.sql}'`);
         }
 
         return [prop, val] as const;

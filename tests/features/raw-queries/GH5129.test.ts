@@ -1,4 +1,4 @@
-import { MikroORM, Entity, PrimaryKey, Property, raw, RawQueryFragment } from '@mikro-orm/sqlite';
+import { MikroORM, Entity, PrimaryKey, Property, raw, RawQueryFragment, wrap, serialize } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
@@ -46,4 +46,11 @@ test('#5129', async () => {
   );
 
   expect(RawQueryFragment.checkCacheSize()).toBe(0);
+  expect(lengthOfTruncatedNameQuery.toJSON()).toBe('[raw]: length(substr([::alias::].name, 0, ?)) (#0)');
+
+  const e = new User('n', 'e');
+  e.name = lengthOfTruncatedNameQuery;
+  expect(() => wrap(e).toObject()).toThrow(`Trying to serialize raw SQL fragment: 'length(substr([::alias::].name, 0, ?))'`);
+  expect(() => JSON.stringify(e)).toThrow(`Trying to serialize raw SQL fragment: 'length(substr([::alias::].name, 0, ?))'`);
+  expect(() => serialize(e)).toThrow(`Trying to serialize raw SQL fragment: 'length(substr([::alias::].name, 0, ?))'`);
 });

@@ -28,7 +28,7 @@ export class RawQueryFragment {
   }
 
   toJSON() {
-    throw new Error(`Trying to serialize raw SQL fragment: '${this.sql}'`);
+    return this.#key;
   }
 
   toString() {
