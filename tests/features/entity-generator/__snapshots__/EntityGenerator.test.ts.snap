@@ -28,7 +28,7 @@ export class Author3 {
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ default: 0 })
+  @Property({ type: 'number' })
   termsAccepted: number & Opt = 0;
 
   @Property({ nullable: true })
@@ -56,7 +56,7 @@ export class BookTag3 {
   @Property()
   name!: string;
 
-  @Property({ defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -77,8 +77,8 @@ export class Book3 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ default: '' })
-  title!: string & Opt;
+  @Property({ type: 'string' })
+  title: string & Opt = '';
 
   @ManyToOne({ entity: () => Author3, updateRule: 'cascade' })
   author!: Author3;
@@ -151,7 +151,7 @@ export class Test3 {
   @Property({ nullable: true })
   name?: string;
 
-  @Property({ default: 1 })
+  @Property({ type: 'number' })
   version: number & Opt = 1;
 
 }

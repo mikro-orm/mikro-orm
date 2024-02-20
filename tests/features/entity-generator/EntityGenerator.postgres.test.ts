@@ -26,7 +26,7 @@ describe('EntityGenerator', () => {
           type: 'varchar(50)',
           maxLength: 50,
           nullable: true,
-          default: 'foo',
+          default: `'foo'`,
           indexes: [],
         },
       },
@@ -35,9 +35,11 @@ describe('EntityGenerator', () => {
     const helper = orm.em.getDriver().getPlatform().getSchemaHelper()!;
     const meta = table.getEntityDeclaration(orm.config.getNamingStrategy(), helper, orm.config.get('entityGenerator').scalarPropertiesForRelations!);
     expect(meta.properties.name.default).toBeUndefined();
+    expect(meta.properties.name.defaultRaw).toBeUndefined();
     expect(meta.properties.name.nullable).toBe(true);
     expect(meta.properties.name.columnTypes[0]).toBe('varchar(50)');
     expect(meta.properties.test.default).toBe('foo');
+    expect(meta.properties.test.defaultRaw).toBe(`'foo'`);
     expect(meta.properties.test.nullable).toBe(true);
     expect(meta.properties.test.columnTypes[0]).toBe('varchar(50)');
 

@@ -29,10 +29,10 @@ export class Users {
   @Property({ length: 100 })
   lastName!: string;
 
-  @Property({ length: 200, generated: () => "(((first_name)::text || ' '::text) || (last_name)::text) stored" })
+  @Property({ type: 'string', length: 200, generated: () => "(((first_name)::text || ' '::text) || (last_name)::text) stored" })
   fullName!: string & Opt;
 
-  @Property({ length: 6, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 6, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
   @Property({ columnType: 'date' })
@@ -75,10 +75,10 @@ export class Users {
   @Property({ length: 100 })
   lastName!: string;
 
-  @Property({ length: 200, generated: '(((first_name)::text || ' '::text) || (last_name)::text) stored' })
+  @Property({ type: 'string', length: 200, generated: '(((first_name)::text || ' '::text) || (last_name)::text) stored' })
   fullName!: string & Opt;
 
-  @Property({ length: 6, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 6, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
   @Property({ columnType: 'date' })

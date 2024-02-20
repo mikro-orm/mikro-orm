@@ -197,9 +197,7 @@ export class SourceFile {
         })()
       : prop.type;
 
-    // string defaults are usually things like SQL functions, but can be also enums, for that `useDefault` should be true
-    const isEnumOrNonStringDefault = prop.enum || typeof prop.default !== 'string';
-    const useDefault = prop.default != null && isEnumOrNonStringDefault;
+    const useDefault = prop.default != null;
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
 
     if (prop.ref) {
@@ -217,7 +215,7 @@ export class SourceFile {
     }
     ret += hiddenType;
 
-    if (useDefault || (optional !== '?' && (typeof prop.default !== 'undefined' || prop.generated))) {
+    if (useDefault || (prop.optional && !prop.nullable)) {
       this.coreImports.add('Opt');
       ret += ' & Opt';
     }
@@ -230,7 +228,7 @@ export class SourceFile {
       return `${padding}${ret} = ${propType}.${prop.default.toUpperCase()};\n`;
     }
 
-    return `${padding}${ret} = ${prop.default};\n`;
+    return `${padding}${ret} = ${propType === 'string' ? this.quote('' + prop.default) : prop.default};\n`;
   }
 
   protected getEnumClassDefinition(enumClassName: string, enumValues: string[], padLeft: number): string {
@@ -405,10 +403,6 @@ export class SourceFile {
   }
 
   protected getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
-    if (this.options.scalarTypeInDecorator && prop.kind === ReferenceKind.SCALAR && !prop.enum) {
-      options.type = this.quote(prop.type);
-    }
-
     if (prop.nullable && !prop.mappedBy) {
       options.nullable = true;
     }
@@ -438,21 +432,12 @@ export class SourceFile {
       options.comment = this.quote(prop.comment);
     }
 
-    if (prop.default == null) {
-      return;
-    }
-
-    if (typeof prop.default !== 'string') {
-      options.default = prop.default;
-      return;
-    }
-
-    if ([`''`, ''].includes(prop.default)) {
-      options.default = `''`;
-    } else if (prop.defaultRaw === this.quote(prop.default)) {
-      options.default = this.quote(prop.default);
-    } else {
-      options.defaultRaw = `\`${prop.default}\``;
+    if (typeof prop.defaultRaw !== 'undefined' && prop.defaultRaw !== 'null' &&
+      prop.defaultRaw !== (typeof prop.default === 'string' ? this.quote(prop.default) : `${prop.default}`)
+    ) {
+      options.defaultRaw = `\`${prop.defaultRaw}\``;
+    } else if (prop.ref && prop.default != null) {
+      options.default = typeof prop.default === 'string' ? this.quote(prop.default) : prop.default;
     }
   }
 
@@ -468,13 +453,13 @@ export class SourceFile {
       return;
     }
 
-    let propType = prop.type;
-
-    if (propType === 'Date') {
-      propType = 'datetime';
+    // Type option is added not only with the scalarTypeInDecorator option,
+    // but also when there are prop type modifiers, because reflect-metadata can't extract the base.
+    if (this.options.scalarTypeInDecorator || prop.hidden || (prop.optional && (!prop.nullable || prop.default != null))) {
+      options.type = this.quote(prop.type);
     }
 
-    const mappedTypeFromPropType = this.platform.getMappedType(propType);
+    const mappedTypeFromPropType = this.platform.getMappedType(prop.type === 'Date' ? 'datetime' : prop.type);
     const mappedTypeFromColumnType = this.platform.getMappedType(prop.columnTypes[0]);
     const columnTypeFromMappedPropType = mappedTypeFromPropType.getColumnType(
       { ...prop, autoincrement: false },

@@ -38,7 +38,7 @@ export class EmailSendingLogs {
   @Property({ nullable: true, persist: false })
   replyEmailId?: number;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -375,7 +375,7 @@ export class EmailSendingLogs {
   @Property({ nullable: true, persist: false })
   replyEmailId?: number;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -730,7 +730,7 @@ export class EmailSendingLogs {
   @Property({ nullable: true, persist: false })
   replyEmailId?: number;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -1119,7 +1119,7 @@ export class EmailSendingLogs {
   @Property({ nullable: true, persist: false })
   replyEmailId?: number;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -1511,7 +1511,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -1801,7 +1801,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -2109,7 +2109,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -2451,7 +2451,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -2811,7 +2811,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -3101,7 +3101,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -3409,7 +3409,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -3751,7 +3751,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
