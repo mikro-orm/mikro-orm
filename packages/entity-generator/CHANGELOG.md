@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.5](https://github.com/mikro-orm/mikro-orm/compare/v6.1.4...v6.1.5) (2024-02-21)
+
+
+### Bug Fixes
+
+* **entity-generator:** fixed generation of unsigned columns ([#5254](https://github.com/mikro-orm/mikro-orm/issues/5254)) ([d78da29](https://github.com/mikro-orm/mikro-orm/commit/d78da297c701a319ea704847e97c2186934831bc))
+* **entity-generator:** optional and hidden properties get type option + string defaults ([#5264](https://github.com/mikro-orm/mikro-orm/issues/5264)) ([12d3b54](https://github.com/mikro-orm/mikro-orm/commit/12d3b54118035195f5ee0ee5665e37a7f2e37164)), closes [#5260](https://github.com/mikro-orm/mikro-orm/issues/5260)
+
+
+
+
+
 ## [6.1.4](https://github.com/mikro-orm/mikro-orm/compare/v6.1.3...v6.1.4) (2024-02-16)
 
 

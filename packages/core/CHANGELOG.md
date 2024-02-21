@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.5](https://github.com/mikro-orm/mikro-orm/compare/v6.1.4...v6.1.5) (2024-02-21)
+
+
+### Bug Fixes
+
+* **core:** allow serializing raw SQL fragments outside of entity serialization ([9158f51](https://github.com/mikro-orm/mikro-orm/commit/9158f515e513310f593aade04e6bedaa29cd6459)), closes [#5257](https://github.com/mikro-orm/mikro-orm/issues/5257)
+* **core:** ensure missing type validation ignores enums ([a916710](https://github.com/mikro-orm/mikro-orm/commit/a916710dfb48156976c45fb824f95fb958c87409)), closes [#5255](https://github.com/mikro-orm/mikro-orm/issues/5255)
+* **entity-generator:** fixed generation of unsigned columns ([#5254](https://github.com/mikro-orm/mikro-orm/issues/5254)) ([d78da29](https://github.com/mikro-orm/mikro-orm/commit/d78da297c701a319ea704847e97c2186934831bc))
+
+
+
+
+
 ## [6.1.4](https://github.com/mikro-orm/mikro-orm/compare/v6.1.3...v6.1.4) (2024-02-16)
 
 

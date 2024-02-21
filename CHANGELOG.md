@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.5](https://github.com/mikro-orm/mikro-orm/compare/v6.1.4...v6.1.5) (2024-02-21)
+
+
+### Bug Fixes
+
+* **core:** allow serializing raw SQL fragments outside of entity serialization ([9158f51](https://github.com/mikro-orm/mikro-orm/commit/9158f515e513310f593aade04e6bedaa29cd6459)), closes [#5257](https://github.com/mikro-orm/mikro-orm/issues/5257)
+* **core:** ensure missing type validation ignores enums ([a916710](https://github.com/mikro-orm/mikro-orm/commit/a916710dfb48156976c45fb824f95fb958c87409)), closes [#5255](https://github.com/mikro-orm/mikro-orm/issues/5255)
+* **core:** fix `orderBy` option on to-many properties with arrays ([fae2302](https://github.com/mikro-orm/mikro-orm/commit/fae2302bdfdc28629a8c21a6d53782d7d61b6240)), closes [#5265](https://github.com/mikro-orm/mikro-orm/issues/5265)
+* **core:** ignore virtual properties in partial loading hint ([d327db5](https://github.com/mikro-orm/mikro-orm/commit/d327db528529298dd23d8eb089a67a5b5e96a7fb)), closes [#5261](https://github.com/mikro-orm/mikro-orm/issues/5261)
+* **entity-generator:** fixed generation of unsigned columns ([#5254](https://github.com/mikro-orm/mikro-orm/issues/5254)) ([d78da29](https://github.com/mikro-orm/mikro-orm/commit/d78da297c701a319ea704847e97c2186934831bc))
+* **entity-generator:** optional and hidden properties get type option + string defaults ([#5264](https://github.com/mikro-orm/mikro-orm/issues/5264)) ([12d3b54](https://github.com/mikro-orm/mikro-orm/commit/12d3b54118035195f5ee0ee5665e37a7f2e37164)), closes [#5260](https://github.com/mikro-orm/mikro-orm/issues/5260)
+* **schema:** allow 1:m properties in pivot entities ([c370578](https://github.com/mikro-orm/mikro-orm/commit/c37057808aca5b6a4ac190d38374405edc833762))
+
+
+
+
+
 ## [6.1.4](https://github.com/mikro-orm/mikro-orm/compare/v6.1.3...v6.1.4) (2024-02-16)
 
 
