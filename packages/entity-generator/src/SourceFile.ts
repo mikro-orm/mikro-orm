@@ -217,7 +217,7 @@ export class SourceFile {
     }
     ret += hiddenType;
 
-    if (useDefault || (optional !== '?' && typeof prop.default === 'string')) {
+    if (useDefault || (optional !== '?' && (typeof prop.default !== 'undefined' || prop.generated))) {
       this.coreImports.add('Opt');
       ret += ' & Opt';
     }
@@ -413,9 +413,9 @@ export class SourceFile {
       options.nullable = true;
     }
 
-    if (prop.persist === false) {
-      options.persist = false;
-    }
+    (['persist', 'hydrate', 'trackChanges'] as const)
+      .filter(key => prop[key] === false)
+      .forEach(key => options[key] = false);
 
     (['onCreate', 'onUpdate', 'serializer'] as const)
       .filter(key => typeof prop[key] === 'function')
@@ -461,25 +461,35 @@ export class SourceFile {
       options.fieldName = `'${prop.fieldNames[0]}'`;
     }
 
-    // for enum properties, we don't need a column type or the property length
-    // in the decorator so return early.
-    if (prop.enum) {
+    // For enum properties, we don't need a column type
+    // or the property length or other information in the decorator.
+    // Non-persistent properties also don't need any of that additional information.
+    if (prop.enum || !prop.persist) {
       return;
     }
 
-    let t = prop.type;
+    let propType = prop.type;
 
-    if (t === 'Date') {
-      t = 'datetime';
+    if (propType === 'Date') {
+      propType = 'datetime';
     }
 
-    const mappedType1 = this.platform.getMappedType(t);
-    const mappedType2 = this.platform.getMappedType(prop.columnTypes[0]);
-    const columnType1 = mappedType1.getColumnType({ ...prop, autoincrement: false }, this.platform);
-    const columnType2 = mappedType2.getColumnType({ ...prop, autoincrement: false }, this.platform);
+    const mappedTypeFromPropType = this.platform.getMappedType(propType);
+    const mappedTypeFromColumnType = this.platform.getMappedType(prop.columnTypes[0]);
+    const columnTypeFromMappedPropType = mappedTypeFromPropType.getColumnType(
+      { ...prop, autoincrement: false },
+      this.platform,
+    );
+    const columnTypeFromMappedColumnType = mappedTypeFromColumnType.getColumnType(
+      { ...prop, autoincrement: false },
+      this.platform,
+    );
 
-    if (columnType1 !== columnType2 || [mappedType1, mappedType2].some(t => t instanceof UnknownType)) {
-      options.columnType = this.quote(columnType2);
+    if (
+      columnTypeFromMappedPropType !== columnTypeFromMappedColumnType
+      || [mappedTypeFromPropType, mappedTypeFromColumnType].some(t => t instanceof UnknownType)
+    ) {
+      options.columnType = this.quote(columnTypeFromMappedColumnType);
     }
 
     const assign = (key: keyof EntityProperty) => {
@@ -488,22 +498,32 @@ export class SourceFile {
       }
     };
 
-    if (!(mappedType2 instanceof DateType) && !options.columnType) {
+    if (!(mappedTypeFromColumnType instanceof DateType) && !options.columnType) {
       assign('length');
     }
 
     // those are already included in the `columnType` in most cases, and when that option is present, they would be ignored anyway
     /* istanbul ignore next */
-    if (mappedType2 instanceof DecimalType && !options.columnType) {
+    if (mappedTypeFromColumnType instanceof DecimalType && !options.columnType) {
       assign('precision');
       assign('scale');
     }
+
+    if (this.platform.supportsUnsigned() &&
+      (
+        (!prop.primary && prop.unsigned) ||
+        (prop.primary && !prop.unsigned && this.platform.isNumericColumn(mappedTypeFromColumnType))
+      )
+    ) {
+      assign('unsigned');
+    }
+
     if (prop.autoincrement) {
-      if (!prop.primary || !['number', 'bigint'].includes(t) || this.meta.getPrimaryProps().length !== 1) {
+      if (!prop.primary || !this.platform.isNumericColumn(mappedTypeFromColumnType) || this.meta.getPrimaryProps().length !== 1) {
         options.autoincrement = true;
       }
     } else {
-      if (prop.primary && ['number', 'bigint'].includes(t) && this.meta.getPrimaryProps().length === 1) {
+      if (prop.primary && this.platform.isNumericColumn(mappedTypeFromColumnType) && this.meta.getPrimaryProps().length === 1) {
         options.autoincrement = false;
       }
     }

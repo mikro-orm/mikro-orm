@@ -85,7 +85,7 @@ export class ShippableProducts {
   productId!: number;
 
   @Index({ name: 'fk_shippable_products_destinations1_idx' })
-  @Property({ length: 255, persist: false })
+  @Property({ persist: false })
   destination!: string;
 
   @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', primary: true })
@@ -193,7 +193,6 @@ export const ShippableProductsSchema = new EntitySchema({
     productId: { type: 'number', persist: false },
     destination: {
       type: 'string',
-      length: 255,
       persist: false,
       index: 'fk_shippable_products_destinations1_idx',
     },
@@ -312,7 +311,7 @@ export class ShippableProducts {
   productId!: number;
 
   @Index({ name: 'fk_shippable_products_destinations1_idx' })
-  @Property({ length: 255, persist: false })
+  @Property({ persist: false })
   destination!: string;
 
   @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', primary: true })
@@ -437,7 +436,6 @@ export const ShippableProductsSchema = new EntitySchema({
     productId: { type: 'number', persist: false },
     destination: {
       type: 'string',
-      length: 255,
       persist: false,
       index: 'fk_shippable_products_destinations1_idx',
     },
@@ -579,7 +577,7 @@ export class ShippableProducts {
   productId!: number;
 
   @Index({ name: 'fk_shippable_products_destinations1_idx' })
-  @Property({ length: 255, persist: false })
+  @Property({ persist: false })
   destination!: string;
 
   @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', primary: true })
@@ -712,7 +710,6 @@ export const ShippableProductsSchema = new EntitySchema({
     productId: { type: 'number', persist: false },
     destination: {
       type: 'string',
-      length: 255,
       persist: false,
       index: 'fk_shippable_products_destinations1_idx',
     },
@@ -850,7 +847,7 @@ export class ShippableProducts {
   productId!: number;
 
   @Index({ name: 'fk_shippable_products_destinations1_idx' })
-  @Property({ length: 255, persist: false })
+  @Property({ persist: false })
   destination!: string;
 
   @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', primary: true })
@@ -1006,7 +1003,6 @@ export const ShippableProductsSchema = new EntitySchema({
     productId: { type: 'number', persist: false },
     destination: {
       type: 'string',
-      length: 255,
       persist: false,
       index: 'fk_shippable_products_destinations1_idx',
     },
