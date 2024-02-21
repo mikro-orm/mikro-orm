@@ -1390,9 +1390,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       }
 
       if (propOrderBy) {
-        Utils.keys(propOrderBy).forEach(field => {
-          orderBy.push({ [`${propAlias}.${field}` as EntityKey]: propOrderBy[field] } as QueryOrderMap<T>);
-        });
+        for (const item of Utils.asArray(propOrderBy)) {
+          Utils.keys(item).forEach(field => {
+            orderBy.push({ [`${propAlias}.${field}` as EntityKey]: item[field] } as QueryOrderMap<T>);
+          });
+        }
       }
 
       if (hint.children) {
