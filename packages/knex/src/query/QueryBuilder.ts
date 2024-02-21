@@ -1156,6 +1156,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
         return;
       }
 
+      if (prop?.persist === false && !prop.embedded && !prop.formula && type === 'where') {
+        return;
+      }
+
       if (prop?.embedded) {
         const name = prop.embeddedPath?.join('.') ?? prop.fieldNames[0];
         const aliased = this._aliases[a] ? `${a}.${name}` : name;

@@ -1446,6 +1446,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return;
     }
 
+    if (prop.persist === false && !prop.embedded && !prop.formula) {
+      return;
+    }
+
     ret.push(prop.name);
   }
 

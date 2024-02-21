@@ -59,7 +59,12 @@ describe('GH issue 535', () => {
 
     orm.em.clear();
 
-    const fetchedA = await orm.em.findOneOrFail(A, { id: a.id }, { populate: ['b'] });
-    expect(fetchedA.calcProp).toBe('foo');
+    const fetchedA1 = await orm.em.findOneOrFail(A, { id: a.id }, { fields: ['b', 'calcProp'], populate: ['b'] });
+    expect(fetchedA1.calcProp).toBe('foo');
+    expect(wrap(fetchedA1).toObject()).toEqual({ id: 1, b: { id: 1 }, calcProp: 'foo' });
+
+    const fetchedA2 = await orm.em.fork().qb(A).where({ id: a.id }).select(['id', 'calcProp']).leftJoinAndSelect('b', 'b');
+    expect(fetchedA2[0].calcProp).toBe('foo');
+    expect(wrap(fetchedA2[0]).toObject()).toEqual({ id: 1, b: { id: 1, a: 1, prop: 'foo' }, calcProp: 'foo' });
   });
 });
