@@ -485,8 +485,9 @@ export class SourceFile {
       this.platform,
     );
 
-    if (columnTypeFromMappedPropType !== columnTypeFromMappedColumnType ||
-      [mappedTypeFromPropType, mappedTypeFromColumnType].some(t => t instanceof UnknownType)
+    if (
+      columnTypeFromMappedPropType !== columnTypeFromMappedColumnType
+      || [mappedTypeFromPropType, mappedTypeFromColumnType].some(t => t instanceof UnknownType)
     ) {
       options.columnType = this.quote(columnTypeFromMappedColumnType);
     }
