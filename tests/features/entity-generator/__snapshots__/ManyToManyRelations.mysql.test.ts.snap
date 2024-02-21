@@ -145,14 +145,16 @@ export class UserEmails {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Emails;
 
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   isVerified: boolean & Opt = false;
 
 }
 ",
   "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
+import { UserEmails } from './UserEmails';
 
 @Entity()
 export class Users {
@@ -165,6 +167,9 @@ export class Users {
   @Unique({ name: 'name_UNIQUE' })
   @Property({ length: 255 })
   name!: string;
+
+  @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id' })
+  userEmails = new Collection<Emails>(this);
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
   userFlags = new Collection<Flags>(this);
@@ -377,11 +382,12 @@ export const UserEmailsSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
-    isVerified: { type: 'boolean', default: false },
+    isVerified: { type: 'boolean' },
   },
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
 
@@ -389,6 +395,7 @@ export class Users {
   [PrimaryKeyProp]?: 'userId';
   userId!: number;
   name!: string;
+  userEmails = new Collection<Emails>(this);
   userFlags = new Collection<Flags>(this);
   userOrders = new Collection<Orders>(this);
 }
@@ -398,6 +405,14 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'number' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userEmails: {
+      kind: 'm:n',
+      entity: () => Emails,
+      pivotTable: 'user_emails',
+      pivotEntity: () => UserEmails,
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'email_id',
+    },
     userFlags: {
       kind: 'm:n',
       entity: () => Flags,
@@ -565,7 +580,7 @@ export class UserEmails {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Emails;
 
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   isVerified: boolean & Opt = false;
 
 }
@@ -600,7 +615,7 @@ export class Users {
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_orders', pivotEntity: () => UserEmailOrders, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
   userEmailOrders = new Collection<Emails>(this);
 
-  @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
+  @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id' })
   userEmails = new Collection<Emails>(this);
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -814,7 +829,7 @@ export const UserEmailsSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
-    isVerified: { type: 'boolean', default: false },
+    isVerified: { type: 'boolean' },
   },
 });
 ",
@@ -874,7 +889,6 @@ export const UsersSchema = new EntitySchema({
       pivotEntity: () => UserEmails,
       joinColumn: 'user_id',
       inverseJoinColumn: 'email_id',
-      persist: false,
     },
     userFlags: {
       kind: 'm:n',
@@ -1043,7 +1057,7 @@ export class UserEmails {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Emails;
 
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   isVerified: boolean & Opt = false;
 
 }
@@ -1292,7 +1306,7 @@ export const UserEmailsSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
-    isVerified: { type: 'boolean', default: false },
+    isVerified: { type: 'boolean' },
   },
 });
 ",
@@ -1500,7 +1514,7 @@ export class UserEmails {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Emails;
 
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   isVerified: boolean & Opt = false;
 
 }
@@ -1749,7 +1763,7 @@ export const UserEmailsSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
-    isVerified: { type: 'boolean', default: false },
+    isVerified: { type: 'boolean' },
   },
 });
 ",
@@ -1833,8 +1847,9 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { UserEmails } from './UserEmails';
+import { Users } from './Users';
 
 @Entity()
 export class Emails {
@@ -1850,6 +1865,9 @@ export class Emails {
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
   emailInverse = new Collection<UserEmails>(this);
+
+  @ManyToMany({ entity: () => Users, mappedBy: 'userEmails' })
+  userEmailsInverse = new Collection<Users>(this);
 
 }
 ",
@@ -1977,12 +1995,13 @@ export class UserEmails {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Emails;
 
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   isVerified: boolean & Opt = false;
 
 }
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
 import { UserEmails } from './UserEmails';
@@ -1998,6 +2017,9 @@ export class Users {
   @Unique({ name: 'name_UNIQUE' })
   @Property({ length: 255 })
   name!: string;
+
+  @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id' })
+  userEmails = new Collection<Emails>(this);
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
   userFlags = new Collection<Flags>(this);
@@ -2047,12 +2069,14 @@ export const CompletedOrdersSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { UserEmails } from './UserEmails';
+import { Users } from './Users';
 
 export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
   emailInverse = new Collection<UserEmails>(this);
+  userEmailsInverse = new Collection<Users>(this);
 }
 
 export const EmailsSchema = new EntitySchema({
@@ -2061,6 +2085,7 @@ export const EmailsSchema = new EntitySchema({
     emailId: { primary: true, type: 'number' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+    userEmailsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userEmails' },
   },
 });
 ",
@@ -2227,11 +2252,12 @@ export const UserEmailsSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
-    isVerified: { type: 'boolean', default: false },
+    isVerified: { type: 'boolean' },
   },
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
 import { UserEmails } from './UserEmails';
@@ -2240,6 +2266,7 @@ export class Users {
   [PrimaryKeyProp]?: 'userId';
   userId!: number;
   name!: string;
+  userEmails = new Collection<Emails>(this);
   userFlags = new Collection<Flags>(this);
   userOrders = new Collection<Orders>(this);
   userInverse = new Collection<UserEmails>(this);
@@ -2250,6 +2277,14 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'number' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userEmails: {
+      kind: 'm:n',
+      entity: () => Emails,
+      pivotTable: 'user_emails',
+      pivotEntity: () => UserEmails,
+      joinColumn: 'user_id',
+      inverseJoinColumn: 'email_id',
+    },
     userFlags: {
       kind: 'm:n',
       entity: () => Flags,
@@ -2322,7 +2357,7 @@ export class Emails {
   @ManyToMany({ entity: () => Users, mappedBy: 'userEmailOrders', persist: false })
   userEmailOrdersInverse = new Collection<Users>(this);
 
-  @ManyToMany({ entity: () => Users, mappedBy: 'userEmails', persist: false })
+  @ManyToMany({ entity: () => Users, mappedBy: 'userEmails' })
   userEmailsInverse = new Collection<Users>(this);
 
 }
@@ -2451,7 +2486,7 @@ export class UserEmails {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Emails;
 
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   isVerified: boolean & Opt = false;
 
 }
@@ -2486,7 +2521,7 @@ export class Users {
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_orders', pivotEntity: () => UserEmailOrders, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
   userEmailOrders = new Collection<Emails>(this);
 
-  @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
+  @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id' })
   userEmails = new Collection<Emails>(this);
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -2569,7 +2604,7 @@ export const EmailsSchema = new EntitySchema({
       mappedBy: 'userEmailOrders',
       persist: false,
     },
-    userEmailsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userEmails', persist: false },
+    userEmailsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userEmails' },
   },
 });
 ",
@@ -2736,7 +2771,7 @@ export const UserEmailsSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
-    isVerified: { type: 'boolean', default: false },
+    isVerified: { type: 'boolean' },
   },
 });
 ",
@@ -2798,7 +2833,6 @@ export const UsersSchema = new EntitySchema({
       pivotEntity: () => UserEmails,
       joinColumn: 'user_id',
       inverseJoinColumn: 'email_id',
-      persist: false,
     },
     userFlags: {
       kind: 'm:n',
@@ -2984,7 +3018,7 @@ export class UserEmails {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Emails;
 
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   isVerified: boolean & Opt = false;
 
 }
@@ -3248,7 +3282,7 @@ export const UserEmailsSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
-    isVerified: { type: 'boolean', default: false },
+    isVerified: { type: 'boolean' },
   },
 });
 ",
@@ -3475,7 +3509,7 @@ export class UserEmails {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_emails_emails1_idx' })
   email!: Emails;
 
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   isVerified: boolean & Opt = false;
 
 }
@@ -3739,7 +3773,7 @@ export const UserEmailsSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_user_emails_emails1_idx',
     },
-    isVerified: { type: 'boolean', default: false },
+    isVerified: { type: 'boolean' },
   },
 });
 ",

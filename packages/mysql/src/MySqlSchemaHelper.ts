@@ -113,7 +113,12 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
     for (const col of allColumns) {
       const mappedType = this.platform.getMappedType(col.column_type);
-      const defaultValue = str(this.normalizeDefaultValue(col.column_default, col.length));
+      const defaultValue = str(this.normalizeDefaultValue(
+        (mappedType.compareAsType() === 'boolean' && ['0', '1'].includes(col.column_default))
+          ? ['false', 'true'][+col.column_default]
+          : col.column_default,
+        col.length,
+      ));
       const key = this.getTableKey(col);
       const generated = col.generation_expression ? `${col.generation_expression} ${col.extra.match(/stored generated/i) ? 'stored' : 'virtual'}` : undefined;
       ret[key] ??= [];

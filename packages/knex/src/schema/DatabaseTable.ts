@@ -604,8 +604,13 @@ export class DatabaseTable {
     const columnOptions: Partial<EntityProperty> = {};
     if (fk.columnNames.length === 1) {
       const column = this.getColumn(fk.columnNames[0])!;
-      columnOptions.default = this.getPropertyDefaultValue(schemaHelper, column, type);
-      columnOptions.defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, type, true);
+
+      const defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, column.type, true);
+      const defaultTs = this.getPropertyDefaultValue(schemaHelper, column, column.type);
+
+      columnOptions.default = defaultRaw !== defaultTs ? defaultTs : undefined;
+      columnOptions.defaultRaw = (column.nullable && defaultRaw === 'null') ? undefined : defaultRaw;
+      columnOptions.optional = typeof column.generated !== 'undefined' || defaultTs != null;
       columnOptions.generated = column.generated;
       columnOptions.nullable = column.nullable;
       columnOptions.primary = column.primary;
@@ -645,6 +650,10 @@ export class DatabaseTable {
 
     const kind = this.getReferenceKind(fk, unique);
     const type = this.getPropertyTypeForColumn(namingStrategy, column, fk);
+
+    const defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, type, true);
+    const defaultParsed = this.getPropertyDefaultValue(schemaHelper, column, type);
+    const defaultTs = defaultRaw !== defaultParsed ? defaultParsed : undefined;
     const fkOptions: Partial<EntityProperty> = {};
 
     if (fk) {
@@ -660,9 +669,10 @@ export class DatabaseTable {
       type,
       kind,
       generated: column.generated,
+      optional: defaultRaw !== 'null' || defaultTs != null || typeof column.generated !== 'undefined',
       columnType: column.type,
-      default: this.getPropertyDefaultValue(schemaHelper, column, type),
-      defaultRaw: this.getPropertyDefaultValue(schemaHelper, column, type, true),
+      default: defaultTs,
+      defaultRaw: (column.nullable && defaultRaw === 'null') ? undefined : defaultRaw,
       nullable: column.nullable,
       primary: column.primary && persist,
       autoincrement: column.autoincrement,
@@ -749,7 +759,7 @@ export class DatabaseTable {
       return !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + column.default);
     }
 
-    if (propType === 'number') {
+    if (propType === 'number' && !raw) {
       return +column.default;
     }
 

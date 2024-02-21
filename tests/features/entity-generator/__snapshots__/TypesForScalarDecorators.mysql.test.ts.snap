@@ -12,16 +12,16 @@ export class Users {
   @PrimaryKey({ type: 'number' })
   userId!: number;
 
-  @Property({ length: 255, type: 'string' })
+  @Property({ type: 'string', length: 255 })
   username!: string;
 
-  @Property({ unsigned: true, type: 'bigint' })
+  @Property({ type: 'bigint', unsigned: true })
   views!: bigint;
 
   @Property({ type: 'boolean' })
   enabled!: boolean;
 
-  @Property({ length: 0, type: 'Date', defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
