@@ -255,6 +255,10 @@ module.exports = {
             from: '/docs/entity-references',
             to: '/docs/type-safe-relations',
           },
+          {
+            from: '/docs/usage-with-babel',
+            to: '/docs/usage-with-transpilers',
+          },
         ],
       },
     ],

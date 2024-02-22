@@ -233,7 +233,7 @@
         },
         {
           "type": "doc",
-          "id": "usage-with-babel"
+          "id": "usage-with-transpilers"
         },
         {
           "type": "doc",
