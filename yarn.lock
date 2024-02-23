@@ -1393,7 +1393,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.2.9"
     "@mikro-orm/knex": "npm:6.2.9"
-    fs-extra: "npm:11.2.0"
+    ts-morph: "npm:22.0.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -2456,16 +2456,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=18, @types/node@npm:^20.11.17":
-  version: 20.12.13
-  resolution: "@types/node@npm:20.12.13"
-  dependencies:
-    undici-types: "npm:~5.26.4"
-  checksum: 10/c9f02cfe342bce4aa9221f389115c1f9e3bd9abc87d45e3b2c3a5b92d99523c02b72dd67f50cbbc5edddbaf7dd458cf61dd3289d7a8c14fde80c998df10fee82
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:20.14.0":
+"@types/node@npm:*, @types/node@npm:20.14.0, @types/node@npm:>=18, @types/node@npm:^20.11.17":
   version: 20.14.0
   resolution: "@types/node@npm:20.14.0"
   dependencies:

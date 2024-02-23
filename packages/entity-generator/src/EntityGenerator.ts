@@ -1,4 +1,5 @@
 import {
+  type Dictionary,
   EntityMetadata,
   type EntityProperty,
   type GenerateOptions,
@@ -17,7 +18,17 @@ import {
   type EntityManager,
   type SchemaHelper,
 } from '@mikro-orm/knex';
-import { ensureDir, writeFile } from 'fs-extra';
+import {
+  type ClassDeclaration,
+  type EnumDeclaration,
+  type ImportSpecifier,
+  ModuleKind,
+  Project,
+  ScriptKind,
+  ScriptTarget,
+  type VariableDeclaration,
+} from 'ts-morph';
+import { ESCAPE_PREFIX, RESOLVE_PREFIX } from './CoreImportsHelper';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
 import { SourceFile } from './SourceFile';
 
@@ -47,10 +58,8 @@ export class EntityGenerator {
 
   async generate(options: GenerateOptions = {}): Promise<string[]> {
     options = Utils.mergeConfig({}, this.config.get('entityGenerator'), options);
-    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config);
+    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
     const metadata = await this.getEntityMetadata(schema, options);
-    const defaultPath = `${this.config.get('baseDir')}/generated-entities`;
-    const baseDir = Utils.normalizePath(options.path ?? defaultPath);
 
     for (const meta of metadata) {
       if (!meta.pivotTable || this.referencedEntities.has(meta)) {
@@ -62,17 +71,11 @@ export class EntityGenerator {
       }
     }
 
-    if (options.save) {
-      await ensureDir(baseDir);
-      await Promise.all(this.sources.map(file => writeFile(baseDir + '/' + file.getBaseName(), file.generate(), { flush: true })));
-    }
-
-    return this.sources.map(file => file.generate());
+    return this.postProcess(options);
   }
 
   private async getEntityMetadata(schema: DatabaseSchema, options: GenerateOptions) {
     let metadata = schema.getTables()
-      .filter(table => !options.schema || table.schema === options.schema)
       .sort((a, b) => a.name!.localeCompare(b.name!))
       .map(table => {
         const skipColumns = options.skipColumns?.[table.getShortestName()];
@@ -313,6 +316,125 @@ export class EntityGenerator {
         relations: [],
       }));
     }
+  }
+
+  private postProcess(options: GenerateOptions) {
+    const defaultPath = `${this.config.get('baseDir')}/generated-entities`;
+    const baseDir = Utils.normalizePath(options.path ?? defaultPath);
+    const project = new Project({
+      compilerOptions: {
+        strict: true,
+        isolatedModules: true,
+        module: ModuleKind.Node16,
+        target: ScriptTarget.Latest,
+      },
+    });
+
+    const processedSources = this.sources
+      .map(file => ({ sourceFile: project.createSourceFile(
+        baseDir + '/' + file.getBaseName(),
+        file.generate(),
+        { overwrite: true, scriptKind: ScriptKind.TS },
+      ), file }))
+      .map(({ sourceFile, file }) => {
+        const customNameDeclarations: Dictionary<ClassDeclaration | EnumDeclaration | VariableDeclaration> = {};
+        const customImportedDeclarations: Dictionary<ImportSpecifier> = {};
+        const conflictingCoreImports: Dictionary<ImportSpecifier> = {};
+
+        if (!file.hasPotentialCoreConflict) {
+          sourceFile.forgetDescendants();
+          return ({ sourceFile, customNameDeclarations, customImportedDeclarations, conflictingCoreImports });
+        }
+
+        for (const declaration of [
+          sourceFile.getClasses(),
+          sourceFile.getEnums(),
+          sourceFile.getVariableDeclarations(),
+        ].flat()) {
+          const originalName = declaration.getName();
+          if (originalName?.startsWith(ESCAPE_PREFIX)) {
+            const intendedName = originalName.replace(ESCAPE_PREFIX, '');
+            customNameDeclarations[intendedName] = declaration;
+          } else {
+            declaration.forget();
+          }
+        }
+
+        const customNameImports: string[] = [];
+        for (const importDeclaration of sourceFile.getImportDeclarations()) {
+          if (importDeclaration.getModuleSpecifierValue() === '@mikro-orm/core') {
+            continue;
+          }
+
+          if (importDeclaration.getModuleSpecifierSourceFile()) {
+            for (const namedImport of importDeclaration.getNamedImports()) {
+              const originalName = namedImport.getName();
+              if (originalName.startsWith(ESCAPE_PREFIX)) {
+                const intendedName = originalName.replace(ESCAPE_PREFIX, '');
+                customNameImports.push(intendedName);
+                namedImport.forgetDescendants();
+              } else {
+                namedImport.forget();
+              }
+            }
+            continue;
+          }
+
+          for (const namedImport of importDeclaration.getNamedImports()) {
+            const originalName = namedImport.getName();
+            if (originalName.startsWith(ESCAPE_PREFIX)) {
+              const intendedName = originalName.replace(ESCAPE_PREFIX, '');
+              customImportedDeclarations[intendedName] = namedImport;
+              namedImport.forgetDescendants();
+            } else {
+              namedImport.forget();
+            }
+          }
+        }
+
+        const coreImports = sourceFile.getImportDeclaration('@mikro-orm/core')?.getNamedImports();
+        if (coreImports) {
+          const namesOfCustomDeclarations = [...Object.keys(customImportedDeclarations), ...Object.keys(customNameDeclarations)];
+          for (const coreImport of coreImports) {
+            let alias = coreImport.getName();
+            while (namesOfCustomDeclarations.includes(alias) || customNameImports.includes(alias)) {
+              alias = `${RESOLVE_PREFIX}${alias}`;
+            }
+            if (alias !== coreImport.getName()) {
+              conflictingCoreImports[alias] = coreImport;
+            } else {
+              coreImport.forget();
+            }
+          }
+        }
+
+        return { sourceFile, customNameDeclarations, customImportedDeclarations, conflictingCoreImports };
+      })
+      .map(({ sourceFile, customNameDeclarations, customImportedDeclarations, conflictingCoreImports }) => {
+        for (const [newAlias, coreImport] of Object.entries(conflictingCoreImports)) {
+          coreImport.renameAlias(newAlias);
+        }
+        return { sourceFile, customNameDeclarations, customImportedDeclarations };
+      })
+      .map(({ sourceFile, customNameDeclarations, customImportedDeclarations }) => {
+          for (const [intendedName, declaration] of Object.entries(customNameDeclarations)) {
+            declaration.rename(intendedName);
+          }
+          return { sourceFile, customImportedDeclarations };
+        },
+      )
+      .map(({ sourceFile, customImportedDeclarations }) => {
+        for (const [intendedName, declaration] of Object.entries(customImportedDeclarations)) {
+          declaration.renameAlias(intendedName).setName(intendedName).removeAlias();
+        }
+        sourceFile.forgetDescendants();
+        return sourceFile;
+      });
+
+    if (options.save) {
+      project.saveSync();
+    }
+    return processedSources.map(sourceFile => sourceFile.getFullText());
   }
 
 }

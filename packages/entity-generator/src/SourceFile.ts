@@ -21,19 +21,27 @@ import {
   UnknownType,
   Utils,
 } from '@mikro-orm/core';
-import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper';
+import { ESCAPE_PREFIX, POSSIBLE_TYPE_IMPORTS, POSSIBLY_GENERATED_CORE_IMPORTS, RESOLVE_PREFIX } from './CoreImportsHelper';
 
 /**
  * @see https://github.com/tc39/proposal-regexp-unicode-property-escapes#other-examples
  */
 export const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$\u200C\u200D\p{ID_Continue}])*$/u;
 
-const primitivesAndLibs = [...SCALAR_TYPES, 'bigint', 'Uint8Array', 'unknown', 'object', 'any'];
+/**
+ * It is possible that an entity is called something that starts with the resolve prefix,
+ * thus causing conflicts in other files that may both import the entity and have their own conflicts.
+ * So to ensure they are covered, such entities are also tagged for checks.
+ */
+const resolvePrefixRegex = new RegExp(`^(?:${RESOLVE_PREFIX})+`, 'g');
+
+const primitivesAndLibs = [...SCALAR_TYPES, 'Uint8Array', 'unknown', 'object', 'any'];
 
 export class SourceFile {
 
   protected readonly coreImports = new Set<string>();
   protected readonly entityImports = new Set<string>();
+  private _hasPotentialCoreConflict = false;
 
   constructor(
     protected readonly meta: EntityMetadata,
@@ -157,7 +165,10 @@ export class SourceFile {
     const entityImportExtension = this.options.esmImport ? '.js' : '';
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
     entityImports.sort().forEach(entity => {
-      imports.push(`import { ${entity} } from './${this.options.fileName!(entity)}${entityImportExtension}';`);
+      const normalizedClassName = entity.replace(/\[]$/, '');
+      if (!primitivesAndLibs.includes(normalizedClassName)) {
+        imports.push(`import { ${this.getValidIdentifierName(entity)} } from './${this.options.fileName!(entity)}${entityImportExtension}';`);
+      }
     });
     return imports.join('\n');
   }
@@ -167,18 +178,12 @@ export class SourceFile {
     if (this.meta.abstract) {
       ret += `abstract `;
     }
-    ret += `class ${this.meta.className}`;
+    ret += `class ${this.getValidIdentifierName(this.meta.className)}`;
     if (this.meta.extends) {
-      this.entityImports.add(this.meta.extends);
-      ret += ` extends ${this.meta.extends}`;
+      ret += ` extends ${this.refEntityImport(this.meta.extends)}`;
     } else if (this.options.useCoreBaseEntity) {
-      if (this.meta.className === 'BaseEntity') {
-        this.coreImports.add('BaseEntity as MikroBaseEntity');
-        ret += ` extends MikroBaseEntity`;
-      } else {
         this.coreImports.add('BaseEntity');
         ret += ` extends BaseEntity`;
-      }
     }
     ret += ` {\n${classBody}}\n`;
     return ret;
@@ -206,7 +211,7 @@ export class SourceFile {
 
     if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
       this.coreImports.add('Collection');
-      return `${padding}${propName}${hiddenType ? `: Collection<${prop.type}>${hiddenType}` : ''} = new Collection<${prop.type}>(this);\n`;
+      return `${padding}${propName}${hiddenType ? `: Collection<${this.refEntityImport(prop.type)}>${hiddenType}` : ''} = new Collection<${this.refEntityImport(prop.type)}>(this);\n`;
     }
 
     const propType = prop.mapToPk
@@ -233,7 +238,7 @@ export class SourceFile {
             for (const typeSpec of [prop.runtimeType, rawType, serializedType]) {
               const simplePropType = typeSpec.replace(/\[]+$/, '');
               if (!primitivesAndLibs.includes(simplePropType)) {
-                this.entityImports.add(simplePropType);
+                this.refEntityImport(simplePropType);
               }
             }
 
@@ -284,7 +289,7 @@ export class SourceFile {
 
   protected getEnumClassDefinition(enumClassName: string, enumValues: string[], padLeft: number): string {
     const padding = ' '.repeat(padLeft);
-    let ret = `export enum ${enumClassName} {\n`;
+    let ret = `export enum ${this.getValidIdentifierName(enumClassName)} {\n`;
 
     for (const enumValue of enumValues) {
       ret += `${padding}${enumValue.toUpperCase()} = '${enumValue}',\n`;
@@ -395,7 +400,7 @@ export class SourceFile {
     }
 
     if (prop.enum) {
-      options.items = `() => ${prop.runtimeType}`;
+      options.items = `() => ${this.getValidIdentifierName(prop.runtimeType)}`;
     }
 
     this.getCommonDecoratorOptions(options, prop);
@@ -590,11 +595,10 @@ export class SourceFile {
   }
 
   protected getManyToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
-    this.entityImports.add(prop.type);
-    options.entity = `() => ${prop.type}`;
+    options.entity = `() => ${this.refEntityImport(prop.type)}`;
 
     if (prop.mappedBy) {
-      options.mappedBy = this.quote(prop.mappedBy);
+      options.mappedBy = this.quote(`${prop.mappedBy}`);
       return;
     }
 
@@ -603,8 +607,7 @@ export class SourceFile {
     }
 
     if (prop.pivotEntity && prop.pivotEntity !== prop.pivotTable) {
-      this.entityImports.add(prop.pivotEntity);
-      options.pivotEntity = `() => ${prop.pivotEntity}`;
+      options.pivotEntity = `() => ${this.refEntityImport(prop.pivotEntity)}`;
     }
 
     if (prop.joinColumns.length === 1) {
@@ -628,14 +631,12 @@ export class SourceFile {
   }
 
   protected getOneToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
-    this.entityImports.add(prop.type);
-    options.entity = `() => ${prop.type}`;
+    options.entity = `() => ${this.refEntityImport(prop.type)}`;
     options.mappedBy = this.quote(prop.mappedBy);
   }
 
   protected getEmbeddedPropertyDeclarationOptions(options: Dictionary, prop: EntityProperty) {
-    this.entityImports.add(prop.type);
-    options.entity = `() => ${prop.type}`;
+    options.entity = `() => ${this.refEntityImport(prop.type)}`;
 
     if (prop.array) {
       options.array = true;
@@ -651,8 +652,7 @@ export class SourceFile {
   }
 
   protected getForeignKeyDecoratorOptions(options: OneToOneOptions<any, any>, prop: EntityProperty) {
-    this.entityImports.add(prop.type);
-    options.entity = `() => ${prop.type}`;
+    options.entity = `() => ${this.refEntityImport(prop.type)}`;
 
     if (prop.ref) {
       options.ref = true;
@@ -728,6 +728,23 @@ export class SourceFile {
     }
 
     return '@Property';
+  }
+
+  protected refEntityImport(type: string) {
+    this.entityImports.add(type);
+    return this.getValidIdentifierName(type);
+  }
+
+  protected getValidIdentifierName(type: string) {
+    if (POSSIBLY_GENERATED_CORE_IMPORTS.includes(type.replaceAll(resolvePrefixRegex, '')) || type.startsWith(ESCAPE_PREFIX)) {
+      this._hasPotentialCoreConflict = true;
+      return `${ESCAPE_PREFIX}${type}`;
+    }
+    return type;
+  }
+
+  get hasPotentialCoreConflict(): boolean {
+    return this._hasPotentialCoreConflict;
   }
 
 }
