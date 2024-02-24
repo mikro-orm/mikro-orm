@@ -206,6 +206,17 @@ export class EntityFactory {
     const meta = this.metadata.get<T>(entityName);
     const schema = this.driver.getSchemaName(meta, options);
 
+    if (meta.simplePK) {
+      const exists = this.unitOfWork.getById(entityName, id as Primary<T>, schema);
+
+      if (exists) {
+        return exists;
+      }
+
+      const data = Utils.isPlainObject(id) ? id : { [meta.primaryKeys[0]]: Array.isArray(id) ? id[0] : id };
+      return this.create(entityName, data as EntityData<T>, { ...options, initialized: false });
+    }
+
     if (Array.isArray(id)) {
       id = Utils.getPrimaryKeyCondFromArray(id, meta);
     }

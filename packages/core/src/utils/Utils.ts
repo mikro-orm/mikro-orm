@@ -496,15 +496,24 @@ export class Utils {
    * Checks whether the argument looks like primary key (string, number or ObjectId).
    */
   static isPrimaryKey<T>(key: any, allowComposite = false): key is Primary<T> {
+    if (['string', 'number', 'bigint'].includes(typeof key)) {
+      return true;
+    }
+
     if (allowComposite && Array.isArray(key) && key.every(v => Utils.isPrimaryKey(v, true))) {
       return true;
     }
+    if (Utils.isObject(key)) {
+      if (key.constructor && key.constructor.name.toLowerCase() === 'objectid') {
+        return true;
+      }
 
-    if (Utils.isObject(key) && !Utils.isPlainObject(key) && !Utils.isEntity(key, true)) {
-      return true;
+      if (!Utils.isPlainObject(key) && !Utils.isEntity(key, true)) {
+        return true;
+      }
     }
 
-    return ['string', 'number', 'bigint'].includes(typeof key) || Utils.isObjectID(key) || key instanceof Date || key instanceof Buffer;
+    return false;
   }
 
   /**

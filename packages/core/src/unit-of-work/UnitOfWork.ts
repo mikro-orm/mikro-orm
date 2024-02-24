@@ -97,6 +97,7 @@ export class UnitOfWork {
       return entity;
     }
 
+    const forceUndefined = this.em.config.get('forceUndefined');
     const wrapped = helper(entity);
 
     if (options?.loaded && wrapped.__initialized && !wrapped.__onLoadFired) {
@@ -107,30 +108,29 @@ export class UnitOfWork {
     wrapped.__managed = true;
 
     if (data && (options?.refresh || !wrapped.__originalEntityData)) {
-      Object.keys(data).forEach(key => wrapped.__loadedProperties.add(key));
+      for (const key of Utils.keys(data)) {
+        const prop = wrapped.__meta.properties[key];
 
-      wrapped.__meta.relations.forEach(prop => {
-        if (Utils.isPlainObject(data[prop.name])) {
-          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
+        if (!prop) {
+          continue;
         }
-      });
 
-      wrapped.__meta.props.forEach(prop => {
-        if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
+        wrapped.__loadedProperties.add(key);
+        if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
+          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
+        } else if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
           prop.targetMeta?.props.forEach(p => {
             const prefix = prop.prefix === false ? '' : prop.prefix === true ? prop.name + '_' : prop.prefix;
             data[prefix + p.name as EntityKey] = data[prop.name as EntityKey][p.name];
           });
           data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
         }
-      });
 
-      if (this.em.config.get('forceUndefined')) {
-        Utils.keys(data).forEach(key => {
+        if (forceUndefined) {
           if (data[key] === null) {
             data[key] = undefined;
           }
-        });
+        }
       }
 
       wrapped.__originalEntityData = data;
