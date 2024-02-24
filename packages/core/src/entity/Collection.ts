@@ -335,13 +335,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
     let em = (this._em ?? wrapped.__em) as typeof wrapped.__em;
 
     if (!em) {
-      for (const i of this.items) {
-        if (i && helper(i).__em) {
-          em = helper(i).__em;
-          break;
-        }
-      }
-
       for (const i of items) {
         if (i && helper(i).__em) {
           em = helper(i).__em;
