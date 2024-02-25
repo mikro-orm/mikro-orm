@@ -221,7 +221,7 @@ export class EntityFactory {
       id = Utils.getPrimaryKeyCondFromArray(id, meta);
     }
 
-    const pks = Utils.getOrderedPrimaryKeys<T>(id, meta);
+    const pks = Utils.getOrderedPrimaryKeys<T>(id, meta, this.platform, options.convertCustomTypes);
     const exists = this.unitOfWork.getById<T>(entityName, pks as Primary<T>, schema);
 
     if (exists) {
@@ -324,7 +324,7 @@ export class EntityFactory {
       return undefined;
     }
 
-    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta);
+    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.platform, options.convertCustomTypes);
 
     return this.unitOfWork.getById<T>(meta.className, pks, schema);
   }

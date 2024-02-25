@@ -734,7 +734,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     where = await em.processWhere(entityName, where, options, 'read');
     em.validator.validateEmptyWhere(where);
     em.checkLockRequirements(options.lockMode, meta);
-    entity = em.unitOfWork.tryGetById<Entity>(entityName, where, options.schema);
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
 
     if (entity && !em.shouldRefresh(meta, entity, options) && isOptimisticLocking) {
