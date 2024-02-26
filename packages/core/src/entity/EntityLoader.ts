@@ -22,6 +22,7 @@ import type { MetadataStorage } from '../metadata/MetadataStorage';
 import type { Platform } from '../platforms/Platform';
 import { helper } from './wrap';
 import type { LoggingOptions } from '../logging/Logger';
+import { raw, RawQueryFragment } from '../utils/RawQueryFragment';
 
 export type EntityLoaderOptions<Entity, Fields extends string = '*', Excludes extends string = never> = {
   where?: FilterQuery<Entity>;
@@ -361,9 +362,27 @@ export class EntityLoader {
       where = { $and: [where, prop.where] } as FilterQuery<Entity>;
     }
 
+    const propOrderBy: QueryOrderMap<Entity>[] = [];
+
+    if (prop.orderBy) {
+      for (const item of Utils.asArray(prop.orderBy)) {
+        for (const field of Utils.keys(item)) {
+          const rawField = RawQueryFragment.getKnownFragment(field, false);
+
+          if (rawField) {
+            const raw2 = raw(rawField.sql, rawField.params);
+            propOrderBy.push({ [raw2.toString()]: item[field] } as QueryOrderMap<Entity>);
+            continue;
+          }
+
+          propOrderBy.push({ [field]: item[field] } as QueryOrderMap<Entity>);
+        }
+      }
+    }
+
     const items = await this.em.find(prop.type, where, {
       filters, convertCustomTypes, lockMode, populateWhere, logging,
-      orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy)] as QueryOrderMap<Entity>[],
+      orderBy: [...Utils.asArray(options.orderBy), ...propOrderBy] as QueryOrderMap<Entity>[],
       populate: populate.children as never ?? populate.all ?? [],
       exclude: Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) as any : options.exclude,
       strategy, fields, schema, connectionType,

@@ -1391,9 +1391,18 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (propOrderBy) {
         for (const item of Utils.asArray(propOrderBy)) {
-          Utils.keys(item).forEach(field => {
+          for (const field of Utils.keys(item)) {
+            const rawField = RawQueryFragment.getKnownFragment(field, false);
+
+            if (rawField) {
+              const sql = propAlias ? rawField.sql.replace(new RegExp(ALIAS_REPLACEMENT_RE, 'g'), propAlias) : rawField.sql;
+              const raw2 = raw(sql, rawField.params);
+              orderBy.push({ [raw2.toString()]: item[field] } as QueryOrderMap<T>);
+              continue;
+            }
+
             orderBy.push({ [`${propAlias}.${field}` as EntityKey]: item[field] } as QueryOrderMap<T>);
-          });
+          }
         }
       }
 

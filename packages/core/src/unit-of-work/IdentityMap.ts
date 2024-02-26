@@ -81,11 +81,6 @@ export class IdentityMap {
     const wrapped = (item as AnyEntity).__helper;
     const meta = wrapped.__meta as EntityMetadata<T>;
     const hash = wrapped.getSerializedPrimaryKey();
-
-    if (hash == null) {
-      return hash as string;
-    }
-
     const schema = wrapped.__schema || meta.root.schema;
 
     if (schema) {
