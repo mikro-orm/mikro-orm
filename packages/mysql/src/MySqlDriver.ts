@@ -31,8 +31,8 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
   override async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     const res = await super.nativeInsertMany(entityName, data, options);
-		const pks = this.getPrimaryKeyFields(entityName);
-		const ctx = options.ctx;
+    const pks = this.getPrimaryKeyFields(entityName);
+    const ctx = options.ctx;
     const autoIncrementIncrement = await this.getAutoIncrementIncrement(ctx);
     data.forEach((item, idx) => res.rows![idx] = { [pks[0]]: item[pks[0]] ?? res.insertId as number + (idx * autoIncrementIncrement) });
     res.row = res.rows![0];
