@@ -13,6 +13,7 @@ test('should create an entity using a single connection', async () => {
   const orm = await MikroORM.init({
     dbName: 'mikro_orm_5279',
     entities: [Product],
+    port: 3308,
     pool: {
       min: 1,
       max: 1,
