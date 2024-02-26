@@ -135,7 +135,7 @@
         "quick-start",
         "usage-with-nestjs",
         "usage-with-js",
-        "usage-with-babel",
+        "usage-with-transpilers",
         "usage-with-adminjs",
         "entity-constructors",
         "multiple-schemas",

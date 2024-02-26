@@ -19,7 +19,7 @@ Moreover, how the metadata extraction from decorators happens is controlled via 
 
 Read more about them in the [Metadata Providers section](./metadata-providers.md).
 
-> Current set of decorators in MikroORM is designed to work with the `tsc`. Using `babel` is also possible, but requires some additional setup. Read more about it [here](./usage-with-babel.md). For notes about `webpack`, read the [deployment section](./deployment.md).
+> Current set of decorators in MikroORM is designed to work with the `tsc`. Using `babel` and `swc` is also possible, but requires some additional setup. Read more about it [here](./usage-with-transpilers.md). For notes about `webpack`, read the [deployment section](./deployment.md).
 >
 > `ts-morph` is compatible only with the `tsc` approach.
 

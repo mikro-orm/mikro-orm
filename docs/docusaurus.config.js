@@ -68,6 +68,16 @@ const docusaurusPluginTypedocApiOptions = {
   },
 };
 
+const renames = {
+  'usage-with-transpilers': ['usage-with-babel'],
+  'type-safe-relations': ['entity-references'],
+  'logging': ['debugging'],
+  'lifecycle-hooks': ['events'],
+  'quick-start': [{min: '6.0', from: 'installation'}, ''],
+};
+
+const docsRouteRegex = /^\/docs\/([^\/]+\/|)([^\/]*)$/;
+
 if (!!process.env.MIKRO_ORM_DOCS_TESTING) {
   // Always include the latest version, and the earliest version.
   const includedVersions = new Set([
@@ -226,36 +236,33 @@ module.exports = {
     [
       '@docusaurus/plugin-client-redirects',
       {
-        redirects: [
-          {
-            from: '/docs',
-            to: '/docs/quick-start',
-          },
-          {
-            from: '/docs/next',
-            to: '/docs/quick-start',
-          },
-          {
-            from: '/docs/installation',
-            to: '/docs/quick-start',
-          },
-          {
-            from: '/docs/next/installation',
-            to: '/docs/next/quick-start',
-          },
-          {
-            from: '/docs/lifecycle-hooks',
-            to: '/docs/events',
-          },
-          {
-            from: '/docs/debugging',
-            to: '/docs/logging',
-          },
-          {
-            from: '/docs/entity-references',
-            to: '/docs/type-safe-relations',
-          },
-        ],
+        /**
+         * @param {string} to
+         * @return {string|string[]|undefined}
+         */
+        createRedirects(to) {
+          if (!to.startsWith('/docs/') || to.startsWith('/docs/api/')) {
+            return;
+          }
+
+          const match = docsRouteRegex.exec(to);
+          if (!match) {
+            return;
+          }
+
+          if (renames[match[2]]) {
+            return renames[match[2]].map(fromEntry => {
+              if (typeof fromEntry === 'string') {
+                return `/docs/${match[1]}${fromEntry}`;
+              }
+              if (versions.indexOf(match[1].slice(0, -1)) <= versions.indexOf(fromEntry.min)) {
+                return `/docs/${match[1]}${fromEntry.from}`;
+              }
+              return '';
+            }).filter(Boolean);
+          }
+
+        }
       },
     ],
   ],

@@ -95,7 +95,7 @@ module.exports = {
         'usage-with-mongo',
         'usage-with-nestjs',
         'usage-with-js',
-        'usage-with-babel',
+        'usage-with-transpilers',
         'usage-with-adminjs',
         'usage-with-jest',
         'entity-constructors',
