@@ -17,7 +17,7 @@
     "@docusaurus/plugin-client-redirects": "^3.1.1",
     "@docusaurus/preset-classic": "^3.1.1",
     "@docusaurus/remark-plugin-npm2yarn": "^3.1.1",
-    "@giscus/react": "^2.4.0",
+    "@giscus/react": "^3.0.0",
     "@mdx-js/react": "3.0.0",
     "classnames": "^2.5.1",
     "docusaurus-plugin-typedoc-api": "^4.2.0",
