@@ -65,7 +65,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
       const em = this.getEntityManager(this.items, false);
       await em?.populate(this.items, options.populate as any, options as any);
     } else {
-      await this.init(options);
+      await this.init({ refresh: false, ...options });
     }
 
     return this as unknown as LoadedCollection<Loaded<TT, P>>;
@@ -319,8 +319,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
       ? helper(this.owner).__schema
       : undefined;
     await em.populate(this.owner as TT[], populate, {
-      ...options,
       refresh: true,
+      ...options,
       connectionType: options.connectionType,
       schema,
       where: { [this.property.name]: options.where } as FilterQuery<TT>,
