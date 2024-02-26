@@ -11,7 +11,7 @@ class Product {
 
 test('should create an entity using a single connection', async () => {
   const orm = await MikroORM.init({
-    dbName: 'mikro_orm_5278',
+    dbName: 'mikro_orm_5279',
     entities: [Product],
     pool: {
       min: 1,
