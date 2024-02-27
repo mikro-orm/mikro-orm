@@ -29,6 +29,8 @@ import type {
   GetReferenceOptions,
   NativeInsertUpdateOptions,
   UpdateOptions,
+  UpsertManyOptions,
+  UpsertOptions,
 } from '../drivers/IDatabaseDriver';
 import type { Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
@@ -87,7 +89,7 @@ export class EntityRepository<Entity extends object> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsert(entityOrData?: EntityData<Entity> | Entity, options?: NativeInsertUpdateOptions<Entity>): Promise<Entity> {
+  async upsert(entityOrData?: EntityData<Entity> | Entity, options?: UpsertOptions<Entity>): Promise<Entity> {
     return this.getEntityManager().upsert<Entity>(this.entityName, entityOrData, options);
   }
 
@@ -116,7 +118,7 @@ export class EntityRepository<Entity extends object> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsertMany(entitiesOrData?: EntityData<Entity>[] | Entity[], options?: NativeInsertUpdateOptions<Entity>): Promise<Entity[]> {
+  async upsertMany(entitiesOrData?: EntityData<Entity>[] | Entity[], options?: UpsertManyOptions<Entity>): Promise<Entity[]> {
     return this.getEntityManager().upsertMany(this.entityName, entitiesOrData, options);
   }
 
