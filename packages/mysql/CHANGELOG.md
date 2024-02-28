@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.6](https://github.com/mikro-orm/mikro-orm/compare/v6.1.5...v6.1.6) (2024-02-28)
+
+
+### Bug Fixes
+
+* **mysql:** apply current context when fetching `auto_increment_increment` ([#5280](https://github.com/mikro-orm/mikro-orm/issues/5280)) ([c8021da](https://github.com/mikro-orm/mikro-orm/commit/c8021da020d7afa0f338319811a72ef4c1877d12)), closes [#5279](https://github.com/mikro-orm/mikro-orm/issues/5279)
+
+
+
+
+
 ## [6.1.5](https://github.com/mikro-orm/mikro-orm/compare/v6.1.4...v6.1.5) (2024-02-21)
 
 

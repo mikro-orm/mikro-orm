@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.6](https://github.com/mikro-orm/mikro-orm/compare/v6.1.5...v6.1.6) (2024-02-28)
+
+
+### Bug Fixes
+
+* **core:** support raw fragments in `orderBy` of 1:m and m:n relations ([ed80163](https://github.com/mikro-orm/mikro-orm/commit/ed801634b6677da9f123f7033f27452a40558602)), closes [#5277](https://github.com/mikro-orm/mikro-orm/issues/5277)
+
+
+
+
+
 ## [6.1.5](https://github.com/mikro-orm/mikro-orm/compare/v6.1.4...v6.1.5) (2024-02-21)
 
 

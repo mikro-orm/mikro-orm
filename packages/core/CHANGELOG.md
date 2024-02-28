@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.6](https://github.com/mikro-orm/mikro-orm/compare/v6.1.5...v6.1.6) (2024-02-28)
+
+
+### Bug Fixes
+
+* **core:** don't refresh collection state via `Collection.load()` ([f5be639](https://github.com/mikro-orm/mikro-orm/commit/f5be6393a272b7d2d6d4083361573b574d865ae6)), closes [#5268](https://github.com/mikro-orm/mikro-orm/issues/5268)
+* **core:** fix type of `options` parameter in `repository.upsert/Many()` ([4c12e7f](https://github.com/mikro-orm/mikro-orm/commit/4c12e7f202ce93e884b4da87a8b3a5a42ee63216))
+* **core:** support raw fragments in `orderBy` of 1:m and m:n relations ([ed80163](https://github.com/mikro-orm/mikro-orm/commit/ed801634b6677da9f123f7033f27452a40558602)), closes [#5277](https://github.com/mikro-orm/mikro-orm/issues/5277)
+
+
+### Performance Improvements
+
+* **core:** improve composite PK hashing ([73094ef](https://github.com/mikro-orm/mikro-orm/commit/73094efb8f140f57bf6e1f160edf209812182eab))
+* **core:** improve hydration of simple FKs ([c4bd1f0](https://github.com/mikro-orm/mikro-orm/commit/c4bd1f0317a481df6fc55625353dd79f8dd056c4))
+* **core:** optimize adding entities to large collections ([8a960d5](https://github.com/mikro-orm/mikro-orm/commit/8a960d571fc9c245d5dd10e5973e5b83ce454d92))
+
+
+
+
+
 ## [6.1.5](https://github.com/mikro-orm/mikro-orm/compare/v6.1.4...v6.1.5) (2024-02-21)
 
 
