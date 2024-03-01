@@ -40,10 +40,10 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           }
 
           const payload = (this.payload[key] as CriteriaNode<T>).unwrap();
-          const sub = qb
-            .clone(true)
+          const qb2 = qb.clone(true);
+          const sub = qb2
             .from(this.parent!.entityName)
-            .innerJoin(this.key!, qb.getNextAlias(this.prop!.type))
+            .innerJoin(this.key!, qb2.getNextAlias(this.prop!.type))
             .select(this.prop!.targetMeta!.primaryKeys);
 
           if (key === '$every') {

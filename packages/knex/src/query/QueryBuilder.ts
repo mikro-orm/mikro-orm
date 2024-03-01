@@ -951,7 +951,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const properties = [
       'flags', '_populate', '_populateWhere', '__populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
       '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
-      '_comments', '_hintComments', 'rawFragments',
+      '_comments', '_hintComments', 'rawFragments', 'aliasCounter',
     ];
 
     RawQueryFragment.cloneRegistry = this.rawFragments;
