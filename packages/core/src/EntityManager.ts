@@ -327,6 +327,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
+  addFilter(name: string, cond: Dictionary | ((args: Dictionary) => MaybePromise<FilterQuery<AnyEntity>>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], enabled?: boolean): void;
+
+  /**
+   * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
+   */
   addFilter(name: string, cond: Dictionary | ((args: Dictionary) => MaybePromise<FilterQuery<AnyEntity>>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], enabled = true): void {
     const options: FilterDef = { name, cond, default: enabled };
 
