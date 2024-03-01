@@ -306,7 +306,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return { where, populateWhere: options.populateWhere };
     }
 
-    return { where: options.populateWhere };
+    return { where: options.populateWhere as ObjectQuery<Entity> };
   }
 
   /**

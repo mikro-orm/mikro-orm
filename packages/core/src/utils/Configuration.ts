@@ -558,7 +558,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   hydrator: HydratorConstructor;
   loadStrategy: LoadStrategy | 'select-in' | 'joined';
   dataloader: DataloaderType | boolean;
-  populateWhere: PopulateHint;
+  populateWhere?: PopulateHint | `${PopulateHint}`;
   flushMode: FlushMode | 'commit' | 'auto' | 'always';
   entityRepository?: EntityClass<EntityRepository<any>>;
   entityManager?: Constructor<EM>;
