@@ -59,7 +59,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     return false;
   }
 
-  willAutoJoin(qb: IQueryBuilder<T>, alias?: string) {
+  willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions) {
     return false;
   }
 

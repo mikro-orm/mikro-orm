@@ -18,9 +18,9 @@ export class ArrayCriteriaNode<T extends object> extends CriteriaNode<T> {
     });
   }
 
-  override willAutoJoin(qb: IQueryBuilder<T>, alias?: string) {
+  override willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions) {
     return this.payload.some((node: CriteriaNode<T>) => {
-      return node.willAutoJoin(qb, alias);
+      return node.willAutoJoin(qb, alias, options);
     });
   }
 

@@ -29,9 +29,16 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
     if (this.shouldAutoJoin(qb, nestedAlias)) {
       if (keys.some(k => ['$some', '$none', '$every'].includes(k))) {
+        // ignore collection operators when used on a non-relational property - this can happen when they get into
+        // populateWhere via `infer` on m:n properties with select-in strategy
+        if (!this.prop?.targetMeta) {
+          return {};
+        }
+
         const $and: Dictionary[] = [];
+        const knownKey = [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE, ReferenceKind.EMBEDDED].includes(this.prop!.kind) || (this.prop!.kind === ReferenceKind.ONE_TO_ONE && this.prop!.owner);
         const primaryKeys = this.metadata.find(this.entityName)!.primaryKeys.map(pk => {
-          return [QueryType.SELECT, QueryType.COUNT].includes(qb.type!) ? `${alias}.${pk}` : pk;
+          return [QueryType.SELECT, QueryType.COUNT].includes(qb.type!) ? `${knownKey ? alias : ownerAlias}.${pk}` : pk;
         });
 
         for (const key of keys) {
@@ -100,8 +107,8 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     }, {} as Dictionary);
   }
 
-  override willAutoJoin(qb: IQueryBuilder<T>, alias?: string) {
-    const nestedAlias = qb.getAliasForJoinPath(this.getPath());
+  override willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions) {
+    const nestedAlias = qb.getAliasForJoinPath(this.getPath(), options);
     const ownerAlias = alias || qb.alias;
     const keys = Object.keys(this.payload);
 
@@ -115,7 +122,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
     return keys.some(field => {
       const childNode = this.payload[field] as CriteriaNode<T>;
-      return childNode.willAutoJoin(qb, this.prop ? alias : ownerAlias);
+      return childNode.willAutoJoin(qb, this.prop ? alias : ownerAlias, options);
     });
   }
 
@@ -171,6 +178,10 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
     if (keys.every(k => k.includes('.') && k.startsWith(`${qb.alias}.`))) {
       return false;
+    }
+
+    if (keys.some(k => ['$some', '$none', '$every'].includes(k))) {
+      return true;
     }
 
     const meta = this.metadata.find(this.entityName)!;

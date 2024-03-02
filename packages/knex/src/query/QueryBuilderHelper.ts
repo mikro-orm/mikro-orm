@@ -553,7 +553,7 @@ export class QueryBuilderHelper {
 
     /* istanbul ignore next */
     if (!op) {
-      throw new Error(`Invalid query condition: ${inspect(cond)}`);
+      throw new Error(`Invalid query condition: ${inspect(cond, { depth: 5 })}`);
     }
 
     const replacement = this.getOperatorReplacement(op, value);

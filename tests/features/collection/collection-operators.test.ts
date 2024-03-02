@@ -67,6 +67,7 @@ beforeAll(async () => {
     entities: [Author],
     dbName: ':memory:',
     loggerFactory: options => new SimpleLogger(options),
+    populateWhere: 'infer',
   });
 
   await orm.schema.createSchema();

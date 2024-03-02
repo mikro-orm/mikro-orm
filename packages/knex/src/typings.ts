@@ -190,7 +190,7 @@ export interface ICriteriaNode<T extends object> {
   index?: number;
   process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any;
   shouldInline(payload: any): boolean;
-  willAutoJoin(qb: IQueryBuilder<T>, alias?: string): boolean;
+  willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions): boolean;
   shouldRename(payload: any): boolean;
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string;
   getPath(addIndex?: boolean): string;
