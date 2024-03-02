@@ -122,3 +122,24 @@ test('$every with populateWhere: infer', async () => {
     'left join `server` as `s1` on `u0`.`id` = `s1`.`user_id` ' +
     'where `u0`.`id` not in (select `u0`.`id` from `user` as `u0` inner join `server` as `s1` on `u0`.`id` = `s1`.`user_id` where not (`s1`.`name` != \'test\'))');
 });
+
+test('disallow $every on top level', async () => {
+  const mock = mockLogger(orm);
+
+  await expect(orm.em.fork().find(
+    User,
+    {
+      $every: {
+        servers: {
+          name: {
+            $ne: 'test',
+          },
+        },
+      },
+    },
+    {
+      populate: ['servers'],
+      populateWhere: 'infer',
+    },
+  )).rejects.toThrow('Collection operators can be used only inside a collection property context, but it was used for User.id.');
+});

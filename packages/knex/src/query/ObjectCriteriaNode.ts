@@ -29,10 +29,14 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
     if (this.shouldAutoJoin(qb, nestedAlias)) {
       if (keys.some(k => ['$some', '$none', '$every'].includes(k))) {
-        // ignore collection operators when used on a non-relational property - this can happen when they get into
-        // populateWhere via `infer` on m:n properties with select-in strategy
-        if (!this.prop?.targetMeta) {
-          return {};
+        if (![ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(this.prop!.kind)) {
+          // ignore collection operators when used on a non-relational property - this can happen when they get into
+          // populateWhere via `infer` on m:n properties with select-in strategy
+          if (this.parent?.parent) { // we validate only usage on top level
+            return {};
+          }
+
+          throw new Error(`Collection operators can be used only inside a collection property context, but it was used for ${this.getPath()}.`);
         }
 
         const $and: Dictionary[] = [];
