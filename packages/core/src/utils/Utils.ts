@@ -227,7 +227,11 @@ export class Utils {
    */
   static dropUndefinedProperties<T = Dictionary | unknown[]>(o: any, value?: undefined | null, visited = new Set()): void {
     if (Array.isArray(o)) {
-      return o.forEach((item: unknown) => Utils.dropUndefinedProperties(item, value, visited));
+      for (const item of o) {
+        Utils.dropUndefinedProperties(item, value, visited);
+      }
+
+      return;
     }
 
     if (!Utils.isPlainObject(o) || visited.has(o)) {
@@ -236,14 +240,14 @@ export class Utils {
 
     visited.add(o);
 
-    Object.keys(o).forEach(key => {
+    for (const key of Object.keys(o)) {
       if (o[key] === value) {
         delete o[key];
-        return;
+        continue;
       }
 
       Utils.dropUndefinedProperties(o[key], value, visited);
-    });
+    }
   }
 
   /**
@@ -331,15 +335,15 @@ export class Utils {
     const source = sources.shift();
 
     if (Utils.isObject(target) && Utils.isPlainObject(source)) {
-      Object.entries(source).forEach(([key, value]) => {
+      for (const [key, value] of Object.entries(source)) {
         if (ignoreUndefined && typeof value === 'undefined') {
-          return;
+          continue;
         }
 
         if (Utils.isPlainObject(value)) {
           if (!Utils.isObject(target[key])) {
             target[key] = Utils.copy(value);
-            return;
+            continue;
           }
 
           /* istanbul ignore next */
@@ -351,7 +355,7 @@ export class Utils {
         } else {
           Object.assign(target, { [key]: value });
         }
-      });
+      }
     }
 
     return Utils._merge(target, sources, ignoreUndefined);
@@ -379,13 +383,13 @@ export class Utils {
   static diff(a: Dictionary, b: Dictionary): Record<keyof (typeof a & typeof b), any> {
     const ret: Dictionary = {};
 
-    Object.keys(b).forEach(k => {
+    for (const k of Object.keys(b)) {
       if (Utils.equals(a[k], b[k])) {
-        return;
+        continue;
       }
 
       ret[k] = b[k];
-    });
+    }
 
     return ret;
   }
@@ -428,11 +432,11 @@ export class Utils {
    */
   static renameKey<T>(payload: T, from: string | keyof T, to: string): void {
     if (Utils.isObject(payload) && (from as string) in payload && !(to in payload)) {
-      Object.keys(payload).forEach(key => {
+      for (const key of Object.keys(payload)) {
         const value = payload[key];
         delete payload[key];
         payload[from === key ? to : key as keyof T] = value;
-      }, payload);
+      }
     }
   }
 
@@ -1137,11 +1141,7 @@ export class Utils {
     let p = prop;
     const path: string[] = [];
 
-    function isObjectProperty(prop: EntityProperty): boolean {
-      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop.object || !!prop.array;
-    }
-
-    if (!isObjectProperty(prop) && !prop.embedded) {
+    if (!prop.object && !prop.array && !prop.embedded) {
       return entity[prop.name] != null ? [[entity[prop.name], []]] : [];
     }
 
@@ -1162,7 +1162,11 @@ export class Utils {
       const k = path[idx];
 
       if (Array.isArray(t)) {
-        return t.forEach((t, ii) => follow(t, idx, [...i, ii]));
+        for (const t1 of t) {
+          const ii = t.indexOf(t1);
+          follow(t1, idx, [...i, ii]);
+        }
+        return;
       }
 
       if (t == null) {
@@ -1183,11 +1187,7 @@ export class Utils {
   }
 
   static setPayloadProperty<T>(entity: EntityDictionary<T>, meta: EntityMetadata<T>, prop: EntityProperty<T>, value: unknown, idx: number[]): void {
-    function isObjectProperty(prop: EntityProperty): boolean {
-      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop.object || !!prop.array;
-    }
-
-    if (!isObjectProperty(prop)) {
+    if (!prop.object && !prop.array && !prop.embedded) {
       entity[prop.name] = value as T[keyof T & string];
       return;
     }
@@ -1210,7 +1210,8 @@ export class Utils {
     }
 
     let j = 0;
-    path.forEach((k, i) => {
+    for (const k of path) {
+      const i = path.indexOf(k);
       if (i === path.length - 1) {
         if (Array.isArray(target)) {
           target[idx[j++]][k] = value;
@@ -1224,7 +1225,7 @@ export class Utils {
           target = target[k];
         }
       }
-    });
+    }
   }
 
   static tryRequire<T extends Dictionary = any>({ module, from, allowError, warning }: { module: string; warning: string; from?: string; allowError?: string }): T | undefined {

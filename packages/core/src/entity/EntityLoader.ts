@@ -262,35 +262,24 @@ export class EntityLoader {
     const mapToPk = prop.targetMeta!.properties[prop.mappedBy].mapToPk;
     const map: Dictionary<Entity[]> = {};
 
-    filtered.forEach(entity => {
+    for (const entity of filtered) {
       const key = helper(entity).getSerializedPrimaryKey();
-      return map[key] = [];
-    });
-
-    if (mapToPk) {
-      children.forEach(child => {
-        const pk = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
-
-        if (pk) {
-          const key = helper(this.em.getReference(prop.type, pk)).getSerializedPrimaryKey();
-          map[key]?.push(child as Entity);
-        }
-      });
-    } else {
-      children.forEach(child => {
-        const entity = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
-
-        if (entity) {
-          const key = helper(entity).getSerializedPrimaryKey();
-          map[key]?.push(child as Entity);
-        }
-      });
+      map[key] = [];
     }
 
-    filtered.forEach(entity => {
+    for (const child of children) {
+      const pk = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
+
+      if (pk) {
+        const key = helper(mapToPk ? this.em.getReference(prop.type, pk) : pk).getSerializedPrimaryKey();
+        map[key]?.push(child as Entity);
+      }
+    }
+
+    for (const entity of filtered) {
       const key = helper(entity).getSerializedPrimaryKey();
       (entity[field] as unknown as Collection<Entity>).hydrate(map[key]);
-    });
+    }
   }
 
   private initializeManyToMany<Entity>(filtered: Entity[], children: AnyEntity[], prop: EntityProperty<Entity>, field: keyof Entity, customOrder: boolean): void {
