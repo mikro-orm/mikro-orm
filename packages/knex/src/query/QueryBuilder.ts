@@ -957,7 +957,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     RawQueryFragment.cloneRegistry = this.rawFragments;
 
     for (const prop of Object.keys(this)) {
-      if (reset.includes(prop)) {
+      if (reset.includes(prop) || prop === '_helper') {
         continue;
       }
 
@@ -972,6 +972,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     qb._aliases = { ...this._aliases };
+    (qb._helper as Dictionary).aliasMap = qb._aliases;
     qb.finalized = false;
 
     return qb;

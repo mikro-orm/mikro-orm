@@ -149,3 +149,17 @@ test('invalid query', async () => {
   expect(res[0]).toHaveLength(1);
   expect(res[1]).toBe(1);
 });
+
+test('invalid query 2', async () => {
+  const query = orm.em.createQueryBuilder(User, 'user')
+    .clone()
+    .where({
+      location: {
+        location: 'loc name',
+      },
+    });
+
+  expect(query.getFormattedQuery()).toBe(`select "user".* from "user" as "user" left join "location" as "l1" on "user"."location_id" = "l1"."id" where "l1"."location" = 'loc name'`);
+  const res = await query;
+  expect(res).toHaveLength(1);
+});
