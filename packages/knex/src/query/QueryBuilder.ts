@@ -1470,7 +1470,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
           const type = this.platform.castColumn(prop);
           const fieldName = this.helper.mapper(field, this.type, undefined, null);
 
-          if (!prop?.persist && !prop?.formula) {
+          if (!prop?.persist && !prop?.formula && !pks.includes(fieldName)) {
             addToSelect.push(fieldName);
           }
 
