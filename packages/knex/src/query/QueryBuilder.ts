@@ -856,7 +856,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       }
     }
 
-    return entities;
+    return Utils.unique(entities);
   }
 
   /**
@@ -889,8 +889,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
    */
   async getResultAndCount(): Promise<[T[], number]> {
     return [
-      await this.getResultList(),
-      await this.getCount(),
+      await this.clone().getResultList(),
+      await this.clone().getCount(),
     ];
   }
 

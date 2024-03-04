@@ -63,6 +63,15 @@ beforeAll(async () => {
       { name: 'test' },
     ],
   });
+  orm.em.create(User, {
+    id: 2,
+    location: {
+      location: 'test',
+    },
+    servers: [
+      { name: 'test' },
+    ],
+  });
 
   await orm.em.flush();
   orm.em.clear();
@@ -147,7 +156,7 @@ test('invalid query', async () => {
     .limit(1)
     .getResultAndCount();
   expect(res[0]).toHaveLength(1);
-  expect(res[1]).toBe(1);
+  expect(res[1]).toBe(2);
 });
 
 test('invalid query 2', async () => {
@@ -162,4 +171,29 @@ test('invalid query 2', async () => {
   expect(query.getFormattedQuery()).toBe(`select "user".* from "user" as "user" left join "location" as "l1" on "user"."location_id" = "l1"."id" where "l1"."location" = 'loc name'`);
   const res = await query;
   expect(res).toHaveLength(1);
+});
+
+test('invalid query 3', async () => {
+  const [users, count] = await orm.em.fork()
+    .createQueryBuilder(User)
+    .select('*')
+    .leftJoinAndSelect('servers', 's')
+    .limit(1)
+    .getResultAndCount();
+
+  expect(users).toHaveLength(1);
+  expect(users[0].servers).toHaveLength(3);
+  expect(count).toBe(2);
+
+  const [users2, count2] = await orm.em.fork()
+    .createQueryBuilder(User)
+    .select('*')
+    .leftJoinAndSelect('servers', 's')
+    .limit(3)
+    .getResultAndCount();
+
+  expect(users2).toHaveLength(2);
+  expect(users2[0].servers).toHaveLength(3);
+  expect(users2[1].servers).toHaveLength(1);
+  expect(count2).toBe(2);
 });
