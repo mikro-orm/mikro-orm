@@ -13,6 +13,9 @@ class User {
   @OneToMany(() => Server, x => x.user)
   servers = new Collection<Server>(this);
 
+  @Property({ type: 'json', nullable: true })
+  data: any;
+
 }
 
 @Entity()
@@ -62,6 +65,7 @@ beforeAll(async () => {
       { name: 's2' },
       { name: 'test' },
     ],
+    data: { foo: 'bar' },
   });
   orm.em.create(User, {
     id: 2,
@@ -71,6 +75,7 @@ beforeAll(async () => {
     servers: [
       { name: 'test' },
     ],
+    data: { foo: 'baz' },
   });
 
   await orm.em.flush();
@@ -174,9 +179,11 @@ test('invalid query 2', async () => {
 });
 
 test('invalid query 3', async () => {
+  const mock = mockLogger(orm);
   const [users, count] = await orm.em.fork()
     .createQueryBuilder(User)
     .select('*')
+    .where({ data: { foo: { $ne: null } } })
     .leftJoinAndSelect('servers', 's')
     .limit(1)
     .getResultAndCount();
@@ -184,10 +191,13 @@ test('invalid query 3', async () => {
   expect(users).toHaveLength(1);
   expect(users[0].servers).toHaveLength(3);
   expect(count).toBe(2);
+  expect(mock.mock.calls[0][0]).toMatch(`select "u0".*, "s"."id" as "s__id", "s"."name" as "s__name", "s"."user_id" as "s__user_id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."id" in (select "u0"."id" from (select "u0"."id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null group by "u0"."id" limit 1) as "u0")`);
+  expect(mock.mock.calls[1][0]).toMatch(`select count(distinct("u0"."id")) as "count" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null`);
 
   const [users2, count2] = await orm.em.fork()
     .createQueryBuilder(User)
     .select('*')
+    .where({ data: { foo: { $ne: null } } })
     .leftJoinAndSelect('servers', 's')
     .limit(3)
     .getResultAndCount();
@@ -196,4 +206,6 @@ test('invalid query 3', async () => {
   expect(users2[0].servers).toHaveLength(3);
   expect(users2[1].servers).toHaveLength(1);
   expect(count2).toBe(2);
+  expect(mock.mock.calls[2][0]).toMatch(`select "u0".*, "s"."id" as "s__id", "s"."name" as "s__name", "s"."user_id" as "s__user_id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."id" in (select "u0"."id" from (select "u0"."id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null group by "u0"."id" limit 3) as "u0")`);
+  expect(mock.mock.calls[3][0]).toMatch(`select count(distinct("u0"."id")) as "count" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null`);
 });
