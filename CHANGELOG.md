@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.7](https://github.com/mikro-orm/mikro-orm/compare/v6.1.6...v6.1.7) (2024-03-04)
+
+
+### Bug Fixes
+
+* **core:** add `em.addFilter()` fallback signature that allows more than 3 types ([b6efd44](https://github.com/mikro-orm/mikro-orm/commit/b6efd4470e9c060c3611c1e3395bd9f500cd0376))
+* **core:** fix aliasing of queries with collection operators ([0435faf](https://github.com/mikro-orm/mikro-orm/commit/0435faf712783c89ed8b9de456c8da1c4f551c91)), closes [#5301](https://github.com/mikro-orm/mikro-orm/issues/5301)
+* **core:** ignore collection operators in `populateWhere` conditions ([7b6b363](https://github.com/mikro-orm/mikro-orm/commit/7b6b3634301469cd39fa18f39e6761f01a0d94bb))
+* **query-builder:** check for duplicate selects when wrapping pagination query ([e005cc2](https://github.com/mikro-orm/mikro-orm/commit/e005cc22ef4e247f9741bdcaf1af012337977b7e))
+* **query-builder:** fix cloning of alias map ([50d8fb9](https://github.com/mikro-orm/mikro-orm/commit/50d8fb9b1b3f9b59768badd70138c4b83e516bf1))
+
+
+### Features
+
+* **core:** validate wrong placement of collection operators ([c35e705](https://github.com/mikro-orm/mikro-orm/commit/c35e705714f2f88b8da8a0264b5517d6f991274f))
+
+
+
+
+
 ## [6.1.6](https://github.com/mikro-orm/mikro-orm/compare/v6.1.5...v6.1.6) (2024-02-28)
 
 
