@@ -71,7 +71,7 @@ export class ChangeSetPersister {
       const chunk = changeSets.slice(i, i + size);
       const pks = chunk.map(cs => cs.getPrimaryKey());
       options = this.propagateSchemaFromMetadata(meta, options);
-      await this.driver.nativeDelete(meta.className, { [pk]: { $in: pks } } as FilterQuery<T>, options);
+      await this.driver.nativeDelete(meta.root.className, { [pk]: { $in: pks } } as FilterQuery<T>, options);
     }
   }
 
