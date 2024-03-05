@@ -119,8 +119,8 @@ export class Author2 extends BaseEntity2 {
   @ManyToOne({ nullable: true, updateRule: 'no action', deleteRule: 'cascade' })
   favouriteBook?: Book2;
 
-  @ManyToOne({ nullable: true })
-  favouriteAuthor?: Author2;
+  @ManyToOne(() => Author2, { nullable: true })
+  favouriteAuthor?: Author2 | null;
 
   @Embedded(() => Identity, { nullable: true, object: true })
   identity?: Identity;

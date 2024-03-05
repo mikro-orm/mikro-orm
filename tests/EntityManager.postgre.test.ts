@@ -1855,6 +1855,24 @@ describe('EntityManagerPostgre', () => {
     expect(author.age).toBe(123);
   });
 
+  test('update reference with null', async () => {
+    await orm.em.insertMany(Author2, [
+      { id: 1, name: 'name', email: 'email1', age: 123 },
+      { id: 2, name: 'name', email: 'email2', age: 1, favouriteAuthor: 1 },
+    ]);
+    const ref2 = orm.em.getReference(Author2, 2);
+
+    const mock = mockLogger(orm, ['query', 'query-params']);
+    ref2.favouriteAuthor = null;
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "favourite_author_id" = NULL, "updated_at" = '.*' where "id" = 2/);
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    expect(ref2.favouriteAuthor).toBeNull();
+  });
+
   test('update with raw sql fragment', async () => {
     await orm.em.insertMany(Author2, [
       { id: 1, name: 'name', email: 'email1', age: 123 },
