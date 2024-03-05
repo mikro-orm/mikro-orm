@@ -102,8 +102,8 @@ class User {
   @Embedded({ object: true })
   address4: Address1 = new Address1();
 
-  @Embedded(() => Address1, { array: true })
-  addresses: Address1[] = [];
+  @Embedded(() => Address1, { array: true, nullable: true })
+  addresses: Address1[] | null = [];
 
   @Property({ nullable: true })
   after?: number; // property after embeddables to verify order props in resulting schema
@@ -188,20 +188,20 @@ describe('embedded entities in postgresql', () => {
 
     orm.em.assign(user, { addresses: [address1] });
     expect(user.addresses).toEqual([address1]);
-    expect(user.addresses[0]).toBeInstanceOf(Address1);
+    expect(user.addresses![0]).toBeInstanceOf(Address1);
 
     orm.em.assign(user, { addresses: [address1] });
     expect(user.addresses).toEqual([address1]);
-    expect(user.addresses[0]).toBeInstanceOf(Address1);
+    expect(user.addresses![0]).toBeInstanceOf(Address1);
 
     orm.em.assign(user, { addresses: [address2] });
     expect(user.addresses).toEqual([address2]);
-    expect(user.addresses[0]).toBeInstanceOf(Address1);
+    expect(user.addresses![0]).toBeInstanceOf(Address1);
 
     orm.em.assign(user, { addresses: address1 }); // push to existing array
     expect(user.addresses).toEqual([address2, address1]);
-    expect(user.addresses[0]).toBeInstanceOf(Address1);
-    expect(user.addresses[1]).toBeInstanceOf(Address1);
+    expect(user.addresses![0]).toBeInstanceOf(Address1);
+    expect(user.addresses![1]).toBeInstanceOf(Address1);
     expect(user.addresses).toHaveLength(2);
   });
 
@@ -491,7 +491,7 @@ describe('embedded entities in postgresql', () => {
   });
 
   test('array operators', async () => {
-    await createUser();
+    createUser();
     const qb = orm.em.createQueryBuilder(User).select('*').where({
       addresses: { $contains: [{ street: 'Downing street 13A' }] },
     });
@@ -513,6 +513,15 @@ describe('embedded entities in postgresql', () => {
         country: 'UK 4B',
       },
     ]);
+  });
+
+  test('nullable array property', async () => {
+    const user1 = createUser();
+    const user2 = createUser();
+    user1.addresses = null;
+    await orm.em.flush();
+    expect(user1.addresses).toBeNull();
+    expect(user2.addresses).toHaveLength(2);
   });
 
 });
