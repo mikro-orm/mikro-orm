@@ -109,7 +109,7 @@ module.exports = {
   scripts: ['/js/custom.js'],
   trailingSlash: false,
   onBrokenLinks: 'throw',
-  onBrokenAnchors: 'throw',
+  onBrokenAnchors: 'warn', // broken with @mdx-js/react@3.0.1
   onBrokenMarkdownLinks: 'throw',
   onDuplicateRoutes: 'throw',
   themeConfig: {
