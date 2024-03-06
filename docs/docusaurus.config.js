@@ -159,12 +159,19 @@ module.exports = {
           'data-type': 'versions',
         },
         {
-          href: 'https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LWM4ZDExMjU5ZDhmNjA2MmM3MWMwZmExNjhhNDdiYTMwNWM0MGY5ZTE3ZjkyZTMzOWExNDgyYmMzNDE1NDI5NjA',
-          label: 'Slack',
+          href: 'https://discord.gg/ynAmaVDV',
+          label: 'Discord',
           position: 'right',
-          title: 'Chat on Slack',
+          title: 'Chat on Discord',
           className: 'icon',
         },
+        // {
+        //   href: 'https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LWM4ZDExMjU5ZDhmNjA2MmM3MWMwZmExNjhhNDdiYTMwNWM0MGY5ZTE3ZjkyZTMzOWExNDgyYmMzNDE1NDI5NjA',
+        //   label: 'Slack',
+        //   position: 'right',
+        //   title: 'Chat on Slack',
+        //   className: 'icon',
+        // },
         {
           href: 'https://github.com/mikro-orm/mikro-orm',
           label: 'GitHub',
@@ -189,6 +196,10 @@ module.exports = {
         {
           title: 'Community',
           items: [
+            {
+              label: 'Discord',
+              href: 'https://discord.gg/ynAmaVDV',
+            },
             {
               label: 'Slack',
               href: 'https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LWM4ZDExMjU5ZDhmNjA2MmM3MWMwZmExNjhhNDdiYTMwNWM0MGY5ZTE3ZjkyZTMzOWExNDgyYmMzNDE1NDI5NjA',

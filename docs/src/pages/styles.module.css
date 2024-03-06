@@ -54,3 +54,17 @@ html[data-theme="light"] .feature > div {
   max-width: 200px;
   padding: 20px 0 30px;
 }
+
+.getStarted {
+  background: rgba(70, 203, 174, 0.5);
+  color: #ddd;
+  font-weight: 800;
+}
+
+html[data-theme="dark"] .getStarted {
+  background: #182126;
+}
+
+.sourceCode {
+  font-weight: 600;
+}
