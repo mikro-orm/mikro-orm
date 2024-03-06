@@ -1237,24 +1237,31 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       loggerContext: options.loggerContext,
     });
     options.ctx ??= em.transactionContext;
+    const propagateToUpperContext = !em.global || this.config.get('allowGlobalContext');
 
     return TransactionContext.create(fork, async () => {
       return fork.getConnection().transactional(async trx => {
         fork.transactionContext = trx;
-        fork.eventManager.registerSubscriber({
-          afterFlush(args: FlushEventArgs) {
-            args.uow.getChangeSets()
-              .filter(cs => [ChangeSetType.DELETE, ChangeSetType.DELETE_EARLY].includes(cs.type))
-              .forEach(cs => em.unitOfWork.unsetIdentity(cs.entity));
-          },
-        });
+
+        if (propagateToUpperContext) {
+          fork.eventManager.registerSubscriber({
+            afterFlush(args: FlushEventArgs) {
+              args.uow.getChangeSets()
+                .filter(cs => [ChangeSetType.DELETE, ChangeSetType.DELETE_EARLY].includes(cs.type))
+                .forEach(cs => em.unitOfWork.unsetIdentity(cs.entity));
+            },
+          });
+        }
+
         const ret = await cb(fork);
         await fork.flush();
 
-        // ensure all entities from inner context are merged to the upper one
-        for (const entity of fork.unitOfWork.getIdentityMap()) {
-          em.unitOfWork.register(entity);
-          entity.__helper!.__em = em;
+        if (propagateToUpperContext) {
+          // ensure all entities from inner context are merged to the upper one
+          for (const entity of fork.unitOfWork.getIdentityMap()) {
+            em.unitOfWork.register(entity);
+            entity.__helper!.__em = em;
+          }
         }
 
         return ret;
