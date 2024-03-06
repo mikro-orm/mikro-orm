@@ -134,7 +134,7 @@ function Footer() {
                 )}
               </div>
             )}
-            {copyright}
+            {copyright}{' '}
             Icons made by <a href="https://www.flaticon.com/authors/surang" title="surang">surang</a> and <a href="https://www.flaticon.com/authors/skyclick" title="Skyclick">Skyclick</a>.
           </div>
         )}
