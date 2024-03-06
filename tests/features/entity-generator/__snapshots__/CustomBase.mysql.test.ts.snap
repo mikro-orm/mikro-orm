@@ -502,6 +502,7 @@ export class User2 {
 exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName= entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 
 export class Address2 {
   [PrimaryKeyProp]?: 'author';
@@ -524,6 +525,7 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 
 export class Author2 {
   id!: number;
@@ -662,7 +664,9 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -709,6 +713,8 @@ export const Book2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 
 export class Book2Tags {
   [PrimaryKeyProp]?: 'order';
@@ -738,6 +744,7 @@ export const Book2TagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema } from '@mikro-orm/core';
+import { Car2 } from './Car2';
 
 export class CarOwner2 {
   id!: number;
@@ -773,6 +780,7 @@ export const Car2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Test2 } from './Test2';
 
 export class Configuration2 {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -804,6 +812,7 @@ export const Dummy2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 {
   id!: number;
@@ -864,6 +873,8 @@ export const FooBaz2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -933,6 +944,8 @@ export const Publisher2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema } from '@mikro-orm/core';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests {
   id!: number;
@@ -978,6 +991,7 @@ export const SandwichSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 export class Test2 {
@@ -1596,6 +1610,7 @@ export abstract class BaseEntity {
 exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 
 export class Address2 extends BaseEntity {
@@ -1620,6 +1635,7 @@ export const Address2Schema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Book2 } from './Book2';
 
 export class Author2 extends BaseEntity {
   id!: number;
@@ -1760,8 +1776,10 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends BaseEntity {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -1809,6 +1827,8 @@ export const Book2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 
 export class Book2Tags extends BaseEntity {
   [PrimaryKeyProp]?: 'order';
@@ -1839,6 +1859,7 @@ export const Book2TagsSchema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Car2 } from './Car2';
 
 export class CarOwner2 extends BaseEntity {
   id!: number;
@@ -1876,6 +1897,7 @@ export const Car2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends BaseEntity {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -1909,6 +1931,7 @@ export const Dummy2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends BaseEntity {
   id!: number;
@@ -1971,6 +1994,8 @@ export const FooBaz2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends BaseEntity {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -2042,6 +2067,8 @@ export const Publisher2Schema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends BaseEntity {
   id!: number;
@@ -2089,6 +2116,7 @@ export const SandwichSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 export class Test2 extends BaseEntity {
@@ -2714,6 +2742,7 @@ export class User2 extends BaseUser2 {
 exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseUser2 entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 
 export class Address2 extends BaseUser2 {
@@ -2738,6 +2767,7 @@ export const Address2Schema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Book2 } from './Book2';
 
 export class Author2 extends BaseUser2 {
   id!: number;
@@ -2878,8 +2908,10 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends BaseUser2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -2927,6 +2959,8 @@ export const Book2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 
 export class Book2Tags extends BaseUser2 {
   [PrimaryKeyProp]?: 'order';
@@ -2957,6 +2991,7 @@ export const Book2TagsSchema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Car2 } from './Car2';
 
 export class CarOwner2 extends BaseUser2 {
   id!: number;
@@ -2994,6 +3029,7 @@ export const Car2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends BaseUser2 {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -3027,6 +3063,7 @@ export const Dummy2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends BaseUser2 {
   id!: number;
@@ -3089,6 +3126,8 @@ export const FooBaz2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends BaseUser2 {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -3160,6 +3199,8 @@ export const Publisher2Schema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends BaseUser2 {
   id!: number;
@@ -3207,6 +3248,7 @@ export const SandwichSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 export class Test2 extends BaseUser2 {
@@ -3826,6 +3868,7 @@ export abstract class CustomBase {
 exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=CustomBase entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { CustomBase } from './CustomBase';
 
 export class Address2 extends CustomBase {
@@ -3849,6 +3892,7 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 
 export class Author2 extends CustomBase {
@@ -3990,8 +4034,10 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends CustomBase {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -4038,6 +4084,8 @@ export const Book2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
 
 export class Book2Tags extends CustomBase {
@@ -4068,6 +4116,7 @@ export const Book2TagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema } from '@mikro-orm/core';
+import { Car2 } from './Car2';
 import { CustomBase } from './CustomBase';
 
 export class CarOwner2 extends CustomBase {
@@ -4106,6 +4155,7 @@ export const Car2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends CustomBase {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -4139,6 +4189,7 @@ export const Dummy2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends CustomBase {
   id!: number;
@@ -4201,6 +4252,8 @@ export const FooBaz2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends CustomBase {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -4272,6 +4325,8 @@ export const Publisher2Schema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends CustomBase {
   id!: number;
@@ -4318,6 +4373,7 @@ export const SandwichSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
 
@@ -4924,6 +4980,7 @@ export class User2 extends BaseEntity {
 exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName= entitySchema=true: dump 1`] = `
 [
   "import { BaseEntity, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 
 export class Address2 extends BaseEntity {
   [PrimaryKeyProp]?: 'author';
@@ -4946,6 +5003,7 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 
 export class Author2 extends BaseEntity {
   id!: number;
@@ -5084,7 +5142,9 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends BaseEntity {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -5131,6 +5191,8 @@ export const Book2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 
 export class Book2Tags extends BaseEntity {
   [PrimaryKeyProp]?: 'order';
@@ -5160,6 +5222,7 @@ export const Book2TagsSchema = new EntitySchema({
 });
 ",
   "import { BaseEntity, EntitySchema } from '@mikro-orm/core';
+import { Car2 } from './Car2';
 
 export class CarOwner2 extends BaseEntity {
   id!: number;
@@ -5195,6 +5258,7 @@ export const Car2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends BaseEntity {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -5226,6 +5290,7 @@ export const Dummy2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, EntitySchema, Opt } from '@mikro-orm/core';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends BaseEntity {
   id!: number;
@@ -5286,6 +5351,8 @@ export const FooBaz2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends BaseEntity {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -5355,6 +5422,8 @@ export const Publisher2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, EntitySchema } from '@mikro-orm/core';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends BaseEntity {
   id!: number;
@@ -5400,6 +5469,7 @@ export const SandwichSchema = new EntitySchema({
 });
 ",
   "import { BaseEntity, Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 export class Test2 extends BaseEntity {
@@ -6018,6 +6088,7 @@ export abstract class BaseEntity extends MikroBaseEntity {
 exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 
 export class Address2 extends BaseEntity {
@@ -6042,6 +6113,7 @@ export const Address2Schema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Book2 } from './Book2';
 
 export class Author2 extends BaseEntity {
   id!: number;
@@ -6182,8 +6254,10 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends BaseEntity {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -6231,6 +6305,8 @@ export const Book2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 
 export class Book2Tags extends BaseEntity {
   [PrimaryKeyProp]?: 'order';
@@ -6261,6 +6337,7 @@ export const Book2TagsSchema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Car2 } from './Car2';
 
 export class CarOwner2 extends BaseEntity {
   id!: number;
@@ -6298,6 +6375,7 @@ export const Car2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends BaseEntity {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -6331,6 +6409,7 @@ export const Dummy2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends BaseEntity {
   id!: number;
@@ -6393,6 +6472,8 @@ export const FooBaz2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends BaseEntity {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -6464,6 +6545,8 @@ export const Publisher2Schema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends BaseEntity {
   id!: number;
@@ -6511,6 +6594,7 @@ export const SandwichSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 export class Test2 extends BaseEntity {
@@ -7136,6 +7220,7 @@ export class User2 extends BaseUser2 {
 exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseUser2 entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 
 export class Address2 extends BaseUser2 {
@@ -7160,6 +7245,7 @@ export const Address2Schema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Book2 } from './Book2';
 
 export class Author2 extends BaseUser2 {
   id!: number;
@@ -7300,8 +7386,10 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends BaseUser2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -7349,6 +7437,8 @@ export const Book2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 
 export class Book2Tags extends BaseUser2 {
   [PrimaryKeyProp]?: 'order';
@@ -7379,6 +7469,7 @@ export const Book2TagsSchema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Car2 } from './Car2';
 
 export class CarOwner2 extends BaseUser2 {
   id!: number;
@@ -7416,6 +7507,7 @@ export const Car2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends BaseUser2 {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -7449,6 +7541,7 @@ export const Dummy2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends BaseUser2 {
   id!: number;
@@ -7511,6 +7604,8 @@ export const FooBaz2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends BaseUser2 {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -7582,6 +7677,8 @@ export const Publisher2Schema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends BaseUser2 {
   id!: number;
@@ -7629,6 +7726,7 @@ export const SandwichSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 export class Test2 extends BaseUser2 {
@@ -8248,6 +8346,7 @@ export abstract class CustomBase extends BaseEntity {
 exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=CustomBase entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { CustomBase } from './CustomBase';
 
 export class Address2 extends CustomBase {
@@ -8271,6 +8370,7 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 
 export class Author2 extends CustomBase {
@@ -8412,8 +8512,10 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends CustomBase {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -8460,6 +8562,8 @@ export const Book2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
 
 export class Book2Tags extends CustomBase {
@@ -8490,6 +8594,7 @@ export const Book2TagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema } from '@mikro-orm/core';
+import { Car2 } from './Car2';
 import { CustomBase } from './CustomBase';
 
 export class CarOwner2 extends CustomBase {
@@ -8528,6 +8633,7 @@ export const Car2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends CustomBase {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -8561,6 +8667,7 @@ export const Dummy2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends CustomBase {
   id!: number;
@@ -8623,6 +8730,8 @@ export const FooBaz2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends CustomBase {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -8694,6 +8803,8 @@ export const Publisher2Schema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends CustomBase {
   id!: number;
@@ -8740,6 +8851,7 @@ export const SandwichSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
 
@@ -9346,6 +9458,7 @@ export class User2 {
 exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName= entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 
 export class Address2 {
   [PrimaryKeyProp]?: 'author';
@@ -9368,6 +9481,7 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 
 export class Author2 {
   id!: number;
@@ -9506,7 +9620,9 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -9553,6 +9669,8 @@ export const Book2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 
 export class Book2Tags {
   [PrimaryKeyProp]?: 'order';
@@ -9582,6 +9700,7 @@ export const Book2TagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema } from '@mikro-orm/core';
+import { Car2 } from './Car2';
 
 export class CarOwner2 {
   id!: number;
@@ -9617,6 +9736,7 @@ export const Car2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Test2 } from './Test2';
 
 export class Configuration2 {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -9648,6 +9768,7 @@ export const Dummy2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 {
   id!: number;
@@ -9708,6 +9829,8 @@ export const FooBaz2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -9777,6 +9900,8 @@ export const Publisher2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema } from '@mikro-orm/core';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests {
   id!: number;
@@ -9822,6 +9947,7 @@ export const SandwichSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 export class Test2 {
@@ -10440,6 +10566,7 @@ export abstract class BaseEntity {
 exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 
 export class Address2 extends BaseEntity {
@@ -10464,6 +10591,7 @@ export const Address2Schema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Book2 } from './Book2';
 
 export class Author2 extends BaseEntity {
   id!: number;
@@ -10604,8 +10732,10 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends BaseEntity {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -10653,6 +10783,8 @@ export const Book2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 
 export class Book2Tags extends BaseEntity {
   [PrimaryKeyProp]?: 'order';
@@ -10683,6 +10815,7 @@ export const Book2TagsSchema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Car2 } from './Car2';
 
 export class CarOwner2 extends BaseEntity {
   id!: number;
@@ -10720,6 +10853,7 @@ export const Car2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends BaseEntity {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -10753,6 +10887,7 @@ export const Dummy2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends BaseEntity {
   id!: number;
@@ -10815,6 +10950,8 @@ export const FooBaz2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends BaseEntity {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -10886,6 +11023,8 @@ export const Publisher2Schema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends BaseEntity {
   id!: number;
@@ -10933,6 +11072,7 @@ export const SandwichSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 export class Test2 extends BaseEntity {
@@ -11558,6 +11698,7 @@ export class User2 extends BaseUser2 {
 exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseUser2 entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 
 export class Address2 extends BaseUser2 {
@@ -11582,6 +11723,7 @@ export const Address2Schema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Book2 } from './Book2';
 
 export class Author2 extends BaseUser2 {
   id!: number;
@@ -11722,8 +11864,10 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends BaseUser2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -11771,6 +11915,8 @@ export const Book2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 
 export class Book2Tags extends BaseUser2 {
   [PrimaryKeyProp]?: 'order';
@@ -11801,6 +11947,7 @@ export const Book2TagsSchema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Car2 } from './Car2';
 
 export class CarOwner2 extends BaseUser2 {
   id!: number;
@@ -11838,6 +11985,7 @@ export const Car2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends BaseUser2 {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -11871,6 +12019,7 @@ export const Dummy2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends BaseUser2 {
   id!: number;
@@ -11933,6 +12082,8 @@ export const FooBaz2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends BaseUser2 {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -12004,6 +12155,8 @@ export const Publisher2Schema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends BaseUser2 {
   id!: number;
@@ -12051,6 +12204,7 @@ export const SandwichSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 export class Test2 extends BaseUser2 {
@@ -12670,6 +12824,7 @@ export abstract class CustomBase {
 exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=CustomBase entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { CustomBase } from './CustomBase';
 
 export class Address2 extends CustomBase {
@@ -12693,6 +12848,7 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 
 export class Author2 extends CustomBase {
@@ -12834,8 +12990,10 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends CustomBase {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -12882,6 +13040,8 @@ export const Book2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
 
 export class Book2Tags extends CustomBase {
@@ -12912,6 +13072,7 @@ export const Book2TagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema } from '@mikro-orm/core';
+import { Car2 } from './Car2';
 import { CustomBase } from './CustomBase';
 
 export class CarOwner2 extends CustomBase {
@@ -12950,6 +13111,7 @@ export const Car2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends CustomBase {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -12983,6 +13145,7 @@ export const Dummy2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends CustomBase {
   id!: number;
@@ -13045,6 +13208,8 @@ export const FooBaz2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends CustomBase {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -13116,6 +13281,8 @@ export const Publisher2Schema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends CustomBase {
   id!: number;
@@ -13162,6 +13329,7 @@ export const SandwichSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
 
@@ -13768,6 +13936,7 @@ export class User2 extends BaseEntity {
 exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName= entitySchema=true: dump 1`] = `
 [
   "import { BaseEntity, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 
 export class Address2 extends BaseEntity {
   [PrimaryKeyProp]?: 'author';
@@ -13790,6 +13959,7 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 
 export class Author2 extends BaseEntity {
   id!: number;
@@ -13928,7 +14098,9 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends BaseEntity {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -13975,6 +14147,8 @@ export const Book2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 
 export class Book2Tags extends BaseEntity {
   [PrimaryKeyProp]?: 'order';
@@ -14004,6 +14178,7 @@ export const Book2TagsSchema = new EntitySchema({
 });
 ",
   "import { BaseEntity, EntitySchema } from '@mikro-orm/core';
+import { Car2 } from './Car2';
 
 export class CarOwner2 extends BaseEntity {
   id!: number;
@@ -14039,6 +14214,7 @@ export const Car2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends BaseEntity {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -14070,6 +14246,7 @@ export const Dummy2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, EntitySchema, Opt } from '@mikro-orm/core';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends BaseEntity {
   id!: number;
@@ -14130,6 +14307,8 @@ export const FooBaz2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends BaseEntity {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -14199,6 +14378,8 @@ export const Publisher2Schema = new EntitySchema({
 });
 ",
   "import { BaseEntity, EntitySchema } from '@mikro-orm/core';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends BaseEntity {
   id!: number;
@@ -14244,6 +14425,7 @@ export const SandwichSchema = new EntitySchema({
 });
 ",
   "import { BaseEntity, Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 export class Test2 extends BaseEntity {
@@ -14862,6 +15044,7 @@ export abstract class BaseEntity extends MikroBaseEntity {
 exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 
 export class Address2 extends BaseEntity {
@@ -14886,6 +15069,7 @@ export const Address2Schema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Book2 } from './Book2';
 
 export class Author2 extends BaseEntity {
   id!: number;
@@ -15026,8 +15210,10 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends BaseEntity {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -15075,6 +15261,8 @@ export const Book2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 
 export class Book2Tags extends BaseEntity {
   [PrimaryKeyProp]?: 'order';
@@ -15105,6 +15293,7 @@ export const Book2TagsSchema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Car2 } from './Car2';
 
 export class CarOwner2 extends BaseEntity {
   id!: number;
@@ -15142,6 +15331,7 @@ export const Car2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends BaseEntity {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -15175,6 +15365,7 @@ export const Dummy2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends BaseEntity {
   id!: number;
@@ -15237,6 +15428,8 @@ export const FooBaz2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends BaseEntity {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -15308,6 +15501,8 @@ export const Publisher2Schema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends BaseEntity {
   id!: number;
@@ -15355,6 +15550,7 @@ export const SandwichSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
+import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 export class Test2 extends BaseEntity {
@@ -15980,6 +16176,7 @@ export class User2 extends BaseUser2 {
 exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseUser2 entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 
 export class Address2 extends BaseUser2 {
@@ -16004,6 +16201,7 @@ export const Address2Schema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Book2 } from './Book2';
 
 export class Author2 extends BaseUser2 {
   id!: number;
@@ -16144,8 +16342,10 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends BaseUser2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -16193,6 +16393,8 @@ export const Book2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 
 export class Book2Tags extends BaseUser2 {
   [PrimaryKeyProp]?: 'order';
@@ -16223,6 +16425,7 @@ export const Book2TagsSchema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Car2 } from './Car2';
 
 export class CarOwner2 extends BaseUser2 {
   id!: number;
@@ -16260,6 +16463,7 @@ export const Car2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends BaseUser2 {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -16293,6 +16497,7 @@ export const Dummy2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends BaseUser2 {
   id!: number;
@@ -16355,6 +16560,8 @@ export const FooBaz2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends BaseUser2 {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -16426,6 +16633,8 @@ export const Publisher2Schema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends BaseUser2 {
   id!: number;
@@ -16473,6 +16682,7 @@ export const SandwichSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
+import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 export class Test2 extends BaseUser2 {
@@ -17092,6 +17302,7 @@ export abstract class CustomBase extends BaseEntity {
 exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=CustomBase entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { CustomBase } from './CustomBase';
 
 export class Address2 extends CustomBase {
@@ -17115,6 +17326,7 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 
 export class Author2 extends CustomBase {
@@ -17256,8 +17468,10 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
+import { Publisher2 } from './Publisher2';
 
 export class Book2 extends CustomBase {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -17304,6 +17518,8 @@ export const Book2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
 
 export class Book2Tags extends CustomBase {
@@ -17334,6 +17550,7 @@ export const Book2TagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema } from '@mikro-orm/core';
+import { Car2 } from './Car2';
 import { CustomBase } from './CustomBase';
 
 export class CarOwner2 extends CustomBase {
@@ -17372,6 +17589,7 @@ export const Car2Schema = new EntitySchema({
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { Test2 } from './Test2';
 
 export class Configuration2 extends CustomBase {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -17405,6 +17623,7 @@ export const Dummy2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends CustomBase {
   id!: number;
@@ -17467,6 +17686,8 @@ export const FooBaz2Schema = new EntitySchema({
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 extends CustomBase {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -17538,6 +17759,8 @@ export const Publisher2Schema = new EntitySchema({
 ",
   "import { EntitySchema } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests extends CustomBase {
   id!: number;
@@ -17584,6 +17807,7 @@ export const SandwichSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
 

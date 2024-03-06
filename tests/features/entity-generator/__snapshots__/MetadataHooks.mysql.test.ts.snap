@@ -669,6 +669,7 @@ export abstract class CustomBase2 {
 exports[`MetadataHooks [mysql] identifiedReferences=false metadata hooks with entity schema: mysql-EntitySchema-dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Author2 } from './Author2';
 
 export class Address2 {
   [PrimaryKeyProp]?: 'author';
@@ -690,8 +691,9 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EagerProps, EntitySchema, Hidden, Opt } from '@mikro-orm/core';
+  "import { Cascade, Collection, EagerProps, Embedded, EntitySchema, Hidden, Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
+import { IdentitiesContainer } from './IdentitiesContainer';
 
 export class Author2 {
   [EagerProps]?: 'favouriteBook';
@@ -879,6 +881,8 @@ export const BookTag2Schema = new EntitySchema({
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -932,6 +936,8 @@ export const Book2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
 
 export class Book2Tags {
   [PrimaryKeyProp]?: 'order';
@@ -961,6 +967,7 @@ export const Book2TagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema } from '@mikro-orm/core';
+import { Car2 } from './Car2';
 
 export class CarOwner2 {
   id!: number;
@@ -1004,6 +1011,7 @@ export const Car2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Test2 } from './Test2';
 
 export class Configuration2 {
   [PrimaryKeyProp]?: ['property', 'test'];
@@ -1035,6 +1043,7 @@ export const Dummy2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
 
@@ -1106,6 +1115,8 @@ export const FooBaz2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 {
   [PrimaryKeyProp]?: ['bar', 'baz'];
@@ -1181,6 +1192,8 @@ export const Publisher2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema } from '@mikro-orm/core';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
 
 export class Publisher2Tests {
   id!: number;
@@ -1229,6 +1242,7 @@ export const SandwichSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
 import { Publisher2Tests } from './Publisher2Tests';
@@ -1624,7 +1638,6 @@ import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
-import { number } from './number';
 
 @Entity()
 export class Book2 {
@@ -2012,7 +2025,6 @@ export class Test2 {
   "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
-import { [string, number] } from './[string, number]';
 
 @Entity()
 export class User2 {
@@ -2142,8 +2154,9 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EagerProps, EntitySchema, Hidden, Opt, Ref } from '@mikro-orm/core';
+  "import { Cascade, Collection, EagerProps, Embedded, EntitySchema, Hidden, Opt, Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
+import { IdentitiesContainer } from './IdentitiesContainer';
 
 export class Author2 {
   [EagerProps]?: 'favouriteBook';
@@ -2345,8 +2358,8 @@ export const BookTag2Schema = new EntitySchema({
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
-import { number } from './number';
 
 export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -2796,7 +2809,6 @@ export const Test2Schema = new EntitySchema({
   "import { Collection, EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
-import { [string, number] } from './[string, number]';
 
 export class User2 {
   [PrimaryKeyProp]?: ['firstName', 'lastName'];

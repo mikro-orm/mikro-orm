@@ -174,6 +174,8 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
@@ -206,6 +208,8 @@ export const ProductCountryMapSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
@@ -244,6 +248,7 @@ export const ProductSellersSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountryMap } from './ProductCountryMap';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
@@ -273,6 +278,8 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
@@ -319,6 +326,7 @@ export const SalesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
 export class Sellers {
@@ -604,6 +612,7 @@ export const ProductSellersSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountryMap } from './ProductCountryMap';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
@@ -683,6 +692,7 @@ export const SalesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
 export class Sellers {
@@ -918,6 +928,8 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
 import { Sales } from './Sales';
 
 export class ProductCountryMap {
@@ -953,7 +965,9 @@ export const ProductCountryMapSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 import { Sales } from './Sales';
+import { Sellers } from './Sellers';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
@@ -994,6 +1008,7 @@ export const ProductSellersSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
 
@@ -1029,6 +1044,8 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
@@ -1402,6 +1419,7 @@ export const ProductSellersSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
 
@@ -1655,6 +1673,7 @@ export class Sellers {
 exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
 export class Countries {
@@ -1679,6 +1698,8 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['country', 'product'];
@@ -1707,6 +1728,8 @@ export const ProductCountryMapSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
@@ -1760,6 +1783,8 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
@@ -1803,6 +1828,7 @@ export const SalesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
 export class Sellers {
@@ -1968,6 +1994,7 @@ export class Sellers {
 exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
 export class Countries {
@@ -2133,6 +2160,7 @@ export const SalesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
 export class Sellers {
@@ -2351,6 +2379,8 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
 import { Sales } from './Sales';
 
 export class ProductCountryMap {
@@ -2382,7 +2412,9 @@ export const ProductCountryMapSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 import { Sales } from './Sales';
+import { Sellers } from './Sellers';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
@@ -2447,6 +2479,8 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
@@ -3035,6 +3069,7 @@ export class Sellers {
 exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
 export class Countries {
@@ -3059,6 +3094,8 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['country', 'product'];
@@ -3087,6 +3124,8 @@ export const ProductCountryMapSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
@@ -3140,6 +3179,8 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
@@ -3183,6 +3224,7 @@ export const SalesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
 export class Sellers {
@@ -3348,6 +3390,7 @@ export class Sellers {
 exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
 export class Countries {
@@ -3513,6 +3556,7 @@ export const SalesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
 export class Sellers {
@@ -3731,6 +3775,8 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Products } from './Products';
 import { Sales } from './Sales';
 
 export class ProductCountryMap {
@@ -3762,7 +3808,9 @@ export const ProductCountryMapSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 import { Sales } from './Sales';
+import { Sellers } from './Sellers';
 
 export class ProductSellers {
   [PrimaryKeyProp]?: ['seller', 'product'];
@@ -3827,6 +3875,8 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountryMap } from './ProductCountryMap';
+import { ProductSellers } from './ProductSellers';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';

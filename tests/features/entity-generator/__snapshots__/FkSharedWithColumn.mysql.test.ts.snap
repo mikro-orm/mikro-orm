@@ -81,6 +81,7 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
 
 export class LegalUserCountries {
   [PrimaryKeyProp]?: 'countries';
@@ -97,6 +98,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { LegalUserCountries } from './LegalUserCountries';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';
@@ -374,6 +377,7 @@ export class Users {
 exports[`fk_shared_with_column_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { LegalUserCountries } from './LegalUserCountries';
 import { Users } from './Users';
 
 export class Countries {
@@ -395,6 +399,7 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
 import { Users } from './Users';
 
 export class LegalUserCountries {
@@ -414,6 +419,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { LegalUserCountries } from './LegalUserCountries';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';
@@ -710,6 +717,7 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
 
 export class LegalUserCountries {
   [PrimaryKeyProp]?: 'country';
@@ -724,6 +732,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { LegalUserCountries } from './LegalUserCountries';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';
@@ -969,6 +979,7 @@ export class Users {
 exports[`fk_shared_with_column_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { LegalUserCountries } from './LegalUserCountries';
 import { Users } from './Users';
 
 export class Countries {
@@ -990,6 +1001,7 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
 import { Users } from './Users';
 
 export class LegalUserCountries {
@@ -1007,6 +1019,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { LegalUserCountries } from './LegalUserCountries';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';
@@ -1282,6 +1296,7 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
 
 export class LegalUserCountries {
   [PrimaryKeyProp]?: 'country';
@@ -1296,6 +1311,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { LegalUserCountries } from './LegalUserCountries';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';
@@ -1541,6 +1558,7 @@ export class Users {
 exports[`fk_shared_with_column_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { LegalUserCountries } from './LegalUserCountries';
 import { Users } from './Users';
 
 export class Countries {
@@ -1562,6 +1580,7 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
 import { Users } from './Users';
 
 export class LegalUserCountries {
@@ -1579,6 +1598,8 @@ export const LegalUserCountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { LegalUserCountries } from './LegalUserCountries';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';

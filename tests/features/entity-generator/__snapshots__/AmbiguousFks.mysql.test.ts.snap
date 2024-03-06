@@ -259,6 +259,7 @@ export class Sellers {
 exports[`ambiguous_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
 export class Colors {
@@ -299,6 +300,8 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Colors } from './Colors';
+import { Products } from './Products';
 
 export class ProductColors {
   [PrimaryKeyProp]?: ['color', 'product'];
@@ -325,6 +328,8 @@ export const ProductColorsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { ProductSizes } from './ProductSizes';
 
 export class ProductCountries {
   [PrimaryKeyProp]?: ['product', 'countries'];
@@ -356,6 +361,8 @@ export const ProductCountriesSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountries } from './ProductCountries';
+import { Products } from './Products';
 
 export class ProductSizes {
   [PrimaryKeyProp]?: 'product';
@@ -402,6 +409,11 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductColors } from './ProductColors';
+import { ProductCountries } from './ProductCountries';
+import { ProductSizes } from './ProductSizes';
+import { SellerCountries } from './SellerCountries';
+import { SellerProducts } from './SellerProducts';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
@@ -494,6 +506,8 @@ export const SalesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Sellers } from './Sellers';
 
 export class SellerCountries {
   [PrimaryKeyProp]?: ['seller', 'countries'];
@@ -520,6 +534,8 @@ export const SellerCountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
 
 export class SellerProducts {
   [PrimaryKeyProp]?: ['seller', 'product'];
@@ -548,6 +564,8 @@ export const SellerProductsSchema = new EntitySchema({
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
+import { SellerCountries } from './SellerCountries';
+import { SellerProducts } from './SellerProducts';
 
 export class Sellers {
   [PrimaryKeyProp]?: 'sellerId';
@@ -843,6 +861,7 @@ export class Sellers {
 exports[`ambiguous_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
 export class Colors {
@@ -958,6 +977,7 @@ export const ProductCountriesSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountries } from './ProductCountries';
 import { Products } from './Products';
 
 export class ProductSizes {
@@ -1186,6 +1206,8 @@ export const SellerProductsSchema = new EntitySchema({
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
+import { SellerCountries } from './SellerCountries';
+import { SellerProducts } from './SellerProducts';
 
 export class Sellers {
   [PrimaryKeyProp]?: 'sellerId';
@@ -1589,6 +1611,8 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Colors } from './Colors';
+import { Products } from './Products';
 import { Sales } from './Sales';
 
 export class ProductColors {
@@ -1618,6 +1642,8 @@ export const ProductColorsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { ProductSizes } from './ProductSizes';
 import { Sales } from './Sales';
 
 export class ProductCountries {
@@ -1653,6 +1679,7 @@ export const ProductCountriesSchema = new EntitySchema({
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountries } from './ProductCountries';
+import { Products } from './Products';
 import { Sales } from './Sales';
 
 export class ProductSizes {
@@ -1713,6 +1740,11 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductColors } from './ProductColors';
+import { ProductCountries } from './ProductCountries';
+import { ProductSizes } from './ProductSizes';
+import { SellerCountries } from './SellerCountries';
+import { SellerProducts } from './SellerProducts';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
@@ -1805,7 +1837,9 @@ export const SalesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
 import { Sales } from './Sales';
+import { Sellers } from './Sellers';
 
 export class SellerCountries {
   [PrimaryKeyProp]?: ['seller', 'countries'];
@@ -1834,7 +1868,9 @@ export const SellerCountriesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 import { Sales } from './Sales';
+import { Sellers } from './Sellers';
 
 export class SellerProducts {
   [PrimaryKeyProp]?: ['seller', 'product'];
@@ -1867,6 +1903,7 @@ export const SellerProductsSchema = new EntitySchema({
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
+import { SellerCountries } from './SellerCountries';
 import { SellerProducts } from './SellerProducts';
 
 export class Sellers {
@@ -2605,6 +2642,7 @@ export const SellerProductsSchema = new EntitySchema({
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
+import { SellerCountries } from './SellerCountries';
 import { SellerProducts } from './SellerProducts';
 
 export class Sellers {
@@ -2854,6 +2892,7 @@ export class Sellers {
 exports[`ambiguous_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
 export class Colors {
@@ -2880,7 +2919,9 @@ export const ColorsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
+import { SellerCountries } from './SellerCountries';
 import { Sellers } from './Sellers';
 
 export class Countries {
@@ -2914,6 +2955,8 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Colors } from './Colors';
+import { Products } from './Products';
 
 export class ProductColors {
   [PrimaryKeyProp]?: ['color', 'product'];
@@ -2936,6 +2979,8 @@ export const ProductColorsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { ProductSizes } from './ProductSizes';
 
 export class ProductCountries {
   [PrimaryKeyProp]?: ['country', 'product'];
@@ -2958,6 +3003,7 @@ export const ProductCountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 
 export class ProductSizes {
   [PrimaryKeyProp]?: 'product';
@@ -2993,6 +3039,11 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductColors } from './ProductColors';
+import { ProductCountries } from './ProductCountries';
+import { ProductSizes } from './ProductSizes';
+import { SellerCountries } from './SellerCountries';
+import { SellerProducts } from './SellerProducts';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
@@ -3076,6 +3127,8 @@ export const SalesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Sellers } from './Sellers';
 
 export class SellerCountries {
   [PrimaryKeyProp]?: ['country', 'seller'];
@@ -3098,6 +3151,8 @@ export const SellerCountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
 
 export class SellerProducts {
   [PrimaryKeyProp]?: ['seller', 'product'];
@@ -3121,6 +3176,7 @@ export const SellerProductsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Products } from './Products';
+import { SellerProducts } from './SellerProducts';
 
 export class Sellers {
   [PrimaryKeyProp]?: 'sellerId';
@@ -3358,6 +3414,7 @@ export class Sellers {
 exports[`ambiguous_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
 export class Colors {
@@ -3384,7 +3441,9 @@ export const ColorsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
+import { SellerCountries } from './SellerCountries';
 import { Sellers } from './Sellers';
 
 export class Countries {
@@ -3679,6 +3738,7 @@ export const SellerProductsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Products } from './Products';
+import { SellerProducts } from './SellerProducts';
 
 export class Sellers {
   [PrimaryKeyProp]?: 'sellerId';
@@ -4001,6 +4061,7 @@ export const ColorsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
 import { Sellers } from './Sellers';
@@ -4038,6 +4099,8 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Colors } from './Colors';
+import { Products } from './Products';
 import { Sales } from './Sales';
 
 export class ProductColors {
@@ -4063,6 +4126,8 @@ export const ProductColorsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { ProductSizes } from './ProductSizes';
 import { Sales } from './Sales';
 
 export class ProductCountries {
@@ -4090,6 +4155,7 @@ export const ProductCountriesSchema = new EntitySchema({
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountries } from './ProductCountries';
+import { Products } from './Products';
 import { Sales } from './Sales';
 
 export class ProductSizes {
@@ -4141,6 +4207,11 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductColors } from './ProductColors';
+import { ProductCountries } from './ProductCountries';
+import { ProductSizes } from './ProductSizes';
+import { SellerCountries } from './SellerCountries';
+import { SellerProducts } from './SellerProducts';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
@@ -4224,7 +4295,9 @@ export const SalesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
 import { Sales } from './Sales';
+import { Sellers } from './Sellers';
 
 export class SellerCountries {
   [PrimaryKeyProp]?: ['country', 'seller'];
@@ -4249,7 +4322,9 @@ export const SellerCountriesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 import { Sales } from './Sales';
+import { Sellers } from './Sellers';
 
 export class SellerProducts {
   [PrimaryKeyProp]?: ['seller', 'product'];
@@ -4605,6 +4680,7 @@ export const ColorsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
 import { Sellers } from './Sellers';
@@ -5178,6 +5254,7 @@ export class Sellers {
 exports[`ambiguous_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
 export class Colors {
@@ -5204,7 +5281,9 @@ export const ColorsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
+import { SellerCountries } from './SellerCountries';
 import { Sellers } from './Sellers';
 
 export class Countries {
@@ -5238,6 +5317,8 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Colors } from './Colors';
+import { Products } from './Products';
 
 export class ProductColors {
   [PrimaryKeyProp]?: ['color', 'product'];
@@ -5260,6 +5341,8 @@ export const ProductColorsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { ProductSizes } from './ProductSizes';
 
 export class ProductCountries {
   [PrimaryKeyProp]?: ['country', 'product'];
@@ -5282,6 +5365,7 @@ export const ProductCountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 
 export class ProductSizes {
   [PrimaryKeyProp]?: 'product';
@@ -5317,6 +5401,11 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductColors } from './ProductColors';
+import { ProductCountries } from './ProductCountries';
+import { ProductSizes } from './ProductSizes';
+import { SellerCountries } from './SellerCountries';
+import { SellerProducts } from './SellerProducts';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
@@ -5400,6 +5489,8 @@ export const SalesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { Sellers } from './Sellers';
 
 export class SellerCountries {
   [PrimaryKeyProp]?: ['country', 'seller'];
@@ -5422,6 +5513,8 @@ export const SellerCountriesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
+import { Sellers } from './Sellers';
 
 export class SellerProducts {
   [PrimaryKeyProp]?: ['seller', 'product'];
@@ -5445,6 +5538,7 @@ export const SellerProductsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Products } from './Products';
+import { SellerProducts } from './SellerProducts';
 
 export class Sellers {
   [PrimaryKeyProp]?: 'sellerId';
@@ -5682,6 +5776,7 @@ export class Sellers {
 exports[`ambiguous_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
 export class Colors {
@@ -5708,7 +5803,9 @@ export const ColorsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
+import { SellerCountries } from './SellerCountries';
 import { Sellers } from './Sellers';
 
 export class Countries {
@@ -6003,6 +6100,7 @@ export const SellerProductsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Products } from './Products';
+import { SellerProducts } from './SellerProducts';
 
 export class Sellers {
   [PrimaryKeyProp]?: 'sellerId';
@@ -6325,6 +6423,7 @@ export const ColorsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
 import { Sellers } from './Sellers';
@@ -6362,6 +6461,8 @@ export const CountriesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Colors } from './Colors';
+import { Products } from './Products';
 import { Sales } from './Sales';
 
 export class ProductColors {
@@ -6387,6 +6488,8 @@ export const ProductColorsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
+import { ProductSizes } from './ProductSizes';
 import { Sales } from './Sales';
 
 export class ProductCountries {
@@ -6414,6 +6517,7 @@ export const ProductCountriesSchema = new EntitySchema({
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountries } from './ProductCountries';
+import { Products } from './Products';
 import { Sales } from './Sales';
 
 export class ProductSizes {
@@ -6465,6 +6569,11 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductColors } from './ProductColors';
+import { ProductCountries } from './ProductCountries';
+import { ProductSizes } from './ProductSizes';
+import { SellerCountries } from './SellerCountries';
+import { SellerProducts } from './SellerProducts';
 
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
@@ -6548,7 +6657,9 @@ export const SalesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Countries } from './Countries';
 import { Sales } from './Sales';
+import { Sellers } from './Sellers';
 
 export class SellerCountries {
   [PrimaryKeyProp]?: ['country', 'seller'];
@@ -6573,7 +6684,9 @@ export const SellerCountriesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 import { Sales } from './Sales';
+import { Sellers } from './Sellers';
 
 export class SellerProducts {
   [PrimaryKeyProp]?: ['seller', 'product'];
@@ -6929,6 +7042,7 @@ export const ColorsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
 import { Sellers } from './Sellers';
