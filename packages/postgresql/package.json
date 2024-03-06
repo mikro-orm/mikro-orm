@@ -58,7 +58,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^6.1.8",
+    "@mikro-orm/knex": "6.1.8",
     "pg": "8.11.3",
     "postgres-array": "3.0.2",
     "postgres-date": "2.1.0",
