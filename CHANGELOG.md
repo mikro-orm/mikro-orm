@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.8](https://github.com/mikro-orm/mikro-orm/compare/v6.1.7...v6.1.8) (2024-03-06)
+
+
+### Bug Fixes
+
+* **core:** allow setting values to `null` on unloaded references ([1cbead6](https://github.com/mikro-orm/mikro-orm/commit/1cbead6eec839777e5f8f00e9fcdfe7a9a8088bf)), closes [#5274](https://github.com/mikro-orm/mikro-orm/issues/5274)
+* **core:** fix bulk-inserting entities with nullable embedded arrays ([f16551e](https://github.com/mikro-orm/mikro-orm/commit/f16551ec37e4a12b29c7ada2427a29b81d15996e))
+* **core:** skip STI discriminator condition when bulk-deleting entities ([fa712ca](https://github.com/mikro-orm/mikro-orm/commit/fa712ca134d16334aaba275779df14970ed8bfb8)), closes [#5303](https://github.com/mikro-orm/mikro-orm/issues/5303)
+* **query-builder:** fix `qb.getResultAndCount()` when pagination is triggered ([67444c0](https://github.com/mikro-orm/mikro-orm/commit/67444c08a27af1a2d6d65ee061a4e54f1dac0734))
+
+
+
+
+
 ## [6.1.7](https://github.com/mikro-orm/mikro-orm/compare/v6.1.6...v6.1.7) (2024-03-04)
 
 
