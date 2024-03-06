@@ -109,6 +109,7 @@ export const AllowedAgesAtCreationSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
+import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 export class Users {
   id!: number;
@@ -164,6 +165,7 @@ export const AllowedAgesAtCreationSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt } from '@mikro-orm/core';
+import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 export class Users {
   id!: number;

@@ -65,7 +65,6 @@ export class Test {
 exports[`multiple schemas with same table name 2 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Test } from './Test';
 
 @Entity({ tableName: 'test', schema: 'schema1' })
 export class Schema1Test {
@@ -79,13 +78,12 @@ export class Schema1Test {
   @Property({ length: 6, nullable: true })
   created?: Date;
 
-  @ManyToOne({ entity: () => Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @ManyToOne({ entity: () => Schema1Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   test?: Schema1Test;
 
 }
 ",
   "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Test } from './Test';
 
 @Entity({ tableName: 'test', schema: 'schema2' })
 export class Schema2Test {
@@ -99,13 +97,12 @@ export class Schema2Test {
   @Property({ length: 6, nullable: true })
   created?: Date;
 
-  @ManyToOne({ entity: () => Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @ManyToOne({ entity: () => Schema2Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   test?: Schema2Test;
 
 }
 ",
   "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Test } from './Test';
 
 @Entity({ tableName: 'test' })
 export class PublicTest {
@@ -119,7 +116,7 @@ export class PublicTest {
   @Property({ length: 6, nullable: true })
   created?: Date;
 
-  @ManyToOne({ entity: () => Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  @ManyToOne({ entity: () => PublicTest, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   test?: PublicTest;
 
 }

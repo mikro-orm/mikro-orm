@@ -100,6 +100,7 @@ export const FashionableColorsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';
@@ -391,6 +392,7 @@ export const FashionableColorsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';
@@ -673,6 +675,7 @@ export const FashionableColorsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';
@@ -934,6 +937,7 @@ export const FashionableColorsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';
@@ -1198,6 +1202,7 @@ export const FashionableColorsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';
@@ -1469,6 +1474,7 @@ export const FashionableColorsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { FashionableColors } from './FashionableColors';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';

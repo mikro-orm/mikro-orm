@@ -153,6 +153,8 @@ export class Senders {
 exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { RecepientEmails } from './RecepientEmails';
+import { SenderEmails } from './SenderEmails';
 
 export class EmailSendingLogs {
   [PrimaryKeyProp]?: 'logId';
@@ -226,6 +228,8 @@ export const EmailsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Recepients } from './Recepients';
 
 export class RecepientEmails {
   [PrimaryKeyProp]?: ['recepient', 'email'];
@@ -258,6 +262,7 @@ export const RecepientEmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
+import { RecepientEmails } from './RecepientEmails';
 
 export class Recepients {
   [PrimaryKeyProp]?: 'recepientId';
@@ -283,6 +288,8 @@ export const RecepientsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Senders } from './Senders';
 
 export class SenderEmails {
   [PrimaryKeyProp]?: ['sender', 'email'];
@@ -310,6 +317,7 @@ export const SenderEmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
+import { SenderEmails } from './SenderEmails';
 
 export class Senders {
   [PrimaryKeyProp]?: 'senderId';
@@ -604,6 +612,7 @@ export const RecepientEmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
+import { RecepientEmails } from './RecepientEmails';
 
 export class Recepients {
   [PrimaryKeyProp]?: 'recepientId';
@@ -665,6 +674,7 @@ export const SenderEmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
+import { SenderEmails } from './SenderEmails';
 
 export class Senders {
   [PrimaryKeyProp]?: 'senderId';
@@ -874,6 +884,8 @@ export class Senders {
 exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { RecepientEmails } from './RecepientEmails';
+import { SenderEmails } from './SenderEmails';
 
 export class EmailSendingLogs {
   [PrimaryKeyProp]?: 'logId';
@@ -957,6 +969,8 @@ export const EmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
+import { Emails } from './Emails';
+import { Recepients } from './Recepients';
 
 export class RecepientEmails {
   [PrimaryKeyProp]?: ['recepient', 'email'];
@@ -1020,6 +1034,8 @@ export const RecepientsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
+import { Emails } from './Emails';
+import { Senders } from './Senders';
 
 export class SenderEmails {
   [PrimaryKeyProp]?: ['sender', 'email'];
@@ -1612,6 +1628,8 @@ export class Senders {
 exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { RecepientEmails } from './RecepientEmails';
+import { SenderEmails } from './SenderEmails';
 
 export class EmailSendingLogs {
   [PrimaryKeyProp]?: 'logId';
@@ -1675,6 +1693,8 @@ export const EmailsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Recepients } from './Recepients';
 
 export class RecepientEmails {
   [PrimaryKeyProp]?: ['recepient', 'email'];
@@ -1703,6 +1723,7 @@ export const RecepientEmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
+import { RecepientEmails } from './RecepientEmails';
 
 export class Recepients {
   [PrimaryKeyProp]?: 'recepientId';
@@ -1728,6 +1749,8 @@ export const RecepientsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Senders } from './Senders';
 
 export class SenderEmails {
   [PrimaryKeyProp]?: ['sender', 'email'];
@@ -1751,6 +1774,7 @@ export const SenderEmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
+import { SenderEmails } from './SenderEmails';
 
 export class Senders {
   [PrimaryKeyProp]?: 'senderId';
@@ -2002,6 +2026,7 @@ export const RecepientEmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
+import { RecepientEmails } from './RecepientEmails';
 
 export class Recepients {
   [PrimaryKeyProp]?: 'recepientId';
@@ -2059,6 +2084,7 @@ export const SenderEmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
+import { SenderEmails } from './SenderEmails';
 
 export class Senders {
   [PrimaryKeyProp]?: 'senderId';
@@ -2239,6 +2265,8 @@ export class Senders {
 exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { RecepientEmails } from './RecepientEmails';
+import { SenderEmails } from './SenderEmails';
 
 export class EmailSendingLogs {
   [PrimaryKeyProp]?: 'logId';
@@ -2312,6 +2340,8 @@ export const EmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
+import { Emails } from './Emails';
+import { Recepients } from './Recepients';
 
 export class RecepientEmails {
   [PrimaryKeyProp]?: ['recepient', 'email'];
@@ -2371,6 +2401,8 @@ export const RecepientsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
+import { Emails } from './Emails';
+import { Senders } from './Senders';
 
 export class SenderEmails {
   [PrimaryKeyProp]?: ['sender', 'email'];
@@ -2912,6 +2944,8 @@ export class Senders {
 exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { RecepientEmails } from './RecepientEmails';
+import { SenderEmails } from './SenderEmails';
 
 export class EmailSendingLogs {
   [PrimaryKeyProp]?: 'logId';
@@ -2975,6 +3009,8 @@ export const EmailsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Recepients } from './Recepients';
 
 export class RecepientEmails {
   [PrimaryKeyProp]?: ['recepient', 'email'];
@@ -3003,6 +3039,7 @@ export const RecepientEmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
+import { RecepientEmails } from './RecepientEmails';
 
 export class Recepients {
   [PrimaryKeyProp]?: 'recepientId';
@@ -3028,6 +3065,8 @@ export const RecepientsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Senders } from './Senders';
 
 export class SenderEmails {
   [PrimaryKeyProp]?: ['sender', 'email'];
@@ -3051,6 +3090,7 @@ export const SenderEmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
+import { SenderEmails } from './SenderEmails';
 
 export class Senders {
   [PrimaryKeyProp]?: 'senderId';
@@ -3302,6 +3342,7 @@ export const RecepientEmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
+import { RecepientEmails } from './RecepientEmails';
 
 export class Recepients {
   [PrimaryKeyProp]?: 'recepientId';
@@ -3359,6 +3400,7 @@ export const SenderEmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
+import { SenderEmails } from './SenderEmails';
 
 export class Senders {
   [PrimaryKeyProp]?: 'senderId';
@@ -3539,6 +3581,8 @@ export class Senders {
 exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { RecepientEmails } from './RecepientEmails';
+import { SenderEmails } from './SenderEmails';
 
 export class EmailSendingLogs {
   [PrimaryKeyProp]?: 'logId';
@@ -3612,6 +3656,8 @@ export const EmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
+import { Emails } from './Emails';
+import { Recepients } from './Recepients';
 
 export class RecepientEmails {
   [PrimaryKeyProp]?: ['recepient', 'email'];
@@ -3671,6 +3717,8 @@ export const RecepientsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
+import { Emails } from './Emails';
+import { Senders } from './Senders';
 
 export class SenderEmails {
   [PrimaryKeyProp]?: ['sender', 'email'];

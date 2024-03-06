@@ -200,11 +200,12 @@ export class SourceFile {
     const useDefault = prop.default != null;
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
 
+    if (!prop.mapToPk && typeof prop.kind === 'string' && prop.kind !== ReferenceKind.SCALAR) {
+      this.entityImports.add(propType);
+    }
+
     if (prop.ref) {
       this.coreImports.add('Ref');
-      if (typeof prop.kind === 'string' && prop.kind !== ReferenceKind.SCALAR) {
-        this.entityImports.add(propType);
-      }
       return `${padding}${prop.name}${optional}: Ref<${propType}>${hiddenType};\n`;
     }
 
@@ -581,10 +582,8 @@ export class SourceFile {
   }
 
   protected getForeignKeyDecoratorOptions(options: OneToOneOptions<any, any>, prop: EntityProperty) {
-    const parts = prop.referencedTableName.split('.', 2);
-    const className = this.namingStrategy.getEntityName(...parts.reverse() as [string, string]);
-    this.entityImports.add(className);
-    options.entity = `() => ${className}`;
+    this.entityImports.add(prop.type);
+    options.entity = `() => ${prop.type}`;
 
     if (prop.ref) {
       options.ref = true;

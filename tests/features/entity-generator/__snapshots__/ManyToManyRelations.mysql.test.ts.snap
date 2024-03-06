@@ -185,6 +185,8 @@ export class Users {
 exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false readOnlyPivotTables=false entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class CompletedOrders {
   id!: number;
@@ -263,6 +265,8 @@ export const OrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmailAvatars {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -294,6 +298,9 @@ export const UserEmailAvatarsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
 
 export class UserEmailFlags {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -325,6 +332,9 @@ export const UserEmailFlagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class UserEmailOrders {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -354,6 +364,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmails {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -390,6 +402,7 @@ export const UserEmailsSchema = new EntitySchema({
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
+import { UserEmails } from './UserEmails';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';
@@ -632,6 +645,8 @@ export class Users {
 exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false readOnlyPivotTables=true entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class CompletedOrders {
   id!: number;
@@ -710,6 +725,8 @@ export const OrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmailAvatars {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -741,6 +758,9 @@ export const UserEmailAvatarsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
 
 export class UserEmailFlags {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -772,6 +792,9 @@ export const UserEmailFlagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class UserEmailOrders {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -801,6 +824,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmails {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -837,6 +862,10 @@ export const UserEmailsSchema = new EntitySchema({
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
+import { UserEmails } from './UserEmails';
 
 export class Users {
   [PrimaryKeyProp]?: 'userId';
@@ -1109,6 +1138,8 @@ export class Users {
 exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true readOnlyPivotTables=false entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class CompletedOrders {
   id!: number;
@@ -1187,6 +1218,8 @@ export const OrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmailAvatars {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -1218,6 +1251,9 @@ export const UserEmailAvatarsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
 
 export class UserEmailFlags {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -1249,6 +1285,9 @@ export const UserEmailFlagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class UserEmailOrders {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -1278,6 +1317,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmails {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -1311,6 +1352,8 @@ export const UserEmailsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class UserOrders {
   [PrimaryKeyProp]?: ['user', 'order'];
@@ -1566,6 +1609,8 @@ export class Users {
 exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true readOnlyPivotTables=true entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class CompletedOrders {
   id!: number;
@@ -1644,6 +1689,8 @@ export const OrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmailAvatars {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -1675,6 +1722,9 @@ export const UserEmailAvatarsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
 
 export class UserEmailFlags {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -1706,6 +1756,9 @@ export const UserEmailFlagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class UserEmailOrders {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -1735,6 +1788,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmails {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -1768,6 +1823,8 @@ export const UserEmailsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class UserOrders {
   [PrimaryKeyProp]?: ['user', 'order'];
@@ -2038,6 +2095,8 @@ export class Users {
 exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false readOnlyPivotTables=false entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class CompletedOrders {
   id!: number;
@@ -2090,6 +2149,7 @@ export const EmailsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
 export class Flags {
@@ -2133,6 +2193,8 @@ export const OrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmailAvatars {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -2164,6 +2226,9 @@ export const UserEmailAvatarsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
 
 export class UserEmailFlags {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -2195,6 +2260,9 @@ export const UserEmailFlagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class UserEmailOrders {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -2224,6 +2292,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmails {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -2541,6 +2611,8 @@ export class Users {
 exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false readOnlyPivotTables=true entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class CompletedOrders {
   id!: number;
@@ -2609,6 +2681,7 @@ export const EmailsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
 export class Flags {
@@ -2652,6 +2725,8 @@ export const OrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmailAvatars {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -2683,6 +2758,9 @@ export const UserEmailAvatarsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
 
 export class UserEmailFlags {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -2714,6 +2792,9 @@ export const UserEmailFlagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class UserEmailOrders {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -2743,6 +2824,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmails {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -2779,6 +2862,9 @@ export const UserEmailsSchema = new EntitySchema({
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserEmails } from './UserEmails';
 
 export class Users {
@@ -3074,6 +3160,8 @@ export class Users {
 exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true readOnlyPivotTables=false entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class CompletedOrders {
   id!: number;
@@ -3123,6 +3211,7 @@ export const EmailsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
 export class Flags {
@@ -3163,6 +3252,8 @@ export const OrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmailAvatars {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -3194,6 +3285,9 @@ export const UserEmailAvatarsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
 
 export class UserEmailFlags {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -3225,6 +3319,9 @@ export const UserEmailFlagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class UserEmailOrders {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -3254,6 +3351,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmails {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -3287,6 +3386,8 @@ export const UserEmailsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class UserOrders {
   [PrimaryKeyProp]?: ['user', 'order'];
@@ -3565,6 +3666,8 @@ export class Users {
 exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true readOnlyPivotTables=true entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class CompletedOrders {
   id!: number;
@@ -3614,6 +3717,7 @@ export const EmailsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
 export class Flags {
@@ -3654,6 +3758,8 @@ export const OrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmailAvatars {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -3685,6 +3791,9 @@ export const UserEmailAvatarsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Flags } from './Flags';
+import { Users } from './Users';
 
 export class UserEmailFlags {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -3716,6 +3825,9 @@ export const UserEmailFlagsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class UserEmailOrders {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -3745,6 +3857,8 @@ export const UserEmailOrdersSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Emails } from './Emails';
+import { Users } from './Users';
 
 export class UserEmails {
   [PrimaryKeyProp]?: ['user', 'email'];
@@ -3778,6 +3892,8 @@ export const UserEmailsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Orders } from './Orders';
+import { Users } from './Users';
 
 export class UserOrders {
   [PrimaryKeyProp]?: ['user', 'order'];
