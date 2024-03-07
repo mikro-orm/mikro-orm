@@ -1136,7 +1136,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (options.onConflictAction === 'ignore' || (!res.rows?.length && loadPK.size > 0) || reloadFields) {
       const unique = meta.hydrateProps.filter(p => !p.lazy).map(p => p.name);
-      const add = new Set(propIndex! >= 0 ? [unique[propIndex!]] : []);
+      const add = new Set(propIndex! >= 0 ? [unique[propIndex!]] : [] as EntityKey<Entity>[]);
 
       for (const cond of loadPK.values()) {
         Utils.keys(cond).forEach(key => add.add(key as EntityKey));

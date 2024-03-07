@@ -40,7 +40,7 @@ export class Reference<T extends object> {
   }
 
   static create<T extends object>(entity: T | Ref<T>): Ref<T> {
-    const unwrapped = Reference.unwrapReference(entity);
+    const unwrapped = Reference.unwrapReference(entity) as T;
     const ref = helper(entity).toReference() as Reference<T>;
 
     if (unwrapped !== ref.unwrap()) {
@@ -270,12 +270,12 @@ export interface LoadReferenceOrFailOptions<T extends object, P extends string =
 /**
  * shortcut for `wrap(entity).toReference()`
  */
-export function ref<T extends object>(entity: T | Ref<T>): Ref<T> & LoadedReference<Loaded<T, AddEager<T>>>;
+export function ref<T>(entity: T | Ref<T>): Ref<T> & LoadedReference<Loaded<T, AddEager<T>>>;
 
 /**
  * shortcut for `Reference.createFromPK(entityType, pk)`
  */
-export function ref<T extends object, PKV extends Primary<T> = Primary<T>>(entityType: EntityClass<T>, pk?: T | PKV): Ref<T>;
+export function ref<T, PKV extends Primary<T> = Primary<T>>(entityType: EntityClass<T>, pk?: T | PKV): Ref<T>;
 
 /**
  * shortcut for `wrap(entity).toReference()`

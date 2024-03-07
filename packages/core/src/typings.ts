@@ -36,7 +36,6 @@ export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
 export type IsAny<T> = 0 extends (1 & T) ? true : false;
 export type IsNever<T, True = true, False = false> = [T] extends [never] ? True : False;
-export type NoInfer<T> = [T][T extends any ? 0 : never];
 export type MaybePromise<T> = T | Promise<T>;
 
 export type DeepPartial<T> = T & {
@@ -956,7 +955,7 @@ export type AutoPath<O, P extends string | boolean, E extends string = never, D 
                 ? `${A}.${AutoPath<Defined<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
                 : never
               : Q extends StringKeys<O, E>
-                ? (Defined<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<Defined<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q}.`)
+                ? (Defined<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<Defined<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q & string}.`)
                 : StringKeys<O, E> | `${CollectionKeys<O>}:ref`
               : never
             : never
