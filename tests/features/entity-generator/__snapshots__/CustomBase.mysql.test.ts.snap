@@ -18,7 +18,7 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -137,7 +137,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -269,7 +269,7 @@ export class Dummy2 {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
@@ -307,7 +307,7 @@ export class FooBar2 {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class FooBaz2 {
@@ -323,7 +323,7 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -346,7 +346,7 @@ export class FooParam2 {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
@@ -434,7 +434,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -524,7 +524,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 export class Author2 {
@@ -663,7 +663,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -811,7 +811,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 {
@@ -855,7 +855,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 
 export class FooBaz2 {
   id!: number;
@@ -872,7 +872,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -894,7 +894,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 
 export class Publisher2 {
   id!: number;
@@ -990,7 +990,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -1101,7 +1101,7 @@ export class Address2 extends BaseEntity {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 
@@ -1223,7 +1223,7 @@ export class BookTag2 extends BaseEntity {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 import { BookTag2 } from './BookTag2';
@@ -1361,7 +1361,7 @@ export class Dummy2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz2 } from './FooBaz2';
 
@@ -1400,7 +1400,7 @@ export class FooBar2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 @Entity()
@@ -1417,7 +1417,7 @@ export class FooBaz2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -1441,7 +1441,7 @@ export class FooParam2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 @Entity()
@@ -1532,7 +1532,7 @@ export class Sandwich extends BaseEntity {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -1596,7 +1596,7 @@ export class User2 extends BaseEntity {
 
 }
 ",
-  "import { Config, DefineConfig } from '@mikro-orm/core';
+  "import { Config, type DefineConfig } from '@mikro-orm/core';
 
 export abstract class BaseEntity {
 
@@ -1633,7 +1633,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 
@@ -1775,7 +1775,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 import { BookTag2 } from './BookTag2';
@@ -1929,7 +1929,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz2 } from './FooBaz2';
 
@@ -1974,7 +1974,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 export class FooBaz2 extends BaseEntity {
@@ -1992,7 +1992,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -2015,7 +2015,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 export class Publisher2 extends BaseEntity {
@@ -2114,7 +2114,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -2205,7 +2205,7 @@ export const User2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Config, DefineConfig, EntitySchema } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity {
   [Config]?: DefineConfig<{ forceObject: false }>;
@@ -2239,7 +2239,7 @@ export class Address2 extends BaseUser2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 
@@ -2304,7 +2304,7 @@ export class Author2 extends BaseUser2 {
 
 }
 ",
-  "import { Config, DefineConfig, Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 {
@@ -2363,7 +2363,7 @@ export class BookTag2 extends BaseUser2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 import { BookTag2 } from './BookTag2';
@@ -2501,7 +2501,7 @@ export class Dummy2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -2540,7 +2540,7 @@ export class FooBar2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 @Entity()
@@ -2557,7 +2557,7 @@ export class FooBaz2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -2581,7 +2581,7 @@ export class FooParam2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 @Entity()
@@ -2672,7 +2672,7 @@ export class Sandwich extends BaseUser2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -2765,7 +2765,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 
@@ -2843,7 +2843,7 @@ export const Author2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Config, DefineConfig, EntitySchema } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, EntitySchema } from '@mikro-orm/core';
 
 export class BaseUser2 {
   [Config]?: DefineConfig<{ forceObject: false }>;
@@ -2907,7 +2907,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 import { BookTag2 } from './BookTag2';
@@ -3061,7 +3061,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -3106,7 +3106,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 export class FooBaz2 extends BaseUser2 {
@@ -3124,7 +3124,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -3147,7 +3147,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 export class Publisher2 extends BaseUser2 {
@@ -3246,7 +3246,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -3359,7 +3359,7 @@ export class Address2 extends CustomBase {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 
@@ -3481,7 +3481,7 @@ export class BookTag2 extends CustomBase {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
@@ -3619,7 +3619,7 @@ export class Dummy2 extends CustomBase {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBaz2 } from './FooBaz2';
 
@@ -3658,7 +3658,7 @@ export class FooBar2 extends CustomBase {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 @Entity()
@@ -3675,7 +3675,7 @@ export class FooBaz2 extends CustomBase {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -3699,7 +3699,7 @@ export class FooParam2 extends CustomBase {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 @Entity()
@@ -3790,7 +3790,7 @@ export class Sandwich extends CustomBase {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
@@ -3854,7 +3854,7 @@ export class User2 extends CustomBase {
 
 }
 ",
-  "import { Config, DefineConfig } from '@mikro-orm/core';
+  "import { Config, type DefineConfig } from '@mikro-orm/core';
 
 export abstract class CustomBase {
 
@@ -3891,7 +3891,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 
@@ -4033,7 +4033,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
@@ -4187,7 +4187,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBaz2 } from './FooBaz2';
 
@@ -4232,7 +4232,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 export class FooBaz2 extends CustomBase {
@@ -4250,7 +4250,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -4273,7 +4273,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 export class Publisher2 extends CustomBase {
@@ -4372,7 +4372,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
@@ -4463,7 +4463,7 @@ export const User2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Config, DefineConfig, EntitySchema } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, EntitySchema } from '@mikro-orm/core';
 
 export abstract class CustomBase {
   [Config]?: DefineConfig<{ forceObject: false }>;
@@ -4496,7 +4496,7 @@ export class Address2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -4615,7 +4615,7 @@ export class BookTag2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -4747,7 +4747,7 @@ export class Dummy2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { BaseEntity, Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
@@ -4785,7 +4785,7 @@ export class FooBar2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { BaseEntity, Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class FooBaz2 extends BaseEntity {
@@ -4801,7 +4801,7 @@ export class FooBaz2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { BaseEntity, Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -4824,7 +4824,7 @@ export class FooParam2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { BaseEntity, Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 extends BaseEntity {
@@ -4912,7 +4912,7 @@ export class Sandwich extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -5002,7 +5002,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 export class Author2 extends BaseEntity {
@@ -5141,7 +5141,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -5289,7 +5289,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { BaseEntity, EntitySchema, type Opt } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends BaseEntity {
@@ -5333,7 +5333,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { BaseEntity, EntitySchema, type Opt } from '@mikro-orm/core';
 
 export class FooBaz2 extends BaseEntity {
   id!: number;
@@ -5350,7 +5350,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { BaseEntity, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -5372,7 +5372,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { BaseEntity, EntitySchema, type Opt } from '@mikro-orm/core';
 
 export class Publisher2 extends BaseEntity {
   id!: number;
@@ -5468,7 +5468,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -5579,7 +5579,7 @@ export class Address2 extends BaseEntity {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 
@@ -5701,7 +5701,7 @@ export class BookTag2 extends BaseEntity {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 import { BookTag2 } from './BookTag2';
@@ -5839,7 +5839,7 @@ export class Dummy2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz2 } from './FooBaz2';
 
@@ -5878,7 +5878,7 @@ export class FooBar2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 @Entity()
@@ -5895,7 +5895,7 @@ export class FooBaz2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -5919,7 +5919,7 @@ export class FooParam2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 @Entity()
@@ -6010,7 +6010,7 @@ export class Sandwich extends BaseEntity {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -6074,7 +6074,7 @@ export class User2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroBaseEntity, Config, DefineConfig } from '@mikro-orm/core';
+  "import { BaseEntity as MikroBaseEntity, Config, type DefineConfig } from '@mikro-orm/core';
 
 export abstract class BaseEntity extends MikroBaseEntity {
 
@@ -6111,7 +6111,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 
@@ -6253,7 +6253,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 import { BookTag2 } from './BookTag2';
@@ -6407,7 +6407,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz2 } from './FooBaz2';
 
@@ -6452,7 +6452,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 export class FooBaz2 extends BaseEntity {
@@ -6470,7 +6470,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -6493,7 +6493,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 export class Publisher2 extends BaseEntity {
@@ -6592,7 +6592,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -6683,7 +6683,7 @@ export const User2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroBaseEntity, Config, DefineConfig, EntitySchema } from '@mikro-orm/core';
+  "import { BaseEntity as MikroBaseEntity, Config, type DefineConfig, EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity extends MikroBaseEntity {
   [Config]?: DefineConfig<{ forceObject: false }>;
@@ -6717,7 +6717,7 @@ export class Address2 extends BaseUser2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 
@@ -6782,7 +6782,7 @@ export class Author2 extends BaseUser2 {
 
 }
 ",
-  "import { BaseEntity, Config, DefineConfig, Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { BaseEntity, Config, type DefineConfig, Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 extends BaseEntity {
@@ -6841,7 +6841,7 @@ export class BookTag2 extends BaseUser2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 import { BookTag2 } from './BookTag2';
@@ -6979,7 +6979,7 @@ export class Dummy2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -7018,7 +7018,7 @@ export class FooBar2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 @Entity()
@@ -7035,7 +7035,7 @@ export class FooBaz2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -7059,7 +7059,7 @@ export class FooParam2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 @Entity()
@@ -7150,7 +7150,7 @@ export class Sandwich extends BaseUser2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -7243,7 +7243,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 
@@ -7321,7 +7321,7 @@ export const Author2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, Config, DefineConfig, EntitySchema } from '@mikro-orm/core';
+  "import { BaseEntity, Config, type DefineConfig, EntitySchema } from '@mikro-orm/core';
 
 export class BaseUser2 extends BaseEntity {
   [Config]?: DefineConfig<{ forceObject: false }>;
@@ -7385,7 +7385,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 import { BookTag2 } from './BookTag2';
@@ -7539,7 +7539,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -7584,7 +7584,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 export class FooBaz2 extends BaseUser2 {
@@ -7602,7 +7602,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -7625,7 +7625,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 export class Publisher2 extends BaseUser2 {
@@ -7724,7 +7724,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -7837,7 +7837,7 @@ export class Address2 extends CustomBase {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 
@@ -7959,7 +7959,7 @@ export class BookTag2 extends CustomBase {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
@@ -8097,7 +8097,7 @@ export class Dummy2 extends CustomBase {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBaz2 } from './FooBaz2';
 
@@ -8136,7 +8136,7 @@ export class FooBar2 extends CustomBase {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 @Entity()
@@ -8153,7 +8153,7 @@ export class FooBaz2 extends CustomBase {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -8177,7 +8177,7 @@ export class FooParam2 extends CustomBase {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 @Entity()
@@ -8268,7 +8268,7 @@ export class Sandwich extends CustomBase {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
@@ -8332,7 +8332,7 @@ export class User2 extends CustomBase {
 
 }
 ",
-  "import { BaseEntity, Config, DefineConfig } from '@mikro-orm/core';
+  "import { BaseEntity, Config, type DefineConfig } from '@mikro-orm/core';
 
 export abstract class CustomBase extends BaseEntity {
 
@@ -8369,7 +8369,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 
@@ -8511,7 +8511,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
@@ -8665,7 +8665,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBaz2 } from './FooBaz2';
 
@@ -8710,7 +8710,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 export class FooBaz2 extends CustomBase {
@@ -8728,7 +8728,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -8751,7 +8751,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 export class Publisher2 extends CustomBase {
@@ -8850,7 +8850,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
@@ -8941,7 +8941,7 @@ export const User2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, Config, DefineConfig, EntitySchema } from '@mikro-orm/core';
+  "import { BaseEntity, Config, type DefineConfig, EntitySchema } from '@mikro-orm/core';
 
 export abstract class CustomBase extends BaseEntity {
   [Config]?: DefineConfig<{ forceObject: false }>;
@@ -8974,7 +8974,7 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -9093,7 +9093,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -9225,7 +9225,7 @@ export class Dummy2 {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
@@ -9263,7 +9263,7 @@ export class FooBar2 {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class FooBaz2 {
@@ -9279,7 +9279,7 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -9302,7 +9302,7 @@ export class FooParam2 {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
@@ -9390,7 +9390,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -9480,7 +9480,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 export class Author2 {
@@ -9619,7 +9619,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -9767,7 +9767,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 {
@@ -9811,7 +9811,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 
 export class FooBaz2 {
   id!: number;
@@ -9828,7 +9828,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -9850,7 +9850,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 
 export class Publisher2 {
   id!: number;
@@ -9946,7 +9946,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -10057,7 +10057,7 @@ export class Address2 extends BaseEntity {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 
@@ -10179,7 +10179,7 @@ export class BookTag2 extends BaseEntity {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 import { BookTag2 } from './BookTag2';
@@ -10317,7 +10317,7 @@ export class Dummy2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz2 } from './FooBaz2';
 
@@ -10356,7 +10356,7 @@ export class FooBar2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 @Entity()
@@ -10373,7 +10373,7 @@ export class FooBaz2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -10397,7 +10397,7 @@ export class FooParam2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 @Entity()
@@ -10488,7 +10488,7 @@ export class Sandwich extends BaseEntity {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -10552,7 +10552,7 @@ export class User2 extends BaseEntity {
 
 }
 ",
-  "import { Config, DefineConfig } from '@mikro-orm/core';
+  "import { Config, type DefineConfig } from '@mikro-orm/core';
 
 export abstract class BaseEntity {
 
@@ -10589,7 +10589,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 
@@ -10731,7 +10731,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 import { BookTag2 } from './BookTag2';
@@ -10885,7 +10885,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz2 } from './FooBaz2';
 
@@ -10930,7 +10930,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 export class FooBaz2 extends BaseEntity {
@@ -10948,7 +10948,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -10971,7 +10971,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 export class Publisher2 extends BaseEntity {
@@ -11070,7 +11070,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -11161,7 +11161,7 @@ export const User2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Config, DefineConfig, EntitySchema } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity {
   [Config]?: DefineConfig<{ forceObject: true }>;
@@ -11195,7 +11195,7 @@ export class Address2 extends BaseUser2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 
@@ -11260,7 +11260,7 @@ export class Author2 extends BaseUser2 {
 
 }
 ",
-  "import { Config, DefineConfig, Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 {
@@ -11319,7 +11319,7 @@ export class BookTag2 extends BaseUser2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 import { BookTag2 } from './BookTag2';
@@ -11457,7 +11457,7 @@ export class Dummy2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -11496,7 +11496,7 @@ export class FooBar2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 @Entity()
@@ -11513,7 +11513,7 @@ export class FooBaz2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -11537,7 +11537,7 @@ export class FooParam2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 @Entity()
@@ -11628,7 +11628,7 @@ export class Sandwich extends BaseUser2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -11721,7 +11721,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 
@@ -11799,7 +11799,7 @@ export const Author2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Config, DefineConfig, EntitySchema } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, EntitySchema } from '@mikro-orm/core';
 
 export class BaseUser2 {
   [Config]?: DefineConfig<{ forceObject: true }>;
@@ -11863,7 +11863,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 import { BookTag2 } from './BookTag2';
@@ -12017,7 +12017,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -12062,7 +12062,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 export class FooBaz2 extends BaseUser2 {
@@ -12080,7 +12080,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -12103,7 +12103,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 export class Publisher2 extends BaseUser2 {
@@ -12202,7 +12202,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -12315,7 +12315,7 @@ export class Address2 extends CustomBase {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 
@@ -12437,7 +12437,7 @@ export class BookTag2 extends CustomBase {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
@@ -12575,7 +12575,7 @@ export class Dummy2 extends CustomBase {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBaz2 } from './FooBaz2';
 
@@ -12614,7 +12614,7 @@ export class FooBar2 extends CustomBase {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 @Entity()
@@ -12631,7 +12631,7 @@ export class FooBaz2 extends CustomBase {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -12655,7 +12655,7 @@ export class FooParam2 extends CustomBase {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 @Entity()
@@ -12746,7 +12746,7 @@ export class Sandwich extends CustomBase {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
@@ -12810,7 +12810,7 @@ export class User2 extends CustomBase {
 
 }
 ",
-  "import { Config, DefineConfig } from '@mikro-orm/core';
+  "import { Config, type DefineConfig } from '@mikro-orm/core';
 
 export abstract class CustomBase {
 
@@ -12847,7 +12847,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 
@@ -12989,7 +12989,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
@@ -13143,7 +13143,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBaz2 } from './FooBaz2';
 
@@ -13188,7 +13188,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 export class FooBaz2 extends CustomBase {
@@ -13206,7 +13206,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -13229,7 +13229,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 export class Publisher2 extends CustomBase {
@@ -13328,7 +13328,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
@@ -13419,7 +13419,7 @@ export const User2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Config, DefineConfig, EntitySchema } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, EntitySchema } from '@mikro-orm/core';
 
 export abstract class CustomBase {
   [Config]?: DefineConfig<{ forceObject: true }>;
@@ -13452,7 +13452,7 @@ export class Address2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -13571,7 +13571,7 @@ export class BookTag2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -13703,7 +13703,7 @@ export class Dummy2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { BaseEntity, Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
@@ -13741,7 +13741,7 @@ export class FooBar2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { BaseEntity, Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class FooBaz2 extends BaseEntity {
@@ -13757,7 +13757,7 @@ export class FooBaz2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { BaseEntity, Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -13780,7 +13780,7 @@ export class FooParam2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { BaseEntity, Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 extends BaseEntity {
@@ -13868,7 +13868,7 @@ export class Sandwich extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity, Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -13958,7 +13958,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 export class Author2 extends BaseEntity {
@@ -14097,7 +14097,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -14245,7 +14245,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { BaseEntity, EntitySchema, type Opt } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 export class FooBar2 extends BaseEntity {
@@ -14289,7 +14289,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { BaseEntity, EntitySchema, type Opt } from '@mikro-orm/core';
 
 export class FooBaz2 extends BaseEntity {
   id!: number;
@@ -14306,7 +14306,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { BaseEntity, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -14328,7 +14328,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { BaseEntity, EntitySchema, type Opt } from '@mikro-orm/core';
 
 export class Publisher2 extends BaseEntity {
   id!: number;
@@ -14424,7 +14424,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -14535,7 +14535,7 @@ export class Address2 extends BaseEntity {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 
@@ -14657,7 +14657,7 @@ export class BookTag2 extends BaseEntity {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 import { BookTag2 } from './BookTag2';
@@ -14795,7 +14795,7 @@ export class Dummy2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz2 } from './FooBaz2';
 
@@ -14834,7 +14834,7 @@ export class FooBar2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 @Entity()
@@ -14851,7 +14851,7 @@ export class FooBaz2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -14875,7 +14875,7 @@ export class FooParam2 extends BaseEntity {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 @Entity()
@@ -14966,7 +14966,7 @@ export class Sandwich extends BaseEntity {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -15030,7 +15030,7 @@ export class User2 extends BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroBaseEntity, Config, DefineConfig } from '@mikro-orm/core';
+  "import { BaseEntity as MikroBaseEntity, Config, type DefineConfig } from '@mikro-orm/core';
 
 export abstract class BaseEntity extends MikroBaseEntity {
 
@@ -15067,7 +15067,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 
@@ -15209,7 +15209,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseEntity } from './BaseEntity';
 import { BookTag2 } from './BookTag2';
@@ -15363,7 +15363,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz2 } from './FooBaz2';
 
@@ -15408,7 +15408,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 export class FooBaz2 extends BaseEntity {
@@ -15426,7 +15426,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -15449,7 +15449,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 
 export class Publisher2 extends BaseEntity {
@@ -15548,7 +15548,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -15639,7 +15639,7 @@ export const User2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroBaseEntity, Config, DefineConfig, EntitySchema } from '@mikro-orm/core';
+  "import { BaseEntity as MikroBaseEntity, Config, type DefineConfig, EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity extends MikroBaseEntity {
   [Config]?: DefineConfig<{ forceObject: true }>;
@@ -15673,7 +15673,7 @@ export class Address2 extends BaseUser2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 
@@ -15738,7 +15738,7 @@ export class Author2 extends BaseUser2 {
 
 }
 ",
-  "import { BaseEntity, Config, DefineConfig, Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { BaseEntity, Config, type DefineConfig, Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 extends BaseEntity {
@@ -15797,7 +15797,7 @@ export class BookTag2 extends BaseUser2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 import { BookTag2 } from './BookTag2';
@@ -15935,7 +15935,7 @@ export class Dummy2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -15974,7 +15974,7 @@ export class FooBar2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 @Entity()
@@ -15991,7 +15991,7 @@ export class FooBaz2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -16015,7 +16015,7 @@ export class FooParam2 extends BaseUser2 {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 @Entity()
@@ -16106,7 +16106,7 @@ export class Sandwich extends BaseUser2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -16199,7 +16199,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 
@@ -16277,7 +16277,7 @@ export const Author2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, Config, DefineConfig, EntitySchema } from '@mikro-orm/core';
+  "import { BaseEntity, Config, type DefineConfig, EntitySchema } from '@mikro-orm/core';
 
 export class BaseUser2 extends BaseEntity {
   [Config]?: DefineConfig<{ forceObject: true }>;
@@ -16341,7 +16341,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BaseUser2 } from './BaseUser2';
 import { BookTag2 } from './BookTag2';
@@ -16495,7 +16495,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -16540,7 +16540,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 export class FooBaz2 extends BaseUser2 {
@@ -16558,7 +16558,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -16581,7 +16581,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 
 export class Publisher2 extends BaseUser2 {
@@ -16680,7 +16680,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { BaseUser2 } from './BaseUser2';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -16793,7 +16793,7 @@ export class Address2 extends CustomBase {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 
@@ -16915,7 +16915,7 @@ export class BookTag2 extends CustomBase {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
@@ -17053,7 +17053,7 @@ export class Dummy2 extends CustomBase {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBaz2 } from './FooBaz2';
 
@@ -17092,7 +17092,7 @@ export class FooBar2 extends CustomBase {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 @Entity()
@@ -17109,7 +17109,7 @@ export class FooBaz2 extends CustomBase {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -17133,7 +17133,7 @@ export class FooParam2 extends CustomBase {
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 @Entity()
@@ -17224,7 +17224,7 @@ export class Sandwich extends CustomBase {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
@@ -17288,7 +17288,7 @@ export class User2 extends CustomBase {
 
 }
 ",
-  "import { BaseEntity, Config, DefineConfig } from '@mikro-orm/core';
+  "import { BaseEntity, Config, type DefineConfig } from '@mikro-orm/core';
 
 export abstract class CustomBase extends BaseEntity {
 
@@ -17325,7 +17325,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 
@@ -17467,7 +17467,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { CustomBase } from './CustomBase';
@@ -17621,7 +17621,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBaz2 } from './FooBaz2';
 
@@ -17666,7 +17666,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 export class FooBaz2 extends CustomBase {
@@ -17684,7 +17684,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
@@ -17707,7 +17707,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 
 export class Publisher2 extends CustomBase {
@@ -17806,7 +17806,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBase } from './CustomBase';
 import { FooBar2 } from './FooBar2';
@@ -17897,7 +17897,7 @@ export const User2Schema = new EntitySchema({
   },
 });
 ",
-  "import { BaseEntity, Config, DefineConfig, EntitySchema } from '@mikro-orm/core';
+  "import { BaseEntity, Config, type DefineConfig, EntitySchema } from '@mikro-orm/core';
 
 export abstract class CustomBase extends BaseEntity {
   [Config]?: DefineConfig<{ forceObject: true }>;

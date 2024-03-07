@@ -14,7 +14,7 @@ export class AllowedAgesAtCreation {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 @Entity()
@@ -60,7 +60,7 @@ export class AllowedAgesAtCreation {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 @Entity()
@@ -108,7 +108,7 @@ export const AllowedAgesAtCreationSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 export class Users {
@@ -165,7 +165,7 @@ export const AllowedAgesAtCreationSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 export class Users {
