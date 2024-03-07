@@ -3,4 +3,7 @@ export const POSSIBLE_TYPE_IMPORTS = [
   'Hidden',
   'Opt',
   'Ref',
+  'EntityRef',
+  'ScalarRef',
+  'Rel',
 ] as const;
