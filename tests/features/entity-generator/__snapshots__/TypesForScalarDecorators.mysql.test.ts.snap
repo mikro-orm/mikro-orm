@@ -2,7 +2,7 @@
 
 exports[`TypesForScalarDecorators: dump 1`] = `
 [
-  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Users {

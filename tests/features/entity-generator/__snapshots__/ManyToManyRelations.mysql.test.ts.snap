@@ -88,7 +88,7 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -130,7 +130,7 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -297,7 +297,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -363,7 +363,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -536,7 +536,7 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -578,7 +578,7 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -757,7 +757,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -823,7 +823,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -1029,7 +1029,7 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -1071,7 +1071,7 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -1250,7 +1250,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -1316,7 +1316,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -1500,7 +1500,7 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -1542,7 +1542,7 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -1721,7 +1721,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -1787,7 +1787,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -1995,7 +1995,7 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -2037,7 +2037,7 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -2225,7 +2225,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -2291,7 +2291,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -2499,7 +2499,7 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -2541,7 +2541,7 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -2757,7 +2757,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -2823,7 +2823,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -3047,7 +3047,7 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -3089,7 +3089,7 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -3284,7 +3284,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -3350,7 +3350,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -3553,7 +3553,7 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -3595,7 +3595,7 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -3790,7 +3790,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -3856,7 +3856,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 

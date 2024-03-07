@@ -2,7 +2,7 @@
 
 exports[`EntityGenerator enum with default value [postgres]: postgres-entity-dump-enum-default-value 1`] = `
 [
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
@@ -52,7 +52,7 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -129,7 +129,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -213,7 +213,7 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
@@ -251,7 +251,7 @@ export class FooBar2 {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class FooBaz2 {
@@ -267,7 +267,7 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -393,7 +393,7 @@ export class Publisher2Tests {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -444,7 +444,7 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -521,7 +521,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -602,7 +602,7 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
@@ -640,7 +640,7 @@ export class FooBar2 {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class FooBaz2 {
@@ -656,7 +656,7 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 

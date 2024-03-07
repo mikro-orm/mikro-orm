@@ -14,7 +14,7 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -43,7 +43,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -70,7 +70,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 
@@ -97,7 +97,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -173,7 +173,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -207,7 +207,7 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -246,7 +246,7 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 
@@ -277,7 +277,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -369,7 +369,7 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -398,7 +398,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -425,7 +425,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 
@@ -452,7 +452,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -528,7 +528,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -569,7 +569,7 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -610,7 +610,7 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 
@@ -641,7 +641,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -743,7 +743,7 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -776,7 +776,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -807,7 +807,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -842,7 +842,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -927,7 +927,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -964,7 +964,7 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -1006,7 +1006,7 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -1043,7 +1043,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -1145,7 +1145,7 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -1178,7 +1178,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -1209,7 +1209,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -1244,7 +1244,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -1329,7 +1329,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -1373,7 +1373,7 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -1417,7 +1417,7 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -1454,7 +1454,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -1555,7 +1555,7 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -1577,7 +1577,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -1597,7 +1597,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
@@ -1619,7 +1619,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -1697,7 +1697,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -1727,7 +1727,7 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -1762,7 +1762,7 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
@@ -1782,7 +1782,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -1876,7 +1876,7 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -1898,7 +1898,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -1918,7 +1918,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
@@ -1940,7 +1940,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -2018,7 +2018,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -2055,7 +2055,7 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -2092,7 +2092,7 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
@@ -2112,7 +2112,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -2211,7 +2211,7 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -2237,7 +2237,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -2261,7 +2261,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
@@ -2295,7 +2295,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -2378,7 +2378,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -2411,7 +2411,7 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -2449,7 +2449,7 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
@@ -2478,7 +2478,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -2577,7 +2577,7 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -2603,7 +2603,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -2627,7 +2627,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
@@ -2661,7 +2661,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -2744,7 +2744,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -2784,7 +2784,7 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -2824,7 +2824,7 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
@@ -2853,7 +2853,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -2951,7 +2951,7 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -2973,7 +2973,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -2993,7 +2993,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
@@ -3015,7 +3015,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -3093,7 +3093,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -3123,7 +3123,7 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -3158,7 +3158,7 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
@@ -3178,7 +3178,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -3272,7 +3272,7 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -3294,7 +3294,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -3314,7 +3314,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
@@ -3336,7 +3336,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -3414,7 +3414,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -3451,7 +3451,7 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -3488,7 +3488,7 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
@@ -3508,7 +3508,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -3607,7 +3607,7 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -3633,7 +3633,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -3657,7 +3657,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
@@ -3691,7 +3691,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -3774,7 +3774,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -3807,7 +3807,7 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -3845,7 +3845,7 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
@@ -3874,7 +3874,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -3973,7 +3973,7 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -3999,7 +3999,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -4023,7 +4023,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
@@ -4057,7 +4057,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -4140,7 +4140,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -4180,7 +4180,7 @@ export const ProductCountryMapSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -4220,7 +4220,7 @@ export const ProductSellersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
@@ -4249,7 +4249,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 

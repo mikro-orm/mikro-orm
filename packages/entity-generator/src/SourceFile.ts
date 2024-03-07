@@ -16,6 +16,7 @@ import {
   UnknownType,
   Utils,
 } from '@mikro-orm/core';
+import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper';
 
 /**
  * @see https://github.com/tc39/proposal-regexp-unicode-property-escapes#other-examples
@@ -134,7 +135,7 @@ export class SourceFile {
   protected generateImports() {
     const imports = [];
     if (this.coreImports.size > 0) {
-      imports.push(`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`);
+      imports.push(`import { ${([...this.coreImports].sort().map(t => POSSIBLE_TYPE_IMPORTS.includes(t as typeof POSSIBLE_TYPE_IMPORTS[number]) ? `type ${t}` : t).join(', '))} } from '@mikro-orm/core';`);
     }
     const entityImportExtension = this.options.esmImport ? '.js' : '';
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
