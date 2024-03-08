@@ -77,8 +77,8 @@ export class Cursor<
     const limit = first || last;
     const isLast = !first && !!last;
     const hasMorePages = !!overfetch && limit != null && items.length > limit;
-    this.hasPrevPage = before || after ? true : (isLast && hasMorePages);
-    this.hasNextPage = !(isLast && !before && !after) && hasMorePages;
+    this.hasPrevPage = isLast ? hasMorePages : !!after;
+    this.hasNextPage = isLast ? !!before : hasMorePages;
 
     if (hasMorePages) {
       if (isLast) {

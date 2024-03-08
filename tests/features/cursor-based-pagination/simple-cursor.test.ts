@@ -408,8 +408,8 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
     expect(cursor5.totalCount).toBe(50);
     expect(cursor5.startCursor).toBe('WzFd');
     expect(cursor5.endCursor).toBe('WzFd');
-    expect(cursor5.hasNextPage).toBe(false);
-    expect(cursor5.hasPrevPage).toBe(true);
+    expect(cursor5.hasNextPage).toBe(true);
+    expect(cursor5.hasPrevPage).toBe(false);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toMatchSnapshot();
     orm.em.clear();
@@ -426,8 +426,8 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
     expect(cursor6.totalCount).toBe(50);
     expect(cursor6.startCursor).toBeNull();
     expect(cursor6.endCursor).toBeNull();
-    expect(cursor6.hasNextPage).toBe(false);
-    expect(cursor6.hasPrevPage).toBe(true);
+    expect(cursor6.hasNextPage).toBe(true);
+    expect(cursor6.hasPrevPage).toBe(false);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toMatchSnapshot();
     orm.em.clear();
@@ -533,8 +533,8 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
     expect(cursor5.totalCount).toBe(50);
     expect(cursor5.startCursor).toBe('WzUwXQ');
     expect(cursor5.endCursor).toBe('WzUwXQ');
-    expect(cursor5.hasNextPage).toBe(false);
-    expect(cursor5.hasPrevPage).toBe(true);
+    expect(cursor5.hasNextPage).toBe(true);
+    expect(cursor5.hasPrevPage).toBe(false);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toMatchSnapshot();
     orm.em.clear();
@@ -551,8 +551,8 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
     expect(cursor6.totalCount).toBe(50);
     expect(cursor6.startCursor).toBeNull();
     expect(cursor6.endCursor).toBeNull();
-    expect(cursor6.hasNextPage).toBe(false);
-    expect(cursor6.hasPrevPage).toBe(true);
+    expect(cursor6.hasNextPage).toBe(true);
+    expect(cursor6.hasPrevPage).toBe(false);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toMatchSnapshot();
     orm.em.clear();
