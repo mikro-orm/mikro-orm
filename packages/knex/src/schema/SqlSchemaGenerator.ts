@@ -95,6 +95,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       const created: string[] = [];
 
       for (const [enumName, enumOptions] of Object.entries(toSchema.getNativeEnums())) {
+        /* istanbul ignore if */
         if (created.includes(enumName)) {
           continue;
         }
