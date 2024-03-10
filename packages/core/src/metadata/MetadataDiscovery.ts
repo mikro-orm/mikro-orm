@@ -1106,7 +1106,7 @@ export class MetadataDiscovery {
 
   private initGeneratedColumn(meta: EntityMetadata, prop: EntityProperty): void {
     if (!prop.generated && prop.columnTypes) {
-      const match = prop.columnTypes[0].match(/(.*) generated always as (.*)/);
+      const match = prop.columnTypes[0]?.match(/(.*) generated always as (.*)/);
 
       if (match) {
         prop.columnTypes[0] = match[1];
