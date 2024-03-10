@@ -91,6 +91,20 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       ret += await this.dump(this.knex.schema.createSchemaIfNotExists(namespace));
     }
 
+    if (this.platform.supportsNativeEnums()) {
+      const created: string[] = [];
+
+      for (const [enumName, enumOptions] of Object.entries(toSchema.getNativeEnums())) {
+        if (created.includes(enumName)) {
+          continue;
+        }
+
+        created.push(enumName);
+        const sql = this.helper.getCreateNativeEnumSQL(enumName, enumOptions, options.schema ?? this.config.get('schema'));
+        ret += await this.dump(this.knex.schema.raw(sql), '\n');
+      }
+    }
+
     for (const tableDef of toSchema.getTables()) {
       ret += await this.dump(this.createTable(tableDef));
     }
@@ -369,13 +383,24 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const [schemaName, tableName] = this.splitTableName(diff.name);
 
     if (this.platform.supportsNativeEnums()) {
-      const changedNativeEnums: [string, string[], string[]][] = [];
+      const createdNativeEnums: [enumName: string, items: string[]][] = [];
+      const changedNativeEnums: [enumName: string, itemsNew: string[], itemsOld: string[]][] = [];
 
-      for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
-        if (column.nativeEnumName && changedProperties.has('enumItems') && column.nativeEnumName in diff.fromTable.nativeEnums) {
+      for (const { column, changedProperties, fromColumn } of Object.values(diff.changedColumns)) {
+        if (!column.nativeEnumName) {
+          continue;
+        }
+
+        if (changedProperties.has('enumItems') && column.nativeEnumName in diff.fromTable.nativeEnums) {
           changedNativeEnums.push([column.nativeEnumName, column.enumItems!, diff.fromTable.getColumn(column.name)!.enumItems!]);
+        } else if (changedProperties.has('type') && !(column.nativeEnumName in diff.fromTable.nativeEnums)) {
+          createdNativeEnums.push([column.nativeEnumName, column.enumItems!]);
         }
       }
+
+      Utils.removeDuplicates(createdNativeEnums).forEach(([enumName, items]) => {
+        ret.push(this.knex.schema.raw(this.helper.getCreateNativeEnumSQL(enumName, items, schemaName)));
+      });
 
       Utils.removeDuplicates(changedNativeEnums).forEach(([enumName, itemsNew, itemsOld]) => {
         // postgres allows only adding new items, the values are case insensitive
@@ -426,7 +451,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         }
       }
 
-      for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
+      for (const { column, changedProperties, fromColumn } of Object.values(diff.changedColumns)) {
         if (changedProperties.size === 1 && changedProperties.has('comment')) {
           continue;
         }

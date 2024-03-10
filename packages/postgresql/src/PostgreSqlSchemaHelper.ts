@@ -1,5 +1,17 @@
-import { BigIntType, EnumType, Type, Utils, type Dictionary } from '@mikro-orm/core';
-import { SchemaHelper, type AbstractSqlConnection, type CheckDef, type Column, type DatabaseSchema, type DatabaseTable, type ForeignKey, type IndexDef, type Table, type TableDifference, type Knex } from '@mikro-orm/knex';
+import { BigIntType, type Dictionary, EnumType, Type, Utils } from '@mikro-orm/core';
+import {
+  type AbstractSqlConnection,
+  type CheckDef,
+  type Column,
+  type DatabaseSchema,
+  type DatabaseTable,
+  type ForeignKey,
+  type IndexDef,
+  type Knex,
+  SchemaHelper,
+  type Table,
+  type TableDifference,
+} from '@mikro-orm/knex';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
 
@@ -244,6 +256,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }, {});
   }
 
+  override getCreateNativeEnumSQL(name: string, values: unknown[], schema?: string): string {
+    if (schema && schema !== this.platform.getDefaultSchemaName()) {
+      name = schema + '.' + name;
+    }
+
+    return `create type ${this.platform.quoteIdentifier(name)} as enum (${values.map(value => this.platform.quoteValue(value)).join(', ')})`;
+  }
+
   override getDropNativeEnumSQL(name: string, schema?: string): string {
     if (schema && schema !== this.platform.getDefaultSchemaName()) {
       name = schema + '.' + name;
@@ -318,12 +338,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         fromTable.nativeEnums[column.nativeEnumName] = [];
       }
 
-      return table.enum(column.name, column.enumItems, {
-        useNative: true,
-        enumName: column.nativeEnumName,
-        schemaName: fromTable.schema && fromTable.schema !== this.platform.getDefaultSchemaName() ? fromTable.schema : undefined,
-        existingType,
-      });
+      const schemaPrefix = fromTable.schema && fromTable.schema !== this.platform.getDefaultSchemaName() ? `${fromTable.schema}.` : '';
+      const type = this.platform.quoteIdentifier(schemaPrefix + column.nativeEnumName);
+
+      if (column.type.endsWith('[]')) {
+        return table.specificType(column.name, type + '[]');
+      }
+
+      return table.specificType(column.name, type);
     }
 
     if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {

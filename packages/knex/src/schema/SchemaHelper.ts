@@ -63,6 +63,10 @@ export abstract class SchemaHelper {
     return {};
   }
 
+  getCreateNativeEnumSQL(name: string, values: unknown[], schema?: string): string {
+    throw new Error('Not supported by given driver');
+  }
+
   getDropNativeEnumSQL(name: string, schema?: string): string {
     throw new Error('Not supported by given driver');
   }

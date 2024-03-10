@@ -10,6 +10,7 @@ create table "different_schema"."new_table" ("id" serial primary key, "enum_test
 
 exports[`native enums in postgres enum diffing: postgres-update-schema-enums-2 1`] = `
 "create type "different_schema"."enum_test" as enum ('a', 'b');
+
 alter table "different_schema"."new_table" alter column "enum_test" type "different_schema"."enum_test" using ("enum_test"::"different_schema"."enum_test");
 
 "
@@ -31,12 +32,12 @@ exports[`native enums in postgres generate schema from metadata [postgres]: post
 "set names 'utf8';
 set session_replication_role = 'replica';
 
-create type "enum5" as enum ('a');
-create type "enum4" as enum ('a', 'b', 'c');
-create type "enum3" as enum ('1', '2', '3');
-create type "enum2" as enum ('1', '2');
-create type "enum_entity_type2" as enum ('LOCAL', 'GLOBAL');
 create type "enum_entity_type" as enum ('local', 'global');
+create type "enum_entity_type2" as enum ('LOCAL', 'GLOBAL');
+create type "enum2" as enum ('1', '2');
+create type "enum3" as enum ('1', '2', '3');
+create type "enum4" as enum ('a', 'b', 'c');
+create type "enum5" as enum ('a');
 create table "enum_entity" ("id" serial primary key, "type" "enum_entity_type" not null default 'local', "type2" "enum_entity_type2" not null default 'LOCAL', "enum2" "enum2" null, "enum3" "enum3" null, "enum4" "enum4" null, "enum5" "enum5" null);
 
 set session_replication_role = 'origin';
@@ -63,12 +64,12 @@ exports[`native enums in postgres generate schema from metadata [postgres]: post
 "set names 'utf8';
 set session_replication_role = 'replica';
 
-create type "enum5" as enum ('a');
-create type "enum4" as enum ('a', 'b', 'c');
-create type "enum3" as enum ('1', '2', '3');
-create type "enum2" as enum ('1', '2');
-create type "enum_entity_type2" as enum ('LOCAL', 'GLOBAL');
 create type "enum_entity_type" as enum ('local', 'global');
+create type "enum_entity_type2" as enum ('LOCAL', 'GLOBAL');
+create type "enum2" as enum ('1', '2');
+create type "enum3" as enum ('1', '2', '3');
+create type "enum4" as enum ('a', 'b', 'c');
+create type "enum5" as enum ('a');
 create table "enum_entity" ("id" serial primary key, "type" "enum_entity_type" not null default 'local', "type2" "enum_entity_type2" not null default 'LOCAL', "enum2" "enum2" null, "enum3" "enum3" null, "enum4" "enum4" null, "enum5" "enum5" null);
 
 set session_replication_role = 'origin';

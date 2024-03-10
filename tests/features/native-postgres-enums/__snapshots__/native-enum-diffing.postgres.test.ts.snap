@@ -24,6 +24,7 @@ alter table "user" drop constraint if exists "user_type_check";
 alter table "user" drop constraint if exists "user_type2_check";
 
 create type "user_type" as enum ('personal', 'organization');
+
 alter table "user" alter column "type" type "user_type" using ("type"::"user_type");
 alter table "user" alter column "type2" type "user_type" using ("type2"::"user_type");
 
