@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.9](https://github.com/mikro-orm/mikro-orm/compare/v6.1.8...v6.1.9) (2024-03-10)
+
+
+### Bug Fixes
+
+* **entity-generator:** emit missing imports in `EntitySchema` generated files ([#5311](https://github.com/mikro-orm/mikro-orm/issues/5311)) ([f680d66](https://github.com/mikro-orm/mikro-orm/commit/f680d66d8da08f0c6c898c3dd300bf1e920439b4))
+* **entity-generator:** output type import statements for type only core imports ([#5317](https://github.com/mikro-orm/mikro-orm/issues/5317)) ([bd3f160](https://github.com/mikro-orm/mikro-orm/commit/bd3f160988ac48c9d1a0b591f5674f9b8f5e16e7))
+
+
+
+
+
 ## [6.1.8](https://github.com/mikro-orm/mikro-orm/compare/v6.1.7...v6.1.8) (2024-03-06)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

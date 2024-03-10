@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.9](https://github.com/mikro-orm/mikro-orm/compare/v6.1.8...v6.1.9) (2024-03-10)
+
+
+### Features
+
+* **postgres:** add support for native enum arrays ([c2e362b](https://github.com/mikro-orm/mikro-orm/commit/c2e362bc6fe19ec792d13f475a11cf2290b94fde)), closes [#5322](https://github.com/mikro-orm/mikro-orm/issues/5322)
+
+
+
+
+
 ## [6.1.8](https://github.com/mikro-orm/mikro-orm/compare/v6.1.7...v6.1.8) (2024-03-06)
 
 

@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.9](https://github.com/mikro-orm/mikro-orm/compare/v6.1.8...v6.1.9) (2024-03-10)
+
+
+### Bug Fixes
+
+* **core:** don't propagate changes from `em.transactional()` to upper context if its global ([7ac9a19](https://github.com/mikro-orm/mikro-orm/commit/7ac9a1945469264ea32727c2e63fd89d9f2d7ec8)), closes [#5309](https://github.com/mikro-orm/mikro-orm/issues/5309)
+* **core:** ignore filters on relations inside embedded properties ([1e4b2ce](https://github.com/mikro-orm/mikro-orm/commit/1e4b2ce41d66e1686aac0d28bf8b6a06b2cbf9b4)), closes [#5310](https://github.com/mikro-orm/mikro-orm/issues/5310)
+* **core:** improve checks for generated columns ([0396e1e](https://github.com/mikro-orm/mikro-orm/commit/0396e1e8c0cd65f1dcd4ea4d29419ed2b5e7446a))
+* **core:** map virtual relations with `persist: false` as formulas to preserve aliasing ([20a4cfb](https://github.com/mikro-orm/mikro-orm/commit/20a4cfb005fed168786d0da806d1c89e29b6f4ab))
+
+
+### Features
+
+* **postgres:** add support for native enum arrays ([c2e362b](https://github.com/mikro-orm/mikro-orm/commit/c2e362bc6fe19ec792d13f475a11cf2290b94fde)), closes [#5322](https://github.com/mikro-orm/mikro-orm/issues/5322)
+
+
+
+
+
 ## [6.1.8](https://github.com/mikro-orm/mikro-orm/compare/v6.1.7...v6.1.8) (2024-03-06)
 
 
