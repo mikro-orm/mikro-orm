@@ -1344,6 +1344,10 @@ export class MetadataDiscovery {
     const meta2 = this.discovered.find(m => m.className === prop.type)!;
     prop.referencedPKs = meta2.primaryKeys;
     prop.targetMeta = meta2;
+
+    if (!prop.formula && prop.persist === false && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.embedded) {
+      prop.formula = a => `${a}.${prop.fieldNames[0]}`;
+    }
   }
 
   private initColumnType(prop: EntityProperty): void {
