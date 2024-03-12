@@ -71,6 +71,10 @@ export class EntityAssigner {
     let value = data[propName];
     const prop = { ...props[propName], name: propName } as EntityProperty<T>;
 
+    if (options.onlyOwnProperties && (prop as any).entity && !Utils.isPrimaryKey(value)) {
+      return;
+    }
+
     if (propName in props && !prop.nullable && value == null) {
       throw new Error(`You must pass a non-${value} value to the property ${propName} of entity ${(entity as Dictionary).constructor.name}.`);
     }
@@ -294,6 +298,7 @@ export interface AssignOptions {
   updateNestedEntities?: boolean;
   updateByPrimaryKey?: boolean;
   onlyProperties?: boolean;
+  onlyOwnProperties?: boolean;
   convertCustomTypes?: boolean;
   mergeObjectProperties?: boolean;
   merge?: boolean;
