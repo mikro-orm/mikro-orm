@@ -119,6 +119,85 @@ describe('EntityAssignerMongo', () => {
     });
   });
 
+  test('#assign() should ignore nested entities when onlyOwnProperties : true (#5327)', async () => {
+    const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
+    const book = new Book('Book2', jon);
+    book._id = new ObjectId();
+    assign<any>(jon, { books: [book], name: 'Jon SnowOwn2' }, { onlyOwnProperties: true });
+    expect((jon as any).books.length).toBe(0);
+    expect(jon.name).toBe('Jon SnowOwn2');
+    await orm.em.persistAndFlush(jon);
+    const em = orm.em.fork();
+    const dbBook = await em.findOne(Book, { _id: book._id });
+    expect(dbBook).toBeNull();
+  });
+
+  test('#assign() should ignore nested entities when onlyOwnProperties : true (reference) (#5327)', async () => {
+    const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
+    const em = orm.em.fork();
+    await em.persistAndFlush(jon);
+    const ref = orm.em.getReference(Author, jon._id);
+    const book = new Book('Book2', jon);
+    book._id = new ObjectId();
+    assign<any>(ref, { books: [book], name: 'Jon SnowOwn2' }, { em: orm.em, onlyOwnProperties: true });
+    expect((ref as any).books).toBeUndefined();
+    expect(ref.name).toBe('Jon SnowOwn2');
+    await orm.em.persistAndFlush(ref);
+    const em2 = orm.em.fork();
+    const dbBook = await em2.findOne(Book, { _id: book._id });
+    expect(dbBook).toBeNull();
+  });
+
+  test('#assign() should ignore nested owned entity when onlyOwnProperties : true (#5327)', async () => {
+    const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
+    const book = new Book('Book2');
+    assign<any>(book, { author: jon, title: 'GreatBook' }, { em: orm.em, onlyOwnProperties: true });
+    expect(book.author).toBeUndefined();
+    expect(book.title).toBe('GreatBook');
+  });
+
+  test('#assign() should ignore nested owned entity when onlyOwnProperties : true (reference) (#5327)', async () => {
+    const book = new Book('Book2', new Author('Temp Author', 'tempmail@wall.st'));
+    book._id = new ObjectId();
+    const em = orm.em.fork();
+    await em.persistAndFlush(book);
+
+    const ref = orm.em.getReference(Book, book._id);
+
+    const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
+    jon._id = new ObjectId();
+    assign<any>(ref, { author: jon, title: 'GreatBook' }, { em: orm.em, onlyOwnProperties: true });
+    expect(ref.author).toBeUndefined();
+    expect(ref.title).toBe('GreatBook');
+
+    const em2 = orm.em.fork();
+    const dbJon = await em2.findOne(Author, { _id: jon._id });
+    expect(dbJon).toBeNull();
+
+  });
+
+  test('#assign() should add nested PrimaryKey when onlyOwnProperties : true (#5327)', async () => {
+    const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
+    jon._id = new ObjectId();
+    const em = orm.em.fork();
+    await em.persistAndFlush(jon);
+    const book = new Book('Book2');
+    assign<any>(book, { author: jon._id }, { em: orm.em, onlyOwnProperties: true });
+    expect(book.author).toBeTruthy();
+  });
+
+  test('#assign() should add nested PrimaryKey when onlyOwnProperties : true (reference) (#5327)', async () => {
+    const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
+    const book = new Book('Book2', new Author('Temp Author', 'tempmail@wall.st'));
+    book._id = new ObjectId();
+    jon._id = new ObjectId();
+    const em = orm.em.fork();
+    await em.persistAndFlush([jon, book]);
+    const ref = orm.em.getReference(Book, book._id);
+    assign<any>(ref, { author: jon._id }, { em: orm.em, onlyOwnProperties: true });
+    expect(ref.author).toBeTruthy();
+  });
+
   afterAll(async () => orm.close(true));
 
 });

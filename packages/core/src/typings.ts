@@ -391,7 +391,7 @@ export type AnyString = string & {};
 
 export interface EntityProperty<Owner = any, Target = any> {
   name: EntityKey<Owner>;
-  entity: () => EntityName<Owner>;
+  entity?: () => EntityName<Owner>;
   type: keyof typeof types | AnyString;
   runtimeType: 'number' | 'string' | 'boolean' | 'bigint' | 'Buffer' | 'Date';
   targetMeta?: EntityMetadata<Target>;
