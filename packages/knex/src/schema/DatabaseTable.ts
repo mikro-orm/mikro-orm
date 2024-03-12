@@ -28,7 +28,7 @@ export class DatabaseTable {
   private indexes: IndexDef[] = [];
   private checks: CheckDef[] = [];
   private foreignKeys: Dictionary<ForeignKey> = {};
-  public nativeEnums: Dictionary<unknown[]> = {}; // for postgres
+  public nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
   public comment?: string;
 
   constructor(private readonly platform: AbstractSqlPlatform,

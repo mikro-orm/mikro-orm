@@ -11,7 +11,7 @@ export class DatabaseSchema {
 
   private tables: DatabaseTable[] = [];
   private namespaces = new Set<string>();
-  private nativeEnums: Dictionary<unknown[]> = {}; // for postgres
+  private nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
 
   constructor(private readonly platform: AbstractSqlPlatform,
               readonly name: string) { }
@@ -42,17 +42,25 @@ export class DatabaseSchema {
     return !!this.getTable(name);
   }
 
-  setNativeEnums(nativeEnums: Dictionary<unknown[]>): void {
+  setNativeEnums(nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }>): void {
     this.nativeEnums = nativeEnums;
     this.tables.forEach(t => t.nativeEnums = nativeEnums);
   }
 
-  getNativeEnums(): Dictionary<unknown[]> {
+  getNativeEnums(): Dictionary<{ name: string; schema?: string; items: string[] }> {
     return this.nativeEnums;
+  }
+
+  getNativeEnum(name: string): { name: string; schema?: string; items: string[] } {
+    return this.nativeEnums[name];
   }
 
   hasNamespace(namespace: string) {
     return this.namespaces.has(namespace);
+  }
+
+  hasNativeEnum(name: string) {
+    return name in this.nativeEnums;
   }
 
   getNamespaces(): string[] {
@@ -73,12 +81,25 @@ export class DatabaseSchema {
 
   static fromMetadata(metadata: EntityMetadata[], platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): DatabaseSchema {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
-    const nativeEnums: Dictionary<unknown[]> = {};
+    const nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {};
 
     for (const meta of metadata) {
-      meta.props
-        .filter(prop => prop.nativeEnumName)
-        .forEach(prop => nativeEnums[prop.nativeEnumName!] = prop.items?.map(val => '' + val) ?? []);
+      for (const prop of meta.props) {
+        if (prop.nativeEnumName) {
+          let key = prop.nativeEnumName;
+          const s = meta.schema ?? schema.name;
+
+          if (s && s !== platform.getDefaultSchemaName()) {
+            key = s + '.' + key;
+          }
+
+          nativeEnums[key] = {
+            name: prop.nativeEnumName,
+            schema: meta.schema ?? schema.name,
+            items: prop.items?.map(val => '' + val) ?? [],
+          };
+        }
+      }
     }
 
     schema.setNativeEnums(nativeEnums);

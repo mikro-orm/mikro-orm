@@ -37,7 +37,17 @@ export class SchemaComparator {
    * stored in toSchema.
    */
   compare(fromSchema: DatabaseSchema, toSchema: DatabaseSchema, inverseDiff?: SchemaDifference): SchemaDifference {
-    const diff: SchemaDifference = { newTables: {}, removedTables: {}, changedTables: {}, orphanedForeignKeys: [], newNamespaces: new Set(), removedNamespaces: new Set(), fromSchema };
+    const diff: SchemaDifference = {
+      newTables: {},
+      removedTables: {},
+      changedTables: {},
+      orphanedForeignKeys: [],
+      newNativeEnums: [],
+      removedNativeEnums: [],
+      newNamespaces: new Set(),
+      removedNamespaces: new Set(),
+      fromSchema,
+    };
     const foreignKeysToTable: Dictionary<ForeignKey[]> = {};
 
     for (const namespace of toSchema.getNamespaces()) {
@@ -54,6 +64,22 @@ export class SchemaComparator {
       }
 
       diff.removedNamespaces.add(namespace);
+    }
+
+    for (const nativeEnum of Object.keys(toSchema.getNativeEnums())) {
+      if (fromSchema.hasNativeEnum(nativeEnum)) {
+        continue;
+      }
+
+      diff.newNativeEnums.push(toSchema.getNativeEnum(nativeEnum));
+    }
+
+    for (const nativeEnum of Object.keys(fromSchema.getNativeEnums())) {
+      if (toSchema.hasNativeEnum(nativeEnum)) {
+        continue;
+      }
+
+      diff.removedNativeEnums.push(fromSchema.getNativeEnum(nativeEnum));
     }
 
     for (const table of toSchema.getTables()) {

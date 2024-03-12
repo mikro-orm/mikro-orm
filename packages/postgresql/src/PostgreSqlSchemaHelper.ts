@@ -118,7 +118,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllColumns(connection: AbstractSqlConnection, tables: Table[], nativeEnums?: Dictionary<string[]>): Promise<Dictionary<Column[]>> {
+  async getAllColumns(connection: AbstractSqlConnection, tables: Table[], nativeEnums?: Dictionary<{ name: string; schema?: string; items: string[] }>): Promise<Dictionary<Column[]>> {
     const sql = `select table_schema as schema_name, table_name, column_name,
       column_default,
       is_nullable,
@@ -176,7 +176,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       if (nativeEnums?.[column.type]) {
         column.mappedType = Type.getType(EnumType);
         column.nativeEnumName = column.type;
-        column.enumItems = nativeEnums[column.type];
+        column.enumItems = nativeEnums[column.type]?.items;
       }
 
       ret[key].push(column);
@@ -242,16 +242,27 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getNativeEnumDefinitions(connection: AbstractSqlConnection, schemas: string[]): Promise<Dictionary<string[]>> {
-    const res = await connection.execute('select t.typname as enum_name, array_agg(e.enumlabel order by e.enumsortorder) as enum_value ' +
+  async getNativeEnumDefinitions(connection: AbstractSqlConnection, schemas: string[]): Promise<Dictionary<{ name: string; schema?: string; items: string[] }>> {
+    const res = await connection.execute('select t.typname as enum_name, min(n.nspname) as schema_name, array_agg(e.enumlabel order by e.enumsortorder) as enum_value ' +
       'from pg_type t ' +
       'join pg_enum e on t.oid = e.enumtypid ' +
       'join pg_catalog.pg_namespace n on n.oid = t.typnamespace ' +
       'where n.nspname in (?) ' +
-      'group by t.typname', Utils.unique(schemas));
+      'group by t.typname', [Utils.unique(schemas)]);
 
     return res.reduce((o, row) => {
-      o[row.enum_name] = this.platform.unmarshallArray(row.enum_value);
+      let name = row.enum_name;
+
+      if (row.schema_name && row.schema_name !== this.platform.getDefaultSchemaName()) {
+        name = row.schema_name + '.' + name;
+      }
+
+      o[name] = {
+        name: row.enum_name,
+        schema: row.schema_name,
+        items: this.platform.unmarshallArray(row.enum_value),
+      };
+
       return o;
     }, {});
   }
@@ -332,12 +343,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
 
     if (column.nativeEnumName && column.enumItems) {
-      const existingType = alter ? column.nativeEnumName in fromTable.nativeEnums : false;
-
-      if (!existingType) {
-        fromTable.nativeEnums[column.nativeEnumName] = [];
-      }
-
       const schemaPrefix = fromTable.schema && fromTable.schema !== this.platform.getDefaultSchemaName() ? `${fromTable.schema}.` : '';
       const type = this.platform.quoteIdentifier(schemaPrefix + column.nativeEnumName);
 
@@ -399,6 +404,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         ret.push(`alter table ${quotedName} alter column "${col.column.name}" drop default`);
       }
 
+      if (col.fromColumn.nativeEnumName && !col.column.nativeEnumName && col.fromColumn.default) {
+        ret.push(`alter table ${quotedName} alter column "${col.column.name}" drop default`);
+      }
+
       if (!col.fromColumn.nativeEnumName) {
         const constraintName = `${tableName}_${col.column.name}_check`;
         ret.push(`alter table ${quotedName} drop constraint if exists "${constraintName}"`);
@@ -430,6 +439,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     for (const col of changedEnums) {
       if (!col.fromColumn.nativeEnumName && col.column.nativeEnumName && col.column.default) {
+        ret.push(`alter table ${quotedName} alter column "${col.column.name}" set default ${col.column.default}`);
+      }
+
+      if (col.fromColumn.nativeEnumName && !col.column.nativeEnumName && col.column.default) {
         ret.push(`alter table ${quotedName} alter column "${col.column.name}" set default ${col.column.default}`);
       }
     }

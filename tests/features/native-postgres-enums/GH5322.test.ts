@@ -37,7 +37,9 @@ afterAll(() => orm.close());
 
 test('GH #5322', async () => {
   const sql = await orm.schema.getCreateSchemaSQL();
+  const freshUpdate = await orm.schema.getUpdateSchemaSQL();
   expect(sql).toMatch(`create type "my_enum" as enum ('local', 'global');\ncreate table "enum_entity" ("id" serial primary key, "type" "my_enum" not null default 'local', "types" "my_enum"[] not null);`);
+  expect(freshUpdate).toMatch(`create type "my_enum" as enum ('local', 'global');\ncreate table "enum_entity" ("id" serial primary key, "type" "my_enum" not null default 'local', "types" "my_enum"[] not null);`);
   await orm.schema.execute(sql);
 
   const meta = orm.getMetadata(EnumEntity);

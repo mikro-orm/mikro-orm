@@ -129,10 +129,12 @@ export interface TableDifference {
 
 export interface SchemaDifference {
   newNamespaces: Set<string>;
+  newNativeEnums: { name: string; schema?: string; items: string[] }[];
   newTables: Dictionary<DatabaseTable>;
   changedTables: Dictionary<TableDifference>;
   removedTables: Dictionary<DatabaseTable>;
   removedNamespaces: Set<string>;
+  removedNativeEnums: { name: string; schema?: string }[];
   orphanedForeignKeys: ForeignKey[];
   fromSchema: DatabaseSchema;
 }
