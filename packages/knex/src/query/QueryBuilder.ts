@@ -1349,6 +1349,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
         const alias = this.getNextAlias(prop.pivotEntity ?? prop.type);
         const aliasedName = `${fromAlias}.${prop.name}#${alias}`;
         this._joins[aliasedName] = this.helper.joinOneToReference(prop, this.mainAlias.aliasName, alias, JoinType.leftJoin);
+        this._joins[aliasedName].path = `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? meta.className)}.${prop.name}`;
         this._populateMap[aliasedName] = this._joins[aliasedName].alias;
       }
     });

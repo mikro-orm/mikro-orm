@@ -42,9 +42,9 @@ describe('read-replicas', () => {
       author = (await orm.em.findOne(Author2, author))!;
       await orm.em.findOne(Author2, author, { refresh: true });
       await orm.em.findOne(Author2, author, { refresh: true });
-      expect(mock.mock.calls[4][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via read connection 'read-\d'/);
-      expect(mock.mock.calls[5][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via read connection 'read-\d'/);
-      expect(mock.mock.calls[6][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+      expect(mock.mock.calls[4][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `a1__author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+      expect(mock.mock.calls[5][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `a1__author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+      expect(mock.mock.calls[6][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `a1__author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via read connection 'read-\d'/);
 
       author.name = 'Jon Blow';
       await orm.em.flush();
@@ -158,8 +158,8 @@ describe('read-replicas', () => {
       author = (await orm.em.findOne(Author2, author))!;
       await orm.em.findOne(Author2, author, { refresh: true });
       await orm.em.qb(Author2).where({ id: author.id }).limit(1).execute();
-      expect(mock.mock.calls[4][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
-      expect(mock.mock.calls[5][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[4][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `a1__author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[5][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `a1__author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[6][0]).toMatch(/select `a0`\.\* from `author2` as `a0` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
 
       author.name = 'Jon Blow';
@@ -272,8 +272,8 @@ describe('read-replicas', () => {
     const schema = `${orm.config.get('dbName')}_schema_2`;
     const res1 = await orm.em.find(Book2, { publisher: { $ne: null } }, { schema, populate: ['perex'] });
     const res2 = await orm.em.find(Book2, { publisher: { $ne: null } }, { populate: ['perex'] });
-    expect(mock.mock.calls[0][0]).toMatch(`select \`b0\`.*, \`b0\`.price * 1.19 as \`price_taxed\`, \`t1\`.\`id\` as \`test_id\` from \`${schema}\`.\`book2\` as \`b0\` left join \`${schema}\`.\`test2\` as \`t1\` on \`b0\`.\`uuid_pk\` = \`t1\`.\`book_uuid_pk\` where \`b0\`.\`author_id\` is not null and \`b0\`.\`publisher_id\` is not null`);
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` from `book2` as `b0` left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`publisher_id` is not null');
+    expect(mock.mock.calls[0][0]).toMatch(`select \`b0\`.*, \`b0\`.price * 1.19 as \`price_taxed\`, \`t1\`.\`id\` as \`t1__id\` from \`${schema}\`.\`book2\` as \`b0\` left join \`${schema}\`.\`test2\` as \`t1\` on \`b0\`.\`uuid_pk\` = \`t1\`.\`book_uuid_pk\` where \`b0\`.\`author_id\` is not null and \`b0\`.\`publisher_id\` is not null`);
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` from `book2` as `b0` left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`publisher_id` is not null');
     expect(res1.length).toBe(0);
     expect(res2.length).toBe(1);
   });

@@ -238,4 +238,6 @@ test('invalid query 4', async () => {
     },
   );
   expect(results[3].user).toBeNull();
+  expect(mock.mock.calls).toHaveLength(1);
+  expect(mock.mock.calls[0][0]).toMatch(`select "s0".*, "u1"."id" as "u1__id", "u1"."location_id" as "u1__location_id", "u1"."name" as "u1__name", "u1"."data" as "u1__data" from "server" as "s0" left join "user" as "u1" on "s0"."user_id" = "u1"."id" and ("u1"."name" = 'u1' or "u1"."id" is null) where ("u1"."name" = 'u1' or "u1"."id" is null)`);
 });

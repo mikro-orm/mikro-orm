@@ -383,7 +383,7 @@ export class QueryBuilderHelper {
     if (join.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(join.prop.kind)) {
       return join.prop.fieldNames.map((fieldName, idx) => {
         const columns = join.prop.owner ? join.joinColumns : join.inverseJoinColumns;
-        return this.mapper(`${join.alias}.${columns![idx]}`, type, undefined, fieldName);
+        return this.mapper(`${join.alias}.${columns![idx]}`, type, undefined, `${join.alias}__${columns![idx]}`);
       });
     }
 
