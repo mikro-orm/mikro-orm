@@ -1421,6 +1421,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
         if (join) {
           if (join.cond[k]) {
             join.cond = { [op ?? '$and']: [join.cond, { [k]: cond[k] }] };
+          } else if (op === '$or') {
+            join.cond.$or ??= [];
+            join.cond.$or.push({ [k]: cond[k] });
           } else {
             join.cond = { ...join.cond, [k]: cond[k] };
           }

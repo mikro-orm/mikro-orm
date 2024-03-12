@@ -13,6 +13,9 @@ class User {
   @OneToMany(() => Server, x => x.user)
   servers = new Collection<Server>(this);
 
+  @Property()
+  name!: string;
+
   @Property({ type: 'json', nullable: true })
   data: any;
 
@@ -65,6 +68,7 @@ beforeAll(async () => {
       { name: 's2' },
       { name: 'test' },
     ],
+    name: 'u1',
     data: { foo: 'bar' },
   });
   orm.em.create(User, {
@@ -75,6 +79,7 @@ beforeAll(async () => {
     servers: [
       { name: 'test' },
     ],
+    name: 'u2',
     data: { foo: 'baz' },
   });
 
@@ -208,4 +213,29 @@ test('invalid query 3', async () => {
   expect(count2).toBe(2);
   expect(mock.mock.calls[2][0]).toMatch(`select "u0".*, "s"."id" as "s__id", "s"."name" as "s__name", "s"."user_id" as "s__user_id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."id" in (select "u0"."id" from (select "u0"."id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null group by "u0"."id" limit 3) as "u0")`);
   expect(mock.mock.calls[3][0]).toMatch(`select count(distinct("u0"."id")) as "count" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null`);
+});
+
+test('invalid query 4', async () => {
+  const mock = mockLogger(orm);
+  const results = await orm.em.fork().find(
+    Server,
+    {
+      user: {
+        $or: [
+          {
+            name: 'u1',
+          },
+          {
+            id: null,
+          },
+        ],
+      },
+    },
+    {
+      populate: ['user'],
+      populateWhere: 'infer',
+      logging: { enabled: true },
+    },
+  );
+  expect(results[3].user).toBeNull();
 });
