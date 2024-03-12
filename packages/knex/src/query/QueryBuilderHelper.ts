@@ -250,8 +250,11 @@ export class QueryBuilderHelper {
             return;
           }
 
-          const left = `${join.ownerAlias}.${primaryKey}`;
-          conditions.push(`${this.knex.ref(left)} = ${this.knex.ref(right)}`);
+          const left = join.prop.object && join.prop.fieldNameRaw
+            ? join.prop.fieldNameRaw.replaceAll(ALIAS_REPLACEMENT, join.ownerAlias)
+            : this.knex.ref(`${join.ownerAlias}.${primaryKey}`);
+
+          conditions.push(`${left} = ${this.knex.ref(right)}`);
         });
       }
 
