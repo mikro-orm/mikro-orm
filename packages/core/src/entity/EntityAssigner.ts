@@ -71,7 +71,7 @@ export class EntityAssigner {
     let value = data[propName];
     const prop = { ...props[propName], name: propName } as EntityProperty<T>;
 
-    if (options.onlyOwnProperties && prop.entity && !Utils.isPrimaryKey(value)) {
+    if (options.onlyOwnProperties && (prop as any).entity && !Utils.isPrimaryKey(value)) {
       return;
     }
 
