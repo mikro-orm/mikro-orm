@@ -71,10 +71,12 @@ export class EntityAssigner {
     let value = data[propName];
     const prop = { ...props[propName], name: propName } as EntityProperty<T>;
 
-    if (options.onlyOwnProperties) {
-      if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop?.kind)) {
+    if (prop && options.onlyOwnProperties) {
+      if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
         return;
-      } else if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop?.kind)) {
+      }
+
+      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
         value = Utils.extractPK(value, prop.targetMeta);
       }
     }
