@@ -159,7 +159,7 @@ module.exports = {
           'data-type': 'versions',
         },
         {
-          href: 'https://discord.gg/ynAmaVDV',
+          href: 'https://discord.gg/w8bjxFHS7X',
           label: 'Discord',
           position: 'right',
           title: 'Chat on Discord',
@@ -198,7 +198,7 @@ module.exports = {
           items: [
             {
               label: 'Discord',
-              href: 'https://discord.gg/ynAmaVDV',
+              href: 'https://discord.gg/w8bjxFHS7X',
             },
             {
               label: 'Slack',
