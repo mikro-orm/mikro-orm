@@ -71,6 +71,16 @@ export class EntityAssigner {
     let value = data[propName];
     const prop = { ...props[propName], name: propName } as EntityProperty<T>;
 
+    if (prop && options.onlyOwnProperties) {
+      if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
+        return;
+      }
+
+      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+        value = Utils.extractPK(value, prop.targetMeta);
+      }
+    }
+
     if (propName in props && !prop.nullable && value == null) {
       throw new Error(`You must pass a non-${value} value to the property ${propName} of entity ${(entity as Dictionary).constructor.name}.`);
     }
@@ -294,6 +304,7 @@ export interface AssignOptions {
   updateNestedEntities?: boolean;
   updateByPrimaryKey?: boolean;
   onlyProperties?: boolean;
+  onlyOwnProperties?: boolean;
   convertCustomTypes?: boolean;
   mergeObjectProperties?: boolean;
   merge?: boolean;
