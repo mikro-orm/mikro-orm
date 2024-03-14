@@ -47,7 +47,7 @@ export class Book1 {
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3' })
-@Index({ properties: 'metaData.foo.bar.baz' })
+@Index({ properties: ['author3', 'metaData.foo.bar.baz'] })
 @Unique({ properties: 'metaData.fooBar.email' })
 @Index({ name: 'custom_index_expr123', expression: 'create  index  "custom_index_expr123" on "book" ("isbn")' })
 export class Book2 {

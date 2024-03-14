@@ -636,7 +636,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
       if (index.columnNames.some(column => column.includes('.'))) {
         const columns = this.platform.getJsonIndexDefinition(index);
-        table.index(columns.map(column => this.knex.raw(`(${column})`)), index.keyName, { indexType: 'unique' });
+        table.index(columns.map(column => this.knex.raw(column)), index.keyName, { indexType: 'unique' });
       } else {
         table.unique(index.columnNames, { indexName: index.keyName });
       }
@@ -652,7 +652,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
       if (index.columnNames.some(column => column.includes('.'))) {
         const columns = this.platform.getJsonIndexDefinition(index);
-        table.index(columns.map(column => this.knex.raw(`(${column})`)), index.keyName, index.type as Dictionary);
+        table.index(columns.map(column => this.knex.raw(column)), index.keyName, index.type as Dictionary);
       } else {
         table.index(index.columnNames, index.keyName, index.type as Dictionary);
       }

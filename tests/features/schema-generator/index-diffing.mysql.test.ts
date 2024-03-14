@@ -48,6 +48,7 @@ export class Book1 {
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3' })
 @Index({ properties: 'metaData.foo.bar.baz', options: { returning: 'char(200)' } })
+@Index({ properties: ['author3', 'metaData.fooBar.email'], options: { returning: 'char(200)' } })
 @Unique({ properties: 'metaData.fooBar.email' })
 export class Book2 {
 
@@ -88,6 +89,7 @@ export class Book2 {
 @Index({ properties: 'author3', name: 'lol31' })
 @Index({ properties: 'author3', name: 'lol41' })
 @Index({ properties: ['metaData.foo.bar2', 'metaData.foo.bar3'] })
+@Index({ properties: ['metaData.fooBar.email', 'author3'], options: { returning: 'char(200)' } })
 @Unique({ properties: ['metaData.fooBar.bazBaz', 'metaData.fooBar.lol123'] })
 export class Book3 {
 

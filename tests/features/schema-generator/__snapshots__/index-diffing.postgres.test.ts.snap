@@ -21,7 +21,7 @@ create index "book_author4_id_index" on "book" ("author4_id");
 create index "book_author5_id_index" on "book" ("author5_id");
 create index "custom_index_expr" on "book" ("title");
 create  index  "custom_index_expr123" on "book" ("isbn");
-create index "book_meta_data_foo_bar_baz_index" on "book" (("meta_data"->'foo'->'bar'->>'baz'));
+create index "book_author3_id_meta_data_foo_bar_baz_index" on "book" (author3_id, ("meta_data"->'foo'->'bar'->>'baz'));
 create unique index "book_meta_data_fooBar_email_unique" on "book" (("meta_data"->'fooBar'->>'email'));
 alter table "book" drop constraint "book_isbn_unique";
 alter table "book" add constraint "isbn_unique_constr" unique ("isbn");
@@ -30,8 +30,8 @@ alter table "book" add constraint "isbn_unique_constr" unique ("isbn");
 `;
 
 exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes on FKs on column update 3`] = `
-"drop index "book_meta_data_fooBar_email_unique";
-drop index "book_meta_data_foo_bar_baz_index";
+"drop index "book_author3_id_meta_data_foo_bar_baz_index";
+drop index "book_meta_data_fooBar_email_unique";
 drop index "custom_index_expr";
 
 create index "custom_index_expr2" on "book" ("title");

@@ -227,15 +227,19 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   override getJsonIndexDefinition(index: IndexDef): string[] {
     return index.columnNames
       .map(column => {
+        if (!column.includes('.')) {
+          return column;
+        }
+
         const path = column.split('.');
         const first = path.shift()!;
         const last = path.pop()!;
 
         if (path.length === 0) {
-          return `${this.quoteIdentifier(first)}->>${this.quoteValue(last)}`;
+          return `(${this.quoteIdentifier(first)}->>${this.quoteValue(last)})`;
         }
 
-        return `${this.quoteIdentifier(first)}->${path.map(c => this.quoteValue(c)).join('->')}->>${this.quoteValue(last)}`;
+        return `(${this.quoteIdentifier(first)}->${path.map(c => this.quoteValue(c)).join('->')}->>${this.quoteValue(last)})`;
       });
   }
 

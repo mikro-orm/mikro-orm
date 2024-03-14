@@ -27,8 +27,12 @@ export class MySqlPlatform extends AbstractSqlPlatform {
   override getJsonIndexDefinition(index: IndexDef): string[] {
     return index.columnNames
       .map(column => {
+        if (!column.includes('.')) {
+          return column;
+        }
+
         const [root, ...path] = column.split('.');
-        return `json_value(${this.quoteIdentifier(root)}, '$.${path.join('.')}' returning ${index.options?.returning ?? 'char(255)'})`;
+        return `(json_value(${this.quoteIdentifier(root)}, '$.${path.join('.')}' returning ${index.options?.returning ?? 'char(255)'}))`;
       });
   }
 
