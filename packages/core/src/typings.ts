@@ -547,7 +547,7 @@ export class EntityMetadata<T = any> {
       return !prop.inherited && prop.hydrate !== false && !discriminator && !prop.embedded && !onlyGetter;
     });
     this.trackingProps = this.hydrateProps
-      .filter(prop => !prop.getter && !prop.setter)
+      .filter(prop => !prop.getter && !prop.setter && prop.trackChanges !== false)
       .filter(prop => ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind))
       .filter(prop => !prop.serializedPrimaryKey);
     this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.type));
