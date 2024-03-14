@@ -1174,8 +1174,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
    * @internal
    */
   mapPropToFieldNames<T extends object>(qb: QueryBuilder<T>, prop: EntityProperty<T>, tableAlias?: string): Field<T>[] {
-    const knex = this.connection.getKnex();
-    const aliased = knex.ref(tableAlias ? `${tableAlias}__${prop.fieldNames[0]}` : prop.fieldNames[0]).toString();
+    const aliased = this.platform.quoteIdentifier(tableAlias ? `${tableAlias}__${prop.fieldNames[0]}` : prop.fieldNames[0]);
 
     if (tableAlias && prop.customTypes?.some(type => type?.convertToJSValueSQL)) {
       return prop.fieldNames.map((col, idx) => {
@@ -1183,25 +1182,30 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           return col;
         }
 
-        const prefixed = knex.ref(col).withSchema(tableAlias).toString();
-        const aliased = knex.ref(`${tableAlias}__${col}`).toString();
+        const prefixed = this.platform.quoteIdentifier(`${tableAlias}.${col}`);
+        const aliased = this.platform.quoteIdentifier(`${tableAlias}__${col}`);
 
         return raw(`${prop.customTypes[idx]!.convertToJSValueSQL!(prefixed, this.platform)} as ${aliased}`);
       });
     }
 
     if (tableAlias && prop.customType?.convertToJSValueSQL) {
-      const prefixed = knex.ref(prop.fieldNames[0]).withSchema(tableAlias).toString();
+      const prefixed = this.platform.quoteIdentifier(`${tableAlias}.${prop.fieldNames[0]}`);
       return [raw(`${prop.customType.convertToJSValueSQL(prefixed, this.platform)} as ${aliased}`)];
     }
 
     if (prop.formula) {
-      const alias = knex.ref(tableAlias ?? qb.alias).toString();
+      const alias = this.platform.quoteIdentifier(tableAlias ?? qb.alias);
       return [raw(`${prop.formula!(alias)} as ${aliased}`)];
     }
 
     if (tableAlias) {
-      return prop.fieldNames.map(fieldName => knex.ref(fieldName).withSchema(tableAlias).as(`${tableAlias}__${fieldName}`));
+      return prop.fieldNames.map(fieldName => {
+        const name = this.platform.quoteIdentifier(`${tableAlias}.${fieldName}`);
+        const alias = this.platform.quoteIdentifier(`${tableAlias}__${fieldName}`);
+
+        return raw(`${name} as ${alias}`);
+      });
     }
 
     return prop.fieldNames;
@@ -1534,8 +1538,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       meta.props
         .filter(prop => prop.formula && !lazyProps.includes(prop))
         .forEach(prop => {
-          const a = this.connection.getKnex().ref(alias).toString();
-          const aliased = this.connection.getKnex().ref(prop.fieldNames[0]).toString();
+          const a = this.platform.quoteIdentifier(alias);
+          const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
           ret.push(raw(`${prop.formula!(a)} as ${aliased}`));
         });
 
