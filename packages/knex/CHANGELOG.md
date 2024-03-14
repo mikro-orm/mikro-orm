@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.10](https://github.com/mikro-orm/mikro-orm/compare/v6.1.9...v6.1.10) (2024-03-14)
+
+
+### Bug Fixes
+
+* **core:** don't alias formulas in update/delete queries ([9e35642](https://github.com/mikro-orm/mikro-orm/commit/9e3564234ba80546df162b628bfebadad6b5c036)), closes [#5334](https://github.com/mikro-orm/mikro-orm/issues/5334)
+* **core:** fix populating references for 1:m collections ([9b9027d](https://github.com/mikro-orm/mikro-orm/commit/9b9027d65a3dff6822b3463871e6571b3aa22a76)), closes [#5336](https://github.com/mikro-orm/mikro-orm/issues/5336)
+* **postgres:** fix diffing of native enums (create/remove via `schema:update`) ([7c8be79](https://github.com/mikro-orm/mikro-orm/commit/7c8be795e5c5b365dbb03ecadc7709cc42794b12)), closes [#5322](https://github.com/mikro-orm/mikro-orm/issues/5322)
+* **query-builder:** allow joining object/array properties ([fd90bae](https://github.com/mikro-orm/mikro-orm/commit/fd90bae88e02cda9f1f8fcb6246c723464209a00)), closes [#5325](https://github.com/mikro-orm/mikro-orm/issues/5325)
+* **query-builder:** fix `join on` conditions where `or` operator ([92936ef](https://github.com/mikro-orm/mikro-orm/commit/92936efd8ba5aa97c5c204127116f48133d63f90))
+* **schema:** support compound index over JSON property and a regular column ([319df49](https://github.com/mikro-orm/mikro-orm/commit/319df499742475c68df3581f4863be649aa564d7)), closes [#5333](https://github.com/mikro-orm/mikro-orm/issues/5333)
+* **sql:** allow creating query builder from a global context ([9217bb3](https://github.com/mikro-orm/mikro-orm/commit/9217bb3fefe3bfa4570160b46f8475f2148bde97))
+* **sql:** override FK value when it's disallowed by query condition ([0d20847](https://github.com/mikro-orm/mikro-orm/commit/0d20847ad10ba29f8bcab1c033400f6a2bf7b43a))
+
+
+
+
+
 ## [6.1.9](https://github.com/mikro-orm/mikro-orm/compare/v6.1.8...v6.1.9) (2024-03-10)
 
 

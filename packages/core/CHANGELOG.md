@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.10](https://github.com/mikro-orm/mikro-orm/compare/v6.1.9...v6.1.10) (2024-03-14)
+
+
+### Bug Fixes
+
+* **core:** detect `ts-node` when using esm loader ([#5332](https://github.com/mikro-orm/mikro-orm/issues/5332)) ([23cc880](https://github.com/mikro-orm/mikro-orm/commit/23cc8803d22d90868e3411e77d5c81b04e7bc651))
+* **core:** don't alias formulas in update/delete queries ([9e35642](https://github.com/mikro-orm/mikro-orm/commit/9e3564234ba80546df162b628bfebadad6b5c036)), closes [#5334](https://github.com/mikro-orm/mikro-orm/issues/5334)
+* **core:** fix value of `hasPrev[/Next]Page` when paginating backwards ([#5320](https://github.com/mikro-orm/mikro-orm/issues/5320)) ([00239eb](https://github.com/mikro-orm/mikro-orm/commit/00239ebe97d65aef520c39fdc6121fc138ebb8ce))
+
+
+### Features
+
+* **core:** add `onlyOwnProperties` option to `assign` helper ([#5330](https://github.com/mikro-orm/mikro-orm/issues/5330)) ([a081bea](https://github.com/mikro-orm/mikro-orm/commit/a081bea80d17c01213c26a9cf7ad4b89e05ab33a)), closes [#5327](https://github.com/mikro-orm/mikro-orm/issues/5327)
+
+
+### Performance Improvements
+
+* **core:** disable change tracking on scalars when `flushMode: auto` ([fc30bfe](https://github.com/mikro-orm/mikro-orm/commit/fc30bfe13888293a9ac9b91d8bbc874eb3c98e31))
+
+
+
+
+
 ## [6.1.9](https://github.com/mikro-orm/mikro-orm/compare/v6.1.8...v6.1.9) (2024-03-10)
 
 
