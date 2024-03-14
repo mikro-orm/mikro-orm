@@ -1055,7 +1055,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
             continue;
           }
 
-          if (prop.kind === ReferenceKind.MANY_TO_MANY && ref) {
+          if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) && ref) {
             map[pk][propName] = [...map[pk][propName], ...(item[propName] as T[])];
             continue;
           }
