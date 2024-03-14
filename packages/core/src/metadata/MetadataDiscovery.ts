@@ -1351,7 +1351,7 @@ export class MetadataDiscovery {
     prop.targetMeta = meta2;
 
     if (!prop.formula && prop.persist === false && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.embedded) {
-      prop.formula = a => `${a}.${prop.fieldNames[0]}`;
+      prop.formula = a => `${a}.${this.platform.quoteIdentifier(prop.fieldNames[0])}`;
     }
   }
 

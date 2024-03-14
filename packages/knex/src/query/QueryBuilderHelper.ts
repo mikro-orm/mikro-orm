@@ -118,8 +118,13 @@ export class QueryBuilderHelper {
       const alias2 = this.knex.ref(a).toString();
       const aliased = this.knex.ref(prop.fieldNames[0]).toString();
       const as = alias === null ? '' : ` as ${aliased}`;
+      let value = prop.formula(alias2);
 
-      return this.knex.raw(`${prop.formula(alias2)}${as}`);
+      if (!this.isTableNameAliasRequired(type)) {
+        value = value.replaceAll(alias2 + '.', '');
+      }
+
+      return this.knex.raw(`${value}${as}`);
     }
 
     if (prop?.hasConvertToJSValueSQL) {
