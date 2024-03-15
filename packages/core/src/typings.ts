@@ -888,8 +888,8 @@ export interface IMigrationGenerator {
 }
 
 export interface Migration {
-  up(): Promise<void>;
-  down(): Promise<void>;
+  up(): Promise<void> | void;
+  down(): Promise<void> | void;
 }
 
 export interface MigrationObject {
