@@ -415,20 +415,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/cli@npm:19.1.0":
-  version: 19.1.0
-  resolution: "@commitlint/cli@npm:19.1.0"
+"@commitlint/cli@npm:19.2.0":
+  version: 19.2.0
+  resolution: "@commitlint/cli@npm:19.2.0"
   dependencies:
     "@commitlint/format": "npm:^19.0.3"
     "@commitlint/lint": "npm:^19.1.0"
-    "@commitlint/load": "npm:^19.1.0"
-    "@commitlint/read": "npm:^19.0.3"
+    "@commitlint/load": "npm:^19.2.0"
+    "@commitlint/read": "npm:^19.2.0"
     "@commitlint/types": "npm:^19.0.3"
     execa: "npm:^8.0.1"
     yargs: "npm:^17.0.0"
   bin:
     commitlint: cli.js
-  checksum: 10/1c01c74749c849dc24c4c21a78e1de4b415bdddc7045eeb39839e3067057c69e91165da13621ec5174e20b91c8bb71c11e4a8ef35ade27b87aa0575d41f4ed54
+  checksum: 10/7b40dacb664cb57c8c6d93d589bf51a26ea9eaab3d0925be24ef2d2d299175c7282c9425027c827381dc05ea07bed59941fa46dd5dcbab2a6d6ea25c04d2c187
   languageName: node
   linkType: hard
 
@@ -505,21 +505,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/load@npm:^19.1.0":
-  version: 19.1.0
-  resolution: "@commitlint/load@npm:19.1.0"
+"@commitlint/load@npm:^19.2.0":
+  version: 19.2.0
+  resolution: "@commitlint/load@npm:19.2.0"
   dependencies:
     "@commitlint/config-validator": "npm:^19.0.3"
     "@commitlint/execute-rule": "npm:^19.0.0"
     "@commitlint/resolve-extends": "npm:^19.1.0"
     "@commitlint/types": "npm:^19.0.3"
     chalk: "npm:^5.3.0"
-    cosmiconfig: "npm:^8.3.6"
+    cosmiconfig: "npm:^9.0.0"
     cosmiconfig-typescript-loader: "npm:^5.0.0"
     lodash.isplainobject: "npm:^4.0.6"
     lodash.merge: "npm:^4.6.2"
     lodash.uniq: "npm:^4.5.0"
-  checksum: 10/d9dfe8a9ca13ae3ab4df7ce6211a0ad0cb6ade195333cc0b8a08b6bf4eb9c8723b91e29ee7e43326a31a33a2e0cbd0e18bb421c7e2a06c21fdd89daa436cb879
+  checksum: 10/5cd35a0a60064c70c06ab6bd8b1ae02cf6ecc1d0520b76c68cdc7c12094338f04c19e2df5d7ae30d681e858871c4f1963ae39e4969ed61139959cf4b300030fc
   languageName: node
   linkType: hard
 
@@ -541,15 +541,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/read@npm:^19.0.3":
-  version: 19.0.3
-  resolution: "@commitlint/read@npm:19.0.3"
+"@commitlint/read@npm:^19.2.0":
+  version: 19.2.0
+  resolution: "@commitlint/read@npm:19.2.0"
   dependencies:
     "@commitlint/top-level": "npm:^19.0.0"
     "@commitlint/types": "npm:^19.0.3"
+    execa: "npm:^8.0.1"
     git-raw-commits: "npm:^4.0.0"
     minimist: "npm:^1.2.8"
-  checksum: 10/da7cd9f03d805d9679d76af1c79b7313dc7c73cc94fa96d51385d47c5f6720e6c807fb6c6ee973a439ac7a4647c68459e4d9dce6b40fadefb8a52042eb96351c
+  checksum: 10/5f8cbaf018459e61f12b84e942078dc6c4afc55025b1cee4c28ea5e87bb7947402b493c0ec4b6eff08fa7494a20e6d32a76a6f7349a9a89e292c7969324a69c2
   languageName: node
   linkType: hard
 
@@ -1270,7 +1271,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/root@workspace:."
   dependencies:
-    "@commitlint/cli": "npm:19.1.0"
+    "@commitlint/cli": "npm:19.2.0"
     "@commitlint/config-conventional": "npm:19.1.0"
     "@mikro-orm/mongo-highlighter": "npm:1.0.0"
     "@mikro-orm/sql-highlighter": "npm:1.0.1"
@@ -1278,7 +1279,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.12"
-    "@types/node": "npm:20.11.27"
+    "@types/node": "npm:20.11.28"
     "@types/pg": "npm:8.11.2"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:9.0.8"
@@ -2246,12 +2247,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.11.27":
-  version: 20.11.27
-  resolution: "@types/node@npm:20.11.27"
+"@types/node@npm:20.11.28":
+  version: 20.11.28
+  resolution: "@types/node@npm:20.11.28"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 10/4be53485d499dd7c7896190e76a0ce1f6c6917d1f4d0b4b240b3670160fcbc548daed32beaac0fc92429b37dbeaa2496fc56f460acaab969bddb77394318a89b
+  checksum: 10/b03f69213ac6e7cd5f7efa86139f24e23ff70a12fed04adeac5413b62d6982343ce94906f74c401c5afefda48d36ae0efd6a575240996b15a5cf80b456ab4221
   languageName: node
   linkType: hard
 
@@ -3838,7 +3839,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cosmiconfig@npm:^8.2.0, cosmiconfig@npm:^8.3.6":
+"cosmiconfig@npm:^8.2.0":
   version: 8.3.6
   resolution: "cosmiconfig@npm:8.3.6"
   dependencies:
@@ -3852,6 +3853,23 @@ __metadata:
     typescript:
       optional: true
   checksum: 10/91d082baca0f33b1c085bf010f9ded4af43cbedacba8821da0fb5667184d0a848addc52c31fadd080007f904a555319c238cf5f4c03e6d58ece2e4876b2e73d6
+  languageName: node
+  linkType: hard
+
+"cosmiconfig@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "cosmiconfig@npm:9.0.0"
+  dependencies:
+    env-paths: "npm:^2.2.1"
+    import-fresh: "npm:^3.3.0"
+    js-yaml: "npm:^4.1.0"
+    parse-json: "npm:^5.2.0"
+  peerDependencies:
+    typescript: ">=4.9.5"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 10/8bdf1dfbb6fdb3755195b6886dc0649a3c742ec75afa4cb8da7b070936aed22a4f4e5b7359faafe03180358f311dbc300d248fd6586c458203d376a40cc77826
   languageName: node
   linkType: hard
 
@@ -4250,7 +4268,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"env-paths@npm:^2.2.0":
+"env-paths@npm:^2.2.0, env-paths@npm:^2.2.1":
   version: 2.2.1
   resolution: "env-paths@npm:2.2.1"
   checksum: 10/65b5df55a8bab92229ab2b40dad3b387fad24613263d103a97f91c9fe43ceb21965cd3392b1ccb5d77088021e525c4e0481adb309625d0cb94ade1d1fb8dc17e
