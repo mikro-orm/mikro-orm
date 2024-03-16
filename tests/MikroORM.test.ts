@@ -86,18 +86,18 @@ describe('MikroORM', () => {
       entities: [Test],
       driver: MongoDriver,
       dbName: 'mikro-orm-test',
-      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json', alwaysAnalyseProperties: false },
+      discovery: { alwaysAnalyseProperties: false },
       connect: false,
     };
-    const pathExistsMock = jest.spyOn(fs as any, 'pathExists');
-    pathExistsMock.mockImplementation(async path => {
-      const str = path as string;
-      return str.endsWith('.json') || (str.endsWith('/mikro-orm.config.ts') && !str.endsWith('/src/mikro-orm.config.ts'));
+    const pathExistsMock = jest.spyOn(fs, 'pathExistsSync');
+    pathExistsMock.mockImplementation(path => {
+      return path.endsWith('.json') || (path.endsWith('/mikro-orm.config.ts') && !path.endsWith('/src/mikro-orm.config.ts'));
     });
     jest.mock('../mikro-orm.config.ts', () => options, { virtual: true });
     jest.mock(Utils.normalizePath(process.cwd()) + '/mikro-orm.config.ts', () => options, { virtual: true });
     const pkg = { 'mikro-orm': { useTsNode: true } } as any;
-    jest.mock('../package.json', () => pkg, { virtual: true });
+    jest.spyOn(require('fs-extra'), 'readJSONSync').mockImplementation(() => pkg);
+    jest.spyOn(Utils, 'dynamicImport').mockImplementation(async () => options);
 
     const orm = await MikroORM.init();
 
@@ -117,6 +117,7 @@ describe('MikroORM', () => {
     expect(await orm.isConnected()).toBe(false);
 
     pathExistsMock.mockRestore();
+    jest.restoreAllMocks();
   });
 
   test('CLI config can export async function', async () => {

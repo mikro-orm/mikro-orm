@@ -3,7 +3,7 @@ import globby, { type GlobbyOptions } from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
 import { platform } from 'os';
 import { fileURLToPath, pathToFileURL, type URL } from 'url';
-import { pathExists } from 'fs-extra';
+import { pathExistsSync } from 'fs-extra';
 import { createHash } from 'crypto';
 import { tokenize } from 'esprima';
 import { clone } from './clone';
@@ -970,7 +970,7 @@ export class Utils {
       return found.length > 0;
     }
 
-    return pathExists(path);
+    return pathExistsSync(path);
   }
 
   /**

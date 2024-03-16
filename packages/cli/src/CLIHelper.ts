@@ -1,4 +1,4 @@
-import { pathExists } from 'fs-extra';
+import { pathExistsSync } from 'fs-extra';
 import yargs from 'yargs';
 import { colors, ConfigurationLoader, MikroORM, Utils, type Configuration, type IDatabaseDriver, type Options } from '@mikro-orm/core';
 
@@ -8,7 +8,7 @@ import { colors, ConfigurationLoader, MikroORM, Utils, type Configuration, type 
 export class CLIHelper {
 
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
-    const deps = await ConfigurationLoader.getORMPackages();
+    const deps = ConfigurationLoader.getORMPackages();
 
     if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI) {
       throw new Error('@mikro-orm/cli needs to be installed as a local dependency!');
@@ -19,7 +19,7 @@ export class CLIHelper {
 
   static async getORM(warnWhenNoEntities?: boolean, opts: Partial<Options> = {}): Promise<MikroORM> {
     const options = await CLIHelper.getConfiguration(warnWhenNoEntities, opts);
-    const settings = await ConfigurationLoader.getSettings();
+    const settings = ConfigurationLoader.getSettings();
     options.set('allowGlobalContext', true);
     options.set('debug', !!settings.verbose);
     options.getLogger().setDebugMode(!!settings.verbose);
@@ -69,7 +69,7 @@ export class CLIHelper {
     console.log(text);
   }
 
-  static async getConfigPaths(): Promise<string[]> {
+  static getConfigPaths(): string[] {
     return ConfigurationLoader.getConfigPaths();
   }
 
@@ -79,7 +79,7 @@ export class CLIHelper {
     CLIHelper.dump(`   - mikro-orm ${colors.green(version)}`);
     CLIHelper.dump(`   - node ${colors.green(CLIHelper.getNodeVersion())}`);
 
-    if (await pathExists(process.cwd() + '/package.json')) {
+    if (pathExistsSync(process.cwd() + '/package.json')) {
       const drivers = await CLIHelper.getDriverDependencies();
 
       for (const driver of drivers) {

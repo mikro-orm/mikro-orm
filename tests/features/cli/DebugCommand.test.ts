@@ -27,9 +27,9 @@ describe('DebugCommand', () => {
 
     const globbyMock = jest.spyOn(Utils, 'pathExists');
     globbyMock.mockResolvedValue(true);
-    getSettings.mockResolvedValue({});
+    getSettings.mockReturnValue({});
     getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver } as any, false));
-    getConfigPaths.mockResolvedValue(['./path/orm-config.ts']);
+    getConfigPaths.mockReturnValue(['./path/orm-config.ts']);
     await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(1);
     expect(dump.mock.calls).toEqual([
@@ -40,7 +40,7 @@ describe('DebugCommand', () => {
       [' - database connection succesful'],
     ]);
 
-    getSettings.mockResolvedValue({ useTsNode: true });
+    getSettings.mockReturnValue({ useTsNode: true });
     globbyMock.mockImplementation(async (path: string) => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
     getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver, tsNode: true, entities: ['./dist/entities-1', './dist/entities-2'], entitiesTs: ['./src/entities-1', './src/entities-2'] } as any, false));
     dump.mock.calls.length = 0;
@@ -106,9 +106,9 @@ describe('DebugCommand', () => {
 
     globbyMock.mockResolvedValue(false);
     dump.mock.calls.length = 0;
-    getSettings.mockResolvedValue({});
+    getSettings.mockReturnValue({});
     getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver } as any, false));
-    getConfigPaths.mockResolvedValue(['./path/orm-config.ts']);
+    getConfigPaths.mockReturnValue(['./path/orm-config.ts']);
     const connectionMock = jest.spyOn(CLIHelper, 'isDBConnected');
     connectionMock.mockImplementation(async () => false);
     await expect(cmd.handler()).resolves.toBeUndefined();

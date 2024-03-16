@@ -14,13 +14,13 @@ export class DebugCommand implements CommandModule {
   async handler() {
     CLIHelper.dump(`Current ${colors.cyan('MikroORM')} CLI configuration`);
     await CLIHelper.dumpDependencies();
-    const settings = await ConfigurationLoader.getSettings();
+    const settings = ConfigurationLoader.getSettings();
 
     if (settings.useTsNode) {
       CLIHelper.dump(' - ts-node ' + colors.green('enabled'));
     }
 
-    const configPaths = await CLIHelper.getConfigPaths();
+    const configPaths = CLIHelper.getConfigPaths();
     CLIHelper.dump(' - searched config paths:');
     await DebugCommand.checkPaths(configPaths, 'yellow');
 
