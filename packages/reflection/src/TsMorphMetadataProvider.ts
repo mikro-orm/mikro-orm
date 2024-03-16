@@ -1,15 +1,18 @@
 import { ModuleKind, Project, type PropertyDeclaration, type SourceFile } from 'ts-morph';
-import { MetadataError, MetadataProvider, MetadataStorage, ReferenceKind, Utils, type EntityMetadata, type EntityProperty } from '@mikro-orm/core';
+import {
+  MetadataError,
+  MetadataProvider,
+  MetadataStorage,
+  ReferenceKind,
+  Utils,
+  type EntityMetadata,
+  type EntityProperty,
+  ConfigurationLoader,
+} from '@mikro-orm/core';
 
 export class TsMorphMetadataProvider extends MetadataProvider {
 
-  private readonly project = new Project({
-    compilerOptions: {
-      strictNullChecks: true,
-      module: ModuleKind.Node16,
-    },
-  });
-
+  private project!: Project;
   private sources!: SourceFile[];
 
   override useCache(): boolean {
@@ -189,7 +192,26 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
   }
 
+  private initProject(): void {
+    if (this.project) {
+      return;
+    }
+
+    const settings = ConfigurationLoader.getSettings();
+    const tsConfigFilePath = this.config.get('discovery').tsConfigPath ?? settings.tsConfigPath ?? `${process.cwd()}/tsconfig.json`;
+
+    this.project = new Project({
+      tsConfigFilePath,
+      compilerOptions: {
+        strictNullChecks: true,
+        module: ModuleKind.Node16,
+      },
+    });
+  }
+
   private initSourceFiles(): void {
+    this.initProject();
+
     // All entity files are first required during the discovery, before we reach here, so it is safe to get the parts from the global
     // metadata storage. We know the path thanks the decorators being executed. In case we are running via ts-node, the extension
     // will be already `.ts`, so no change needed. `.js` files will get renamed to `.d.ts` files as they will be used as a source for
