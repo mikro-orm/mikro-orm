@@ -108,3 +108,35 @@ test('Query through nested relationship', async () => {
 
   expect(submissionFields).toHaveLength(1);
 });
+
+test('Setting relationship to null should clear both fields of composite foreign key', async () => {
+  const submission = await orm.em.findOneOrFail(
+    FormSubmission,
+    { orgId: 1, id: 20 },
+    { populate: ['form'] },
+  );
+
+  expect(submission.form).not.toBeNull();
+
+  submission.form = undefined;
+
+  await orm.em.flush();
+  orm.em.clear();
+
+  const submissionAfter = await orm.em.findOneOrFail(
+    FormSubmission,
+    { orgId: 1, id: 20 },
+    { populate: ['form'] },
+  );
+
+  expect(submissionAfter.form).toBeNull();
+
+  const qb = orm.em.createQueryBuilder(FormSubmission)
+    .where({ orgId: 1, id: 20 });
+
+  const results = await qb.execute('all', { mapResults: false });
+  const result = results[0];
+
+  expect(result.form_org_id).toBeNull();
+  expect(result.form_id).toBeNull();
+});
