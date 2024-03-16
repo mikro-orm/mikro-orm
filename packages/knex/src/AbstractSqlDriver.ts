@@ -145,7 +145,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   }
 
   async findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null> {
-    const opts = { populate: [], ...(options || {}) } as FindOptions<T>;
+    const opts = { populate: [], ...options } as FindOptions<T>;
     const meta = this.metadata.find(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, opts.populate as unknown as PopulateOptions<T>[], opts.fields);
     const joinedProps = this.joinedProps(meta, populate, options);
@@ -749,7 +749,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
             params.push(cond![pk as keyof FilterQuery<T>]);
           }
         });
-        return `(${new Array(pks.length).fill('?').join(', ')})`;
+        return `(${Array.from({ length: pks.length }).fill('?').join(', ')})`;
       }
 
       params.push(cond);
