@@ -174,10 +174,10 @@ Note, however, that glob paths are not supported by webpack, so if you are build
 @Module({
   imports: [
     MikroOrmModule.forRoot({
-      ...
-        autoLoadEntities: true,
-}),
-],
+      // ...
+      autoLoadEntities: true,
+    }),
+  ],
 })
 export class AppModule {}
 ```
@@ -416,45 +416,9 @@ The `@mikro-orm/nestjs` package exposes `getRepositoryToken()` function that ret
 export class PhotoModule {}
 ```
 
-## Using `AsyncLocalStorage` for request context
-
-:::info
-
-Since v5 `AsyncLocalStorage` is used inside `RequestContext` helper so this section is no longer valid.
-
-:::
-
-In older versions, the `domain` api was used in the `RequestContext` helper. Since `@mikro-orm/core@4.0.3`, we can use the new `AsyncLocalStorage` too, if you are on up to date node version:
-
-```ts
-// create new (global) storage instance
-const storage = new AsyncLocalStorage<EntityManager>();
-
-@Module({
-  imports: [
-    MikroOrmModule.forRoot({
-      // ...
-      registerRequestContext: false, // disable automatic middleware
-      context: () => storage.getStore(), // use our AsyncLocalStorage instance
-    }),
-  ],
-  controllers: [AppController],
-  providers: [AppService],
-})
-export class AppModule {}
-
-// register the request context middleware
-const app = await NestFactory.create(AppModule, { ... });
-
-const orm = app.get(MikroORM);
-app.use((req, res, next) => {
-  storage.run(orm.em.fork({ useContext: true }), next);
-});
-```
-
 ## Using `EventSubscriber`
 
-You should use `@Injectable` and register subscriber manually instead of `@Subscriber` decorator.
+Subscribers are normally registered only via the ORM config, but you can do so also dynamically via `EventManager.registerSubscriber()`. If you want your subscriber to use some dependencies from the Nest.js DI container, use the `@Injectable` decorator and register the subscriber manually in the constructor instead of passing it to the ORM config:
 
 ```typescript
 import { Injectable } from '@nestjs/common';
