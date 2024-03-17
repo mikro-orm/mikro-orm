@@ -82,6 +82,23 @@ The `RequestContext.getEntityManager()` method then checks `AsyncLocalStorage` s
 
 The [`AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) class from Node.js core is the magician here. It allows us to track the context throughout the async calls. It allows us to decouple the `EntityManager` fork creation (usually in a middleware as shown in previous section) from its usage through the global `EntityManager` instance.
 
+### Using custom `AsyncLocalStorage` instance
+
+The `RequestContext` helper holds its own `AsyncLocalStorage` instance, which the ORM checks automatically when resolving `em.getContext()`. If you want to bring your own, you can do so by using the `context` option:
+
+```ts
+const storage = new AsyncLocalStorage<EntityManager>();
+
+const orm = await MikroORM.init({
+  context: () => storage.getStore(),
+  // ...
+});
+
+app.use((req, res, next) => {
+  storage.run(orm.em.fork({ useContext: true }), next);
+});
+```
+
 ## `@CreateRequestContext()` decorator
 
 > Before v6, `@CreateRequestContext()` was called `@UseRequestContext()`.
