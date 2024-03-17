@@ -180,7 +180,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       res.push([collection.collectionName, collection.createIndex(fieldOrSpec, {
         name: index.name,
         unique: false,
-        ...(index.options || {}),
+        ...index.options,
       })]);
     });
 
@@ -196,7 +196,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       res.push([collection.collectionName, collection.createIndex(fieldOrSpec, {
         name: index.name,
         unique: true,
-        ...(index.options || {}),
+        ...index.options,
       })]);
     });
 

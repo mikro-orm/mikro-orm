@@ -145,7 +145,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       if (Utils.isOperator(k, false)) {
         const tmp = payload[k];
         delete payload[k];
-        o[this.aliased(field, alias)] = { [k]: tmp, ...(o[this.aliased(field, alias)] || {}) };
+        o[this.aliased(field, alias)] = { [k]: tmp, ...o[this.aliased(field, alias)] };
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
         const idx = prop.referencedPKs.indexOf(k as EntityKey);
         const key = idx !== -1 && !childAlias && ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) ? prop.joinColumns[idx] : k;

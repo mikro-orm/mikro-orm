@@ -598,7 +598,10 @@ export class EntityLoader {
     if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       children.push(...filtered.map(e => (e[prop.name] as unknown as Collection<Entity, AnyEntity>).owner));
     } else if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner) {
-      children.push(...filtered.reduce((a, b) => [...a, ...(b[prop.name] as unknown as Collection<AnyEntity>).getItems()], [] as AnyEntity[]));
+      children.push(...filtered.reduce((a, b) => {
+        a.push(...(b[prop.name] as Collection<AnyEntity>).getItems());
+        return a;
+      }, [] as AnyEntity[]));
     } else if (prop.kind === ReferenceKind.MANY_TO_MANY) { // inverse side
       children.push(...filtered as AnyEntity[]);
     } else { // MANY_TO_ONE or ONE_TO_ONE
