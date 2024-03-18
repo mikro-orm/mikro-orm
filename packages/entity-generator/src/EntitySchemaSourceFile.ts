@@ -62,8 +62,8 @@ export class EntitySchemaSourceFile extends SourceFile {
     }
 
     ret += `\n`;
-    ret += `export const ${this.meta.className}Schema = new EntitySchema({\n`;
-    ret += `  class: ${this.meta.className},\n`;
+    ret += `export const ${this.getValidIdentifierName(`${this.meta.className}Schema`)} = new EntitySchema({\n`;
+    ret += `  class: ${this.getValidIdentifierName(this.meta.className)},\n`;
 
     if (this.meta.tableName && this.meta.tableName !== this.namingStrategy.classToTableName(this.meta.className)) {
       ret += `  tableName: ${this.quote(this.meta.tableName)},\n`;
@@ -144,7 +144,7 @@ export class EntitySchemaSourceFile extends SourceFile {
 
     if (prop.enum) {
       options.enum = true;
-      options.items = `() => ${prop.type}`;
+      options.items = `() => ${this.getValidIdentifierName(prop.type)}`;
     }
 
     if (prop.formula) {

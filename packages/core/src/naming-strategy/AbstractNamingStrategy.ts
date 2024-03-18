@@ -46,7 +46,8 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
    * @inheritDoc
    */
   getEntityName(tableName: string, schemaName?: string): string {
-    return this.getClassName(tableName, '_');
+    const name = tableName.match(/^\d/) ? `E_${tableName}` : tableName;
+    return this.getClassName(name, '_');
   }
 
   columnNameToProperty(columnName: string): string {

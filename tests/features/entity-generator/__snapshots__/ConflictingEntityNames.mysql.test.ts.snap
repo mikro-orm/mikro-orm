@@ -1,0 +1,277 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`conflicting_entity_names_example entitySchema=false: dump 1`] = `
+[
+  "import { Embedded, Entity as MikroEntity, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Entity } from './Entity';
+import { EntitySchema } from './EntitySchema';
+import { MyUnknownClass } from './MyUnknownClass';
+
+@MikroEntity()
+export class Config {
+
+  @PrimaryKey({ columnType: 'smallint' })
+  id!: number;
+
+  @Unique({ name: 'name_UNIQUE' })
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ columnType: 'json' })
+  settings!: any;
+
+  @Embedded({ entity: () => MyUnknownClass, persist: false, hydrate: false })
+  test!: MyUnknownClass;
+
+  @Embedded({ entity: () => Entity, persist: false, hydrate: false })
+  test2!: Entity;
+
+  @Embedded({ entity: () => EntitySchema, persist: false, hydrate: false })
+  test3!: EntitySchema;
+
+}
+",
+  "import { Collection, Entity as MikroEntity, Enum, ManyToMany as MikroManyToMany, OneToMany, PrimaryKey } from '@mikro-orm/core';
+import { ManyToMany } from './ManyToMany';
+import { Property } from './Property';
+
+@MikroEntity()
+export class Entity {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Enum({ items: () => EntityType })
+  type!: EntityType;
+
+  @MikroManyToMany({ entity: () => Property, pivotTable: 'many_to_many', pivotEntity: () => ManyToMany, joinColumn: 'entity_id', inverseJoinColumn: 'property_id', fixedOrder: true, fixedOrderColumn: 'creation_order' })
+  manyToMany = new Collection<Property>(this);
+
+  @OneToMany({ entity: () => ManyToMany, mappedBy: 'entity' })
+  entityInverse = new Collection<ManyToMany>(this);
+
+}
+
+export enum EntityType {
+  LEGAL = 'legal',
+  PHYSICAL = 'physical',
+}
+",
+  "import { Collection, Entity, OneToMany, PrimaryKey, Property as MikroProperty } from '@mikro-orm/core';
+import { Property } from './Property';
+
+@Entity()
+export class Enum {
+
+  @PrimaryKey({ columnType: 'smallint' })
+  id!: number;
+
+  @MikroProperty({ length: 255 })
+  opt!: string;
+
+  @OneToMany({ entity: () => Property, mappedBy: 'oneToMany' })
+  oneToManyInverse = new Collection<Property>(this);
+
+}
+",
+  "import { Entity as MikroEntity, ManyToOne, type Opt, PrimaryKeyProp, Property as MikroProperty, Unique } from '@mikro-orm/core';
+import { Entity } from './Entity';
+import { Property } from './Property';
+
+@MikroEntity()
+export class ManyToMany {
+
+  [PrimaryKeyProp]?: ['entity', 'property'];
+
+  @ManyToOne({ entity: () => Entity, primary: true })
+  entity!: Entity;
+
+  @ManyToOne({ entity: () => Property, primary: true, index: 'fk_many_to_many_property1_idx' })
+  property!: Property;
+
+  @Unique({ name: 'creation_order_UNIQUE' })
+  @MikroProperty({ unsigned: true, autoincrement: true })
+  creationOrder!: number;
+
+  @MikroProperty({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  ownerSince!: Date & Opt;
+
+}
+",
+  "import { Collection, Entity as MikroEntity, ManyToMany as MikroManyToMany, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/core';
+import { Entity } from './Entity';
+import { Enum } from './Enum';
+import { ManyToMany } from './ManyToMany';
+
+@MikroEntity()
+export class Property {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Enum, fieldName: 'one_to_many', index: 'fk_property_enum_idx' })
+  oneToMany!: Enum;
+
+  @MikroManyToMany({ entity: () => Entity, mappedBy: 'manyToMany' })
+  manyToManyInverse = new Collection<Entity>(this);
+
+  @OneToMany({ entity: () => ManyToMany, mappedBy: 'property' })
+  propertyInverse = new Collection<ManyToMany>(this);
+
+}
+",
+]
+`;
+
+exports[`conflicting_entity_names_example entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema as MikroEntitySchema } from '@mikro-orm/core';
+import { Entity } from './Entity';
+import { EntitySchema } from './EntitySchema';
+import { MyUnknownClass } from './MyUnknownClass';
+
+export class Config {
+  id!: number;
+  name!: string;
+  settings!: any;
+  test!: MyUnknownClass;
+  test2!: Entity;
+  test3!: EntitySchema;
+}
+
+export const ConfigSchema = new MikroEntitySchema({
+  class: Config,
+  properties: {
+    id: { primary: true, type: 'number', columnType: 'smallint' },
+    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    settings: { type: 'any', columnType: 'json' },
+    test: {
+      kind: 'embedded',
+      entity: () => MyUnknownClass,
+      persist: false,
+      hydrate: false,
+    },
+    test2: { kind: 'embedded', entity: () => Entity, persist: false, hydrate: false },
+    test3: {
+      kind: 'embedded',
+      entity: () => EntitySchema,
+      persist: false,
+      hydrate: false,
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema as MikroEntitySchema } from '@mikro-orm/core';
+import { ManyToMany } from './ManyToMany';
+import { Property } from './Property';
+
+export class Entity {
+  id!: number;
+  type!: EntityType;
+  manyToMany = new Collection<Property>(this);
+  entityInverse = new Collection<ManyToMany>(this);
+}
+
+export enum EntityType {
+  LEGAL = 'legal',
+  PHYSICAL = 'physical',
+}
+
+export const EntitySchema = new MikroEntitySchema({
+  class: Entity,
+  properties: {
+    id: { primary: true, type: 'number' },
+    type: { enum: true, items: () => EntityType },
+    manyToMany: {
+      kind: 'm:n',
+      entity: () => Property,
+      pivotTable: 'many_to_many',
+      pivotEntity: () => ManyToMany,
+      joinColumn: 'entity_id',
+      inverseJoinColumn: 'property_id',
+      fixedOrder: true,
+      fixedOrderColumn: 'creation_order',
+    },
+    entityInverse: { kind: '1:m', entity: () => ManyToMany, mappedBy: 'entity' },
+  },
+});
+",
+  "import { Collection, EntitySchema } from '@mikro-orm/core';
+import { Property } from './Property';
+
+export class Enum {
+  id!: number;
+  opt!: string;
+  oneToManyInverse = new Collection<Property>(this);
+}
+
+export const EnumSchema = new EntitySchema({
+  class: Enum,
+  properties: {
+    id: { primary: true, type: 'number', columnType: 'smallint' },
+    opt: { type: 'string', length: 255 },
+    oneToManyInverse: { kind: '1:m', entity: () => Property, mappedBy: 'oneToMany' },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity } from './Entity';
+import { Property } from './Property';
+
+export class ManyToMany {
+  [PrimaryKeyProp]?: ['entity', 'property'];
+  entity!: Entity;
+  property!: Property;
+  creationOrder!: number;
+  ownerSince!: Date & Opt;
+}
+
+export const ManyToManySchema = new EntitySchema({
+  class: ManyToMany,
+  properties: {
+    entity: { primary: true, kind: 'm:1', entity: () => Entity },
+    property: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Property,
+      index: 'fk_many_to_many_property1_idx',
+    },
+    creationOrder: {
+      type: 'number',
+      unsigned: true,
+      autoincrement: true,
+      unique: 'creation_order_UNIQUE',
+    },
+    ownerSince: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+  },
+});
+",
+  "import { Collection, EntitySchema } from '@mikro-orm/core';
+import { Entity } from './Entity';
+import { Enum } from './Enum';
+import { ManyToMany } from './ManyToMany';
+
+export class Property {
+  id!: number;
+  oneToMany!: Enum;
+  manyToManyInverse = new Collection<Entity>(this);
+  propertyInverse = new Collection<ManyToMany>(this);
+}
+
+export const PropertySchema = new EntitySchema({
+  class: Property,
+  properties: {
+    id: { primary: true, type: 'number' },
+    oneToMany: {
+      kind: 'm:1',
+      entity: () => Enum,
+      fieldName: 'one_to_many',
+      index: 'fk_property_enum_idx',
+    },
+    manyToManyInverse: { kind: 'm:n', entity: () => Entity, mappedBy: 'manyToMany' },
+    propertyInverse: { kind: '1:m', entity: () => ManyToMany, mappedBy: 'property' },
+  },
+});
+",
+]
+`;

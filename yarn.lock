@@ -1149,7 +1149,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.1.10"
     "@mikro-orm/knex": "npm:6.1.10"
-    fs-extra: "npm:11.2.0"
+    ts-morph: "npm:22.0.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown

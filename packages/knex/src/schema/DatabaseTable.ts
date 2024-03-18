@@ -205,8 +205,7 @@ export class DatabaseTable {
       skippedColumnNames,
     } = this.foreignKeysToProps(namingStrategy, scalarPropertiesForRelations);
 
-    let name = namingStrategy.getEntityName(this.name, this.schema);
-    name = name.match(/^\d/) ? 'E' + name : name;
+    const name = namingStrategy.getEntityName(this.name, this.schema);
     const schema = new EntitySchema({ name, collection: this.name, schema: this.schema });
 
     const compositeFkIndexes: Dictionary<{ keyName: string }> = {};

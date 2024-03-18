@@ -1,4 +1,5 @@
 import {
+  type Dictionary,
   EntityMetadata,
   type EntityProperty,
   type GenerateOptions,
@@ -16,7 +17,17 @@ import {
   type EntityManager,
   type SchemaHelper,
 } from '@mikro-orm/knex';
-import { ensureDir, writeFile } from 'fs-extra';
+import {
+  type ClassDeclaration,
+  type EnumDeclaration,
+  type ImportSpecifier,
+  ModuleKind,
+  Project,
+  ScriptKind,
+  ScriptTarget,
+  type VariableDeclaration,
+} from 'ts-morph';
+import { ESCAPE_PREFIX, RESOLVE_PREFIX } from './CoreImportsHelper';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
 import { SourceFile } from './SourceFile';
 
@@ -46,10 +57,8 @@ export class EntityGenerator {
 
   async generate(options: GenerateOptions = {}): Promise<string[]> {
     options = Utils.mergeConfig({}, this.config.get('entityGenerator'), options);
-    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config);
+    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
     const metadata = await this.getEntityMetadata(schema, options);
-    const defaultPath = `${this.config.get('baseDir')}/generated-entities`;
-    const baseDir = Utils.normalizePath(options.path ?? defaultPath);
 
     for (const meta of metadata) {
       if (!meta.pivotTable || this.referencedEntities.has(meta)) {
@@ -61,17 +70,11 @@ export class EntityGenerator {
       }
     }
 
-    if (options.save) {
-      await ensureDir(baseDir);
-      await Promise.all(this.sources.map(file => writeFile(baseDir + '/' + file.getBaseName(), file.generate(), { flush: true })));
-    }
-
-    return this.sources.map(file => file.generate());
+    return this.postProcess(options);
   }
 
   private async getEntityMetadata(schema: DatabaseSchema, options: GenerateOptions) {
     let metadata = schema.getTables()
-      .filter(table => !options.schema || table.schema === options.schema)
       .sort((a, b) => a.name!.localeCompare(b.name!))
       .map(table => {
         const skipColumns = options.skipColumns?.[table.getShortestName()];
@@ -87,7 +90,12 @@ export class EntityGenerator {
 
     for (const meta of metadata) {
       for (const prop of meta.relations) {
-        if (options.skipTables?.includes(prop.referencedTableName)) {
+        if (options.skipTables?.includes(prop.referencedTableName) ||
+          (prop.referencedTableName.includes('.') && (() => {
+            const parts = prop.referencedTableName.split('.');
+            return parts[0] === schema.name && options.skipTables?.includes(parts[1]);
+          })())
+        ) {
           prop.kind = ReferenceKind.SCALAR;
           const meta2 = metadata.find(m => m.className === prop.type)!;
           prop.type = meta2.getPrimaryProps().map(pk => pk.type).join(' | ');
@@ -95,9 +103,23 @@ export class EntityGenerator {
       }
     }
 
-    metadata = metadata.filter(table => !options.skipTables || !options.skipTables.includes(table.tableName));
+    metadata = metadata.filter(meta => !options.skipTables || !(options.skipTables.includes(`${meta.schema ?? schema.name}.${meta.collection}`) || ((meta.schema ?? schema.name) === schema.name && options.skipTables.includes(meta.collection))));
 
     await options.onInitialMetadata?.(metadata, this.platform);
+
+    // enforce schema usage in class names only on duplicates
+    const duplicates = Utils.findDuplicates(metadata.map(meta => meta.className));
+
+    for (const duplicate of duplicates) {
+      for (const meta of metadata.filter(meta => meta.className === duplicate)) {
+        meta.className = this.namingStrategy.getEntityName(`${meta.schema ?? schema.name}_${meta.className}`);
+        metadata.forEach(relMeta => relMeta.relations.forEach(prop => {
+          if (prop.type === duplicate && (prop.referencedTableName === meta.collection || prop.referencedTableName === `${meta.schema ?? schema.name}.${meta.collection}`)) {
+            prop.type = meta.className;
+          }
+        }));
+      }
+    }
 
     this.detectManyToManyRelations(metadata, options.onlyPurePivotTables!, options.readOnlyPivotTables!);
 
@@ -111,20 +133,6 @@ export class EntityGenerator {
 
     if (options.customBaseEntityName) {
       this.generateAndAttachCustomBaseEntity(metadata, options.customBaseEntityName);
-    }
-
-    // enforce schema usage in class names only on duplicates
-    const duplicates = Utils.findDuplicates(metadata.map(meta => meta.className));
-
-    for (const duplicate of duplicates) {
-      for (const meta of metadata.filter(meta => meta.className === duplicate)) {
-        meta.className = this.namingStrategy.getEntityName(`${meta.schema}_${meta.className}`);
-        metadata.forEach(meta => meta.relations.forEach(prop => {
-          if (prop.type === duplicate) {
-            prop.type = meta.className;
-          }
-        }));
-      }
     }
 
     await options.onProcessedMetadata?.(metadata, this.platform);
@@ -296,6 +304,125 @@ export class EntityGenerator {
         relations: [],
       }));
     }
+  }
+
+  private postProcess(options: GenerateOptions) {
+    const defaultPath = `${this.config.get('baseDir')}/generated-entities`;
+    const baseDir = Utils.normalizePath(options.path ?? defaultPath);
+    const project = new Project({
+      compilerOptions: {
+        strict: true,
+        isolatedModules: true,
+        module: ModuleKind.Node16,
+        target: ScriptTarget.Latest,
+      },
+    });
+
+    const processedSources = this.sources
+      .map(file => ({ sourceFile: project.createSourceFile(
+        baseDir + '/' + file.getBaseName(),
+        file.generate(),
+        { overwrite: true, scriptKind: ScriptKind.TS },
+      ), file }))
+      .map(({ sourceFile, file }) => {
+        const customNameDeclarations: Dictionary<ClassDeclaration | EnumDeclaration | VariableDeclaration> = {};
+        const customImportedDeclarations: Dictionary<ImportSpecifier> = {};
+        const conflictingCoreImports: Dictionary<ImportSpecifier> = {};
+
+        if (!file.hasPotentialCoreConflict) {
+          sourceFile.forgetDescendants();
+          return ({ sourceFile, customNameDeclarations, customImportedDeclarations, conflictingCoreImports });
+        }
+
+        for (const declaration of [
+          sourceFile.getClasses(),
+          sourceFile.getEnums(),
+          sourceFile.getVariableDeclarations(),
+        ].flat()) {
+          const originalName = declaration.getName();
+          if (typeof originalName !== 'undefined' && originalName.startsWith(ESCAPE_PREFIX)) {
+            const intendedName = originalName.replace(ESCAPE_PREFIX, '');
+            customNameDeclarations[intendedName] = declaration;
+          } else {
+            declaration.forget();
+          }
+        }
+
+        const customNameImports: string[] = [];
+        for (const importDeclaration of sourceFile.getImportDeclarations()) {
+          if (importDeclaration.getModuleSpecifierValue() === '@mikro-orm/core') {
+            continue;
+          }
+
+          if (importDeclaration.getModuleSpecifierSourceFile()) {
+            for (const namedImport of importDeclaration.getNamedImports()) {
+              const originalName = namedImport.getName();
+              if (originalName.startsWith(ESCAPE_PREFIX)) {
+                const intendedName = originalName.replace(ESCAPE_PREFIX, '');
+                customNameImports.push(intendedName);
+                namedImport.forgetDescendants();
+              } else {
+                namedImport.forget();
+              }
+            }
+            continue;
+          }
+
+          for (const namedImport of importDeclaration.getNamedImports()) {
+            const originalName = namedImport.getName();
+            if (originalName.startsWith(ESCAPE_PREFIX)) {
+              const intendedName = originalName.replace(ESCAPE_PREFIX, '');
+              customImportedDeclarations[intendedName] = namedImport;
+              namedImport.forgetDescendants();
+            } else {
+              namedImport.forget();
+            }
+          }
+        }
+
+        const coreImports = sourceFile.getImportDeclaration('@mikro-orm/core')?.getNamedImports();
+        if (coreImports) {
+          const namesOfCustomDeclarations = [...Object.keys(customImportedDeclarations), ...Object.keys(customNameDeclarations)];
+          for (const coreImport of coreImports) {
+            let alias = coreImport.getName();
+            while (namesOfCustomDeclarations.includes(alias) || customNameImports.includes(alias)) {
+              alias = `${RESOLVE_PREFIX}${alias}`;
+            }
+            if (alias !== coreImport.getName()) {
+              conflictingCoreImports[alias] = coreImport;
+            } else {
+              coreImport.forget();
+            }
+          }
+        }
+
+        return { sourceFile, customNameDeclarations, customImportedDeclarations, conflictingCoreImports };
+      })
+      .map(({ sourceFile, customNameDeclarations, customImportedDeclarations, conflictingCoreImports }) => {
+        for (const [newAlias, coreImport] of Object.entries(conflictingCoreImports)) {
+          coreImport.renameAlias(newAlias);
+        }
+        return { sourceFile, customNameDeclarations, customImportedDeclarations };
+      })
+      .map(({ sourceFile, customNameDeclarations, customImportedDeclarations }) => {
+          for (const [intendedName, declaration] of Object.entries(customNameDeclarations)) {
+            declaration.rename(intendedName);
+          }
+          return { sourceFile, customImportedDeclarations };
+        },
+      )
+      .map(({ sourceFile, customImportedDeclarations }) => {
+        for (const [intendedName, declaration] of Object.entries(customImportedDeclarations)) {
+          declaration.renameAlias(intendedName).setName(intendedName).removeAlias();
+        }
+        sourceFile.forgetDescendants();
+        return sourceFile;
+      });
+
+    if (options.save) {
+      project.saveSync();
+    }
+    return processedSources.map(sourceFile => sourceFile.getFullText());
   }
 
 }

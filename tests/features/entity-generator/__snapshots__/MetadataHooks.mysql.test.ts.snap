@@ -691,7 +691,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Cascade, Collection, EagerProps, Embedded, EntitySchema, type Hidden, type Opt } from '@mikro-orm/core';
+  "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { IdentitiesContainer } from './IdentitiesContainer';
 
@@ -2154,7 +2154,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Cascade, Collection, EagerProps, Embedded, EntitySchema, type Hidden, type Opt, type Ref } from '@mikro-orm/core';
+  "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type Opt, type Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { IdentitiesContainer } from './IdentitiesContainer';
 

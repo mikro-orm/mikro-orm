@@ -583,8 +583,7 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Test2 } from './Test2';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Configuration2 {
@@ -594,8 +593,8 @@ export class Configuration2 {
   @PrimaryKey({ length: 255 })
   property!: string;
 
-  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
-  test!: Test2;
+  @PrimaryKey({ fieldName: 'test_id' })
+  test!: number;
 
   @Property({ length: 255 })
   value!: string;
@@ -692,9 +691,8 @@ export class Label2 {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Label2 } from './Label2';
-import { Test2 } from './Test2';
 
 @Entity({ tableName: 'label2_tests', schema: 'label_schema' })
 export class Label2Tests {
@@ -705,8 +703,8 @@ export class Label2Tests {
   @ManyToOne({ entity: () => Label2, updateRule: 'cascade', deleteRule: 'cascade' })
   label2!: Label2;
 
-  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
-  test2!: Test2;
+  @Property({ fieldName: 'test2_id' })
+  test2!: number;
 
 }
 ",
@@ -764,9 +762,8 @@ export enum Publisher2Enum5 {
   A = 'a',
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
-import { Test2 } from './Test2';
 
 @Entity({ tableName: 'publisher2_tests' })
 export class Publisher2Tests {
@@ -777,8 +774,8 @@ export class Publisher2Tests {
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher2!: Publisher2;
 
-  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
-  test2!: Test2;
+  @Property({ fieldName: 'test2_id' })
+  test2!: number;
 
 }
 ",

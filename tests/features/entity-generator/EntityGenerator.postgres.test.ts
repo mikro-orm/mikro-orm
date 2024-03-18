@@ -56,6 +56,7 @@ describe('EntityGenerator', () => {
     });
     expect(dump).toMatchSnapshot('postgres-entity-dump-skipTables');
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
+    await expect(pathExists('./temp/entities/Test2.ts')).resolves.toBe(false);
     await remove('./temp/entities');
 
     await orm.schema.dropDatabase();
