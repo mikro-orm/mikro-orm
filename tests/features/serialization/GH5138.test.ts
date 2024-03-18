@@ -1,10 +1,13 @@
-import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, wrap } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/sqlite';
 
 @Entity()
 class School {
 
   @PrimaryKey()
   id!: number;
+
+  @Property()
+  name!: string;
 
 }
 
@@ -13,6 +16,9 @@ class User {
 
   @PrimaryKey()
   id!: number;
+
+  @Property()
+  name!: string;
 
   @ManyToMany({
     entity: () => Role,
@@ -55,26 +61,40 @@ beforeAll(async () => {
     dbName: ':memory:',
     ensureDatabase: { create: true },
   });
-});
 
-afterAll(() => orm.close());
-
-test('lazy em.populate on m:n', async () => {
-  const a = orm.em.create(User, {
+  orm.em.create(User, {
     id: 1,
+    name: 'u',
     roles: [{}, {}],
-    school: {},
+    school: { name: 's' },
   });
 
   await orm.em.flush();
   orm.em.clear();
+});
 
+beforeEach(() => orm.em.clear());
+afterAll(() => orm.close());
+
+test('lazy em.populate on m:n', async () => {
   const user = await orm.em.findOneOrFail(User, { id: 1 }, { populate: ['school'] });
   await orm.em.populate(user, ['roles']);
   const dto = wrap(user).toObject();
   expect(dto).toEqual({
     id: 1,
+    name: 'u',
     roles: [{ id: 1 }, { id: 2 }],
-    school: { id: 1 },
+    school: { id: 1, name: 's' },
+  });
+});
+
+test('lazy em.populate with partial loading', async () => {
+  const user = await orm.em.findOneOrFail(User, { id: 1 }, {});
+  await orm.em.populate(user, ['school'], { fields: ['school.name'] });
+  const dto = wrap(user).toObject();
+  expect(dto).toEqual({
+    id: 1,
+    name: 'u',
+    school: { id: 1, name: 's' },
   });
 });

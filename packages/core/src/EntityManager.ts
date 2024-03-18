@@ -1812,11 +1812,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   async populate<
     Entity extends object,
-    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
+    Naked extends FromEntityType<UnboxArray<Entity>> = FromEntityType<UnboxArray<Entity>>,
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entities: Entity, populate: AutoPath<UnboxArray<Entity>, Hint, '*'>[] | false, options: EntityLoaderOptions<UnboxArray<Entity>, Fields, Excludes> = {}): Promise<Entity extends object[] ? MergeLoaded<ArrayElement<Entity>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Entity, Naked, Hint, Fields, Excludes>> {
+  >(entities: Entity, populate: AutoPath<Naked, Hint, '*'>[] | false, options: EntityLoaderOptions<Naked, Fields, Excludes> = {}): Promise<Entity extends object[] ? MergeLoaded<ArrayElement<Entity>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Entity, Naked, Hint, Fields, Excludes>> {
     const arr = Utils.asArray(entities);
 
     if (arr.length === 0) {

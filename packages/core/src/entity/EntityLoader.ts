@@ -59,7 +59,7 @@ export class EntityLoader {
    */
   async populate<Entity extends object, Fields extends string = '*'>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): Promise<void> {
     if (entities.length === 0 || Utils.isEmpty(populate)) {
-      return;
+      return this.setSerializationContext(entities, populate, options);
     }
 
     if ((entities as AnyEntity[]).some(e => !e.__helper)) {
@@ -77,7 +77,6 @@ export class EntityLoader {
     options.refresh ??= false;
     options.convertCustomTypes ??= true;
     populate = this.normalizePopulate<Entity>(entityName, populate as true, options.strategy, options.lookup);
-    const exclude = options.exclude as string[] ?? [];
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
     /* istanbul ignore next */
@@ -85,17 +84,9 @@ export class EntityLoader {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
+    this.setSerializationContext(entities, populate, options);
+
     for (const entity of entities) {
-      const context = helper(entity).__serializationContext;
-      context.populate = context.populate ? context.populate.concat(populate) : populate as PopulateOptions<Entity>[];
-
-      if (context.fields && options.fields) {
-        options.fields.forEach(f => context.fields!.add(f as string));
-      } else if (options.fields) {
-        context.fields = new Set(options.fields as string[]);
-      }
-
-      context.exclude = context.exclude ? context.exclude.concat(exclude) : exclude;
       visited.add(entity);
     }
 
@@ -126,6 +117,24 @@ export class EntityLoader {
 
     // merge same fields
     return this.mergeNestedPopulate(normalized);
+  }
+
+  private setSerializationContext<Entity extends object, Fields extends string = '*'>(entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): void {
+    const exclude = options.exclude as string[] ?? [];
+
+    for (const entity of entities) {
+      const context = helper(entity).__serializationContext;
+      context.populate = context.populate ? context.populate.concat(populate as any) : populate as PopulateOptions<Entity>[];
+      context.exclude = context.exclude ? context.exclude.concat(exclude) : exclude;
+
+      if (context.fields && options.fields) {
+        options.fields.forEach(f => context.fields!.add(f as string));
+      } else if (options.fields) {
+        context.fields = new Set(options.fields as string[]);
+      } else {
+        context.fields = new Set(['*']);
+      }
+    }
   }
 
   private expandDotPaths<Entity>(normalized: PopulateOptions<Entity>[], meta: EntityMetadata<any>) {

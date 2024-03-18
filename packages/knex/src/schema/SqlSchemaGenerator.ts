@@ -1,4 +1,4 @@
-﻿import type { Knex } from 'knex';
+import type { Knex } from 'knex';
 import {
   AbstractSchemaGenerator,
   Utils,
