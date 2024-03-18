@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.11](https://github.com/mikro-orm/mikro-orm/compare/v6.1.10...v6.1.11) (2024-03-18)
+
+
+### Bug Fixes
+
+* **core:** improve serialization of lazily partially loaded entities ([1c7b446](https://github.com/mikro-orm/mikro-orm/commit/1c7b44652100aa4e940787b3ee7ca4e208039984)), closes [#5139](https://github.com/mikro-orm/mikro-orm/issues/5139)
+* **core:** support unsetting composite FKs via flush ([64f2afd](https://github.com/mikro-orm/mikro-orm/commit/64f2afd1a899b86e54eef6e58d6f475b28f67c6f))
+* **migrator:** type mismatch between Migration interface and class ([#5343](https://github.com/mikro-orm/mikro-orm/issues/5343)) ([2fba5ee](https://github.com/mikro-orm/mikro-orm/commit/2fba5eebbc118c98a890b3083d521b52b263ba30)), closes [#5340](https://github.com/mikro-orm/mikro-orm/issues/5340)
+* **query-builder:** fix aliasing of FK when used in deeply nested and/or conditions ([ebb966c](https://github.com/mikro-orm/mikro-orm/commit/ebb966caae9f06a8c4a9fec7a642e678ddfebb66)), closes [#5086](https://github.com/mikro-orm/mikro-orm/issues/5086)
+* **reflection:** respect custom tsconfig options ([e8cfdc0](https://github.com/mikro-orm/mikro-orm/commit/e8cfdc04cb5beed30f3ce144d7d57ee6d95e0c60))
+* **sql:** fix aliasing of nested composite FK queries ([60b2c91](https://github.com/mikro-orm/mikro-orm/commit/60b2c9197249c8f982423ef320463cc8357b6542))
+
+
+
+
+
 ## [6.1.10](https://github.com/mikro-orm/mikro-orm/compare/v6.1.9...v6.1.10) (2024-03-14)
 
 

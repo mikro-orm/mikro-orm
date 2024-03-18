@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.11](https://github.com/mikro-orm/mikro-orm/compare/v6.1.10...v6.1.11) (2024-03-18)
+
+
+### Bug Fixes
+
+* **core:** improve serialization of lazily partially loaded entities ([1c7b446](https://github.com/mikro-orm/mikro-orm/commit/1c7b44652100aa4e940787b3ee7ca4e208039984)), closes [#5139](https://github.com/mikro-orm/mikro-orm/issues/5139)
+* **query-builder:** fix aliasing of FK when used in deeply nested and/or conditions ([ebb966c](https://github.com/mikro-orm/mikro-orm/commit/ebb966caae9f06a8c4a9fec7a642e678ddfebb66)), closes [#5086](https://github.com/mikro-orm/mikro-orm/issues/5086)
+* **sql:** fix aliasing of nested composite FK queries ([60b2c91](https://github.com/mikro-orm/mikro-orm/commit/60b2c9197249c8f982423ef320463cc8357b6542))
+
+
+
+
+
 ## [6.1.10](https://github.com/mikro-orm/mikro-orm/compare/v6.1.9...v6.1.10) (2024-03-14)
 
 

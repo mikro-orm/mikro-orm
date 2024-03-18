@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.11](https://github.com/mikro-orm/mikro-orm/compare/v6.1.10...v6.1.11) (2024-03-18)
+
+
+### Bug Fixes
+
+* **core:** improve serialization of lazily partially loaded entities ([1c7b446](https://github.com/mikro-orm/mikro-orm/commit/1c7b44652100aa4e940787b3ee7ca4e208039984)), closes [#5139](https://github.com/mikro-orm/mikro-orm/issues/5139)
+* **core:** support unsetting composite FKs via flush ([64f2afd](https://github.com/mikro-orm/mikro-orm/commit/64f2afd1a899b86e54eef6e58d6f475b28f67c6f))
+* **migrator:** type mismatch between Migration interface and class ([#5343](https://github.com/mikro-orm/mikro-orm/issues/5343)) ([2fba5ee](https://github.com/mikro-orm/mikro-orm/commit/2fba5eebbc118c98a890b3083d521b52b263ba30)), closes [#5340](https://github.com/mikro-orm/mikro-orm/issues/5340)
+
+
+
+
+
 ## [6.1.10](https://github.com/mikro-orm/mikro-orm/compare/v6.1.9...v6.1.10) (2024-03-14)
 
 
