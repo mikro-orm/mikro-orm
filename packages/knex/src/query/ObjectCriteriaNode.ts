@@ -2,6 +2,7 @@ import {
   ALIAS_REPLACEMENT,
   type Dictionary,
   type EntityKey,
+  type EntityProperty,
   QueryFlag,
   raw,
   RawQueryFragment,
@@ -138,6 +139,27 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     return !!this.prop && this.prop.kind !== ReferenceKind.SCALAR && !scalar && !operator;
   }
 
+  private getChildKey(k: EntityKey, prop: EntityProperty, childAlias?: string): string {
+    const idx = prop.referencedPKs.indexOf(k as EntityKey);
+    return idx !== -1 && !childAlias && ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) ? prop.joinColumns[idx] : k;
+  }
+
+  private inlineArrayChildPayload(obj: Dictionary, payload: Dictionary[], k: string, prop: EntityProperty, childAlias?: string) {
+    const key = this.getChildKey(k as EntityKey, prop, childAlias);
+    const value = payload.map((child: Dictionary) => Object.keys(child).reduce((inner, childKey) => {
+      if (Utils.isGroupOperator(childKey) && Array.isArray(child[childKey])) {
+        this.inlineArrayChildPayload(child, child[childKey], childKey, prop, childAlias);
+      } else {
+        const key = (this.isPrefixed(childKey) || Utils.isOperator(childKey)) ? childKey : this.aliased(childKey, childAlias);
+        inner[key] = child[childKey];
+      }
+
+      return inner;
+    }, {} as Dictionary));
+
+    this.inlineCondition(key, obj, value);
+  }
+
   private inlineChildPayload<T>(o: Dictionary, payload: Dictionary, field: EntityKey<T>, alias?: string, childAlias?: string) {
     const prop = this.metadata.find<T>(this.entityName)!.properties[field];
 
@@ -146,30 +168,28 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         const tmp = payload[k];
         delete payload[k];
         o[this.aliased(field, alias)] = { [k]: tmp, ...o[this.aliased(field, alias)] };
+      } else if (Utils.isGroupOperator(k) && Array.isArray(payload[k])) {
+        this.inlineArrayChildPayload(o, payload[k], k, prop, childAlias);
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
-        const idx = prop.referencedPKs.indexOf(k as EntityKey);
-        const key = idx !== -1 && !childAlias && ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) ? prop.joinColumns[idx] : k;
-
-        if (key in o) {
-          const $and = o.$and ?? [];
-          $and.push({ [key]: o[key] }, { [key]: payload[k] });
-          delete o[key];
-          o.$and = $and;
-        } else if (Utils.isOperator(k) && Array.isArray(payload[k])) {
-            o[key] = payload[k].map((child: Dictionary) => Object.keys(child).reduce((o, childKey) => {
-              const key = (this.isPrefixed(childKey) || Utils.isOperator(childKey)) ? childKey : this.aliased(childKey, childAlias);
-              o[key] = child[childKey];
-              return o;
-            }, {} as Dictionary));
-        } else {
-          o[key] = payload[k];
-        }
+        const key = this.getChildKey(k as EntityKey, prop, childAlias);
+        this.inlineCondition(key, o, payload[k]);
       } else if (RawQueryFragment.isKnownFragment(k)) {
         o[k] = payload[k];
       } else {
         o[`${childAlias}.${k}`] = payload[k];
         o[this.aliased(k, childAlias)] = payload[k];
       }
+    }
+  }
+
+  private inlineCondition(key: string, o: Dictionary<any>, value: unknown) {
+    if (key in o) {
+      const $and = o.$and ?? [];
+      $and.push({ [key]: o[key] }, { [key]: value });
+      delete o[key];
+      o.$and = $and;
+    } else {
+      o[key] = value;
     }
   }
 

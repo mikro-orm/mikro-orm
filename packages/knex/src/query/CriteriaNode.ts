@@ -35,7 +35,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
         return;
       }
 
-      pks.forEach(k => {
+      for (const k of pks) {
         this.prop = meta.props.find(prop => prop.name === k || (prop.fieldNames?.length === 1 && prop.fieldNames[0] === k));
         const isProp = this.prop || meta.props.find(prop => (prop.fieldNames || []).includes(k));
 
@@ -43,7 +43,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
         if (validate && !isProp && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k) && !RawQueryFragment.isKnownFragment(k)) {
           throw new Error(`Trying to query by not existing property ${entityName}.${k}`);
         }
-      });
+      }
     }
   }
 
