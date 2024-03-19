@@ -29,7 +29,7 @@ export class Users {
   @Property({ length: 100 })
   lastName!: string;
 
-  @Property({ type: 'string', length: 200, generated: () => "concat(\`first_name\`,_utf8mb4\\\\' \\\\',\`last_name\`) virtual" })
+  @Property({ type: 'string', length: 200, generated: () => "(concat(\`first_name\`,_utf8mb4' ',\`last_name\`)) virtual" })
   fullName!: string & Opt;
 
   @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -38,7 +38,7 @@ export class Users {
   @Property({ columnType: 'date' })
   dateOfBirth!: string;
 
-  @ManyToOne({ entity: () => AllowedAgesAtCreation, fieldName: 'age_at_creation', deleteRule: 'cascade', generated: () => "timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`) stored", nullable: true, index: 'fk_users_allowed_ages_at_creation_idx' })
+  @ManyToOne({ entity: () => AllowedAgesAtCreation, fieldName: 'age_at_creation', deleteRule: 'cascade', generated: () => "(timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`)) stored", nullable: true, index: 'fk_users_allowed_ages_at_creation_idx' })
   ageAtCreation?: AllowedAgesAtCreation;
 
 }
@@ -75,7 +75,7 @@ export class Users {
   @Property({ length: 100 })
   lastName!: string;
 
-  @Property({ type: 'string', length: 200, generated: 'concat(\`first_name\`,_utf8mb4\\' \\',\`last_name\`) virtual' })
+  @Property({ type: 'string', length: 200, generated: '(concat(\`first_name\`,_utf8mb4\\' \\',\`last_name\`)) virtual' })
   fullName!: string & Opt;
 
   @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -84,7 +84,7 @@ export class Users {
   @Property({ columnType: 'date' })
   dateOfBirth!: string;
 
-  @ManyToOne({ entity: () => AllowedAgesAtCreation, fieldName: 'age_at_creation', deleteRule: 'cascade', generated: 'timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`) stored', nullable: true, index: 'fk_users_allowed_ages_at_creation_idx' })
+  @ManyToOne({ entity: () => AllowedAgesAtCreation, fieldName: 'age_at_creation', deleteRule: 'cascade', generated: '(timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`)) stored', nullable: true, index: 'fk_users_allowed_ages_at_creation_idx' })
   ageAtCreation?: AllowedAgesAtCreation;
 
 }
@@ -130,7 +130,7 @@ export const UsersSchema = new EntitySchema({
     fullName: {
       type: 'string',
       length: 200,
-      generated: () => "concat(\`first_name\`,_utf8mb4\\\\' \\\\',\`last_name\`) virtual",
+      generated: () => "(concat(\`first_name\`,_utf8mb4' ',\`last_name\`)) virtual",
     },
     createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
     dateOfBirth: { type: 'string', columnType: 'date' },
@@ -139,7 +139,7 @@ export const UsersSchema = new EntitySchema({
       entity: () => AllowedAgesAtCreation,
       fieldName: 'age_at_creation',
       deleteRule: 'cascade',
-      generated: () => "timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`) stored",
+      generated: () => "(timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`)) stored",
       nullable: true,
       index: 'fk_users_allowed_ages_at_creation_idx',
     },
@@ -187,7 +187,7 @@ export const UsersSchema = new EntitySchema({
     fullName: {
       type: 'string',
       length: 200,
-      generated: 'concat(\`first_name\`,_utf8mb4\\' \\',\`last_name\`) virtual',
+      generated: '(concat(\`first_name\`,_utf8mb4\\' \\',\`last_name\`)) virtual',
     },
     createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
     dateOfBirth: { type: 'string', columnType: 'date' },
@@ -196,7 +196,7 @@ export const UsersSchema = new EntitySchema({
       entity: () => AllowedAgesAtCreation,
       fieldName: 'age_at_creation',
       deleteRule: 'cascade',
-      generated: 'timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`) stored',
+      generated: '(timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`)) stored',
       nullable: true,
       index: 'fk_users_allowed_ages_at_creation_idx',
     },

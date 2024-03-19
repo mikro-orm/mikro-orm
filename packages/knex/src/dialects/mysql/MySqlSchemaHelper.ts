@@ -78,7 +78,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
         constraint: !index.non_unique,
       };
 
-      if (!index.column_name || index.column_name.match(/[(): ,"'`]/) || index.expression?.match(/ where /i)) {
+      if (!index.column_name || index.expression?.match(/ where /i)) {
         indexDef.expression = index.expression; // required for the `getCreateIndexSQL()` call
         indexDef.expression = this.getCreateIndexSQL(index.table_name, indexDef, !!index.expression);
       }
@@ -125,7 +125,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
         col.length,
       ));
       const key = this.getTableKey(col);
-      const generated = col.generation_expression ? `${col.generation_expression} ${col.extra.match(/stored generated/i) ? 'stored' : 'virtual'}` : undefined;
+      const generated = col.generation_expression ? `(${col.generation_expression.replaceAll(`\\'`, `'`)}) ${col.extra.match(/stored generated/i) ? 'stored' : 'virtual'}` : undefined;
       ret[key] ??= [];
       ret[key].push({
         name: col.column_name,

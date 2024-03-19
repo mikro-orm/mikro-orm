@@ -1,0 +1,266 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`odd_db_name100 entitySchema=false: postgre 1`] = `
+[
+  "import { Entity, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
+
+@Entity({ tableName: '*misc', schema: 'odd table_names_example:100%' })
+export class E_$42misc {
+
+  [PrimaryKeyProp]?: '@ref';
+
+  @OneToOne({ entity: () => E50$37$32of$32stuff, fieldName: '@ref', primary: true })
+  '@ref'!: E50$37$32of$32stuff;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this } from './Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this';
+
+@Entity({ tableName: '123_table_name', schema: 'odd table_names_example:100%' })
+export class E123TableName {
+
+  [PrimaryKeyProp]?: '$';
+
+  @PrimaryKey({ autoincrement: false })
+  $!: number;
+
+  @ManyToOne({ entity: () => Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this, fieldName: 'prototype' })
+  prototype!: Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this;
+
+  @Property({ fieldName: 'oh_captain__my___captain', type: 'string', length: 255 })
+  ohCaptainMyCaptain: string & Opt = 'test';
+
+  @Property({ length: 255 })
+  infer!: string;
+
+  @Property({ fieldName: '$infer', length: 200 })
+  $$infer!: string;
+
+  @Property({ fieldName: '$$infer', length: 200 })
+  $$$infer!: string;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity({ tableName: '50% of stuff', schema: 'odd table_names_example:100%' })
+@Unique({ name: 'odd columns\\' unique index', expression: 'CREATE UNIQUE INDEX "odd columns\\' unique index" ON "odd table_names_example:100%"."50% of stuff" USING btree ("column with apostrophe in it\\'s name", "column with backtick in it\`\`s name")' })
+export class E50$37$32of$32stuff {
+
+  [PrimaryKeyProp]?: '+20%';
+
+  @PrimaryKey({ fieldName: '+-20%' })
+  '+20%'!: number;
+
+  @Property({ length: 45 })
+  'my@odd.column'!: string;
+
+  @Property({ fieldName: 'column with apostrophe in it\\'s name', length: 45 })
+  'columnWithApostropheInIt\\'sName'!: string;
+
+  @Property({ fieldName: 'column with backtick in it\`\`s name', length: 45 })
+  'columnWithBacktickInIt\`\`sName'!: string;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ tableName: 'ns___subns__the_name', schema: 'odd_identifier\\'s_example\\'s_second' })
+export class NsSubnsTheName {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ fieldName: 'r_n_b', length: 45 })
+  rNB!: string;
+
+  @Property({ fieldName: '*', length: 45 })
+  '$*'!: string;
+
+  @Property({ fieldName: '$*', length: 35 })
+  '$$*'!: string;
+
+}
+",
+  "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { E_$42misc } from './E_$42misc';
+
+@Entity({ tableName: 'table\\'s name has apostrophe, Also \`\` this', schema: 'odd_identifier\\'s_example\\'s_second' })
+export class Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this {
+
+  [PrimaryKeyProp]?: '!cool';
+
+  @OneToOne({ entity: () => E_$42misc, fieldName: '!cool', primary: true })
+  '!cool'!: E_$42misc;
+
+  @Property({ length: 45, nullable: true })
+  \`'derive\`?: string;
+
+}
+",
+  "import { Entity, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { E_$42misc } from './E_$42misc';
+
+@Entity({ tableName: 'this+that', schema: 'odd table_names_example:100%' })
+export class This$43that {
+
+  [PrimaryKeyProp]?: '80OfStuff';
+
+  @OneToOne({ entity: () => E_$42misc, fieldName: '80 of stuff', primary: true })
+  '80OfStuff'!: E_$42misc;
+
+}
+",
+]
+`;
+
+exports[`odd_db_name100 entitySchema=true: postgre 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
+
+export class E_$42misc {
+  [PrimaryKeyProp]?: '@ref';
+  '@ref'!: E50$37$32of$32stuff;
+}
+
+export const E_$42miscSchema = new EntitySchema({
+  class: E_$42misc,
+  tableName: '*misc',
+  schema: 'odd table_names_example:100%',
+  properties: {
+    '@ref': {
+      primary: true,
+      kind: '1:1',
+      entity: () => E50$37$32of$32stuff,
+      fieldName: '@ref',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this } from './Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this';
+
+export class E123TableName {
+  [PrimaryKeyProp]?: '$';
+  $!: number;
+  prototype!: Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this;
+  ohCaptainMyCaptain: string & Opt = 'test';
+  infer!: string;
+  $$infer!: string;
+  $$$infer!: string;
+}
+
+export const E123TableNameSchema = new EntitySchema({
+  class: E123TableName,
+  tableName: '123_table_name',
+  schema: 'odd table_names_example:100%',
+  properties: {
+    $: { primary: true, type: 'number', autoincrement: false },
+    prototype: {
+      kind: 'm:1',
+      entity: () => Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this,
+      fieldName: 'prototype',
+    },
+    ohCaptainMyCaptain: { type: 'string', fieldName: 'oh_captain__my___captain', length: 255 },
+    infer: { type: 'string', length: 255 },
+    $$infer: { type: 'string', fieldName: '$infer', length: 200 },
+    $$$infer: { type: 'string', fieldName: '$$infer', length: 200 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class E50$37$32of$32stuff {
+  [PrimaryKeyProp]?: '+20%';
+  '+20%'!: number;
+  'my@odd.column'!: string;
+  'columnWithApostropheInIt\\'sName'!: string;
+  'columnWithBacktickInIt\`\`sName'!: string;
+}
+
+export const E50$37$32of$32stuffSchema = new EntitySchema({
+  class: E50$37$32of$32stuff,
+  tableName: '50% of stuff',
+  schema: 'odd table_names_example:100%',
+  uniques: [
+    { name: 'odd columns\\' unique index', expression: 'CREATE UNIQUE INDEX "odd columns\\' unique index" ON "odd table_names_example:100%"."50% of stuff" USING btree ("column with apostrophe in it\\'s name", "column with backtick in it\`\`s name")' },
+  ],
+  properties: {
+    '+20%': { primary: true, type: 'number', fieldName: '+-20%' },
+    'my@odd.column': { type: 'string', length: 45 },
+    'columnWithApostropheInIt\\'sName': {
+      type: 'string',
+      fieldName: 'column with apostrophe in it\\'s name',
+      length: 45,
+    },
+    'columnWithBacktickInIt\`\`sName': { type: 'string', fieldName: 'column with backtick in it\`\`s name', length: 45 },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class NsSubnsTheName {
+  id!: number;
+  rNB!: string;
+  '$*'!: string;
+  '$$*'!: string;
+}
+
+export const NsSubnsTheNameSchema = new EntitySchema({
+  class: NsSubnsTheName,
+  tableName: 'ns___subns__the_name',
+  schema: 'odd_identifier\\'s_example\\'s_second',
+  properties: {
+    id: { primary: true, type: 'number' },
+    rNB: { type: 'string', fieldName: 'r_n_b', length: 45 },
+    '$*': { type: 'string', fieldName: '*', length: 45 },
+    '$$*': { type: 'string', fieldName: '$*', length: 35 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { E_$42misc } from './E_$42misc';
+
+export class Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this {
+  [PrimaryKeyProp]?: '!cool';
+  '!cool'!: E_$42misc;
+  \`'derive\`?: string;
+}
+
+export const Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32thisSchema = new EntitySchema({
+  class: Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this,
+  tableName: 'table\\'s name has apostrophe, Also \`\` this',
+  schema: 'odd_identifier\\'s_example\\'s_second',
+  properties: {
+    '!cool': { primary: true, kind: '1:1', entity: () => E_$42misc, fieldName: '!cool' },
+    \`'derive\`: { type: 'string', length: 45, nullable: true },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { E_$42misc } from './E_$42misc';
+
+export class This$43that {
+  [PrimaryKeyProp]?: '80OfStuff';
+  '80OfStuff'!: E_$42misc;
+}
+
+export const This$43thatSchema = new EntitySchema({
+  class: This$43that,
+  tableName: 'this+that',
+  schema: 'odd table_names_example:100%',
+  properties: {
+    '80OfStuff': {
+      primary: true,
+      kind: '1:1',
+      entity: () => E_$42misc,
+      fieldName: '80 of stuff',
+    },
+  },
+});
+",
+]
+`;

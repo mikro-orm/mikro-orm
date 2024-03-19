@@ -1,10 +1,13 @@
 import type { NamingStrategy } from './NamingStrategy';
+import { PopulatePath } from '../enums';
+
+const populatePathMembers = Object.values(PopulatePath);
 
 export abstract class AbstractNamingStrategy implements NamingStrategy {
 
   getClassName(file: string, separator = '-'): string {
     const name = file.split('.')[0];
-    const ret = name.replace(new RegExp(`${separator}+(\\w)`, 'g'), m => m[1].toUpperCase());
+    const ret = name.replace(new RegExp(`(?:${separator})+(\\w)`, 'ug'), (_, p1) => p1.toUpperCase());
 
     return ret.charAt(0).toUpperCase() + ret.slice(1);
   }
@@ -46,11 +49,16 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
    * @inheritDoc
    */
   getEntityName(tableName: string, schemaName?: string): string {
-    return this.getClassName(tableName, '_');
+    const name = tableName.match(/^[^$_\p{ID_Start}]/u) ? `E_${tableName}` : tableName;
+    return this.getClassName(name.replaceAll(/[^\u200C\u200D\p{ID_Continue}]+/ug, r => r.split('').map(c => `$${c.codePointAt(0)}`).join('')), '_');
   }
 
   columnNameToProperty(columnName: string): string {
-    return columnName.replace(/[_\- ](\w)/g, m => m[1].toUpperCase()).replace(/[_\- ]+/g, '');
+    const propName = columnName.replace(/[_\- ]+(\w)/ug, (_, p1) => p1.toUpperCase());
+    if (populatePathMembers.includes(propName.replace(/^\${2,}/u, '$$').replace(/^\$\*$/u, '*') as PopulatePath)) {
+      return `$${propName}`;
+    }
+    return propName;
   }
 
   aliasName(entityName: string, index: number): string {
