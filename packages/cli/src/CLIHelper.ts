@@ -35,13 +35,13 @@ export class CLIHelper {
     return MikroORM.init(options.getAll());
   }
 
-  static async isDBConnected(): Promise<boolean> {
+  static async isDBConnected(reason = false): Promise<boolean | string> {
     try {
       const config = await CLIHelper.getConfiguration();
       await config.getDriver().connect();
-      const isConnected = await config.getDriver().getConnection().isConnected();
+      const isConnected = await config.getDriver().getConnection().checkConnection();
       await config.getDriver().close();
-      return isConnected;
+      return isConnected.reason && reason ? isConnected.reason : isConnected.ok;
     } catch {
       return false;
     }

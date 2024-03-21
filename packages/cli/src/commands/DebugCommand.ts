@@ -28,11 +28,12 @@ export class DebugCommand implements CommandModule {
       const config = await CLIHelper.getConfiguration();
       CLIHelper.dump(` - configuration ${colors.green('found')}`);
 
-      const isConnected = await CLIHelper.isDBConnected();
-      if (isConnected) {
-        CLIHelper.dump(` - ${colors.green('database connection succesful')}`);
+      const isConnected = await CLIHelper.isDBConnected(true);
+
+      if (isConnected === true) {
+        CLIHelper.dump(` - ${colors.green('database connection successful')}`);
       } else {
-        CLIHelper.dump(` - ${colors.yellow('database connection failed')}`);
+        CLIHelper.dump(` - ${colors.yellow(`database connection failed (${isConnected})`)}`);
       }
 
       const tsNode = config.get('tsNode');
