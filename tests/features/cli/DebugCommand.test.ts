@@ -110,7 +110,7 @@ describe('DebugCommand', () => {
     getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver } as any, false));
     getConfigPaths.mockReturnValue(['./path/orm-config.ts']);
     const connectionMock = jest.spyOn(CLIHelper, 'isDBConnected');
-    connectionMock.mockImplementation(async (reason) => reason ? 'host not found' : false);
+    connectionMock.mockImplementation(async reason => reason ? 'host not found' : false);
     await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(6);
     expect(dump.mock.calls).toEqual([
