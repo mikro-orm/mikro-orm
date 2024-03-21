@@ -1,9 +1,11 @@
 import type { EntityMetadata } from '../typings';
+import type { Logger } from '../logging/Logger';
 import { Utils } from '../utils/Utils';
 
 // to get around circular dependencies
 export interface IConfiguration {
   get(key: string, defaultValue?: any): any;
+  getLogger(): Logger;
 }
 
 export abstract class MetadataProvider {

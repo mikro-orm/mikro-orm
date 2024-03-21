@@ -16,12 +16,18 @@ export class A {
 let orm: MikroORM;
 
 beforeAll(async () => {
+  const logger = jest.fn();
   orm = await MikroORM.init({
     metadataCache: { enabled: false },
+    logger,
+    debug: true,
     entities: [A],
     dbName: 'mikro_orm_test_3720',
     metadataProvider: TsMorphMetadataProvider,
+    discovery: { tsConfigPath: 'foobar.json' },
   });
+  expect(logger).toHaveBeenCalledWith(expect.stringContaining('File not found:'));
+  expect(logger).toHaveBeenCalledWith(expect.stringContaining('foobar.json'));
 
   await orm.schema.refreshDatabase();
 });

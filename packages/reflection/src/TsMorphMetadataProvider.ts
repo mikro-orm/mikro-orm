@@ -198,15 +198,25 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
 
     const settings = ConfigurationLoader.getSettings();
-    const tsConfigFilePath = this.config.get('discovery').tsConfigPath ?? settings.tsConfigPath ?? `${process.cwd()}/tsconfig.json`;
+    const tsConfigFilePath = this.config.get('discovery').tsConfigPath ?? settings.tsConfigPath ?? './tsconfig.json';
 
-    this.project = new Project({
-      tsConfigFilePath,
-      compilerOptions: {
-        strictNullChecks: true,
-        module: ModuleKind.Node16,
-      },
-    });
+    try {
+      this.project = new Project({
+        tsConfigFilePath: Utils.normalizePath(process.cwd(), tsConfigFilePath),
+        compilerOptions: {
+          strictNullChecks: true,
+          module: ModuleKind.Node16,
+        },
+      });
+    } catch (e: any) {
+      this.config.getLogger().warn('discovery', e.message);
+      this.project = new Project({
+        compilerOptions: {
+          strictNullChecks: true,
+          module: ModuleKind.Node16,
+        },
+      });
+    }
   }
 
   private initSourceFiles(): void {
