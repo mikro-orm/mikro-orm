@@ -222,7 +222,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         on rco.unique_constraint_schema = rel_kcu.constraint_schema
         and rco.unique_constraint_name = rel_kcu.constraint_name
         and kcu.ordinal_position = rel_kcu.ordinal_position
-      where (${tables.map(t => `tco.table_name = '${t.table_name}' and tco.table_schema = '${t.schema_name}' and tco.constraint_schema = '${t.schema_name}'`).join(' or ')})
+      where (${tables.map(t => `(tco.table_name = '${t.table_name}' and tco.table_schema = '${t.schema_name}' and tco.constraint_schema = '${t.schema_name}')`).join(' or ')})
       and tco.constraint_type = 'FOREIGN KEY'
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
     const allFks = await connection.execute<any[]>(sql);
