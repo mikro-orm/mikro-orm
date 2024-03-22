@@ -18,7 +18,7 @@ import type {
   IMetadataStorage,
   Primary,
 } from '../typings';
-import { ARRAY_OPERATORS, GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
+import { ARRAY_OPERATORS, JSON_KEY_OPERATORS, GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
 import type { Collection } from '../entity/Collection';
 import type { Platform } from '../platforms';
 import { helper } from '../entity/wrap';
@@ -1010,6 +1010,10 @@ export class Utils {
 
   static isArrayOperator(key: PropertyKey): boolean {
     return ARRAY_OPERATORS.includes(key as string);
+  }
+
+  static isJsonKeyOperator(key: PropertyKey): boolean {
+    return JSON_KEY_OPERATORS.includes(key as string);
   }
 
   static hasNestedKey(object: unknown, key: string): boolean {
