@@ -135,6 +135,9 @@ export type OperatorMap<T> = {
   $contains?: string[] | object;
   $contained?: string[] | object;
   $exists?: boolean;
+  $haskey?: string;
+  $haskeys?: string[];
+  $hassomekeys?: string[];
 };
 
 export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T>;

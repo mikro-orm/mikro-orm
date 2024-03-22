@@ -241,6 +241,12 @@ export class QueryHelper {
       }, {} as FilterQuery<T>);
     }
 
+    if (key && Utils.isJsonKeyOperator(key)) {
+      return Array.isArray(cond)
+        ? (platform.marshallArray(cond) as unknown as FilterQuery<T>)
+        : cond;
+    }
+
     if (Array.isArray(cond) && !(key && Utils.isArrayOperator(key))) {
       return (cond as FilterQuery<T>[]).map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as unknown as FilterQuery<T>;
     }
