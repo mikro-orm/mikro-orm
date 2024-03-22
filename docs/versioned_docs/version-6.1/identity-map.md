@@ -5,6 +5,12 @@ sidebar_label: Identity Map
 
 `MikroORM` uses identity map in background, so we will always get the same instance of one entity.
 
+## What is an "Identity Map"
+
+You can think of an "identity map" as a sort of "in memory cache", in the sense that it starts off empty, gets filled and updated as you perform calls with the entity manager, and items in it get pulled out of it ("cache hit" of sorts) when an operation matches an ID the identity map is aware of. However, it is also different from an actual (result) cache, and should not be used as one (See [here](./caching.md) for an actual result cache). Caches are generally meant to improve performance across requests. An identity map is instead meant to improve performance within a single request, by making it possible to compare entity objects trivially, which in turn enables the ORM to batch operations to the database. It also helps to reduce your application's memory footprint per request, by ensuring that even if you make multiple queries that match the same rows, those rows will only exist once in memory.
+
+For example:
+
 ```ts
 const authorRepository = em.getRepository(Author);
 const jon = await authorRepository.findOne({ name: 'Jon Snow' }, { populate: ['books'] });
