@@ -30,7 +30,7 @@ class Book {
   parameters!: BooksParameters;
 
   @Property({ type: 'jsonb' })
-  authors: string[];
+  authors!: string[];
 
   @ManyToOne(() => User)
   user!: User;
