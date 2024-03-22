@@ -56,14 +56,14 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 
-test('GH #4678 ($haskey operator)', async () => {
+test('GH #4678 ($hasKey operator)', async () => {
   const mock = mockLogger(orm);
   await orm.em.findAll(Book, {
-    where: { parameters: { $haskey: 'seasons' } },
+    where: { parameters: { $hasKey: 'seasons' } },
   });
   await orm.em.findAll(User, {
     where: {
-      books: { parameters: { $haskey: 'seasons' } },
+      books: { parameters: { $hasKey: 'seasons' } },
     },
     populate: ['books'],
     strategy: 'select-in',
@@ -77,14 +77,14 @@ test('GH #4678 ($haskey operator)', async () => {
   );
 });
 
-test('GH #4678 ($hassomekeys operator)', async () => {
+test('GH #4678 ($hasSomeKeys operator)', async () => {
   const mock = mockLogger(orm);
   await orm.em.findAll(Book, {
-    where: { parameters: { $hassomekeys: ['seasons', 'pages'] } },
+    where: { parameters: { $hasSomeKeys: ['seasons', 'pages'] } },
   });
   await orm.em.findAll(User, {
     where: {
-      books: { parameters: { $hassomekeys: ['seasons', 'pages'] } },
+      books: { parameters: { $hasSomeKeys: ['seasons', 'pages'] } },
     },
     populate: ['books'],
     strategy: 'select-in',
@@ -97,14 +97,14 @@ test('GH #4678 ($hassomekeys operator)', async () => {
   );
 });
 
-test('GH #4678 ($haskeys operator)', async () => {
+test('GH #4678 ($hasKeys operator)', async () => {
   const mock = mockLogger(orm);
   await orm.em.findAll(Book, {
-    where: { parameters: { $haskeys: ['seasons', 'pages'] } },
+    where: { parameters: { $hasKeys: ['seasons', 'pages'] } },
   });
   await orm.em.findAll(User, {
     where: {
-      books: { parameters: { $haskeys: ['seasons', 'pages'] } },
+      books: { parameters: { $hasKeys: ['seasons', 'pages'] } },
     },
     populate: ['books'],
     strategy: 'select-in',

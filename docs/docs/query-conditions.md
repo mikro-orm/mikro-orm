@@ -68,9 +68,9 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$overlap`     | &&               | (postgres only)                                                                             |
 | `$contains`    | @>               | (postgres only)                                                                             |
 | `$contained`   | \<@              | (postgres only)                                                                             |
-| `$haskey`      | ?                | (postgres only)                                                                             |
-| `$hassomekeys` | ?|               | (postgres only)                                                                             |
-| `$haskeys`     | ?&               | (postgres only)                                                                             |
+| `$hasKey`      | ?                | (postgres only)                                                                             |
+| `$hasSomeKeys` | ?|               | (postgres only)                                                                             |
+| `$hasKeys`     | ?&               | (postgres only)                                                                             |
 
 ### Logical
 

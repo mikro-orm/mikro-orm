@@ -42,9 +42,9 @@ export enum QueryOperator {
   $none = 'none', // collection operators, sql only
   $some = 'some', // collection operators, sql only
   $every = 'every', // collection operators, sql only
-  $haskey = '?', // postgres only, json
-  $haskeys = '?&', // postgres only, json
-  $hassomekeys = '?|', // postgres only, json
+  $hasKey = '?', // postgres only, json
+  $hasKeys = '?&', // postgres only, json
+  $hasSomeKeys = '?|', // postgres only, json
 }
 
 export const ARRAY_OPERATORS = [
@@ -60,9 +60,9 @@ export const ARRAY_OPERATORS = [
 ];
 
 export const JSON_KEY_OPERATORS = [
-  '$haskey',
-  '$haskeys',
-  '$hassomekeys',
+  '$hasKey',
+  '$hasKeys',
+  '$hasSomeKeys',
 ];
 
 export enum QueryOrder {
