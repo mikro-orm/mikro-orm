@@ -71,6 +71,10 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           });
         }
 
+        if ($and.length === 1) {
+          return $and[0];
+        }
+
         return { $and };
       }
 
@@ -182,15 +186,21 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     }
   }
 
-  private inlineCondition(key: string, o: Dictionary<any>, value: unknown) {
-    if (key in o) {
-      const $and = o.$and ?? [];
-      $and.push({ [key]: o[key] }, { [key]: value });
-      delete o[key];
-      o.$and = $and;
-    } else {
+  private inlineCondition(key: string, o: Dictionary, value: unknown) {
+    if (!(key in o)) {
       o[key] = value;
+      return;
     }
+
+    if (key === '$and') {
+      o.$and.push({ [key]: value });
+      return;
+    }
+
+    const $and = o.$and ?? [];
+    $and.push({ [key]: o[key] }, { [key]: value });
+    delete o[key];
+    o.$and = $and;
   }
 
   private shouldAutoJoin(qb: IQueryBuilder<T>, nestedAlias: string | undefined): boolean {

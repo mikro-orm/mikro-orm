@@ -13,6 +13,9 @@ class Author {
   @OneToMany(() => Book, b => b.author)
   books = new Collection<Book>(this);
 
+  @OneToMany(() => Book, b => b.author2)
+  books2 = new Collection<Book>(this);
+
   constructor(name: string) {
     this.name = name;
   }
@@ -30,6 +33,9 @@ class Book {
 
   @ManyToOne(() => Author)
   author!: Author;
+
+  @ManyToOne(() => Author, { nullable: true })
+  author2?: Author;
 
   @ManyToMany(() => BookTag)
   tags = new Collection<BookTag>(this);
@@ -138,9 +144,10 @@ test('1:m sub-query operators $some, $none and $every', async () => {
 
   results = await orm.em.fork().find(Author, {
     books: { $none: {} },
+    books2: { $none: {} },
   });
   expect(results.map(res => res.name)).toEqual(['Author 1']);
-  expect(mock.mock.calls[4][0]).toBe('[query] select `a0`.* from `author` as `a0` where `a0`.`id` not in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author_id`)');
+  expect(mock.mock.calls[4][0]).toBe('[query] select `a0`.* from `author` as `a0` where `a0`.`id` not in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author_id`) and `a0`.`id` not in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author2_id`)');
 });
 
 test('m:n sub-query operators $some, $none and $every (select-in)', async () => {
