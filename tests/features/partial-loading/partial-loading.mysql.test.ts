@@ -1,4 +1,4 @@
-import type { MikroORM } from '@mikro-orm/core';
+import type { Loaded, MikroORM } from '@mikro-orm/core';
 import { LoadStrategy } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2 } from '../../entities-sql';
@@ -399,6 +399,18 @@ describe('partial loading (mysql)', () => {
     expect(r2.books[0].author.id).toBeDefined();
     expect(r2.books[0].author.name).toBe(god.name);
     expect(r2.books[0].author.email).toBe(god.email);
+  });
+
+  test('assignability', async () => {
+    const r1 = await orm.em.findOne(Author2, 1, {
+      fields: ['name', 'age', 'address'],
+    });
+
+    function foo(author: Loaded<Author2, never, 'name'>) {
+      //
+    }
+
+    const f = foo(r1!);
   });
 
 });

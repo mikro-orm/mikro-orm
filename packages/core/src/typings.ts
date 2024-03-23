@@ -1042,13 +1042,7 @@ export type MergeSelected<T, U, F extends string> =
     ? IsNever<Exclude<E, F>> extends true
       ? Loaded<TT, P, AnyStringToNever<F> | AnyStringToNever<FF>> // no excludes, we want to merge the partial hints
       : Loaded<TT, AnyStringToNever<P>, AnyStringToNever<FF>, AnyStringToNever<Exclude<E, F>>> // with excludes, we only remove the property from it
-    : T extends { [__selectedType]?: [U, infer P, infer FF] }
-      ? string extends FF
-        ? T
-        : string extends P
-          ? Selected<U, never, F | (FF & string)>
-          : Selected<U, P & string, F | (FF & string)>
-      : T;
+    : T;
 
 // merge partial loading hints, and propagate populate: '*' to it
 type MergeFields<F1 extends string, F2 extends string, P1, P2> =
@@ -1080,9 +1074,9 @@ export type Selected<T, L extends string = never, F extends string = '*'> = {
   [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
 } & {
   [K in keyof T as FunctionKeys<T, K>]: T[K];
-} & { [__selectedType]?: [T, L, F] };
+} & { [__selectedType]?: T };
 
-export type EntityType<T> = T | { [__loadedType]?: T } | { [__selectedType]?: [T, any, any] };
+export type EntityType<T> = T | { [__loadedType]?: T } | { [__selectedType]?: T };
 export type FromEntityType<T> = T extends EntityType<infer U> ? U : T;
 
 type LoadedInternal<T, L extends string = never, F extends string = '*', E extends string = never> =
