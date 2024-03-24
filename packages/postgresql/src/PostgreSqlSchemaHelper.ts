@@ -207,28 +207,38 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
-    const sql = `select tco.table_schema as schema_name, kcu.table_name as table_name, rel_kcu.table_name as referenced_table_name,
-      rel_kcu.constraint_schema as referenced_schema_name,
-      kcu.column_name as column_name,
-      rel_kcu.column_name as referenced_column_name, kcu.constraint_name, rco.update_rule, rco.delete_rule
-      from information_schema.table_constraints tco
-      join information_schema.key_column_usage kcu
-        on tco.constraint_schema = kcu.constraint_schema
-        and tco.constraint_name = kcu.constraint_name
-      join information_schema.referential_constraints rco
-        on tco.constraint_schema = rco.constraint_schema
-        and tco.constraint_name = rco.constraint_name
-      join information_schema.key_column_usage rel_kcu
-        on rco.unique_constraint_schema = rel_kcu.constraint_schema
-        and rco.unique_constraint_name = rel_kcu.constraint_name
-        and kcu.ordinal_position = rel_kcu.ordinal_position
-      where (${tables.map(t => `(tco.table_name = '${t.table_name}' and tco.table_schema = '${t.schema_name}' and tco.constraint_schema = '${t.schema_name}')`).join(' or ')})
-      and tco.constraint_type = 'FOREIGN KEY'
-      order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
+    const sql = `select nsp1.nspname schema_name, cls1.relname table_name, nsp2.nspname referenced_schema_name,
+      cls2.relname referenced_table_name, a.attname column_name, af.attname referenced_column_name, conname constraint_name,
+      confupdtype update_rule, confdeltype delete_rule,*
+      from pg_attribute a
+      join pg_constraint con on con.conrelid = a.attrelid AND a.attnum = ANY (con.conkey)
+      join pg_attribute af on af.attnum = ANY (con.confkey) AND af.attrelid = con.confrelid
+      join pg_namespace nsp1 on nsp1.oid = con.connamespace
+      join pg_class cls1 on cls1.oid = con.conrelid
+      join pg_class cls2 on cls2.oid = confrelid
+      join pg_namespace nsp2 on nsp2.oid = cls2.relnamespace
+      where (${tables.map(t => `(cls1.relname = '${t.table_name}' and nsp1.nspname = '${t.schema_name}')`).join(' or ')})
+      and confrelid > 0
+      order by nsp1.nspname, cls1.relname, constraint_name`;
+
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
 
+    function mapReferencialIntegrity(value: string) {
+      switch (value) {
+        case 'r': return 'RESTRICT';
+        case 'c': return 'CASCADE';
+        case 'n': return 'SET NULL';
+        case 'd': return 'SET DEFAULT';
+        case 'a':
+        default: return 'NO ACTION';
+      }
+    }
+
     for (const fk of allFks) {
+      fk.update_rule = mapReferencialIntegrity(fk.update_rule);
+      fk.delete_rule = mapReferencialIntegrity(fk.delete_rule);
+
       const key = this.getTableKey(fk);
       ret[key] ??= [];
       ret[key].push(fk);

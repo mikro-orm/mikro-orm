@@ -245,8 +245,13 @@ export abstract class SchemaHelper {
   mapForeignKeys(fks: any[], tableName: string, schemaName?: string): Dictionary {
     return fks.reduce((ret, fk: any) => {
       if (ret[fk.constraint_name]) {
-        ret[fk.constraint_name].columnNames.push(fk.column_name);
-        ret[fk.constraint_name].referencedColumnNames.push(fk.referenced_column_name);
+        if (!ret[fk.constraint_name].columnNames.includes(fk.column_name)) {
+          ret[fk.constraint_name].columnNames.push(fk.column_name);
+        }
+
+        if (!ret[fk.constraint_name].referencedColumnNames.includes(fk.referenced_column_name)) {
+          ret[fk.constraint_name].referencedColumnNames.push(fk.referenced_column_name);
+        }
       } else {
         ret[fk.constraint_name] = {
           columnNames: [fk.column_name],
