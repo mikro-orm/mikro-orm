@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
+
+
+### Bug Fixes
+
+* **core:** fix assignability of partially loaded entities ([9de4965](https://github.com/mikro-orm/mikro-orm/commit/9de4965dc1ec952b3addc2d902ee5587c2f38f05)), closes [#5374](https://github.com/mikro-orm/mikro-orm/issues/5374)
+* **core:** fix inlining of `$and` conditions ([8ddb3e4](https://github.com/mikro-orm/mikro-orm/commit/8ddb3e4f5166a0e425c4a895fde003e80e0c6bdb)), closes [#5368](https://github.com/mikro-orm/mikro-orm/issues/5368)
+* **entity-generator:** try to resolve errors for foreign keys without indexes ([f2094ab](https://github.com/mikro-orm/mikro-orm/commit/f2094ab3383bc7de9da892b8d259c67b1144c741)), closes [#5364](https://github.com/mikro-orm/mikro-orm/issues/5364)
+* **postgres:** fix query for loading all foreign keys from existing schema ([2eb85d5](https://github.com/mikro-orm/mikro-orm/commit/2eb85d501727601ee86eba8c2c1a11d994cce8cf)), closes [#5364](https://github.com/mikro-orm/mikro-orm/issues/5364)
+* **reflection:** fallback to not proving path to tsconfig if not found ([a24d80d](https://github.com/mikro-orm/mikro-orm/commit/a24d80dc3353a6a84c9c6f1ac26b3c7e3e824901))
+
+
+### Features
+
+* **cli:** add reason for failed connection check in `debug` command ([d61e248](https://github.com/mikro-orm/mikro-orm/commit/d61e248688676a875cdd16c9d780fe8485687c09))
+* **core:** allow passing `EntityManager` or `EntityRepository` to `@CreateRequestContext` decorator ([184cdd4](https://github.com/mikro-orm/mikro-orm/commit/184cdd43ce4dcee5288b3297719914e9f25e50cb))
+* **postgres:** add `?`, `?|` and `?&` json operators ([#5366](https://github.com/mikro-orm/mikro-orm/issues/5366)) ([6418872](https://github.com/mikro-orm/mikro-orm/commit/641887245abbded5df2d984fc24c6fe3cea80c9b)), closes [#4678](https://github.com/mikro-orm/mikro-orm/issues/4678)
+
+
+### Performance Improvements
+
+* **postgres:** try to optimize loading of foreign keys ([2dff96b](https://github.com/mikro-orm/mikro-orm/commit/2dff96bc48c6a84bc1fc213e8044b0ac722d4792)), closes [#5364](https://github.com/mikro-orm/mikro-orm/issues/5364)
+
+
+
+
+
 ## [6.1.11](https://github.com/mikro-orm/mikro-orm/compare/v6.1.10...v6.1.11) (2024-03-18)
 
 

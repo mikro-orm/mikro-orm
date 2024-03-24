@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
+
+
+### Bug Fixes
+
+* **core:** fix inlining of `$and` conditions ([8ddb3e4](https://github.com/mikro-orm/mikro-orm/commit/8ddb3e4f5166a0e425c4a895fde003e80e0c6bdb)), closes [#5368](https://github.com/mikro-orm/mikro-orm/issues/5368)
+* **entity-generator:** try to resolve errors for foreign keys without indexes ([f2094ab](https://github.com/mikro-orm/mikro-orm/commit/f2094ab3383bc7de9da892b8d259c67b1144c741)), closes [#5364](https://github.com/mikro-orm/mikro-orm/issues/5364)
+
+
+### Performance Improvements
+
+* **postgres:** try to optimize loading of foreign keys ([2dff96b](https://github.com/mikro-orm/mikro-orm/commit/2dff96bc48c6a84bc1fc213e8044b0ac722d4792)), closes [#5364](https://github.com/mikro-orm/mikro-orm/issues/5364)
+
+
+
+
+
 ## [6.1.11](https://github.com/mikro-orm/mikro-orm/compare/v6.1.10...v6.1.11) (2024-03-18)
 
 

@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
+
+
+### Bug Fixes
+
+* **core:** fix assignability of partially loaded entities ([9de4965](https://github.com/mikro-orm/mikro-orm/commit/9de4965dc1ec952b3addc2d902ee5587c2f38f05)), closes [#5374](https://github.com/mikro-orm/mikro-orm/issues/5374)
+* **reflection:** fallback to not proving path to tsconfig if not found ([a24d80d](https://github.com/mikro-orm/mikro-orm/commit/a24d80dc3353a6a84c9c6f1ac26b3c7e3e824901))
+
+
+### Features
+
+* **core:** allow passing `EntityManager` or `EntityRepository` to `@CreateRequestContext` decorator ([184cdd4](https://github.com/mikro-orm/mikro-orm/commit/184cdd43ce4dcee5288b3297719914e9f25e50cb))
+* **postgres:** add `?`, `?|` and `?&` json operators ([#5366](https://github.com/mikro-orm/mikro-orm/issues/5366)) ([6418872](https://github.com/mikro-orm/mikro-orm/commit/641887245abbded5df2d984fc24c6fe3cea80c9b)), closes [#4678](https://github.com/mikro-orm/mikro-orm/issues/4678)
+
+
+
+
+
 ## [6.1.11](https://github.com/mikro-orm/mikro-orm/compare/v6.1.10...v6.1.11) (2024-03-18)
 
 

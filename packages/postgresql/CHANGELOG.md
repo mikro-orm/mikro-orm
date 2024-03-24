@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
+
+
+### Bug Fixes
+
+* **postgres:** fix query for loading all foreign keys from existing schema ([2eb85d5](https://github.com/mikro-orm/mikro-orm/commit/2eb85d501727601ee86eba8c2c1a11d994cce8cf)), closes [#5364](https://github.com/mikro-orm/mikro-orm/issues/5364)
+
+
+### Performance Improvements
+
+* **postgres:** try to optimize loading of foreign keys ([2dff96b](https://github.com/mikro-orm/mikro-orm/commit/2dff96bc48c6a84bc1fc213e8044b0ac722d4792)), closes [#5364](https://github.com/mikro-orm/mikro-orm/issues/5364)
+
+
+
+
+
 ## [6.1.11](https://github.com/mikro-orm/mikro-orm/compare/v6.1.10...v6.1.11) (2024-03-18)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

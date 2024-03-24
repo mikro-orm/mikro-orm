@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
+
+
+### Features
+
+* **cli:** add reason for failed connection check in `debug` command ([d61e248](https://github.com/mikro-orm/mikro-orm/commit/d61e248688676a875cdd16c9d780fe8485687c09))
+
+
+
+
+
 ## [6.1.11](https://github.com/mikro-orm/mikro-orm/compare/v6.1.10...v6.1.11) (2024-03-18)
 
 **Note:** Version bump only for package @mikro-orm/cli

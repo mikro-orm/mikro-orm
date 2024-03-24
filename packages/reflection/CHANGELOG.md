@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
+
+
+### Bug Fixes
+
+* **reflection:** fallback to not proving path to tsconfig if not found ([a24d80d](https://github.com/mikro-orm/mikro-orm/commit/a24d80dc3353a6a84c9c6f1ac26b3c7e3e824901))
+
+
+
+
+
 ## [6.1.11](https://github.com/mikro-orm/mikro-orm/compare/v6.1.10...v6.1.11) (2024-03-18)
 
 
