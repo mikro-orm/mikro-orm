@@ -585,12 +585,12 @@ export class DatabaseTable {
     fk: ForeignKey,
     namingStrategy: NamingStrategy,
     schemaHelper: SchemaHelper,
-    fkIndex: IndexDef,
+    fkIndex: IndexDef | undefined,
     nullable: boolean,
     propNameBase: string,
   ) {
     const prop = this.getPropertyName(namingStrategy, propNameBase, fk);
-    const kind = (fkIndex.unique && !fkIndex.primary) ? this.getReferenceKind(fk, fkIndex) : this.getReferenceKind(fk);
+    const kind = (fkIndex?.unique && !fkIndex.primary) ? this.getReferenceKind(fk, fkIndex) : this.getReferenceKind(fk);
     const type = this.getPropertyTypeForForeignKey(namingStrategy, fk);
 
     const fkOptions: Partial<EntityProperty> = {};
@@ -627,9 +627,9 @@ export class DatabaseTable {
       kind,
       ...columnOptions,
       nullable,
-      primary: fkIndex.primary || !fk.columnNames.some(columnName => !this.getPrimaryKey()?.columnNames.includes(columnName)),
-      index: !fkIndex.unique ? fkIndex.keyName : undefined,
-      unique: (fkIndex.unique && !fkIndex.primary) ? fkIndex.keyName : undefined,
+      primary: fkIndex?.primary || !fk.columnNames.some(columnName => !this.getPrimaryKey()?.columnNames.includes(columnName)),
+      index: !fkIndex?.unique ? fkIndex?.keyName : undefined,
+      unique: (fkIndex?.unique && !fkIndex.primary) ? fkIndex.keyName : undefined,
       ...fkOptions,
     };
   }
