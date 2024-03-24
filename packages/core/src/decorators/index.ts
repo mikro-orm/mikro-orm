@@ -14,5 +14,4 @@ export * from './Embeddable';
 export * from './Embedded';
 export * from './Filter';
 export * from './CreateRequestContext';
-export * from './EnsureRequestContext';
 export * from './hooks';

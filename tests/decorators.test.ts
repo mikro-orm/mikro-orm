@@ -11,6 +11,8 @@ import {
   CreateRequestContext,
   EnsureRequestContext,
   RequestContext,
+  EntityManager,
+  EntityRepository,
 } from '@mikro-orm/core';
 import type { Dictionary } from '@mikro-orm/core';
 import { Test } from './entities';
@@ -109,6 +111,28 @@ class TestClass3 {
 
 }
 
+class TestClass4 {
+
+  constructor(private readonly em: EntityManager) {}
+
+  @CreateRequestContext()
+  foo() {
+    //
+  }
+
+}
+
+class TestClass5 {
+
+  constructor(private readonly repo: EntityRepository<any>) {}
+
+  @CreateRequestContext<TestClass5>(t => t.repo)
+  foo() {
+    //
+  }
+
+}
+
 describe('decorators', () => {
 
   const lookupPathFromDecorator = jest.spyOn(Utils, 'lookupPathFromDecorator');
@@ -173,7 +197,9 @@ describe('decorators', () => {
   });
 
   test('CreateRequestContext', async () => {
-    const orm = Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: jest.fn() } } });
+    const em = Object.create(EntityManager.prototype, { name: { value: 'default' }, fork: { value: jest.fn() } });
+    const repo = Object.create(EntityRepository.prototype, { em: { value: em } });
+    const orm = Object.create(MikroORM.prototype, { em: { value: em } });
     const test = new TestClass(orm);
 
     const ret1 = await test.asyncMethodReturnsValue();
@@ -193,7 +219,7 @@ describe('decorators', () => {
     const ret6 = await test2.methodWithCallback();
     expect(ret6).toBeUndefined();
 
-    const err = '@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@CreateRequestContext(() => orm)`';
+    const err = '@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, `em: EntityManager` property, or with a callback parameter like `@CreateRequestContext(() => orm)` that returns one of those types. The parameter will contain a reference to current `this`. Returning an EntityRepository from it is also supported.';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
     const ret7 = await test.methodWithAsyncCallback();
     expect(ret7).toEqual(TEST_VALUE);
@@ -203,6 +229,14 @@ describe('decorators', () => {
     const test3 = new TestClass3(ASYNC_ORM);
     const ret9 = await test3.methodWithAsyncOrmPropertyAndReturnsNothing();
     expect(ret9).toBeUndefined();
+
+    const test4 = new TestClass4(em);
+    const ret10 = await test4.foo();
+    expect(ret10).toBeUndefined();
+
+    const test5 = new TestClass5(repo);
+    const ret11 = await test5.foo();
+    expect(ret11).toBeUndefined();
   });
 
   test('EnsureRequestContext', async () => {
@@ -226,7 +260,7 @@ describe('decorators', () => {
     const ret6 = await test2.methodWithCallback();
     expect(ret6).toBeUndefined();
 
-    const err = '@EnsureRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@EnsureRequestContext(() => orm)`';
+    const err = '@EnsureRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, `em: EntityManager` property, or with a callback parameter like `@EnsureRequestContext(() => orm)` that returns one of those types. The parameter will contain a reference to current `this`. Returning an EntityRepository from it is also supported.';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
 
     await RequestContext.create(orm.em, async () => {

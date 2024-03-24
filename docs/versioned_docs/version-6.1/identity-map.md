@@ -109,18 +109,16 @@ app.use((req, res, next) => {
 
 > Before v6, `@CreateRequestContext()` was called `@UseRequestContext()`.
 
-Middlewares are executed only for regular HTTP request handlers, what if we need a request scoped method outside that? One example of that is queue handlers or scheduled tasks (e.g. CRON jobs).
+Middlewares are executed only for regular HTTP request handlers, what if you need a request scoped method outside that? One example of that is queue handlers or scheduled tasks (e.g. CRON jobs).
 
-We can use the `@CreateRequestContext()` decorator. It requires us to first inject the `MikroORM` instance to current context, it will be then used to create the context for us. Under the hood, the decorator will register new request context for our method and execute it inside the context.
-
-This decorator will wrap the underlying method in `RequestContext.create()` call. Every call to such method will create new context (new `EntityManager` fork) which will be used inside.
+In those cases, you can use the `@CreateRequestContext()` decorator. It requires you to first inject the `MikroORM` instance (or an `EntityManager` or some `EntityRepository`) to current context, it will be then used to create a new context for us. Under the hood, the decorator will register the new request context for our method and execute it inside it (vi `RequestContext.create()`).
 
 > `@CreateRequestContext()` should be used only on the top level methods. It should not be nested - a method decorated with it should not call another method that is also decorated with it.
 
 ```ts
-@Injectable()
 export class MyService {
 
+  // or `private readonly em: EntityManager`
   constructor(private readonly orm: MikroORM) { }
 
   @CreateRequestContext()
@@ -131,14 +129,29 @@ export class MyService {
 }
 ```
 
-Alternatively we can provide a callback that will return the `MikroORM` instance.
+Alternatively you can provide a callback that will return one of `MikroORM`, `EntityManager` or `EntityRepository` instance.
 
 ```ts
 import { DI } from '..';
 
 export class MyService {
 
-  @CreateRequestContext(() => DI.orm)
+  @CreateRequestContext(() => DI.em)
+  async doSomething() {
+    // this will be executed in a separate context
+  }
+
+}
+```
+
+The callback will receive current `this` in the first parameter. You can use it to link the `EntityManager` or `EntityRepository` too:
+
+```ts
+export class MyService {
+
+  constructor(private readonly userRepository: EntityRepository<User>) { }
+
+  @CreateRequestContext<MyService>(t => t.userRepository)
   async doSomething() {
     // this will be executed in a separate context
   }
