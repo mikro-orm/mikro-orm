@@ -1,5 +1,6 @@
-import { BigIntType, type Dictionary, EnumType, Type, Utils } from '@mikro-orm/core';
+import { BigIntType, EnumType, Type, Utils, type Dictionary } from '@mikro-orm/core';
 import {
+  SchemaHelper,
   type AbstractSqlConnection,
   type CheckDef,
   type Column,
@@ -8,7 +9,6 @@ import {
   type ForeignKey,
   type IndexDef,
   type Knex,
-  SchemaHelper,
   type Table,
   type TableDifference,
 } from '@mikro-orm/knex';
@@ -209,17 +209,17 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
     const sql = `select nsp1.nspname schema_name, cls1.relname table_name, nsp2.nspname referenced_schema_name,
       cls2.relname referenced_table_name, a.attname column_name, af.attname referenced_column_name, conname constraint_name,
-      confupdtype update_rule, confdeltype delete_rule,*
+      confupdtype update_rule, confdeltype delete_rule, array_position(con.conkey,a.attnum) as ord
       from pg_attribute a
       join pg_constraint con on con.conrelid = a.attrelid AND a.attnum = ANY (con.conkey)
-      join pg_attribute af on af.attnum = ANY (con.confkey) AND af.attrelid = con.confrelid
+      join pg_attribute af on af.attnum = con.confkey[array_position(con.conkey,a.attnum)] AND af.attrelid = con.confrelid
       join pg_namespace nsp1 on nsp1.oid = con.connamespace
       join pg_class cls1 on cls1.oid = con.conrelid
       join pg_class cls2 on cls2.oid = confrelid
       join pg_namespace nsp2 on nsp2.oid = cls2.relnamespace
       where (${tables.map(t => `(cls1.relname = '${t.table_name}' and nsp1.nspname = '${t.schema_name}')`).join(' or ')})
       and confrelid > 0
-      order by nsp1.nspname, cls1.relname, constraint_name`;
+      order by nsp1.nspname, cls1.relname, constraint_name, ord`;
 
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;

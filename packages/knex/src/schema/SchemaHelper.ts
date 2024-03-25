@@ -1,14 +1,14 @@
+import { BigIntType, EnumType, RawQueryFragment, Utils, type Connection, type Dictionary } from '@mikro-orm/core';
 import type { Knex } from 'knex';
-import { BigIntType, EnumType, Utils, type Connection, type Dictionary, RawQueryFragment } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 import type { CheckDef, Column, IndexDef, Table, TableDifference } from '../typings';
-import type { DatabaseTable } from './DatabaseTable';
 import type { DatabaseSchema } from './DatabaseSchema';
+import type { DatabaseTable } from './DatabaseTable';
 
 export abstract class SchemaHelper {
 
-  constructor(protected readonly platform: AbstractSqlPlatform) {}
+  constructor(protected readonly platform: AbstractSqlPlatform) { }
 
   getSchemaBeginning(charset: string): string {
     return `${this.disableForeignKeysSQL()}\n\n`;
@@ -245,13 +245,8 @@ export abstract class SchemaHelper {
   mapForeignKeys(fks: any[], tableName: string, schemaName?: string): Dictionary {
     return fks.reduce((ret, fk: any) => {
       if (ret[fk.constraint_name]) {
-        if (!ret[fk.constraint_name].columnNames.includes(fk.column_name)) {
-          ret[fk.constraint_name].columnNames.push(fk.column_name);
-        }
-
-        if (!ret[fk.constraint_name].referencedColumnNames.includes(fk.referenced_column_name)) {
-          ret[fk.constraint_name].referencedColumnNames.push(fk.referenced_column_name);
-        }
+        ret[fk.constraint_name].columnNames.push(fk.column_name);
+        ret[fk.constraint_name].referencedColumnNames.push(fk.referenced_column_name);
       } else {
         ret[fk.constraint_name] = {
           columnNames: [fk.column_name],
