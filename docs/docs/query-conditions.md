@@ -69,7 +69,7 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$contains`    | @>               | (postgres only)                                                                             |
 | `$contained`   | \<@              | (postgres only)                                                                             |
 | `$hasKey`      | ?                | (postgres only)                                                                             |
-| `$hasSomeKeys` | ?|               | (postgres only)                                                                             |
+| `$hasSomeKeys` | ?&#x7c;          | (postgres only)                                                                             |
 | `$hasKeys`     | ?&               | (postgres only)                                                                             |
 
 ### Logical
