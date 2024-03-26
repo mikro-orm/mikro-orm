@@ -2137,7 +2137,7 @@ describe('EntityManagerMySql', () => {
   test('insert with raw sql fragment', async () => {
     const author = orm.em.create(Author2, { id: 1, name: 'name', email: 'email', age: raw('100 + 20 + 3') });
     const mock = mockLogger(orm, ['query', 'query-params']);
-    expect(() => author.age!++).toThrow();
+    expect(() => (author.age as number)++).toThrow();
     expect(() => JSON.stringify(author)).toThrow();
     await orm.em.flush();
 
