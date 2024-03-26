@@ -778,6 +778,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
       return cached.data;
     }
 
+    if (!this.finalized && method === 'get') {
+      this.limit(1);
+    }
+
     const write = method === 'run' || !this.platform.getConfig().get('preferReadReplicas');
     const type = this.connectionType || (write ? 'write' : 'read');
     const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context, this.loggerContext);
@@ -863,6 +867,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Executes the query, returning the first result or null
    */
   async getSingleResult(): Promise<T | null> {
+    if (!this.finalized) {
+      this.limit(1);
+    }
+
     const [res] = await this.getResultList(1);
     return res || null;
   }
