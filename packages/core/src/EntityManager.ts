@@ -1536,7 +1536,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * symbol to omit some properties from this check without making them optional. Alternatively, use `partial: true`
    * in the options to disable the strict checks for required properties. This option has no effect on runtime.
    */
-  create<Entity extends object>(entityName: EntityName<Entity>, data: RequiredEntityData<Entity>, options?: CreateOptions): Entity;
+  create<Entity extends object, Convert extends boolean = false>(entityName: EntityName<Entity>, data: RequiredEntityData<Entity, never, Convert>, options?: CreateOptions<Convert>): Entity;
 
   /**
    * Creates new instance of given entity and populates it with given data.
@@ -1550,7 +1550,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * symbol to omit some properties from this check without making them optional. Alternatively, use `partial: true`
    * in the options to disable the strict checks for required properties. This option has no effect on runtime.
    */
-  create<Entity extends object>(entityName: EntityName<Entity>, data: EntityData<Entity>, options: CreateOptions & { partial: true }): Entity;
+  create<Entity extends object, Convert extends boolean = false>(entityName: EntityName<Entity>, data: EntityData<Entity, Convert>, options: CreateOptions<Convert> & { partial: true }): Entity;
 
   /**
    * Creates new instance of given entity and populates it with given data.
@@ -1564,7 +1564,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    symbol to omit some properties from this check without making them optional. Alternatively, use `partial: true`
    in the options to disable the strict checks for required properties. This option has no effect on runtime.
    */
-  create<Entity extends object>(entityName: EntityName<Entity>, data: RequiredEntityData<Entity>, options: CreateOptions = {}): Entity {
+  create<Entity extends object, Convert extends boolean = false>(entityName: EntityName<Entity>, data: RequiredEntityData<Entity, never, Convert>, options: CreateOptions<Convert> = {}): Entity {
     const em = this.getContext();
     options.schema ??= em._schema;
     const entity = em.entityFactory.create(entityName, data as EntityData<Entity>, {
@@ -1587,8 +1587,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   assign<
     Entity extends object,
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
-    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
-  >(entity: Entity | Partial<Entity>, data: Data & IsSubset<EntityData<Naked>, Data>, options: AssignOptions = {}): MergeSelected<Entity, Naked, keyof Data & string> {
+    Convert extends boolean = false,
+    Data extends EntityData<Naked, Convert> | Partial<EntityDTO<Naked>> = EntityData<Naked, Convert> | Partial<EntityDTO<Naked>>,
+  >(entity: Entity | Partial<Entity>, data: Data & IsSubset<EntityData<Naked, Convert>, Data>, options: AssignOptions<Convert> = {}): MergeSelected<Entity, Naked, keyof Data & string> {
     return EntityAssigner.assign(entity, data as any, { em: this.getContext(), ...options }) as any;
   }
 
@@ -2291,7 +2292,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
 }
 
-export interface CreateOptions {
+export interface CreateOptions<Convert extends boolean> {
   /** creates a managed entity instance instead, bypassing the constructor call */
   managed?: boolean;
   /** create entity in a specific schema - alternatively, use `wrap(entity).setSchema()` */
@@ -2300,6 +2301,8 @@ export interface CreateOptions {
   persist?: boolean;
   /** this option disables the strict typing which requires all mandatory properties to have value, it has no effect on runtime */
   partial?: boolean;
+  /** convert raw database values based on mapped types (by default, already converted values are expected) */
+  convertCustomTypes?: Convert;
 }
 
 export interface MergeOptions {

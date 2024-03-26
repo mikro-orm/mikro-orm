@@ -107,6 +107,53 @@ If your type implementation is stateful, e.g. if you want the type to behave dif
 born?: Date;
 ```
 
+## Mapping to objects and type-safety
+
+When your custom type maps a value to an object, it might break the internal types like in `em.create()`, as there is no easy way to detect whether some object type is an entity or something else. In those cases, it can be handy to use `IType` to provide more information about your type on the type-level. It has three arguments, the first represents the runtime type, the second one is the raw value type, and the last optional argument allows overriding the serialized type (which defaults to the raw value type).
+
+Consider the following custom type:
+
+```ts
+class MyClass {
+  constructor(private value: string) {}
+}
+
+class MyType extends Type<MyClass, string> {
+
+  convertToDatabaseValue(value: MyClass): string {
+    return value.value;
+  }
+
+  convertToJSValue(value: string): MyClass {
+    return new MyClass(value);
+  }
+
+}
+```
+
+Now let's use it together with the `IType`:
+
+```ts
+@Entity()
+class MyEntity {
+
+  @Property({ type: MyType })
+  // highlight-next-line
+  foo?: IType<MyClass, string>;
+
+}
+```
+
+This will make the `em.create()` properly disallow values other than MyClass, as well as convert the value type to `string` when serializing. Without the `IType`, there would be no error with `em.create()` and the serialization would result in `MyClass` on type level (but would be a `string` value on runtime):
+
+```ts
+// this will fail but wouldn't without the `IType`
+const entity = em.create(MyEntity, { foo: 'bar' });
+
+// serialized value is now correctly typed to `string`
+const object = wrap(e).toObject(); // `{ foo: string }`
+```
+
 ## Advanced example - PointType and WKT
 
 In this example we will combine mapping values via database as well as during runtime.

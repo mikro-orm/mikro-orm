@@ -254,7 +254,7 @@ export class EntityRepository<Entity extends object> {
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<Entity>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
-  create(data: RequiredEntityData<Entity>, options?: CreateOptions): Entity {
+  create<Convert extends boolean = false>(data: RequiredEntityData<Entity, never, Convert>, options?: CreateOptions<Convert>): Entity {
     return this.getEntityManager().create(this.entityName, data, options);
   }
 
@@ -264,8 +264,9 @@ export class EntityRepository<Entity extends object> {
   assign<
     Ent extends EntityType<Entity>,
     Naked extends FromEntityType<Ent> = FromEntityType<Ent>,
-    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
-  >(entity: Ent | Partial<Ent>, data: Data & IsSubset<EntityData<Naked>, Data>, options?: AssignOptions): MergeSelected<Ent, Naked, keyof Data & string> {
+    Convert extends boolean = false,
+    Data extends EntityData<Naked, Convert> | Partial<EntityDTO<Naked>> = EntityData<Naked, Convert> | Partial<EntityDTO<Naked>>,
+  >(entity: Ent | Partial<Ent>, data: Data & IsSubset<EntityData<Naked, Convert>, Data>, options?: AssignOptions<Convert>): MergeSelected<Ent, Naked, keyof Data & string> {
     this.validateRepositoryType(entity as Entity, 'assign');
     return this.getEntityManager().assign(entity, data as any, options) as any;
   }

@@ -8,6 +8,12 @@ export interface TransformContext {
   mode?: 'hydration' | 'query' | 'query-data' | 'discovery' | 'serialization';
 }
 
+export type IType<Runtime, Raw, Serialized = Raw> = Runtime & {
+  __raw?: Raw;
+  __runtime?: Runtime;
+  __serialized?: Serialized;
+};
+
 export abstract class Type<JSType = string, DBType = JSType> {
 
   private static readonly types = new Map();

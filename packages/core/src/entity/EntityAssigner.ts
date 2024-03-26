@@ -30,9 +30,10 @@ export class EntityAssigner {
   static assign<
     Entity extends object,
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
-    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
-  >(entity: Entity, data: Data & IsSubset<EntityData<Naked>, Data>, options: AssignOptions = {}): MergeSelected<Entity, Naked, keyof Data & string> {
-    let opts = options as unknown as InternalAssignOptions;
+    Convert extends boolean = false,
+    Data extends EntityData<Naked, Convert> | Partial<EntityDTO<Naked>> = EntityData<Naked, Convert> | Partial<EntityDTO<Naked>>,
+  >(entity: Entity, data: Data & IsSubset<EntityData<Naked, Convert>, Data>, options: AssignOptions<Convert> = {}): MergeSelected<Entity, Naked, keyof Data & string> {
+    let opts = options as unknown as InternalAssignOptions<Convert>;
 
     if (opts.visited?.has(entity)) {
       return entity as any;
@@ -63,7 +64,7 @@ export class EntityAssigner {
     return entity as any;
   }
 
-  private static assignProperty<T extends object>(entity: T, propName: string, props: Dictionary<EntityProperty<T>>, data: Dictionary, options: InternalAssignOptions) {
+  private static assignProperty<T extends object, C extends boolean>(entity: T, propName: string, props: Dictionary<EntityProperty<T>>, data: Dictionary, options: InternalAssignOptions<C>) {
     if (options.onlyProperties && !(propName in props)) {
       return;
     }
@@ -91,7 +92,7 @@ export class EntityAssigner {
     }
 
     if (prop && Utils.isCollection(entity[prop.name])) {
-      return EntityAssigner.assignCollection<T>(entity, entity[prop.name] as unknown as Collection<AnyEntity>, value, prop, options.em, options);
+      return EntityAssigner.assignCollection<T, any, C>(entity, entity[prop.name] as unknown as Collection<AnyEntity>, value, prop, options.em, options);
     }
 
     const customType = prop?.customType;
@@ -120,7 +121,7 @@ export class EntityAssigner {
             }
           }
 
-          return EntityAssigner.assignReference<T>(entity, value, prop, options.em!, options);
+          return EntityAssigner.assignReference<T, C>(entity, value, prop, options.em!, options);
         }
 
         if (wrapped.__managed && wrap(unwrappedEntity).isInitialized()) {
@@ -128,7 +129,7 @@ export class EntityAssigner {
         }
       }
 
-      return EntityAssigner.assignReference<T>(entity, value, prop, options.em, options);
+      return EntityAssigner.assignReference<T, C>(entity, value, prop, options.em, options);
     }
 
     if (prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType) && (prop.setter || !prop.getter)) {
@@ -180,7 +181,7 @@ export class EntityAssigner {
     return true;
   }
 
-  private static assignReference<T extends object>(entity: T, value: any, prop: EntityProperty<T>, em: EntityManager | undefined, options: AssignOptions): void {
+  private static assignReference<T extends object, C extends boolean>(entity: T, value: any, prop: EntityProperty<T>, em: EntityManager | undefined, options: AssignOptions<C>): void {
     if (Utils.isEntity(value, true)) {
       entity[prop.name] = Reference.wrapReference(value as T, prop) as EntityValue<T>;
     } else if (Utils.isPrimaryKey(value, true) && EntityAssigner.validateEM(em)) {
@@ -197,7 +198,7 @@ export class EntityAssigner {
     EntityAssigner.autoWireOneToOne(prop, entity);
   }
 
-  private static assignCollection<T extends object, U extends object = AnyEntity>(entity: T, collection: Collection<U>, value: unknown, prop: EntityProperty, em: EntityManager | undefined, options: AssignOptions): void {
+  private static assignCollection<T extends object, U extends object = AnyEntity, C extends boolean = false>(entity: T, collection: Collection<U>, value: unknown, prop: EntityProperty, em: EntityManager | undefined, options: AssignOptions<C>): void {
     const invalid: any[] = [];
     const items = Utils.asArray(value).map((item: any, idx) => {
       // try to propagate missing owning side reference to the payload first
@@ -219,7 +220,7 @@ export class EntityAssigner {
           }
         }
 
-        return this.createCollectionItem<U>(item, em, prop, invalid, options);
+        return this.createCollectionItem<U, C>(item, em, prop, invalid, options);
       }
 
       /* istanbul ignore next */
@@ -227,7 +228,7 @@ export class EntityAssigner {
         return EntityAssigner.assign(collection[idx], item, options);
       }
 
-      return this.createCollectionItem<U>(item, em, prop, invalid, options);
+      return this.createCollectionItem<U, C>(item, em, prop, invalid, options);
     });
 
     if (invalid.length > 0) {
@@ -242,7 +243,7 @@ export class EntityAssigner {
     }
   }
 
-  private static assignEmbeddable<T extends object>(entity: T, value: any, prop: EntityProperty<T>, em: EntityManager | undefined, options: InternalAssignOptions): void {
+  private static assignEmbeddable<T extends object, C extends boolean>(entity: T, value: any, prop: EntityProperty<T>, em: EntityManager | undefined, options: InternalAssignOptions<C>): void {
     const propName = prop.embedded ? prop.embedded[1] : prop.name;
 
     if (value == null) {
@@ -274,7 +275,7 @@ export class EntityAssigner {
     });
   }
 
-  private static createCollectionItem<T extends object>(item: any, em: EntityManager | undefined, prop: EntityProperty, invalid: any[], options: AssignOptions): T {
+  private static createCollectionItem<T extends object, C extends boolean>(item: any, em: EntityManager | undefined, prop: EntityProperty, invalid: any[], options: AssignOptions<C>): T {
     if (Utils.isEntity<T>(item)) {
       return item;
     }
@@ -288,7 +289,7 @@ export class EntityAssigner {
     }
 
     if (Utils.isPlainObject(item) && EntityAssigner.validateEM(em)) {
-      return em.create<T>(prop.type, item as RequiredEntityData<T>, options);
+      return em.create<T, C>(prop.type, item as RequiredEntityData<T, never, C>, options as AssignOptions<C>);
     }
 
     invalid.push(item);
@@ -300,19 +301,19 @@ export class EntityAssigner {
 
 export const assign = EntityAssigner.assign;
 
-export interface AssignOptions {
+export interface AssignOptions<Convert extends boolean> {
   updateNestedEntities?: boolean;
   updateByPrimaryKey?: boolean;
   onlyProperties?: boolean;
   onlyOwnProperties?: boolean;
-  convertCustomTypes?: boolean;
+  convertCustomTypes?: Convert;
   mergeObjectProperties?: boolean;
   merge?: boolean;
   schema?: string;
   em?: EntityManager;
 }
 
-interface InternalAssignOptions extends AssignOptions {
+interface InternalAssignOptions<Convert extends boolean> extends AssignOptions<Convert> {
   visited: Set<AnyEntity>;
   platform: Platform;
 }
