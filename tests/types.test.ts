@@ -1,4 +1,4 @@
-import { Constructor, EntityRepository, EntitySchema, OptionalProps, ref, wrap } from '@mikro-orm/core';
+import { Constructor, EntityRepository, EntitySchema, OptionalProps, IType, ref, wrap } from '@mikro-orm/core';
 import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
@@ -810,7 +810,7 @@ describe('check typings', () => {
       status?: string;
     }
 
-    abstract class AbstractRepository<
+    class AbstractRepository<
       Entity extends AbstractEntity
     > extends EntityRepository<Entity> {
 
@@ -853,6 +853,36 @@ describe('check typings', () => {
     const dto1: UserDTO = { id: 1, name: null };
     // @ts-expect-error
     const dto2: UserDTO = { id: 1, name: undefined };
+  });
+
+  test('custom types with IType', async () => {
+    const myClassSymbol = Symbol('MyClass');
+
+    interface MyClass {
+      [myClassSymbol]: true;
+    }
+
+    class MyEntity {
+
+      myClass!: IType<MyClass, string>;
+
+    }
+
+    function create<T>(type: EntityName<T>, data: EntityData<T> | RequiredEntityData<T>) {
+      //
+    }
+
+    create(MyEntity, { myClass: {} as MyClass });
+    // @ts-expect-error
+    create(MyEntity, { myClass: '...' });
+    // @ts-expect-error
+    create(MyEntity, { myClass: 123 });
+    // @ts-expect-error
+    create(MyEntity, { myClass: true });
+
+    const o = {} as EntityDTO<MyEntity>;
+    const myClass = o.myClass;
+    assert<IsExact<typeof myClass, string>>(true);
   });
 
 });

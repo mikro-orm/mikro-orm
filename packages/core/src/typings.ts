@@ -184,8 +184,9 @@ export interface IWrappedEntity<Entity extends object> {
   serialize<Hint extends string = never, Exclude extends string = never>(options?: SerializeOptions<Entity, Hint, Exclude>): EntityDTO<Loaded<Entity, Hint>>;
   assign<
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
-    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
-  >(data: Data & IsSubset<EntityData<Naked>, Data>, options?: AssignOptions): MergeSelected<Entity, Naked, keyof Data & string>;
+    Convert extends boolean = false,
+    Data extends EntityData<Naked, Convert> | Partial<EntityDTO<Naked>> = EntityData<Naked, Convert> | Partial<EntityDTO<Naked>>,
+  >(data: Data & IsSubset<EntityData<Naked, Convert>, Data>, options?: AssignOptions<Convert>): MergeSelected<Entity, Naked, keyof Data & string>;
   getSchema(): string | undefined;
   setSchema(schema?: string): void;
 }
@@ -234,57 +235,61 @@ export type EntityName<T> = string | EntityClass<T> | EntitySchema<T, any> | { n
 export type GetRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = Entity[typeof EntityRepositoryType] extends EntityRepository<Entity> | undefined ? NonNullable<Entity[typeof EntityRepositoryType]> : Fallback;
 
 export type EntityDataPropValue<T> = T | Primary<T>;
-type ExpandEntityProp<T> = T extends Record<string, any>
-  ? { [K in keyof T as CleanKeys<T, K>]?: EntityDataProp<ExpandProperty<T[K]>> | EntityDataPropValue<ExpandProperty<T[K]>> | null } | EntityDataPropValue<ExpandProperty<T>>
+type ExpandEntityProp<T, C extends boolean = false> = T extends Record<string, any>
+  ? { [K in keyof T as CleanKeys<T, K>]?: EntityDataProp<ExpandProperty<T[K]>, C> | EntityDataPropValue<ExpandProperty<T[K]>> | null } | EntityDataPropValue<ExpandProperty<T>>
   : T;
-type ExpandRequiredEntityProp<T, I> = T extends Record<string, any>
-  ? ExpandRequiredEntityPropObject<T, I> | EntityDataPropValue<ExpandProperty<T>>
+type ExpandRequiredEntityProp<T, I, C extends boolean> = T extends Record<string, any>
+  ? ExpandRequiredEntityPropObject<T, I, C> | EntityDataPropValue<ExpandProperty<T>>
   : T;
 
-type ExpandRequiredEntityPropObject<T, I = never> = {
-  [K in keyof T as RequiredKeys<T, K, I>]: RequiredEntityDataProp<ExpandProperty<T[K]>, T> | EntityDataPropValue<ExpandProperty<T[K]>>;
+type ExpandRequiredEntityPropObject<T, I = never, C extends boolean = false> = {
+  [K in keyof T as RequiredKeys<T, K, I>]: RequiredEntityDataProp<ExpandProperty<T[K]>, T, C> | EntityDataPropValue<ExpandProperty<T[K]>>;
 } & {
-  [K in keyof T as OptionalKeys<T, K, I>]?: RequiredEntityDataProp<ExpandProperty<T[K]>, T> | EntityDataPropValue<ExpandProperty<T[K]>> | null | undefined;
+  [K in keyof T as OptionalKeys<T, K, I>]?: RequiredEntityDataProp<ExpandProperty<T[K]>, T, C> | EntityDataPropValue<ExpandProperty<T[K]>> | null | undefined;
 };
 
-export type EntityDataProp<T> = T extends Date
+export type EntityDataProp<T, C extends boolean> = T extends Date
   ? string | Date
   : T extends Scalar
     ? T
-    : T extends Reference<infer U>
-      ? EntityDataNested<U>
-      : T extends ScalarReference<infer U>
-        ? EntityDataProp<U>
-        : T extends Collection<infer U, any>
+    : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
+      ? (C extends true ? Raw : Runtime)
+      : T extends Reference<infer U>
+        ? EntityDataNested<U>
+        : T extends ScalarReference<infer U>
+          ? EntityDataProp<U, C>
+          : T extends Collection<infer U, any>
             ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
             : T extends readonly (infer U)[]
-                ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
-                : EntityDataNested<T>;
+              ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
+              : EntityDataNested<T>;
 
-export type RequiredEntityDataProp<T, O> = T extends Date
+export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
   ? string | Date
   : T extends Scalar
     ? T
-    : T extends Reference<infer U>
-      ? RequiredEntityDataNested<U, O>
-      : T extends ScalarReference<infer U>
-        ? RequiredEntityDataProp<U, O>
-        : T extends Collection<infer U, any>
-          ? U | U[] | RequiredEntityDataNested<U, O> | RequiredEntityDataNested<U, O>[]
-          : T extends readonly (infer U)[]
-            ? U | U[] | RequiredEntityDataNested<U, O> | RequiredEntityDataNested<U, O>[]
-            : RequiredEntityDataNested<T, O>;
+    : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
+      ? (C extends true ? Raw : Runtime)
+      : T extends Reference<infer U>
+        ? RequiredEntityDataNested<U, O, C>
+        : T extends ScalarReference<infer U>
+          ? RequiredEntityDataProp<U, O, C>
+          : T extends Collection<infer U, any>
+            ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
+            : T extends readonly (infer U)[]
+              ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
+              : RequiredEntityDataNested<T, O, C>;
 
 export type EntityDataNested<T> = T extends undefined
   ? never
   : T extends any[]
     ? Readonly<T>
     : EntityData<T> | ExpandEntityProp<T>;
-type EntityDataItem<T> = T | EntityDataProp<T> | null;
+type EntityDataItem<T, C extends boolean> = T | EntityDataProp<T, C> | null;
 
-export type RequiredEntityDataNested<T, O> = T extends any[]
+export type RequiredEntityDataNested<T, O, C extends boolean> = T extends any[]
   ? Readonly<T>
-  : RequiredEntityData<T, O> | ExpandRequiredEntityProp<T, O>;
+  : RequiredEntityData<T, O> | ExpandRequiredEntityProp<T, O, C>;
 
 type ExplicitlyOptionalProps<T> = (T extends { [OptionalProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Opt ? K : never }[keyof T] & {});
 type NullableKeys<T, V = null> = { [K in keyof T]: V extends T[K] ? K : never }[keyof T];
@@ -299,11 +304,11 @@ type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
       : false;
 type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? CleanKeys<T, K> : never;
 type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : CleanKeys<T, K>;
-export type EntityData<T> = { [K in EntityKey<T>]?: EntityDataItem<T[K]> };
-export type RequiredEntityData<T, I = never> = {
-  [K in keyof T as RequiredKeys<T, K, I>]: T[K] | RequiredEntityDataProp<T[K], T> | Primary<T[K]>
+export type EntityData<T, C extends boolean = false> = { [K in EntityKey<T>]?: EntityDataItem<T[K], C> };
+export type RequiredEntityData<T, I = never, C extends boolean = false> = {
+  [K in keyof T as RequiredKeys<T, K, I>]: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]>
 } & {
-  [K in keyof T as OptionalKeys<T, K, I>]?: T[K] | RequiredEntityDataProp<T[K], T> | Primary<T[K]> | null
+  [K in keyof T as OptionalKeys<T, K, I>]?: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]> | null
 };
 export type EntityDictionary<T> = EntityData<T> & Record<any, any>;
 
@@ -347,21 +352,23 @@ type PrimaryOrObject<T, U, C extends TypeConfig> =
 
 export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
   ? T
-  : T extends LoadedReference<infer U>
-    ? EntityDTO<U, C>
-    : T extends Reference<infer U>
-      ? PrimaryOrObject<E, U, C>
-      : T extends ScalarReference<infer U>
-        ? U
-        : T extends { getItems(check?: boolean): infer U }
-          ? (U extends readonly (infer V)[] ? EntityDTO<V, C>[] : EntityDTO<U, C>)
-          : T extends { $: infer U }
+  : T extends { __serialized?: infer U }
+    ? U
+    : T extends LoadedReference<infer U>
+      ? EntityDTO<U, C>
+      : T extends Reference<infer U>
+        ? PrimaryOrObject<E, U, C>
+        : T extends ScalarReference<infer U>
+          ? U
+          : T extends { getItems(check?: boolean): infer U }
             ? (U extends readonly (infer V)[] ? EntityDTO<V, C>[] : EntityDTO<U, C>)
-            : T extends readonly (infer U)[]
-              ? (T extends readonly [infer U, ...infer V] ? T : U[])
-              : T extends Relation<T>
-                ? EntityDTO<T, C>
-                : T;
+            : T extends { $: infer U }
+              ? (U extends readonly (infer V)[] ? EntityDTO<V, C>[] : EntityDTO<U, C>)
+              : T extends readonly (infer U)[]
+                ? (T extends readonly [infer U, ...infer V] ? T : U[])
+                : T extends Relation<T>
+                  ? EntityDTO<T, C>
+                  : T;
 
 // ideally this should also mark not populated collections as optional, but that would be breaking
 type DTOProbablyOptionalProps<T> = Defined<NullableKeys<T, undefined>>;
