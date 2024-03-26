@@ -771,15 +771,15 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.connectionType = 'write';
     }
 
+    if (!this.finalized && method === 'get' && this.type === QueryType.SELECT) {
+      this.limit(1);
+    }
+
     const query = this.toQuery()._sql;
     const cached = await this.em?.tryCache<T, U>(this.mainAlias.entityName, this._cache, ['qb.execute', query.sql, query.bindings, method]);
 
     if (cached?.data) {
       return cached.data;
-    }
-
-    if (!this.finalized && method === 'get') {
-      this.limit(1);
     }
 
     const write = method === 'run' || !this.platform.getConfig().get('preferReadReplicas');
