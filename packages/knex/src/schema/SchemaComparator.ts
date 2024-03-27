@@ -9,7 +9,6 @@ import {
   type Dictionary,
   type EntityProperty,
   type Logger,
-  DeferMode,
 } from '@mikro-orm/core';
 import type { Column, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
@@ -435,7 +434,7 @@ export class SchemaComparator {
       return true;
     }
 
-    if ((key1.deferMode ?? DeferMode.NOT_DEFERRABLE) !== (key2.deferMode ?? DeferMode.NOT_DEFERRABLE)) {
+    if (key1.deferMode !== key2.deferMode) {
       return true;
     }
 

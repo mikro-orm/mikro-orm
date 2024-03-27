@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { DeferMode, Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'author' })
@@ -96,6 +96,39 @@ export class Book3 {
 
 }
 
+@Entity({ tableName: 'book' })
+export class Book4 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => Author1)
+  author1!: Author1;
+
+}
+
+@Entity({ tableName: 'book' })
+export class Book41 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => Author1, { deferMode: DeferMode.INITIALLY_DEFERRED })
+  author1!: Author1;
+
+}
+
+@Entity({ tableName: 'book' })
+export class Book42 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => Author1, { deferMode: DeferMode.INITIALLY_IMMEDIATE })
+  author1!: Author1;
+
+}
+
 describe('dropping tables with FKs in postgres', () => {
 
   test('schema generator removes stale FKs on target table dropping 1', async () => {
@@ -149,6 +182,42 @@ describe('dropping tables with FKs in postgres', () => {
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);
+
+    await orm.close(true);
+  });
+
+});
+
+describe('updating tables with FKs in postgres', () => {
+
+  test('schema generator updates foreign keys on deferrable change', async () => {
+    const orm = await MikroORM.init({
+      entities: [Author1, Book3],
+      dbName: `mikro_orm_test_fk_diffing`,
+      driver: PostgreSqlDriver,
+    });
+    await orm.schema.ensureDatabase();
+    await orm.schema.execute('drop table if exists author cascade');
+    await orm.schema.execute('drop table if exists book cascade');
+    await orm.schema.createSchema();
+
+    orm.getMetadata().reset('Book3');
+    orm.discoverEntity([Book41]);
+    const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff1).toMatchSnapshot();
+    await orm.schema.execute(diff1);
+
+    orm.getMetadata().reset('Book41');
+    orm.discoverEntity([Book42]);
+    const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff2).toMatchSnapshot();
+    await orm.schema.execute(diff2);
+
+    orm.getMetadata().reset('Book42');
+    orm.discoverEntity([Book4]);
+    const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff3).toMatchSnapshot();
+    await orm.schema.execute(diff3);
 
     await orm.close(true);
   });
