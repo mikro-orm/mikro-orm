@@ -20,7 +20,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
   static fromWrongPropertyType(entity: AnyEntity, property: string, expectedType: string, givenType: string, givenValue: string): ValidationError {
     const entityName = entity.constructor.name;
-    const msg = `Trying to set ${entityName}.${property} of type '${expectedType}' to '${givenValue}' of type '${givenType}'`;
+    const msg = `Trying to set ${entityName}.${property} of type '${expectedType}' to ${inspect(givenValue)} of type '${givenType}'`;
 
     return new ValidationError(msg);
   }

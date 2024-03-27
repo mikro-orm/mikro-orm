@@ -667,7 +667,9 @@ export class QueryBuilderHelper {
   }
 
   finalize(type: QueryType, qb: Knex.QueryBuilder, meta?: EntityMetadata, data?: Dictionary, returning?: Field<any>[]): void {
-    if (!meta || !data || !this.platform.usesReturningStatement()) {
+    const usesReturningStatement = this.platform.usesReturningStatement() || this.platform.usesOutputStatement();
+
+    if (!meta || !data || !usesReturningStatement) {
       return;
     }
 

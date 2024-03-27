@@ -1,7 +1,7 @@
 import type { ReferenceOptions } from './Property';
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import type { EntityName, EntityProperty, AnyEntity, EntityKey, FilterQuery } from '../typings';
+import type { EntityName, EntityProperty, AnyEntity, EntityKey, FilterQuery, AnyString } from '../typings';
 import { ReferenceKind, type QueryOrderMap } from '../enums';
 
 export function ManyToMany<T extends object, O>(
@@ -36,4 +36,6 @@ export interface ManyToManyOptions<Owner, Target> extends ReferenceOptions<Owner
   inverseJoinColumns?: string[];
   referenceColumnName?: string;
   referencedColumnNames?: string[];
+  deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
 }

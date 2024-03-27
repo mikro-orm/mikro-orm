@@ -53,6 +53,14 @@ services:
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
 
+  mssql:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    ports:
+      - "1433:1433"
+    environment:
+      MSSQL_SA_PASSWORD: Root.Root
+      ACCEPT_EULA: 1
+
 volumes:
   mysql8:
     driver_opts:

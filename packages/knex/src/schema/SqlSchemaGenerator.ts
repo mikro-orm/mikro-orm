@@ -6,6 +6,7 @@ import {
   type EntityMetadata,
   type MikroORM,
   type ISchemaGenerator,
+  type Transaction,
   type ClearDatabaseOptions,
   type CreateSchemaOptions,
   type EnsureDatabaseOptions,
@@ -20,8 +21,8 @@ import { SchemaComparator } from './SchemaComparator';
 
 export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> implements ISchemaGenerator {
 
-  private readonly helper = this.platform.getSchemaHelper()!;
-  private readonly options = this.config.get('schemaGenerator');
+  protected readonly helper = this.platform.getSchemaHelper()!;
+  protected readonly options = this.config.get('schemaGenerator');
   protected lastEnsuredDatabase?: string;
 
   static register(orm: MikroORM): void {
@@ -143,13 +144,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     await this.execute(this.helper.enableForeignKeysSQL());
-
-    if (this.em) {
-      const allowGlobalContext = this.config.get('allowGlobalContext');
-      this.config.set('allowGlobalContext', true);
-      this.em.clear();
-      this.config.set('allowGlobalContext', allowGlobalContext);
-    }
+    this.clearIdentityMap();
   }
 
   override async getDropSchemaSQL(options: Omit<DropSchemaOptions, 'dropDb'> = {}): Promise<string> {
@@ -164,7 +159,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     for (const meta of metadata) {
       const table = schema.getTable(meta.tableName);
 
-      if (!this.platform.usesCascadeStatement() && table && !wrap) {
+      if (!this.platform.usesCascadeStatement() && table && (!wrap || options.dropForeignKeys)) {
         for (const fk of Object.values(table.getForeignKeys())) {
           const builder = this.createSchemaBuilder(table.schema).alterTable(table.name, tbl => {
             tbl.dropForeign(fk.columnNames, fk.constraintName);
@@ -345,12 +340,14 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       .inTable(this.getReferencedTableName(foreignKey.referencedTableName, schema))
       .withKeyName(foreignKey.constraintName);
 
-    if (foreignKey.updateRule) {
-      builder.onUpdate(foreignKey.updateRule);
-    }
+    if (foreignKey.localTableName !== foreignKey.referencedTableName || this.platform.supportsSelfReferencingForeignKeyCascade()) {
+      if (foreignKey.updateRule) {
+        builder.onUpdate(foreignKey.updateRule);
+      }
 
-    if (foreignKey.deleteRule) {
-      builder.onDelete(foreignKey.deleteRule);
+      if (foreignKey.deleteRule) {
+        builder.onDelete(foreignKey.deleteRule);
+      }
     }
 
     if (foreignKey.deferMode) {
@@ -556,7 +553,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     await this.driver.execute(this.helper.getDropDatabaseSQL('' + this.knex.ref(name)));
   }
 
-  override async execute(sql: string, options: { wrap?: boolean } = {}) {
+  override async execute(sql: string, options: { wrap?: boolean; ctx?: Transaction } = {}) {
     options.wrap ??= false;
     const lines = this.wrapSchema(sql, options).split('\n').filter(i => i.trim());
 

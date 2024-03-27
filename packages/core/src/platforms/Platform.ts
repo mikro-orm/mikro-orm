@@ -44,6 +44,10 @@ export abstract class Platform {
     return false;
   }
 
+  usesOutputStatement(): boolean {
+    return false;
+  }
+
   usesCascadeStatement(): boolean {
     return false;
   }
@@ -284,6 +288,10 @@ export abstract class Platform {
     }
   }
 
+  supportsSelfReferencingForeignKeyCascade(): boolean {
+    return true;
+  }
+
   supportsMultipleStatements(): boolean {
     return this.config.get('multipleStatements');
   }
@@ -347,6 +355,10 @@ export abstract class Platform {
 
   convertJsonToJSValue(value: unknown): unknown {
     return parseJsonSafe(value);
+  }
+
+  convertDateToJSValue(value: string | Date): string {
+    return value as string;
   }
 
   convertIntervalToJSValue(value: string): unknown {

@@ -108,6 +108,7 @@ export enum QueryFlag {
   INCLUDE_LAZY_FORMULAS = 'INCLUDE_LAZY_FORMULAS',
   AUTO_JOIN_ONE_TO_ONE_OWNER = 'AUTO_JOIN_ONE_TO_ONE_OWNER',
   INFER_POPULATE = 'INFER_POPULATE',
+  IDENTITY_INSERT = 'IDENTITY_INSERT', // mssql only
 }
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];

@@ -12,6 +12,10 @@ export class DateTimeType extends Type<Date, string> {
     return 'Date';
   }
 
+  override get runtimeType(): string {
+    return 'Date';
+  }
+
   override ensureComparable(): boolean {
     return false;
   }

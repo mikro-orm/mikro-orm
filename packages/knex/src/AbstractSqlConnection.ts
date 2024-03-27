@@ -169,7 +169,12 @@ export abstract class AbstractSqlConnection extends Connection {
    */
   async loadFile(path: string): Promise<void> {
     const buf = await readFile(path);
-    await this.getKnex().raw(buf.toString());
+
+    try {
+      await this.getKnex().raw(buf.toString());
+    } catch (e) {
+      throw this.platform.getExceptionConverter().convertException(e as Error);
+    }
   }
 
   protected createKnexClient(type: string): Knex {
@@ -229,6 +234,7 @@ export abstract class AbstractSqlConnection extends Connection {
       return formatted;
     }
 
+    // FIXME is this ok for mssql? without it it breaks some existing postgres tests
     return this.getKnex().client.positionBindings(query);
   }
 

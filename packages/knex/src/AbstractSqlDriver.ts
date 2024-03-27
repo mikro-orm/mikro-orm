@@ -454,7 +454,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
-  async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}, transform?: (sql: string) => string): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.find<T>(entityName)?.root;
@@ -475,6 +475,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const tableName = meta ? this.getTableName(meta, options) : this.platform.quoteIdentifier(entityName);
     let sql = `insert into ${tableName} `;
     sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : `(${this.platform.quoteIdentifier(pks[0])})`;
+
+    if (meta && this.platform.usesOutputStatement()) {
+      const returningProps = meta.props
+        .filter(prop => prop.persist !== false && prop.defaultRaw || prop.autoincrement || prop.generated)
+        .filter(prop => !(prop.name in data[0]) || Utils.isRawSql(data[0][prop.name]));
+      const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
+      sql += returningFields.length > 0 ? ` output ${returningFields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}` : '';
+    }
 
     if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
       sql += ' values ';
@@ -546,6 +554,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       /* istanbul ignore next */
       sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
+    }
+
+    if (transform) {
+      sql = transform(sql);
     }
 
     const res = await this.execute<QueryResult<T>>(sql, params, 'run', options.ctx);
@@ -1201,10 +1213,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     if (tableAlias) {
       return prop.fieldNames.map(fieldName => {
-        const name = this.platform.quoteIdentifier(`${tableAlias}.${fieldName}`);
-        const alias = this.platform.quoteIdentifier(`${tableAlias}__${fieldName}`);
-
-        return raw(`${name} as ${alias}`);
+        return `${tableAlias}.${fieldName} as ${tableAlias}__${fieldName}`;
       });
     }
 
@@ -1235,9 +1244,13 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   protected resolveConnectionType(args: { ctx?: Transaction<Knex.Transaction>; connectionType?: ConnectionType }) {
     if (args.ctx) {
       return 'write';
-    } else if (args.connectionType) {
+    }
+
+    if (args.connectionType) {
       return args.connectionType;
-    } else if (this.config.get('preferReadReplicas') === true) {
+    }
+
+    if (this.config.get('preferReadReplicas')) {
       return 'read';
     }
 

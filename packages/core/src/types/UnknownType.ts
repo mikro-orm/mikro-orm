@@ -8,6 +8,10 @@ export class UnknownType extends StringType {
     return prop.columnTypes?.[0] ?? platform.getVarcharTypeDeclarationSQL(prop);
   }
 
+  override get runtimeType(): string {
+    return 'unknown';
+  }
+
   override compareAsType(): string {
     return 'unknown';
   }

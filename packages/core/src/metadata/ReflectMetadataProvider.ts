@@ -32,7 +32,7 @@ export class ReflectMetadataProvider extends MetadataProvider {
     }
 
     // Force mapping to UnknownType which is a string when we see just `Object`, as that often means failed inference.
-    // This is to prevent defaulting to JSON column type, which can be often hard to revert and cause hard to understand issues with PKs.
+    // This is to prevent defaulting to JSON column type, which can often be hard to revert and cause hard to understand issues with PKs.
     // If there are explicitly provided `columnTypes`, we use those instead for the inference, this way
     // we can have things like `columnType: 'timestamp'` be respected as `type: 'Date'`.
     if (prop.kind === ReferenceKind.SCALAR && type === Object && !prop.columnTypes) {
