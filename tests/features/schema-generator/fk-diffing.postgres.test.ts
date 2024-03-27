@@ -206,21 +206,21 @@ describe('updating tables with FKs in postgres', () => {
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);
-    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
 
     orm.getMetadata().reset('Book41');
     orm.discoverEntity([Book42]);
     const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await orm.schema.execute(diff2);
-    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
 
     orm.getMetadata().reset('Book42');
     orm.discoverEntity([Book4]);
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
     await orm.schema.execute(diff3);
-    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
 
     await orm.close(true);
   });
