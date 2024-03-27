@@ -158,6 +158,10 @@ export class DatabaseTable {
       if (prop.updateRule || prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL)) {
         this.foreignKeys[constraintName].updateRule = prop.updateRule || 'cascade';
       }
+
+      if (prop.deferMode) {
+        this.foreignKeys[constraintName].deferMode = prop.deferMode;
+      }
     }
 
     if (prop.index) {
@@ -599,6 +603,7 @@ export class DatabaseTable {
     fkOptions.referencedColumnNames = fk.referencedColumnNames;
     fkOptions.updateRule = fk.updateRule?.toLowerCase();
     fkOptions.deleteRule = fk.deleteRule?.toLowerCase();
+    fkOptions.deferMode = fk.deferMode;
     fkOptions.columnTypes = fk.columnNames.map(c => this.getColumn(c)!.type);
 
     const columnOptions: Partial<EntityProperty> = {};
@@ -662,6 +667,7 @@ export class DatabaseTable {
       fkOptions.referencedColumnNames = fk.referencedColumnNames;
       fkOptions.updateRule = fk.updateRule?.toLowerCase();
       fkOptions.deleteRule = fk.deleteRule?.toLowerCase();
+      fkOptions.deferMode = fk.deferMode;
     }
 
     return {

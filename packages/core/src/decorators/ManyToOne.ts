@@ -1,7 +1,7 @@
 import type { ReferenceOptions } from './Property';
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import { ReferenceKind } from '../enums';
+import { type DeferMode, ReferenceKind } from '../enums';
 import type { AnyEntity, AnyString, EntityKey, EntityName, EntityProperty } from '../typings';
 
 export function ManyToOne<T extends object, O>(
@@ -30,4 +30,5 @@ export interface ManyToOneOptions<Owner, Target> extends ReferenceOptions<Owner,
   referencedColumnNames?: string[];
   deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
   updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  deferMode?: DeferMode;
 }

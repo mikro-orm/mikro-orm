@@ -256,6 +256,7 @@ export abstract class SchemaHelper {
           referencedColumnNames: [fk.referenced_column_name],
           updateRule: fk.update_rule.toLowerCase(),
           deleteRule: fk.delete_rule.toLowerCase(),
+          deferMode: fk.defer_mode,
         };
       }
 
