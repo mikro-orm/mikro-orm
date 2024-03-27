@@ -21,13 +21,12 @@ class Child {
 
 describe('deferrable constraints in postgres', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Parent, Child],
       dbName: `mikro_orm_test_deferrable`,
-      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });
