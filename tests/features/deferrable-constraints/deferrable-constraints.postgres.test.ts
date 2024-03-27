@@ -1,6 +1,4 @@
-import { MikroORM, Ref, Reference } from '@mikro-orm/core';
-import { DeferMode, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { DeferMode, Entity, ManyToOne, PrimaryKey, MikroORM, Ref, Reference } from '@mikro-orm/postgresql';
 
 @Entity()
 class Parent {
