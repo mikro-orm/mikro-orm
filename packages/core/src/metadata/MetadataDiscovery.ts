@@ -241,7 +241,7 @@ export class MetadataDiscovery {
     paths = paths.map(path => Utils.normalizePath(path));
     const files = await globby(paths, { cwd: Utils.normalizePath(this.config.get('baseDir')) });
     this.logger.log('discovery', `- processing ${colors.cyan('' + files.length)} files`);
-    const found: [Constructor<AnyEntity>, string][] = [];
+    const found: [EntitySchema, string][] = [];
 
     for (const filepath of files) {
       const filename = basename(filepath);
@@ -273,31 +273,31 @@ export class MetadataDiscovery {
         const meta = schema.init().meta;
         this.metadata.set(meta.className, meta);
 
-        found.push([entity, path]);
+        found.push([schema, path]);
       }
     }
 
-    for (const [entity, path] of found) {
-      this.discoverEntity(entity, path);
+    for (const [schema, path] of found) {
+      this.discoverEntity(schema, path);
     }
   }
 
   discoverReferences<T>(refs: (Constructor<T> | EntitySchema<T>)[]): EntityMetadata<T>[] {
-    const found: Constructor<T>[] = [];
+    const found: EntitySchema[] = [];
 
     for (const entity of refs) {
       const schema = this.getSchema(this.prepare(entity) as Constructor<T>);
       const meta = schema.init().meta;
       this.metadata.set(meta.className, meta);
-      found.push(entity as Constructor<T>);
+      found.push(schema);
     }
 
-    for (const entity of found) {
-      this.discoverEntity(entity);
+    for (const schema of found) {
+      this.discoverEntity(schema);
     }
 
     // discover parents (base entities) automatically
-    for (const meta of Object.values(this.metadata.getAll())) {
+    for (const meta of this.metadata) {
       let parent = meta.extends as any;
 
       if (parent instanceof EntitySchema && !this.metadata.has(parent.meta.className)) {
@@ -353,13 +353,10 @@ export class MetadataDiscovery {
     return schema;
   }
 
-  private discoverEntity<T>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>, path?: string): void {
-    entity = this.prepare(entity);
-    this.logger.log('discovery', `- processing entity ${colors.cyan((entity as EntityClass<T>).name)}${colors.grey(path ? ` (${path})` : '')}`);
-    const schema = this.getSchema(entity as Constructor<T>);
-    const meta = schema.init().meta;
+  private discoverEntity<T>(schema: EntitySchema<T>, path?: string): void {
+    this.logger.log('discovery', `- processing entity ${colors.cyan(schema.meta.className)}${colors.grey(path ? ` (${path})` : '')}`);
+    const meta = schema.meta;
     const root = Utils.getRootEntity(this.metadata, meta);
-    this.metadata.set(meta.className, meta);
     schema.meta.path = Utils.relativePath(path || meta.path, this.config.get('baseDir'));
     const cache = meta.useCache && meta.path && this.cache.get(meta.className + extname(meta.path));
 
@@ -372,8 +369,10 @@ export class MetadataDiscovery {
       return;
     }
 
-    // infer default value from property initializer early, as the metatadata provide might use some defaults, e.g. string for reflect-metadata
-    Utils.values(meta.properties).forEach(prop => this.inferDefaultValue(meta, prop));
+    // infer default value from property initializer early, as the metadata provider might use some defaults, e.g. string for reflect-metadata
+    for (const prop of meta.props) {
+      this.inferDefaultValue(meta, prop);
+    }
 
     // if the definition is using EntitySchema we still want it to go through the metadata provider to validate no types are missing
     this.metadataProvider.loadEntityMetadata(meta, meta.className);
@@ -1167,7 +1166,6 @@ export class MetadataDiscovery {
       const now = Date.now();
       const entity1 = new (meta.class as Constructor<any>)();
       const entity2 = new (meta.class as Constructor<any>)();
-
 
       // we compare the two values by reference, this will discard things like `new Date()` or `Date.now()`
       if (this.config.get('discovery').inferDefaultValues && prop.default === undefined && entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name] && entity1[prop.name] !== now) {

@@ -12,8 +12,8 @@ export class ReflectMetadataProvider extends MetadataProvider {
 
   protected initProperties(meta: EntityMetadata): void {
     // load types and column names
-    for (const prop of Object.values(meta.properties)) {
-      if (Utils.isString(prop.entity)) {
+    for (const prop of meta.props) {
+      if (typeof prop.entity === 'string') {
         prop.type = prop.entity;
       } else if (prop.entity) {
         const tmp = prop.entity();
