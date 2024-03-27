@@ -8,11 +8,13 @@ import {
   type EntityOptions,
   type EntityProperty,
   type GenerateOptions,
+  type IndexOptions,
   type NamingStrategy,
   type OneToOneOptions,
   type Platform,
   ReferenceKind,
   type TypeConfig,
+  type UniqueOptions,
   UnknownType,
   Utils,
 } from '@mikro-orm/core';
@@ -21,7 +23,7 @@ import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper';
 /**
  * @see https://github.com/tc39/proposal-regexp-unicode-property-escapes#other-examples
  */
-const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$\u200C\u200D\p{ID_Continue}])*$/u;
+export const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$\u200C\u200D\p{ID_Continue}])*$/u;
 
 export class SourceFile {
 
@@ -50,25 +52,35 @@ export class SourceFile {
     this.meta.indexes.forEach(index => {
       this.coreImports.add('Index');
 
+      const indexOpt: IndexOptions<Dictionary> = {};
+      if (typeof index.name === 'string') {
+        indexOpt.name = this.quote(index.name);
+      }
       if (index.expression) {
-        ret += `@Index({ name: '${index.name}', expression: ${this.quote(index.expression)} })\n`;
-        return;
+        indexOpt.expression = this.quote(index.expression);
+      }
+      if (index.properties) {
+        indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
       }
 
-      const properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
-      ret += `@Index({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
+      ret += `@Index(${this.serializeObject(indexOpt)})\n`;
     });
 
     this.meta.uniques.forEach(index => {
       this.coreImports.add('Unique');
 
+      const uniqueOpt: UniqueOptions<Dictionary> = {};
+      if (typeof index.name === 'string') {
+        uniqueOpt.name = this.quote(index.name);
+      }
       if (index.expression) {
-        ret += `@Unique({ name: '${index.name}', expression: ${this.quote(index.expression)} })\n`;
-        return;
+        uniqueOpt.expression = this.quote(index.expression);
+      }
+      if (index.properties) {
+        uniqueOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
       }
 
-      const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
-      ret += `@Unique({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
+      ret += `@Unique(${this.serializeObject(uniqueOpt)})\n`;
     });
 
     let classHead = '';
@@ -173,11 +185,13 @@ export class SourceFile {
 
   protected quote(val: string) {
     /* istanbul ignore next */
-    return val.startsWith(`'`) ? `\`${val}\`` : `'${val}'`;
+    return val.startsWith(`'`) ? `\`${val.replaceAll('`', '\\``')}\`` : `'${val.replaceAll(`'`, `\\'`)}'`;
   }
 
   protected getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
+
+    const propName = identifierRegex.test(prop.name) ? prop.name : this.quote(prop.name);
 
     let hiddenType = '';
     if (prop.hidden) {
@@ -187,8 +201,7 @@ export class SourceFile {
 
     if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
       this.coreImports.add('Collection');
-      this.entityImports.add(prop.type);
-      return `${padding}${prop.name}${hiddenType ? `: Collection<${prop.type}>${hiddenType}` : ''} = new Collection<${prop.type}>(this);\n`;
+      return `${padding}${propName}${hiddenType ? `: Collection<${prop.type}>${hiddenType}` : ''} = new Collection<${prop.type}>(this);\n`;
     }
 
     const propType = prop.mapToPk
@@ -201,16 +214,12 @@ export class SourceFile {
     const useDefault = prop.default != null;
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
 
-    if (!prop.mapToPk && typeof prop.kind === 'string' && prop.kind !== ReferenceKind.SCALAR) {
-      this.entityImports.add(propType);
-    }
-
     if (prop.ref) {
       this.coreImports.add('Ref');
-      return `${padding}${prop.name}${optional}: Ref<${propType}>${hiddenType};\n`;
+      return `${padding}${propName}${optional}: Ref<${propType}>${hiddenType};\n`;
     }
 
-    let ret = `${prop.name}${optional}: ${propType}`;
+    let ret = `${propName}${optional}: ${propType}`;
 
     if (prop.kind === ReferenceKind.EMBEDDED && prop.array) {
       ret += '[]';
@@ -370,24 +379,25 @@ export class SourceFile {
 
       if (prop.index) {
         this.coreImports.add('Index');
-        ret.push(`@Index({ name: '${prop.index}' })`);
+        ret.push(`@Index(${typeof prop.index === 'string' ? `{ name: ${this.quote(prop.index)} }` : '' })`);
       }
 
       if (prop.unique) {
         this.coreImports.add('Unique');
-        ret.push(`@Unique({ name: '${prop.unique}' })`);
+        ret.push(`@Unique(${typeof prop.unique === 'string' ? `{ name: ${this.quote(prop.unique)} }` : '' })`);
       }
 
       return ret;
     }
 
     const processIndex = (type: 'index' | 'unique') => {
-      if (!prop[type]) {
+      const propType = prop[type];
+      if (!propType) {
         return;
       }
 
       const defaultName = this.platform.getIndexName(this.meta.collection, prop.fieldNames, type);
-      options[type] = defaultName === prop[type] ? 'true' : `'${prop[type]}'`;
+      options[type] = (propType === true || defaultName === propType) ? 'true' : this.quote(propType);
       const expected = {
         index: this.platform.indexForeignKeys(),
         unique: prop.kind === ReferenceKind.ONE_TO_ONE,
@@ -445,7 +455,7 @@ export class SourceFile {
 
   protected getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
     if (prop.fieldNames[0] !== this.namingStrategy.propertyToColumnName(prop.name)) {
-      options.fieldName = `'${prop.fieldNames[0]}'`;
+      options.fieldName = this.quote(prop.fieldNames[0]);
     }
 
     // For enum properties, we don't need a column type

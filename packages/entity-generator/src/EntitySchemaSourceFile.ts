@@ -1,5 +1,13 @@
-import { ReferenceKind, Utils, type Dictionary, type EntityProperty, type TypeConfig } from '@mikro-orm/core';
-import { SourceFile } from './SourceFile';
+import {
+  ReferenceKind,
+  Utils,
+  type Dictionary,
+  type EntityProperty,
+  type TypeConfig,
+  type IndexOptions,
+  type UniqueOptions,
+} from '@mikro-orm/core';
+import { identifierRegex, SourceFile } from './SourceFile';
 
 export class EntitySchemaSourceFile extends SourceFile {
 
@@ -77,12 +85,17 @@ export class EntitySchemaSourceFile extends SourceFile {
     if (this.meta.indexes.length > 0) {
       ret += `  indexes: [\n`;
       this.meta.indexes.forEach(index => {
-        if (index.expression) {
-          ret += `    { name: '${index.name}', expression: ${this.quote(index.expression)} },\n`;
-          return;
+        const indexOpt: IndexOptions<Dictionary> = {};
+        if (typeof index.name === 'string') {
+          indexOpt.name = this.quote(index.name);
         }
-        const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
-        ret += `    { name: '${index.name}', properties: [${properties.join(', ')}] },\n`;
+        if (index.expression) {
+          indexOpt.expression = this.quote(index.expression);
+        }
+        if (index.properties) {
+          indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
+        }
+        ret += `    ${this.serializeObject(indexOpt)},\n`;
       });
       ret += `  ],\n`;
     }
@@ -90,12 +103,18 @@ export class EntitySchemaSourceFile extends SourceFile {
     if (this.meta.uniques.length > 0) {
       ret += `  uniques: [\n`;
       this.meta.uniques.forEach(index => {
-        if (index.expression) {
-          ret += `    { name: '${index.name}', expression: ${this.quote(index.expression)} },\n`;
-          return;
+        const uniqueOpt: UniqueOptions<Dictionary> = {};
+        if (typeof index.name === 'string') {
+          uniqueOpt.name = this.quote(index.name);
         }
-        const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
-        ret += `    { name: '${index.name}', properties: [${properties.join(', ')}] },\n`;
+        if (index.expression) {
+          uniqueOpt.expression = this.quote(index.expression);
+        }
+        if (index.properties) {
+          uniqueOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
+        }
+
+        ret += `    ${this.serializeObject(uniqueOpt)},\n`;
       });
       ret += `  ],\n`;
     }
@@ -108,8 +127,7 @@ export class EntitySchemaSourceFile extends SourceFile {
       if (def.length > 80) {
         def = this.serializeObject(options, 2);
       }
-      //
-      ret += `    ${prop.name}: ${def},\n`;
+      ret += `    ${identifierRegex.test(prop.name) ? prop.name : this.quote(prop.name)}: ${def},\n`;
     });
     ret += `  },\n`;
     ret += `});\n`;
@@ -171,13 +189,14 @@ export class EntitySchemaSourceFile extends SourceFile {
     }
 
     const processIndex = (type: 'index' | 'unique') => {
-      if (!prop[type]) {
+      const propType = prop[type];
+      if (!propType) {
         return;
       }
 
       const defaultName = this.platform.getIndexName(this.meta.collection, prop.fieldNames, type);
       /* istanbul ignore next */
-      options[type] = defaultName === prop[type] ? 'true' : `'${prop[type]}'`;
+      options[type] = (propType === true || defaultName === propType) ? 'true' : this.quote(propType);
       const expected = {
         index: this.platform.indexForeignKeys(),
         unique: prop.kind === ReferenceKind.ONE_TO_ONE,

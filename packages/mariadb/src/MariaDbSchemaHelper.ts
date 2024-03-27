@@ -113,7 +113,7 @@ export class MariaDbSchemaHelper extends SchemaHelper {
       );
       const defaultValue = str(tmp === 'NULL' && col.is_nullable === 'YES' ? null : tmp);
       const key = this.getTableKey(col);
-      const generated = col.generation_expression ? `${col.generation_expression} ${col.extra.match(/stored generated/i) ? 'stored' : 'virtual'}` : undefined;
+      const generated = col.generation_expression ? `${col.generation_expression.replaceAll(`\\'`, `'`)} ${col.extra.match(/stored generated/i) ? 'stored' : 'virtual'}` : undefined;
       ret[key] ??= [];
       ret[key].push({
         name: col.column_name,

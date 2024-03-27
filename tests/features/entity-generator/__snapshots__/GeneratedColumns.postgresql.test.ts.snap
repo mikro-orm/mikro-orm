@@ -75,7 +75,7 @@ export class Users {
   @Property({ length: 100 })
   lastName!: string;
 
-  @Property({ type: 'string', length: 200, generated: '(((first_name)::text || ' '::text) || (last_name)::text) stored' })
+  @Property({ type: 'string', length: 200, generated: '(((first_name)::text || \\' \\'::text) || (last_name)::text) stored' })
   fullName!: string & Opt;
 
   @Property({ type: 'Date', length: 6, defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -186,7 +186,7 @@ export const UsersSchema = new EntitySchema({
     fullName: {
       type: 'string',
       length: 200,
-      generated: '(((first_name)::text || ' '::text) || (last_name)::text) stored',
+      generated: '(((first_name)::text || \\' \\'::text) || (last_name)::text) stored',
     },
     createdAt: { type: 'Date', length: 6, defaultRaw: \`CURRENT_TIMESTAMP\` },
     dateOfBirth: { type: 'string', columnType: 'date' },
