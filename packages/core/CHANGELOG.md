@@ -3,6 +3,135 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
+
+
+### Bug Fixes
+
+* **core:** fix assignability of partially loaded entities ([9de4965](https://github.com/mikro-orm/mikro-orm/commit/9de4965dc1ec952b3addc2d902ee5587c2f38f05)), closes [#5374](https://github.com/mikro-orm/mikro-orm/issues/5374)
+* **reflection:** fallback to not proving path to tsconfig if not found ([a24d80d](https://github.com/mikro-orm/mikro-orm/commit/a24d80dc3353a6a84c9c6f1ac26b3c7e3e824901))
+
+
+### Features
+
+* **core:** allow passing `EntityManager` or `EntityRepository` to `@CreateRequestContext` decorator ([184cdd4](https://github.com/mikro-orm/mikro-orm/commit/184cdd43ce4dcee5288b3297719914e9f25e50cb))
+* **postgres:** add `?`, `?|` and `?&` json operators ([#5366](https://github.com/mikro-orm/mikro-orm/issues/5366)) ([6418872](https://github.com/mikro-orm/mikro-orm/commit/641887245abbded5df2d984fc24c6fe3cea80c9b)), closes [#4678](https://github.com/mikro-orm/mikro-orm/issues/4678)
+
+
+
+
+
+## [6.1.11](https://github.com/mikro-orm/mikro-orm/compare/v6.1.10...v6.1.11) (2024-03-18)
+
+
+### Bug Fixes
+
+* **core:** improve serialization of lazily partially loaded entities ([1c7b446](https://github.com/mikro-orm/mikro-orm/commit/1c7b44652100aa4e940787b3ee7ca4e208039984)), closes [#5139](https://github.com/mikro-orm/mikro-orm/issues/5139)
+* **core:** support unsetting composite FKs via flush ([64f2afd](https://github.com/mikro-orm/mikro-orm/commit/64f2afd1a899b86e54eef6e58d6f475b28f67c6f))
+* **migrator:** type mismatch between Migration interface and class ([#5343](https://github.com/mikro-orm/mikro-orm/issues/5343)) ([2fba5ee](https://github.com/mikro-orm/mikro-orm/commit/2fba5eebbc118c98a890b3083d521b52b263ba30)), closes [#5340](https://github.com/mikro-orm/mikro-orm/issues/5340)
+
+
+
+
+
+## [6.1.10](https://github.com/mikro-orm/mikro-orm/compare/v6.1.9...v6.1.10) (2024-03-14)
+
+
+### Bug Fixes
+
+* **core:** detect `ts-node` when using esm loader ([#5332](https://github.com/mikro-orm/mikro-orm/issues/5332)) ([23cc880](https://github.com/mikro-orm/mikro-orm/commit/23cc8803d22d90868e3411e77d5c81b04e7bc651))
+* **core:** don't alias formulas in update/delete queries ([9e35642](https://github.com/mikro-orm/mikro-orm/commit/9e3564234ba80546df162b628bfebadad6b5c036)), closes [#5334](https://github.com/mikro-orm/mikro-orm/issues/5334)
+* **core:** fix value of `hasPrev[/Next]Page` when paginating backwards ([#5320](https://github.com/mikro-orm/mikro-orm/issues/5320)) ([00239eb](https://github.com/mikro-orm/mikro-orm/commit/00239ebe97d65aef520c39fdc6121fc138ebb8ce))
+
+
+### Features
+
+* **core:** add `onlyOwnProperties` option to `assign` helper ([#5330](https://github.com/mikro-orm/mikro-orm/issues/5330)) ([a081bea](https://github.com/mikro-orm/mikro-orm/commit/a081bea80d17c01213c26a9cf7ad4b89e05ab33a)), closes [#5327](https://github.com/mikro-orm/mikro-orm/issues/5327)
+
+
+### Performance Improvements
+
+* **core:** disable change tracking on scalars when `flushMode: auto` ([fc30bfe](https://github.com/mikro-orm/mikro-orm/commit/fc30bfe13888293a9ac9b91d8bbc874eb3c98e31))
+
+
+
+
+
+## [6.1.9](https://github.com/mikro-orm/mikro-orm/compare/v6.1.8...v6.1.9) (2024-03-10)
+
+
+### Bug Fixes
+
+* **core:** don't propagate changes from `em.transactional()` to upper context if its global ([7ac9a19](https://github.com/mikro-orm/mikro-orm/commit/7ac9a1945469264ea32727c2e63fd89d9f2d7ec8)), closes [#5309](https://github.com/mikro-orm/mikro-orm/issues/5309)
+* **core:** ignore filters on relations inside embedded properties ([1e4b2ce](https://github.com/mikro-orm/mikro-orm/commit/1e4b2ce41d66e1686aac0d28bf8b6a06b2cbf9b4)), closes [#5310](https://github.com/mikro-orm/mikro-orm/issues/5310)
+* **core:** improve checks for generated columns ([0396e1e](https://github.com/mikro-orm/mikro-orm/commit/0396e1e8c0cd65f1dcd4ea4d29419ed2b5e7446a))
+* **core:** map virtual relations with `persist: false` as formulas to preserve aliasing ([20a4cfb](https://github.com/mikro-orm/mikro-orm/commit/20a4cfb005fed168786d0da806d1c89e29b6f4ab))
+
+
+### Features
+
+* **postgres:** add support for native enum arrays ([c2e362b](https://github.com/mikro-orm/mikro-orm/commit/c2e362bc6fe19ec792d13f475a11cf2290b94fde)), closes [#5322](https://github.com/mikro-orm/mikro-orm/issues/5322)
+
+
+
+
+
+## [6.1.8](https://github.com/mikro-orm/mikro-orm/compare/v6.1.7...v6.1.8) (2024-03-06)
+
+
+### Bug Fixes
+
+* **core:** allow setting values to `null` on unloaded references ([1cbead6](https://github.com/mikro-orm/mikro-orm/commit/1cbead6eec839777e5f8f00e9fcdfe7a9a8088bf)), closes [#5274](https://github.com/mikro-orm/mikro-orm/issues/5274)
+* **core:** skip STI discriminator condition when bulk-deleting entities ([fa712ca](https://github.com/mikro-orm/mikro-orm/commit/fa712ca134d16334aaba275779df14970ed8bfb8)), closes [#5303](https://github.com/mikro-orm/mikro-orm/issues/5303)
+
+
+
+
+
+## [6.1.7](https://github.com/mikro-orm/mikro-orm/compare/v6.1.6...v6.1.7) (2024-03-04)
+
+
+### Bug Fixes
+
+* **core:** add `em.addFilter()` fallback signature that allows more than 3 types ([b6efd44](https://github.com/mikro-orm/mikro-orm/commit/b6efd4470e9c060c3611c1e3395bd9f500cd0376))
+
+
+
+
+
+## [6.1.6](https://github.com/mikro-orm/mikro-orm/compare/v6.1.5...v6.1.6) (2024-02-28)
+
+
+### Bug Fixes
+
+* **core:** don't refresh collection state via `Collection.load()` ([f5be639](https://github.com/mikro-orm/mikro-orm/commit/f5be6393a272b7d2d6d4083361573b574d865ae6)), closes [#5268](https://github.com/mikro-orm/mikro-orm/issues/5268)
+* **core:** fix type of `options` parameter in `repository.upsert/Many()` ([4c12e7f](https://github.com/mikro-orm/mikro-orm/commit/4c12e7f202ce93e884b4da87a8b3a5a42ee63216))
+* **core:** support raw fragments in `orderBy` of 1:m and m:n relations ([ed80163](https://github.com/mikro-orm/mikro-orm/commit/ed801634b6677da9f123f7033f27452a40558602)), closes [#5277](https://github.com/mikro-orm/mikro-orm/issues/5277)
+
+
+### Performance Improvements
+
+* **core:** improve composite PK hashing ([73094ef](https://github.com/mikro-orm/mikro-orm/commit/73094efb8f140f57bf6e1f160edf209812182eab))
+* **core:** improve hydration of simple FKs ([c4bd1f0](https://github.com/mikro-orm/mikro-orm/commit/c4bd1f0317a481df6fc55625353dd79f8dd056c4))
+* **core:** optimize adding entities to large collections ([8a960d5](https://github.com/mikro-orm/mikro-orm/commit/8a960d571fc9c245d5dd10e5973e5b83ce454d92))
+
+
+
+
+
+## [6.1.5](https://github.com/mikro-orm/mikro-orm/compare/v6.1.4...v6.1.5) (2024-02-21)
+
+
+### Bug Fixes
+
+* **core:** allow serializing raw SQL fragments outside of entity serialization ([9158f51](https://github.com/mikro-orm/mikro-orm/commit/9158f515e513310f593aade04e6bedaa29cd6459)), closes [#5257](https://github.com/mikro-orm/mikro-orm/issues/5257)
+* **core:** ensure missing type validation ignores enums ([a916710](https://github.com/mikro-orm/mikro-orm/commit/a916710dfb48156976c45fb824f95fb958c87409)), closes [#5255](https://github.com/mikro-orm/mikro-orm/issues/5255)
+* **entity-generator:** fixed generation of unsigned columns ([#5254](https://github.com/mikro-orm/mikro-orm/issues/5254)) ([d78da29](https://github.com/mikro-orm/mikro-orm/commit/d78da297c701a319ea704847e97c2186934831bc))
+
+
+
+
+
 ## [6.1.4](https://github.com/mikro-orm/mikro-orm/compare/v6.1.3...v6.1.4) (2024-02-16)
 
 

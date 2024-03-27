@@ -5,6 +5,12 @@ sidebar_label: Identity Map
 
 `MikroORM` uses identity map in background, so we will always get the same instance of one entity.
 
+## What is an "Identity Map"
+
+You can think of an "identity map" as a sort of "in memory cache", in the sense that it starts off empty, gets filled and updated as you perform calls with the entity manager, and items in it get pulled out of it ("cache hit" of sorts) when an operation matches an ID the identity map is aware of. However, it is also different from an actual (result) cache, and should not be used as one (See [here](./caching.md) for an actual result cache). Caches are generally meant to improve performance across requests. An identity map is instead meant to improve performance within a single request, by making it possible to compare entity objects trivially, which in turn enables the ORM to batch operations to the database. It also helps to reduce your application's memory footprint per request, by ensuring that even if you make multiple queries that match the same rows, those rows will only exist once in memory.
+
+For example:
+
 ```ts
 const authorRepository = em.getRepository(Author);
 const jon = await authorRepository.findOne({ name: 'Jon Snow' }, { populate: ['books'] });
@@ -82,22 +88,37 @@ The `RequestContext.getEntityManager()` method then checks `AsyncLocalStorage` s
 
 The [`AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) class from Node.js core is the magician here. It allows us to track the context throughout the async calls. It allows us to decouple the `EntityManager` fork creation (usually in a middleware as shown in previous section) from its usage through the global `EntityManager` instance.
 
+### Using custom `AsyncLocalStorage` instance
+
+The `RequestContext` helper holds its own `AsyncLocalStorage` instance, which the ORM checks automatically when resolving `em.getContext()`. If you want to bring your own, you can do so by using the `context` option:
+
+```ts
+const storage = new AsyncLocalStorage<EntityManager>();
+
+const orm = await MikroORM.init({
+  context: () => storage.getStore(),
+  // ...
+});
+
+app.use((req, res, next) => {
+  storage.run(orm.em.fork({ useContext: true }), next);
+});
+```
+
 ## `@CreateRequestContext()` decorator
 
 > Before v6, `@CreateRequestContext()` was called `@UseRequestContext()`.
 
-Middlewares are executed only for regular HTTP request handlers, what if we need a request scoped method outside that? One example of that is queue handlers or scheduled tasks (e.g. CRON jobs).
+Middlewares are executed only for regular HTTP request handlers, what if you need a request scoped method outside that? One example of that is queue handlers or scheduled tasks (e.g. CRON jobs).
 
-We can use the `@CreateRequestContext()` decorator. It requires us to first inject the `MikroORM` instance to current context, it will be then used to create the context for us. Under the hood, the decorator will register new request context for our method and execute it inside the context.
-
-This decorator will wrap the underlying method in `RequestContext.create()` call. Every call to such method will create new context (new `EntityManager` fork) which will be used inside.
+In those cases, you can use the `@CreateRequestContext()` decorator. It requires you to first inject the `MikroORM` instance (or an `EntityManager` or some `EntityRepository`) to current context, it will be then used to create a new context for us. Under the hood, the decorator will register the new request context for our method and execute it inside it (vi `RequestContext.create()`).
 
 > `@CreateRequestContext()` should be used only on the top level methods. It should not be nested - a method decorated with it should not call another method that is also decorated with it.
 
 ```ts
-@Injectable()
 export class MyService {
 
+  // or `private readonly em: EntityManager`
   constructor(private readonly orm: MikroORM) { }
 
   @CreateRequestContext()
@@ -108,14 +129,29 @@ export class MyService {
 }
 ```
 
-Alternatively we can provide a callback that will return the `MikroORM` instance.
+Alternatively you can provide a callback that will return one of `MikroORM`, `EntityManager` or `EntityRepository` instance.
 
 ```ts
 import { DI } from '..';
 
 export class MyService {
 
-  @CreateRequestContext(() => DI.orm)
+  @CreateRequestContext(() => DI.em)
+  async doSomething() {
+    // this will be executed in a separate context
+  }
+
+}
+```
+
+The callback will receive current `this` in the first parameter. You can use it to link the `EntityManager` or `EntityRepository` too:
+
+```ts
+export class MyService {
+
+  constructor(private readonly userRepository: EntityRepository<User>) { }
+
+  @CreateRequestContext<MyService>(t => t.userRepository)
   async doSomething() {
     // this will be executed in a separate context
   }

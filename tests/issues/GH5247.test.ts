@@ -42,8 +42,8 @@ afterAll(async () => {
 test('simple - no getQuery', async () => {
   const query: QBFilterQuery<Test> = { a: { value: 1 } };
   const qb = orm.em.qb(Test).where(query);
-  const res = await qb.execute(); // proper sql query is generated
-  expect(res.length).toBe(1); // result as expected
+  const res = await qb.execute('get'); // proper sql query is generated
+  expect(res).toEqual({ id: 1, a: '{"value":1}' });
   expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 

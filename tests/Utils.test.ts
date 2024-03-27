@@ -41,6 +41,8 @@ describe('Utils', () => {
     expect(Utils.isObject(new Date())).toBe(true);
     expect(Utils.isNotObject(new Date(), [Date])).toBe(false);
     expect(Utils.isObject(Test)).toBe(false);
+    expect(Utils.isObjectID(Test)).toBe(false);
+    expect(Utils.isObjectID(new ObjectId())).toBe(true);
   });
 
   test('isEntity', () => {

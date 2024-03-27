@@ -135,13 +135,13 @@ function Home() {
                 'button button--outline button--secondary button--lg',
                 styles.getStarted,
               )}
-              to={useBaseUrl('docs/quick-start')}>
-              Documentation
+              to={useBaseUrl('docs/guide')}>
+              Get Started
             </Link>
             <Link
               className={classnames(
                 'button button--outline button--secondary button--lg',
-                styles.getStarted,
+                styles.sourceCode,
               )}
               to={'https://github.com/mikro-orm/mikro-orm'}>
               Source code

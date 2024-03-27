@@ -105,7 +105,12 @@ export class MariaDbSchemaHelper extends SchemaHelper {
 
     for (const col of allColumns) {
       const mappedType = this.platform.getMappedType(col.column_type);
-      const tmp = this.normalizeDefaultValue(col.column_default, col.length);
+      const tmp = this.normalizeDefaultValue(
+        (mappedType.compareAsType() === 'boolean' && ['0', '1'].includes(col.column_default))
+          ? ['false', 'true'][+col.column_default]
+          : col.column_default,
+        col.length,
+      );
       const defaultValue = str(tmp === 'NULL' && col.is_nullable === 'YES' ? null : tmp);
       const key = this.getTableKey(col);
       const generated = col.generation_expression ? `${col.generation_expression} ${col.extra.match(/stored generated/i) ? 'stored' : 'virtual'}` : undefined;

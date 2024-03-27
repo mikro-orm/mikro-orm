@@ -1,4 +1,4 @@
-﻿import type { Knex } from 'knex';
+import type { Knex } from 'knex';
 import {
   AbstractSchemaGenerator,
   Utils,
@@ -90,6 +90,21 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
 
       ret += await this.dump(this.knex.schema.createSchemaIfNotExists(namespace));
+    }
+
+    if (this.platform.supportsNativeEnums()) {
+      const created: string[] = [];
+
+      for (const [enumName, enumOptions] of Object.entries(toSchema.getNativeEnums())) {
+        /* istanbul ignore if */
+        if (created.includes(enumName)) {
+          continue;
+        }
+
+        created.push(enumName);
+        const sql = this.helper.getCreateNativeEnumSQL(enumName, enumOptions.items, options.schema ?? this.config.get('schema'));
+        ret += await this.dump(this.knex.schema.raw(sql), '\n');
+      }
     }
 
     for (const tableDef of toSchema.getTables()) {
@@ -218,7 +233,6 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta => meta.tableName);
     fromSchema.prune(options.schema, wildcardSchemaTables);
     toSchema.prune(options.schema, wildcardSchemaTables);
-    toSchema.setNativeEnums(fromSchema.getNativeEnums());
 
     return { fromSchema, toSchema };
   }
@@ -230,6 +244,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       for (const newNamespace of schemaDiff.newNamespaces) {
         // schema might already exist, e.g. explicit usage of `public` in postgres
         ret += await this.dump(this.knex.schema.createSchemaIfNotExists(newNamespace));
+      }
+    }
+
+    if (this.platform.supportsNativeEnums()) {
+      for (const newNativeEnum of schemaDiff.newNativeEnums) {
+        const sql = this.helper.getCreateNativeEnumSQL(newNativeEnum.name, newNativeEnum.items, newNativeEnum.schema ?? options.schema ?? this.config.get('schema'));
+        ret += await this.dump(this.knex.schema.raw(sql), '\n');
       }
     }
 
@@ -273,6 +294,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     for (const changedTable of Object.values(schemaDiff.changedTables)) {
       for (const builder of this.postAlterTable(changedTable, options.safe!)) {
         ret += await this.dump(builder);
+      }
+    }
+
+    if (!options.safe && this.platform.supportsNativeEnums()) {
+      for (const removedNativeEnum of schemaDiff.removedNativeEnums) {
+        const sql = this.helper.getDropNativeEnumSQL(removedNativeEnum.name, removedNativeEnum.schema);
+        ret += await this.dump(this.knex.schema.raw(sql), '\n');
       }
     }
 
@@ -366,11 +394,17 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const [schemaName, tableName] = this.splitTableName(diff.name);
 
     if (this.platform.supportsNativeEnums()) {
-      const changedNativeEnums: [string, string[], string[]][] = [];
+      const changedNativeEnums: [enumName: string, itemsNew: string[], itemsOld: string[]][] = [];
 
       for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
-        if (column.nativeEnumName && changedProperties.has('enumItems') && column.nativeEnumName in diff.fromTable.nativeEnums) {
-          changedNativeEnums.push([column.nativeEnumName, column.enumItems!, diff.fromTable.getColumn(column.name)!.enumItems!]);
+        if (!column.nativeEnumName) {
+          continue;
+        }
+
+        const key = schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' + column.nativeEnumName : column.nativeEnumName;
+
+        if (changedProperties.has('enumItems') && key in diff.fromTable.nativeEnums) {
+          changedNativeEnums.push([column.nativeEnumName, column.enumItems!, diff.fromTable.nativeEnums[key].items]);
         }
       }
 
@@ -423,7 +457,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         }
       }
 
-      for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
+      for (const { column, changedProperties, fromColumn } of Object.values(diff.changedColumns)) {
         if (changedProperties.size === 1 && changedProperties.has('comment')) {
           continue;
         }
@@ -599,7 +633,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
       if (index.columnNames.some(column => column.includes('.'))) {
         const columns = this.platform.getJsonIndexDefinition(index);
-        table.index(columns.map(column => this.knex.raw(`(${column})`)), index.keyName, { indexType: 'unique' });
+        table.index(columns.map(column => this.knex.raw(column)), index.keyName, { indexType: 'unique' });
       } else {
         table.unique(index.columnNames, { indexName: index.keyName });
       }
@@ -615,7 +649,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
       if (index.columnNames.some(column => column.includes('.'))) {
         const columns = this.platform.getJsonIndexDefinition(index);
-        table.index(columns.map(column => this.knex.raw(`(${column})`)), index.keyName, index.type as Dictionary);
+        table.index(columns.map(column => this.knex.raw(column)), index.keyName, index.type as Dictionary);
       } else {
         table.index(index.columnNames, index.keyName, index.type as Dictionary);
       }

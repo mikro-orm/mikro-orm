@@ -2,6 +2,7 @@ import {
   ALIAS_REPLACEMENT,
   type Dictionary,
   type EntityKey,
+  type EntityProperty,
   QueryFlag,
   raw,
   RawQueryFragment,
@@ -29,9 +30,20 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
     if (this.shouldAutoJoin(qb, nestedAlias)) {
       if (keys.some(k => ['$some', '$none', '$every'].includes(k))) {
+        if (![ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(this.prop!.kind)) {
+          // ignore collection operators when used on a non-relational property - this can happen when they get into
+          // populateWhere via `infer` on m:n properties with select-in strategy
+          if (this.parent?.parent) { // we validate only usage on top level
+            return {};
+          }
+
+          throw new Error(`Collection operators can be used only inside a collection property context, but it was used for ${this.getPath()}.`);
+        }
+
         const $and: Dictionary[] = [];
+        const knownKey = [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE, ReferenceKind.EMBEDDED].includes(this.prop!.kind) || (this.prop!.kind === ReferenceKind.ONE_TO_ONE && this.prop!.owner);
         const primaryKeys = this.metadata.find(this.entityName)!.primaryKeys.map(pk => {
-          return [QueryType.SELECT, QueryType.COUNT].includes(qb.type!) ? `${alias}.${pk}` : pk;
+          return [QueryType.SELECT, QueryType.COUNT].includes(qb.type!) ? `${knownKey ? alias : ownerAlias}.${pk}` : pk;
         });
 
         for (const key of keys) {
@@ -40,10 +52,10 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           }
 
           const payload = (this.payload[key] as CriteriaNode<T>).unwrap();
-          const sub = qb
-            .clone(true)
+          const qb2 = qb.clone(true);
+          const sub = qb2
             .from(this.parent!.entityName)
-            .innerJoin(this.key!, qb.getNextAlias(this.prop!.type))
+            .innerJoin(this.key!, qb2.getNextAlias(this.prop!.type))
             .select(this.prop!.targetMeta!.primaryKeys);
 
           if (key === '$every') {
@@ -57,6 +69,10 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           $and.push({
             [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: (sub as Dictionary).getKnexQuery() },
           });
+        }
+
+        if ($and.length === 1) {
+          return $and[0];
         }
 
         return { $and };
@@ -100,8 +116,8 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     }, {} as Dictionary);
   }
 
-  override willAutoJoin(qb: IQueryBuilder<T>, alias?: string) {
-    const nestedAlias = qb.getAliasForJoinPath(this.getPath());
+  override willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions) {
+    const nestedAlias = qb.getAliasForJoinPath(this.getPath(), options);
     const ownerAlias = alias || qb.alias;
     const keys = Object.keys(this.payload);
 
@@ -115,7 +131,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
     return keys.some(field => {
       const childNode = this.payload[field] as CriteriaNode<T>;
-      return childNode.willAutoJoin(qb, this.prop ? alias : ownerAlias);
+      return childNode.willAutoJoin(qb, this.prop ? alias : ownerAlias, options);
     });
   }
 
@@ -127,6 +143,27 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     return !!this.prop && this.prop.kind !== ReferenceKind.SCALAR && !scalar && !operator;
   }
 
+  private getChildKey(k: EntityKey, prop: EntityProperty, childAlias?: string): string {
+    const idx = prop.referencedPKs.indexOf(k as EntityKey);
+    return idx !== -1 && !childAlias && ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) ? prop.joinColumns[idx] : k;
+  }
+
+  private inlineArrayChildPayload(obj: Dictionary, payload: Dictionary[], k: string, prop: EntityProperty, childAlias?: string) {
+    const key = this.getChildKey(k as EntityKey, prop, childAlias);
+    const value = payload.map((child: Dictionary) => Object.keys(child).reduce((inner, childKey) => {
+      if (Utils.isGroupOperator(childKey) && Array.isArray(child[childKey])) {
+        this.inlineArrayChildPayload(child, child[childKey], childKey, prop, childAlias);
+      } else {
+        const key = (this.isPrefixed(childKey) || Utils.isOperator(childKey)) ? childKey : this.aliased(childKey, childAlias);
+        inner[key] = child[childKey];
+      }
+
+      return inner;
+    }, {} as Dictionary));
+
+    this.inlineCondition(key, obj, value);
+  }
+
   private inlineChildPayload<T>(o: Dictionary, payload: Dictionary, field: EntityKey<T>, alias?: string, childAlias?: string) {
     const prop = this.metadata.find<T>(this.entityName)!.properties[field];
 
@@ -134,25 +171,12 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       if (Utils.isOperator(k, false)) {
         const tmp = payload[k];
         delete payload[k];
-        o[this.aliased(field, alias)] = { [k]: tmp, ...(o[this.aliased(field, alias)] || {}) };
+        o[this.aliased(field, alias)] = { [k]: tmp, ...o[this.aliased(field, alias)] };
+      } else if (Utils.isGroupOperator(k) && Array.isArray(payload[k])) {
+        this.inlineArrayChildPayload(o, payload[k], k, prop, childAlias);
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
-        const idx = prop.referencedPKs.indexOf(k as EntityKey);
-        const key = idx !== -1 && !childAlias && ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) ? prop.joinColumns[idx] : k;
-
-        if (key in o) {
-          const $and = o.$and ?? [];
-          $and.push({ [key]: o[key] }, { [key]: payload[k] });
-          delete o[key];
-          o.$and = $and;
-        } else if (Utils.isOperator(k) && Array.isArray(payload[k])) {
-            o[key] = payload[k].map((child: Dictionary) => Object.keys(child).reduce((o, childKey) => {
-              const key = (this.isPrefixed(childKey) || Utils.isOperator(childKey)) ? childKey : this.aliased(childKey, childAlias);
-              o[key] = child[childKey];
-              return o;
-            }, {} as Dictionary));
-        } else {
-          o[key] = payload[k];
-        }
+        const key = this.getChildKey(k as EntityKey, prop, childAlias);
+        this.inlineCondition(key, o, payload[k]);
       } else if (RawQueryFragment.isKnownFragment(k)) {
         o[k] = payload[k];
       } else {
@@ -160,6 +184,23 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         o[this.aliased(k, childAlias)] = payload[k];
       }
     }
+  }
+
+  private inlineCondition(key: string, o: Dictionary, value: unknown) {
+    if (!(key in o)) {
+      o[key] = value;
+      return;
+    }
+
+    if (key === '$and') {
+      o.$and.push({ [key]: value });
+      return;
+    }
+
+    const $and = o.$and ?? [];
+    $and.push({ [key]: o[key] }, { [key]: value });
+    delete o[key];
+    o.$and = $and;
   }
 
   private shouldAutoJoin(qb: IQueryBuilder<T>, nestedAlias: string | undefined): boolean {
@@ -171,6 +212,10 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
     if (keys.every(k => k.includes('.') && k.startsWith(`${qb.alias}.`))) {
       return false;
+    }
+
+    if (keys.some(k => ['$some', '$none', '$every'].includes(k))) {
+      return true;
     }
 
     const meta = this.metadata.find(this.entityName)!;

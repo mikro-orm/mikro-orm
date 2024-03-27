@@ -141,6 +141,11 @@ export class MetadataDiscovery {
         this.initDefaultValue(prop);
         this.inferTypeFromDefault(prop);
         this.initColumnType(prop);
+
+        // change tracking on scalars is used only for "auto" flushMode
+        if (this.config.get('flushMode') !== 'auto') {
+          prop.trackChanges = false;
+        }
       }
     }
 
@@ -1113,7 +1118,7 @@ export class MetadataDiscovery {
 
   private initGeneratedColumn(meta: EntityMetadata, prop: EntityProperty): void {
     if (!prop.generated && prop.columnTypes) {
-      const match = prop.columnTypes[0].match(/(.*) generated always as (.*)/);
+      const match = prop.columnTypes[0]?.match(/(.*) generated always as (.*)/);
 
       if (match) {
         prop.columnTypes[0] = match[1];
@@ -1351,6 +1356,10 @@ export class MetadataDiscovery {
     const meta2 = this.discovered.find(m => m.className === prop.type)!;
     prop.referencedPKs = meta2.primaryKeys;
     prop.targetMeta = meta2;
+
+    if (!prop.formula && prop.persist === false && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.embedded) {
+      prop.formula = a => `${a}.${this.platform.quoteIdentifier(prop.fieldNames[0])}`;
+    }
   }
 
   private initColumnType(prop: EntityProperty): void {

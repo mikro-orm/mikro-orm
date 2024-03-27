@@ -28,7 +28,7 @@ export class DatabaseTable {
   private indexes: IndexDef[] = [];
   private checks: CheckDef[] = [];
   private foreignKeys: Dictionary<ForeignKey> = {};
-  public nativeEnums: Dictionary<unknown[]> = {}; // for postgres
+  public nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
   public comment?: string;
 
   constructor(private readonly platform: AbstractSqlPlatform,
@@ -585,12 +585,12 @@ export class DatabaseTable {
     fk: ForeignKey,
     namingStrategy: NamingStrategy,
     schemaHelper: SchemaHelper,
-    fkIndex: IndexDef,
+    fkIndex: IndexDef | undefined,
     nullable: boolean,
     propNameBase: string,
   ) {
     const prop = this.getPropertyName(namingStrategy, propNameBase, fk);
-    const kind = (fkIndex.unique && !fkIndex.primary) ? this.getReferenceKind(fk, fkIndex) : this.getReferenceKind(fk);
+    const kind = (fkIndex?.unique && !fkIndex.primary) ? this.getReferenceKind(fk, fkIndex) : this.getReferenceKind(fk);
     const type = this.getPropertyTypeForForeignKey(namingStrategy, fk);
 
     const fkOptions: Partial<EntityProperty> = {};
@@ -604,8 +604,13 @@ export class DatabaseTable {
     const columnOptions: Partial<EntityProperty> = {};
     if (fk.columnNames.length === 1) {
       const column = this.getColumn(fk.columnNames[0])!;
-      columnOptions.default = this.getPropertyDefaultValue(schemaHelper, column, type);
-      columnOptions.defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, type, true);
+
+      const defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, column.type, true);
+      const defaultTs = this.getPropertyDefaultValue(schemaHelper, column, column.type);
+
+      columnOptions.default = defaultRaw !== defaultTs ? defaultTs : undefined;
+      columnOptions.defaultRaw = (column.nullable && defaultRaw === 'null') ? undefined : defaultRaw;
+      columnOptions.optional = typeof column.generated !== 'undefined' || defaultTs != null;
       columnOptions.generated = column.generated;
       columnOptions.nullable = column.nullable;
       columnOptions.primary = column.primary;
@@ -622,9 +627,9 @@ export class DatabaseTable {
       kind,
       ...columnOptions,
       nullable,
-      primary: fkIndex.primary || !fk.columnNames.some(columnName => !this.getPrimaryKey()?.columnNames.includes(columnName)),
-      index: !fkIndex.unique ? fkIndex.keyName : undefined,
-      unique: (fkIndex.unique && !fkIndex.primary) ? fkIndex.keyName : undefined,
+      primary: fkIndex?.primary || !fk.columnNames.some(columnName => !this.getPrimaryKey()?.columnNames.includes(columnName)),
+      index: !fkIndex?.unique ? fkIndex?.keyName : undefined,
+      unique: (fkIndex?.unique && !fkIndex.primary) ? fkIndex.keyName : undefined,
       ...fkOptions,
     };
   }
@@ -645,6 +650,10 @@ export class DatabaseTable {
 
     const kind = this.getReferenceKind(fk, unique);
     const type = this.getPropertyTypeForColumn(namingStrategy, column, fk);
+
+    const defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, type, true);
+    const defaultParsed = this.getPropertyDefaultValue(schemaHelper, column, type);
+    const defaultTs = defaultRaw !== defaultParsed ? defaultParsed : undefined;
     const fkOptions: Partial<EntityProperty> = {};
 
     if (fk) {
@@ -660,13 +669,15 @@ export class DatabaseTable {
       type,
       kind,
       generated: column.generated,
+      optional: defaultRaw !== 'null' || defaultTs != null || typeof column.generated !== 'undefined',
       columnType: column.type,
-      default: this.getPropertyDefaultValue(schemaHelper, column, type),
-      defaultRaw: this.getPropertyDefaultValue(schemaHelper, column, type, true),
+      default: defaultTs,
+      defaultRaw: (column.nullable && defaultRaw === 'null') ? undefined : defaultRaw,
       nullable: column.nullable,
       primary: column.primary && persist,
       autoincrement: column.autoincrement,
       fieldName: column.name,
+      unsigned: column.unsigned,
       length: column.length,
       precision: column.precision,
       scale: column.scale,
@@ -748,7 +759,7 @@ export class DatabaseTable {
       return !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + column.default);
     }
 
-    if (propType === 'number') {
+    if (propType === 'number' && !raw) {
       return +column.default;
     }
 

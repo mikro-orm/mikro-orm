@@ -19,7 +19,7 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
 
     const raw = RawQueryFragment.getKnownFragment(parent, false);
 
-    if (raw) {
+    if (raw && respectCustomCloneMethod) {
       return raw.clone();
     }
 
@@ -114,7 +114,7 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
 
       const raw = RawQueryFragment.getKnownFragment(i, false);
 
-      if (raw) {
+      if (raw && respectCustomCloneMethod) {
         const i2 = raw.clone().toString();
         (child as any)[i2] = _clone(parent[i]);
         continue;

@@ -24,7 +24,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
    * Creates a QueryBuilder instance
    */
   createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, alias?: string, type?: ConnectionType, loggerContext?: LoggingOptions): QueryBuilder<T> {
-    const context = this.getContext();
+    const context = this.getContext(false);
     return new QueryBuilder<T>(entityName, this.getMetadata(), this.getDriver(), context.getTransactionContext(), alias, type, context, loggerContext ?? context.loggerContext);
   }
 

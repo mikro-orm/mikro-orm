@@ -8,7 +8,7 @@ TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-or
 
 [![NPM version](https://img.shields.io/npm/v/@mikro-orm/core.svg)](https://www.npmjs.com/package/@mikro-orm/core)
 [![NPM dev version](https://img.shields.io/npm/v/@mikro-orm/core/next.svg)](https://www.npmjs.com/package/@mikro-orm/core)
-[![Chat on slack](https://img.shields.io/badge/chat-on%20slack-blue.svg)](https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LWM4ZDExMjU5ZDhmNjA2MmM3MWMwZmExNjhhNDdiYTMwNWM0MGY5ZTE3ZjkyZTMzOWExNDgyYmMzNDE1NDI5NjA)
+[![Chat on discord](https://img.shields.io/badge/chat-on%20discord-blue.svg)](https://discord.gg/w8bjxFHS7X)
 [![Downloads](https://img.shields.io/npm/dm/@mikro-orm/core.svg)](https://www.npmjs.com/package/@mikro-orm/core)
 [![Coverage Status](https://img.shields.io/coveralls/mikro-orm/mikro-orm.svg)](https://coveralls.io/r/mikro-orm/mikro-orm?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/27999651d3adc47cfa40/maintainability)](https://codeclimate.com/github/mikro-orm/mikro-orm/maintainability)

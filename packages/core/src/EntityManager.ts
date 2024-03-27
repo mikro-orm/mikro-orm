@@ -306,7 +306,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return { where, populateWhere: options.populateWhere };
     }
 
-    return { where: options.populateWhere };
+    return { where: options.populateWhere as ObjectQuery<Entity> };
   }
 
   /**
@@ -323,6 +323,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
   addFilter<T1, T2, T3>(name: string, cond: FilterQuery<T1 | T2 | T3> | ((args: Dictionary) => MaybePromise<FilterQuery<T1 | T2 | T3>>), entityName?: [EntityName<T1>, EntityName<T2>, EntityName<T3>], enabled?: boolean): void;
+
+  /**
+   * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
+   */
+  addFilter(name: string, cond: Dictionary | ((args: Dictionary) => MaybePromise<FilterQuery<AnyEntity>>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], enabled?: boolean): void;
 
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
@@ -465,7 +470,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const props = meta.relations.filter(prop => {
-      return [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)
+      return !prop.object && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)
         && ((options.fields?.length ?? 0) === 0 || options.fields?.some(f => prop.name === f || prop.name.startsWith(`${String(f)}.`)));
     });
     const ret = options.populate as PopulateOptions<T>[];
@@ -734,7 +739,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     where = await em.processWhere(entityName, where, options, 'read');
     em.validator.validateEmptyWhere(where);
     em.checkLockRequirements(options.lockMode, meta);
-    entity = em.unitOfWork.tryGetById<Entity>(entityName, where, options.schema);
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
 
     if (entity && !em.shouldRefresh(meta, entity, options) && isOptimisticLocking) {
@@ -1132,7 +1136,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (options.onConflictAction === 'ignore' || (!res.rows?.length && loadPK.size > 0) || reloadFields) {
       const unique = meta.hydrateProps.filter(p => !p.lazy).map(p => p.name);
-      const add = new Set(propIndex! >= 0 ? [unique[propIndex!]] : []);
+      const add = new Set(propIndex! >= 0 ? [unique[propIndex!]] : [] as EntityKey<Entity>[]);
 
       for (const cond of loadPK.values()) {
         Utils.keys(cond).forEach(key => add.add(key as EntityKey));
@@ -1233,24 +1237,31 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       loggerContext: options.loggerContext,
     });
     options.ctx ??= em.transactionContext;
+    const propagateToUpperContext = !em.global || this.config.get('allowGlobalContext');
 
     return TransactionContext.create(fork, async () => {
       return fork.getConnection().transactional(async trx => {
         fork.transactionContext = trx;
-        fork.eventManager.registerSubscriber({
-          afterFlush(args: FlushEventArgs) {
-            args.uow.getChangeSets()
-              .filter(cs => [ChangeSetType.DELETE, ChangeSetType.DELETE_EARLY].includes(cs.type))
-              .forEach(cs => em.unitOfWork.unsetIdentity(cs.entity));
-          },
-        });
+
+        if (propagateToUpperContext) {
+          fork.eventManager.registerSubscriber({
+            afterFlush(args: FlushEventArgs) {
+              args.uow.getChangeSets()
+                .filter(cs => [ChangeSetType.DELETE, ChangeSetType.DELETE_EARLY].includes(cs.type))
+                .forEach(cs => em.unitOfWork.unsetIdentity(cs.entity));
+            },
+          });
+        }
+
         const ret = await cb(fork);
         await fork.flush();
 
-        // ensure all entities from inner context are merged to the upper one
-        for (const entity of fork.unitOfWork.getIdentityMap()) {
-          em.unitOfWork.register(entity);
-          entity.__helper!.__em = em;
+        if (propagateToUpperContext) {
+          // ensure all entities from inner context are merged to the upper one
+          for (const entity of fork.unitOfWork.getIdentityMap()) {
+            em.unitOfWork.register(entity);
+            entity.__helper!.__em = em;
+          }
         }
 
         return ret;
@@ -1525,7 +1536,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * symbol to omit some properties from this check without making them optional. Alternatively, use `partial: true`
    * in the options to disable the strict checks for required properties. This option has no effect on runtime.
    */
-  create<Entity extends object>(entityName: EntityName<Entity>, data: RequiredEntityData<Entity>, options?: CreateOptions): Entity;
+  create<Entity extends object, Convert extends boolean = false>(entityName: EntityName<Entity>, data: RequiredEntityData<Entity, never, Convert>, options?: CreateOptions<Convert>): Entity;
 
   /**
    * Creates new instance of given entity and populates it with given data.
@@ -1539,7 +1550,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * symbol to omit some properties from this check without making them optional. Alternatively, use `partial: true`
    * in the options to disable the strict checks for required properties. This option has no effect on runtime.
    */
-  create<Entity extends object>(entityName: EntityName<Entity>, data: EntityData<Entity>, options: CreateOptions & { partial: true }): Entity;
+  create<Entity extends object, Convert extends boolean = false>(entityName: EntityName<Entity>, data: EntityData<Entity, Convert>, options: CreateOptions<Convert> & { partial: true }): Entity;
 
   /**
    * Creates new instance of given entity and populates it with given data.
@@ -1553,7 +1564,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    symbol to omit some properties from this check without making them optional. Alternatively, use `partial: true`
    in the options to disable the strict checks for required properties. This option has no effect on runtime.
    */
-  create<Entity extends object>(entityName: EntityName<Entity>, data: RequiredEntityData<Entity>, options: CreateOptions = {}): Entity {
+  create<Entity extends object, Convert extends boolean = false>(entityName: EntityName<Entity>, data: RequiredEntityData<Entity, never, Convert>, options: CreateOptions<Convert> = {}): Entity {
     const em = this.getContext();
     options.schema ??= em._schema;
     const entity = em.entityFactory.create(entityName, data as EntityData<Entity>, {
@@ -1576,8 +1587,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   assign<
     Entity extends object,
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
-    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
-  >(entity: Entity | Partial<Entity>, data: Data & IsSubset<EntityData<Naked>, Data>, options: AssignOptions = {}): MergeSelected<Entity, Naked, keyof Data & string> {
+    Convert extends boolean = false,
+    Data extends EntityData<Naked, Convert> | Partial<EntityDTO<Naked>> = EntityData<Naked, Convert> | Partial<EntityDTO<Naked>>,
+  >(entity: Entity | Partial<Entity>, data: Data & IsSubset<EntityData<Naked, Convert>, Data>, options: AssignOptions<Convert> = {}): MergeSelected<Entity, Naked, keyof Data & string> {
     return EntityAssigner.assign(entity, data as any, { em: this.getContext(), ...options }) as any;
   }
 
@@ -1801,11 +1813,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   async populate<
     Entity extends object,
-    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
+    Naked extends FromEntityType<UnboxArray<Entity>> = FromEntityType<UnboxArray<Entity>>,
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entities: Entity, populate: AutoPath<UnboxArray<Entity>, Hint, '*'>[] | false, options: EntityLoaderOptions<UnboxArray<Entity>, Fields, Excludes> = {}): Promise<Entity extends object[] ? MergeLoaded<ArrayElement<Entity>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Entity, Naked, Hint, Fields, Excludes>> {
+  >(entities: Entity, populate: AutoPath<Naked, Hint, '*'>[] | false, options: EntityLoaderOptions<Naked, Fields, Excludes> = {}): Promise<Entity extends object[] ? MergeLoaded<ArrayElement<Entity>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Entity, Naked, Hint, Fields, Excludes>> {
     const arr = Utils.asArray(entities);
 
     if (arr.length === 0) {
@@ -2280,7 +2292,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
 }
 
-export interface CreateOptions {
+export interface CreateOptions<Convert extends boolean> {
   /** creates a managed entity instance instead, bypassing the constructor call */
   managed?: boolean;
   /** create entity in a specific schema - alternatively, use `wrap(entity).setSchema()` */
@@ -2289,6 +2301,8 @@ export interface CreateOptions {
   persist?: boolean;
   /** this option disables the strict typing which requires all mandatory properties to have value, it has no effect on runtime */
   partial?: boolean;
+  /** convert raw database values based on mapped types (by default, already converted values are expected) */
+  convertCustomTypes?: Convert;
 }
 
 export interface MergeOptions {

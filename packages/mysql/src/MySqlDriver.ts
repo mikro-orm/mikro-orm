@@ -1,4 +1,4 @@
-import type { Configuration, EntityDictionary, NativeInsertUpdateManyOptions, QueryResult } from '@mikro-orm/core';
+import type { Configuration, EntityDictionary, NativeInsertUpdateManyOptions, QueryResult, Transaction } from '@mikro-orm/core';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
 import { MySqlConnection } from './MySqlConnection';
 import { MySqlPlatform } from './MySqlPlatform';
@@ -11,14 +11,14 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
     super(config, new MySqlPlatform(), MySqlConnection, ['knex', 'mysql2']);
   }
 
-  private async getAutoIncrementIncrement(): Promise<number> {
+  private async getAutoIncrementIncrement(ctx?: Transaction): Promise<number> {
     if (this.autoIncrementIncrement == null) {
       // the increment step may differ when running a cluster, see https://github.com/mikro-orm/mikro-orm/issues/3828
       const res = await this.connection.execute<{ auto_increment_increment: number }>(
         `show variables like 'auto_increment_increment'`,
         [],
         'get',
-        undefined,
+        ctx,
         { enabled: false },
       );
       /* istanbul ignore next */
@@ -32,7 +32,8 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
     options.processCollections ??= true;
     const res = await super.nativeInsertMany(entityName, data, options);
     const pks = this.getPrimaryKeyFields(entityName);
-    const autoIncrementIncrement = await this.getAutoIncrementIncrement();
+    const ctx = options.ctx;
+    const autoIncrementIncrement = await this.getAutoIncrementIncrement(ctx);
     data.forEach((item, idx) => res.rows![idx] = { [pks[0]]: item[pks[0]] ?? res.insertId as number + (idx * autoIncrementIncrement) });
     res.row = res.rows![0];
 

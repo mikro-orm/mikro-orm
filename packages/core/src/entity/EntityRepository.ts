@@ -29,6 +29,8 @@ import type {
   GetReferenceOptions,
   NativeInsertUpdateOptions,
   UpdateOptions,
+  UpsertManyOptions,
+  UpsertOptions,
 } from '../drivers/IDatabaseDriver';
 import type { Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
@@ -87,7 +89,7 @@ export class EntityRepository<Entity extends object> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsert(entityOrData?: EntityData<Entity> | Entity, options?: NativeInsertUpdateOptions<Entity>): Promise<Entity> {
+  async upsert(entityOrData?: EntityData<Entity> | Entity, options?: UpsertOptions<Entity>): Promise<Entity> {
     return this.getEntityManager().upsert<Entity>(this.entityName, entityOrData, options);
   }
 
@@ -116,7 +118,7 @@ export class EntityRepository<Entity extends object> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsertMany(entitiesOrData?: EntityData<Entity>[] | Entity[], options?: NativeInsertUpdateOptions<Entity>): Promise<Entity[]> {
+  async upsertMany(entitiesOrData?: EntityData<Entity>[] | Entity[], options?: UpsertManyOptions<Entity>): Promise<Entity[]> {
     return this.getEntityManager().upsertMany(this.entityName, entitiesOrData, options);
   }
 
@@ -238,7 +240,7 @@ export class EntityRepository<Entity extends object> {
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entities: Ent, populate: AutoPath<Entity, Hint, '*'>[] | false, options?: EntityLoaderOptions<Entity, Fields, Excludes>): Promise<Ent extends object[] ? MergeLoaded<ArrayElement<Ent>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Ent, Naked, Hint, Fields, Excludes>> {
+  >(entities: Ent, populate: AutoPath<Naked, Hint, '*'>[] | false, options?: EntityLoaderOptions<Naked, Fields, Excludes>): Promise<Ent extends object[] ? MergeLoaded<ArrayElement<Ent>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Ent, Naked, Hint, Fields, Excludes>> {
     this.validateRepositoryType(entities, 'populate');
     // @ts-ignore hard to type
     return this.getEntityManager().populate(entities, populate, options);
@@ -252,7 +254,7 @@ export class EntityRepository<Entity extends object> {
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<Entity>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
-  create(data: RequiredEntityData<Entity>, options?: CreateOptions): Entity {
+  create<Convert extends boolean = false>(data: RequiredEntityData<Entity, never, Convert>, options?: CreateOptions<Convert>): Entity {
     return this.getEntityManager().create(this.entityName, data, options);
   }
 
@@ -262,8 +264,9 @@ export class EntityRepository<Entity extends object> {
   assign<
     Ent extends EntityType<Entity>,
     Naked extends FromEntityType<Ent> = FromEntityType<Ent>,
-    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
-  >(entity: Ent | Partial<Ent>, data: Data & IsSubset<EntityData<Naked>, Data>, options?: AssignOptions): MergeSelected<Ent, Naked, keyof Data & string> {
+    Convert extends boolean = false,
+    Data extends EntityData<Naked, Convert> | Partial<EntityDTO<Naked>> = EntityData<Naked, Convert> | Partial<EntityDTO<Naked>>,
+  >(entity: Ent | Partial<Ent>, data: Data & IsSubset<EntityData<Naked, Convert>, Data>, options?: AssignOptions<Convert>): MergeSelected<Ent, Naked, keyof Data & string> {
     this.validateRepositoryType(entity as Entity, 'assign');
     return this.getEntityManager().assign(entity, data as any, options) as any;
   }

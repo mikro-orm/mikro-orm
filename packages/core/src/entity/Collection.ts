@@ -65,7 +65,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
       const em = this.getEntityManager(this.items, false);
       await em?.populate(this.items, options.populate as any, options as any);
     } else {
-      await this.init(options);
+      await this.init({ refresh: false, ...options });
     }
 
     return this as unknown as LoadedCollection<Loaded<TT, P>>;
@@ -114,7 +114,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     let items: Loaded<TT, P>[];
 
     if (this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
-      const cond = await em.applyFilters(this.property.type, where, options.filters ?? {}, 'read');
+      const cond = await em.applyFilters(this.property.type, where, options.filters ?? {}, 'read') as FilterQuery<T>;
       const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, opts.orderBy, ctx, options);
       items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<TT>) => em.merge(this.property.type, item, { convertCustomTypes: true })) as any;
     } else {
@@ -319,8 +319,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
       ? helper(this.owner).__schema
       : undefined;
     await em.populate(this.owner as TT[], populate, {
-      ...options,
       refresh: true,
+      ...options,
       connectionType: options.connectionType,
       schema,
       where: { [this.property.name]: options.where } as FilterQuery<TT>,
@@ -335,13 +335,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
     let em = (this._em ?? wrapped.__em) as typeof wrapped.__em;
 
     if (!em) {
-      for (const i of this.items) {
-        if (i && helper(i).__em) {
-          em = helper(i).__em;
-          break;
-        }
-      }
-
       for (const i of items) {
         if (i && helper(i).__em) {
           em = helper(i).__em;

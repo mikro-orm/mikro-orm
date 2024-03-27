@@ -14,13 +14,13 @@ export class DebugCommand implements CommandModule {
   async handler() {
     CLIHelper.dump(`Current ${colors.cyan('MikroORM')} CLI configuration`);
     await CLIHelper.dumpDependencies();
-    const settings = await ConfigurationLoader.getSettings();
+    const settings = ConfigurationLoader.getSettings();
 
     if (settings.useTsNode) {
       CLIHelper.dump(' - ts-node ' + colors.green('enabled'));
     }
 
-    const configPaths = await CLIHelper.getConfigPaths();
+    const configPaths = CLIHelper.getConfigPaths();
     CLIHelper.dump(' - searched config paths:');
     await DebugCommand.checkPaths(configPaths, 'yellow');
 
@@ -28,11 +28,12 @@ export class DebugCommand implements CommandModule {
       const config = await CLIHelper.getConfiguration();
       CLIHelper.dump(` - configuration ${colors.green('found')}`);
 
-      const isConnected = await CLIHelper.isDBConnected();
-      if (isConnected) {
-        CLIHelper.dump(` - ${colors.green('database connection succesful')}`);
+      const isConnected = await CLIHelper.isDBConnected(true);
+
+      if (isConnected === true) {
+        CLIHelper.dump(` - ${colors.green('database connection successful')}`);
       } else {
-        CLIHelper.dump(` - ${colors.yellow('database connection failed')}`);
+        CLIHelper.dump(` - ${colors.yellow(`database connection failed (${isConnected})`)}`);
       }
 
       const tsNode = config.get('tsNode');

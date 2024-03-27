@@ -43,7 +43,11 @@ You can define custom types by extending `Type` abstract class. It has several o
 ```ts
 import { Type, Platform, EntityProperty, ValidationError } from '@mikro-orm/core';
 
-export class DateType extends Type<Date, string> {
+/**
+ * A custom type that maps SQL date column to JS Date objects.
+ * Note that the ORM DateType maps to string instead of Date.
+ */
+export class MyDateType extends Type<Date, string> {
 
   convertToDatabaseValue(value: Date | string | undefined, platform: Platform): string {
     if (value instanceof Date) {
@@ -54,7 +58,7 @@ export class DateType extends Type<Date, string> {
       return value as string;
     }
 
-    throw ValidationError.invalidType(DateType, value, 'JS');
+    throw ValidationError.invalidType(MyDateType, value, 'JS');
   }
 
   convertToJSValue(value: Date | string | undefined, platform: Platform): Date {
@@ -65,7 +69,7 @@ export class DateType extends Type<Date, string> {
     const date = new Date(value);
 
     if (date.toString() === 'Invalid Date') {
-      throw ValidationError.invalidType(DateType, value, 'database');
+      throw ValidationError.invalidType(MyDateType, value, 'database');
     }
 
     return date;
@@ -90,7 +94,7 @@ export class FooBar {
   @Property()
   name!: string;
 
-  @Property({ type: DateType, length: 3 })
+  @Property({ type: MyDateType, length: 3 })
   born?: Date;
 
 }
@@ -100,7 +104,54 @@ If your type implementation is stateful, e.g. if you want the type to behave dif
 
 ```ts
 @Property({ type: new MyDateType('DD-MM-YYYY') })
-born?: string;
+born?: Date;
+```
+
+## Mapping to objects and type-safety
+
+When your custom type maps a value to an object, it might break the internal types like in `em.create()`, as there is no easy way to detect whether some object type is an entity or something else. In those cases, it can be handy to use `IType` to provide more information about your type on the type-level. It has three arguments, the first represents the runtime type, the second one is the raw value type, and the last optional argument allows overriding the serialized type (which defaults to the raw value type).
+
+Consider the following custom type:
+
+```ts
+class MyClass {
+  constructor(private value: string) {}
+}
+
+class MyType extends Type<MyClass, string> {
+
+  convertToDatabaseValue(value: MyClass): string {
+    return value.value;
+  }
+
+  convertToJSValue(value: string): MyClass {
+    return new MyClass(value);
+  }
+
+}
+```
+
+Now let's use it together with the `IType`:
+
+```ts
+@Entity()
+class MyEntity {
+
+  @Property({ type: MyType })
+  // highlight-next-line
+  foo?: IType<MyClass, string>;
+
+}
+```
+
+This will make the `em.create()` properly disallow values other than MyClass, as well as convert the value type to `string` when serializing. Without the `IType`, there would be no error with `em.create()` and the serialization would result in `MyClass` on type level (but would be a `string` value on runtime):
+
+```ts
+// this will fail but wouldn't without the `IType`
+const entity = em.create(MyEntity, { foo: 'bar' });
+
+// serialized value is now correctly typed to `string`
+const object = wrap(e).toObject(); // `{ foo: string }`
 ```
 
 ## Advanced example - PointType and WKT
@@ -363,11 +414,11 @@ object?: { foo: string; bar: number };
 
 ### DateType
 
-To store dates without time information, we can use `DateType`. It does use `date` column type and maps it to the `Date` object.
+To store dates without time information, we can use `DateType`. It does use `date` column type and maps it to a `string`.
 
 ```ts
 @Property({ type: DateType, nullable: true })
-born?: Date;
+born?: string;
 ```
 
 ### TimeType

@@ -1,5 +1,17 @@
 import { BigIntType, EnumType, Type, Utils, type Dictionary } from '@mikro-orm/core';
-import { SchemaHelper, type AbstractSqlConnection, type CheckDef, type Column, type DatabaseSchema, type DatabaseTable, type ForeignKey, type IndexDef, type Table, type TableDifference, type Knex } from '@mikro-orm/knex';
+import {
+  SchemaHelper,
+  type AbstractSqlConnection,
+  type CheckDef,
+  type Column,
+  type DatabaseSchema,
+  type DatabaseTable,
+  type ForeignKey,
+  type IndexDef,
+  type Knex,
+  type Table,
+  type TableDifference,
+} from '@mikro-orm/knex';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
 
@@ -106,7 +118,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllColumns(connection: AbstractSqlConnection, tables: Table[], nativeEnums?: Dictionary<string[]>): Promise<Dictionary<Column[]>> {
+  async getAllColumns(connection: AbstractSqlConnection, tables: Table[], nativeEnums?: Dictionary<{ name: string; schema?: string; items: string[] }>): Promise<Dictionary<Column[]>> {
     const sql = `select table_schema as schema_name, table_name, column_name,
       column_default,
       is_nullable,
@@ -164,7 +176,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       if (nativeEnums?.[column.type]) {
         column.mappedType = Type.getType(EnumType);
         column.nativeEnumName = column.type;
-        column.enumItems = nativeEnums[column.type];
+        column.enumItems = nativeEnums[column.type]?.items;
       }
 
       ret[key].push(column);
@@ -195,28 +207,38 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
-    const sql = `select tco.table_schema as schema_name, kcu.table_name as table_name, rel_kcu.table_name as referenced_table_name,
-      rel_kcu.constraint_schema as referenced_schema_name,
-      kcu.column_name as column_name,
-      rel_kcu.column_name as referenced_column_name, kcu.constraint_name, rco.update_rule, rco.delete_rule
-      from information_schema.table_constraints tco
-      join information_schema.key_column_usage kcu
-        on tco.constraint_schema = kcu.constraint_schema
-        and tco.constraint_name = kcu.constraint_name
-      join information_schema.referential_constraints rco
-        on tco.constraint_schema = rco.constraint_schema
-        and tco.constraint_name = rco.constraint_name
-      join information_schema.key_column_usage rel_kcu
-        on rco.unique_constraint_schema = rel_kcu.constraint_schema
-        and rco.unique_constraint_name = rel_kcu.constraint_name
-        and kcu.ordinal_position = rel_kcu.ordinal_position
-      where (${tables.map(t => `tco.table_name = '${t.table_name}' and tco.table_schema = '${t.schema_name}' and tco.constraint_schema = '${t.schema_name}'`).join(' or ')})
-      and tco.constraint_type = 'FOREIGN KEY'
-      order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
+    const sql = `select nsp1.nspname schema_name, cls1.relname table_name, nsp2.nspname referenced_schema_name,
+      cls2.relname referenced_table_name, a.attname column_name, af.attname referenced_column_name, conname constraint_name,
+      confupdtype update_rule, confdeltype delete_rule, array_position(con.conkey,a.attnum) as ord
+      from pg_attribute a
+      join pg_constraint con on con.conrelid = a.attrelid AND a.attnum = ANY (con.conkey)
+      join pg_attribute af on af.attnum = con.confkey[array_position(con.conkey,a.attnum)] AND af.attrelid = con.confrelid
+      join pg_namespace nsp1 on nsp1.oid = con.connamespace
+      join pg_class cls1 on cls1.oid = con.conrelid
+      join pg_class cls2 on cls2.oid = confrelid
+      join pg_namespace nsp2 on nsp2.oid = cls2.relnamespace
+      where (${tables.map(t => `(cls1.relname = '${t.table_name}' and nsp1.nspname = '${t.schema_name}')`).join(' or ')})
+      and confrelid > 0
+      order by nsp1.nspname, cls1.relname, constraint_name, ord`;
+
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
 
+    function mapReferencialIntegrity(value: string) {
+      switch (value) {
+        case 'r': return 'RESTRICT';
+        case 'c': return 'CASCADE';
+        case 'n': return 'SET NULL';
+        case 'd': return 'SET DEFAULT';
+        case 'a':
+        default: return 'NO ACTION';
+      }
+    }
+
     for (const fk of allFks) {
+      fk.update_rule = mapReferencialIntegrity(fk.update_rule);
+      fk.delete_rule = mapReferencialIntegrity(fk.delete_rule);
+
       const key = this.getTableKey(fk);
       ret[key] ??= [];
       ret[key].push(fk);
@@ -230,18 +252,37 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getNativeEnumDefinitions(connection: AbstractSqlConnection, schemas: string[]): Promise<Dictionary<string[]>> {
-    const res = await connection.execute('select t.typname as enum_name, array_agg(e.enumlabel order by e.enumsortorder) as enum_value ' +
+  async getNativeEnumDefinitions(connection: AbstractSqlConnection, schemas: string[]): Promise<Dictionary<{ name: string; schema?: string; items: string[] }>> {
+    const res = await connection.execute('select t.typname as enum_name, min(n.nspname) as schema_name, array_agg(e.enumlabel order by e.enumsortorder) as enum_value ' +
       'from pg_type t ' +
       'join pg_enum e on t.oid = e.enumtypid ' +
       'join pg_catalog.pg_namespace n on n.oid = t.typnamespace ' +
       'where n.nspname in (?) ' +
-      'group by t.typname', Utils.unique(schemas));
+      'group by t.typname', [Utils.unique(schemas)]);
 
     return res.reduce((o, row) => {
-      o[row.enum_name] = this.platform.unmarshallArray(row.enum_value);
+      let name = row.enum_name;
+
+      if (row.schema_name && row.schema_name !== this.platform.getDefaultSchemaName()) {
+        name = row.schema_name + '.' + name;
+      }
+
+      o[name] = {
+        name: row.enum_name,
+        schema: row.schema_name,
+        items: this.platform.unmarshallArray(row.enum_value),
+      };
+
       return o;
     }, {});
+  }
+
+  override getCreateNativeEnumSQL(name: string, values: unknown[], schema?: string): string {
+    if (schema && schema !== this.platform.getDefaultSchemaName()) {
+      name = schema + '.' + name;
+    }
+
+    return `create type ${this.platform.quoteIdentifier(name)} as enum (${values.map(value => this.platform.quoteValue(value)).join(', ')})`;
   }
 
   override getDropNativeEnumSQL(name: string, schema?: string): string {
@@ -312,18 +353,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
 
     if (column.nativeEnumName && column.enumItems) {
-      const existingType = alter ? column.nativeEnumName in fromTable.nativeEnums : false;
+      const schemaPrefix = fromTable.schema && fromTable.schema !== this.platform.getDefaultSchemaName() ? `${fromTable.schema}.` : '';
+      const type = this.platform.quoteIdentifier(schemaPrefix + column.nativeEnumName);
 
-      if (!existingType) {
-        fromTable.nativeEnums[column.nativeEnumName] = [];
+      if (column.type.endsWith('[]')) {
+        return table.specificType(column.name, type + '[]');
       }
 
-      return table.enum(column.name, column.enumItems, {
-        useNative: true,
-        enumName: column.nativeEnumName,
-        schemaName: fromTable.schema && fromTable.schema !== this.platform.getDefaultSchemaName() ? fromTable.schema : undefined,
-        existingType,
-      });
+      return table.specificType(column.name, type);
     }
 
     if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
@@ -377,6 +414,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         ret.push(`alter table ${quotedName} alter column "${col.column.name}" drop default`);
       }
 
+      if (col.fromColumn.nativeEnumName && !col.column.nativeEnumName && col.fromColumn.default) {
+        ret.push(`alter table ${quotedName} alter column "${col.column.name}" drop default`);
+      }
+
       if (!col.fromColumn.nativeEnumName) {
         const constraintName = `${tableName}_${col.column.name}_check`;
         ret.push(`alter table ${quotedName} drop constraint if exists "${constraintName}"`);
@@ -408,6 +449,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     for (const col of changedEnums) {
       if (!col.fromColumn.nativeEnumName && col.column.nativeEnumName && col.column.default) {
+        ret.push(`alter table ${quotedName} alter column "${col.column.name}" set default ${col.column.default}`);
+      }
+
+      if (col.fromColumn.nativeEnumName && !col.column.nativeEnumName && col.column.default) {
         ret.push(`alter table ${quotedName} alter column "${col.column.name}" set default ${col.column.default}`);
       }
     }

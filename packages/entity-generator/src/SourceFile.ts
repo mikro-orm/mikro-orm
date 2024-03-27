@@ -16,6 +16,7 @@ import {
   UnknownType,
   Utils,
 } from '@mikro-orm/core';
+import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper';
 
 /**
  * @see https://github.com/tc39/proposal-regexp-unicode-property-escapes#other-examples
@@ -134,7 +135,7 @@ export class SourceFile {
   protected generateImports() {
     const imports = [];
     if (this.coreImports.size > 0) {
-      imports.push(`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`);
+      imports.push(`import { ${([...this.coreImports].sort().map(t => POSSIBLE_TYPE_IMPORTS.includes(t as typeof POSSIBLE_TYPE_IMPORTS[number]) ? `type ${t}` : t).join(', '))} } from '@mikro-orm/core';`);
     }
     const entityImportExtension = this.options.esmImport ? '.js' : '';
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
@@ -197,16 +198,15 @@ export class SourceFile {
         })()
       : prop.type;
 
-    // string defaults are usually things like SQL functions, but can be also enums, for that `useDefault` should be true
-    const isEnumOrNonStringDefault = prop.enum || typeof prop.default !== 'string';
-    const useDefault = prop.default != null && isEnumOrNonStringDefault;
+    const useDefault = prop.default != null;
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
+
+    if (!prop.mapToPk && typeof prop.kind === 'string' && prop.kind !== ReferenceKind.SCALAR) {
+      this.entityImports.add(propType);
+    }
 
     if (prop.ref) {
       this.coreImports.add('Ref');
-      if (typeof prop.kind === 'string' && prop.kind !== ReferenceKind.SCALAR) {
-        this.entityImports.add(propType);
-      }
       return `${padding}${prop.name}${optional}: Ref<${propType}>${hiddenType};\n`;
     }
 
@@ -217,7 +217,7 @@ export class SourceFile {
     }
     ret += hiddenType;
 
-    if (useDefault || (optional !== '?' && typeof prop.default === 'string')) {
+    if (useDefault || (prop.optional && !prop.nullable)) {
       this.coreImports.add('Opt');
       ret += ' & Opt';
     }
@@ -230,7 +230,7 @@ export class SourceFile {
       return `${padding}${ret} = ${propType}.${prop.default.toUpperCase()};\n`;
     }
 
-    return `${padding}${ret} = ${prop.default};\n`;
+    return `${padding}${ret} = ${propType === 'string' ? this.quote('' + prop.default) : prop.default};\n`;
   }
 
   protected getEnumClassDefinition(enumClassName: string, enumValues: string[], padLeft: number): string {
@@ -405,17 +405,13 @@ export class SourceFile {
   }
 
   protected getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
-    if (this.options.scalarTypeInDecorator && prop.kind === ReferenceKind.SCALAR && !prop.enum) {
-      options.type = this.quote(prop.type);
-    }
-
     if (prop.nullable && !prop.mappedBy) {
       options.nullable = true;
     }
 
-    if (prop.persist === false) {
-      options.persist = false;
-    }
+    (['persist', 'hydrate', 'trackChanges'] as const)
+      .filter(key => prop[key] === false)
+      .forEach(key => options[key] = false);
 
     (['onCreate', 'onUpdate', 'serializer'] as const)
       .filter(key => typeof prop[key] === 'function')
@@ -438,21 +434,12 @@ export class SourceFile {
       options.comment = this.quote(prop.comment);
     }
 
-    if (prop.default == null) {
-      return;
-    }
-
-    if (typeof prop.default !== 'string') {
-      options.default = prop.default;
-      return;
-    }
-
-    if ([`''`, ''].includes(prop.default)) {
-      options.default = `''`;
-    } else if (prop.defaultRaw === this.quote(prop.default)) {
-      options.default = this.quote(prop.default);
-    } else {
-      options.defaultRaw = `\`${prop.default}\``;
+    if (typeof prop.defaultRaw !== 'undefined' && prop.defaultRaw !== 'null' &&
+      prop.defaultRaw !== (typeof prop.default === 'string' ? this.quote(prop.default) : `${prop.default}`)
+    ) {
+      options.defaultRaw = `\`${prop.defaultRaw}\``;
+    } else if (prop.ref && prop.default != null) {
+      options.default = typeof prop.default === 'string' ? this.quote(prop.default) : prop.default;
     }
   }
 
@@ -461,25 +448,35 @@ export class SourceFile {
       options.fieldName = `'${prop.fieldNames[0]}'`;
     }
 
-    // for enum properties, we don't need a column type or the property length
-    // in the decorator so return early.
-    if (prop.enum) {
+    // For enum properties, we don't need a column type
+    // or the property length or other information in the decorator.
+    // Non-persistent properties also don't need any of that additional information.
+    if (prop.enum || !prop.persist) {
       return;
     }
 
-    let t = prop.type;
-
-    if (t === 'Date') {
-      t = 'datetime';
+    // Type option is added not only with the scalarTypeInDecorator option,
+    // but also when there are prop type modifiers, because reflect-metadata can't extract the base.
+    if (this.options.scalarTypeInDecorator || prop.hidden || (prop.optional && (!prop.nullable || prop.default != null))) {
+      options.type = this.quote(prop.type);
     }
 
-    const mappedType1 = this.platform.getMappedType(t);
-    const mappedType2 = this.platform.getMappedType(prop.columnTypes[0]);
-    const columnType1 = mappedType1.getColumnType({ ...prop, autoincrement: false }, this.platform);
-    const columnType2 = mappedType2.getColumnType({ ...prop, autoincrement: false }, this.platform);
+    const mappedTypeFromPropType = this.platform.getMappedType(prop.type === 'Date' ? 'datetime' : prop.type);
+    const mappedTypeFromColumnType = this.platform.getMappedType(prop.columnTypes[0]);
+    const columnTypeFromMappedPropType = mappedTypeFromPropType.getColumnType(
+      { ...prop, autoincrement: false },
+      this.platform,
+    );
+    const columnTypeFromMappedColumnType = mappedTypeFromColumnType.getColumnType(
+      { ...prop, autoincrement: false },
+      this.platform,
+    );
 
-    if (columnType1 !== columnType2 || [mappedType1, mappedType2].some(t => t instanceof UnknownType)) {
-      options.columnType = this.quote(columnType2);
+    if (
+      columnTypeFromMappedPropType !== columnTypeFromMappedColumnType
+      || [mappedTypeFromPropType, mappedTypeFromColumnType].some(t => t instanceof UnknownType)
+    ) {
+      options.columnType = this.quote(columnTypeFromMappedColumnType);
     }
 
     const assign = (key: keyof EntityProperty) => {
@@ -488,22 +485,32 @@ export class SourceFile {
       }
     };
 
-    if (!(mappedType2 instanceof DateType) && !options.columnType) {
+    if (!(mappedTypeFromColumnType instanceof DateType) && !options.columnType) {
       assign('length');
     }
 
     // those are already included in the `columnType` in most cases, and when that option is present, they would be ignored anyway
     /* istanbul ignore next */
-    if (mappedType2 instanceof DecimalType && !options.columnType) {
+    if (mappedTypeFromColumnType instanceof DecimalType && !options.columnType) {
       assign('precision');
       assign('scale');
     }
+
+    if (this.platform.supportsUnsigned() &&
+      (
+        (!prop.primary && prop.unsigned) ||
+        (prop.primary && !prop.unsigned && this.platform.isNumericColumn(mappedTypeFromColumnType))
+      )
+    ) {
+      assign('unsigned');
+    }
+
     if (prop.autoincrement) {
-      if (!prop.primary || !['number', 'bigint'].includes(t) || this.meta.getPrimaryProps().length !== 1) {
+      if (!prop.primary || !this.platform.isNumericColumn(mappedTypeFromColumnType) || this.meta.getPrimaryProps().length !== 1) {
         options.autoincrement = true;
       }
     } else {
-      if (prop.primary && ['number', 'bigint'].includes(t) && this.meta.getPrimaryProps().length === 1) {
+      if (prop.primary && this.platform.isNumericColumn(mappedTypeFromColumnType) && this.meta.getPrimaryProps().length === 1) {
         options.autoincrement = false;
       }
     }
@@ -576,10 +583,8 @@ export class SourceFile {
   }
 
   protected getForeignKeyDecoratorOptions(options: OneToOneOptions<any, any>, prop: EntityProperty) {
-    const parts = prop.referencedTableName.split('.', 2);
-    const className = this.namingStrategy.getEntityName(...parts.reverse() as [string, string]);
-    this.entityImports.add(className);
-    options.entity = `() => ${className}`;
+    this.entityImports.add(prop.type);
+    options.entity = `() => ${prop.type}`;
 
     if (prop.ref) {
       options.ref = true;

@@ -271,7 +271,7 @@ describe('QueryBuilder', () => {
       .setFlag(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)
       .limit(2, 1);
     expect(qb.hasFlag(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)).toBe(true);
-    const sql = 'select `fz`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `fz` left join `foo_bar2` as `e1` on `fz`.`id` = `e1`.`baz_id` limit ? offset ?';
+    const sql = 'select `fz`.*, `e1`.`id` as `e1__id` from `foo_baz2` as `fz` left join `foo_bar2` as `e1` on `fz`.`id` = `e1`.`baz_id` limit ? offset ?';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual([2, 1]);
   });
@@ -722,42 +722,42 @@ describe('QueryBuilder', () => {
   test('select by 1:1 inversed', async () => {
     const qb = orm.em.createQueryBuilder(FooBaz2);
     qb.select('*').where({ id: 123 }).populate([{ field: 'bar' }]);
-    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e0`.`id` = ?');
+    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `e1__id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e0`.`id` = ?');
     expect(qb.getParams()).toEqual([123]);
   });
 
   test('select by 1:1 inversed (search by association)', async () => {
     const qb = orm.em.createQueryBuilder(FooBaz2);
     qb.select('*').where({ bar: 123 });
-    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` = ?');
+    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `e1__id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` = ?');
     expect(qb.getParams()).toEqual([123]);
   });
 
   test('select by 1:1 inversed with populate', async () => {
     const qb = orm.em.createQueryBuilder(FooBaz2);
     qb.select('*').where({ id: 123 }).populate([{ field: 'bar' }]);
-    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e0`.`id` = ?');
+    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `e1__id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e0`.`id` = ?');
     expect(qb.getParams()).toEqual([123]);
   });
 
   test('select by 1:1 inversed (uuid pk)', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
     qb.select('*').where({ test: 123 });
-    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `test_id`, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e1`.`id` = ?');
+    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `e1__id`, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e1`.`id` = ?');
     expect(qb.getParams()).toEqual([123]);
   });
 
   test('select by 1:1 inversed with populate (uuid pk)', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
     qb.select('*').where({ test: 123 }).populate([{ field: 'test' }]);
-    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `test_id`, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e1`.`id` = ?');
+    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `e1__id`, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e1`.`id` = ?');
     expect(qb.getParams()).toEqual([123]);
   });
 
   test('select by 1:1 inversed with populate() before where() (uuid pk)', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
     qb.select('*').populate([{ field: 'test' }]).where({ test: 123 });
-    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `test_id`, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e1`.`id` = ?');
+    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `e1__id`, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e1`.`id` = ?');
     expect(qb.getParams()).toEqual([123]);
   });
 
@@ -2966,7 +2966,7 @@ describe('QueryBuilder', () => {
 
   test('joining 1:1 inverse inside $and condition (GH issue 849)', async () => {
     const sql0 = orm.em.createQueryBuilder(FooBaz2).select('*').where({ bar: 123 }).getQuery();
-    expect(sql0).toBe('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` = ?');
+    expect(sql0).toBe('select `e0`.*, `e1`.`id` as `e1__id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` = ?');
     const expected = 'select `e0`.* from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` in (?)';
     const sql1 = orm.em.createQueryBuilder(FooBaz2).where({ bar: [123] }).getQuery();
     expect(sql1).toBe(expected);
@@ -3025,7 +3025,7 @@ describe('QueryBuilder', () => {
       'where `e1`.`id` = ?');
 
     const sql4 = orm.em.createQueryBuilder(Book2).select('*').where({ test: { id: 1 } }).getQuery();
-    expect(sql4).toBe('select `e0`.*, `e1`.`id` as `test_id`, `e0`.price * 1.19 as `price_taxed` ' +
+    expect(sql4).toBe('select `e0`.*, `e1`.`id` as `e1__id`, `e0`.price * 1.19 as `price_taxed` ' +
       'from `book2` as `e0` ' +
       'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
       'where `e1`.`id` = ?');

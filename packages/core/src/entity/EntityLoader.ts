@@ -22,6 +22,7 @@ import type { MetadataStorage } from '../metadata/MetadataStorage';
 import type { Platform } from '../platforms/Platform';
 import { helper } from './wrap';
 import type { LoggingOptions } from '../logging/Logger';
+import { raw, RawQueryFragment } from '../utils/RawQueryFragment';
 
 export type EntityLoaderOptions<Entity, Fields extends string = '*', Excludes extends string = never> = {
   where?: FilterQuery<Entity>;
@@ -58,7 +59,7 @@ export class EntityLoader {
    */
   async populate<Entity extends object, Fields extends string = '*'>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): Promise<void> {
     if (entities.length === 0 || Utils.isEmpty(populate)) {
-      return;
+      return this.setSerializationContext(entities, populate, options);
     }
 
     if ((entities as AnyEntity[]).some(e => !e.__helper)) {
@@ -76,7 +77,6 @@ export class EntityLoader {
     options.refresh ??= false;
     options.convertCustomTypes ??= true;
     populate = this.normalizePopulate<Entity>(entityName, populate as true, options.strategy, options.lookup);
-    const exclude = options.exclude as string[] ?? [];
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
     /* istanbul ignore next */
@@ -84,17 +84,9 @@ export class EntityLoader {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
+    this.setSerializationContext(entities, populate, options);
+
     for (const entity of entities) {
-      const context = helper(entity).__serializationContext;
-      context.populate = context.populate ? context.populate.concat(populate) : populate as PopulateOptions<Entity>[];
-
-      if (context.fields && options.fields) {
-        options.fields.forEach(f => context.fields!.add(f as string));
-      } else if (options.fields) {
-        context.fields = new Set(options.fields as string[]);
-      }
-
-      context.exclude = context.exclude ? context.exclude.concat(exclude) : exclude;
       visited.add(entity);
     }
 
@@ -125,6 +117,24 @@ export class EntityLoader {
 
     // merge same fields
     return this.mergeNestedPopulate(normalized);
+  }
+
+  private setSerializationContext<Entity extends object, Fields extends string = '*'>(entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): void {
+    const exclude = options.exclude as string[] ?? [];
+
+    for (const entity of entities) {
+      const context = helper(entity).__serializationContext;
+      context.populate = context.populate ? context.populate.concat(populate as any) : populate as PopulateOptions<Entity>[];
+      context.exclude = context.exclude ? context.exclude.concat(exclude) : exclude;
+
+      if (context.fields && options.fields) {
+        options.fields.forEach(f => context.fields!.add(f as string));
+      } else if (options.fields) {
+        context.fields = new Set(options.fields as string[]);
+      } else {
+        context.fields = new Set(['*']);
+      }
+    }
   }
 
   private expandDotPaths<Entity>(normalized: PopulateOptions<Entity>[], meta: EntityMetadata<any>) {
@@ -261,35 +271,24 @@ export class EntityLoader {
     const mapToPk = prop.targetMeta!.properties[prop.mappedBy].mapToPk;
     const map: Dictionary<Entity[]> = {};
 
-    filtered.forEach(entity => {
+    for (const entity of filtered) {
       const key = helper(entity).getSerializedPrimaryKey();
-      return map[key] = [];
-    });
-
-    if (mapToPk) {
-      children.forEach(child => {
-        const pk = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
-
-        if (pk) {
-          const key = helper(this.em.getReference(prop.type, pk)).getSerializedPrimaryKey();
-          map[key]?.push(child as Entity);
-        }
-      });
-    } else {
-      children.forEach(child => {
-        const entity = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
-
-        if (entity) {
-          const key = helper(entity).getSerializedPrimaryKey();
-          map[key]?.push(child as Entity);
-        }
-      });
+      map[key] = [];
     }
 
-    filtered.forEach(entity => {
+    for (const child of children) {
+      const pk = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
+
+      if (pk) {
+        const key = helper(mapToPk ? this.em.getReference(prop.type, pk) : pk).getSerializedPrimaryKey();
+        map[key]?.push(child as Entity);
+      }
+    }
+
+    for (const entity of filtered) {
       const key = helper(entity).getSerializedPrimaryKey();
       (entity[field] as unknown as Collection<Entity>).hydrate(map[key]);
-    });
+    }
   }
 
   private initializeManyToMany<Entity>(filtered: Entity[], children: AnyEntity[], prop: EntityProperty<Entity>, field: keyof Entity, customOrder: boolean): void {
@@ -361,9 +360,27 @@ export class EntityLoader {
       where = { $and: [where, prop.where] } as FilterQuery<Entity>;
     }
 
+    const propOrderBy: QueryOrderMap<Entity>[] = [];
+
+    if (prop.orderBy) {
+      for (const item of Utils.asArray(prop.orderBy)) {
+        for (const field of Utils.keys(item)) {
+          const rawField = RawQueryFragment.getKnownFragment(field, false);
+
+          if (rawField) {
+            const raw2 = raw(rawField.sql, rawField.params);
+            propOrderBy.push({ [raw2.toString()]: item[field] } as QueryOrderMap<Entity>);
+            continue;
+          }
+
+          propOrderBy.push({ [field]: item[field] } as QueryOrderMap<Entity>);
+        }
+      }
+    }
+
     const items = await this.em.find(prop.type, where, {
       filters, convertCustomTypes, lockMode, populateWhere, logging,
-      orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy)] as QueryOrderMap<Entity>[],
+      orderBy: [...Utils.asArray(options.orderBy), ...propOrderBy] as QueryOrderMap<Entity>[],
       populate: populate.children as never ?? populate.all ?? [],
       exclude: Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) as any : options.exclude,
       strategy, fields, schema, connectionType,
@@ -590,7 +607,10 @@ export class EntityLoader {
     if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       children.push(...filtered.map(e => (e[prop.name] as unknown as Collection<Entity, AnyEntity>).owner));
     } else if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner) {
-      children.push(...filtered.reduce((a, b) => [...a, ...(b[prop.name] as unknown as Collection<AnyEntity>).getItems()], [] as AnyEntity[]));
+      children.push(...filtered.reduce((a, b) => {
+        a.push(...(b[prop.name] as Collection<AnyEntity>).getItems());
+        return a;
+      }, [] as AnyEntity[]));
     } else if (prop.kind === ReferenceKind.MANY_TO_MANY) { // inverse side
       children.push(...filtered as AnyEntity[]);
     } else { // MANY_TO_ONE or ONE_TO_ONE

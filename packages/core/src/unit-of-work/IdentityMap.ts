@@ -1,5 +1,4 @@
 import type { AnyEntity, Constructor, EntityMetadata } from '../typings';
-import { Utils } from '../utils/Utils';
 
 export class IdentityMap {
 
@@ -81,29 +80,7 @@ export class IdentityMap {
   private getPkHash<T>(item: T): string {
     const wrapped = (item as AnyEntity).__helper;
     const meta = wrapped.__meta as EntityMetadata<T>;
-    let pk = wrapped!.getPrimaryKey(true);
-
-    if (Utils.isRawSql(pk)) {
-      pk = wrapped!.getPrimaryKey();
-    }
-
-    if (pk && pk.valueOf !== Object.prototype.valueOf && typeof pk.valueOf === 'function') {
-      pk = pk.valueOf();
-    }
-
-    if (pk == null) {
-      return pk as string;
-    }
-
-    let hash: string;
-
-    if (meta.simplePK) {
-      hash = '' + item[meta.primaryKeys[0]];
-    } else {
-      const pks = Utils.getOrderedPrimaryKeys<T>(pk, meta);
-      hash = Utils.getPrimaryKeyHash(pks as string[]);
-    }
-
+    const hash = wrapped.getSerializedPrimaryKey();
     const schema = wrapped.__schema || meta.root.schema;
 
     if (schema) {

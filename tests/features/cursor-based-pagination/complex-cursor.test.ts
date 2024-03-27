@@ -198,8 +198,8 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mssql', 'mongo
     expect(cursor2.totalCount).toBe(10);
     expect(cursor2.startCursor).toBe('W3siYmVzdEZyaWVuZCI6eyJlbWFpbCI6ImVtYWlsLTk2IiwibmFtZSI6IlVzZXIgMyJ9fSwiVXNlciAzIiwyNiwiZW1haWwtNTEiXQ');
     expect(cursor2.endCursor).toBe('W3siYmVzdEZyaWVuZCI6eyJlbWFpbCI6ImVtYWlsLTk2IiwibmFtZSI6IlVzZXIgMyJ9fSwiVXNlciAzIiwzNiwiZW1haWwtNzEiXQ');
-    expect(cursor2.hasNextPage).toBe(false);
-    expect(cursor2.hasPrevPage).toBe(true);
+    expect(cursor2.hasNextPage).toBe(true);
+    expect(cursor2.hasPrevPage).toBe(false);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toMatchSnapshot();
 

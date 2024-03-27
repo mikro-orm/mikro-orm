@@ -196,7 +196,7 @@ export class Author {
 
 We can define check constraints via `@Check()` decorator. We can use it either on entity class, or on entity property. It has a required `expression` property, that can be either a string or a callback, that receives map of property names to column names. Note that we need to use the generic type argument if we want TypeScript suggestions for the property names.
 
-> Check constraints are currently supported only in postgres driver.
+> Check constraints are currently supported in PostgreSQL, MySQL 8 and MariaDB drivers. SQLite also supports creating check constraints, but schema inference is currently not implemented. Also note that SQLite does not support adding check constraints to existing tables.
 
 See [Defining Entities](./defining-entities.md#check-constraints).
 

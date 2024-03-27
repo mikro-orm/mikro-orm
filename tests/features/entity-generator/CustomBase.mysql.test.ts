@@ -1,11 +1,11 @@
-import { MikroORM } from '@mikro-orm/mysql';
-import { initORMMySql } from '../../bootstrap';
-
+import { MikroORM } from '@mikro-orm/sqlite';
+import { initORMSqlite2 } from '../../bootstrap';
 
 describe('CustomBase', () => {
   let orm: MikroORM;
+
   beforeEach(async () => {
-    orm = await initORMMySql('mysql', {}, true);
+    orm = await initORMSqlite2('better-sqlite');
   });
 
   afterEach(async () => {

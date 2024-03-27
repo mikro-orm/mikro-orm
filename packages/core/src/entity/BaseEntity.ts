@@ -49,8 +49,9 @@ export abstract class BaseEntity {
   assign<
     Entity extends this,
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
-    Data extends EntityData<Naked> | Partial<EntityDTO<Naked>> = EntityData<Naked> | Partial<EntityDTO<Naked>>,
-  >(data: Data & IsSubset<EntityData<Naked>, Data>, options: AssignOptions = {}): MergeSelected<Entity, Naked, keyof Data & string> {
+    Convert extends boolean = false,
+    Data extends EntityData<Naked, Convert> | Partial<EntityDTO<Naked>> = EntityData<Naked, Convert> | Partial<EntityDTO<Naked>>,
+  >(data: Data & IsSubset<EntityData<Naked>, Data>, options: AssignOptions<Convert> = {}): MergeSelected<Entity, Naked, keyof Data & string> {
     return EntityAssigner.assign(this as Entity, data as any, options) as any;
   }
 

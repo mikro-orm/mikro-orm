@@ -1,6 +1,6 @@
 import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
 import { basename, join } from 'path';
-import { ensureDir, pathExists, writeJSON } from 'fs-extra';
+import { ensureDir, pathExistsSync, writeJSON } from 'fs-extra';
 import {
   t,
   Type,
@@ -262,7 +262,7 @@ export class Migrator implements IMigrator {
   }
 
   protected async getSchemaFromSnapshot() {
-    if (!this.options.snapshot || !await pathExists(this.snapshotPath)) {
+    if (!this.options.snapshot || !pathExistsSync(this.snapshotPath)) {
       return undefined;
     }
 

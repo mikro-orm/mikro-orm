@@ -118,8 +118,13 @@ export class QueryBuilderHelper {
       const alias2 = this.knex.ref(a).toString();
       const aliased = this.knex.ref(prop.fieldNames[0]).toString();
       const as = alias === null ? '' : ` as ${aliased}`;
+      let value = prop.formula(alias2);
 
-      return this.knex.raw(`${prop.formula(alias2)}${as}`);
+      if (!this.isTableNameAliasRequired(type)) {
+        value = value.replaceAll(alias2 + '.', '');
+      }
+
+      return this.knex.raw(`${value}${as}`);
     }
 
     if (prop?.hasConvertToJSValueSQL) {
@@ -250,8 +255,11 @@ export class QueryBuilderHelper {
             return;
           }
 
-          const left = `${join.ownerAlias}.${primaryKey}`;
-          conditions.push(`${this.knex.ref(left)} = ${this.knex.ref(right)}`);
+          const left = join.prop.object && join.prop.fieldNameRaw
+            ? join.prop.fieldNameRaw.replaceAll(ALIAS_REPLACEMENT, join.ownerAlias)
+            : this.knex.ref(`${join.ownerAlias}.${primaryKey}`);
+
+          conditions.push(`${left} = ${this.knex.ref(right)}`);
         });
       }
 
@@ -383,7 +391,7 @@ export class QueryBuilderHelper {
     if (join.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(join.prop.kind)) {
       return join.prop.fieldNames.map((fieldName, idx) => {
         const columns = join.prop.owner ? join.joinColumns : join.inverseJoinColumns;
-        return this.mapper(`${join.alias}.${columns![idx]}`, type, undefined, fieldName);
+        return this.mapper(`${join.alias}.${columns![idx]}`, type, undefined, `${join.alias}__${columns![idx]}`);
       });
     }
 
@@ -553,7 +561,7 @@ export class QueryBuilderHelper {
 
     /* istanbul ignore next */
     if (!op) {
-      throw new Error(`Invalid query condition: ${inspect(cond)}`);
+      throw new Error(`Invalid query condition: ${inspect(cond, { depth: 5 })}`);
     }
 
     const replacement = this.getOperatorReplacement(op, value);

@@ -3,6 +3,76 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
+
+
+### Bug Fixes
+
+* **reflection:** fallback to not proving path to tsconfig if not found ([a24d80d](https://github.com/mikro-orm/mikro-orm/commit/a24d80dc3353a6a84c9c6f1ac26b3c7e3e824901))
+
+
+
+
+
+## [6.1.11](https://github.com/mikro-orm/mikro-orm/compare/v6.1.10...v6.1.11) (2024-03-18)
+
+
+### Bug Fixes
+
+* **reflection:** respect custom tsconfig options ([e8cfdc0](https://github.com/mikro-orm/mikro-orm/commit/e8cfdc04cb5beed30f3ce144d7d57ee6d95e0c60))
+
+
+
+
+
+## [6.1.10](https://github.com/mikro-orm/mikro-orm/compare/v6.1.9...v6.1.10) (2024-03-14)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [6.1.9](https://github.com/mikro-orm/mikro-orm/compare/v6.1.8...v6.1.9) (2024-03-10)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [6.1.8](https://github.com/mikro-orm/mikro-orm/compare/v6.1.7...v6.1.8) (2024-03-06)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [6.1.7](https://github.com/mikro-orm/mikro-orm/compare/v6.1.6...v6.1.7) (2024-03-04)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [6.1.6](https://github.com/mikro-orm/mikro-orm/compare/v6.1.5...v6.1.6) (2024-02-28)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [6.1.5](https://github.com/mikro-orm/mikro-orm/compare/v6.1.4...v6.1.5) (2024-02-21)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
 ## [6.1.4](https://github.com/mikro-orm/mikro-orm/compare/v6.1.3...v6.1.4) (2024-02-16)
 
 **Note:** Version bump only for package @mikro-orm/reflection

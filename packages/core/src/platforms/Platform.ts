@@ -480,7 +480,7 @@ export abstract class Platform {
   }
 
   isNumericColumn(mappedType: Type<unknown>): boolean {
-    return [IntegerType, SmallIntType, BigIntType].some(t => mappedType instanceof t);
+    return [IntegerType, SmallIntType, BigIntType, TinyIntType].some(t => mappedType instanceof t);
   }
 
   supportsUnsigned(): boolean {

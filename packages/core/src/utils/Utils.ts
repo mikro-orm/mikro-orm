@@ -3,7 +3,7 @@ import globby, { type GlobbyOptions } from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
 import { platform } from 'os';
 import { fileURLToPath, pathToFileURL, type URL } from 'url';
-import { pathExists } from 'fs-extra';
+import { pathExistsSync } from 'fs-extra';
 import { createHash } from 'crypto';
 import { tokenize } from 'esprima';
 import { clone } from './clone';
@@ -18,7 +18,7 @@ import type {
   IMetadataStorage,
   Primary,
 } from '../typings';
-import { ARRAY_OPERATORS, GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
+import { ARRAY_OPERATORS, JSON_KEY_OPERATORS, GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
 import type { Collection } from '../entity/Collection';
 import type { Platform } from '../platforms';
 import { helper } from '../entity/wrap';
@@ -235,7 +235,11 @@ export class Utils {
    */
   static dropUndefinedProperties<T = Dictionary | unknown[]>(o: any, value?: undefined | null, visited = new Set()): void {
     if (Array.isArray(o)) {
-      return o.forEach((item: unknown) => Utils.dropUndefinedProperties(item, value, visited));
+      for (const item of o) {
+        Utils.dropUndefinedProperties(item, value, visited);
+      }
+
+      return;
     }
 
     if (!Utils.isPlainObject(o) || visited.has(o)) {
@@ -244,14 +248,14 @@ export class Utils {
 
     visited.add(o);
 
-    Object.keys(o).forEach(key => {
+    for (const key of Object.keys(o)) {
       if (o[key] === value) {
         delete o[key];
-        return;
+        continue;
       }
 
       Utils.dropUndefinedProperties(o[key], value, visited);
-    });
+    }
   }
 
   /**
@@ -343,15 +347,15 @@ export class Utils {
     const source = sources.shift();
 
     if (Utils.isObject(target) && Utils.isPlainObject(source)) {
-      Object.entries(source).forEach(([key, value]) => {
+      for (const [key, value] of Object.entries(source)) {
         if (ignoreUndefined && typeof value === 'undefined') {
-          return;
+          continue;
         }
 
         if (Utils.isPlainObject(value)) {
           if (!Utils.isObject(target[key])) {
             target[key] = Utils.copy(value);
-            return;
+            continue;
           }
 
           /* istanbul ignore next */
@@ -363,7 +367,7 @@ export class Utils {
         } else {
           Object.assign(target, { [key]: value });
         }
-      });
+      }
     }
 
     return Utils._merge(target, sources, ignoreUndefined);
@@ -391,13 +395,13 @@ export class Utils {
   static diff(a: Dictionary, b: Dictionary): Record<keyof (typeof a & typeof b), any> {
     const ret: Dictionary = {};
 
-    Object.keys(b).forEach(k => {
+    for (const k of Object.keys(b)) {
       if (Utils.equals(a[k], b[k])) {
-        return;
+        continue;
       }
 
       ret[k] = b[k];
-    });
+    }
 
     return ret;
   }
@@ -440,11 +444,11 @@ export class Utils {
    */
   static renameKey<T>(payload: T, from: string | keyof T, to: string): void {
     if (Utils.isObject(payload) && (from as string) in payload && !(to in payload)) {
-      Object.keys(payload).forEach(key => {
+      for (const key of Object.keys(payload)) {
         const value = payload[key];
         delete payload[key];
         payload[from === key ? to : key as keyof T] = value;
-      }, payload);
+      }
     }
   }
 
@@ -508,15 +512,24 @@ export class Utils {
    * Checks whether the argument looks like primary key (string, number or ObjectId).
    */
   static isPrimaryKey<T>(key: any, allowComposite = false): key is Primary<T> {
+    if (['string', 'number', 'bigint'].includes(typeof key)) {
+      return true;
+    }
+
     if (allowComposite && Array.isArray(key) && key.every(v => Utils.isPrimaryKey(v, true))) {
       return true;
     }
+    if (Utils.isObject(key)) {
+      if (key.constructor && key.constructor.name.toLowerCase() === 'objectid') {
+        return true;
+      }
 
-    if (Utils.isObject(key) && !Utils.isPlainObject(key) && !Utils.isEntity(key, true)) {
-      return true;
+      if (!Utils.isPlainObject(key) && !Utils.isEntity(key, true)) {
+        return true;
+      }
     }
 
-    return ['string', 'number', 'bigint'].includes(typeof key) || Utils.isObjectID(key) || key instanceof Date || key instanceof Buffer;
+    return false;
   }
 
   /**
@@ -667,15 +680,19 @@ export class Utils {
     }, {} as any);
   }
 
-  static getOrderedPrimaryKeys<T>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>): Primary<T>[] {
+  static getOrderedPrimaryKeys<T>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes = false): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
     const pks = meta.primaryKeys.map((pk, idx) => {
       const prop = meta.properties[pk];
       // `data` can be a composite PK in form of array of PKs, or a DTO
       let value = Array.isArray(data) ? data[idx] : (data[pk] ?? data);
 
+      if (convertCustomTypes && platform && prop.customType && !prop.targetMeta) {
+        value = prop.customType.convertToJSValue(value, platform);
+      }
+
       if (prop.kind !== ReferenceKind.SCALAR && prop.targetMeta) {
-        const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta);
+        const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta, platform, convertCustomTypes);
         value = value2.length > 1 ? value2 : value2[0];
       }
 
@@ -759,6 +776,7 @@ export class Utils {
       || !!process.env.TS_JEST // check if ts-jest is used (works only with v27.0.4+)
       || !!process.env.VITEST // check if vitest is used
       || process.argv.slice(1).some(arg => arg.includes('ts-node')) // registering ts-node runner
+      || process.execArgv.some(arg => arg === 'ts-node/esm') // check for ts-node/esm module loader
       || (require.extensions && !!require.extensions['.ts']); // check if the extension is registered
   }
 
@@ -964,7 +982,7 @@ export class Utils {
       return found.length > 0;
     }
 
-    return pathExists(path);
+    return pathExistsSync(path);
   }
 
   /**
@@ -1004,6 +1022,10 @@ export class Utils {
 
   static isArrayOperator(key: PropertyKey): boolean {
     return ARRAY_OPERATORS.includes(key as string);
+  }
+
+  static isJsonKeyOperator(key: PropertyKey): boolean {
+    return JSON_KEY_OPERATORS.includes(key as string);
   }
 
   static hasNestedKey(object: unknown, key: string): boolean {
@@ -1136,11 +1158,7 @@ export class Utils {
     let p = prop;
     const path: string[] = [];
 
-    function isObjectProperty(prop: EntityProperty): boolean {
-      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop.object || !!prop.array;
-    }
-
-    if (!isObjectProperty(prop) && !prop.embedded) {
+    if (!prop.object && !prop.array && !prop.embedded) {
       return entity[prop.name] != null ? [[entity[prop.name], []]] : [];
     }
 
@@ -1161,7 +1179,11 @@ export class Utils {
       const k = path[idx];
 
       if (Array.isArray(t)) {
-        return t.forEach((t, ii) => follow(t, idx, [...i, ii]));
+        for (const t1 of t) {
+          const ii = t.indexOf(t1);
+          follow(t1, idx, [...i, ii]);
+        }
+        return;
       }
 
       if (t == null) {
@@ -1182,11 +1204,7 @@ export class Utils {
   }
 
   static setPayloadProperty<T>(entity: EntityDictionary<T>, meta: EntityMetadata<T>, prop: EntityProperty<T>, value: unknown, idx: number[]): void {
-    function isObjectProperty(prop: EntityProperty): boolean {
-      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop.object || !!prop.array;
-    }
-
-    if (!isObjectProperty(prop)) {
+    if (!prop.object && !prop.array && !prop.embedded) {
       entity[prop.name] = value as T[keyof T & string];
       return;
     }
@@ -1209,7 +1227,8 @@ export class Utils {
     }
 
     let j = 0;
-    path.forEach((k, i) => {
+    for (const k of path) {
+      const i = path.indexOf(k);
       if (i === path.length - 1) {
         if (Array.isArray(target)) {
           target[idx[j++]][k] = value;
@@ -1223,7 +1242,7 @@ export class Utils {
           target = target[k];
         }
       }
-    });
+    }
   }
 
   static tryRequire<T extends Dictionary = any>({ module, from, allowError, warning }: { module: string; warning: string; from?: string; allowError?: string }): T | undefined {

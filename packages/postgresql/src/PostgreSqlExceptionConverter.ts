@@ -12,6 +12,14 @@ export class PostgreSqlExceptionConverter extends ExceptionConverter {
    * @link https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractPostgreSQLDriver.php
    */
   override convertException(exception: Error & Dictionary): DriverException {
+    if (exception.detail?.toString().trim()) {
+      exception.message += '\n - detail: ' + exception.detail;
+    }
+
+    if (exception.hint?.toString().trim()) {
+      exception.message += '\n - hint: ' + exception.hint;
+    }
+
     switch (exception.code) {
       case '40001':
       case '40P01':

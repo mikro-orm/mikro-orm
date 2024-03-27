@@ -1,12 +1,18 @@
 import { writeFileSync } from 'node:fs';
 import { FileCacheAdapter } from '@mikro-orm/core';
 import { TEMP_DIR } from '../../helpers';
+import { ensureDir } from 'fs-extra';
 
 describe('FileCacheAdapter', () => {
+  const tempdir = TEMP_DIR + '/foo';
+
+  beforeAll(async () => {
+    await ensureDir(tempdir);
+  });
 
   test('should ignore old cache', async () => {
-    const origin = TEMP_DIR + '/.origin';
-    const cache = new FileCacheAdapter({ cacheDir: TEMP_DIR }, TEMP_DIR);
+    const origin = tempdir + '/.origin';
+    const cache = new FileCacheAdapter({ cacheDir: tempdir }, tempdir);
     writeFileSync(origin, '123', { flush: true });
     cache.set('cache-test-handle-1', 123, origin);
     expect(cache.get('cache-test-handle-1')).toBe(123);
@@ -23,7 +29,7 @@ describe('FileCacheAdapter', () => {
   });
 
   test('should ignore if cached origin not found on file system', async () => {
-    const cache = new FileCacheAdapter({ cacheDir: TEMP_DIR }, TEMP_DIR);
+    const cache = new FileCacheAdapter({ cacheDir: tempdir }, tempdir);
     cache.set('cache-test-handle-2', 123, 'not-existing-path');
     expect(cache.get('cache-test-handle-2')).toBeNull();
     cache.clear();

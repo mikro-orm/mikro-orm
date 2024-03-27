@@ -149,8 +149,8 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
   private readonly options: MikroORMOptions<D, EM>;
   private readonly logger: Logger;
-  private readonly driver: D;
-  private readonly platform: Platform;
+  private readonly driver!: D;
+  private readonly platform!: Platform;
   private readonly cache = new Map<string, any>();
   private readonly extensions = new Map<string, () => unknown>();
 
@@ -173,11 +173,14 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       highlighter: this.options.highlighter,
       writer: this.options.logger,
     });
-    this.driver = new this.options.driver!(this);
-    this.platform = this.driver.getPlatform();
-    this.platform.setConfig(this);
-    this.detectSourceFolder(options);
-    this.init();
+
+    if (this.options.driver) {
+      this.driver = new this.options.driver!(this);
+      this.platform = this.driver.getPlatform();
+      this.platform.setConfig(this);
+      this.detectSourceFolder(options);
+      this.init();
+    }
   }
 
   /**
@@ -519,6 +522,7 @@ export interface MetadataDiscoveryOptions {
   checkDuplicateEntities?: boolean;
   onMetadata?: (meta: EntityMetadata, platform: Platform) => MaybePromise<void>;
   afterDiscovered?: (storage: MetadataStorage, platform: Platform) => MaybePromise<void>;
+  tsConfigPath?: string;
 }
 
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = EntityManager> extends ConnectionOptions {
@@ -558,7 +562,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   hydrator: HydratorConstructor;
   loadStrategy: LoadStrategy | 'select-in' | 'joined';
   dataloader: DataloaderType | boolean;
-  populateWhere: PopulateHint;
+  populateWhere?: PopulateHint | `${PopulateHint}`;
   flushMode: FlushMode | 'commit' | 'auto' | 'always';
   entityRepository?: EntityClass<EntityRepository<any>>;
   entityManager?: Constructor<EM>;

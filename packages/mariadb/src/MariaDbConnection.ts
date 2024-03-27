@@ -1,4 +1,4 @@
-import type { Connection } from 'mariadb';
+import type { Connection, QueryConfig } from 'mariadb';
 import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
 
 export class MariaDbConnection extends AbstractSqlConnection {
@@ -22,7 +22,7 @@ export class MariaDbConnection extends AbstractSqlConnection {
   }
 
   override getConnectionOptions(): Knex.MySqlConnectionConfig {
-    const ret = super.getConnectionOptions() as Knex.MySqlConnectionConfig;
+    const ret = super.getConnectionOptions() as Knex.MySqlConnectionConfig & QueryConfig;
 
     if (this.config.get('multipleStatements')) {
       ret.multipleStatements = this.config.get('multipleStatements');
@@ -36,8 +36,8 @@ export class MariaDbConnection extends AbstractSqlConnection {
       ret.timezone = this.config.get('timezone');
     }
 
-    ret.bigNumberStrings = true;
     ret.supportBigNumbers = true;
+    ret.insertIdAsNumber = true;
     ret.dateStrings = true;
     // @ts-ignore
     ret.checkDuplicate = false;

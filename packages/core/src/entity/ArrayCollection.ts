@@ -38,7 +38,7 @@ export class ArrayCollection<T extends object, O extends object> {
     }
 
     const meta = this.property.targetMeta!;
-    const args = [...meta.toJsonParams.map(() => undefined)];
+    const args = meta.toJsonParams.map(() => undefined);
 
     return this.map(item => wrap(item as TT).toJSON(...args));
   }
@@ -77,6 +77,18 @@ export class ArrayCollection<T extends object, O extends object> {
         this.items.add(entity);
         this.propagate(entity, 'add');
       }
+    }
+  }
+
+  /**
+   * @internal
+   */
+  addWithoutPropagation(entity: T): void {
+    if (!this.contains(entity, false)) {
+      this.incrementCount(1);
+      this[this.items.size] = entity;
+      this.items.add(entity);
+      this.dirty = true;
     }
   }
 
@@ -181,6 +193,7 @@ export class ArrayCollection<T extends object, O extends object> {
     this.incrementCount(-1);
     delete this[this.items.size];
     Object.assign(this, [...this.items]);
+    this.dirty = true;
   }
 
   contains(item: T | Reference<T>, check?: boolean): boolean {
@@ -404,6 +417,7 @@ export class ArrayCollection<T extends object, O extends object> {
     const collection = item[this.property.inversedBy as keyof T] as ArrayCollection<O, T>;
 
     if (this.shouldPropagateToCollection(collection, method)) {
+      method = method === 'takeSnapshot' ? method : (method + 'WithoutPropagation') as any;
       collection[method as 'add'](this.owner);
     }
   }

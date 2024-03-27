@@ -5,6 +5,10 @@ import type { EntityProperty } from '../typings';
 export class EnumType extends Type<string | null | undefined> {
 
   override getColumnType(prop: EntityProperty, platform: Platform) {
+    if (prop.nativeEnumName) {
+      return prop.nativeEnumName;
+    }
+
     return prop.columnTypes?.[0] ?? platform.getEnumTypeDeclarationSQL(prop);
   }
 

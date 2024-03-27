@@ -10,19 +10,19 @@ title: Decorators
 
 `@Entity` decorator is used to mark your model classes as entities. Do not use it for abstract base classes.
 
-| Parameter             | Type                     | Optional | Description                                                                      |
-| --------------------- | ------------------------ | -------- | -------------------------------------------------------------------------------- |
-| `tableName`           | `string`                 | yes      | Override default collection/table name.                                          |
-| `schema`              | `string`                 | yes      | Sets the schema name.                                                            |
-| `collection`          | `string`                 | yes      | Alias for `tableName`.                                                           |
-| `comment`             | `string`                 | yes      | Specify comment to table. **(SQL only)**                                         |
+| Parameter             | Type                     | Optional | Description                                                                        |
+|-----------------------|--------------------------|----------|------------------------------------------------------------------------------------|
+| `tableName`           | `string`                 | yes      | Override default collection/table name.                                            |
+| `schema`              | `string`                 | yes      | Sets the schema name.                                                              |
+| `collection`          | `string`                 | yes      | Alias for `tableName`.                                                             |
+| `comment`             | `string`                 | yes      | Specify comment to table. **(SQL only)**                                           |
 | `repository`          | `() => EntityRepository` | yes      | Set [custom repository class](./repositories.md#custom-repository).                |
 | `discriminatorColumn` | `string`                 | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
 | `discriminatorMap`    | `Dictionary<string>`     | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
 | `discriminatorValue`  | `number` &#124; `string` | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
-| `forceConstructor`    | `boolean`                | yes      | Enforce use of constructor when creating managed entity instances                |
-| `abstract`            | `boolean`                | yes      | Marks entity as abstract, such entities are inlined during discovery.            |
-| `readonly`            | `boolean`                | yes      | Disables change tracking - such entities are ignored during flush.               |
+| `forceConstructor`    | `boolean`                | yes      | Enforce use of constructor when creating managed entity instances                  |
+| `abstract`            | `boolean`                | yes      | Marks entity as abstract, such entities are inlined during discovery.              |
+| `readonly`            | `boolean`                | yes      | Disables change tracking - such entities are ignored during flush.                 |
 
 ```ts
 @Entity({ tableName: 'authors' })
@@ -35,14 +35,14 @@ export class Author { ... }
 
 `@Property()` decorator is used to define regular entity property. All following decorators extend the `@Property()` decorator, so you can also use its parameters there.
 
-| Parameter          | Type                                              | Optional | Description                                                                                                                                           |
-|--------------------|---------------------------------------------------|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `fieldName`        | `string`                                          | yes      | Override default property name (see [Naming Strategy](./naming-strategy.md)).                                                                         |
-| `type`             | `string` &#124; `Constructor<Type>` &#124; `Type` | yes      | Explicitly specify the runtime type (see [Metadata Providers](./metadata-providers.md) and [Custom Types](./custom-types.md)).                        |
-| `returning`        | `boolean`                                         | yes      | Whether this property should be part of `returning` clause. Works only in PostgreSQL and SQLite drivers.                                              |
-| `onUpdate`         | `() => any`                                       | yes      | Automatically update the property value every time entity gets updated.                                                                               |
+| Parameter          | Type                                              | Optional | Description                                                                                                                                         |
+|--------------------|---------------------------------------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `fieldName`        | `string`                                          | yes      | Override default property name (see [Naming Strategy](./naming-strategy.md)).                                                                       |
+| `type`             | `string` &#124; `Constructor<Type>` &#124; `Type` | yes      | Explicitly specify the runtime type (see [Metadata Providers](./metadata-providers.md) and [Custom Types](./custom-types.md)).                      |
+| `returning`        | `boolean`                                         | yes      | Whether this property should be part of `returning` clause. Works only in PostgreSQL and SQLite drivers.                                            |
+| `onUpdate`         | `() => any`                                       | yes      | Automatically update the property value every time entity gets updated.                                                                             |
 | `persist`          | `boolean`                                         | yes      | Set to `false` to define [Shadow Property](serializing.md#shadow-properties).                                                                       |
-| `hydrate`          | `boolean`                                         | yes      | Set to `false` to disable hydration of this property. Useful for persisted getters.                                                                   |
+| `hydrate`          | `boolean`                                         | yes      | Set to `false` to disable hydration of this property. Useful for persisted getters.                                                                 |
 | `hidden`           | `boolean`                                         | yes      | Set to `true` to omit the property when [Serializing](serializing.md).                                                                              |
 | `columnType`       | `string`                                          | yes      | Specify exact database column type for [Schema Generator](schema-generator.md). **(SQL only)**                                                      |
 | `length`           | `number`                                          | yes      | Length/precision of database column, used for `datetime/timestamp/varchar` column types for [Schema Generator](schema-generator.md). **(SQL only)** |
@@ -53,7 +53,7 @@ export class Author { ... }
 | `comment`          | `string`                                          | yes      | Specify comment of column for [Schema Generator](schema-generator.md). **(SQL only)**                                                               |
 | `version`          | `boolean`                                         | yes      | Set to true to enable [Optimistic Locking](transactions.md#optimistic-locking) via version field. **(SQL only)**                                    |
 | `concurrencyCheck` | `boolean`                                         | yes      | Set to true to enable [Concurrency Check](transactions.md#concurrency-checks) via concurrency fields.                                               |
-| `customOrder`      | `string[]` &#124; `number[]` &#124; `boolean[]`   | yes      | Specify a custom order for the column. **(SQL only)**                                                                                                 |
+| `customOrder`      | `string[]` &#124; `number[]` &#124; `boolean[]`   | yes      | Specify a custom order for the column. **(SQL only)**                                                                                               |
 
 > You can use property initializers as usual.
 
@@ -123,7 +123,7 @@ id!: string;
 See [Defining Entities](./defining-entities.md#enums).
 
 | Parameter | Type                                                   | Optional | Description                    |
-| --------- | ------------------------------------------------------ | -------- | ------------------------------ |
+|-----------|--------------------------------------------------------|----------|--------------------------------|
 | `items`   | `number[]` &#124; `string[]` &#124; `() => Dictionary` | yes      | Specify enum items explicitly. |
 
 ```ts
@@ -150,7 +150,7 @@ enum4 = 'a';
 See [Defining Entities](./defining-entities.md#formulas).
 
 | Parameter | Type                           | Optional | Description                                          |
-| --------- | ------------------------------ | -------- | ---------------------------------------------------- |
+|-----------|--------------------------------|----------|------------------------------------------------------|
 | `formula` | `string` &#124; `() => string` | no       | SQL fragment that will be part of the select clause. |
 
 ```ts
@@ -164,11 +164,11 @@ Use `@Index()` to create an index, or `@Unique()` to create unique constraint. Y
 
 See [Defining Entities](./defining-entities.md#indexes).
 
-| Parameter | Type | Optional | Description |
-| --- | --- | --- | --- |
-| `name` | `string` | yes | index name |
-| `properties` | `string` &#124; `string[]` | yes | list of properties, required when using on entity level |
-| `type` | `string` | yes | index type, not available for `@Unique()`. Use `fulltext` to enable support for the `$fulltext` operator |
+| Parameter    | Type                       | Optional | Description                                                                                              |
+|--------------|----------------------------|----------|----------------------------------------------------------------------------------------------------------|
+| `name`       | `string`                   | yes      | index name                                                                                               |
+| `properties` | `string` &#124; `string[]` | yes      | list of properties, required when using on entity level                                                  |
+| `type`       | `string`                   | yes      | index type, not available for `@Unique()`. Use `fulltext` to enable support for the `$fulltext` operator |
 
 ```ts
 @Entity()
@@ -196,12 +196,12 @@ export class Author {
 
 We can define check constraints via `@Check()` decorator. We can use it either on entity class, or on entity property. It has a required `expression` property, that can be either a string or a callback, that receives map of property names to column names. Note that we need to use the generic type argument if we want TypeScript suggestions for the property names.
 
-> Check constraints are currently supported only in postgres driver.
+> Check constraints are currently supported in PostgreSQL, MySQL 8 and MariaDB drivers. SQLite also supports creating check constraints, but schema inference is currently not implemented. Also note that SQLite does not support adding check constraints to existing tables.
 
 See [Defining Entities](./defining-entities.md#check-constraints).
 
 | Parameter    | Type                            | Optional | Description                                                                          |
-| ------------ | ------------------------------- | -------- | ------------------------------------------------------------------------------------ |
+|--------------|---------------------------------|----------|--------------------------------------------------------------------------------------|
 | `name`       | `string`                        | yes      | constraint name                                                                      |
 | `property`   | `string`                        | yes      | property name, only used when generating the constraint name                         |
 | `expression` | `string` &#124; `CheckCallback` | no       | constraint definition, can be a callback that gets a map of property to column names |
@@ -254,7 +254,7 @@ See [Defining Entities](./relationships.md#manytoone) for more examples.
 | `cascade`    | `Cascade[]`                                   | yes      | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](./cascading.md)). |
 | `eager`      | `boolean`                                     | yes      | Always load the relationship. (Discouraged for use with to-many relations.)                                                                                 |
 | `inversedBy` | `(string & keyof T) ` &#124; ` (e: T) => any` | yes      | Point to the inverse side property name.                                                                                                                    |
-| `ref`        | `boolean`                                     | yes      | Wrap the entity in [`Reference` wrapper](type-safe-relations.md).                                                                                         |
+| `ref`        | `boolean`                                     | yes      | Wrap the entity in [`Reference` wrapper](type-safe-relations.md).                                                                                           |
 | `primary`    | `boolean`                                     | yes      | Use this relation as primary key.                                                                                                                           |
 | `deleteRule` | `string`                                      | yes      | [Referential integrity](./cascading.md#declarative-referential-integrity).                                                                                  |
 | `updateRule` | `string`                                      | yes      | [Referential integrity](./cascading.md#declarative-referential-integrity).                                                                                  |
@@ -286,7 +286,7 @@ See [Defining Entities](./relationships.md#onetoone) for more examples, includin
 | `owner`         | `boolean`                                     | yes      | Explicitly set as owning side (same as providing `inversedBy`).                                                                                             |
 | `inversedBy`    | `(string & keyof T) ` &#124; ` (e: T) => any` | yes      | Point to the inverse side property name.                                                                                                                    |
 | `mappedBy`      | `(string & keyof T)` &#124; `(e: T) => any`   | yes      | Point to the owning side property name.                                                                                                                     |
-| `ref`           | `boolean`                                     | yes      | Wrap the entity in [`Reference` wrapper](type-safe-relations.md).                                                                                         |
+| `ref`           | `boolean`                                     | yes      | Wrap the entity in [`Reference` wrapper](type-safe-relations.md).                                                                                           |
 | `orphanRemoval` | `boolean`                                     | yes      | Remove the entity when it gets disconnected from the relationship (see [Cascading](./cascading.md#orphan-removal)).                                         |
 | `joinColumn`    | `string`                                      | yes      | Override default database column name on the owning side (see [Naming Strategy](./naming-strategy.md)).                                                     |
 | `primary`       | `boolean`                                     | yes      | Use this relation as primary key.                                                                                                                           |

@@ -353,7 +353,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const criteriaNode = CriteriaNodeFactory.createNode<T>(this.metadata, this.mainAlias.entityName, cond);
     const ignoreBranching = this.__populateWhere === 'infer';
 
-    if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type!) && criteriaNode.willAutoJoin(this)) {
+    if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type!) && criteriaNode.willAutoJoin(this, undefined, { ignoreBranching })) {
       // use sub-query to support joining
       this.setFlag(this.type === QueryType.UPDATE ? QueryFlag.UPDATE_SUB_QUERY : QueryFlag.DELETE_SUB_QUERY);
       this.select(this.mainAlias.metadata!.primaryKeys, true);
@@ -770,6 +770,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.connectionType = 'write';
     }
 
+    if (!this.finalized && method === 'get' && this.type === QueryType.SELECT) {
+      this.limit(1);
+    }
+
     const query = this.toQuery()._sql;
     const cached = await this.em?.tryCache<T, U>(this.mainAlias.entityName, this._cache, ['qb.execute', query.sql, query.bindings, method]);
 
@@ -855,13 +859,17 @@ export class QueryBuilder<T extends object = AnyEntity> {
       }
     }
 
-    return entities;
+    return Utils.unique(entities);
   }
 
   /**
    * Executes the query, returning the first result or null
    */
   async getSingleResult(): Promise<T | null> {
+    if (!this.finalized) {
+      this.limit(1);
+    }
+
     const [res] = await this.getResultList(1);
     return res || null;
   }
@@ -888,8 +896,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
    */
   async getResultAndCount(): Promise<[T[], number]> {
     return [
-      await this.getResultList(),
-      await this.getCount(),
+      await this.clone().getResultList(),
+      await this.clone().getCount(),
     ];
   }
 
@@ -950,13 +958,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const properties = [
       'flags', '_populate', '_populateWhere', '__populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
       '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
-      '_comments', '_hintComments', 'rawFragments',
+      '_comments', '_hintComments', 'rawFragments', 'aliasCounter',
     ];
 
     RawQueryFragment.cloneRegistry = this.rawFragments;
 
     for (const prop of Object.keys(this)) {
-      if (reset.includes(prop)) {
+      if (reset.includes(prop) || prop === '_helper') {
         continue;
       }
 
@@ -971,6 +979,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     qb._aliases = { ...this._aliases };
+    (qb._helper as Dictionary).aliasMap = qb._aliases;
     qb.finalized = false;
 
     return qb;
@@ -1152,6 +1161,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
       /* istanbul ignore next */
       if (prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+        return;
+      }
+
+      if (prop?.persist === false && !prop.embedded && !prop.formula && type === 'where') {
         return;
       }
 
@@ -1343,6 +1356,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
         const alias = this.getNextAlias(prop.pivotEntity ?? prop.type);
         const aliasedName = `${fromAlias}.${prop.name}#${alias}`;
         this._joins[aliasedName] = this.helper.joinOneToReference(prop, this.mainAlias.aliasName, alias, JoinType.leftJoin);
+        this._joins[aliasedName].path = `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? meta.className)}.${prop.name}`;
         this._populateMap[aliasedName] = this._joins[aliasedName].alias;
       }
     });
@@ -1415,6 +1429,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
         if (join) {
           if (join.cond[k]) {
             join.cond = { [op ?? '$and']: [join.cond, { [k]: cond[k] }] };
+          } else if (op === '$or') {
+            join.cond.$or ??= [];
+            join.cond.$or.push({ [k]: cond[k] });
           } else {
             join.cond = { ...join.cond, [k]: cond[k] };
           }
@@ -1465,7 +1482,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
           const type = this.platform.castColumn(prop);
           const fieldName = this.helper.mapper(field, this.type, undefined, null);
 
-          if (!prop?.persist && !prop?.formula) {
+          if (!prop?.persist && !prop?.formula && !pks.includes(fieldName)) {
             addToSelect.push(fieldName);
           }
 

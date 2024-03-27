@@ -3,6 +3,90 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
+
+
+### Bug Fixes
+
+* **postgres:** fix query for loading all foreign keys from existing schema ([2eb85d5](https://github.com/mikro-orm/mikro-orm/commit/2eb85d501727601ee86eba8c2c1a11d994cce8cf)), closes [#5364](https://github.com/mikro-orm/mikro-orm/issues/5364)
+
+
+### Performance Improvements
+
+* **postgres:** try to optimize loading of foreign keys ([2dff96b](https://github.com/mikro-orm/mikro-orm/commit/2dff96bc48c6a84bc1fc213e8044b0ac722d4792)), closes [#5364](https://github.com/mikro-orm/mikro-orm/issues/5364)
+
+
+
+
+
+## [6.1.11](https://github.com/mikro-orm/mikro-orm/compare/v6.1.10...v6.1.11) (2024-03-18)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [6.1.10](https://github.com/mikro-orm/mikro-orm/compare/v6.1.9...v6.1.10) (2024-03-14)
+
+
+### Bug Fixes
+
+* **postgres:** fix diffing of native enums (create/remove via `schema:update`) ([7c8be79](https://github.com/mikro-orm/mikro-orm/commit/7c8be795e5c5b365dbb03ecadc7709cc42794b12)), closes [#5322](https://github.com/mikro-orm/mikro-orm/issues/5322)
+* **schema:** support compound index over JSON property and a regular column ([319df49](https://github.com/mikro-orm/mikro-orm/commit/319df499742475c68df3581f4863be649aa564d7)), closes [#5333](https://github.com/mikro-orm/mikro-orm/issues/5333)
+
+
+### Features
+
+* **postgres:** provide more details in driver exceptions ([e782d06](https://github.com/mikro-orm/mikro-orm/commit/e782d0686e45ddfd1e91e613ed83b0b5a046dc6f))
+
+
+
+
+
+## [6.1.9](https://github.com/mikro-orm/mikro-orm/compare/v6.1.8...v6.1.9) (2024-03-10)
+
+
+### Features
+
+* **postgres:** add support for native enum arrays ([c2e362b](https://github.com/mikro-orm/mikro-orm/commit/c2e362bc6fe19ec792d13f475a11cf2290b94fde)), closes [#5322](https://github.com/mikro-orm/mikro-orm/issues/5322)
+
+
+
+
+
+## [6.1.8](https://github.com/mikro-orm/mikro-orm/compare/v6.1.7...v6.1.8) (2024-03-06)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [6.1.7](https://github.com/mikro-orm/mikro-orm/compare/v6.1.6...v6.1.7) (2024-03-04)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [6.1.6](https://github.com/mikro-orm/mikro-orm/compare/v6.1.5...v6.1.6) (2024-02-28)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [6.1.5](https://github.com/mikro-orm/mikro-orm/compare/v6.1.4...v6.1.5) (2024-02-21)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
 ## [6.1.4](https://github.com/mikro-orm/mikro-orm/compare/v6.1.3...v6.1.4) (2024-02-16)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

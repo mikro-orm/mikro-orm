@@ -35,7 +35,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
         return;
       }
 
-      pks.forEach(k => {
+      for (const k of pks) {
         this.prop = meta.props.find(prop => prop.name === k || (prop.fieldNames?.length === 1 && prop.fieldNames[0] === k));
         const isProp = this.prop || meta.props.find(prop => (prop.fieldNames || []).includes(k));
 
@@ -43,7 +43,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
         if (validate && !isProp && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k) && !RawQueryFragment.isKnownFragment(k)) {
           throw new Error(`Trying to query by not existing property ${entityName}.${k}`);
         }
-      });
+      }
     }
   }
 
@@ -59,7 +59,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     return false;
   }
 
-  willAutoJoin(qb: IQueryBuilder<T>, alias?: string) {
+  willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions) {
     return false;
   }
 
@@ -86,7 +86,13 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
   }
 
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string {
-    const joinAlias = qb.getAliasForJoinPath(this.getPath());
+    let joinAlias = qb.getAliasForJoinPath(this.getPath());
+
+    if (!joinAlias && this.parent && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind) && this.prop!.owner) {
+      joinAlias = qb.getAliasForJoinPath(this.parent.getPath());
+      return Utils.getPrimaryKeyHash(this.prop!.joinColumns.map(col => `${joinAlias ?? qb.alias}.${col}`));
+    }
+
     const alias = joinAlias ?? qb.alias;
 
     if (this.prop!.kind === ReferenceKind.MANY_TO_MANY) {

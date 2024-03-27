@@ -97,6 +97,7 @@ export class UnitOfWork {
       return entity;
     }
 
+    const forceUndefined = this.em.config.get('forceUndefined');
     const wrapped = helper(entity);
 
     if (options?.loaded && wrapped.__initialized && !wrapped.__onLoadFired) {
@@ -107,30 +108,30 @@ export class UnitOfWork {
     wrapped.__managed = true;
 
     if (data && (options?.refresh || !wrapped.__originalEntityData)) {
-      Object.keys(data).forEach(key => wrapped.__loadedProperties.add(key));
+      for (const key of Utils.keys(data)) {
+        const prop = wrapped.__meta.properties[key];
 
-      wrapped.__meta.relations.forEach(prop => {
-        if (Utils.isPlainObject(data[prop.name])) {
-          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
+        if (!prop) {
+          continue;
         }
-      });
 
-      wrapped.__meta.props.forEach(prop => {
-        if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
-          prop.targetMeta?.props.forEach(p => {
+        wrapped.__loadedProperties.add(key);
+        if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
+          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
+        } else if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
+          for (const p of prop.targetMeta!.props) {
             const prefix = prop.prefix === false ? '' : prop.prefix === true ? prop.name + '_' : prop.prefix;
             data[prefix + p.name as EntityKey] = data[prop.name as EntityKey][p.name];
-          });
+          }
+
           data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
         }
-      });
 
-      if (this.em.config.get('forceUndefined')) {
-        Utils.keys(data).forEach(key => {
+        if (forceUndefined) {
           if (data[key] === null) {
             data[key] = undefined;
           }
-        });
+        }
       }
 
       wrapped.__originalEntityData = data;
@@ -323,7 +324,10 @@ export class UnitOfWork {
       const prop2 = prop.targetMeta!.properties[inverseProp];
 
       if (prop.kind === ReferenceKind.ONE_TO_MANY && prop2.nullable && Utils.isCollection<AnyEntity>(relation)) {
-        relation.getItems(false).forEach(item => delete item[inverseProp]);
+        for (const item of relation.getItems(false)) {
+          delete item[inverseProp];
+        }
+
         continue;
       }
 
@@ -373,9 +377,11 @@ export class UnitOfWork {
     try {
       await this.eventManager.dispatchEvent(EventType.beforeFlush, { em: this.em, uow: this });
       this.computeChangeSets();
-      this.changeSets.forEach(cs => {
+
+      for (const cs of this.changeSets.values()) {
         cs.entity.__helper.__processing = true;
-      });
+      }
+
       await this.eventManager.dispatchEvent(EventType.onFlush, { em: this.em, uow: this });
 
       // nothing to do, do not start transaction
@@ -397,9 +403,9 @@ export class UnitOfWork {
       }
       this.resetTransaction(oldTx);
 
-      this.changeSets.forEach(cs => {
+      for (const cs of this.changeSets.values()) {
         cs.entity.__helper.__processing = false;
-      });
+      }
 
       await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
     } finally {
@@ -466,7 +472,6 @@ export class UnitOfWork {
 
     for (const entity of this.identityMap) {
       if (!this.removeStack.has(entity) && !this.persistStack.has(entity) && !this.orphanRemoveStack.has(entity)) {
-        this.persistStack.add(entity);
         this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
       }
     }
@@ -526,8 +531,11 @@ export class UnitOfWork {
     }
 
     this.extraUpdates.add([changeSet.entity, props.map(p => p.name), props.map(p => changeSet.entity[p.name]), changeSet]);
-    props.forEach(p => delete changeSet.entity[p.name]);
-    props.forEach(p => delete changeSet.payload[p.name]);
+
+    for (const p of props) {
+      delete changeSet.entity[p.name];
+      delete changeSet.payload[p.name];
+    }
   }
 
   scheduleOrphanRemoval(entity?: AnyEntity, visited?: Set<AnyEntity>): void {
@@ -568,12 +576,12 @@ export class UnitOfWork {
     wrapped.__schema ??= this.em.schema;
     this.initIdentifier(entity);
 
-    for (const prop of helper(entity).__meta.relations) {
-      const targets = Utils.unwrapProperty(entity, helper(entity).__meta, prop);
-      targets.forEach(([target]) => {
+    for (const prop of wrapped.__meta.relations) {
+      const targets = Utils.unwrapProperty(entity, wrapped.__meta, prop);
+      for (const [target] of targets) {
         const kind = Reference.unwrapReference(target as object);
         this.processReference(entity, prop, kind, visited, processed, idx);
-      });
+      }
     }
 
     const changeSet = this.changeSetComputer.computeChangeSet(entity);
@@ -717,11 +725,12 @@ export class UnitOfWork {
   }
 
   private postCommitCleanup(): void {
-    this.changeSets.forEach(cs => {
+    for (const cs of this.changeSets.values()) {
       const wrapped = helper(cs.entity);
       wrapped.__processing = false;
       delete wrapped.__pk;
-    });
+    }
+
     this.persistStack.clear();
     this.removeStack.clear();
     this.orphanRemoveStack.clear();
@@ -768,9 +777,9 @@ export class UnitOfWork {
     const collection = kind as Collection<AnyEntity>;
 
     if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) && collection) {
-      collection
-        .getItems(false)
-        .forEach(item => this.cascade(item, type, visited, options));
+      for (const item of collection.getItems(false)) {
+        this.cascade(item, type, visited, options);
+      }
     }
   }
 
@@ -1050,7 +1059,7 @@ export class UnitOfWork {
       [ChangeSetType.DELETE_EARLY]: new Map<string, ChangeSet<any>[]>(),
     };
 
-    this.changeSets.forEach(cs => {
+    for (const cs of this.changeSets.values()) {
       const group = groups[cs.type];
       const classGroup = group.get(cs.rootName) ?? [];
       classGroup.push(cs);
@@ -1058,7 +1067,7 @@ export class UnitOfWork {
       if (!group.has(cs.rootName)) {
         group.set(cs.rootName, classGroup);
       }
-    });
+    }
 
     return groups;
   }

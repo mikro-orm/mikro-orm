@@ -315,6 +315,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         return;
       }
 
+      if (prop.joinColumns?.length > 1 && data[k] == null) {
+        delete data[k];
+        prop.joinColumns.forEach((joinColumn, idx) => data[joinColumn] = null);
+
+        return;
+      }
+
       if (prop.customType && convertCustomTypes && !this.platform.isRaw(data[k])) {
         data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, { fromQuery: true, key: k, mode: 'query-data' });
       }

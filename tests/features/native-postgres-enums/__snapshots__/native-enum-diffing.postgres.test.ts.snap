@@ -13,17 +13,22 @@ exports[`diffing native enums in postgres: 0. create schema with check enum 1`] 
 
 exports[`diffing native enums in postgres: 1. convert to native enum 1`] = `
 {
-  "down": "alter table "user" alter column "type" type text using ("type"::text);
+  "down": "alter table "user" alter column "type" drop default;
+
+alter table "user" alter column "type" type text using ("type"::text);
 alter table "user" add constraint "user_type_check" check ("type" in ('personal', 'organization'));
 alter table "user" alter column "type2" type text using ("type2"::text);
 alter table "user" add constraint "user_type2_check" check ("type2" in ('personal', 'organization'));
 
+alter table "user" alter column "type" set default 'personal';
+
+drop type "user_type";
 ",
-  "up": "alter table "user" alter column "type" drop default;
+  "up": "create type "user_type" as enum ('personal', 'organization');
+alter table "user" alter column "type" drop default;
 alter table "user" drop constraint if exists "user_type_check";
 alter table "user" drop constraint if exists "user_type2_check";
 
-create type "user_type" as enum ('personal', 'organization');
 alter table "user" alter column "type" type "user_type" using ("type"::"user_type");
 alter table "user" alter column "type2" type "user_type" using ("type2"::"user_type");
 

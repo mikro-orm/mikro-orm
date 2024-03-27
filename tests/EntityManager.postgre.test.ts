@@ -1089,16 +1089,15 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(FooBaz2, { id: baz.id }, { populate: ['bar'] });
-    expect(mock.mock.calls[1][0]).toMatch('select "f0".*, "f1"."id" as "bar_id" from "foo_baz2" as "f0" left join "foo_bar2" as "f1" on "f0"."id" = "f1"."baz_id" where "f0"."id" = $1 limit $2');
-    expect(mock.mock.calls[2][0]).toMatch('select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where "f0"."baz_id" in ($1)');
+    expect(mock.mock.calls[1][0]).toMatch('select "f0".*, "b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."name with space" as "b1__name with space", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."blob2" as "b1__blob2", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random", "b1"."id" as "b1__id" from "foo_baz2" as "f0" left join "foo_bar2" as "b1" on "f0"."id" = "b1"."baz_id" where "f0"."id" = $1 limit $2');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
     expect(wrap(b1).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
     orm.em.clear();
 
     const b2 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, { populate: ['bar'] });
-    expect(mock.mock.calls[3][0]).toMatch('select "f0".*, "f1"."id" as "bar_id" from "foo_baz2" as "f0" left join "foo_bar2" as "f1" on "f0"."id" = "f1"."baz_id" where "f1"."id" = $1 limit $2');
-    expect(mock.mock.calls[4][0]).toMatch('select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where "f0"."baz_id" in ($1)');
+    expect(mock.mock.calls[2][0]).toMatch('select "f0".*, "b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."name with space" as "b1__name with space", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."blob2" as "b1__blob2", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random", "b1"."id" as "b1__id" from "foo_baz2" as "f0" left join "foo_bar2" as "b1" on "f0"."id" = "b1"."baz_id" left join "foo_bar2" as "f2" on "f0"."id" = "f2"."baz_id" where "f2"."id" = $1 limit $2');
+    expect(mock.mock.calls).toHaveLength(3);
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
@@ -1448,7 +1447,7 @@ describe('EntityManagerPostgre', () => {
       strategy: 'joined',
     });
     expect(mock).toHaveBeenCalledTimes(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "a0".*, "b1"."uuid_pk" as "b1__uuid_pk", "f2"."uuid_pk" as "favourite_book_uuid_pk" from "author2" as "a0" left join "book2" as "b1" on "a0"."id" = "b1"."author_id" and "b1"."author_id" is not null left join "book2" as "f2" on "a0"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null where "a0"."id" = 1 order by "b1"."title" asc');
+    expect(mock.mock.calls[0][0]).toMatch('select "a0".*, "b1"."uuid_pk" as "b1__uuid_pk", "f2"."uuid_pk" as "f2__uuid_pk" from "author2" as "a0" left join "book2" as "b1" on "a0"."id" = "b1"."author_id" and "b1"."author_id" is not null left join "book2" as "f2" on "a0"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null where "a0"."id" = 1 order by "b1"."title" asc');
     expect(a1.books.isInitialized()).toBe(true);
     expect(a1.books.isInitialized(true)).toBe(false);
     expect(wrap(a1.books[0]).isInitialized()).toBe(false);
@@ -1653,7 +1652,7 @@ describe('EntityManagerPostgre', () => {
     });
     expect(res).toHaveLength(1);
     expect(res[0].books.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch('select "a0".*, "f1"."uuid_pk" as "favourite_book_uuid_pk" from "author2" as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null left join "book2" as "b2" on "a0"."id" = "b2"."author_id" where "b2"."title" in ($1, $2)');
+    expect(mock.mock.calls[0][0]).toMatch('select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from "author2" as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null left join "book2" as "b2" on "a0"."id" = "b2"."author_id" where "b2"."title" in ($1, $2)');
     expect(mock.mock.calls[1][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" in ($1) order by "b0"."title" asc');
   });
 
@@ -1777,7 +1776,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "author_id") values ($1, $2, $3, $4), ($5, $6, $7, $8), ($9, $10, $11, $12)');
     expect(mock.mock.calls[3][0]).toMatch('update "author2" set "favourite_author_id" = $1, "updated_at" = $2 where "id" = $3');
     expect(mock.mock.calls[4][0]).toMatch('commit');
-    expect(mock.mock.calls[5][0]).toMatch('select "a0".*, "f1"."uuid_pk" as "favourite_book_uuid_pk" from "author2" as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null where "a0"."id" = $1 limit $2');
+    expect(mock.mock.calls[5][0]).toMatch('select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from "author2" as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null where "a0"."id" = $1 limit $2');
   });
 
   test('allow assigning PK to undefined/null', async () => {
@@ -1844,7 +1843,7 @@ describe('EntityManagerPostgre', () => {
   test('insert with raw sql fragment', async () => {
     const author = orm.em.create(Author2, { id: 1, name: 'name', email: 'email', age: raw('100 + 20 + 3') });
     const mock = mockLogger(orm, ['query', 'query-params']);
-    expect(() => author.age!++).toThrow();
+    expect(() => (author.age as number)++).toThrow();
     expect(() => JSON.stringify(author)).toThrow();
     await orm.em.flush();
 
@@ -1853,6 +1852,24 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     expect(author.age).toBe(123);
+  });
+
+  test('update reference with null', async () => {
+    await orm.em.insertMany(Author2, [
+      { id: 1, name: 'name', email: 'email1', age: 123 },
+      { id: 2, name: 'name', email: 'email2', age: 1, favouriteAuthor: 1 },
+    ]);
+    const ref2 = orm.em.getReference(Author2, 2);
+
+    const mock = mockLogger(orm, ['query', 'query-params']);
+    ref2.favouriteAuthor = null;
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch(/update "author2" set "favourite_author_id" = NULL, "updated_at" = '.*' where "id" = 2/);
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    expect(ref2.favouriteAuthor).toBeNull();
   });
 
   test('update with raw sql fragment', async () => {
@@ -1865,7 +1882,7 @@ describe('EntityManagerPostgre', () => {
 
     const mock = mockLogger(orm, ['query', 'query-params']);
     ref1.age = sql`age * 2`;
-    expect(() => ref1.age!++).toThrow();
+    expect(() => (ref1.age as number)++).toThrow();
     expect(() => ref2.age = ref1.age).toThrow();
     expect(() => JSON.stringify(ref1)).toThrow();
     await orm.em.flush();

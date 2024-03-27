@@ -1,4 +1,4 @@
-import type { Platform } from '@mikro-orm/sqlite';
+import type { IType, Platform } from '@mikro-orm/sqlite';
 import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
@@ -63,7 +63,7 @@ export class CartItem {
   readonly cart!: Cart;
 
   @PrimaryKey({ type: SkuType })
-  readonly sku: Sku;
+  readonly sku: IType<Sku, string>;
 
   @Property()
   quantity: number;
@@ -91,8 +91,8 @@ describe('GH issue 910', () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
 
     const id = '123';
-    const item1 = new CartItem(Sku.create('sku1'), 10);
-    const item2 = new CartItem(Sku.create('sku2'), 10);
+    const item1 = orm.em.create(CartItem, { sku: 'sku1', quantity: 10 }, { partial: true, convertCustomTypes: true });
+    const item2 = orm.em.create(CartItem, { sku: Sku.create('sku2'), quantity: 10 }, { partial: true });
     const cart = new Cart(id, [item1, item2]);
     await orm.em.persistAndFlush(cart);
 

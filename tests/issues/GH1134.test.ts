@@ -170,4 +170,3 @@ describe('GH issue 1134', () => {
     expect(json[0].m[0].e).toMatchObject(expected);
   });
 });
-

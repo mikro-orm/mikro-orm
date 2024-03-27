@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { pathExists, pathExistsSync, realpath } from 'fs-extra';
+import { pathExistsSync, readJSONSync, realpathSync } from 'fs-extra';
 import { isAbsolute, join } from 'path';
 import { platform } from 'os';
 import { fileURLToPath } from 'url';
@@ -16,16 +16,16 @@ import type { EntityManager } from '../EntityManager';
 export class ConfigurationLoader {
 
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
-    await this.commonJSCompat(options);
+    this.commonJSCompat(options);
     this.registerDotenv(options);
-    const paths = await this.getConfigPaths();
+    const paths = this.getConfigPaths();
     const env = this.loadEnvironmentVars();
 
     for (let path of paths) {
       path = Utils.absolutePath(path);
       path = Utils.normalizePath(path);
 
-      if (await pathExists(path)) {
+      if (pathExistsSync(path)) {
         const config = await Utils.dynamicImport(path);
         /* istanbul ignore next */
         let tmp = config.default ?? config;
@@ -38,7 +38,7 @@ export class ConfigurationLoader {
           tmp = await tmp;
         }
 
-        const esmConfigOptions = await this.isESM() ? { entityGenerator: { esmImport: true } } : {};
+        const esmConfigOptions = this.isESM() ? { entityGenerator: { esmImport: true } } : {};
 
         return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env), validate);
       }
@@ -51,17 +51,17 @@ export class ConfigurationLoader {
     throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);
   }
 
-  static async getPackageConfig(basePath = process.cwd()): Promise<Dictionary> {
-    if (await pathExists(`${basePath}/package.json`)) {
+  static getPackageConfig(basePath = process.cwd()): Dictionary {
+    if (pathExistsSync(`${basePath}/package.json`)) {
       /* istanbul ignore next */
       try {
-        return await Utils.dynamicImport(`${basePath}/package.json`);
+        return readJSONSync(`${basePath}/package.json`);
       } catch {
         return {};
       }
     }
 
-    const parentFolder = await realpath(`${basePath}/..`);
+    const parentFolder = realpathSync(`${basePath}/..`);
 
     // we reached the root folder
     if (basePath === parentFolder) {
@@ -71,8 +71,8 @@ export class ConfigurationLoader {
     return this.getPackageConfig(parentFolder);
   }
 
-  static async getSettings(): Promise<Settings> {
-    const config = await ConfigurationLoader.getPackageConfig();
+  static getSettings(): Settings {
+    const config = ConfigurationLoader.getPackageConfig();
     const settings = { ...config['mikro-orm'] };
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
     settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
@@ -87,7 +87,7 @@ export class ConfigurationLoader {
     return settings;
   }
 
-  static async getConfigPaths(): Promise<string[]> {
+  static getConfigPaths(): string[] {
     const options = Utils.parseArgs();
 
     if (options.config) {
@@ -95,7 +95,7 @@ export class ConfigurationLoader {
     }
 
     const paths: string[] = [];
-    const settings = await ConfigurationLoader.getSettings();
+    const settings = ConfigurationLoader.getSettings();
 
     if (process.env.MIKRO_ORM_CLI_CONFIG) {
       paths.push(process.env.MIKRO_ORM_CLI_CONFIG);
@@ -119,14 +119,14 @@ export class ConfigurationLoader {
     return Utils.unique(paths).filter(p => p.endsWith('.js') || tsNode || settings.alwaysAllowTs);
   }
 
-  static async isESM(): Promise<boolean> {
-    const config = await ConfigurationLoader.getPackageConfig();
+  static isESM(): boolean {
+    const config = ConfigurationLoader.getPackageConfig();
     const type = config?.type ?? '';
 
     return type === 'module';
   }
 
-  static async registerTsNode(configPath = 'tsconfig.json'): Promise<boolean> {
+  static registerTsNode(configPath = 'tsconfig.json'): boolean {
     const tsConfigPath = isAbsolute(configPath) ? configPath : join(process.cwd(), configPath);
 
     const tsNode = Utils.tryRequire({
@@ -264,8 +264,8 @@ export class ConfigurationLoader {
     return ret;
   }
 
-  static async getORMPackages(): Promise<Set<string>> {
-    const pkg = await this.getPackageConfig();
+  static getORMPackages(): Set<string> {
+    const pkg = this.getPackageConfig();
     return new Set([
       ...Object.keys(pkg.dependencies ?? {}),
       ...Object.keys(pkg.devDependencies ?? {}),
@@ -273,8 +273,8 @@ export class ConfigurationLoader {
   }
 
   /** @internal */
-  static async commonJSCompat(options: Partial<Options>): Promise<void> {
-    if (await this.isESM()) {
+  static commonJSCompat(options: Partial<Options>): void {
+    if (this.isESM()) {
       return;
     }
 
@@ -294,7 +294,7 @@ export class ConfigurationLoader {
     Utils.setDynamicImportProvider(options.dynamicImportProvider);
   }
 
-  static async getORMPackageVersion(name: string): Promise<string | undefined> {
+  static getORMPackageVersion(name: string): string | undefined {
     /* istanbul ignore next */
     try {
       const pkg = Utils.requireFrom(`${name}/package.json`);
@@ -305,19 +305,19 @@ export class ConfigurationLoader {
   }
 
   // inspired by https://github.com/facebook/mikro-orm/pull/3386
-  static async checkPackageVersion(): Promise<string> {
+  static checkPackageVersion(): string {
     const coreVersion = Utils.getORMVersion();
 
     if (process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH) {
       return coreVersion;
     }
 
-    const deps = await this.getORMPackages();
+    const deps = this.getORMPackages();
     const exceptions = new Set(['nestjs', 'sql-highlighter', 'mongo-highlighter']);
     const ormPackages = [...deps].filter(d => d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length)));
 
     for (const ormPackage of ormPackages) {
-      const version = await this.getORMPackageVersion(ormPackage);
+      const version = this.getORMPackageVersion(ormPackage);
 
       if (version != null && version !== coreVersion) {
         throw new Error(

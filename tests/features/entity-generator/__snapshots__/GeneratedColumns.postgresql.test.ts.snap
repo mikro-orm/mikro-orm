@@ -14,7 +14,7 @@ export class AllowedAgesAtCreation {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 @Entity()
@@ -29,10 +29,10 @@ export class Users {
   @Property({ length: 100 })
   lastName!: string;
 
-  @Property({ length: 200, generated: () => "(((first_name)::text || ' '::text) || (last_name)::text) stored" })
-  fullName!: string;
+  @Property({ type: 'string', length: 200, generated: () => "(((first_name)::text || ' '::text) || (last_name)::text) stored" })
+  fullName!: string & Opt;
 
-  @Property({ length: 6, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 6, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
   @Property({ columnType: 'date' })
@@ -60,7 +60,7 @@ export class AllowedAgesAtCreation {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 @Entity()
@@ -75,10 +75,10 @@ export class Users {
   @Property({ length: 100 })
   lastName!: string;
 
-  @Property({ length: 200, generated: '(((first_name)::text || ' '::text) || (last_name)::text) stored' })
-  fullName!: string;
+  @Property({ type: 'string', length: 200, generated: '(((first_name)::text || ' '::text) || (last_name)::text) stored' })
+  fullName!: string & Opt;
 
-  @Property({ length: 6, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 6, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
   @Property({ columnType: 'date' })
@@ -108,13 +108,14 @@ export const AllowedAgesAtCreationSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
+import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 export class Users {
   id!: number;
   firstName!: string;
   lastName!: string;
-  fullName!: string;
+  fullName!: string & Opt;
   createdAt!: Date & Opt;
   dateOfBirth!: string;
   ageAtCreation?: AllowedAgesAtCreation;
@@ -163,13 +164,14 @@ export const AllowedAgesAtCreationSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
+import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 export class Users {
   id!: number;
   firstName!: string;
   lastName!: string;
-  fullName!: string;
+  fullName!: string & Opt;
   createdAt!: Date & Opt;
   dateOfBirth!: string;
   ageAtCreation?: AllowedAgesAtCreation;

@@ -129,10 +129,12 @@ export interface TableDifference {
 
 export interface SchemaDifference {
   newNamespaces: Set<string>;
+  newNativeEnums: { name: string; schema?: string; items: string[] }[];
   newTables: Dictionary<DatabaseTable>;
   changedTables: Dictionary<TableDifference>;
   removedTables: Dictionary<DatabaseTable>;
   removedNamespaces: Set<string>;
+  removedNativeEnums: { name: string; schema?: string }[];
   orphanedForeignKeys: ForeignKey[];
   fromSchema: DatabaseSchema;
 }
@@ -190,7 +192,7 @@ export interface ICriteriaNode<T extends object> {
   index?: number;
   process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any;
   shouldInline(payload: any): boolean;
-  willAutoJoin(qb: IQueryBuilder<T>, alias?: string): boolean;
+  willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions): boolean;
   shouldRename(payload: any): boolean;
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string;
   getPath(addIndex?: boolean): string;

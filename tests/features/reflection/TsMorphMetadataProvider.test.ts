@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/mongodb';
+import { Configuration, MikroORM } from '@mikro-orm/mongodb';
 import type { Options, PrimaryProperty, EntityMetadata } from '@mikro-orm/core';
 import { Collection as Collection_, Reference as Reference_, ReferenceKind, EnumArrayType } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
@@ -108,7 +108,7 @@ describe('TsMorphMetadataProvider', () => {
   });
 
   test('should ignore entity without path', async () => {
-    const provider = new TsMorphMetadataProvider({} as any);
+    const provider = new TsMorphMetadataProvider(new Configuration({}, false));
     const initProperties = jest.spyOn(TsMorphMetadataProvider.prototype, 'initProperties' as any);
     expect(initProperties).toHaveBeenCalledTimes(0);
     provider.loadEntityMetadata({} as any, 'name');
@@ -116,7 +116,7 @@ describe('TsMorphMetadataProvider', () => {
   });
 
   test('should throw when source file not found', async () => {
-    const provider = new TsMorphMetadataProvider({} as any);
+    const provider = new TsMorphMetadataProvider(new Configuration({}, false));
     const error = `Source file './path/to/entity.ts' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`;
     expect(() => provider.getExistingSourceFile('./path/to/entity.js')).toThrow(error);
   });

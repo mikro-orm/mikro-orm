@@ -43,7 +43,11 @@ You can define custom types by extending `Type` abstract class. It has several o
 ```ts
 import { Type, Platform, EntityProperty, ValidationError } from '@mikro-orm/core';
 
-export class DateType extends Type<Date, string> {
+/**
+ * A custom type that maps SQL date column to JS Date objects.
+ * Note that the ORM DateType maps to string instead of Date.
+ */
+export class MyDateType extends Type<Date, string> {
 
   convertToDatabaseValue(value: Date | string | undefined, platform: Platform): string {
     if (value instanceof Date) {
@@ -54,7 +58,7 @@ export class DateType extends Type<Date, string> {
       return value as string;
     }
 
-    throw ValidationError.invalidType(DateType, value, 'JS');
+    throw ValidationError.invalidType(MyDateType, value, 'JS');
   }
 
   convertToJSValue(value: Date | string | undefined, platform: Platform): Date {
@@ -65,7 +69,7 @@ export class DateType extends Type<Date, string> {
     const date = new Date(value);
 
     if (date.toString() === 'Invalid Date') {
-      throw ValidationError.invalidType(DateType, value, 'database');
+      throw ValidationError.invalidType(MyDateType, value, 'database');
     }
 
     return date;
@@ -90,7 +94,7 @@ export class FooBar {
   @Property()
   name!: string;
 
-  @Property({ type: DateType, length: 3 })
+  @Property({ type: MyDateType, length: 3 })
   born?: Date;
 
 }
@@ -100,7 +104,7 @@ If your type implementation is stateful, e.g. if you want the type to behave dif
 
 ```ts
 @Property({ type: new MyDateType('DD-MM-YYYY') })
-born?: string;
+born?: Date;
 ```
 
 ## Advanced example - PointType and WKT
@@ -363,11 +367,11 @@ object?: { foo: string; bar: number };
 
 ### DateType
 
-To store dates without time information, we can use `DateType`. It does use `date` column type and maps it to the `Date` object.
+To store dates without time information, we can use `DateType`. It does use `date` column type and maps it to a `string`.
 
 ```ts
 @Property({ type: DateType, nullable: true })
-born?: Date;
+born?: string;
 ```
 
 ### TimeType

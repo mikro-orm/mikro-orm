@@ -160,6 +160,8 @@ jobs:
           yarn coverage --max-workers ${{ steps.cpu-cores.outputs.count }} > COVERAGE_RESULT
           echo "$(cat COVERAGE_RESULT)"
           git status && git diff
+        env:
+          RETRY_TESTS: 1
 
       - name: Codecov
         uses: codecov/codecov-action@v4

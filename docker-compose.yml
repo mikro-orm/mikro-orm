@@ -27,7 +27,7 @@ services:
       - mysql8:/var/lib/mysql
 
   mariadb:
-    image: mariadb:11.2
+    image: mariadb:11.3
     ports:
       - "3309:3306"
     environment:

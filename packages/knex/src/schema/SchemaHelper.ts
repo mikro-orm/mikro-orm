@@ -1,14 +1,14 @@
+import { BigIntType, EnumType, RawQueryFragment, Utils, type Connection, type Dictionary } from '@mikro-orm/core';
 import type { Knex } from 'knex';
-import { BigIntType, EnumType, Utils, type Connection, type Dictionary, RawQueryFragment } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 import type { CheckDef, Column, IndexDef, Table, TableDifference } from '../typings';
-import type { DatabaseTable } from './DatabaseTable';
 import type { DatabaseSchema } from './DatabaseSchema';
+import type { DatabaseTable } from './DatabaseTable';
 
 export abstract class SchemaHelper {
 
-  constructor(protected readonly platform: AbstractSqlPlatform) {}
+  constructor(protected readonly platform: AbstractSqlPlatform) { }
 
   getSchemaBeginning(charset: string): string {
     return `${this.disableForeignKeysSQL()}\n\n`;
@@ -61,6 +61,10 @@ export abstract class SchemaHelper {
 
   async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
     return {};
+  }
+
+  getCreateNativeEnumSQL(name: string, values: unknown[], schema?: string): string {
+    throw new Error('Not supported by given driver');
   }
 
   getDropNativeEnumSQL(name: string, schema?: string): string {

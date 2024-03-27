@@ -176,7 +176,7 @@ export class EntityComparator {
 
     const lines: string[] = [];
     const context = new Map<string, any>();
-    context.set('getCompositeKeyValue', (val: any) => Utils.flatten(Utils.getCompositeKeyValue(val, meta, true, this.platform) as unknown[][]));
+    context.set('getCompositeKeyValue', (val: any) => Utils.flatten(Utils.getCompositeKeyValue(val, meta, 'convertToDatabaseValue', this.platform) as unknown[][]));
 
     if (meta.primaryKeys.length > 1) {
       lines.push(`  const pks = entity.__helper.__pk ? getCompositeKeyValue(entity.__helper.__pk) : [`);

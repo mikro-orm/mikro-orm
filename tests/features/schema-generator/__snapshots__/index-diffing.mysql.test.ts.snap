@@ -20,6 +20,7 @@ alter table \`book\` add constraint \`book_author5_id_foreign\` foreign key (\`a
 
 exports[`indexes on FKs in mysql (GH 1518) schema generator respect indexes on FKs on column update 2`] = `
 "alter table \`book\` add index \`custom_index_expr\`(\`title\`);
+alter table \`book\` add index \`book_author3_id_meta_data_fooBar_email_index\`(author3_id, (json_value(\`meta_data\`, '$.fooBar.email' returning char(200))));
 alter table \`book\` add index \`book_meta_data_foo_bar_baz_index\`((json_value(\`meta_data\`, '$.foo.bar.baz' returning char(200))));
 alter table \`book\` add unique index \`book_meta_data_fooBar_email_unique\`((json_value(\`meta_data\`, '$.fooBar.email' returning char(255))));
 alter table \`book\` drop index \`book_isbn_unique\`;
@@ -29,11 +30,13 @@ alter table \`book\` add unique \`isbn_unique_constr\`(\`isbn\`);
 `;
 
 exports[`indexes on FKs in mysql (GH 1518) schema generator respect indexes on FKs on column update 3`] = `
-"alter table \`book\` drop index \`book_meta_data_foo_bar_baz_index\`;
+"alter table \`book\` drop index \`book_author3_id_meta_data_fooBar_email_index\`;
+alter table \`book\` drop index \`book_meta_data_foo_bar_baz_index\`;
 alter table \`book\` drop index \`book_meta_data_fooBar_email_unique\`;
 alter table \`book\` drop index \`custom_index_expr\`;
 
 alter table \`book\` add index \`custom_index_expr2\`(\`title\`);
+alter table \`book\` add index \`book_meta_data_fooBar_email_author3_id_index\`((json_value(\`meta_data\`, '$.fooBar.email' returning char(200))), author3_id);
 alter table \`book\` add index \`book_meta_data_foo_bar2_meta_data_foo_bar3_index\`((json_value(\`meta_data\`, '$.foo.bar2' returning char(255))), (json_value(\`meta_data\`, '$.foo.bar3' returning char(255))));
 alter table \`book\` add index \`lol41\`(\`author3_id\`);
 alter table \`book\` add index \`lol31\`(\`author3_id\`);
@@ -48,6 +51,7 @@ alter table \`book\` add unique \`book_isbn_unique\`(\`isbn\`);
 exports[`indexes on FKs in mysql (GH 1518) schema generator respect indexes on FKs on column update 4`] = `
 "alter table \`book\` drop index \`book_meta_data_foo_bar2_meta_data_foo_bar3_index\`;
 alter table \`book\` drop index \`book_meta_data_fooBar_bazBaz_meta_data_fooBar_lol123_unique\`;
+alter table \`book\` drop index \`book_meta_data_fooBar_email_author3_id_index\`;
 alter table \`book\` drop index \`lol31\`;
 alter table \`book\` drop index \`lol41\`;
 

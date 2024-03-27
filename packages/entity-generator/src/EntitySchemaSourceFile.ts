@@ -55,9 +55,8 @@ export class EntitySchemaSourceFile extends SourceFile {
     }
 
     classBody += `${props.join('')}`;
-    const classDecl = this.getEntityClass(classBody);
 
-    let ret = `${this.generateImports()}\n\n${classDecl}`;
+    let ret = this.getEntityClass(classBody);
     if (enumDefinitions.length) {
       ret += '\n' + enumDefinitions.join('\n');
     }
@@ -114,6 +113,8 @@ export class EntitySchemaSourceFile extends SourceFile {
     });
     ret += `  },\n`;
     ret += `});\n`;
+
+    ret = `${this.generateImports()}\n\n${ret}`;
 
     return ret;
   }

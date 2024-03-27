@@ -70,8 +70,12 @@ export abstract class AbstractSqlPlatform extends Platform {
   override getJsonIndexDefinition(index: IndexDef): string[] {
     return index.columnNames
       .map(column => {
+        if (!column.includes('.')) {
+          return column;
+        }
+
         const [root, ...path] = column.split('.');
-        return `json_extract(${root}, '$.${path.join('.')}')`;
+        return `(json_extract(${root}, '$.${path.join('.')}'))`;
       });
   }
 

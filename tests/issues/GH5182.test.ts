@@ -80,7 +80,7 @@ test('it should map the entities correctly', async () => {
     .leftJoinAndSelect('t.posts', 'p')
     .leftJoin('p.authors', 'a2')
     .where('a.id = a2.id')
-    .orderBy({ 'a.id': 'DESC' })
+    .orderBy({ 'a.id': 'DESC', 'p.id': 'DESC' })
     .getSingleResult();
   expect(result!.tags[0].posts[0].id).toBe(2);
 });

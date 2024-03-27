@@ -170,7 +170,7 @@ export class MongoConnection extends Connection {
     const options: Dictionary = ctx ? { session: ctx } : {};
 
     if (fields) {
-      options.projection = fields.reduce((o, k) => ({ ...o, [k]: 1 }), {});
+      options.projection = fields.reduce((o, k) => Object.assign(o, { [k]: 1 }), {});
     }
 
     const resultSet = this.getCollection<T>(collection).find(where as Filter<T>, options);

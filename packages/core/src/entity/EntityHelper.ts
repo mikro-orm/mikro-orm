@@ -2,18 +2,18 @@ import { inspect } from 'util';
 
 import type { EntityManager } from '../EntityManager';
 import {
-  EntityRepositoryType,
-  OptionalProps,
-  PrimaryKeyProp,
-  EagerProps,
-  HiddenProps,
   type AnyEntity,
   type Dictionary,
+  EagerProps,
+  type EntityKey,
   type EntityMetadata,
   type EntityProperty,
-  type IHydrator,
+  EntityRepositoryType,
   type EntityValue,
-  type EntityKey,
+  HiddenProps,
+  type IHydrator,
+  OptionalProps,
+  PrimaryKeyProp,
 } from '../typings';
 import { EntityTransformer } from '../serialization/EntityTransformer';
 import { Reference } from './Reference';
@@ -196,24 +196,25 @@ export class EntityHelper {
   }
 
   static propagate<T extends object>(meta: EntityMetadata<T>, entity: T, owner: T, prop: EntityProperty<T>, value?: T[keyof T & string], old?: T): void {
-    const inverseProps = prop.targetMeta!.bidirectionalRelations
-      .filter(prop2 => (prop2.inversedBy || prop2.mappedBy) === prop.name)
-      .filter(prop2 => {
-        const meta2 = prop2.targetMeta!;
-        return meta2.abstract ? meta2.root.className === meta.root.className : meta2.className === meta.className;
-      }) as EntityProperty<T>[];
+    for (const prop2 of prop.targetMeta!.bidirectionalRelations) {
+      if ((prop2.inversedBy || prop2.mappedBy) !== prop.name) {
+        continue;
+      }
 
-    for (const prop2 of inverseProps) {
-      const inverse = value?.[prop2.name];
+      if (prop2.targetMeta!.abstract ? prop2.targetMeta!.root.class !== meta.root.class : prop2.targetMeta!.class !== meta.class) {
+        continue;
+      }
+
+      const inverse = value?.[prop2.name as EntityKey<T>];
 
       if (prop.kind === ReferenceKind.MANY_TO_ONE && Utils.isCollection<T, T>(inverse) && inverse.isInitialized()) {
-        inverse.add(owner);
+        inverse.addWithoutPropagation(owner);
       }
 
       if (prop.kind === ReferenceKind.ONE_TO_ONE && entity && (!prop.owner || helper(entity).__initialized)) {
         if (
           (value != null && Reference.unwrapReference(inverse!) !== owner) ||
-          (value == null && entity[prop2.name] != null)
+          (value == null && entity[prop2.name as EntityKey<T>] != null)
         ) {
           EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old as T);
         }
@@ -260,8 +261,7 @@ export class EntityHelper {
     const meta = wrapped.__meta;
     const platform = wrapped.__platform;
     const serializedPrimaryKey = meta.props.find(p => p.serializedPrimaryKey);
-
-    const values: [string, unknown][] = [];
+    const values: any[] = [];
 
     if (serializedPrimaryKey) {
       const pk = meta.getPrimaryProps()[0];
@@ -278,21 +278,23 @@ export class EntityHelper {
       });
 
       if (entity[pk.name] == null && val != null) {
-        values.push([serializedPrimaryKey.name, val]);
+        values.push(serializedPrimaryKey.name, val);
       }
     }
 
-    meta.trackingProps.forEach(prop => {
+    for (const prop of meta.trackingProps) {
       if (entity[prop.name] !== undefined) {
-        values.push([prop.name, entity[prop.name]]);
+        values.push(prop.name, entity[prop.name]);
       }
-    });
 
-    meta.trackingProps.forEach(prop => {
       delete entity[prop.name];
-    });
+    }
+
     Object.defineProperties(entity, meta.definedProperties);
-    values.forEach(val => entity[val[0] as EntityKey<T>] = val[1] as EntityValue<T>);
+
+    for (let i = 0; i < values.length; i += 2) {
+      entity[values[i] as EntityKey<T>] = values[i + 1];
+    }
   }
 
 }

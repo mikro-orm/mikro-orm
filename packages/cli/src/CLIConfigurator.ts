@@ -18,12 +18,12 @@ import { CreateDatabaseCommand } from './commands/CreateDatabaseCommand';
 export class CLIConfigurator {
 
   static async configure(): Promise<Argv> {
-    await ConfigurationLoader.checkPackageVersion();
-    const settings = await ConfigurationLoader.getSettings();
+    ConfigurationLoader.checkPackageVersion();
+    const settings = ConfigurationLoader.getSettings();
     const version = Utils.getORMVersion();
 
     if (settings.useTsNode) {
-      const tsNode = await ConfigurationLoader.registerTsNode(settings.tsConfigPath);
+      const tsNode = ConfigurationLoader.registerTsNode(settings.tsConfigPath);
 
       /* istanbul ignore if */
       if (!tsNode) {

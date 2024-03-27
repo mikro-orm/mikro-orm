@@ -2,7 +2,7 @@
 
 exports[`EntityGenerator enum with default value [mysql]: mysql-entity-dump-enum-default-value 1`] = `
 [
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
@@ -10,13 +10,13 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 100, nullable: true, default: '123' })
-  test?: string;
+  @Property({ type: 'string', length: 100, nullable: true })
+  test?: string & Opt = '123';
 
-  @Enum({ items: () => Publisher2Type, default: 'local' })
+  @Enum({ items: () => Publisher2Type })
   type: Publisher2Type & Opt = Publisher2Type.LOCAL;
 
-  @Enum({ items: () => Publisher2Type2, nullable: true, default: 'LOCAL' })
+  @Enum({ items: () => Publisher2Type2, nullable: true })
   type2?: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
 }
@@ -36,7 +36,7 @@ export enum Publisher2Type2 {
 
 exports[`EntityGenerator generate EntitySchema with bidirectional relations and reference wrappers [mysql]: mysql-entity-schema-bidirectional-dump 1`] = `
 [
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 export class Address2 {
@@ -60,7 +60,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 export class Author2 {
@@ -106,7 +106,7 @@ export const Author2Schema = new EntitySchema({
       unique: 'custom_email_unique_name',
     },
     age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'boolean', default: false, index: 'author2_terms_accepted_index' },
+    termsAccepted: { type: 'boolean', index: 'author2_terms_accepted_index' },
     optional: { type: 'boolean', nullable: true },
     identities: { type: 'string', columnType: 'text', nullable: true },
     born: {
@@ -152,7 +152,7 @@ export const Author2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Ref } from '@mikro-orm/core';
 
 export class BaseUser2 {
   id!: number;
@@ -231,7 +231,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -249,7 +249,7 @@ export class Book2 {
   meta?: any;
   author!: Ref<Author2>;
   publisher?: Ref<Publisher2>;
-  foo?: string;
+  foo?: string & Opt = 'lol';
   bookToTagUnordered = new Collection<BookTag2>(this);
   favouriteBookInverse = new Collection<Author2>(this);
   book2Inverse = new Collection<Book2Tags>(this);
@@ -275,7 +275,7 @@ export const Book2Schema = new EntitySchema({
       deleteRule: 'cascade',
       nullable: true,
     },
-    foo: { type: 'string', length: 255, nullable: true, default: 'lol' },
+    foo: { type: 'string', length: 255, nullable: true },
     bookToTagUnordered: {
       kind: 'm:n',
       entity: () => BookTag2,
@@ -289,7 +289,7 @@ export const Book2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -322,7 +322,7 @@ export const Book2TagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 
 export class CarOwner2 {
@@ -340,7 +340,7 @@ export const CarOwner2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -366,7 +366,7 @@ export const Car2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Test2 } from './Test2';
 
 export class Configuration2 {
@@ -404,7 +404,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -458,7 +458,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { FooParam2 } from './FooParam2';
 
 export class FooBaz2 {
@@ -478,7 +478,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -512,13 +512,13 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
 export class Publisher2 {
   id!: number;
-  name!: string & Opt;
+  name: string & Opt = 'asd';
   type: Publisher2Type & Opt = Publisher2Type.LOCAL;
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
   enum1?: number;
@@ -554,9 +554,9 @@ export const Publisher2Schema = new EntitySchema({
   class: Publisher2,
   properties: {
     id: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, default: 'asd' },
-    type: { enum: true, items: () => Publisher2Type, default: 'local' },
-    type2: { enum: true, items: () => Publisher2Type2, default: 'LOCAL' },
+    name: { type: 'string', length: 255 },
+    type: { enum: true, items: () => Publisher2Type },
+    type2: { enum: true, items: () => Publisher2Type2 },
     enum1: { type: 'number', columnType: 'tinyint', nullable: true },
     enum2: { type: 'number', columnType: 'tinyint', nullable: true },
     enum3: { type: 'number', columnType: 'tinyint', nullable: true },
@@ -567,7 +567,7 @@ export const Publisher2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Ref } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -619,7 +619,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -659,7 +659,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number', default: 1 },
+    version: { type: 'number' },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar2,
@@ -669,7 +669,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -682,7 +682,7 @@ export const Test2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -730,7 +730,7 @@ export const User2Schema = new EntitySchema({
 
 exports[`EntityGenerator generate EntitySchema with reference wrappers and named import [mysql]: mysql-entityschema-named-dump 1`] = `
 [
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2.js';
 
 export class Address2 {
@@ -754,7 +754,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2.js';
 
 export class Author2 {
@@ -796,7 +796,7 @@ export const Author2Schema = new EntitySchema({
       unique: 'custom_email_unique_name',
     },
     age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'boolean', default: false, index: 'author2_terms_accepted_index' },
+    termsAccepted: { type: 'boolean', index: 'author2_terms_accepted_index' },
     optional: { type: 'boolean', nullable: true },
     identities: { type: 'string', columnType: 'text', nullable: true },
     born: {
@@ -838,7 +838,7 @@ export const Author2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Ref } from '@mikro-orm/core';
 
 export class BaseUser2 {
   id!: number;
@@ -902,7 +902,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2.js';
 import { BookTag2 } from './BookTag2.js';
 import { Publisher2 } from './Publisher2.js';
@@ -918,7 +918,7 @@ export class Book2 {
   meta?: any;
   author!: Ref<Author2>;
   publisher?: Ref<Publisher2>;
-  foo?: string;
+  foo?: string & Opt = 'lol';
   bookToTagUnordered = new Collection<BookTag2>(this);
 }
 
@@ -941,7 +941,7 @@ export const Book2Schema = new EntitySchema({
       deleteRule: 'cascade',
       nullable: true,
     },
-    foo: { type: 'string', length: 255, nullable: true, default: 'lol' },
+    foo: { type: 'string', length: 255, nullable: true },
     bookToTagUnordered: {
       kind: 'm:n',
       entity: () => BookTag2,
@@ -952,7 +952,7 @@ export const Book2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2.js';
 import { BookTag2 } from './BookTag2.js';
 
@@ -985,7 +985,7 @@ export const Book2TagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2.js';
 
 export class CarOwner2 {
@@ -1021,7 +1021,7 @@ export const Car2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Test2 } from './Test2.js';
 
 export class Configuration2 {
@@ -1059,7 +1059,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2.js';
 
 export class FooBar2 {
@@ -1105,7 +1105,7 @@ export const FooBar2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 
 export class FooBaz2 {
   id!: number;
@@ -1122,7 +1122,7 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2.js';
 import { FooBaz2 } from './FooBaz2.js';
 
@@ -1156,11 +1156,11 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
 
 export class Publisher2 {
   id!: number;
-  name!: string & Opt;
+  name: string & Opt = 'asd';
   type: Publisher2Type & Opt = Publisher2Type.LOCAL;
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
   enum1?: number;
@@ -1194,9 +1194,9 @@ export const Publisher2Schema = new EntitySchema({
   class: Publisher2,
   properties: {
     id: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, default: 'asd' },
-    type: { enum: true, items: () => Publisher2Type, default: 'local' },
-    type2: { enum: true, items: () => Publisher2Type2, default: 'LOCAL' },
+    name: { type: 'string', length: 255 },
+    type: { enum: true, items: () => Publisher2Type },
+    type2: { enum: true, items: () => Publisher2Type2 },
     enum1: { type: 'number', columnType: 'tinyint', nullable: true },
     enum2: { type: 'number', columnType: 'tinyint', nullable: true },
     enum3: { type: 'number', columnType: 'tinyint', nullable: true },
@@ -1205,7 +1205,7 @@ export const Publisher2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Ref } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2.js';
 import { Test2 } from './Test2.js';
 
@@ -1254,7 +1254,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, Opt, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2.js';
 import { FooBar2 } from './FooBar2.js';
 
@@ -1289,7 +1289,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number', default: 1 },
+    version: { type: 'number' },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar2,
@@ -1299,7 +1299,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
+    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -1309,7 +1309,7 @@ export const Test2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2.js';
 import { Sandwich } from './Sandwich.js';
 
@@ -1357,7 +1357,7 @@ export const User2Schema = new EntitySchema({
 
 exports[`EntityGenerator generate OptionalProps and include properties for columns that are not nullable, but have defaults: generate-OptionalProps 1`] = `
 [
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Account {
@@ -1365,10 +1365,10 @@ export class Account {
   @PrimaryKey()
   id!: bigint;
 
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   active: boolean & Opt = false;
 
-  @Property({ default: true })
+  @Property({ type: 'boolean' })
   receiveEmailNotifications: boolean & Opt = true;
 
 }
@@ -1394,7 +1394,7 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -1405,10 +1405,10 @@ export class Author2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
@@ -1424,7 +1424,7 @@ export class Author2 {
   age?: number;
 
   @Index({ name: 'author2_terms_accepted_index' })
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   termsAccepted: boolean & Opt = false;
 
   @Property({ nullable: true })
@@ -1513,7 +1513,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -1526,7 +1526,7 @@ export class Book2 {
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
   @Index({ name: 'book2_title_index' })
@@ -1551,8 +1551,8 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Publisher2;
 
-  @Property({ length: 255, nullable: true, default: 'lol' })
-  foo?: string;
+  @Property({ type: 'string', length: 255, nullable: true })
+  foo?: string & Opt = 'lol';
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
   bookToTagUnordered = new Collection<BookTag2>(this);
@@ -1645,7 +1645,7 @@ export class Dummy2 {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
@@ -1666,7 +1666,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date & Opt;
 
   @Property({ length: 65535, nullable: true })
@@ -1683,7 +1683,7 @@ export class FooBar2 {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class FooBaz2 {
@@ -1694,12 +1694,12 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -1717,12 +1717,12 @@ export class FooParam2 {
   @Property({ length: 255 })
   value!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
@@ -1730,13 +1730,13 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, default: 'asd' })
-  name!: string & Opt;
+  @Property({ type: 'string', length: 255 })
+  name: string & Opt = 'asd';
 
-  @Enum({ items: () => Publisher2Type, default: 'local' })
+  @Enum({ items: () => Publisher2Type })
   type: Publisher2Type & Opt = Publisher2Type.LOCAL;
 
-  @Enum({ items: () => Publisher2Type2, default: 'LOCAL' })
+  @Enum({ items: () => Publisher2Type2 })
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
   @Property({ columnType: 'tinyint', nullable: true })
@@ -1810,7 +1810,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -1829,13 +1829,13 @@ export class Test2 {
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   parent?: Test2;
 
-  @Property({ default: 1 })
+  @Property({ type: 'number' })
   version: number & Opt = 1;
 
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -1893,7 +1893,7 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -1904,10 +1904,10 @@ export class Author2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
@@ -1923,7 +1923,7 @@ export class Author2 {
   age?: number;
 
   @Index({ name: 'author2_terms_accepted_index' })
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   termsAccepted: boolean & Opt = false;
 
   @Property({ nullable: true })
@@ -2038,7 +2038,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -2053,7 +2053,7 @@ export class Book2 {
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
   @Index({ name: 'book2_title_index' })
@@ -2078,8 +2078,8 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Publisher2;
 
-  @Property({ length: 255, nullable: true, default: 'lol' })
-  foo?: string;
+  @Property({ type: 'string', length: 255, nullable: true })
+  foo?: string & Opt = 'lol';
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
   bookToTagUnordered = new Collection<BookTag2>(this);
@@ -2192,7 +2192,7 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -2215,7 +2215,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date & Opt;
 
   @Property({ length: 65535, nullable: true })
@@ -2241,7 +2241,7 @@ export class FooBar2 {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooParam2 } from './FooParam2';
 
 @Entity()
@@ -2253,7 +2253,7 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
   @OneToMany({ entity: () => FooParam2, mappedBy: 'baz' })
@@ -2261,7 +2261,7 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -2279,12 +2279,12 @@ export class FooParam2 {
   @Property({ length: 255 })
   value!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
@@ -2294,13 +2294,13 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, default: 'asd' })
-  name!: string & Opt;
+  @Property({ type: 'string', length: 255 })
+  name: string & Opt = 'asd';
 
-  @Enum({ items: () => Publisher2Type, default: 'local' })
+  @Enum({ items: () => Publisher2Type })
   type: Publisher2Type & Opt = Publisher2Type.LOCAL;
 
-  @Enum({ items: () => Publisher2Type2, default: 'LOCAL' })
+  @Enum({ items: () => Publisher2Type2 })
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
   @Property({ columnType: 'tinyint', nullable: true })
@@ -2384,7 +2384,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -2405,13 +2405,13 @@ export class Test2 {
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   parent?: Test2;
 
-  @Property({ default: 1 })
+  @Property({ type: 'number' })
   version: number & Opt = 1;
 
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -2462,7 +2462,7 @@ export class User2 {
 
 exports[`EntityGenerator generate entities with bidirectional relations and reference wrappers [mysql]: mysql-entity-bidirectional-dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 @Entity()
@@ -2478,7 +2478,7 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, Opt, PrimaryKey, Property, Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -2489,10 +2489,10 @@ export class Author2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
@@ -2508,7 +2508,7 @@ export class Author2 {
   age?: number;
 
   @Index({ name: 'author2_terms_accepted_index' })
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   termsAccepted: boolean & Opt = false;
 
   @Property({ nullable: true })
@@ -2554,7 +2554,7 @@ export class Author2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 {
@@ -2623,7 +2623,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -2638,7 +2638,7 @@ export class Book2 {
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
   @Index({ name: 'book2_title_index' })
@@ -2663,8 +2663,8 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, ref: true, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Ref<Publisher2>;
 
-  @Property({ length: 255, nullable: true, default: 'lol' })
-  foo?: string;
+  @Property({ type: 'string', length: 255, nullable: true })
+  foo?: string & Opt = 'lol';
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
   bookToTagUnordered = new Collection<BookTag2>(this);
@@ -2680,7 +2680,7 @@ export class Book2 {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -2700,7 +2700,7 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 
 @Entity()
@@ -2717,7 +2717,7 @@ export class CarOwner2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -2748,7 +2748,7 @@ export class Car2 {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -2777,7 +2777,7 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, Opt, PrimaryKey, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -2800,7 +2800,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: Ref<FooBar2>;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date & Opt;
 
   @Property({ length: 65535, nullable: true })
@@ -2826,7 +2826,7 @@ export class FooBar2 {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooParam2 } from './FooParam2';
 
 @Entity()
@@ -2838,7 +2838,7 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
   @OneToMany({ entity: () => FooParam2, mappedBy: 'baz' })
@@ -2846,7 +2846,7 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -2864,12 +2864,12 @@ export class FooParam2 {
   @Property({ length: 255 })
   value!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
@@ -2879,13 +2879,13 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, default: 'asd' })
-  name!: string & Opt;
+  @Property({ type: 'string', length: 255 })
+  name: string & Opt = 'asd';
 
-  @Enum({ items: () => Publisher2Type, default: 'local' })
+  @Enum({ items: () => Publisher2Type })
   type: Publisher2Type & Opt = Publisher2Type.LOCAL;
 
-  @Enum({ items: () => Publisher2Type2, default: 'LOCAL' })
+  @Enum({ items: () => Publisher2Type2 })
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
   @Property({ columnType: 'tinyint', nullable: true })
@@ -2931,7 +2931,7 @@ export enum Publisher2Enum5 {
   A = 'a',
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -2969,7 +2969,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, Opt, PrimaryKey, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -2990,13 +2990,13 @@ export class Test2 {
   @ManyToOne({ entity: () => Test2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   parent?: Ref<Test2>;
 
-  @Property({ default: 1 })
+  @Property({ type: 'number' })
   version: number & Opt = 1;
 
   @OneToOne({ entity: () => FooBar2, ref: true, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: Ref<FooBar2>;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -3013,7 +3013,7 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -3047,7 +3047,7 @@ export class User2 {
 
 exports[`EntityGenerator generate entities with reference wrappers and named import [mysql]: mysql-entity-named-dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2.js';
 
 @Entity()
@@ -3063,7 +3063,7 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2.js';
 
 @Entity()
@@ -3074,10 +3074,10 @@ export class Author2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
@@ -3093,7 +3093,7 @@ export class Author2 {
   age?: number;
 
   @Index({ name: 'author2_terms_accepted_index' })
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   termsAccepted: boolean & Opt = false;
 
   @Property({ nullable: true })
@@ -3127,7 +3127,7 @@ export class Author2 {
 
 }
 ",
-  "import { Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, Ref, Unique } from '@mikro-orm/core';
+  "import { Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 {
@@ -3182,7 +3182,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2.js';
 import { BookTag2 } from './BookTag2.js';
 import { Publisher2 } from './Publisher2.js';
@@ -3195,7 +3195,7 @@ export class Book2 {
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
   @Index({ name: 'book2_title_index' })
@@ -3220,15 +3220,15 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, ref: true, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Ref<Publisher2>;
 
-  @Property({ length: 255, nullable: true, default: 'lol' })
-  foo?: string;
+  @Property({ type: 'string', length: 255, nullable: true })
+  foo?: string & Opt = 'lol';
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
   bookToTagUnordered = new Collection<BookTag2>(this);
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2.js';
 import { BookTag2 } from './BookTag2.js';
 
@@ -3248,7 +3248,7 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2.js';
 
 @Entity()
@@ -3285,7 +3285,7 @@ export class Car2 {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Test2 } from './Test2.js';
 
 @Entity()
@@ -3314,7 +3314,7 @@ export class Dummy2 {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2.js';
 
 @Entity()
@@ -3335,7 +3335,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: Ref<FooBar2>;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date & Opt;
 
   @Property({ length: 65535, nullable: true })
@@ -3352,7 +3352,7 @@ export class FooBar2 {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class FooBaz2 {
@@ -3363,12 +3363,12 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2.js';
 import { FooBaz2 } from './FooBaz2.js';
 
@@ -3386,12 +3386,12 @@ export class FooParam2 {
   @Property({ length: 255 })
   value!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
@@ -3399,13 +3399,13 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, default: 'asd' })
-  name!: string & Opt;
+  @Property({ type: 'string', length: 255 })
+  name: string & Opt = 'asd';
 
-  @Enum({ items: () => Publisher2Type, default: 'local' })
+  @Enum({ items: () => Publisher2Type })
   type: Publisher2Type & Opt = Publisher2Type.LOCAL;
 
-  @Enum({ items: () => Publisher2Type2, default: 'LOCAL' })
+  @Enum({ items: () => Publisher2Type2 })
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
   @Property({ columnType: 'tinyint', nullable: true })
@@ -3445,7 +3445,7 @@ export enum Publisher2Enum5 {
   A = 'a',
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2.js';
 import { Test2 } from './Test2.js';
 
@@ -3479,7 +3479,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, Opt, PrimaryKey, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2.js';
 import { FooBar2 } from './FooBar2.js';
 
@@ -3498,13 +3498,13 @@ export class Test2 {
   @ManyToOne({ entity: () => Test2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   parent?: Ref<Test2>;
 
-  @Property({ default: 1 })
+  @Property({ type: 'number' })
   version: number & Opt = 1;
 
   @OneToOne({ entity: () => FooBar2, ref: true, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: Ref<FooBar2>;
 
-  @Property({ fieldName: 'foo___baz', nullable: true })
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
   @ManyToMany({ entity: () => FooBar2, joinColumn: 'test2_id', inverseJoinColumn: 'foo_bar2_id' })
@@ -3512,7 +3512,7 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2.js';
 import { Sandwich } from './Sandwich.js';
 
@@ -3551,7 +3551,7 @@ exports[`EntityGenerator numeric nullable columns with null default [mariadb]: m
 @Entity()
 export class Vrf {
 
-  @PrimaryKey()
+  @PrimaryKey({ unsigned: false })
   id!: number;
 
   @Property({ nullable: true })
@@ -3578,7 +3578,7 @@ exports[`EntityGenerator numeric nullable columns with null default [mysql]: mys
 @Entity()
 export class Vrf {
 
-  @PrimaryKey()
+  @PrimaryKey({ unsigned: false })
   id!: number;
 
   @Property({ nullable: true })
@@ -3616,7 +3616,7 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -3627,10 +3627,10 @@ export class Author2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
@@ -3646,7 +3646,7 @@ export class Author2 {
   age?: number;
 
   @Index({ name: 'author2_terms_accepted_index' })
-  @Property({ default: false })
+  @Property({ type: 'boolean' })
   termsAccepted: boolean & Opt = false;
 
   @Property({ nullable: true })
@@ -3735,7 +3735,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -3748,7 +3748,7 @@ export class Book2 {
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
   @Index({ name: 'book2_title_index' })
@@ -3770,8 +3770,8 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Publisher2;
 
-  @Property({ length: 255, nullable: true, default: 'lol' })
-  foo?: string;
+  @Property({ type: 'string', length: 255, nullable: true })
+  foo?: string & Opt = 'lol';
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
   bookToTagUnordered = new Collection<BookTag2>(this);
@@ -3864,7 +3864,7 @@ export class Dummy2 {
 
 }
 ",
-  "import { Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
@@ -3885,7 +3885,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date & Opt;
 
   @Property({ length: 65535, nullable: true })
@@ -3902,7 +3902,7 @@ export class FooBar2 {
 
 }
 ",
-  "import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class FooBaz2 {
@@ -3913,12 +3913,12 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
 ",
-  "import { Entity, ManyToOne, Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -3936,12 +3936,12 @@ export class FooParam2 {
   @Property({ length: 255 })
   value!: string;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
 ",
-  "import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
@@ -3949,13 +3949,13 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, default: 'asd' })
-  name!: string & Opt;
+  @Property({ type: 'string', length: 255 })
+  name: string & Opt = 'asd';
 
-  @Enum({ items: () => Publisher2Type, default: 'local' })
+  @Enum({ items: () => Publisher2Type })
   type: Publisher2Type & Opt = Publisher2Type.LOCAL;
 
-  @Enum({ items: () => Publisher2Type2, default: 'LOCAL' })
+  @Enum({ items: () => Publisher2Type2 })
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
   @Property({ columnType: 'tinyint', nullable: true })
@@ -4008,7 +4008,7 @@ export class Publisher2Tests {
   publisher2!: Publisher2;
 
   @Index({ name: 'publisher2_tests_test2_id_index' })
-  @Property({ fieldName: 'test2_id' })
+  @Property({ fieldName: 'test2_id', unsigned: true })
   test2!: number;
 
 }

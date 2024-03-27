@@ -3,6 +3,7 @@ import { ArrayType } from './ArrayType';
 import type { Platform } from '../platforms';
 import { ValidationError } from '../errors';
 import type { TransformContext } from './Type';
+import type { EntityProperty } from '../typings';
 
 function mapHydrator<T>(items: T[] | undefined, hydrate: (i: string) => T): (i: string) => T {
   if (items && items.length > 0 && typeof items[0] === 'number') {
@@ -31,6 +32,14 @@ export class EnumArrayType<T extends string | number = string> extends ArrayType
     }
 
     return super.convertToDatabaseValue(value, platform, context);
+  }
+
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
+    if (prop.nativeEnumName) {
+      return `${prop.nativeEnumName}[]`;
+    }
+
+    return super.getColumnType(prop, platform);
   }
 
 }

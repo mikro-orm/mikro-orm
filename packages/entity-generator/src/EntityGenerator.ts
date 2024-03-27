@@ -95,7 +95,7 @@ export class EntityGenerator {
       }
     }
 
-    metadata = metadata.filter(table => !options.skipTables || !options.skipTables.includes(table.tableName));
+    metadata = metadata.filter(table => !options.skipTables?.includes(table.tableName));
 
     await options.onInitialMetadata?.(metadata, this.platform);
 

@@ -3,6 +3,78 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
+
+**Note:** Version bump only for package @mikro-orm/entity-generator
+
+
+
+
+
+## [6.1.11](https://github.com/mikro-orm/mikro-orm/compare/v6.1.10...v6.1.11) (2024-03-18)
+
+**Note:** Version bump only for package @mikro-orm/entity-generator
+
+
+
+
+
+## [6.1.10](https://github.com/mikro-orm/mikro-orm/compare/v6.1.9...v6.1.10) (2024-03-14)
+
+**Note:** Version bump only for package @mikro-orm/entity-generator
+
+
+
+
+
+## [6.1.9](https://github.com/mikro-orm/mikro-orm/compare/v6.1.8...v6.1.9) (2024-03-10)
+
+
+### Bug Fixes
+
+* **entity-generator:** emit missing imports in `EntitySchema` generated files ([#5311](https://github.com/mikro-orm/mikro-orm/issues/5311)) ([f680d66](https://github.com/mikro-orm/mikro-orm/commit/f680d66d8da08f0c6c898c3dd300bf1e920439b4))
+* **entity-generator:** output type import statements for type only core imports ([#5317](https://github.com/mikro-orm/mikro-orm/issues/5317)) ([bd3f160](https://github.com/mikro-orm/mikro-orm/commit/bd3f160988ac48c9d1a0b591f5674f9b8f5e16e7))
+
+
+
+
+
+## [6.1.8](https://github.com/mikro-orm/mikro-orm/compare/v6.1.7...v6.1.8) (2024-03-06)
+
+**Note:** Version bump only for package @mikro-orm/entity-generator
+
+
+
+
+
+## [6.1.7](https://github.com/mikro-orm/mikro-orm/compare/v6.1.6...v6.1.7) (2024-03-04)
+
+**Note:** Version bump only for package @mikro-orm/entity-generator
+
+
+
+
+
+## [6.1.6](https://github.com/mikro-orm/mikro-orm/compare/v6.1.5...v6.1.6) (2024-02-28)
+
+**Note:** Version bump only for package @mikro-orm/entity-generator
+
+
+
+
+
+## [6.1.5](https://github.com/mikro-orm/mikro-orm/compare/v6.1.4...v6.1.5) (2024-02-21)
+
+
+### Bug Fixes
+
+* **entity-generator:** fixed generation of unsigned columns ([#5254](https://github.com/mikro-orm/mikro-orm/issues/5254)) ([d78da29](https://github.com/mikro-orm/mikro-orm/commit/d78da297c701a319ea704847e97c2186934831bc))
+* **entity-generator:** optional and hidden properties get type option + string defaults ([#5264](https://github.com/mikro-orm/mikro-orm/issues/5264)) ([12d3b54](https://github.com/mikro-orm/mikro-orm/commit/12d3b54118035195f5ee0ee5665e37a7f2e37164)), closes [#5260](https://github.com/mikro-orm/mikro-orm/issues/5260)
+
+
+
+
+
 ## [6.1.4](https://github.com/mikro-orm/mikro-orm/compare/v6.1.3...v6.1.4) (2024-02-16)
 
 

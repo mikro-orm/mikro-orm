@@ -85,7 +85,7 @@ export class ShippableProducts {
   productId!: number;
 
   @Index({ name: 'fk_shippable_products_destinations1_idx' })
-  @Property({ length: 255, persist: false })
+  @Property({ persist: false })
   destination!: string;
 
   @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', primary: true })
@@ -108,6 +108,7 @@ export class ShippableProducts {
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 
 export class DeliverableProducts {
   [PrimaryKeyProp]?: 'product';
@@ -142,6 +143,7 @@ export const DestinationsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 
 export class ManufacturedProducts {
   [PrimaryKeyProp]?: 'product';
@@ -176,6 +178,9 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { DeliverableProducts } from './DeliverableProducts';
+import { Destinations } from './Destinations';
+import { ManufacturedProducts } from './ManufacturedProducts';
 
 export class ShippableProducts {
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
@@ -193,7 +198,6 @@ export const ShippableProductsSchema = new EntitySchema({
     productId: { type: 'number', persist: false },
     destination: {
       type: 'string',
-      length: 255,
       persist: false,
       index: 'fk_shippable_products_destinations1_idx',
     },
@@ -229,7 +233,7 @@ export const ShippableProductsSchema = new EntitySchema({
 
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 
 @Entity()
@@ -264,7 +268,7 @@ export class Destinations {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 
 @Entity()
@@ -298,7 +302,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { DeliverableProducts } from './DeliverableProducts';
 import { Destinations } from './Destinations';
 import { ManufacturedProducts } from './ManufacturedProducts';
@@ -312,7 +316,7 @@ export class ShippableProducts {
   productId!: number;
 
   @Index({ name: 'fk_shippable_products_destinations1_idx' })
-  @Property({ length: 255, persist: false })
+  @Property({ persist: false })
   destination!: string;
 
   @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', primary: true })
@@ -334,7 +338,7 @@ export class ShippableProducts {
 
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 
 export class DeliverableProducts {
@@ -375,7 +379,7 @@ export const DestinationsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 
 export class ManufacturedProducts {
@@ -416,7 +420,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { DeliverableProducts } from './DeliverableProducts';
 import { Destinations } from './Destinations';
 import { ManufacturedProducts } from './ManufacturedProducts';
@@ -437,7 +441,6 @@ export const ShippableProductsSchema = new EntitySchema({
     productId: { type: 'number', persist: false },
     destination: {
       type: 'string',
-      length: 255,
       persist: false,
       index: 'fk_shippable_products_destinations1_idx',
     },
@@ -579,7 +582,7 @@ export class ShippableProducts {
   productId!: number;
 
   @Index({ name: 'fk_shippable_products_destinations1_idx' })
-  @Property({ length: 255, persist: false })
+  @Property({ persist: false })
   destination!: string;
 
   @ManyToOne({ entity: () => DeliverableProducts, fieldName: 'product_id', primary: true })
@@ -602,6 +605,7 @@ export class ShippableProducts {
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
 export class DeliverableProducts {
@@ -646,6 +650,7 @@ export const DestinationsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
 export class ManufacturedProducts {
@@ -677,6 +682,7 @@ export const ManufacturedProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ManufacturedProducts } from './ManufacturedProducts';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
@@ -695,6 +701,9 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { DeliverableProducts } from './DeliverableProducts';
+import { Destinations } from './Destinations';
+import { ManufacturedProducts } from './ManufacturedProducts';
 
 export class ShippableProducts {
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
@@ -712,7 +721,6 @@ export const ShippableProductsSchema = new EntitySchema({
     productId: { type: 'number', persist: false },
     destination: {
       type: 'string',
-      length: 255,
       persist: false,
       index: 'fk_shippable_products_destinations1_idx',
     },
@@ -748,7 +756,7 @@ export const ShippableProductsSchema = new EntitySchema({
 
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
 [
-  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
@@ -791,7 +799,7 @@ export class Destinations {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
@@ -817,7 +825,7 @@ export class ManufacturedProducts {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { ManufacturedProducts } from './ManufacturedProducts';
 
 @Entity()
@@ -836,7 +844,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { DeliverableProducts } from './DeliverableProducts';
 import { Destinations } from './Destinations';
 import { ManufacturedProducts } from './ManufacturedProducts';
@@ -850,7 +858,7 @@ export class ShippableProducts {
   productId!: number;
 
   @Index({ name: 'fk_shippable_products_destinations1_idx' })
-  @Property({ length: 255, persist: false })
+  @Property({ persist: false })
   destination!: string;
 
   @ManyToOne({ entity: () => DeliverableProducts, ref: true, fieldName: 'product_id', primary: true })
@@ -872,7 +880,7 @@ export class ShippableProducts {
 
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
@@ -923,7 +931,7 @@ export const DestinationsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
@@ -961,7 +969,7 @@ export const ManufacturedProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { ManufacturedProducts } from './ManufacturedProducts';
 
 export class Products {
@@ -985,7 +993,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { DeliverableProducts } from './DeliverableProducts';
 import { Destinations } from './Destinations';
 import { ManufacturedProducts } from './ManufacturedProducts';
@@ -1006,7 +1014,6 @@ export const ShippableProductsSchema = new EntitySchema({
     productId: { type: 'number', persist: false },
     destination: {
       type: 'string',
-      length: 255,
       persist: false,
       index: 'fk_shippable_products_destinations1_idx',
     },
@@ -1139,6 +1146,7 @@ export class ShippableProducts {
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 
 export class DeliverableProducts {
   [PrimaryKeyProp]?: 'product';
@@ -1171,6 +1179,7 @@ export const DestinationsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 
 export class ManufacturedProducts {
   [PrimaryKeyProp]?: 'product';
@@ -1203,6 +1212,9 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { DeliverableProducts } from './DeliverableProducts';
+import { Destinations } from './Destinations';
+import { ManufacturedProducts } from './ManufacturedProducts';
 
 export class ShippableProducts {
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
@@ -1247,7 +1259,7 @@ export const ShippableProductsSchema = new EntitySchema({
 
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 
 @Entity()
@@ -1279,7 +1291,7 @@ export class Destinations {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 
 @Entity()
@@ -1310,7 +1322,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { DeliverableProducts } from './DeliverableProducts';
 import { Destinations } from './Destinations';
 import { ManufacturedProducts } from './ManufacturedProducts';
@@ -1339,7 +1351,7 @@ export class ShippableProducts {
 
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 
 export class DeliverableProducts {
@@ -1378,7 +1390,7 @@ export const DestinationsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 
 export class ManufacturedProducts {
@@ -1417,7 +1429,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { DeliverableProducts } from './DeliverableProducts';
 import { Destinations } from './Destinations';
 import { ManufacturedProducts } from './ManufacturedProducts';
@@ -1581,6 +1593,7 @@ export class ShippableProducts {
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
 export class DeliverableProducts {
@@ -1623,6 +1636,7 @@ export const DestinationsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
 export class ManufacturedProducts {
@@ -1652,6 +1666,7 @@ export const ManufacturedProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ManufacturedProducts } from './ManufacturedProducts';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
@@ -1670,6 +1685,9 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { DeliverableProducts } from './DeliverableProducts';
+import { Destinations } from './Destinations';
+import { ManufacturedProducts } from './ManufacturedProducts';
 
 export class ShippableProducts {
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
@@ -1714,7 +1732,7 @@ export const ShippableProductsSchema = new EntitySchema({
 
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
 [
-  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
@@ -1754,7 +1772,7 @@ export class Destinations {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
@@ -1777,7 +1795,7 @@ export class ManufacturedProducts {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { ManufacturedProducts } from './ManufacturedProducts';
 
 @Entity()
@@ -1796,7 +1814,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { DeliverableProducts } from './DeliverableProducts';
 import { Destinations } from './Destinations';
 import { ManufacturedProducts } from './ManufacturedProducts';
@@ -1825,7 +1843,7 @@ export class ShippableProducts {
 
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
@@ -1874,7 +1892,7 @@ export const DestinationsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
@@ -1910,7 +1928,7 @@ export const ManufacturedProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { ManufacturedProducts } from './ManufacturedProducts';
 
 export class Products {
@@ -1934,7 +1952,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { DeliverableProducts } from './DeliverableProducts';
 import { Destinations } from './Destinations';
 import { ManufacturedProducts } from './ManufacturedProducts';
@@ -2079,6 +2097,7 @@ export class ShippableProducts {
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 
 export class DeliverableProducts {
   [PrimaryKeyProp]?: 'product';
@@ -2111,6 +2130,7 @@ export const DestinationsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 
 export class ManufacturedProducts {
   [PrimaryKeyProp]?: 'product';
@@ -2143,6 +2163,9 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { DeliverableProducts } from './DeliverableProducts';
+import { Destinations } from './Destinations';
+import { ManufacturedProducts } from './ManufacturedProducts';
 
 export class ShippableProducts {
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
@@ -2187,7 +2210,7 @@ export const ShippableProductsSchema = new EntitySchema({
 
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 
 @Entity()
@@ -2219,7 +2242,7 @@ export class Destinations {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 
 @Entity()
@@ -2250,7 +2273,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { DeliverableProducts } from './DeliverableProducts';
 import { Destinations } from './Destinations';
 import { ManufacturedProducts } from './ManufacturedProducts';
@@ -2279,7 +2302,7 @@ export class ShippableProducts {
 
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 
 export class DeliverableProducts {
@@ -2318,7 +2341,7 @@ export const DestinationsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 
 export class ManufacturedProducts {
@@ -2357,7 +2380,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { DeliverableProducts } from './DeliverableProducts';
 import { Destinations } from './Destinations';
 import { ManufacturedProducts } from './ManufacturedProducts';
@@ -2521,6 +2544,7 @@ export class ShippableProducts {
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
 export class DeliverableProducts {
@@ -2563,6 +2587,7 @@ export const DestinationsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
 export class ManufacturedProducts {
@@ -2592,6 +2617,7 @@ export const ManufacturedProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { ManufacturedProducts } from './ManufacturedProducts';
 
 export class Products {
   [PrimaryKeyProp]?: 'productId';
@@ -2610,6 +2636,9 @@ export const ProductsSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { DeliverableProducts } from './DeliverableProducts';
+import { Destinations } from './Destinations';
+import { ManufacturedProducts } from './ManufacturedProducts';
 
 export class ShippableProducts {
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
@@ -2654,7 +2683,7 @@ export const ShippableProductsSchema = new EntitySchema({
 
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
 [
-  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
@@ -2694,7 +2723,7 @@ export class Destinations {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
@@ -2717,7 +2746,7 @@ export class ManufacturedProducts {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { ManufacturedProducts } from './ManufacturedProducts';
 
 @Entity()
@@ -2736,7 +2765,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { DeliverableProducts } from './DeliverableProducts';
 import { Destinations } from './Destinations';
 import { ManufacturedProducts } from './ManufacturedProducts';
@@ -2765,7 +2794,7 @@ export class ShippableProducts {
 
 exports[`non_composite_ambiguous_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
@@ -2814,7 +2843,7 @@ export const DestinationsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { ShippableProducts } from './ShippableProducts';
 
@@ -2850,7 +2879,7 @@ export const ManufacturedProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { ManufacturedProducts } from './ManufacturedProducts';
 
 export class Products {
@@ -2874,7 +2903,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { DeliverableProducts } from './DeliverableProducts';
 import { Destinations } from './Destinations';
 import { ManufacturedProducts } from './ManufacturedProducts';
