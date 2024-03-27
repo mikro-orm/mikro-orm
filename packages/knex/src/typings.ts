@@ -1,5 +1,5 @@
-import type { Knex } from 'knex';
 import type {
+  DeferMode,
   CheckCallback,
   Dictionary,
   EntityProperty,
@@ -12,6 +12,7 @@ import type {
   AnyEntity,
   EntityName,
 } from '@mikro-orm/core';
+import type { Knex } from 'knex';
 import type { JoinType, QueryType } from './query/enums';
 import type { DatabaseSchema, DatabaseTable } from './schema';
 
@@ -78,6 +79,7 @@ export interface ForeignKey {
   referencedColumnNames: string[];
   updateRule?: string;
   deleteRule?: string;
+  deferMode?: DeferMode;
 }
 
 export interface IndexDef {

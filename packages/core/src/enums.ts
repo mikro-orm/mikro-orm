@@ -205,3 +205,9 @@ export interface TransactionOptions {
 
 export abstract class PlainObject {
 }
+
+export enum DeferMode {
+  NOT_DEFERRABLE = 'not deferrable',
+  INITIALLY_IMMEDIATE = 'immediate',
+  INITIALLY_DEFERRED = 'deferred',
+}

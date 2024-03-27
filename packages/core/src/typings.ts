@@ -1,5 +1,12 @@
 import type { Transaction } from './connections';
-import { type Cascade, type EventType, type LoadStrategy, type QueryOrderMap, ReferenceKind } from './enums';
+import {
+  type DeferMode,
+  type Cascade,
+  type EventType,
+  type LoadStrategy,
+  type QueryOrderMap,
+  ReferenceKind,
+} from './enums';
 import {
   type AssignOptions,
   type Collection,
@@ -483,6 +490,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   userDefined?: boolean;
   optional?: boolean; // for ts-morph
   ignoreSchemaChanges?: ('type' | 'extra')[];
+  deferMode?: DeferMode;
 }
 
 export class EntityMetadata<T = any> {

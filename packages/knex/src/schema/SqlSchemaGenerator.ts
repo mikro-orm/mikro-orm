@@ -352,6 +352,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     if (foreignKey.deleteRule) {
       builder.onDelete(foreignKey.deleteRule);
     }
+
+    if (foreignKey.deferMode) {
+      builder.deferrable(foreignKey.deferMode);
+    }
   }
 
   /**

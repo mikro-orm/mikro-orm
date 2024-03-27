@@ -1,4 +1,4 @@
-import { BigIntType, EnumType, Type, Utils, type Dictionary } from '@mikro-orm/core';
+import { BigIntType, EnumType, Type, Utils, type Dictionary, DeferMode } from '@mikro-orm/core';
 import {
   SchemaHelper,
   type AbstractSqlConnection,
@@ -209,7 +209,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
     const sql = `select nsp1.nspname schema_name, cls1.relname table_name, nsp2.nspname referenced_schema_name,
       cls2.relname referenced_table_name, a.attname column_name, af.attname referenced_column_name, conname constraint_name,
-      confupdtype update_rule, confdeltype delete_rule, array_position(con.conkey,a.attnum) as ord
+      confupdtype update_rule, confdeltype delete_rule, array_position(con.conkey,a.attnum) as ord, condeferrable, condeferred
       from pg_attribute a
       join pg_constraint con on con.conrelid = a.attrelid AND a.attnum = ANY (con.conkey)
       join pg_attribute af on af.attnum = con.confkey[array_position(con.conkey,a.attnum)] AND af.attrelid = con.confrelid
@@ -238,6 +238,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     for (const fk of allFks) {
       fk.update_rule = mapReferencialIntegrity(fk.update_rule);
       fk.delete_rule = mapReferencialIntegrity(fk.delete_rule);
+
+      if (fk.condeferrable) {
+        fk.defer_mode = fk.condeferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
+      }
 
       const key = this.getTableKey(fk);
       ret[key] ??= [];
