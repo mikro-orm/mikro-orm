@@ -349,6 +349,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         builder.onDelete(foreignKey.deleteRule);
       }
     }
+
+    if (foreignKey.deferMode) {
+      builder.deferrable(foreignKey.deferMode);
+    }
   }
 
   /**

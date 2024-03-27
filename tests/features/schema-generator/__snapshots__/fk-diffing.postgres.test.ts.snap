@@ -53,3 +53,27 @@ alter table "book" drop column "based_on_id";
 
 "
 `;
+
+exports[`updating tables with FKs in postgres schema generator updates foreign keys on deferrable change 1`] = `
+"alter table "book" drop constraint "book_author1_pk_foreign";
+
+alter table "book" add constraint "book_author1_pk_foreign" foreign key ("author1_pk") references "author" ("pk") on update cascade deferrable initially deferred ;
+
+"
+`;
+
+exports[`updating tables with FKs in postgres schema generator updates foreign keys on deferrable change 2`] = `
+"alter table "book" drop constraint "book_author1_pk_foreign";
+
+alter table "book" add constraint "book_author1_pk_foreign" foreign key ("author1_pk") references "author" ("pk") on update cascade deferrable initially immediate ;
+
+"
+`;
+
+exports[`updating tables with FKs in postgres schema generator updates foreign keys on deferrable change 3`] = `
+"alter table "book" drop constraint "book_author1_pk_foreign";
+
+alter table "book" add constraint "book_author1_pk_foreign" foreign key ("author1_pk") references "author" ("pk") on update cascade;
+
+"
+`;

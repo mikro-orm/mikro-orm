@@ -434,6 +434,10 @@ export class SchemaComparator {
       return true;
     }
 
+    if (key1.deferMode !== key2.deferMode) {
+      return true;
+    }
+
     if (key1.localTableName === key1.referencedTableName && !this.platform.supportsSelfReferencingForeignKeyCascade()) {
       return false;
     }

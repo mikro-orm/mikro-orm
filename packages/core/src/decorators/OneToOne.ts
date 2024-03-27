@@ -1,4 +1,4 @@
-import { ReferenceKind } from '../enums';
+import { type DeferMode, ReferenceKind } from '../enums';
 import { createOneToDecorator, type OneToManyOptions } from './OneToMany';
 import type { AnyString, EntityName } from '../typings';
 
@@ -20,4 +20,5 @@ export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOp
   mapToPk?: boolean;
   deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
   updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  deferMode?: DeferMode;
 }

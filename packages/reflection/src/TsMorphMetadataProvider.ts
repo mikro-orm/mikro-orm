@@ -193,10 +193,6 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   }
 
   private initProject(): void {
-    if (this.project) {
-      return;
-    }
-
     const settings = ConfigurationLoader.getSettings();
     const tsConfigFilePath = this.config.get('discovery').tsConfigPath ?? settings.tsConfigPath ?? './tsconfig.json';
 
@@ -220,7 +216,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   }
 
   private initSourceFiles(): void {
-    this.initProject();
+    if (!this.project) {
+      this.initProject();
+    }
 
     // All entity files are first required during the discovery, before we reach here, so it is safe to get the parts from the global
     // metadata storage. We know the path thanks the decorators being executed. In case we are running via ts-node, the extension
