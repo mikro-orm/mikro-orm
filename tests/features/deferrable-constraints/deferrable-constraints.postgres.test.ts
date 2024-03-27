@@ -31,10 +31,7 @@ describe('deferrable constraints in postgres', () => {
       dbName: `mikro_orm_test_deferrable`,
       driver: PostgreSqlDriver,
     });
-    await orm.schema.ensureDatabase();
-    await orm.schema.execute('drop table if exists child');
-    await orm.schema.execute('drop table if exists parent');
-    await orm.schema.createSchema();
+    await orm.schema.refreshDatabase();
   });
   beforeEach(async () => orm.schema.clearDatabase());
   afterAll(async () => {
