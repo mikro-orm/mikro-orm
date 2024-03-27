@@ -1213,10 +1213,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     if (tableAlias) {
       return prop.fieldNames.map(fieldName => {
-        const name = this.platform.quoteIdentifier(`${tableAlias}.${fieldName}`);
-        const alias = this.platform.quoteIdentifier(`${tableAlias}__${fieldName}`);
-
-        return raw(`${name} as ${alias}`);
+        return `${tableAlias}.${fieldName} as ${tableAlias}__${fieldName}`;
       });
     }
 

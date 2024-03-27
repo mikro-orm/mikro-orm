@@ -713,14 +713,14 @@ describe('EntityManagerMsSql', () => {
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(FooBaz2, { id: baz.id }, { populate: ['bar'] });
-    expect(mock.mock.calls[1][0]).toMatch('select top (@p0) [f0].*, [b1].[id] as [b1__id], [b1].[name] as [b1__name], [b1].[baz_id] as [b1__baz_id], [b1].[foo_bar_id] as [b1__foo_bar_id], [b1].[version] as [b1__version], [b1].[blob] as [b1__blob], [b1].[array] as [b1__array], [b1].[object] as [b1__object], (select 123) as [b1__random], [b1].[id] as [bar_id] from [foo_baz2] as [f0] left join [foo_bar2] as [b1] on [f0].[id] = [b1].[baz_id] where [f0].[id] = @p1');
+    expect(mock.mock.calls[1][0]).toMatch('select top (@p0) [f0].*, [b1].[id] as [b1__id], [b1].[name] as [b1__name], [b1].[baz_id] as [b1__baz_id], [b1].[foo_bar_id] as [b1__foo_bar_id], [b1].[version] as [b1__version], [b1].[blob] as [b1__blob], [b1].[array] as [b1__array], [b1].[object] as [b1__object], (select 123) as [b1__random] from [foo_baz2] as [f0] left join [foo_bar2] as [b1] on [f0].[id] = [b1].[baz_id] where [f0].[id] = @p1');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
     expect(wrap(b1).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
     orm.em.clear();
 
     const b2 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, { populate: ['bar'] });
-    expect(mock.mock.calls[2][0]).toMatch('select top (@p0) [f0].*, [b1].[id] as [b1__id], [b1].[name] as [b1__name], [b1].[baz_id] as [b1__baz_id], [b1].[foo_bar_id] as [b1__foo_bar_id], [b1].[version] as [b1__version], [b1].[blob] as [b1__blob], [b1].[array] as [b1__array], [b1].[object] as [b1__object], (select 123) as [b1__random], [b1].[id] as [bar_id] from [foo_baz2] as [f0] left join [foo_bar2] as [b1] on [f0].[id] = [b1].[baz_id] left join [foo_bar2] as [f2] on [f0].[id] = [f2].[baz_id] where [f2].[id] = @p1');
+    expect(mock.mock.calls[2][0]).toMatch('select top (@p0) [f0].*, [b1].[id] as [b1__id], [b1].[name] as [b1__name], [b1].[baz_id] as [b1__baz_id], [b1].[foo_bar_id] as [b1__foo_bar_id], [b1].[version] as [b1__version], [b1].[blob] as [b1__blob], [b1].[array] as [b1__array], [b1].[object] as [b1__object], (select 123) as [b1__random] from [foo_baz2] as [f0] left join [foo_bar2] as [b1] on [f0].[id] = [b1].[baz_id] left join [foo_bar2] as [f2] on [f0].[id] = [f2].[baz_id] where [f2].[id] = @p1');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
@@ -1015,7 +1015,7 @@ describe('EntityManagerMsSql', () => {
     expect(res).toHaveLength(1);
     expect(res[0].books.length).toBe(3);
     expect(mock.mock.calls).toHaveLength(1);
-    expect(mock.mock.calls[0][0]).toMatch('select [a0].*, [b1].[uuid_pk] as [b1__uuid_pk], [b1].[created_at] as [b1__created_at], [b1].[title] as [b1__title], [b1].[perex] as [b1__perex], [b1].[price] as [b1__price], ([b1].[price] * 1.19) as [b1__price_taxed], [b1].[double] as [b1__double], [b1].[meta] as [b1__meta], [b1].[author_id] as [b1__author_id], [b1].[publisher_id] as [b1__publisher_id], [f2].[uuid_pk] as [favourite_book_uuid_pk] ' +
+    expect(mock.mock.calls[0][0]).toMatch('select [a0].*, [b1].[uuid_pk] as [b1__uuid_pk], [b1].[created_at] as [b1__created_at], [b1].[title] as [b1__title], [b1].[perex] as [b1__perex], [b1].[price] as [b1__price], ([b1].[price] * 1.19) as [b1__price_taxed], [b1].[double] as [b1__double], [b1].[meta] as [b1__meta], [b1].[author_id] as [b1__author_id], [b1].[publisher_id] as [b1__publisher_id], [f2].[uuid_pk] as [f2__uuid_pk] ' +
       'from [author2] as [a0] ' +
       'left join [book2] as [b1] on [a0].[id] = [b1].[author_id] and [b1].[author_id] is not null ' +
       'left join [book2] as [f2] on [a0].[favourite_book_uuid_pk] = [f2].[uuid_pk] and [f2].[author_id] is not null ' +
@@ -1147,7 +1147,7 @@ describe('EntityManagerMsSql', () => {
     expect(mock.mock.calls[2][0]).toMatch('insert into [book2] ([uuid_pk], [created_at], [title], [author_id]) values (@p0, @p1, @p2, @p3), (@p4, @p5, @p6, @p7), (@p8, @p9, @p10, @p11)');
     expect(mock.mock.calls[3][0]).toMatch('update [author2] set [favourite_author_id] = @p0, [updated_at] = @p1 where [id] = @p2;select @@rowcount');
     expect(mock.mock.calls[4][0]).toMatch('commit');
-    expect(mock.mock.calls[5][0]).toMatch('select top (@p0) [a0].*, [f1].[uuid_pk] as [favourite_book_uuid_pk] from [author2] as [a0] left join [book2] as [f1] on [a0].[favourite_book_uuid_pk] = [f1].[uuid_pk] and [f1].[author_id] is not null where [a0].[id] = @p1');
+    expect(mock.mock.calls[5][0]).toMatch('select top (@p0) [a0].*, [f1].[uuid_pk] as [f1__uuid_pk] from [author2] as [a0] left join [book2] as [f1] on [a0].[favourite_book_uuid_pk] = [f1].[uuid_pk] and [f1].[author_id] is not null where [a0].[id] = @p1');
   });
 
   test('allow assigning PK to undefined/null', async () => {
@@ -1378,7 +1378,7 @@ describe('EntityManagerMsSql', () => {
     expect(author.books.getItems().every(b => b.uuid)).toBe(true);
   });
 
-  // this should run in ~600ms (when running single test locally)
+  // this should run in ~700ms (when running single test locally)
   test('perf: batch insert and update', async () => {
     const authors = new Set<Author2>();
 

@@ -1206,17 +1206,22 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const requiresSQLConversion = meta?.props.filter(p => p.hasConvertToJSValueSQL && p.persist !== false) ?? [];
 
     if (this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES) && (fields.includes('*') || fields.includes(`${this.mainAlias.aliasName}.*`)) && requiresSQLConversion.length > 0) {
-      requiresSQLConversion.forEach(p => ret.push(this.helper.mapper(p.name, this.type)));
+      for (const p of requiresSQLConversion) {
+        ret.push(this.helper.mapper(p.name, this.type));
+      }
     }
 
-    Object.keys(this._populateMap).forEach(f => {
-      if (!fields.includes(f.replace(/#\w+$/, '')) && type === 'where') {
+    for (const f of Object.keys(this._populateMap)) {
+      if (type === 'where') {
         const cols = this.helper.mapJoinColumns(this.type ?? QueryType.SELECT, this._joins[f]);
-        ret.push(...cols as string[]);
-      }
-    });
 
-    return ret as U[];
+        for (const col of cols) {
+          ret.push(col as string);
+        }
+      }
+    }
+
+    return Utils.unique(ret) as U[];
   }
 
   private init(type: QueryType, data?: any, cond?: any): this {
@@ -1509,8 +1514,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
             return field.sql.includes(prop);
           }
 
-          // not perfect, but should work most of the time, ideally we should check only the alias (`... as alias`)
-          return field.toString().includes(prop);
+          return false;
         });
 
         if (field instanceof RawQueryFragment) {
