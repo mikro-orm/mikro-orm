@@ -1139,7 +1139,7 @@ __metadata:
     fs-extra: "npm:11.2.0"
     globby: "npm:11.1.0"
     mikro-orm: "npm:6.1.12"
-    reflect-metadata: "npm:0.2.1"
+    reflect-metadata: "npm:0.2.2"
   languageName: unknown
   linkType: soft
 
@@ -9552,10 +9552,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"reflect-metadata@npm:0.2.1":
-  version: 0.2.1
-  resolution: "reflect-metadata@npm:0.2.1"
-  checksum: 10/394b293bd4a538b644ed0e8730c5aeb1e08e78972c915b3d2cf3b302241952cfee8f8bd8a0fdf7d8c7fa78d31d0585489061624692e2577d767abd120cad968c
+"reflect-metadata@npm:0.2.2":
+  version: 0.2.2
+  resolution: "reflect-metadata@npm:0.2.2"
+  checksum: 10/1c93f9ac790fea1c852fde80c91b2760420069f4862f28e6fae0c00c6937a56508716b0ed2419ab02869dd488d123c4ab92d062ae84e8739ea7417fae10c4745
   languageName: node
   linkType: hard
 
