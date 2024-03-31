@@ -355,6 +355,13 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return `${constraints.join(';\n')};\nalter table ${tableNameRaw} drop column ${drops.join(', ')}`;
   }
 
+  override getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column, schemaName?: string): string {
+    const oldName = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName + '.' + oldColumnName;
+    const columnName = this.platform.quoteValue(to.name);
+
+    return `exec sp_rename ${this.platform.quoteValue(oldName)}, ${columnName}, 'COLUMN'`;
+  }
+
   protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {
     const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;

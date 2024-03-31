@@ -175,7 +175,7 @@ describe('SchemaGenerator', () => {
     await orm.close(true);
   });
 
-  test.skip('rename column [mssql]', async () => {
+  test('rename column [mssql]', async () => {
     const orm = await initORMMsSql();
     const meta = orm.getMetadata();
     const authorMeta = meta.get('Author2');

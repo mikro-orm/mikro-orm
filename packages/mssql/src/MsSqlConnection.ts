@@ -19,10 +19,10 @@ export class MsSqlConnection extends AbstractSqlConnection {
   private patchKnex() {
     const { MsSqlColumnCompiler, MsSqlTableCompiler } = MonkeyPatchable;
 
-    MsSqlColumnCompiler.prototype.lowerCase = true;
-    MsSqlColumnCompiler.prototype.addColumnsPrefix = 'add ';
-    MsSqlColumnCompiler.prototype.dropColumnPrefix = 'drop column ';
-    MsSqlColumnCompiler.prototype.alterColumnPrefix = 'alter column ';
+    MsSqlTableCompiler.prototype.lowerCase = true;
+    MsSqlTableCompiler.prototype.addColumnsPrefix = 'add ';
+    MsSqlTableCompiler.prototype.dropColumnPrefix = 'drop column ';
+    MsSqlTableCompiler.prototype.alterColumnPrefix = 'alter column ';
     MsSqlColumnCompiler.prototype.enu = function (allowed: unknown[]) {
       return `varchar(100) check (${this.formatter.wrap(this.args[0])} in ('${(allowed.join("', '"))}'))`;
     };
