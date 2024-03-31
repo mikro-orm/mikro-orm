@@ -385,11 +385,11 @@ const { Migration } = require('@mikro-orm/migrations');
 class Migration20191013214813 extends Migration {
 
   async up() {
-    this.addSql('alter table "book2" drop column "foo";');
+    this.addSql('alter table "custom"."book2" drop column "foo";');
 
     this.addSql('alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);');
 
-    this.addSql('alter table "test2" drop column "path";');
+    this.addSql('alter table "custom"."test2" drop column "path";');
   }
 
   async down() {
@@ -410,11 +410,11 @@ exports.Migration20191013214813 = Migration20191013214813;
       "alter table "custom"."test2" add column "path" polygon null;",
     ],
     "up": [
-      "alter table "book2" drop column "foo";",
+      "alter table "custom"."book2" drop column "foo";",
       "",
       "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
       "",
-      "alter table "test2" drop column "path";",
+      "alter table "custom"."test2" drop column "path";",
     ],
   },
   "fileName": "Migration20191013214813.js",
@@ -430,11 +430,11 @@ import { Migration } from '@mikro-orm/migrations';
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('alter table "book2" drop column "foo";');
+    this.addSql('alter table "custom"."book2" drop column "foo";');
 
     this.addSql('alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);');
 
-    this.addSql('alter table "test2" drop column "path";');
+    this.addSql('alter table "custom"."test2" drop column "path";');
   }
 
   async down(): Promise<void> {
@@ -454,11 +454,11 @@ export class Migration20191013214813 extends Migration {
       "alter table "custom"."test2" add column "path" polygon null;",
     ],
     "up": [
-      "alter table "book2" drop column "foo";",
+      "alter table "custom"."book2" drop column "foo";",
       "",
       "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
       "",
-      "alter table "test2" drop column "path";",
+      "alter table "custom"."test2" drop column "path";",
     ],
   },
   "fileName": "Migration20191013214813.ts",
@@ -472,11 +472,11 @@ exports[`Migrator (postgres) generate migration with custom name with name optio
 export class Migration20191013214813_custom_name extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('alter table "book2" drop column "foo";');
+    this.addSql('alter table "custom"."book2" drop column "foo";');
 
     this.addSql('alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);');
 
-    this.addSql('alter table "test2" drop column "path";');
+    this.addSql('alter table "custom"."test2" drop column "path";');
   }
 
   async down(): Promise<void> {
@@ -496,11 +496,11 @@ export class Migration20191013214813_custom_name extends Migration {
       "alter table "custom"."test2" add column "path" polygon null;",
     ],
     "up": [
-      "alter table "book2" drop column "foo";",
+      "alter table "custom"."book2" drop column "foo";",
       "",
       "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
       "",
-      "alter table "test2" drop column "path";",
+      "alter table "custom"."test2" drop column "path";",
     ],
   },
   "fileName": "migration20191013214813_custom_name.ts",
@@ -514,11 +514,11 @@ exports[`Migrator (postgres) generate migration with custom name: migration-dump
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('alter table "book2" drop column "foo";');
+    this.addSql('alter table "custom"."book2" drop column "foo";');
 
     this.addSql('alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);');
 
-    this.addSql('alter table "test2" drop column "path";');
+    this.addSql('alter table "custom"."test2" drop column "path";');
   }
 
   async down(): Promise<void> {
@@ -538,11 +538,11 @@ export class Migration20191013214813 extends Migration {
       "alter table "custom"."test2" add column "path" polygon null;",
     ],
     "up": [
-      "alter table "book2" drop column "foo";",
+      "alter table "custom"."book2" drop column "foo";",
       "",
       "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
       "",
-      "alter table "test2" drop column "path";",
+      "alter table "custom"."test2" drop column "path";",
     ],
   },
   "fileName": "migration-20191013214813.ts",
@@ -556,11 +556,11 @@ exports[`Migrator (postgres) generate migration with snapshot: migration-snapsho
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('alter table "book2" drop column "foo";');
+    this.addSql('alter table "custom"."book2" drop column "foo";');
 
     this.addSql('alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);');
 
-    this.addSql('alter table "test2" drop column "path";');
+    this.addSql('alter table "custom"."test2" drop column "path";');
   }
 
   async down(): Promise<void> {
@@ -580,11 +580,11 @@ export class Migration20191013214813 extends Migration {
       "alter table "custom"."test2" add column "path" polygon null;",
     ],
     "up": [
-      "alter table "book2" drop column "foo";",
+      "alter table "custom"."book2" drop column "foo";",
       "",
       "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
       "",
-      "alter table "test2" drop column "path";",
+      "alter table "custom"."test2" drop column "path";",
     ],
   },
   "fileName": "Migration20191013214813.ts",
@@ -609,11 +609,11 @@ exports[`Migrator (postgres) generate schema migration: migration-dump 1`] = `
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('alter table "book2" drop column "foo";');
+    this.addSql('alter table "custom"."book2" drop column "foo";');
 
     this.addSql('alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);');
 
-    this.addSql('alter table "test2" drop column "path";');
+    this.addSql('alter table "custom"."test2" drop column "path";');
   }
 
   async down(): Promise<void> {
@@ -633,11 +633,11 @@ export class Migration20191013214813 extends Migration {
       "alter table "custom"."test2" add column "path" polygon null;",
     ],
     "up": [
-      "alter table "book2" drop column "foo";",
+      "alter table "custom"."book2" drop column "foo";",
       "",
       "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
       "",
-      "alter table "test2" drop column "path";",
+      "alter table "custom"."test2" drop column "path";",
     ],
   },
   "fileName": "Migration20191013214813.ts",

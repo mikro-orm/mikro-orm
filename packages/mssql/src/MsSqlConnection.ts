@@ -17,10 +17,58 @@ export class MsSqlConnection extends AbstractSqlConnection {
   }
 
   private patchKnex() {
-    const { MsSqlColumnCompiler } = MonkeyPatchable;
+    const { MsSqlColumnCompiler, MsSqlTableCompiler } = MonkeyPatchable;
 
+    MsSqlColumnCompiler.prototype.lowerCase = true;
+    MsSqlColumnCompiler.prototype.addColumnsPrefix = 'add ';
+    MsSqlColumnCompiler.prototype.dropColumnPrefix = 'drop column ';
+    MsSqlColumnCompiler.prototype.alterColumnPrefix = 'alter column ';
     MsSqlColumnCompiler.prototype.enu = function (allowed: unknown[]) {
       return `varchar(100) check (${this.formatter.wrap(this.args[0])} in ('${(allowed.join("', '"))}'))`;
+    };
+
+    MsSqlTableCompiler.prototype.alterColumns = function (columns: any, colBuilder: any) {
+      for (let i = 0, l = colBuilder.length; i < l; i++) {
+        const builder = colBuilder[i];
+        if (builder.modified.defaultTo) {
+          const schema = this.schemaNameRaw || 'dbo';
+          const baseQuery = `declare @constraint${i} varchar(100) = (select default_constraints.name from sys.all_columns`
+            + ' join sys.tables on all_columns.object_id = tables.object_id'
+            + ' join sys.schemas on tables.schema_id = schemas.schema_id'
+            + ' join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id'
+            + ` where schemas.name = '${schema}' and tables.name = '${this.tableNameRaw}' and all_columns.name = '${builder.getColumnName()}')`
+            + ` if @constraint${i} is not null exec('alter table ${this.tableNameRaw} drop constraint ' + @constraint${i})`;
+          this.pushQuery(baseQuery);
+        }
+      }
+      // in SQL server only one column can be altered at a time
+      columns.sql.forEach((sql: string) => {
+        this.pushQuery({
+          sql: `alter table ${this.tableName()} ${this.alterColumnPrefix.toLowerCase()}${sql}`,
+          bindings: columns.bindings,
+        });
+      });
+    };
+
+    MsSqlTableCompiler.prototype.dropColumn = function (...args: any[]) {
+      const columns = Array.isArray(args[0]) ? args[0] : args;
+      const columnsArray = Array.isArray(columns) ? columns : [columns];
+      const drops = columnsArray.map(column => this.formatter.wrap(column));
+      const schema = this.schemaNameRaw || 'dbo';
+      let i = 0;
+
+      for (const column of columns) {
+        const baseQuery = `declare @constraint${i} varchar(100) = (select default_constraints.name from sys.all_columns`
+          + ' join sys.tables on all_columns.object_id = tables.object_id'
+          + ' join sys.schemas on tables.schema_id = schemas.schema_id'
+          + ' join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id'
+          + ` where schemas.name = '${schema}' and tables.name = '${this.tableNameRaw}' and all_columns.name = '${column}')`
+          + ` if @constraint${i} is not null exec('alter table ${this.tableNameRaw} drop constraint ' + @constraint${i})`;
+        this.pushQuery(baseQuery);
+        i++;
+      }
+
+      this.pushQuery('alter table ' + this.tableName() + ' ' + this.dropColumnPrefix + drops.join(', '));
     };
   }
 

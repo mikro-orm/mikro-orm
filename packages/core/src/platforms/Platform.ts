@@ -338,7 +338,7 @@ export abstract class Platform {
   }
 
   supportsCreatingFullTextIndex(): boolean {
-    throw new Error('Full text searching is not supported by this driver.');
+    return false;
   }
 
   getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {

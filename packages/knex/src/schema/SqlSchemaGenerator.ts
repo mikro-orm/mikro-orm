@@ -1,17 +1,17 @@
 import type { Knex } from 'knex';
 import {
   AbstractSchemaGenerator,
-  Utils,
-  type Dictionary,
-  type EntityMetadata,
-  type MikroORM,
-  type ISchemaGenerator,
-  type Transaction,
   type ClearDatabaseOptions,
   type CreateSchemaOptions,
-  type EnsureDatabaseOptions,
+  type Dictionary,
   type DropSchemaOptions,
+  type EnsureDatabaseOptions,
+  type EntityMetadata,
+  type ISchemaGenerator,
+  type MikroORM,
+  type Transaction,
   type UpdateSchemaOptions,
+  Utils,
 } from '@mikro-orm/core';
 import type { CheckDef, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
@@ -438,10 +438,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
 
       /* istanbul ignore else */
-      if (!safe) {
-        for (const column of Object.values(diff.removedColumns)) {
-          this.helper.pushTableQuery(table, `alter table ${this.platform.quoteIdentifier(tableName)} drop column ${this.platform.quoteIdentifier(column.name)}`);
-        }
+      if (!safe && Object.values(diff.removedColumns).length > 0) {
+        this.helper.pushTableQuery(table, this.helper.getDropColumnsSQL(tableName, Object.values(diff.removedColumns), schemaName));
       }
     }));
 
@@ -555,19 +553,36 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
   override async execute(sql: string, options: { wrap?: boolean; ctx?: Transaction } = {}) {
     options.wrap ??= false;
-    const lines = this.wrapSchema(sql, options).split('\n').filter(i => i.trim());
+    const lines = this.wrapSchema(sql, options).split('\n');
+    const groups: string[][] = [];
+    let i = 0;
 
-    if (lines.length === 0) {
+    for (const line of lines) {
+      if (line.trim() === '') {
+        if (groups[i]?.length > 0) {
+          i++;
+        }
+        continue;
+      }
+
+      groups[i] ??= [];
+      groups[i].push(line.trim());
+    }
+
+    if (groups.length === 0) {
       return;
     }
 
     if (this.platform.supportsMultipleStatements()) {
-      const query = lines.join('\n');
-      await this.driver.execute(query);
+      for (const group of groups) {
+        const query = group.join('\n');
+        await this.driver.execute(query);
+      }
+
       return;
     }
 
-    await Utils.runSerial(lines, line => this.driver.execute(line));
+    await Utils.runSerial(groups.flat(), line => this.driver.execute(line));
   }
 
   private wrapSchema(sql: string, options: { wrap?: boolean }): string {

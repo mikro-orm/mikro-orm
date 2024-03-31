@@ -188,3 +188,123 @@ exec sp_MSforeachtable 'alter table ? check constraint all';
 `;
 
 exports[`SchemaGenerator generate schema from metadata [mssql]: mssql-update-schema-dump 1`] = `""`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-add-column 1`] = `
+"ALTER TABLE [new_table] ADD [id] int identity(1,1) not null primary key, [updated_at] datetime2(3) not null CONSTRAINT [new_table_updated_at_default] DEFAULT current_timestamp;
+
+ALTER TABLE [author2] ADD [favourite_book_uuid_pk] uniqueidentifier null;
+ALTER TABLE [author2] ADD CONSTRAINT [author2_favourite_book_uuid_pk_foreign] FOREIGN KEY ([favourite_book_uuid_pk]) REFERENCES [book2] ([uuid_pk]) ON UPDATE no action ON DELETE cascade;
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-add-index 1`] = `
+"CREATE INDEX [new_title_idx] ON [book2] ([title]);
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-add-unique 1`] = `
+"CREATE UNIQUE INDEX [book2_title_unique] ON [book2] ([title]) WHERE [title] IS NOT NULL;
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-alter-column 1`] = `
+"drop index [author2_born_index] on [author2];
+alter table [author2] alter column [born] varchar(max);
+
+ALTER TABLE [author2] DROP CONSTRAINT [author2_favourite_author_id_foreign];
+
+declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'age') if @constraint0 is not null exec('alter table author2 drop constraint ' + @constraint0);
+declare @constraint1 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'born') if @constraint1 is not null exec('alter table author2 drop constraint ' + @constraint1);
+alter table [author2] alter column [age] int;
+alter table [author2] alter column [born] int not null;
+ALTER TABLE [author2] ADD CONSTRAINT [author2_age_default] DEFAULT 42 FOR [age];
+ALTER TABLE [author2] ADD CONSTRAINT [author2_born_default] DEFAULT 42 FOR [born];
+ALTER TABLE [author2] ADD CONSTRAINT [author2_favourite_author_id_foreign] FOREIGN KEY ([favourite_author_id]) REFERENCES [foo_bar2] ([id]) ON UPDATE cascade ON DELETE set null;
+
+create index [author2_born_index] on [author2] ([born]);
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-create-table 1`] = `
+"CREATE TABLE [new_table] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null CONSTRAINT [new_table_created_at_default] DEFAULT current_timestamp, [updated_at] datetime2(3) not null CONSTRAINT [new_table_updated_at_default] DEFAULT current_timestamp, [name] varchar(255) not null);
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-1:1 1`] = `
+"ALTER TABLE [foo_bar2] DROP CONSTRAINT [foo_bar2_baz_id_foreign];
+
+DROP INDEX [foo_bar2_baz_id_unique] ON [foo_bar2];
+declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'foo_bar2' and all_columns.name = 'baz_id') if @constraint0 is not null exec('alter table [foo_bar2] drop constraint ' + @constraint0);
+alter table [foo_bar2] drop column [baz_id];
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-column 1`] = `
+"ALTER TABLE [author2] DROP CONSTRAINT [author2_favourite_book_uuid_pk_foreign];
+
+ALTER TABLE [new_table] DROP CONSTRAINT [PK__new_tabl__123];
+declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'new_table' and all_columns.name = 'id') if @constraint0 is not null exec('alter table [new_table] drop constraint ' + @constraint0);
+declare @constraint1 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'new_table' and all_columns.name = 'updated_at') if @constraint1 is not null exec('alter table [new_table] drop constraint ' + @constraint1);
+alter table [new_table] drop column [id], [updated_at];
+
+declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'favourite_book_uuid_pk') if @constraint0 is not null exec('alter table [author2] drop constraint ' + @constraint0);
+alter table [author2] drop column [favourite_book_uuid_pk];
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-index 1`] = `
+"DROP INDEX [new_title_idx] ON [book2];
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-table 1`] = `
+"ALTER TABLE [book2] DROP CONSTRAINT [book2_author_id_foreign];
+
+ALTER TABLE [author2_following] DROP CONSTRAINT [author2_following_author2_1_id_foreign];
+
+ALTER TABLE [author2_following] DROP CONSTRAINT [author2_following_author2_2_id_foreign];
+
+ALTER TABLE [author_to_friend] DROP CONSTRAINT [author_to_friend_author2_1_id_foreign];
+
+ALTER TABLE [author_to_friend] DROP CONSTRAINT [author_to_friend_author2_2_id_foreign];
+
+ALTER TABLE [address2] DROP CONSTRAINT [address2_author_id_foreign];
+
+if object_id('[new_table]', 'U') is not null DROP TABLE [new_table];
+
+if object_id('[author2]', 'U') is not null DROP TABLE [author2];
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-table-disabled 1`] = `
+"ALTER TABLE [book2] DROP CONSTRAINT [book2_author_id_foreign];
+
+ALTER TABLE [author2_following] DROP CONSTRAINT [author2_following_author2_1_id_foreign];
+
+ALTER TABLE [author2_following] DROP CONSTRAINT [author2_following_author2_2_id_foreign];
+
+ALTER TABLE [author_to_friend] DROP CONSTRAINT [author_to_friend_author2_1_id_foreign];
+
+ALTER TABLE [author_to_friend] DROP CONSTRAINT [author_to_friend_author2_2_id_foreign];
+
+ALTER TABLE [address2] DROP CONSTRAINT [address2_author_id_foreign];
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-table-safe 1`] = `""`;
+
+exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-unique 1`] = `
+"DROP INDEX [book2_title_unique] ON [book2];
+
+"
+`;

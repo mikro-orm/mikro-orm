@@ -37,7 +37,7 @@ describe('SchemaGenerator', () => {
     await orm.close(true);
   });
 
-  test.skip('update schema [mssql]', async () => {
+  test('update schema [mssql]', async () => {
     const orm = await initORMMsSql();
     const meta = orm.getMetadata();
 
@@ -55,20 +55,20 @@ describe('SchemaGenerator', () => {
         createdAt: {
           kind: ReferenceKind.SCALAR,
           length: 3,
-          defaultRaw: 'current_timestamp(3)',
+          defaultRaw: 'current_timestamp',
           name: 'createdAt',
           type: 'Date',
           fieldNames: ['created_at'],
-          columnTypes: ['datetime(3)'],
+          columnTypes: ['datetime2(3)'],
         },
         updatedAt: {
           kind: ReferenceKind.SCALAR,
           length: 3,
-          defaultRaw: 'current_timestamp(3)',
+          defaultRaw: 'current_timestamp',
           name: 'updatedAt',
           type: 'Date',
           fieldNames: ['updated_at'],
-          columnTypes: ['datetime(3)'],
+          columnTypes: ['datetime2(3)'],
         },
         name: {
           kind: ReferenceKind.SCALAR,
@@ -135,7 +135,7 @@ describe('SchemaGenerator', () => {
     newTableMeta.removeProperty('updatedAt');
     authorMeta.removeProperty('favouriteBook');
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff).toMatchSnapshot('mssql-update-schema-drop-column');
+    expect(diff.replace(/PK__new_tabl__\w+/, 'PK__new_tabl__123')).toMatchSnapshot('mssql-update-schema-drop-column');
     await orm.schema.execute(diff);
 
     newTableMeta.addProperty(idProp);

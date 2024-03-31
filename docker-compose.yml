@@ -53,12 +53,17 @@ services:
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
 
+  # on macos/arm this tends to fail randomly, removing all the related volumes
+  # and restarting the docker machine is required to fix it
   mssql:
     image: mcr.microsoft.com/azure-sql-edge:latest
     ports:
       - "1433:1433"
+    cap_add:
+      - SYS_PTRACE
     environment:
       MSSQL_SA_PASSWORD: Root.Root
+      MSSQL_TELEMETRY_ENABLED: FALSE
       ACCEPT_EULA: 1
 
 volumes:

@@ -129,6 +129,13 @@ export abstract class SchemaHelper {
     return [this.getDropIndexSQL(tableName, { ...index, keyName: oldIndexName }), this.getCreateIndexSQL(tableName, index)].join(';\n');
   }
 
+  getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
+    const name = this.platform.quoteIdentifier((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
+    const drops = columns.map(column => `drop column ${this.platform.quoteIdentifier(column.name)}`).join(', ');
+
+    return `alter table ${name} ${drops}`;
+  }
+
   hasNonDefaultPrimaryKeyName(table: DatabaseTable): boolean {
     const pkIndex = table.getPrimaryKey();
 

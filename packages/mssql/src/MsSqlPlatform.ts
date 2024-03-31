@@ -13,6 +13,7 @@ import {
   ALIAS_REPLACEMENT,
   type Primary,
   type IPrimaryKey,
+  type SimpleColumnMeta,
 } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
@@ -73,6 +74,19 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override getBooleanTypeDeclarationSQL(): string {
     return 'bit';
+  }
+
+  override getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+    /* istanbul ignore next */
+    const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
+    const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
+    const quotedIndexName = this.quoteIdentifier(indexName);
+
+    if (columns.length === 1 && columns[0].type === 'tsvector') {
+      return `create index ${quotedIndexName} on ${quotedTableName} using gin(${quotedColumnNames[0]})`;
+    }
+
+    return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
   }
 
   override getRegExpOperator(): string {

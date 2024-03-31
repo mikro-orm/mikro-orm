@@ -9,13 +9,13 @@ import {
   SchemaHelper,
   StringType,
   type Table,
+  type TableDifference,
   TextType,
   type Type, Utils,
 } from '@mikro-orm/knex';
 
 // TODO generated columns
 // TODO verify schema names
-// TODO recreate indexes when changing column? https://stackoverflow.com/questions/43319018/how-to-alter-column-of-a-table-with-indexes
 export class MsSqlSchemaHelper extends SchemaHelper {
 
   static readonly DEFAULT_VALUES = {
@@ -275,6 +275,84 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const enums = await this.getEnumDefinitions(connection, checks[key] ?? []);
       table.init(columns[key], indexes[key], checks[key], pks, fks[key], enums);
     }
+  }
+
+  override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
+    const ret: string[] = [];
+
+    const indexes = tableDiff.fromTable.getIndexes();
+    const parts = tableDiff.name.split('.');
+    const tableName = parts.pop()!;
+    const schemaName = parts.pop();
+    /* istanbul ignore next */
+    const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
+    const quotedName = this.platform.quoteIdentifier(name);
+
+    // indexes need to be first dropped to be able to change a column type
+    const changedTypes = Object.values(tableDiff.changedColumns).filter(col => col.changedProperties.has('type'));
+
+    for (const col of changedTypes) {
+      for (const index of indexes) {
+        if (index.columnNames.includes(col.column.name)) {
+          ret.push(this.getDropIndexSQL(name, index));
+        }
+      }
+
+      // convert to string first if it's not already a string or has a smaller length
+      const type = col.fromColumn.type;
+      if (!['varchar', 'nvarchar', 'varbinary'].includes(type) || ((col.fromColumn.length ?? 0) < (col.column.length ?? 0))) {
+        ret.push(`alter table ${quotedName} alter column [born] varchar(max)`);
+      }
+    }
+
+    return ret.join(';\n');
+  }
+
+  override getPostAlterTable(tableDiff: TableDifference, safe: boolean): string {
+    const ret: string[] = [];
+    const indexes = tableDiff.fromTable.getIndexes();
+    const parts = tableDiff.name.split('.');
+    const tableName = parts.pop()!;
+    const schemaName = parts.pop();
+    /* istanbul ignore next */
+    const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
+
+    // indexes need to be first dropped to be able to change a column type
+    const changedTypes = Object.values(tableDiff.changedColumns).filter(col => col.changedProperties.has('type'));
+
+    for (const col of changedTypes) {
+      for (const index of indexes) {
+        if (index.columnNames.includes(col.column.name)) {
+          ret.push(this.getCreateIndexSQL(name, index));
+        }
+      }
+    }
+
+    return ret.join(';\n');
+  }
+
+  override getDropIndexSQL(tableName: string, index: IndexDef): string {
+    return `drop index ${this.platform.quoteIdentifier(index.keyName)} on ${this.platform.quoteIdentifier(tableName)}`;
+  }
+
+  override getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
+    const tableNameRaw = this.platform.quoteIdentifier((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
+    const drops: string[] = [];
+    const constraints: string[] = [];
+    let i = 0;
+
+    for (const column of columns) {
+      constraints.push(`declare @constraint${i} varchar(100) = (select default_constraints.name from sys.all_columns`
+        + ' join sys.tables on all_columns.object_id = tables.object_id'
+        + ' join sys.schemas on tables.schema_id = schemas.schema_id'
+        + ' join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id'
+        + ` where schemas.name = '${schemaName ?? this.platform.getDefaultSchemaName()}' and tables.name = '${tableName}' and all_columns.name = '${column.name}')`
+        + ` if @constraint${i} is not null exec('alter table ${tableNameRaw} drop constraint ' + @constraint${i})`);
+      drops.push(this.platform.quoteIdentifier(column.name));
+      i++;
+    }
+
+    return `${constraints.join(';\n')};\nalter table ${tableNameRaw} drop column ${drops.join(', ')}`;
   }
 
   protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {
