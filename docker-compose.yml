@@ -63,7 +63,7 @@ services:
       - SYS_PTRACE
     environment:
       MSSQL_SA_PASSWORD: Root.Root
-      MSSQL_TELEMETRY_ENABLED: FALSE
+      MSSQL_TELEMETRY_ENABLED: 0
       ACCEPT_EULA: 1
 
 volumes:
