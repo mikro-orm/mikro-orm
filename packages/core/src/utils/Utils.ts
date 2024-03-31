@@ -752,7 +752,7 @@ export class Utils {
    * Gets string name of given class.
    */
   static className<T>(classOrName: EntityName<T>): string {
-    if (Utils.isString(classOrName)) {
+    if (typeof classOrName === 'string') {
       return classOrName;
     }
 
