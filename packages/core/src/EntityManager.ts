@@ -168,7 +168,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     if (!this.repositoryMap[entityName]) {
       const meta = this.metadata.get(entityName);
       const RepositoryClass = this.config.getRepositoryClass(meta.repository) as Constructor<EntityRepository<any>>;
-      this.repositoryMap[entityName] = new RepositoryClass(this.getContext(false), entityName);
+      this.repositoryMap[entityName] = new RepositoryClass(this, entityName);
     }
 
     return this.repositoryMap[entityName] as unknown as GetRepository<Entity, Repository>;
