@@ -2,10 +2,12 @@ import {
   type AbstractSqlConnection, type CheckDef,
   type Column,
   type DatabaseSchema,
+  type DatabaseTable,
   type Dictionary,
   EnumType,
   type ForeignKey,
   type IndexDef,
+  type Knex,
   SchemaHelper,
   StringType,
   type Table,
@@ -14,7 +16,6 @@ import {
   type Type, Utils,
 } from '@mikro-orm/knex';
 
-// TODO generated columns
 // TODO verify schema names
 export class MsSqlSchemaHelper extends SchemaHelper {
 
@@ -77,15 +78,16 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       t4.value as column_comment,
       ic.is_nullable as is_nullable,
       data_type as data_type,
-      --definition as generation_expression,
+      cmp.definition as generation_expression,
+      cmp.is_persisted as is_persisted,
       numeric_precision as numeric_precision,
       numeric_scale as numeric_scale,
       coalesce(datetime_precision, character_maximum_length) length,
       columnproperty(sc.object_id, column_name, 'IsIdentity') is_identity
       from information_schema.columns ic
-      inner join sys.columns sc on sc.object_id = object_id(ic.table_schema + '.' + ic.table_name)
-      inner join sys.tables t2 on t2.object_id = object_id(ic.table_schema + '.' + ic.table_name)
-      left join sys.extended_properties t4 on t4.major_id = t2.object_id and t4.name = 'MS_Description' and t4.minor_id = sc.column_id
+      inner join sys.columns sc on sc.name = ic.column_name and sc.object_id = object_id(ic.table_schema + '.' + ic.table_name)
+      left join sys.computed_columns cmp on cmp.name = ic.column_name and cmp.object_id = object_id(ic.table_schema + '.' + ic.table_name)
+      left join sys.extended_properties t4 on t4.major_id = object_id(ic.table_schema + '.' + ic.table_name) and t4.name = 'MS_Description' and t4.minor_id = sc.column_id
       where table_schema = schema_name() and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))})
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql);
@@ -97,7 +99,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const defaultValue = str(this.normalizeDefaultValue(col.column_default, col.length, {}, true));
       const increments = col.is_identity === 1 && connection.getPlatform().isNumericColumn(mappedType);
       const key = this.getTableKey(col);
-      // const generated = col.generation_expression ? `${col.generation_expression} ${col.extra.match(/stored generated/i) ? 'stored' : 'virtual'}` : undefined;
+      const generated = col.generation_expression ? `${col.generation_expression}${col.is_persisted ? ' persisted' : ''}` : undefined;
       ret[key] ??= [];
       ret[key].push({
         name: col.column_name,
@@ -111,7 +113,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         precision: col.numeric_precision,
         scale: col.numeric_scale,
         comment: col.column_comment,
-        // generated,
+        generated,
       });
     }
 
@@ -360,6 +362,14 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     const columnName = this.platform.quoteValue(to.name);
 
     return `exec sp_rename ${this.platform.quoteValue(oldName)}, ${columnName}, 'COLUMN'`;
+  }
+
+  override createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>, alter?: boolean) {
+    if (column.generated) {
+      return table.specificType(column.name, `as ${column.generated}`);
+    }
+
+    return super.createTableColumn(table, column, fromTable, changedProperties);
   }
 
   protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {

@@ -480,10 +480,8 @@ export class SchemaComparator {
 
     if (
       fromColumnType !== toColumnType &&
-      !(
-        fromColumn.ignoreSchemaChanges?.includes('type') ||
-        toColumn.ignoreSchemaChanges?.includes('type')
-      )
+      !(fromColumn.ignoreSchemaChanges?.includes('type') || toColumn.ignoreSchemaChanges?.includes('type')) &&
+      !fromColumn.generated && !toColumn.generated
     ) {
       log(`'type' changed for column ${tableName}.${fromColumn.name}`, { fromColumnType, toColumnType });
       changedProperties.add('type');
