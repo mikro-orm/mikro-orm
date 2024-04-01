@@ -56,7 +56,7 @@ jobs:
         yarn build
 
     - name: Set up GitHub Pages
-      uses: actions/configure-pages@v4
+      uses: actions/configure-pages@v5
 
     - name: Upload GitHub Pages artifact
       uses: actions/upload-pages-artifact@v3

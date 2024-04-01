@@ -653,7 +653,7 @@ An alternative to the previous code snippet could be as well this:
 
 ```ts
 const userRef = em.getReference(User, 1);
-await em.remove(user).flush();
+await em.remove(userRef).flush();
 ```
 
 This concept is especially important for relationships and can be combined with the so-called `Reference` wrapper for added type safety, but we will get to that later.
