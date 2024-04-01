@@ -49,27 +49,6 @@ export class MsSqlConnection extends AbstractSqlConnection {
         });
       });
     };
-
-    MsSqlTableCompiler.prototype.dropColumn = function (...args: any[]) {
-      const columns = Array.isArray(args[0]) ? args[0] : args;
-      const columnsArray = Array.isArray(columns) ? columns : [columns];
-      const drops = columnsArray.map(column => this.formatter.wrap(column));
-      const schema = this.schemaNameRaw || 'dbo';
-      let i = 0;
-
-      for (const column of columns) {
-        const baseQuery = `declare @constraint${i} varchar(100) = (select default_constraints.name from sys.all_columns`
-          + ' join sys.tables on all_columns.object_id = tables.object_id'
-          + ' join sys.schemas on tables.schema_id = schemas.schema_id'
-          + ' join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id'
-          + ` where schemas.name = '${schema}' and tables.name = '${this.tableNameRaw}' and all_columns.name = '${column}')`
-          + ` if @constraint${i} is not null exec('alter table ${this.tableNameRaw} drop constraint ' + @constraint${i})`;
-        this.pushQuery(baseQuery);
-        i++;
-      }
-
-      this.pushQuery('alter table ' + this.tableName() + ' ' + this.dropColumnPrefix + drops.join(', '));
-    };
   }
 
   getDefaultClientUrl(): string {

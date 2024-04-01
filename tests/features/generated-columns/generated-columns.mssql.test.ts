@@ -43,7 +43,7 @@ class User1 {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({
+  orm = MikroORM.initSync({
     entities: [User],
     dbName: 'generated-columns',
     password: 'Root.Root',
