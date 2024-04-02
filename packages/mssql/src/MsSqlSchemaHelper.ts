@@ -1,5 +1,6 @@
 import {
-  type AbstractSqlConnection, type CheckDef,
+  type AbstractSqlConnection,
+  type CheckDef,
   type Column,
   type DatabaseSchema,
   type DatabaseTable,

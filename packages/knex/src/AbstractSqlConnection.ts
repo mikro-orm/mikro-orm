@@ -173,6 +173,7 @@ export abstract class AbstractSqlConnection extends Connection {
     try {
       await this.getKnex().raw(buf.toString());
     } catch (e) {
+      /* istanbul ignore next */
       throw this.platform.getExceptionConverter().convertException(e as Error);
     }
   }
@@ -234,7 +235,6 @@ export abstract class AbstractSqlConnection extends Connection {
       return formatted;
     }
 
-    // FIXME is this ok for mssql? without it it breaks some existing postgres tests
     return this.getKnex().client.positionBindings(query);
   }
 

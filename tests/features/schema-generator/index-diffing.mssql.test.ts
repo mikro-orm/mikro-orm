@@ -1,8 +1,7 @@
-import { Entity, Ref, Index, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, Ref, Index, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/mssql';
 
 @Entity()
-export class Author {
+class Author {
 
   @PrimaryKey()
   id!: number;
@@ -13,7 +12,7 @@ export class Author {
 }
 
 @Entity({ tableName: 'book' })
-export class Book1 {
+class Book1 {
 
   @PrimaryKey()
   id!: number;
@@ -39,18 +38,13 @@ export class Book1 {
   @Property({ unique: true })
   isbn!: string;
 
-  @Property({ type: 'json' })
-  metaData: any;
-
 }
 
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3' })
-@Index({ properties: ['author3', 'metaData.foo.bar.baz'] })
-@Unique({ properties: 'metaData.fooBar.email' })
-@Index({ name: 'custom_index_expr123', expression: 'create  index  "custom_index_expr123" on "book" ("isbn")' })
-export class Book2 {
+@Index({ name: 'custom_index_expr123', expression: 'CREATE  INDEX  [custom_index_expr123] ON [book] ([isbn])' })
+class Book2 {
 
   @PrimaryKey()
   id!: number;
@@ -72,15 +66,12 @@ export class Book2 {
   @ManyToOne(() => Author, { index: true })
   author5!: Author;
 
-  @Index({ expression: 'create index "custom_index_expr" on "book" ("title")' })
+  @Index({ expression: 'CREATE INDEX [custom_index_expr] ON [book] ([title])' })
   @Property()
   title!: string;
 
   @Property({ unique: 'isbn_unique_constr' })
   isbn!: string;
-
-  @Property({ type: 'json' })
-  metaData: any;
 
 }
 
@@ -88,10 +79,8 @@ export class Book2 {
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3', name: 'lol31' })
 @Index({ properties: 'author3', name: 'lol41' })
-@Index({ properties: ['metaData.foo', 'metaData.foo.bar3'] })
-@Unique({ properties: ['metaData.fooBar.bazBaz', 'metaData.fooBar.lol123'] })
-@Index({ name: 'custom_index_expr123', expression: 'create  index  "custom_index_expr123" on "book" ("isbn")' })
-export class Book3 {
+@Index({ name: 'custom_index_expr123', expression: 'create  index  [custom_index_expr123] on [book] ([isbn])' })
+class Book3 {
 
   @PrimaryKey()
   id!: number;
@@ -113,16 +102,13 @@ export class Book3 {
   @ManyToOne(() => Author, { index: 'auth_idx5' })
   author5!: Author;
 
-  @Index({ name: 'custom_index_expr2', expression: 'create index "custom_index_expr2" on "book" ("title")' })
+  @Index({ name: 'custom_index_expr2', expression: 'create index [custom_index_expr2] on [book] ([title])' })
   @Property()
   title!: string;
 
   @Property()
   @Unique()
   isbn!: string;
-
-  @Property({ type: 'json' })
-  metaData: any;
 
 }
 
@@ -130,7 +116,7 @@ export class Book3 {
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3', name: 'lol32' })
 @Index({ properties: 'author3', name: 'lol42' })
-export class Book4 {
+class Book4 {
 
   @PrimaryKey()
   id!: number;
@@ -159,20 +145,17 @@ export class Book4 {
   @Unique()
   isbn!: string;
 
-  @Property({ type: 'json' })
-  metaData: any;
-
 }
 
 describe('indexes on FKs in postgres (GH 1518)', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Author],
       dbName: `mikro_orm_test_gh_1518`,
-      driver: PostgreSqlDriver,
+      password: 'Root.Root',
     });
 
     await orm.schema.refreshDatabase({ dropDb: true });

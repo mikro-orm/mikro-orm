@@ -44,8 +44,15 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   }
 
   async refreshDatabase(options?: RefreshDatabaseOptions): Promise<void> {
-    await this.ensureDatabase();
-    await this.dropSchema();
+    if (options?.dropDb) {
+      const name = this.config.get('dbName')!;
+      await this.dropDatabase(name);
+      await this.createDatabase(name);
+    } else {
+      await this.ensureDatabase();
+      await this.dropSchema();
+    }
+
     await this.createSchema(options);
   }
 
@@ -58,6 +65,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   }
 
   protected clearIdentityMap(): void {
+    /* istanbul ignore next */
     if (!this.em) {
       return;
     }
@@ -95,7 +103,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   /**
    * creates new database and connects to it
    */
-  async createDatabase(name: string): Promise<void> {
+  async createDatabase(name?: string): Promise<void> {
     this.notImplemented();
   }
 

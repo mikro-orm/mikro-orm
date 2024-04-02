@@ -340,7 +340,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       .inTable(this.getReferencedTableName(foreignKey.referencedTableName, schema))
       .withKeyName(foreignKey.constraintName);
 
-    if (foreignKey.localTableName !== foreignKey.referencedTableName || this.platform.supportsSelfReferencingForeignKeyCascade()) {
+    if (foreignKey.localTableName !== foreignKey.referencedTableName || this.platform.supportsMultipleCascadePaths()) {
       if (foreignKey.updateRule) {
         builder.onUpdate(foreignKey.updateRule);
       }
@@ -533,11 +533,12 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   /**
    * creates new database and connects to it
    */
-  override async createDatabase(name: string): Promise<void> {
+  override async createDatabase(name?: string): Promise<void> {
+    name ??= this.config.get('dbName')!;
     const sql = this.helper.getCreateDatabaseSQL('' + this.knex.ref(name));
 
     if (sql) {
-      await this.driver.execute(sql);
+      await this.execute(sql);
     }
 
     this.config.set('dbName', name);

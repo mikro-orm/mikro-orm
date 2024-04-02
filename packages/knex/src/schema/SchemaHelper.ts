@@ -293,7 +293,8 @@ export abstract class SchemaHelper {
   }
 
   getCreateDatabaseSQL(name: string): string {
-    return `create database ${name}`;
+    // two line breaks to force separate execution
+    return `create database ${name};\n\nuse ${name}`;
   }
 
   getDropDatabaseSQL(name: string): string {

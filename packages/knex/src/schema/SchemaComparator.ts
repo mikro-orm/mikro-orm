@@ -447,7 +447,7 @@ export class SchemaComparator {
       return true;
     }
 
-    if (key1.localTableName === key1.referencedTableName && !this.platform.supportsSelfReferencingForeignKeyCascade()) {
+    if (key1.localTableName === key1.referencedTableName && !this.platform.supportsMultipleCascadePaths()) {
       return false;
     }
 

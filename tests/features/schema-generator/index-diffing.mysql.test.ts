@@ -177,12 +177,7 @@ describe('indexes on FKs in mysql (GH 1518)', () => {
       port: 3308,
     });
 
-    await orm.schema.ensureDatabase();
-    await orm.schema.execute('set foreign_key_checks = 0');
-    await orm.schema.execute('drop table if exists author');
-    await orm.schema.execute('drop table if exists book');
-    await orm.schema.execute('set foreign_key_checks = 1');
-    await orm.schema.createSchema();
+    await orm.schema.refreshDatabase({ dropDb: true });
   });
 
   afterAll(() => orm.close(true));

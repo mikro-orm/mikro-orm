@@ -288,7 +288,7 @@ export abstract class Platform {
     }
   }
 
-  supportsSelfReferencingForeignKeyCascade(): boolean {
+  supportsMultipleCascadePaths(): boolean {
     return true;
   }
 

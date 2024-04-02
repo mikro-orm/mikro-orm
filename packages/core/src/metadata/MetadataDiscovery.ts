@@ -773,7 +773,7 @@ export class MetadataDiscovery {
       deleteRule: prop.deleteRule,
     } as EntityProperty;
 
-    if (selfReferencing && !this.platform.supportsSelfReferencingForeignKeyCascade()) {
+    if (selfReferencing && !this.platform.supportsMultipleCascadePaths()) {
       ret.updateRule ??= 'no action';
       ret.deleteRule ??= 'no action';
     }

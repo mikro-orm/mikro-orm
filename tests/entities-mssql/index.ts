@@ -6,7 +6,6 @@ export * from './Test2';
 export * from './FooBar2';
 export * from './FooBaz2';
 export * from './FooParam2';
-export * from './Label2';
 export * from './Configuration2';
 export * from './Address2';
 export * from './Car2';

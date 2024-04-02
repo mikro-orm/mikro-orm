@@ -1,6 +1,6 @@
 import path from 'path';
 import { ObjectId } from 'bson';
-import type { EntityMetadata, MikroORM } from '@mikro-orm/core';
+import { EntityMetadata, MikroORM, sql } from '@mikro-orm/core';
 import { compareObjects, Utils } from '@mikro-orm/core';
 import { Author } from './entities';
 import { initORMMongo, BASE_DIR } from './bootstrap';
@@ -86,6 +86,7 @@ describe('Utils', () => {
     expect(compareObjects({ a: Object.create(null) }, { a: {} })).toBe(true);
     expect(compareObjects({}, Object.create(null))).toBe(true);
     expect(compareObjects(new Test(), new Author('n', 'e'))).toBe(false);
+    expect(compareObjects(sql`select 1`, sql`select 1`)).toBe(false);
     expect(Utils.equals(NaN, NaN)).toBe(true);
   });
 

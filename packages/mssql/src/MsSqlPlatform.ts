@@ -188,7 +188,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return data as T;
   }
 
-  override supportsSelfReferencingForeignKeyCascade(): boolean {
+  override supportsMultipleCascadePaths(): boolean {
     return false;
   }
 

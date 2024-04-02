@@ -26,8 +26,6 @@ CREATE UNIQUE INDEX [foo_bar2_foo_bar_id_unique] ON [foo_bar2] ([foo_bar_id]) WH
 
 CREATE TABLE [foo_param2] ([bar_id] int not null, [baz_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [foo_param2_pkey] PRIMARY KEY ([bar_id], [baz_id]));
 
-CREATE TABLE [label2] ([uuid] uniqueidentifier not null, [name] nvarchar(255) not null, CONSTRAINT [label2_pkey] PRIMARY KEY ([uuid]));
-
 CREATE TABLE [publisher2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null CONSTRAINT [publisher2_name_default] DEFAULT 'asd', [type] varchar(100) check ([type] in ('local', 'global')) not null CONSTRAINT [publisher2_type_default] DEFAULT 'local', [type2] varchar(100) check ([type2] in ('LOCAL', 'GLOBAL')) not null CONSTRAINT [publisher2_type2_default] DEFAULT 'LOCAL', [enum1] tinyint null, [enum2] tinyint null, [enum3] tinyint null, [enum4] varchar(100) check ([enum4] in ('a', 'b', 'c')) null);
 
 CREATE TABLE [author2] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null CONSTRAINT [author2_created_at_default] DEFAULT current_timestamp, [updated_at] datetime2(3) not null CONSTRAINT [author2_updated_at_default] DEFAULT current_timestamp, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [age] int null, [terms_accepted] bit not null CONSTRAINT [author2_terms_accepted_default] DEFAULT 0, [optional] bit null, [identities] text null, [born] date null, [born_time] time null, [favourite_book_uuid_pk] uniqueidentifier null, [favourite_author_id] int null);
@@ -173,7 +171,6 @@ if object_id('[book2_tags]', 'U') is not null DROP TABLE [book2_tags];
 if object_id('[book2]', 'U') is not null DROP TABLE [book2];
 if object_id('[author2]', 'U') is not null DROP TABLE [author2];
 if object_id('[publisher2]', 'U') is not null DROP TABLE [publisher2];
-if object_id('[label2]', 'U') is not null DROP TABLE [label2];
 if object_id('[foo_param2]', 'U') is not null DROP TABLE [foo_param2];
 if object_id('[foo_bar2]', 'U') is not null DROP TABLE [foo_bar2];
 if object_id('[foo_baz2]', 'U') is not null DROP TABLE [foo_baz2];

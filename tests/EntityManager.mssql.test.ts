@@ -13,7 +13,7 @@ describe('EntityManagerMsSql', () => {
   let orm: MikroORM<MsSqlDriver>;
 
   beforeAll(async () => orm = await initORMMsSql());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase({ truncate: false }));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);

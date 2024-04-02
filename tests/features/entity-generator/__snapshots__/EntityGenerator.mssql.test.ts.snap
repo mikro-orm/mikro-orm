@@ -329,19 +329,6 @@ export class FooParam2 {
 
 }
 ",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-
-@Entity()
-export class Label2 {
-
-  @PrimaryKey({ columnType: 'uniqueidentifier' })
-  uuid!: string;
-
-  @Property({ columnType: 'text' })
-  name!: string;
-
-}
-",
   "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()

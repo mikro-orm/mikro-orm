@@ -775,6 +775,7 @@ export interface UpdateSchemaOptions<DatabaseSchema = unknown> {
 
 export interface RefreshDatabaseOptions extends CreateSchemaOptions {
   ensureIndexes?: boolean;
+  dropDb?: boolean;
 }
 
 export interface ISchemaGenerator {
