@@ -3,7 +3,7 @@ import { RequestContext } from '../utils/RequestContext';
 import { EntityManager } from '../EntityManager';
 import { EntityRepository } from '../entity/EntityRepository';
 
-export function CreateRequestContext<T>(getContext?: MikroORM | Promise<MikroORM> | ((type: T) => MikroORM | Promise<MikroORM> | EntityManager | EntityRepository<any>), respectExistingContext = false): MethodDecorator {
+export function CreateRequestContext<T>(getContext?: MikroORM | Promise<MikroORM> | ((type: T) => MikroORM | Promise<MikroORM> | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }), respectExistingContext = false): MethodDecorator {
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     descriptor.value = async function (this: T, ...args: any[]) {
@@ -51,6 +51,6 @@ export function CreateRequestContext<T>(getContext?: MikroORM | Promise<MikroORM
   };
 }
 
-export function EnsureRequestContext<T>(getContext?: MikroORM | Promise<MikroORM> | ((type: T) => MikroORM | Promise<MikroORM> | EntityManager | EntityRepository<any>)): MethodDecorator {
+export function EnsureRequestContext<T>(getContext?: MikroORM | Promise<MikroORM> | ((type: T) => MikroORM | Promise<MikroORM> | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager })): MethodDecorator {
   return CreateRequestContext(getContext, true);
 }
