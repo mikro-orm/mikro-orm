@@ -196,6 +196,7 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
     logger: i => i,
+    extensions: [Migrator, SeedManager, EntityGenerator],
     ...additionalOptions,
   });
 
