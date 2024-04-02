@@ -18,7 +18,7 @@ export class UnicodeString {
     return this.value;
   }
 
-  get [Symbol.toPrimitive]() {
+  [Symbol.toPrimitive]() {
     return this.value;
   }
 
@@ -39,10 +39,6 @@ export class UnicodeStringType extends Type<string | null, string | null> {
   }
 
   override convertToDatabaseValue(value: string | null): string | null {
-    if (value == null) {
-      return null;
-    }
-
     if (typeof value === 'string') {
       return new UnicodeString(value) as any;
     }

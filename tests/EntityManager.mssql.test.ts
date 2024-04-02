@@ -4,7 +4,7 @@ import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, wrap, UniqueConstraintViolationException,
   TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException, NonUniqueFieldNameException, InvalidFieldNameException, IsolationLevel,
 } from '@mikro-orm/core';
-import { MsSqlDriver, MsSqlConnection } from '@mikro-orm/mssql';
+import { MsSqlDriver, MsSqlConnection, UnicodeString } from '@mikro-orm/mssql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2 } from './entities-mssql';
 import { initORMMsSql, mockLogger } from './bootstrap';
 
@@ -1409,6 +1409,13 @@ describe('EntityManagerMsSql', () => {
     if (took > 400) {
       process.stdout.write(`delete test took ${took}\n`);
     }
+  });
+
+  test('UnicodeString', async () => {
+    const u = new UnicodeString('你好世界');
+    expect(u.toString()).toBe('你好世界');
+    expect('' + u).toBe('你好世界');
+    expect(+u).toBe(NaN);
   });
 
 });
