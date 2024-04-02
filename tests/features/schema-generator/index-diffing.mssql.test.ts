@@ -43,7 +43,7 @@ class Book1 {
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3' })
-@Index({ name: 'custom_index_expr123', expression: 'CREATE  INDEX  [custom_index_expr123] ON [book] ([isbn])' })
+@Index({ name: 'custom_index_expr123', expression: 'CREATE  INDEX  [custom_index_expr123] ON [book] ([isbn]) WHERE [isbn] IS NOT NULL' })
 class Book2 {
 
   @PrimaryKey()
@@ -79,7 +79,7 @@ class Book2 {
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3', name: 'lol31' })
 @Index({ properties: 'author3', name: 'lol41' })
-@Index({ name: 'custom_index_expr123', expression: 'create  index  [custom_index_expr123] on [book] ([isbn])' })
+@Index({ name: 'custom_index_expr123', expression: 'create  index  [custom_index_expr123] on [book] ([isbn]) WHERE [isbn] IS NOT NULL' })
 class Book3 {
 
   @PrimaryKey()

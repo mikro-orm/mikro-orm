@@ -127,7 +127,8 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       is_unique as is_unique,
       ind.is_primary_key as is_primary_key,
       col.name as column_name,
-      schema_name(t.schema_id) schema_name
+      schema_name(t.schema_id) as schema_name,
+      (case when filter_definition is not null then concat('where ', filter_definition) else null end) as expression
       from sys.indexes ind
       inner join sys.index_columns ic on ind.object_id = ic.object_id and ind.index_id = ic.index_id
       inner join sys.columns col on ic.object_id = col.object_id and ic.column_id = col.column_id

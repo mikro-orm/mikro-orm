@@ -20,7 +20,7 @@ CREATE INDEX [book_author3_id_index] ON [book] ([author3_id]);
 CREATE INDEX [book_author4_id_index] ON [book] ([author4_id]);
 CREATE INDEX [book_author5_id_index] ON [book] ([author5_id]);
 CREATE INDEX [custom_index_expr] ON [book] ([title]);
-CREATE  INDEX  [custom_index_expr123] ON [book] ([isbn]);
+CREATE  INDEX  [custom_index_expr123] ON [book] ([isbn]) WHERE [isbn] IS NOT NULL;
 DROP INDEX [book_isbn_unique] ON [book];
 CREATE UNIQUE INDEX [isbn_unique_constr] ON [book] ([isbn]) WHERE [isbn] IS NOT NULL;
 
