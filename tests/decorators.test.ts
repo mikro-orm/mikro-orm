@@ -13,6 +13,7 @@ import {
   RequestContext,
   EntityManager,
   EntityRepository,
+  EntityRepositoryType,
 } from '@mikro-orm/core';
 import type { Dictionary } from '@mikro-orm/core';
 import { Test } from './entities';
@@ -122,9 +123,37 @@ class TestClass4 {
 
 }
 
+class BookRepository extends EntityRepository<Book> {
+
+  save(book: Book): void {
+    this.em.persist(book);
+  }
+
+  flush(): Promise<void> {
+    return this.em.flush();
+  }
+
+}
+
+export class Book {
+
+  id!: string;
+
+  @Property({
+    unique: true,
+  })
+  isbn!: string;
+
+  @Property()
+  name!: string;
+
+  [EntityRepositoryType]?: BookRepository;
+
+}
+
 class TestClass5 {
 
-  constructor(private readonly repo: EntityRepository<any>) {}
+  constructor(private readonly repo: BookRepository) {}
 
   @CreateRequestContext<TestClass5>(t => t.repo)
   foo() {
@@ -147,7 +176,7 @@ describe('decorators', () => {
     ManyToMany({ entity: () => Test })(new Test2(), 'test0'); // calling multiple times won't throw
     expect(storage[key].properties.test0).toMatchObject({ kind: ReferenceKind.MANY_TO_MANY, name: 'test0' });
     expect(storage[key].properties.test0.entity()).toBe(Test);
-    expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(7);
+    expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(8);
     MetadataStorage.clear();
     expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(0);
   });
