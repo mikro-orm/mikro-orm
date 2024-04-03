@@ -339,12 +339,21 @@ export class SchemaComparator {
    */
   private detectColumnRenamings(tableDifferences: TableDifference, inverseTableDiff?: TableDifference): void {
     const renameCandidates: Dictionary<[Column, Column][]> = {};
+    const oldFKs = Object.values(tableDifferences.fromTable.getForeignKeys());
+    const newFKs = Object.values(tableDifferences.toTable.getForeignKeys());
 
     for (const addedColumn of Object.values(tableDifferences.addedColumns)) {
       for (const removedColumn of Object.values(tableDifferences.removedColumns)) {
         const diff = this.diffColumn(addedColumn, removedColumn);
 
         if (diff.size !== 0) {
+          continue;
+        }
+
+        const wasFK = oldFKs.some(fk => fk.columnNames.includes(removedColumn.name));
+        const isFK = newFKs.some(fk => fk.columnNames.includes(addedColumn.name));
+
+        if (wasFK !== isFK) {
           continue;
         }
 
