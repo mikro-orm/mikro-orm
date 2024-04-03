@@ -1288,7 +1288,7 @@ export class MetadataDiscovery {
     if (prop.customType && !prop.columnTypes) {
       const mappedType = this.getMappedType({ columnTypes: [prop.customType.getColumnType(prop, this.platform)] } as EntityProperty);
 
-      if (prop.customType.compareAsType() === 'any') {
+      if (prop.customType.compareAsType() === 'any' && ![JsonType].some(t => prop.customType instanceof t)) {
         prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
       } else {
         prop.runtimeType ??= prop.customType.runtimeType as typeof prop.runtimeType;

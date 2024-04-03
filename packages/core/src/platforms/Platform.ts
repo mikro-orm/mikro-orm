@@ -349,6 +349,10 @@ export abstract class Platform {
     return parseJsonSafe(value);
   }
 
+  convertDateToJSValue(value: string | Date): string {
+    return value as string;
+  }
+
   convertIntervalToJSValue(value: string): unknown {
     return value;
   }
@@ -374,7 +378,7 @@ export abstract class Platform {
   }
 
   /**
-   * Allows to register extensions of the driver automatically (e.g. `SchemaGenerator` extension in SQL drivers).
+   * Allows registering extensions of the driver automatically (e.g. `SchemaGenerator` extension in SQL drivers).
    */
   lookupExtensions(orm: MikroORM): void {
     // no extensions by default

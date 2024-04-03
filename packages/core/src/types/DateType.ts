@@ -12,6 +12,10 @@ export class DateType extends Type<string | null | undefined, string | null | un
     return false;
   }
 
+  override convertToJSValue(value: any, platform: Platform): string | null | undefined {
+    return platform.convertDateToJSValue(value);
+  }
+
   override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getDateTypeDeclarationSQL(prop.length);
   }
