@@ -1201,10 +1201,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     if (tableAlias) {
       return prop.fieldNames.map(fieldName => {
-        const name = this.platform.quoteIdentifier(`${tableAlias}.${fieldName}`);
-        const alias = this.platform.quoteIdentifier(`${tableAlias}__${fieldName}`);
-
-        return raw(`${name} as ${alias}`);
+        return `${tableAlias}.${fieldName} as ${tableAlias}__${fieldName}`;
       });
     }
 
@@ -1235,9 +1232,13 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   protected resolveConnectionType(args: { ctx?: Transaction<Knex.Transaction>; connectionType?: ConnectionType }) {
     if (args.ctx) {
       return 'write';
-    } else if (args.connectionType) {
+    }
+
+    if (args.connectionType) {
       return args.connectionType;
-    } else if (this.config.get('preferReadReplicas') === true) {
+    }
+
+    if (this.config.get('preferReadReplicas')) {
       return 'read';
     }
 
