@@ -5,7 +5,7 @@ import type { AnyString, Dictionary, EntityKey } from '../typings';
 export class RawQueryFragment {
 
   static #rawQueryCache = new Map<string, RawQueryFragment>();
-  static #index = 0;
+  static #index = 0n;
   static cloneRegistry?: Set<string>;
 
   #assigned = false;
@@ -16,7 +16,7 @@ export class RawQueryFragment {
     readonly sql: string,
     readonly params: unknown[] = [],
   ) {
-    this.#key = `[raw]: ${this.sql}${this.params ? ` (#${RawQueryFragment.#index++})` : ''}`;
+    this.#key = `[raw]: ${this.sql} (#${RawQueryFragment.#index++})`;
   }
 
   as(alias: string): RawQueryFragment {
