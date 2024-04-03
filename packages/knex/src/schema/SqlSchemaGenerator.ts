@@ -165,7 +165,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     for (const meta of metadata) {
       const table = schema.getTable(meta.tableName);
 
-      if (!this.platform.usesCascadeStatement() && table && !wrap) {
+      if (!this.platform.usesCascadeStatement() && table && (!wrap || options.dropForeignKeys)) {
         for (const fk of Object.values(table.getForeignKeys())) {
           const builder = this.createSchemaBuilder(table.schema).alterTable(table.name, tbl => {
             tbl.dropForeign(fk.columnNames, fk.constraintName);
