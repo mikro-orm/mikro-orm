@@ -759,6 +759,7 @@ export interface EnsureDatabaseOptions extends CreateSchemaOptions, ClearDatabas
 export interface DropSchemaOptions {
   wrap?: boolean;
   dropMigrationsTable?: boolean;
+  dropForeignKeys?: boolean;
   dropDb?: boolean;
   schema?: string;
 }
@@ -774,6 +775,7 @@ export interface UpdateSchemaOptions<DatabaseSchema = unknown> {
 
 export interface RefreshDatabaseOptions extends CreateSchemaOptions {
   ensureIndexes?: boolean;
+  dropDb?: boolean;
 }
 
 export interface ISchemaGenerator {
