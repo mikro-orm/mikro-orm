@@ -146,7 +146,7 @@ jobs:
 
       - name: Init docker
         run: |
-          docker-compose up -d
+          docker compose up -d
 
       - name: Set CC Required env vars
         run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
@@ -169,7 +169,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Teardown docker
-        run: docker-compose down
+        run: docker compose down
 
   publish:
     name: Publish
