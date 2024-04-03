@@ -410,7 +410,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   name: EntityKey<Owner>;
   entity: () => EntityName<Owner>;
   type: keyof typeof types | AnyString;
-  runtimeType: 'number' | 'string' | 'boolean' | 'bigint' | 'Buffer' | 'Date';
+  runtimeType: 'number' | 'string' | 'boolean' | 'bigint' | 'Buffer' | 'Date' | 'object' | 'any';
   targetMeta?: EntityMetadata<Target>;
   columnTypes: string[];
   generated?: string | GeneratedColumnCallback<Owner>;
@@ -568,7 +568,7 @@ export class EntityMetadata<T = any> {
       .filter(prop => !prop.getter && !prop.setter && prop.trackChanges !== false)
       .filter(prop => ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind))
       .filter(prop => !prop.serializedPrimaryKey);
-    this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.type));
+    this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.targetMeta?.root.className ?? prop.type));
     this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
     this.virtual = !!this.expression;
     this.checks = Utils.removeDuplicates(this.checks);

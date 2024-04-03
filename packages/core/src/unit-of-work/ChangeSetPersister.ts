@@ -13,6 +13,7 @@ export class ChangeSetPersister {
 
   private readonly platform: Platform;
   private readonly comparator: EntityComparator;
+  private readonly usesReturningStatement: boolean;
 
   constructor(private readonly driver: IDatabaseDriver,
               private readonly metadata: MetadataStorage,
@@ -22,6 +23,7 @@ export class ChangeSetPersister {
               private readonly config: Configuration) {
     this.platform = this.driver.getPlatform();
     this.comparator = this.config.getComparator(this.metadata);
+    this.usesReturningStatement = this.platform.usesReturningStatement();
   }
 
   async executeInserts<T extends object>(changeSets: ChangeSet<T>[], options?: DriverMethodOptions, withSchema?: boolean): Promise<void> {
@@ -123,7 +125,7 @@ export class ChangeSetPersister {
     wrapped.__initialized = true;
     wrapped.__managed = true;
 
-    if (!this.platform.usesReturningStatement()) {
+    if (!this.usesReturningStatement) {
       await this.reloadVersionValues(meta, [changeSet], options);
     }
 
@@ -137,7 +139,7 @@ export class ChangeSetPersister {
       const chunk = changeSets.slice(i, i + size);
       await this.persistNewEntitiesBatch(meta, chunk, options);
 
-      if (!this.platform.usesReturningStatement()) {
+      if (!this.usesReturningStatement) {
         await this.reloadVersionValues(meta, chunk, options);
       }
     }
@@ -339,7 +341,7 @@ export class ChangeSetPersister {
    * so we use a single query in case of both versioning and default values is used.
    */
   private async reloadVersionValues<T extends object>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], options?: DriverMethodOptions) {
-    const reloadProps = meta.versionProperty && !this.platform.usesReturningStatement() ? [meta.properties[meta.versionProperty]] : [];
+    const reloadProps = meta.versionProperty && !this.usesReturningStatement ? [meta.properties[meta.versionProperty]] : [];
 
     if (changeSets[0].type === ChangeSetType.CREATE) {
       // do not reload things that already had a runtime value
@@ -359,7 +361,7 @@ export class ChangeSetPersister {
         });
       });
       // reload generated columns
-      if (!this.platform.usesReturningStatement()) {
+      if (!this.usesReturningStatement) {
         meta.props
           .filter(prop => prop.generated && !prop.primary)
           .forEach(prop => reloadProps.push(prop));
@@ -429,7 +431,7 @@ export class ChangeSetPersister {
    * We do need to map to the change set payload too, as it will be used in the originalEntityData for new entities.
    */
   mapReturnedValues<T extends object>(entity: T, payload: EntityDictionary<T>, row: Dictionary | undefined, meta: EntityMetadata<T>): void {
-    if (this.platform.usesReturningStatement() && row && Utils.hasObjectKeys(row)) {
+    if (this.usesReturningStatement && row && Utils.hasObjectKeys(row)) {
       const mapped = this.comparator.mapResult<T>(meta.className, row as EntityDictionary<T>);
       this.hydrator.hydrate(entity, meta, mapped, this.factory, 'full', false, true);
       Object.assign(payload, mapped); // merge to the changeset payload, so it gets saved to the entity snapshot
