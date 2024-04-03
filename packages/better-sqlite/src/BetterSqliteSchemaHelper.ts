@@ -20,6 +20,14 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
       + `union all select name as table_name from sqlite_temp_master where type = 'table' order by name`;
   }
 
+  override getDropDatabaseSQL(name: string): string {
+    if (name === ':memory:') {
+      return '';
+    }
+
+    return `drop database if exists ${this.platform.quoteIdentifier(name)}`;
+  }
+
   override getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
     const name = this.platform.quoteIdentifier((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
 

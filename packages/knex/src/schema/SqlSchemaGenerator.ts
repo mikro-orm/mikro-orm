@@ -1,17 +1,17 @@
 import type { Knex } from 'knex';
 import {
   AbstractSchemaGenerator,
-  Utils,
-  type Dictionary,
-  type EntityMetadata,
-  type MikroORM,
-  type ISchemaGenerator,
   type ClearDatabaseOptions,
   type CreateSchemaOptions,
-  type EnsureDatabaseOptions,
+  type Dictionary,
   type DropSchemaOptions,
-  type UpdateSchemaOptions,
+  type EnsureDatabaseOptions,
+  type EntityMetadata,
+  type ISchemaGenerator,
+  type MikroORM,
   type Transaction,
+  type UpdateSchemaOptions,
+  Utils,
 } from '@mikro-orm/core';
 import type { CheckDef, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
@@ -553,7 +553,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     name ??= this.config.get('dbName')!;
     this.config.set('dbName', this.helper.getManagementDbName());
     await this.driver.reconnect();
-    await this.driver.execute(this.helper.getDropDatabaseSQL('' + this.knex.ref(name)));
+    await this.execute(this.helper.getDropDatabaseSQL(name));
   }
 
   override async execute(sql: string, options: { wrap?: boolean; ctx?: Transaction } = {}) {

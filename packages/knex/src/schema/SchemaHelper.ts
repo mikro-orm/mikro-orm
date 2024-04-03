@@ -298,7 +298,7 @@ export abstract class SchemaHelper {
   }
 
   getDropDatabaseSQL(name: string): string {
-    return `drop database if exists ${name}`;
+    return `drop database if exists ${this.platform.quoteIdentifier(name)}`;
   }
 
   getDatabaseExistsSQL(name: string): string {
