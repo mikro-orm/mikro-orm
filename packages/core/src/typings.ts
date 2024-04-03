@@ -787,7 +787,7 @@ export interface ISchemaGenerator {
   updateSchema(options?: UpdateSchemaOptions): Promise<void>;
   getUpdateSchemaSQL(options?: UpdateSchemaOptions): Promise<string>;
   getUpdateSchemaMigrationSQL(options?: UpdateSchemaOptions): Promise<{ up: string; down: string }>;
-  createDatabase(name: string): Promise<void>;
+  createDatabase(name?: string): Promise<void>;
   dropDatabase(name?: string): Promise<void>;
   execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
   ensureIndexes(): Promise<void>;

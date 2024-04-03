@@ -549,7 +549,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     name ??= this.config.get('dbName')!;
     this.config.set('dbName', this.helper.getManagementDbName());
     await this.driver.reconnect();
-    await this.driver.execute(this.helper.getDropDatabaseSQL('' + this.knex.ref(name)));
+    await this.execute(this.helper.getDropDatabaseSQL(name));
   }
 
   override async execute(sql: string, options: { wrap?: boolean; ctx?: Transaction } = {}) {
@@ -563,6 +563,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         if (groups[i]?.length > 0) {
           i++;
         }
+
         continue;
       }
 
