@@ -101,26 +101,26 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return 'nvarchar(max)';
   }
 
-  override getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[] }): string {
+  override getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[]; length?: number }): string {
     if (column.items?.every(item => Utils.isString(item))) {
-      return 'varchar';
+      return this.getVarcharTypeDeclarationSQL({ length: 100, ...column });
     }
 
     return `smallint`;
   }
 
   override getDefaultMappedType(type: string): Type<unknown> {
-    if (type === 'string') {
+    const normalizedType = this.extractSimpleType(type);
+
+    if (normalizedType === 'string' || normalizedType === 'nvarchar') {
       return Type.getType(UnicodeStringType);
     }
 
-    const normalizedType = this.extractSimpleType(type);
     const map = {
       int: 'integer',
       bit: 'boolean',
       real: 'float',
       uniqueidentifier: 'uuid',
-      nvarchar: 'text',
       varbinary: 'blob',
       datetime2: 'datetime',
     } as Dictionary;

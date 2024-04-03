@@ -27,7 +27,8 @@ export class UnicodeString {
 export class UnicodeStringType extends Type<string | null, string | null> {
 
   override getColumnType(prop: EntityProperty) {
-    return `nvarchar(${prop.length ?? 255})`;
+    const length = prop.length === -1 ? 'max' : (prop.length ?? 255);
+    return `nvarchar(${length})`;
   }
 
   override convertToJSValue(value: string | null | UnicodeString): string | null {
@@ -44,6 +45,10 @@ export class UnicodeStringType extends Type<string | null, string | null> {
     }
 
     return value;
+  }
+
+  override get runtimeType(): string {
+    return 'string';
   }
 
   override toJSON(value: string | null | UnicodeString): string | null {

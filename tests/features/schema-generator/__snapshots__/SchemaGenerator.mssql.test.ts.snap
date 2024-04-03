@@ -3,7 +3,7 @@
 exports[`SchemaGenerator generate schema from metadata [mssql]: mssql-create-schema-dump 1`] = `
 "exec sp_MSforeachtable 'alter table ? nocheck constraint all';
 
-CREATE TABLE [base_user2] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(100) not null, [last_name] nvarchar(100) not null, [type] varchar(100) check ([type] in ('employee', 'manager', 'owner')) not null, [owner_prop] nvarchar(255) null, [favourite_employee_id] int null, [favourite_manager_id] int null, [employee_prop] int null, [manager_prop] nvarchar(255) null);
+CREATE TABLE [base_user2] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(100) not null, [last_name] nvarchar(100) not null, [type] nvarchar(100) check ([type] in ('employee', 'manager', 'owner')) not null, [owner_prop] nvarchar(255) null, [favourite_employee_id] int null, [favourite_manager_id] int null, [employee_prop] int null, [manager_prop] nvarchar(255) null);
 CREATE INDEX [base_user2_type_index] ON [base_user2] ([type]);
 CREATE UNIQUE INDEX [base_user2_favourite_manager_id_unique] ON [base_user2] ([favourite_manager_id]) WHERE [favourite_manager_id] IS NOT NULL;
 
@@ -26,7 +26,7 @@ CREATE UNIQUE INDEX [foo_bar2_foo_bar_id_unique] ON [foo_bar2] ([foo_bar_id]) WH
 
 CREATE TABLE [foo_param2] ([bar_id] int not null, [baz_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [foo_param2_pkey] PRIMARY KEY ([bar_id], [baz_id]));
 
-CREATE TABLE [publisher2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null CONSTRAINT [publisher2_name_default] DEFAULT 'asd', [type] varchar(100) check ([type] in ('local', 'global')) not null CONSTRAINT [publisher2_type_default] DEFAULT 'local', [type2] varchar(100) check ([type2] in ('LOCAL', 'GLOBAL')) not null CONSTRAINT [publisher2_type2_default] DEFAULT 'LOCAL', [enum1] tinyint null, [enum2] tinyint null, [enum3] tinyint null, [enum4] varchar(100) check ([enum4] in ('a', 'b', 'c')) null);
+CREATE TABLE [publisher2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null CONSTRAINT [publisher2_name_default] DEFAULT 'asd', [type] nvarchar(100) check ([type] in ('local', 'global')) not null CONSTRAINT [publisher2_type_default] DEFAULT 'local', [type2] nvarchar(100) check ([type2] in ('LOCAL', 'GLOBAL')) not null CONSTRAINT [publisher2_type2_default] DEFAULT 'LOCAL', [enum1] tinyint null, [enum2] tinyint null, [enum3] tinyint null, [enum4] nvarchar(100) check ([enum4] in ('a', 'b', 'c')) null);
 
 CREATE TABLE [author2] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null CONSTRAINT [author2_created_at_default] DEFAULT current_timestamp, [updated_at] datetime2(3) not null CONSTRAINT [author2_updated_at_default] DEFAULT current_timestamp, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [age] int null, [terms_accepted] bit not null CONSTRAINT [author2_terms_accepted_default] DEFAULT 0, [optional] bit null, [identities] text null, [born] date null, [born_time] time null, [favourite_book_uuid_pk] uniqueidentifier null, [favourite_author_id] int null);
 CREATE INDEX [custom_email_index_name] ON [author2] ([email]);
@@ -222,7 +222,7 @@ exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-add-unique 1
 
 exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-alter-column 1`] = `
 "drop index [author2_born_index] on [author2];
-alter table [author2] alter column [born] varchar(max);
+alter table [author2] alter column [born] nvarchar(max);
 
 ALTER TABLE [author2] DROP CONSTRAINT [author2_favourite_author_id_foreign];
 
@@ -315,6 +315,34 @@ exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-table-s
 
 exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-unique 1`] = `
 "DROP INDEX [book2_title_unique] ON [book2];
+
+"
+`;
+
+exports[`SchemaGenerator update schema enums [mssql]: mssql-update-schema-enums-1 1`] = `
+"CREATE TABLE [new_table] ([id] int identity(1,1) not null primary key, [enum_test] nvarchar(100) not null);
+
+"
+`;
+
+exports[`SchemaGenerator update schema enums [mssql]: mssql-update-schema-enums-2 1`] = `
+"alter table [new_table] add constraint [new_table_enum_test_check] check([enum_test] in ('a', 'b'));
+
+"
+`;
+
+exports[`SchemaGenerator update schema enums [mssql]: mssql-update-schema-enums-3 1`] = `
+"alter table [new_table] drop constraint if exists [new_table_enum_test_check];
+
+alter table [new_table] add constraint [new_table_enum_test_check] check([enum_test] in ('a', 'b', 'c'));
+
+"
+`;
+
+exports[`SchemaGenerator update schema enums [mssql]: mssql-update-schema-enums-4 1`] = `
+"alter table [new_table] drop constraint if exists [new_table_enum_test_check];
+
+alter table [new_table] alter column [enum_test] int not null;
 
 "
 `;

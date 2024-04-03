@@ -13,7 +13,7 @@ export class Address2 {
   @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Author2;
 
-  @Property({ columnType: 'text' })
+  @Property({ length: 255 })
   value!: string;
 
 }
@@ -36,12 +36,12 @@ export class Author2 {
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
-  @Property({ columnType: 'text' })
+  @Property({ length: 255 })
   name!: string;
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ columnType: 'text' })
+  @Property({ length: 255 })
   email!: string;
 
   @Property({ nullable: true })
@@ -87,17 +87,17 @@ export class BaseUser2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ columnType: 'text' })
+  @Property({ length: 100 })
   firstName!: string;
 
-  @Property({ columnType: 'text' })
+  @Property({ length: 100 })
   lastName!: string;
 
   @Index({ name: 'base_user2_type_index' })
   @Enum({ items: () => BaseUser2Type })
   type!: BaseUser2Type;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ length: 255, nullable: true })
   ownerProp?: string;
 
   @ManyToOne({ entity: () => BaseUser2, nullable: true })
@@ -109,7 +109,7 @@ export class BaseUser2 {
   @Property({ nullable: true })
   employeeProp?: number;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ length: 255, nullable: true })
   managerProp?: string;
 
 }
@@ -128,7 +128,7 @@ export class BookTag2 {
   @PrimaryKey()
   id!: bigint;
 
-  @Property({ columnType: 'text' })
+  @Property({ length: 50 })
   name!: string;
 
 }
@@ -149,7 +149,7 @@ export class Book2 {
   @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp\` })
   createdAt!: Date & Opt;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ length: 255, nullable: true })
   title?: string;
 
   @Property({ columnType: 'text', nullable: true })
@@ -161,7 +161,7 @@ export class Book2 {
   @Property({ columnType: 'float(24)', nullable: true })
   double?: number;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ length: -1, nullable: true })
   meta?: string;
 
   @ManyToOne({ entity: () => Author2 })
@@ -204,7 +204,7 @@ export class CarOwner2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ columnType: 'text' })
+  @Property({ length: 255 })
   name!: string;
 
   @ManyToOne({ entity: () => Car2, updateRule: 'cascade', index: true })
@@ -220,7 +220,7 @@ export class Car2 {
   [PrimaryKeyProp]?: ['name', 'year'];
 
   @Index({ name: 'car2_name_index' })
-  @PrimaryKey({ columnType: 'text' })
+  @PrimaryKey({ length: 100 })
   name!: string;
 
   @Index({ name: 'car2_year_index' })
@@ -240,13 +240,13 @@ export class Configuration2 {
 
   [PrimaryKeyProp]?: ['property', 'test'];
 
-  @PrimaryKey({ columnType: 'text' })
+  @PrimaryKey({ length: 255 })
   property!: string;
 
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
   test!: Test2;
 
-  @Property({ columnType: 'text' })
+  @Property({ length: 255 })
   value!: string;
 
 }
@@ -270,7 +270,7 @@ export class FooBar2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ columnType: 'text' })
+  @Property({ length: 255 })
   name!: string;
 
   @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -288,7 +288,7 @@ export class FooBar2 {
   @Property({ columnType: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ length: -1, nullable: true })
   object?: string;
 
 }
@@ -301,7 +301,7 @@ export class FooBaz2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ columnType: 'text' })
+  @Property({ length: 255 })
   name!: string;
 
   @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp\` })
@@ -324,7 +324,7 @@ export class FooParam2 {
   @ManyToOne({ entity: () => FooBaz2, primary: true })
   baz!: FooBaz2;
 
-  @Property({ columnType: 'text' })
+  @Property({ length: 255 })
   value!: string;
 
 }
@@ -337,7 +337,7 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'string', columnType: 'text' })
+  @Property({ type: 'string', length: 255 })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher2Type })
@@ -402,7 +402,7 @@ export class Sandwich {
   @PrimaryKey()
   id!: number;
 
-  @Property({ columnType: 'text' })
+  @Property({ length: 255 })
   name!: string;
 
   @Property()
@@ -419,7 +419,7 @@ export class Test2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ length: 255, nullable: true })
   name?: string;
 
   @OneToOne({ entity: () => Book2, nullable: true })
@@ -439,10 +439,10 @@ export class User2 {
 
   [PrimaryKeyProp]?: ['firstName', 'lastName'];
 
-  @PrimaryKey({ columnType: 'text' })
+  @PrimaryKey({ length: 100 })
   firstName!: string;
 
-  @PrimaryKey({ columnType: 'text' })
+  @PrimaryKey({ length: 100 })
   lastName!: string;
 
   @Property({ nullable: true })

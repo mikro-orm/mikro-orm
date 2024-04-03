@@ -1,4 +1,11 @@
-import { BigIntType, EnumType, RawQueryFragment, Utils, type Connection, type Dictionary } from '@mikro-orm/core';
+import {
+  BigIntType,
+  EnumType,
+  RawQueryFragment,
+  Utils,
+  type Connection,
+  type Dictionary,
+} from '@mikro-orm/core';
 import type { Knex } from 'knex';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
@@ -37,6 +44,10 @@ export abstract class SchemaHelper {
   async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[] = [], tableName: string, schemaName?: string): Promise<string[]> {
     const pks = indexes.filter(i => i.primary).map(pk => pk.columnNames);
     return Utils.flatten(pks);
+  }
+
+  inferLengthFromColumnType(type: string): number | undefined {
+    return undefined;
   }
 
   async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
@@ -148,7 +159,7 @@ export abstract class SchemaHelper {
     return pkIndex?.keyName !== defaultName;
   }
 
-  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>, alter?: boolean) {
+  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>, alter?: boolean): Knex.ColumnBuilder | undefined {
     const compositePK = fromTable.getPrimaryKey()?.composite;
 
     if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {

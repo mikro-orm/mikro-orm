@@ -24,14 +24,15 @@ export class MsSqlConnection extends AbstractSqlConnection {
     MsSqlTableCompiler.prototype.dropColumnPrefix = 'drop column ';
     MsSqlTableCompiler.prototype.alterColumnPrefix = 'alter column ';
     MsSqlColumnCompiler.prototype.enu = function (allowed: unknown[]) {
-      return `varchar(100) check (${this.formatter.wrap(this.args[0])} in ('${(allowed.join("', '"))}'))`;
+      return `nvarchar(100) check (${this.formatter.wrap(this.args[0])} in ('${(allowed.join("', '"))}'))`;
     };
 
+    const platform = this.platform;
     MsSqlTableCompiler.prototype.alterColumns = function (columns: any, colBuilder: any) {
       for (let i = 0, l = colBuilder.length; i < l; i++) {
         const builder = colBuilder[i];
         if (builder.modified.defaultTo) {
-          const schema = this.schemaNameRaw || 'dbo';
+          const schema = this.schemaNameRaw || platform.getDefaultSchemaName();
           const baseQuery = `declare @constraint${i} varchar(100) = (select default_constraints.name from sys.all_columns`
             + ' join sys.tables on all_columns.object_id = tables.object_id'
             + ' join sys.schemas on tables.schema_id = schemas.schema_id'

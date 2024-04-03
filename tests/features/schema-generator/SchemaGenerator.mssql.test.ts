@@ -199,7 +199,7 @@ describe('SchemaGenerator', () => {
     await orm.close(true);
   });
 
-  test.skip('update schema enums [mssql]', async () => {
+  test('update schema enums [mssql]', async () => {
     const orm = await initORMMsSql();
     const meta = orm.getMetadata();
     const newTableMeta = new EntitySchema({
@@ -215,7 +215,7 @@ describe('SchemaGenerator', () => {
           type: 'string',
           name: 'enumTest',
           fieldName: 'enum_test',
-          columnType: 'varchar(255)',
+          columnType: 'nvarchar(100)',
         },
       },
       name: 'NewTable',

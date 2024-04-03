@@ -143,6 +143,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
               protected readonly loggerContext?: LoggingOptions) {
     this.platform = this.driver.getPlatform();
     this.knex = this.driver.getConnection(this.connectionType).getKnex();
+
     if (alias) {
       this.aliasCounter++;
       this._explicitAlias = true;

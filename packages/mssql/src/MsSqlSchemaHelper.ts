@@ -14,8 +14,10 @@ import {
   type Table,
   type TableDifference,
   TextType,
-  type Type, Utils,
+  type Type,
+  Utils,
 } from '@mikro-orm/knex';
+import { UnicodeStringType } from './UnicodeStringType';
 
 // TODO verify schema names
 export class MsSqlSchemaHelper extends SchemaHelper {
@@ -101,10 +103,20 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const increments = col.is_identity === 1 && connection.getPlatform().isNumericColumn(mappedType);
       const key = this.getTableKey(col);
       const generated = col.generation_expression ? `${col.generation_expression}${col.is_persisted ? ' persisted' : ''}` : undefined;
+      let type = col.data_type;
+
+      if (col.length != null && !type.endsWith(`(${col.length})`)) {
+        type += `(${col.length})`;
+      }
+
+      if (type === 'numeric' && col.numeric_precision != null && col.numeric_scale != null) {
+        type += `(${col.numeric_precision},${col.numeric_scale})`;
+      }
+
       ret[key] ??= [];
       ret[key].push({
         name: col.column_name,
-        type: this.platform.isNumericColumn(mappedType) ? col.data_type.replace(/ unsigned$/, '').replace(/\(\d+\)$/, '') : col.data_type,
+        type: this.platform.isNumericColumn(mappedType) ? col.data_type.replace(/ unsigned$/, '').replace(/\(\d+\)$/, '') : type,
         mappedType,
         unsigned: col.data_type.endsWith(' unsigned'),
         length: col.length,
@@ -295,6 +307,16 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     // indexes need to be first dropped to be able to change a column type
     const changedTypes = Object.values(tableDiff.changedColumns).filter(col => col.changedProperties.has('type'));
 
+    // detect that the column was an enum before and remove the check constraint in such case here
+    const changedEnums = Object.values(tableDiff.changedColumns).filter(col => col.fromColumn.mappedType instanceof EnumType);
+
+    for (const col of changedEnums) {
+      if (col.changedProperties.has('enumItems')) {
+        const checkName = this.platform.getConfig().getNamingStrategy().indexName(tableName, [col.column.name], 'check');
+        ret.push(`alter table ${quotedName} drop constraint if exists [${checkName}]`);
+      }
+    }
+
     for (const col of changedTypes) {
       for (const index of indexes) {
         if (index.columnNames.includes(col.column.name)) {
@@ -303,9 +325,10 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       }
 
       // convert to string first if it's not already a string or has a smaller length
-      const type = col.fromColumn.type;
-      if (!['varchar', 'nvarchar', 'varbinary'].includes(type) || ((col.fromColumn.length ?? 0) < (col.column.length ?? 0))) {
-        ret.push(`alter table ${quotedName} alter column [born] varchar(max)`);
+      const type = this.platform.extractSimpleType(col.fromColumn.type);
+
+      if (!['varchar', 'nvarchar', 'varbinary'].includes(type) || ((col.fromColumn.length ?? 255) < (col.column.length ?? 255))) {
+        ret.push(`alter table ${quotedName} alter column [${col.oldColumnName}] nvarchar(max)`);
       }
     }
 
@@ -367,6 +390,20 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>, alter?: boolean) {
+    if (changedProperties && column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
+      const checkName = this.platform.getConfig().getNamingStrategy().indexName(fromTable.name, [column.name], 'check');
+
+      if (changedProperties.has('enumItems')) {
+        table.check(`${this.platform.quoteIdentifier(column.name)} in ('${(column.enumItems.join("', '"))}')`, {}, this.platform.quoteIdentifier(checkName));
+      }
+
+      if (changedProperties.has('type')) {
+        return table.specificType(column.name, column.type);
+      }
+
+      return undefined;
+    }
+
     if (column.generated) {
       return table.specificType(column.name, `as ${column.generated}`);
     }
@@ -374,8 +411,22 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return super.createTableColumn(table, column, fromTable, changedProperties);
   }
 
+  override inferLengthFromColumnType(type: string): number | undefined {
+    const match = type.match(/n?varchar\((-?\d+|max)\)/);
+
+    if (!match) {
+      return undefined;
+    }
+
+    if (match[1] === 'max') {
+      return -1;
+    }
+
+    return +match[1];
+  }
+
   protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {
-    const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
+    const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType || type instanceof UnicodeStringType;
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
   }
 

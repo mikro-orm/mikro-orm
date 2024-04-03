@@ -108,6 +108,10 @@ export class DatabaseTable {
         }
       }
 
+      if (prop.length == null && prop.columnTypes[idx]) {
+        prop.length = this.platform.getSchemaHelper()!.inferLengthFromColumnType(prop.columnTypes[idx]);
+      }
+
       const primary = !meta.compositePK && !!prop.primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType);
       this.columns[field] = {
         name: prop.fieldNames[idx],
@@ -757,7 +761,7 @@ export class DatabaseTable {
       return namingStrategy.getClassName(this.name + '_' + column.name, '_');
     }
 
-    return column.mappedType?.compareAsType() ?? 'unknown';
+    return column.mappedType?.runtimeType ?? 'unknown';
   }
 
   private getPropertyDefaultValue(schemaHelper: SchemaHelper, column: Column, propType: string, raw = false): any {

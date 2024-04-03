@@ -32,9 +32,9 @@ export const MonkeyPatchable = {
   MySqlColumnCompiler,
   MySqlQueryCompiler,
   MsSqlColumnCompiler,
+  MsSqlTableCompiler,
   PostgresDialectTableCompiler,
   Sqlite3Dialect,
   Sqlite3DialectTableCompiler,
   TableCompiler,
-  MsSqlTableCompiler,
 };
