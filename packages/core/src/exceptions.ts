@@ -1,3 +1,5 @@
+import type { Dictionary } from './typings';
+
 /**
  * Base class for all errors detected in the driver.
  */
@@ -11,9 +13,10 @@ export class DriverException extends Error {
 
   constructor(previous: Error) {
     super(previous.message);
-    Object.assign(this, previous);
+    Object.getOwnPropertyNames(previous).forEach(k => (this as Dictionary)[k] = (previous as Dictionary)[k]);
     this.name = this.constructor.name;
-    this.stack += '\n\n' + 'previous ' + previous.stack;
+    Error.captureStackTrace(this, this.constructor);
+    this.stack! += '\n\n' + previous.stack!.split('\n').filter(l => l.trim().startsWith('at ')).join('\n');
   }
 
 }
