@@ -29,6 +29,7 @@ import {
   type QueryResult,
   raw,
   RawQueryFragment,
+  Reference,
   ReferenceKind,
   type RequiredEntityData,
   serialize,
@@ -837,9 +838,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
       helper(entity).__serializationContext.populate ??= hint;
       hint.forEach(hint => {
         const [propName] = hint.field.split(':', 2) as [EntityKey<T>];
-        const value = entity[propName];
+        const value = Reference.unwrapReference(entity[propName] as object);
 
-        if (Utils.isEntity<U>(value, true)) {
+        if (Utils.isEntity<U>(value)) {
           helper(value).populated();
           propagatePopulateHint<any>(value, hint.children ?? []);
         } else if (Utils.isCollection(value)) {

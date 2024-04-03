@@ -1297,7 +1297,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.1.12"
     "@mikro-orm/knex": "npm:6.1.12"
-    better-sqlite3: "npm:9.4.3"
+    better-sqlite3: "npm:9.4.4"
     fs-extra: "npm:11.2.0"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
@@ -2382,16 +2382,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=18, @types/node@npm:^20.11.17":
-  version: 20.11.30
-  resolution: "@types/node@npm:20.11.30"
-  dependencies:
-    undici-types: "npm:~5.26.4"
-  checksum: 10/78515bc768d2b878e2e06a1c20eb4f5840072b79b8d28ff3dd0a7feaaf48fd3a2ac03cfa5bc7564da82db5906b43e9ba0e5df9f43d870b7aae2942306e208815
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:20.12.3":
+"@types/node@npm:*, @types/node@npm:20.12.3, @types/node@npm:>=18, @types/node@npm:^20.11.17":
   version: 20.12.3
   resolution: "@types/node@npm:20.12.3"
   dependencies:
@@ -3198,14 +3189,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:9.4.3":
-  version: 9.4.3
-  resolution: "better-sqlite3@npm:9.4.3"
+"better-sqlite3@npm:9.4.4":
+  version: 9.4.4
+  resolution: "better-sqlite3@npm:9.4.4"
   dependencies:
     bindings: "npm:^1.5.0"
     node-gyp: "npm:latest"
     prebuild-install: "npm:^7.1.1"
-  checksum: 10/a6d68f5c079b52b86815ce4a98dedd941da4da2db2f611cf8f1bf85473f0ac53a84858732152b68b5a36406bd5ad4f3d07caca60f9f8a2a654115173da8cba01
+  checksum: 10/9d6f16e33e6db3ed1876fb6f80a16a32cad5d004c9af3fa884004b6c8bcba2f2b2a2eadc4db78f5c005d7b7ab92c23c65545f22b799e636a549eea53f0fe2956
   languageName: node
   linkType: hard
 
@@ -5109,17 +5100,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.15.4":
-  version: 1.15.5
-  resolution: "follow-redirects@npm:1.15.5"
-  peerDependenciesMeta:
-    debug:
-      optional: true
-  checksum: 10/d467f13c1c6aa734599b8b369cd7a625b20081af358f6204ff515f6f4116eb440de9c4e0c49f10798eeb0df26c95dd05d5e0d9ddc5786ab1a8a8abefe92929b4
-  languageName: node
-  linkType: hard
-
-"follow-redirects@npm:^1.15.6":
+"follow-redirects@npm:^1.15.4, follow-redirects@npm:^1.15.6":
   version: 1.15.6
   resolution: "follow-redirects@npm:1.15.6"
   peerDependenciesMeta:
@@ -9340,14 +9321,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-protocol@npm:*":
-  version: 1.6.0
-  resolution: "pg-protocol@npm:1.6.0"
-  checksum: 10/995864cc2a8517368b84697c753caff769a4db292eda66f96d9eec46e3aa84737cd0b0fe171aca9d7d4b4a4c46bb25bd399713cb1027a5bf8f38adea0b4284f4
-  languageName: node
-  linkType: hard
-
-"pg-protocol@npm:^1.6.1":
+"pg-protocol@npm:*, pg-protocol@npm:^1.6.1":
   version: 1.6.1
   resolution: "pg-protocol@npm:1.6.1"
   checksum: 10/9af672208adae8214f55f5b4597c4699ab9946205a99863d3e2bb8d024fdab16711457b539bc366cc29040218aa87508cf61294b76d288f48881b973d9117bd6

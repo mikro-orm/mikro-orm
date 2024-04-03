@@ -1,4 +1,14 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Ref } from '@mikro-orm/postgresql';
+import {
+  Collection,
+  Entity,
+  ManyToOne,
+  MikroORM,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  Ref,
+  wrap,
+} from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
 @Entity()
@@ -33,6 +43,9 @@ class Server {
   @ManyToOne(() => User, { ref: true })
   user!: Ref<User>;
 
+  @ManyToOne(() => Location, { ref: true })
+  location!: Ref<Location>;
+
 }
 
 @Entity()
@@ -49,27 +62,61 @@ class Location {
 
 }
 
+@Entity()
+class ServerProvisioning {
+
+  @PrimaryKey()
+  readonly id!: number;
+
+  @ManyToOne(() => ServerOrder, { ref: true })
+  serverOrder!: Ref<ServerOrder>;
+
+}
+
+@Entity()
+class ServerOrder {
+
+  @PrimaryKey()
+  readonly id!: number;
+
+  @ManyToOne(() => Server, { ref: true })
+  server!: Ref<Server>;
+
+  @OneToMany(() => ServerProvisioning, x => x.serverOrder)
+  serverProvisionings = new Collection<ServerProvisioning>(this);
+
+}
+
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: 'coll-operators-1',
-    entities: [User],
+    entities: [User, ServerProvisioning],
   });
   await orm.schema.refreshDatabase();
 
-  orm.em.create(User, {
+  const location = orm.em.create(Location, {
+    location: 'loc name',
+  });
+  const u1 = orm.em.create(User, {
     id: 1,
-    location: {
-      location: 'loc name',
-    },
+    location,
     servers: [
-      { name: 's1' },
-      { name: 's2' },
-      { name: 'test' },
+      { id: 2, name: 's2', location },
+      { id: 3, name: 'test', location },
     ],
     name: 'u1',
     data: { foo: 'bar' },
+  });
+  const server = orm.em.create(Server, {
+    id: 1,
+    name: 's1',
+    location,
+    user: u1,
+  });
+  orm.em.create(ServerProvisioning, {
+    serverOrder: { server },
   });
   orm.em.create(User, {
     id: 2,
@@ -77,7 +124,7 @@ beforeAll(async () => {
       location: 'test',
     },
     servers: [
-      { name: 'test' },
+      { id: 4, name: 'test', location },
     ],
     name: 'u2',
     data: { foo: 'baz' },
@@ -110,7 +157,7 @@ test('$every without populateWhere', async () => {
     },
   );
   expect(res).toHaveLength(0);
-  expect(mock.mock.calls[0][0]).toMatch(`select "u0".*, "s1"."id" as "s1__id", "s1"."name" as "s1__name", "s1"."user_id" as "s1__user_id" from "user" as "u0" left join "server" as "s1" on "u0"."id" = "s1"."user_id" where "u0"."id" not in (select "u0"."id" from "user" as "u0" inner join "server" as "s1" on "u0"."id" = "s1"."user_id" where not ("s1"."name" != 'test'))`);
+  expect(mock.mock.calls[0][0]).toMatch(`select "u0".*, "s1"."id" as "s1__id", "s1"."name" as "s1__name", "s1"."user_id" as "s1__user_id", "s1"."location_id" as "s1__location_id" from "user" as "u0" left join "server" as "s1" on "u0"."id" = "s1"."user_id" where "u0"."id" not in (select "u0"."id" from "user" as "u0" inner join "server" as "s1" on "u0"."id" = "s1"."user_id" where not ("s1"."name" != 'test'))`);
 });
 
 test('$every with populateWhere: infer', async () => {
@@ -133,7 +180,7 @@ test('$every with populateWhere: infer', async () => {
     },
   );
   expect(res).toHaveLength(0);
-  expect(mock.mock.calls[0][0]).toMatch(`select "u0".*, "s1"."id" as "s1__id", "s1"."name" as "s1__name", "s1"."user_id" as "s1__user_id" from "user" as "u0" left join "server" as "s1" on "u0"."id" = "s1"."user_id" where "u0"."id" not in (select "u0"."id" from "user" as "u0" inner join "server" as "s1" on "u0"."id" = "s1"."user_id" where not ("s1"."name" != 'test'))`);
+  expect(mock.mock.calls[0][0]).toMatch(`select "u0".*, "s1"."id" as "s1__id", "s1"."name" as "s1__name", "s1"."user_id" as "s1__user_id", "s1"."location_id" as "s1__location_id" from "user" as "u0" left join "server" as "s1" on "u0"."id" = "s1"."user_id" where "u0"."id" not in (select "u0"."id" from "user" as "u0" inner join "server" as "s1" on "u0"."id" = "s1"."user_id" where not ("s1"."name" != 'test'))`);
 });
 
 test('disallow $every on top level', async () => {
@@ -196,7 +243,7 @@ test('invalid query 3', async () => {
   expect(users).toHaveLength(1);
   expect(users[0].servers).toHaveLength(3);
   expect(count).toBe(2);
-  expect(mock.mock.calls[0][0]).toMatch(`select "u0".*, "s"."id" as "s__id", "s"."name" as "s__name", "s"."user_id" as "s__user_id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."id" in (select "u0"."id" from (select "u0"."id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null group by "u0"."id" limit 1) as "u0")`);
+  expect(mock.mock.calls[0][0]).toMatch(`select "u0".*, "s"."id" as "s__id", "s"."name" as "s__name", "s"."user_id" as "s__user_id", "s"."location_id" as "s__location_id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."id" in (select "u0"."id" from (select "u0"."id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null group by "u0"."id" limit 1) as "u0")`);
   expect(mock.mock.calls[1][0]).toMatch(`select count(distinct("u0"."id")) as "count" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null`);
 
   const [users2, count2] = await orm.em.fork()
@@ -211,7 +258,7 @@ test('invalid query 3', async () => {
   expect(users2[0].servers).toHaveLength(3);
   expect(users2[1].servers).toHaveLength(1);
   expect(count2).toBe(2);
-  expect(mock.mock.calls[2][0]).toMatch(`select "u0".*, "s"."id" as "s__id", "s"."name" as "s__name", "s"."user_id" as "s__user_id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."id" in (select "u0"."id" from (select "u0"."id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null group by "u0"."id" limit 3) as "u0")`);
+  expect(mock.mock.calls[2][0]).toMatch(`select "u0".*, "s"."id" as "s__id", "s"."name" as "s__name", "s"."user_id" as "s__user_id", "s"."location_id" as "s__location_id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."id" in (select "u0"."id" from (select "u0"."id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null group by "u0"."id" limit 3) as "u0")`);
   expect(mock.mock.calls[3][0]).toMatch(`select count(distinct("u0"."id")) as "count" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null`);
 });
 
@@ -240,4 +287,54 @@ test('invalid query 4', async () => {
   expect(results[3].user).toBeNull();
   expect(mock.mock.calls).toHaveLength(1);
   expect(mock.mock.calls[0][0]).toMatch(`select "s0".*, "u1"."id" as "u1__id", "u1"."location_id" as "u1__location_id", "u1"."name" as "u1__name", "u1"."data" as "u1__data" from "server" as "s0" left join "user" as "u1" on "s0"."user_id" = "u1"."id" and ("u1"."name" = 'u1' or "u1"."id" is null) where ("u1"."name" = 'u1' or "u1"."id" is null)`);
+});
+
+test('invalid query 5/1', async () => {
+  const results = await orm.em
+    .fork()
+    .createQueryBuilder(ServerProvisioning, 'serverProvisioning')
+    .leftJoinAndSelect('serverProvisioning.serverOrder', 'serverOrder')
+    .leftJoinAndSelect('serverOrder.server', 'server')
+    .leftJoinAndSelect('server.location', 'location')
+    .getResult();
+
+  expect(wrap(results[0]).toObject()).toEqual({
+    id: 1,
+    serverOrder: {
+      id: 1,
+      server: {
+        id: 1,
+        name: 's1',
+        user: 1,
+        location: {
+          id: 1,
+          location: 'loc name',
+        },
+      },
+    },
+  });
+});
+
+test('invalid query 5/2', async () => {
+  const results = await orm.em
+    .fork()
+    .find(ServerProvisioning, {}, {
+      populate: ['serverOrder.server.location'],
+    });
+
+  expect(wrap(results[0]).toObject()).toEqual({
+    id: 1,
+    serverOrder: {
+      id: 1,
+      server: {
+        id: 1,
+        name: 's1',
+        user: 1,
+        location: {
+          id: 1,
+          location: 'loc name',
+        },
+      },
+    },
+  });
 });
