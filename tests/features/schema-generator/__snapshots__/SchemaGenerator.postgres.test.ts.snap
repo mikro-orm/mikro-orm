@@ -374,8 +374,7 @@ exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-upd
 `;
 
 exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-2 1`] = `
-"alter table "new_table" alter column "enum_test" type text using ("enum_test"::text);
-alter table "new_table" add constraint "new_table_enum_test_check" check ("enum_test" in ('a', 'b'));
+"alter table "new_table" add constraint "new_table_enum_test_check" check("enum_test" in ('a', 'b'));
 
 "
 `;
@@ -384,7 +383,7 @@ exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-upd
 "alter table "new_table" drop constraint if exists "new_table_enum_test_check";
 
 alter table "new_table" alter column "enum_test" type text using ("enum_test"::text);
-alter table "new_table" add constraint "new_table_enum_test_check" check ("enum_test" in ('a', 'b', 'c'));
+alter table "new_table" add constraint "new_table_enum_test_check" check("enum_test" in ('a', 'b', 'c'));
 
 "
 `;

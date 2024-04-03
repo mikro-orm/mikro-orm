@@ -371,6 +371,20 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return table.specificType(column.name, type);
     }
 
+    if (changedProperties && column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
+      const checkName = this.platform.getConfig().getNamingStrategy().indexName(fromTable.name, [column.name], 'check');
+
+      if (changedProperties.has('enumItems') || (!column.nativeEnumName && fromTable.getColumn(column.name)?.nativeEnumName)) {
+        table.check(`${this.platform.quoteIdentifier(column.name)} in ('${(column.enumItems.join("', '"))}')`, {}, this.platform.quoteIdentifier(checkName));
+      }
+
+      if (changedProperties.has('type')) {
+        return table.specificType(column.name, column.type);
+      }
+
+      return undefined;
+    }
+
     if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
       return table.enum(column.name, column.enumItems);
     }
@@ -427,8 +441,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       }
 
       if (!col.fromColumn.nativeEnumName) {
-        const constraintName = `${tableName}_${col.column.name}_check`;
-        ret.push(`alter table ${quotedName} drop constraint if exists "${constraintName}"`);
+        if (col.changedProperties.has('enumItems') || col.column.nativeEnumName) {
+          const constraintName = `${tableName}_${col.column.name}_check`;
+          ret.push(`alter table ${quotedName} drop constraint if exists "${constraintName}"`);
+        }
       }
     }
 

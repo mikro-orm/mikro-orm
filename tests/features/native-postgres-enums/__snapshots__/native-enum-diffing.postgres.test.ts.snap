@@ -16,9 +16,9 @@ exports[`diffing native enums in postgres: 1. convert to native enum 1`] = `
   "down": "alter table "user" alter column "type" drop default;
 
 alter table "user" alter column "type" type text using ("type"::text);
-alter table "user" add constraint "user_type_check" check ("type" in ('personal', 'organization'));
 alter table "user" alter column "type2" type text using ("type2"::text);
-alter table "user" add constraint "user_type2_check" check ("type2" in ('personal', 'organization'));
+alter table "user" add constraint "user_type_check" check("type" in ('personal', 'organization'));
+alter table "user" add constraint "user_type2_check" check("type2" in ('personal', 'organization'));
 
 alter table "user" alter column "type" set default 'personal';
 

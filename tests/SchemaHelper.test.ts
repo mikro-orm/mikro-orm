@@ -2,7 +2,7 @@ import type { Column } from '@mikro-orm/sqlite';
 import { SchemaHelper, SqlitePlatform } from '@mikro-orm/sqlite';
 import { MySqlPlatform } from '@mikro-orm/mysql';
 import { ColumnDifference, PostgreSqlPlatform, TableDifference } from '@mikro-orm/postgresql';
-import { Dictionary, Type, EnumType, StringType } from '@mikro-orm/core';
+import { Dictionary } from '@mikro-orm/core';
 
 class SchemaHelperTest extends SchemaHelper { }
 
@@ -49,17 +49,9 @@ describe('SchemaHelper', () => {
   describe('postgresql schema helper', () => {
     test('helper quotes schema name when dropping contraints', () => {
       const helper = new PostgreSqlPlatform().getSchemaHelper()!;
-      const fromEnum = { name: 'test_enum', nullable: false, mappedType: Type.getType(EnumType) } as Column;
-      const toEnum = { name: 'test_enum', nullable: false, mappedType: Type.getType(StringType) } as Column;
       const fromUuid = { name: 'test_uuid', nullable: false, type: 'uuid' } as Column;
       const toUuid = { name: 'test_uuid', nullable: false, type: 'uuid' } as Column;
       const changedColumns = {
-        test_enum: {
-          oldColumnName: 'test_column',
-          column: toEnum,
-          fromColumn: fromEnum,
-          changedProperties: new Set(),
-        },
         test_uuid: {
           oldColumnName: 'test_uuid',
           column: toUuid,
@@ -73,14 +65,14 @@ describe('SchemaHelper', () => {
         changedColumns,
       } as TableDifference;
 
-      expect(helper.getPreAlterTable(tableDifference, true)).toEqual(`alter table "test" drop constraint if exists "test_test_enum_check";\nalter table "test" alter column "test_uuid" type text using ("test_uuid"::text)`);
+      expect(helper.getPreAlterTable(tableDifference, true)).toEqual(`alter table "test" alter column "test_uuid" type text using ("test_uuid"::text)`);
 
       const schemaTableDifference: TableDifference = {
         name: 'my_schema.test',
         changedColumns,
       } as TableDifference;
 
-      expect(helper.getPreAlterTable(schemaTableDifference, true)).toEqual(`alter table "my_schema"."test" drop constraint if exists "test_test_enum_check";\nalter table "my_schema"."test" alter column "test_uuid" type text using ("test_uuid"::text)`);
+      expect(helper.getPreAlterTable(schemaTableDifference, true)).toEqual(`alter table "my_schema"."test" alter column "test_uuid" type text using ("test_uuid"::text)`);
     });
   });
 });
