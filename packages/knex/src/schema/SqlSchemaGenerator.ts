@@ -441,10 +441,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
 
       /* istanbul ignore else */
-      if (!safe) {
-        for (const column of Object.values(diff.removedColumns)) {
-          this.helper.pushTableQuery(table, `alter table ${this.platform.quoteIdentifier(tableName)} drop column ${this.platform.quoteIdentifier(column.name)}`);
-        }
+      if (!safe && Object.values(diff.removedColumns).length > 0) {
+        this.helper.pushTableQuery(table, this.helper.getDropColumnsSQL(tableName, Object.values(diff.removedColumns), schemaName));
       }
     }));
 

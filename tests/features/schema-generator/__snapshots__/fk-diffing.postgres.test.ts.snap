@@ -19,8 +19,7 @@ exports[`dropping tables with FKs in postgres schema generator removes stale FKs
 "alter table "book" drop constraint "book_author1_id_foreign";
 alter table "book" drop constraint "book_author2_id_foreign";
 
-alter table "book" drop column "author1_id";
-alter table "book" drop column "author2_id";
+alter table "book" drop column "author1_id", drop column "author2_id";
 
 alter table "book" add column "author1_pk" int not null, add column "author2_pk" int not null;
 alter table "book" add constraint "book_author1_pk_foreign" foreign key ("author1_pk") references "author" ("pk") on update cascade;
@@ -33,8 +32,7 @@ exports[`dropping tables with FKs in postgres schema generator removes stale FKs
 "alter table "book" drop constraint "book_author2_pk_foreign";
 alter table "book" drop constraint "book_based_on_id_foreign";
 
-alter table "book" drop column "based_on_id";
-alter table "book" drop column "author2_pk";
+alter table "book" drop column "based_on_id", drop column "author2_pk";
 
 "
 `;
@@ -48,8 +46,7 @@ drop table if exists "author" cascade;
 
 alter table "book" drop constraint "book_based_on_id_foreign";
 
-alter table "book" drop column "author2_id";
-alter table "book" drop column "based_on_id";
+alter table "book" drop column "author2_id", drop column "based_on_id";
 
 "
 `;

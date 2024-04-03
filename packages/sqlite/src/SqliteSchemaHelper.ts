@@ -1,5 +1,5 @@
 import type { Connection, Dictionary } from '@mikro-orm/core';
-import { SchemaHelper, type AbstractSqlConnection, type IndexDef, type CheckDef } from '@mikro-orm/knex';
+import { SchemaHelper, type AbstractSqlConnection, type IndexDef, type CheckDef, type Column } from '@mikro-orm/knex';
 
 export class SqliteSchemaHelper extends SchemaHelper {
 
@@ -18,6 +18,14 @@ export class SqliteSchemaHelper extends SchemaHelper {
   override getListTablesSQL(): string {
     return `select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' `
       + `union all select name as table_name from sqlite_temp_master where type = 'table' order by name`;
+  }
+
+  override getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
+    const name = this.platform.quoteIdentifier((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
+
+    return columns.map(column => {
+      return `alter table ${name} drop column ${this.platform.quoteIdentifier(column.name)}`;
+    }).join(';\n');
   }
 
   private parseTableDefinition(sql: string, cols: any[]) {

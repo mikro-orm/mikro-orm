@@ -35,9 +35,7 @@ exports[`adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687) schema ge
 {
   "down": "alter table "user" drop constraint "user_city_state_country_id_city_state_id_city_id_foreign";
 
-alter table "user" drop column "city_state_country_id";
-alter table "user" drop column "city_state_id";
-alter table "user" drop column "city_id";
+alter table "user" drop column "city_state_country_id", drop column "city_state_id", drop column "city_id";
 
 ",
   "up": "alter table "user" add column "city_state_country_id" int not null, add column "city_state_id" int not null, add column "city_id" int not null;

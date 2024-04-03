@@ -192,8 +192,7 @@ alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop column \`foo___bar\`;
-alter table \`test2\` drop column \`foo___baz\`;
+alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
 
 set foreign_key_checks = 1;
 "
