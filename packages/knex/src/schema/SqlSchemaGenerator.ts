@@ -449,7 +449,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     ret.push(this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
       for (const column of Object.values(diff.addedColumns)) {
-        const col = this.helper.createTableColumn(table, column, diff.fromTable, undefined, true);
+        const col = this.helper.createTableColumn(table, column, diff.fromTable, undefined, true)!;
         this.helper.configureColumn(column, col, this.knex);
         const foreignKey = Object.values(diff.addedForeignKeys).find(fk => fk.columnNames.length === 1 && fk.columnNames[0] === column.name);
 
@@ -472,8 +472,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
           continue;
         }
 
-        const col = this.helper.createTableColumn(table, column, diff.fromTable, changedProperties, true).alter();
-        this.helper.configureColumn(column, col, this.knex, changedProperties);
+        const col = this.helper.createTableColumn(table, column, diff.fromTable, changedProperties, true)?.alter();
+
+        if (col) {
+          this.helper.configureColumn(column, col, this.knex, changedProperties);
+        }
       }
 
       for (const { column } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('autoincrement'))) {
@@ -618,7 +621,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   private createTable(tableDef: DatabaseTable, alter?: boolean): Knex.SchemaBuilder {
     return this.createSchemaBuilder(tableDef.schema).createTable(tableDef.name, table => {
       tableDef.getColumns().forEach(column => {
-        const col = this.helper.createTableColumn(table, column, tableDef, undefined, alter);
+        const col = this.helper.createTableColumn(table, column, tableDef, undefined, alter)!;
         this.helper.configureColumn(column, col, this.knex);
       });
 
