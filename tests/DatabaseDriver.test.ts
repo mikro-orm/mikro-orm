@@ -82,8 +82,8 @@ describe('DatabaseDriver', () => {
   });
 
   test('not supported', async () => {
+    expect(driver.getPlatform().supportsCreatingFullTextIndex()).toBe(false);
     expect(() => driver.getPlatform().getFullTextWhereClause({} as any)).toThrow('Full text searching is not supported by this driver.');
-    expect(() => driver.getPlatform().supportsCreatingFullTextIndex()).toThrow('Full text searching is not supported by this driver.');
     expect(() => driver.getPlatform().getFullTextIndexExpression({} as any, {} as any, {} as any, {} as any)).toThrow('Full text searching is not supported by this driver.');
   });
 
