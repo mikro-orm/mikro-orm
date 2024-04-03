@@ -769,6 +769,8 @@ export class MetadataDiscovery {
       index: this.platform.indexForeignKeys(),
       primary: !prop.fixedOrder,
       autoincrement: false,
+      updateRule: prop.updateRule,
+      deleteRule: prop.deleteRule,
     } as EntityProperty;
 
     const meta = this.metadata.get(type);
@@ -1110,7 +1112,7 @@ export class MetadataDiscovery {
 
   private initGeneratedColumn(meta: EntityMetadata, prop: EntityProperty): void {
     if (!prop.generated && prop.columnTypes) {
-      const match = prop.columnTypes[0]?.match(/(.*) generated always as (.*)/);
+      const match = prop.columnTypes[0]?.match(/(.*) generated always as (.*)/i);
 
       if (match) {
         prop.columnTypes[0] = match[1];
