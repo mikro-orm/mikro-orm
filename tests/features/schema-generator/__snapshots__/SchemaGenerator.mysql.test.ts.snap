@@ -192,8 +192,7 @@ alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop column \`foo___bar\`;
-alter table \`test2\` drop column \`foo___baz\`;
+alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
 
 set foreign_key_checks = 1;
 "
@@ -216,8 +215,7 @@ alter table \`author2\` add index \`author2_name_age_in_years_index\`(\`name\`, 
 alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop column \`foo___bar\`;
-alter table \`test2\` drop column \`foo___baz\`;
+alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
 
 "
 `;
@@ -263,8 +261,7 @@ alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop column \`foo___bar\`;
-alter table \`test2\` drop column \`foo___baz\`;
+alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
 
 "
 `;
@@ -284,8 +281,7 @@ exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-column 
 alter table \`author2\` drop foreign key \`author2_favourite_book_uuid_pk_foreign\`;
 
 alter table \`new_table\` drop primary key;
-alter table \`new_table\` drop column \`id\`;
-alter table \`new_table\` drop column \`updated_at\`;
+alter table \`new_table\` drop column \`id\`, drop column \`updated_at\`;
 
 alter table \`author2\` drop index \`author2_favourite_book_uuid_pk_index\`;
 alter table \`author2\` drop column \`favourite_book_uuid_pk\`;
@@ -351,8 +347,7 @@ alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop column \`foo___bar\`;
-alter table \`test2\` drop column \`foo___baz\`;
+alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
 
 "
 `;

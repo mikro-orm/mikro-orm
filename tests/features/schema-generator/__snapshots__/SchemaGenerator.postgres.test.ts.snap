@@ -306,8 +306,7 @@ exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-sc
 "alter table "author2" drop constraint "author2_favourite_book_uuid_pk_foreign";
 
 alter table "new_table" drop constraint "new_table_pkey";
-alter table "new_table" drop column "id";
-alter table "new_table" drop column "updated_at";
+alter table "new_table" drop column "id", drop column "updated_at";
 
 alter table "author2" drop column "favourite_book_uuid_pk";
 
