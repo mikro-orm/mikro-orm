@@ -89,7 +89,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   /**
    * creates new database and connects to it
    */
-  async createDatabase(name: string): Promise<void> {
+  async createDatabase(name?: string): Promise<void> {
     this.notImplemented();
   }
 
