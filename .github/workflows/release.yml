@@ -63,7 +63,7 @@ jobs:
 
       - name: Init docker
         run: |
-          docker-compose up -d
+          docker compose up -d
 
       - name: Build
         run: yarn build
