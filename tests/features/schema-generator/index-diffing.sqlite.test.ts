@@ -172,7 +172,8 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
       dbName: `:memory:`,
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+
+    await orm.schema.refreshDatabase({ dropDb: true });
   });
 
   afterAll(() => orm.close(true));

@@ -46,7 +46,7 @@ test('batch insert and mapping of PKs with custom field name [better-sqlite]', a
     dbName: ':memory:',
     driver: BetterSqliteDriver,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refreshDatabase({ dropDb: true });
   const authors = [new Author(), new Author(), new Author()];
   const books = [new Book(), new Book(), new Book()];
   books.forEach((b, idx) => b.author = authors[idx]);

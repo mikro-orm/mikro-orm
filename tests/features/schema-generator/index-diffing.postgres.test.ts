@@ -175,10 +175,7 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
       driver: PostgreSqlDriver,
     });
 
-    await orm.schema.ensureDatabase();
-    await orm.schema.execute('drop table if exists author cascade');
-    await orm.schema.execute('drop table if exists book cascade');
-    await orm.schema.createSchema();
+    await orm.schema.refreshDatabase({ dropDb: true });
   });
 
   afterAll(() => orm.close(true));
