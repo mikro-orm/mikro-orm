@@ -29,6 +29,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `set names '${charset}';\n${this.disableForeignKeysSQL()}\n\n`;
   }
 
+  override getCreateDatabaseSQL(name: string): string {
+    return `create database ${name}`;
+  }
+
   override getListTablesSQL(): string {
     return `select table_name, table_schema as schema_name, `
       + `(select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c

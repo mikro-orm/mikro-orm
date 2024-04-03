@@ -11,6 +11,7 @@ import {
   type EnsureDatabaseOptions,
   type DropSchemaOptions,
   type UpdateSchemaOptions,
+  type Transaction,
 } from '@mikro-orm/core';
 import type { CheckDef, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
@@ -536,11 +537,12 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   /**
    * creates new database and connects to it
    */
-  override async createDatabase(name: string): Promise<void> {
+  override async createDatabase(name?: string): Promise<void> {
+    name ??= this.config.get('dbName')!;
     const sql = this.helper.getCreateDatabaseSQL('' + this.knex.ref(name));
 
     if (sql) {
-      await this.driver.execute(sql);
+      await this.execute(sql);
     }
 
     this.config.set('dbName', name);
@@ -554,21 +556,39 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     await this.driver.execute(this.helper.getDropDatabaseSQL('' + this.knex.ref(name)));
   }
 
-  override async execute(sql: string, options: { wrap?: boolean } = {}) {
+  override async execute(sql: string, options: { wrap?: boolean; ctx?: Transaction } = {}) {
     options.wrap ??= false;
-    const lines = this.wrapSchema(sql, options).split('\n').filter(i => i.trim());
+    const lines = this.wrapSchema(sql, options).split('\n');
+    const groups: string[][] = [];
+    let i = 0;
 
-    if (lines.length === 0) {
+    for (const line of lines) {
+      if (line.trim() === '') {
+        if (groups[i]?.length > 0) {
+          i++;
+        }
+
+        continue;
+      }
+
+      groups[i] ??= [];
+      groups[i].push(line.trim());
+    }
+
+    if (groups.length === 0) {
       return;
     }
 
     if (this.platform.supportsMultipleStatements()) {
-      const query = lines.join('\n');
-      await this.driver.execute(query);
+      for (const group of groups) {
+        const query = group.join('\n');
+        await this.driver.execute(query);
+      }
+
       return;
     }
 
-    await Utils.runSerial(lines, line => this.driver.execute(line));
+    await Utils.runSerial(groups.flat(), line => this.driver.execute(line));
   }
 
   private wrapSchema(sql: string, options: { wrap?: boolean }): string {
