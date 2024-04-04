@@ -5,7 +5,6 @@ import {
   type IDatabaseDriver,
   type EntityManager,
   type MikroORM,
-  type IndexDef,
   JsonProperty,
   raw,
   Type,

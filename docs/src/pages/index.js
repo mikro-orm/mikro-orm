@@ -37,7 +37,7 @@ const features = [
     imageUrl: 'img/icons/creative-idea.svg',
     description: (
       <>
-        Supports <Link to="/docs/usage-with-mongo">MongoDB</Link>, <Link to="/docs/usage-with-sql">MySQL, MariaDB, PostgreSQL and SQLite (including libSQL)</Link> databases, and more can be supported via custom drivers right now.
+        Supports <Link to="/docs/usage-with-mongo">MongoDB</Link>, <Link to="/docs/usage-with-sql">MySQL, MariaDB, PostgreSQL, MS SQL Server, and SQLite (including libSQL)</Link> databases, and more can be supported via custom drivers right now.
       </>
     ),
   },
