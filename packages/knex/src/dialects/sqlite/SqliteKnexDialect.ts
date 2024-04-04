@@ -1,5 +1,5 @@
 import { SqliteTableCompiler } from './SqliteTableCompiler';
-import { MonkeyPatchable } from '../MonkeyPatchable';
+import { MonkeyPatchable } from '../../MonkeyPatchable';
 
 export class SqliteKnexDialect extends MonkeyPatchable.Sqlite3Dialect {
 

@@ -1,10 +1,10 @@
 import { SqliteTableCompiler } from './SqliteTableCompiler';
-import { MonkeyPatchable } from '../MonkeyPatchable';
+import { MonkeyPatchable } from '../../MonkeyPatchable';
 
-export class LibSqlKnexDialect extends MonkeyPatchable.BetterSqlite3Dialect {
+export class BetterSqliteKnexDialect extends MonkeyPatchable.BetterSqlite3Dialect {
 
   _driver() {
-    return require('libsql');
+    return require('better-sqlite3');
   }
 
   tableCompiler() {

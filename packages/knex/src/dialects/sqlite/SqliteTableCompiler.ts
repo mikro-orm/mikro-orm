@@ -1,5 +1,5 @@
 import type { Dictionary } from '@mikro-orm/core';
-import { MonkeyPatchable } from '../MonkeyPatchable';
+import { MonkeyPatchable } from '../../MonkeyPatchable';
 
 export class SqliteTableCompiler extends MonkeyPatchable.Sqlite3DialectTableCompiler {
 
