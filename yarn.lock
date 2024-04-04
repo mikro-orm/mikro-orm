@@ -1102,7 +1102,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.1.12"
     "@mikro-orm/knex": "npm:6.1.12"
-    better-sqlite3: "npm:9.4.4"
+    better-sqlite3: "npm:9.4.5"
     fs-extra: "npm:11.2.0"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
@@ -1188,7 +1188,7 @@ __metadata:
     "@mikro-orm/mongodb": "npm:6.1.12"
     fs-extra: "npm:11.2.0"
     mongodb: "npm:6.5.0"
-    umzug: "npm:3.7.0"
+    umzug: "npm:3.8.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1201,7 +1201,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.1.12"
     "@mikro-orm/knex": "npm:6.1.12"
     fs-extra: "npm:11.2.0"
-    umzug: "npm:3.7.0"
+    umzug: "npm:3.8.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1279,7 +1279,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.12"
-    "@types/node": "npm:20.12.3"
+    "@types/node": "npm:20.12.4"
     "@types/pg": "npm:8.11.4"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:9.0.8"
@@ -2217,12 +2217,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.12.3":
-  version: 20.12.3
-  resolution: "@types/node@npm:20.12.3"
+"@types/node@npm:20.12.4":
+  version: 20.12.4
+  resolution: "@types/node@npm:20.12.4"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 10/3f3c5c6ba118a18aa997c51cdc3c66259d69021f87475a99ed6c913a6956e22de49748e09843bf6447a7a63ae474e61945a6dbcca93e23b2359fc0b6f9914f7a
+  checksum: 10/eab4ed07774b96ea77fc23eb27508dbfe094b52c8326764f5044c609c036a1570fd8708ba770e13db7ad7b69d8a834bf3a4e59fc2f1ade31d6501db76cf5a39b
   languageName: node
   linkType: hard
 
@@ -3007,14 +3007,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:9.4.4":
-  version: 9.4.4
-  resolution: "better-sqlite3@npm:9.4.4"
+"better-sqlite3@npm:9.4.5":
+  version: 9.4.5
+  resolution: "better-sqlite3@npm:9.4.5"
   dependencies:
     bindings: "npm:^1.5.0"
     node-gyp: "npm:latest"
     prebuild-install: "npm:^7.1.1"
-  checksum: 10/9d6f16e33e6db3ed1876fb6f80a16a32cad5d004c9af3fa884004b6c8bcba2f2b2a2eadc4db78f5c005d7b7ab92c23c65545f22b799e636a549eea53f0fe2956
+  checksum: 10/bca9c8e5d48062c5dfd0555c727d5a6da7fae0ba82a7d64f32fbc7b229a62d68789e8ca697d80b0c6b56a31a18267c5ecfe816d93fc9f0f417d740f64b691440
   languageName: node
   linkType: hard
 
@@ -5272,7 +5272,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^8.0.1, glob@npm:^8.0.3":
+"glob@npm:^8.0.1":
   version: 8.1.0
   resolution: "glob@npm:8.1.0"
   dependencies:
@@ -10979,16 +10979,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"umzug@npm:3.7.0":
-  version: 3.7.0
-  resolution: "umzug@npm:3.7.0"
+"umzug@npm:3.8.0":
+  version: 3.8.0
+  resolution: "umzug@npm:3.8.0"
   dependencies:
     "@rushstack/ts-command-line": "npm:^4.12.2"
     emittery: "npm:^0.13.0"
-    glob: "npm:^8.0.3"
+    fast-glob: "npm:^3.3.2"
     pony-cause: "npm:^2.1.4"
     type-fest: "npm:^4.0.0"
-  checksum: 10/2cd3ce78dfa473ae41bed7a0819710caef8fa5ed7a625a42b5f877610bfaa31bf2e99bb92d782d59d01db975f686bffdb60e4bcbf98b524434fc27eb43f56946
+  checksum: 10/e1ce351e08c4dd411b73805b2684673578537cb70cba1e58305f74f63fddaf78474d2dd756643a2e0c39c33ff8b98bc1b72b624ae117783548301c6deee7f8ac
   languageName: node
   linkType: hard
 
