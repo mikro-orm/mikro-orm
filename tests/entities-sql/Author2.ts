@@ -75,54 +75,54 @@ export class Author2 extends BaseEntity2 {
   @Property()
   name: string;
 
-  @Property({ unique: 'custom_email_unique_name' })
+  @Property({ unique: 'custom_email_unique_name', groups: ['personal', 'admin'] })
   @Index({ name: 'custom_email_index_name' })
   email: string;
 
-  @Property({ nullable: true, default: null })
+  @Property({ nullable: true, default: null, groups: ['personal', 'admin'] })
   age?: number;
 
   @Index()
-  @Property()
+  @Property({ groups: ['admin'] })
   termsAccepted: Opt<boolean> = false;
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, groups: ['personal'] })
   optional?: boolean;
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, groups: ['admin'] })
   identities?: string[];
 
-  @Property({ type: 'date', index: true, nullable: true })
+  @Property({ type: 'date', index: true, nullable: true, groups: ['personal', 'admin'] })
   born?: string;
 
-  @Property({ type: t.time, index: 'born_time_idx', nullable: true })
+  @Property({ type: t.time, index: 'born_time_idx', nullable: true, groups: ['personal', 'admin'] })
   bornTime?: string;
 
-  @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
+  @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC }, groups: ['personal'] })
   books = new Collection<Book2>(this);
 
-  @OneToMany({ entity: () => Book2, mappedBy: 'author', strategy: LoadStrategy.JOINED, orderBy: { title: QueryOrder.ASC } })
+  @OneToMany({ entity: () => Book2, mappedBy: 'author', strategy: LoadStrategy.JOINED, orderBy: { title: QueryOrder.ASC }, groups: ['personal'] })
   books2 = new Collection<Book2>(this);
 
-  @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL] })
+  @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL], groups: ['personal', 'admin'] })
   address?: Address2;
 
-  @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend' })
+  @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', groups: ['personal'] })
   friends = new Collection<Author2>(this);
 
-  @ManyToMany(() => Author2)
+  @ManyToMany(() => Author2, undefined, { groups: ['personal'] })
   following = new Collection<Author2>(this);
 
-  @ManyToMany(() => Author2, a => a.following)
+  @ManyToMany(() => Author2, a => a.following, { groups: ['personal'] })
   followers = new Collection<Author2>(this);
 
-  @ManyToOne({ nullable: true, updateRule: 'no action', deleteRule: 'cascade' })
+  @ManyToOne({ nullable: true, updateRule: 'no action', deleteRule: 'cascade', groups: ['personal'] })
   favouriteBook?: Book2;
 
-  @ManyToOne(() => Author2, { nullable: true })
+  @ManyToOne(() => Author2, { nullable: true, groups: ['personal'] })
   favouriteAuthor?: Author2 | null;
 
-  @Embedded(() => Identity, { nullable: true, object: true })
+  @Embedded(() => Identity, { nullable: true, object: true, groups: ['personal', 'admin'] })
   identity?: Identity;
 
   @Property({ persist: false })
@@ -131,7 +131,7 @@ export class Author2 extends BaseEntity2 {
   @Property({ persist: false })
   versionAsString!: string & Opt;
 
-  @Property({ persist: false })
+  @Property({ persist: false, groups: ['admin'] })
   code!: string & Opt;
 
   @Property({ persist: false })
@@ -191,12 +191,12 @@ export class Author2 extends BaseEntity2 {
     Author2.afterDestroyCalled += 1;
   }
 
-  @Property({ name: 'code' })
+  @Property({ name: 'code', groups: ['admin'] })
   getCode(): string & Opt {
     return `${this.email} - ${this.name}`;
   }
 
-  @Property({ persist: false })
+  @Property({ persist: false, groups: ['admin'] })
   get code2(): string & Opt {
     return `${this.email} - ${this.name}`;
   }

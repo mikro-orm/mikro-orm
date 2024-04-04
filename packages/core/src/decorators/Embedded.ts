@@ -29,4 +29,5 @@ export type EmbeddedOptions = {
   hidden?: boolean;
   serializer?: (value: any) => any;
   serializedName?: string;
+  groups?: string[];
 };
