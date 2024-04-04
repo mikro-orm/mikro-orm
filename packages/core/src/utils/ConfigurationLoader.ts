@@ -179,6 +179,7 @@ export class ConfigurationLoader {
     const PLATFORMS = {
       'mongo': { className: 'MongoDriver', module: '@mikro-orm/mongodb' },
       'mysql': { className: 'MySqlDriver', module: '@mikro-orm/mysql' },
+      'mssql': { className: 'MsSqlDriver', module: '@mikro-orm/mssql' },
       'mariadb': { className: 'MariaDbDriver', module: '@mikro-orm/mariadb' },
       'postgresql': { className: 'PostgreSqlDriver', module: '@mikro-orm/postgresql' },
       'sqlite': { className: 'SqliteDriver', module: '@mikro-orm/sqlite' },
