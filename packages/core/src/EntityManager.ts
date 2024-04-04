@@ -25,7 +25,6 @@ import type {
   CountOptions,
   DeleteOptions,
   EntityField,
-  EntityManagerType,
   FindAllOptions,
   FindByCursorOptions,
   FindOneOptions,
@@ -1222,7 +1221,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Runs your callback wrapped inside a database transaction.
    */
-  async transactional<T>(cb: (em: Driver[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
+  async transactional<T>(cb: (em: this) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
     const em = this.getContext(false);
 
     if (this.disableTransactions) {
@@ -1836,7 +1835,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Returns new EntityManager instance with its own identity map
    */
-  fork(options: ForkOptions = {}): Driver[typeof EntityManagerType] {
+  fork(options: ForkOptions = {}): this {
     const em = options.disableContextResolution ? this : this.getContext(false);
     options.clear ??= true;
     options.useContext ??= false;
@@ -1872,7 +1871,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    return fork;
+    return fork as this;
   }
 
   /**
