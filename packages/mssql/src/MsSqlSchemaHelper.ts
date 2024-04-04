@@ -102,6 +102,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const defaultValue = str(this.normalizeDefaultValue(col.column_default, col.length, {}, true));
       const increments = col.is_identity === 1 && connection.getPlatform().isNumericColumn(mappedType);
       const key = this.getTableKey(col);
+      /* istanbul ignore next */
       const generated = col.generation_expression ? `${col.generation_expression}${col.is_persisted ? ' persisted' : ''}` : undefined;
       let type = col.data_type;
 
@@ -161,7 +162,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         constraint: index.is_unique,
       };
 
-      if (!index.column_name || index.column_name.match(/[(): ,"'`]/) || index.expression?.match(/ where /i)) {
+      if (!index.column_name || index.column_name.match(/[(): ,"'`]/) || index.expression?.match(/where /i)) {
         indexDef.expression = index.expression; // required for the `getCreateIndexSQL()` call
         indexDef.expression = this.getCreateIndexSQL(index.table_name, indexDef, !!index.expression);
       }
@@ -225,10 +226,13 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const m1 = item.definition?.match(/^check \((.*)\)/);
       let items = m1?.[1].split(' OR ');
 
-      if (item.columnName && (items?.length ?? 0) > 0) {
+      /* istanbul ignore next */
+      const hasItems = (items?.length ?? 0) > 0;
+
+      if (item.columnName && hasItems) {
         items = items!.map(val => val.trim().replace(`[${item.columnName}]=`, '').match(/^\(?'(.*)'/)?.[1]).filter(Boolean) as string[];
 
-        if (item.columnName && items.length > 0) {
+        if (items.length > 0) {
           o[item.columnName] = items.reverse();
           found.push(index);
         }

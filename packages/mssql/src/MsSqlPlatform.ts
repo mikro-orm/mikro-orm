@@ -12,7 +12,6 @@ import {
   ALIAS_REPLACEMENT,
   type Primary,
   type IPrimaryKey,
-  type SimpleColumnMeta,
 } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
