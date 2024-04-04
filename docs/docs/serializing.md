@@ -221,6 +221,9 @@ interface SerializeOptions<T extends object, P extends string = never, E extends
 
   /** Skip properties with `null` value. */
   skipNull?: boolean;
+
+  /** Only include properties for a specific group. If a property does not specify any group, it will be included, otherwise only properties with a matching group are included. */
+  groups?: string[];
 }
 ```
 
@@ -238,3 +241,44 @@ const dto = wrap(author).serialize({
 ```
 
 If you try to populate a relation that is not initialized, it will have same effect as the `forceObject` option - the value will be represented as object with just the primary key available.
+
+### Serialization groups
+
+Every property can specify its serialization groups, which are then used with explicit serialization.
+
+> Properties without the `groups` option are always included.
+
+Let's consider the following entity:
+
+```ts
+@Entity()
+class User {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  username!: string;
+
+  @Property({ groups: ['public', 'private'] })
+  name!: string;
+
+  @Property({ groups: ['private'] })
+  email!: string;
+
+}
+```
+
+Now when you call `serialize()`:
+- without the `groups` option, you get all the properties
+- with `groups: ['public']` you get `id`, `username` and `name` properties
+- with `groups: ['private']` you get `id`, `username`, `name` and `email` properties
+- with `groups: []` you get only the `id` and `username` properties (those without groups) 
+
+```ts
+const dto1 = serialize(user);
+// User { id: 1, username: 'foo', name: 'Jon', email: 'jon@example.com' }
+
+const dto2 = serialize(user, { groups: ['public'] });
+// User { id: 1, username: 'foo', name: 'Jon' }
+```

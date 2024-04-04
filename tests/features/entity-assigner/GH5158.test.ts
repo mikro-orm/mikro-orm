@@ -24,6 +24,9 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: '5158',
     entities: [User],
+    assign: {
+      mergeObjectProperties: true,
+    },
   });
 });
 

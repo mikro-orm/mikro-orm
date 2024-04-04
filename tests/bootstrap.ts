@@ -14,6 +14,7 @@ import { MySqlDriver } from '@mikro-orm/mysql';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { LibSqlDriver } from '@mikro-orm/libsql';
 import { MsSqlDriver } from '@mikro-orm/mssql';
 
 import {
@@ -233,12 +234,17 @@ export async function initORMSqlite() {
   return orm;
 }
 
-export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite') {
+export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' | 'libsql' = 'sqlite') {
+  const drivers = {
+    'sqlite': SqliteDriver,
+    'better-sqlite': BetterSqliteDriver,
+    'libsql': LibSqlDriver,
+  };
   const orm = MikroORM.initSync<any>({
     entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, IdentitySchema],
     dbName: ':memory:',
     baseDir: BASE_DIR,
-    driver: type === 'sqlite' ? SqliteDriver : BetterSqliteDriver,
+    driver: drivers[type],
     debug: ['query'],
     forceUndefined: true,
     logger: i => i,

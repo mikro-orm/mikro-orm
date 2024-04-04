@@ -25,6 +25,9 @@ test('using custom EM class', async () => {
   });
   await orm.schema.createSchema();
   expect(orm.em).toBeInstanceOf(MyEntityManager);
+  const fork = orm.em.fork();
+  expect(fork).toBeInstanceOf(MyEntityManager);
+  orm.em = fork; // just to test assignability
   const res = orm.em.myCustomMethod(123);
   expect(typeof res).toBe('number');
   await orm.close();

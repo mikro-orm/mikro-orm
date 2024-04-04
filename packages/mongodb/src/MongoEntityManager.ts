@@ -1,4 +1,4 @@
-import { EntityManager, Utils, type EntityName, type EntityRepository, type GetRepository, type TransactionOptions, type EntityManagerType } from '@mikro-orm/core';
+import { EntityManager, Utils, type EntityName, type EntityRepository, type GetRepository, type TransactionOptions } from '@mikro-orm/core';
 import type { Collection, Document, TransactionOptions as MongoTransactionOptions } from 'mongodb';
 import type { MongoDriver } from './MongoDriver';
 import type { MongoEntityRepository } from './MongoEntityRepository';
@@ -37,7 +37,7 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
   /**
    * @inheritDoc
    */
-  override async transactional<T>(cb: (em: Driver[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions & MongoTransactionOptions = {}): Promise<T> {
+  override async transactional<T>(cb: (em: this) => Promise<T>, options: TransactionOptions & MongoTransactionOptions = {}): Promise<T> {
     return super.transactional(cb, options);
   }
 

@@ -184,6 +184,7 @@ export class ConfigurationLoader {
       'postgresql': { className: 'PostgreSqlDriver', module: '@mikro-orm/postgresql' },
       'sqlite': { className: 'SqliteDriver', module: '@mikro-orm/sqlite' },
       'better-sqlite': { className: 'BetterSqliteDriver', module: '@mikro-orm/better-sqlite' },
+      'libsql': { className: 'LibSqlDriver', module: '@mikro-orm/libsql' },
     } as Dictionary;
 
     const array = (v: string) => v.split(',').map(vv => vv.trim());

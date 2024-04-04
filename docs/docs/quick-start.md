@@ -26,6 +26,9 @@ npm install @mikro-orm/core @mikro-orm/sqlite
 
 # for better-sqlite
 npm install @mikro-orm/core @mikro-orm/better-sqlite
+
+# for libsql
+npm install @mikro-orm/core @mikro-orm/libsql
 ```
 
 Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) as well as `esModuleInterop` in `tsconfig.json` via:

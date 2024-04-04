@@ -24,6 +24,12 @@ import { SerializationContext } from './SerializationContext';
 import { RawQueryFragment } from '../utils/RawQueryFragment';
 
 function isVisible<T extends object>(meta: EntityMetadata<T>, propName: EntityKey<T>, options: SerializeOptions<T, any, any>): boolean {
+  const prop = meta.properties[propName];
+
+  if (options.groups && prop?.groups) {
+     return prop.groups.some(g => options.groups!.includes(g));
+  }
+
   if (Array.isArray(options.populate) && options.populate?.find(item => item === propName || item.startsWith(propName + '.') || item === '*')) {
     return true;
   }
@@ -32,7 +38,6 @@ function isVisible<T extends object>(meta: EntityMetadata<T>, propName: EntityKe
     return false;
   }
 
-  const prop = meta.properties[propName];
   const visible = prop && !prop.hidden;
   const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
 
@@ -274,6 +279,9 @@ export interface SerializeOptions<T, P extends string = never, E extends string 
 
   /** Skip properties with `null` value. */
   skipNull?: boolean;
+
+  /** Only include properties for a specific group. If a property does not specify any group, it will be included, otherwise only properties with a matching group are included. */
+  groups?: string[];
 }
 
 /**

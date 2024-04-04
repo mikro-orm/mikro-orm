@@ -43,6 +43,58 @@ test('explicit serialization with ORM BaseEntity', async () => {
   });
 });
 
+test('explicit serialization with groups', async () => {
+  const { god, author, publisher, book1, book2, book3 } = await createEntities();
+  const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] })!;
+  jon.age = 34;
+
+  const o1 = wrap(jon).serialize({ groups: [] });
+  expect(o1).toEqual({
+    id: jon.id,
+    createdAt: jon.createdAt,
+    updatedAt: jon.updatedAt,
+    name: 'Jon Snow',
+  });
+  const o2 = wrap(jon).serialize({ groups: ['personal'] });
+  expect(o2).toEqual({
+    id: jon.id,
+    createdAt: jon.createdAt,
+    updatedAt: jon.updatedAt,
+    books: [book1.uuid, book2.uuid, book3.uuid],
+    books2: [book1.uuid, book2.uuid, book3.uuid],
+    favouriteBook: jon.favouriteBook!.uuid,
+    born: '1990-03-23',
+    email: 'snow@wall.st',
+    name: 'Jon Snow',
+    age: 34,
+    address: null,
+    identity: null,
+    optional: null,
+    bornTime: null,
+    favouriteAuthor: null,
+    followers: [],
+    following: [],
+    friends: [],
+  });
+  const o3 = wrap(jon).serialize({ groups: ['admin'] });
+  expect(o3).toEqual({
+    id: jon.id,
+    createdAt: jon.createdAt,
+    updatedAt: jon.updatedAt,
+    name: 'Jon Snow',
+    email: 'snow@wall.st',
+    age: 34,
+    termsAccepted: false,
+    identities: null,
+    born: '1990-03-23',
+    bornTime: null,
+    address: null,
+    identity: null,
+    code: 'snow@wall.st - Jon Snow',
+    code2: 'snow@wall.st - Jon Snow',
+  });
+});
+
 test('explicit serialization', async () => {
   const { god, author, publisher, book1, book2, book3 } = await createEntities();
   const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] })!;

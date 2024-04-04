@@ -1,6 +1,7 @@
-import 'reflect-metadata';
 import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
+import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { LibSqlDriver } from '@mikro-orm/libsql';
 
 @Entity()
 class Profile {
@@ -29,14 +30,20 @@ class User2 {
 
 }
 
-describe('adding FK column (GH 942)', () => {
+const drivers = {
+  'sqlite': SqliteDriver,
+  'better-sqlite': BetterSqliteDriver,
+  'libsql': LibSqlDriver,
+};
 
-  let orm: MikroORM<SqliteDriver>;
+describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('adding FK column (GH 942, %s)', driver => {
+
+  let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init({
+    orm = await MikroORM.init<any>({
       entities: [User, Profile],
-      driver: SqliteDriver,
+      driver: drivers[driver],
       dbName: ':memory:',
     });
     await orm.schema.createSchema();

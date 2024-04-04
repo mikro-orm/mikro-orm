@@ -24,6 +24,11 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
    * If you omit the `options` parameter, your CLI config will be used.
    */
   static async init<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager>(options?: Options<D, EM>): Promise<MikroORM<D, EM>> {
+    // for back-compatibility only, used by @mikro-orm/nestjs v5
+    if (options as any instanceof Configuration) {
+      options = (options as any as Configuration).getAll() as Options<D, EM>;
+    }
+
     ConfigurationLoader.registerDotenv(options);
     const coreVersion = await ConfigurationLoader.checkPackageVersion();
     const env = ConfigurationLoader.loadEnvironmentVars<D>();
@@ -72,6 +77,11 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
    * - no check for mismatched package versions
    */
   static initSync<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager>(options: Options<D, EM>): MikroORM<D, EM> {
+    // for back-compatibility only, used by @mikro-orm/nestjs v5
+    if (options as any instanceof Configuration) {
+      options = (options as any as Configuration).getAll() as Options<D, EM>;
+    }
+
     ConfigurationLoader.registerDotenv(options);
     const env = ConfigurationLoader.loadEnvironmentVars<D>();
     options = Utils.merge(options, env);
