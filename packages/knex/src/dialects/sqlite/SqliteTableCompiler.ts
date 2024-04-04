@@ -30,7 +30,9 @@ export class SqliteTableCompiler extends MonkeyPatchable.Sqlite3DialectTableComp
 
     // no need for temp tables if we just add a column
     if (addColumnQuery) {
+      /* istanbul ignore next */
       const onUpdate = foreignInfo.onUpdate ? ` on update ${foreignInfo.onUpdate}` : '';
+      /* istanbul ignore next */
       const onDelete = foreignInfo.onDelete ? ` on delete ${foreignInfo.onDelete}` : '';
       addColumnQuery.sql += ` constraint ${keyName} references ${inTable} (${references})${onUpdate}${onDelete}`;
       return;

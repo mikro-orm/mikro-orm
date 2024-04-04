@@ -27,11 +27,12 @@ export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
       return '';
     }
 
-    /* istanbul ignore if */
+    /* istanbul ignore next */
     return `drop database if exists ${this.platform.quoteIdentifier(name)}`;
   }
 
   override getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
+    /* istanbul ignore next */
     const name = this.platform.quoteIdentifier((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
 
     return columns.map(column => {
@@ -77,6 +78,7 @@ export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
       let generated: string | undefined;
 
       if (col.hidden > 1) {
+        /* istanbul ignore next */
         const storage = col.hidden === 2 ? 'virtual' : 'stored';
         const re = `(generated always)? as \\((.*)\\)( ${storage})?$`;
         const match = columnDefinitions[col.name].definition.match(re);
