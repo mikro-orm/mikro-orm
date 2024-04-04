@@ -79,6 +79,7 @@ describe('DatabaseDriver', () => {
     const e1 = driver.convertException(new Error('test'));
     const e2 = driver.convertException(e1);
     expect(e1).toBe(e2);
+    driver.getPlatform().lookupExtensions({} as any);
   });
 
   test('not supported', async () => {

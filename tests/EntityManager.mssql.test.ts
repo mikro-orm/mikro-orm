@@ -90,6 +90,13 @@ describe('EntityManagerMsSql', () => {
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
     await expect(driver.find(BookTag2.name, { books: { $in: [uuid1] } })).resolves.not.toBeNull();
 
+    const conn = driver.getConnection();
+    const tx = await conn.begin();
+    await conn.execute('select 1', [], 'all', tx);
+    await conn.execute(orm.em.getKnex().raw('select 1'), [], 'all', tx);
+    await conn.execute(orm.em.getRepository(Author2).getKnex().raw('select 1'), [], 'all', tx);
+    await conn.commit(tx);
+
     // multi inserts
     await driver.nativeInsert(Test2.name, { id: 1, name: 't1' });
     await driver.nativeInsert(Test2.name, { id: 2, name: 't2' });

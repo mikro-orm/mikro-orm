@@ -37,6 +37,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override convertDateToJSValue(value: string | Date): string {
+    /* istanbul ignore next */
     if (typeof value === 'string') {
       return value;
     }
@@ -56,7 +57,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return `current_timestamp`;
   }
 
-  override getDateTimeTypeDeclarationSQL(column: { length?: number } = { length: 0 }): string {
+  override getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
     return 'datetime2' + (column.length != null ? `(${column.length})` : '');
   }
 
@@ -106,7 +107,8 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       return this.getVarcharTypeDeclarationSQL({ length: 100, ...column });
     }
 
-    return `smallint`;
+    /* istanbul ignore next */
+    return this.getSmallIntTypeDeclarationSQL(column);
   }
 
   override getDefaultMappedType(type: string): Type<unknown> {
@@ -170,14 +172,6 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     }
 
     return cast(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
-  }
-
-  override getJsonIndexDefinition(index: IndexDef): string[] {
-    return index.columnNames
-      .map(column => {
-        const [root, ...path] = column.split('.');
-        return `json_value(${root}, '$.${path.join('.')}')`;
-      });
   }
 
   override normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | string): T {

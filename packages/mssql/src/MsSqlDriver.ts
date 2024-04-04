@@ -40,8 +40,6 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       const sql = `merge into ${tableName} using (${using2}) s on 1 = 0 when not matched then insert default values ${output};`;
 
       const res = await this.execute<QueryResult<T>>(sql, [], 'run', options.ctx);
-
-      const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
       const pks = this.getPrimaryKeyFields(entityName);
       let pk: any[];
 
@@ -53,10 +51,6 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
         res.rows ??= [];
         pk = data.map((d, i) => d[pks[0]] ?? res.rows![i]?.[pks[0]]).map(d => [d]);
         res.insertId = res.insertId || res.row![pks[0]];
-      }
-
-      for (let i = 0; i < collections.length; i++) {
-        await this.processManyToMany<T>(meta, pk[i], collections[i], false, options);
       }
 
       return res;
