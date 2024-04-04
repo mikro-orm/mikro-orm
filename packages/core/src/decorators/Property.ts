@@ -235,6 +235,11 @@ export type PropertyOptions<Owner> = {
    */
   serializedName?: string;
   /**
+   * Specify serialization groups for `serialize()` calls. If a property does not specify any group, it will be included,
+   * otherwise only properties with a matching group are included.
+   */
+  groups?: string[];
+  /**
    * Specify a custom order based on the values. (SQL only)
    */
   customOrder?: string[] | number[] | boolean[];

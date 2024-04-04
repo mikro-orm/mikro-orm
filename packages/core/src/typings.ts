@@ -422,6 +422,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   returning?: boolean;
   primary?: boolean;
   serializedPrimaryKey: boolean;
+  groups?: string[];
   lazy?: boolean;
   array?: boolean;
   length?: number;
