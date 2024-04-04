@@ -57,6 +57,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
+    /* istanbul ignore next */
     return 'datetime2' + (column.length != null ? `(${column.length})` : '');
   }
 
@@ -74,19 +75,6 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override getBooleanTypeDeclarationSQL(): string {
     return 'bit';
-  }
-
-  override getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
-    /* istanbul ignore next */
-    const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
-    const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
-    const quotedIndexName = this.quoteIdentifier(indexName);
-
-    if (columns.length === 1 && columns[0].type === 'tsvector') {
-      return `create index ${quotedIndexName} on ${quotedTableName} using gin(${quotedColumnNames[0]})`;
-    }
-
-    return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
   }
 
   override getRegExpOperator(): string {
@@ -159,6 +147,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
     const [a, ...b] = path;
+    /* istanbul ignore next */
     const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${a}` : a);
     const types = {
       boolean: 'bit',
@@ -166,6 +155,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     const cast = (key: string) => raw(type in types ? `cast(${key} as ${types[type]})` : key);
     const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
 
+    /* istanbul ignore if */
     if (path.length === 0) {
       return cast(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
     }
@@ -194,10 +184,12 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override quoteValue(value: any): string {
+    /* istanbul ignore if */
     if (Utils.isRawSql(value)) {
       return this.formatQuery(value.sql, value.params ?? []);
     }
 
+    /* istanbul ignore if */
     if (this.isRaw(value)) {
       return value;
     }

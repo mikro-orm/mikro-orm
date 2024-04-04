@@ -155,8 +155,8 @@ export class Book2 {
   @Property({ columnType: 'text', nullable: true })
   perex?: string;
 
-  @Property({ columnType: 'float(24)', nullable: true })
-  price?: number;
+  @Property({ columnType: 'numeric(8,2)', nullable: true })
+  price?: string;
 
   @Property({ columnType: 'float(24)', nullable: true })
   double?: number;

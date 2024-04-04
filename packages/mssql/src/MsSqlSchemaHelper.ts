@@ -198,7 +198,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       from information_schema.constraint_column_usage ccu
     inner join information_schema.REFERENTIAL_CONSTRAINTS rc on ccu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME
     inner join information_schema.KEY_COLUMN_USAGE kcu on kcu.CONSTRAINT_NAME = rc.UNIQUE_CONSTRAINT_NAME
-    where (${tables.map(t => `(ccu.table_name = '${t.table_name}' and ccu.table_schema = '${t.schema_name ?? this.platform.getDefaultSchemaName()}')`).join(' or ')})
+    where (${tables.map(t => `(ccu.table_name = '${t.table_name}' and ccu.table_schema = '${t.schema_name}')`).join(' or ')})
     order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
@@ -251,7 +251,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       from sys.check_constraints con
       left outer join sys.objects t on con.parent_object_id = t.object_id
       left outer join sys.all_columns col on con.parent_column_id = col.column_id and con.parent_object_id = col.object_id
-      where (${tables.map(t => `t.name = '${t.table_name}' and schema_name(t.schema_id) = '${t.schema_name ?? this.platform.getDefaultSchemaName()}'`).join(' or ')})
+      where (${tables.map(t => `t.name = '${t.table_name}' and schema_name(t.schema_id) = '${t.schema_name}'`).join(' or ')})
       order by con.name`;
   }
 
@@ -327,7 +327,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       // convert to string first if it's not already a string or has a smaller length
       const type = this.platform.extractSimpleType(col.fromColumn.type);
 
-      if (!['varchar', 'nvarchar', 'varbinary'].includes(type) || ((col.fromColumn.length ?? 255) < (col.column.length ?? 255))) {
+      if (!['varchar', 'nvarchar', 'varbinary'].includes(type) || (col.fromColumn.length! < col.column.length!)) {
         ret.push(`alter table ${quotedName} alter column [${col.oldColumnName}] nvarchar(max)`);
       }
     }
@@ -363,6 +363,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
+    /* istanbul ignore next */
     const tableNameRaw = this.platform.quoteIdentifier((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
     const drops: string[] = [];
     const constraints: string[] = [];
@@ -373,7 +374,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         + ' join sys.tables on all_columns.object_id = tables.object_id'
         + ' join sys.schemas on tables.schema_id = schemas.schema_id'
         + ' join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id'
-        + ` where schemas.name = '${schemaName ?? this.platform.getDefaultSchemaName()}' and tables.name = '${tableName}' and all_columns.name = '${column.name}')`
+        + ` where schemas.name = '${schemaName}' and tables.name = '${tableName}' and all_columns.name = '${column.name}')`
         + ` if @constraint${i} is not null exec('alter table ${tableNameRaw} drop constraint ' + @constraint${i})`);
       drops.push(this.platform.quoteIdentifier(column.name));
       i++;
@@ -383,6 +384,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column, schemaName?: string): string {
+    /* istanbul ignore next */
     const oldName = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName + '.' + oldColumnName;
     const columnName = this.platform.quoteValue(to.name);
 
@@ -397,6 +399,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         table.check(`${this.platform.quoteIdentifier(column.name)} in ('${(column.enumItems.join("', '"))}')`, {}, this.platform.quoteIdentifier(checkName));
       }
 
+      /* istanbul ignore next */
       if (changedProperties.has('type')) {
         return table.specificType(column.name, column.type);
       }

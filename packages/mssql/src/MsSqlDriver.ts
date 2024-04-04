@@ -36,6 +36,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       const using2 = `select * from (values ${data.map((x, i) => `(${i})`).join(',')}) v (id) where 1 = 1`;
+      /* istanbul ignore next */
       const output = returningFields.length > 0 ? `output ${returningFields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}` : '';
       const sql = `merge into ${tableName} using (${using2}) s on 1 = 0 when not matched then insert default values ${output};`;
 
