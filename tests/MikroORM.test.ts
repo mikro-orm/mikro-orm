@@ -19,7 +19,7 @@ import { Author2, Car2, CarOwner2, Sandwich, User2 } from './entities-sql';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver, SqlitePlatform } from '@mikro-orm/sqlite';
 import { MongoDriver } from '@mikro-orm/mongodb';
 
 describe('MikroORM', () => {
@@ -131,7 +131,7 @@ describe('MikroORM', () => {
     delete process.env.MIKRO_ORM_CLI_CONFIG;
   });
 
-  test('should prefer environment variables', async () => {
+  test('should prefer environment variables 1', async () => {
     process.env.MIKRO_ORM_ENV = __dirname + '/mikro-orm.env';
     const orm = await MikroORM.init({ driver: SqliteDriver, host: '123.0.0.321', connect: false });
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
@@ -153,6 +153,22 @@ describe('MikroORM', () => {
       migrations: { path: './dist/migrations', glob: '*.js' },
     });
     expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author4', 'Book4', 'BookTag4', 'FooBar4', 'FooBaz4', 'Identity', 'Publisher4', 'Test4', 'User4', 'publisher4_tests', 'tags_ordered', 'tags_unordered']);
+  });
+
+  test('should prefer environment variables 2 (GH #5413)', async () => {
+    process.env.MIKRO_ORM_ENV = __dirname + '/mikro-orm.env';
+    const orm = await MikroORM.init(new Configuration({ connect: false }, false) as any);
+    expect(orm.em.getDriver()).toBeInstanceOf(SqliteDriver);
+    expect(orm.em.getDriver().getPlatform()).toBeInstanceOf(SqlitePlatform);
+    Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
+  });
+
+  test('should prefer environment variables 3 (GH #5413)', async () => {
+    process.env.MIKRO_ORM_ENV = __dirname + '/mikro-orm2.env';
+    const orm = MikroORM.initSync(new Configuration({ entities: [Test] }, false) as any);
+    expect(orm.em.getDriver()).toBeInstanceOf(SqliteDriver);
+    expect(orm.em.getDriver().getPlatform()).toBeInstanceOf(SqlitePlatform);
+    Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
   });
 
   test('should work with dynamic passwords/tokens', async () => {
