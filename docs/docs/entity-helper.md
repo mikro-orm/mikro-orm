@@ -53,6 +53,8 @@ wrap(book).assign({ meta: { foo: 4 } });
 console.log(book.meta); // { foo: 4 }
 ```
 
+One exception to this rule is assigning to embedded properties. Those are by default merged with the data recursively. You can opt out of that via `mergeEmbeddedProperties` flag (which defaults to `true`).
+
 ### Updating deep entity graph
 
 Since v5, `assign` allows updating deep entity graph by default. To update existing entity, we need to provide its PK in the `data`, as well as to **load that entity first into current context**.
@@ -142,6 +144,20 @@ class UpdateAuthorDTO extends PlainObject {
 
 // dto is an instance of UpdateAuthorDto
 em.assign(user, dto);
+```
+
+### Global configuration
+
+Since v6.2, you can also configure how the `assign` helper works globally:
+
+```ts
+await MikroORM.init({
+  // default values:
+  updateNestedEntities: true,
+  updateByPrimaryKey: true,
+  mergeObjectProperties: false,
+  mergeEmbeddedProperties: true,
+});
 ```
 
 ## `WrappedEntity` and `wrap()` helper

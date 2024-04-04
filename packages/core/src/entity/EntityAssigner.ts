@@ -10,11 +10,11 @@ import type {
   EntityKey,
   EntityProperty,
   EntityValue,
+  FromEntityType,
+  IsSubset,
+  MergeSelected,
   Primary,
   RequiredEntityData,
-  IsSubset,
-  FromEntityType,
-  MergeSelected,
 } from '../typings';
 import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
@@ -44,9 +44,7 @@ export class EntityAssigner {
     opts.visited.add(entity);
     const wrapped = helper(entity);
     opts = {
-      updateNestedEntities: true,
-      updateByPrimaryKey: true,
-      mergeObjectProperties: true,
+      ...wrapped.__config.get('assign'),
       schema: wrapped.__schema,
       ...opts, // allow overriding the defaults
     };
@@ -266,9 +264,9 @@ export class EntityAssigner {
 
     const create = () => EntityAssigner.validateEM(em) && em!.getEntityFactory().createEmbeddable<T>(prop.type, value, {
       convertCustomTypes: options.convertCustomTypes,
-      newEntity: options.mergeObjectProperties ? !('propName' in entity) : true,
+      newEntity: options.mergeEmbeddedProperties ? !('propName' in entity) : true,
     });
-    entity[propName] = (options.mergeObjectProperties ? (entity[propName] || create()) : create()) as EntityValue<T>;
+    entity[propName] = (options.mergeEmbeddedProperties ? (entity[propName] || create()) : create()) as EntityValue<T>;
 
     Object.keys(value).forEach(key => {
       EntityAssigner.assignProperty(entity[propName], key, prop.embeddedProps, value, options);
@@ -308,6 +306,7 @@ export interface AssignOptions<Convert extends boolean> {
   onlyOwnProperties?: boolean;
   convertCustomTypes?: Convert;
   mergeObjectProperties?: boolean;
+  mergeEmbeddedProperties?: boolean;
   merge?: boolean;
   schema?: string;
   em?: EntityManager;

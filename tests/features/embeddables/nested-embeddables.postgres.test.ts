@@ -353,10 +353,11 @@ describe('embedded entities in postgres', () => {
     delete jon.profile1.identity.meta;
 
     orm.em.assign(jon, { profile1: { identity: { meta: { foo: 'f' } } } });
+    expect(jon.profile1.identity.email).toBe('e3');
     expect(jon.profile1.identity.meta!.foo).toBe('f');
     expect(jon.profile1.identity.meta).toBeInstanceOf(IdentityMeta);
 
-    orm.em.assign(jon, { profile1: { identity: { email: 'e4' } } }, { mergeObjectProperties: false });
+    orm.em.assign(jon, { profile1: { identity: { email: 'e4' } } }, { mergeEmbeddedProperties: false });
     expect(jon.profile1.username).toBeUndefined();
     expect(jon.profile1.identity.email).toBe('e4');
     expect(jon.profile1.identity.meta).toBeUndefined();

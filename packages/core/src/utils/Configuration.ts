@@ -31,6 +31,7 @@ import type { MetadataProvider } from '../metadata/MetadataProvider';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider';
 import type { EventSubscriber } from '../events';
+import type { AssignOptions } from '../entity/EntityAssigner';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
@@ -84,6 +85,12 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     populateAfterFlush: true,
     serialization: {
       includePrimaryKeys: true,
+    },
+    assign: {
+      updateNestedEntities: true,
+      updateByPrimaryKey: true,
+      mergeObjectProperties: false,
+      mergeEmbeddedProperties: true,
     },
     persistOnCreate: true,
     forceEntityConstructor: false,
@@ -549,6 +556,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
     /** Enforce unpopulated references to be returned as objects, e.g. `{ author: { id: 1 } }` instead of `{ author: 1 }`. */
     forceObject?: boolean;
   };
+  assign: AssignOptions<boolean>;
   persistOnCreate: boolean;
   forceEntityConstructor: boolean | (Constructor<AnyEntity> | string)[];
   forceUndefined: boolean;
