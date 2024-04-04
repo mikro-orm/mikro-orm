@@ -1,13 +1,12 @@
 import { ensureDir, readFile } from 'fs-extra';
 import { dirname } from 'path';
-import { AbstractSqlConnection, MonkeyPatchable, type Knex } from '@mikro-orm/knex';
-import { Utils, type Dictionary } from '@mikro-orm/core';
+import { AbstractSqlConnection, BetterSqliteKnexDialect, type Knex } from '@mikro-orm/knex';
+import { Utils } from '@mikro-orm/core';
 
 export class BetterSqliteConnection extends AbstractSqlConnection {
 
   override createKnex() {
-    this.getPatchedDialect();
-    this.client = this.createKnexClient('better-sqlite3');
+    this.client = this.createKnexClient(BetterSqliteKnexDialect as any);
     this.connected = true;
   }
 
@@ -64,140 +63,6 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
       insertId: res.lastInsertRowid,
       affectedRows: res.changes,
     } as unknown as T;
-  }
-
-  /**
-   * monkey patch knex' BetterSqlite Dialect so it returns inserted id when doing raw insert query
-   */
-  private getPatchedDialect() {
-    const { Sqlite3Dialect, Sqlite3DialectTableCompiler } = MonkeyPatchable;
-
-    if (Sqlite3Dialect.prototype.__patched) {
-      return Sqlite3Dialect;
-    }
-
-    const processResponse = Sqlite3Dialect.prototype.processResponse;
-    Sqlite3Dialect.prototype.__patched = true;
-    Sqlite3Dialect.prototype.processResponse = (obj: any, runner: any) => {
-      if (obj.method === 'raw' && this.isRunQuery(obj.sql)) {
-        return obj.response ?? obj.context;
-      }
-
-      return processResponse(obj, runner);
-    };
-
-    Sqlite3Dialect.prototype._query = (connection: any, obj: any) => {
-      const callMethod = this.getCallMethod(obj);
-
-      return new Promise((resolve: any, reject: any) => {
-        /* istanbul ignore if */
-        if (!connection?.[callMethod]) {
-          return reject(new Error(`Error calling ${callMethod} on connection.`));
-        }
-
-        connection[callMethod](obj.sql, obj.bindings, function (this: any, err: any, response: any) {
-          if (err) {
-            return reject(err);
-          }
-
-          obj.response = response;
-          obj.context = this;
-
-          return resolve(obj);
-        });
-      });
-    };
-
-    /* istanbul ignore next */
-    Sqlite3DialectTableCompiler.prototype.foreign = function (this: typeof Sqlite3DialectTableCompiler, foreignInfo: Dictionary) {
-      foreignInfo.column = this.formatter.columnize(foreignInfo.column);
-      foreignInfo.column = Array.isArray(foreignInfo.column)
-        ? foreignInfo.column
-        : [foreignInfo.column];
-      foreignInfo.column = foreignInfo.column.map((column: unknown) =>
-        this.client.customWrapIdentifier(column, (a: unknown) => a),
-      );
-      foreignInfo.inTable = this.client.customWrapIdentifier(
-        foreignInfo.inTable,
-        (a: unknown) => a,
-      );
-      foreignInfo.references = Array.isArray(foreignInfo.references)
-        ? foreignInfo.references
-        : [foreignInfo.references];
-      foreignInfo.references = foreignInfo.references.map((column: unknown) =>
-        this.client.customWrapIdentifier(column, (a: unknown) => a),
-      );
-      // quoted versions
-      const column = this.formatter.columnize(foreignInfo.column);
-      const inTable = this.formatter.columnize(foreignInfo.inTable);
-      const references = this.formatter.columnize(foreignInfo.references);
-      const keyName = this.formatter.columnize(foreignInfo.keyName);
-
-      const addColumnQuery = this.sequence.find((query: { sql: string }) => query.sql.includes(`add column ${column[0]}`));
-
-      // no need for temp tables if we just add a column
-      if (addColumnQuery) {
-        const onUpdate = foreignInfo.onUpdate ? ` on update ${foreignInfo.onUpdate}` : '';
-        const deleteRule = foreignInfo.deleteRule ? ` on delete ${foreignInfo.deleteRule}` : '';
-        addColumnQuery.sql += ` constraint ${keyName} references ${inTable} (${references})${onUpdate}${deleteRule}`;
-        return;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
-      const compiler = this;
-
-      if (this.method !== 'create' && this.method !== 'createIfNot') {
-        this.pushQuery({
-          sql: `PRAGMA table_info(${this.tableName()})`,
-          statementsProducer(pragma: any, connection: any) {
-            return compiler.client
-              .ddl(compiler, pragma, connection)
-              .foreign(foreignInfo);
-          },
-        });
-      }
-    };
-
-    return Sqlite3Dialect;
-  }
-
-  private isRunQuery(query: string): boolean {
-    query = query.trim().toLowerCase();
-
-    if ((query.startsWith('insert into') || query.startsWith('update ')) && query.includes(' returning ')) {
-      return false;
-    }
-
-    return query.startsWith('insert into') ||
-      query.startsWith('update') ||
-      query.startsWith('delete') ||
-      query.startsWith('truncate');
-  }
-
-  private getCallMethod(obj: any): string {
-    if (obj.method === 'raw') {
-      const query = obj.sql.trim().toLowerCase();
-
-      if ((query.startsWith('insert into') || query.startsWith('update ')) && query.includes(' returning ')) {
-        return 'all';
-      }
-
-      if (this.isRunQuery(query)) {
-        return 'run';
-      }
-    }
-
-    /* istanbul ignore next */
-    switch (obj.method) {
-      case 'insert':
-      case 'update':
-        return obj.returning ? 'all' : 'run';
-      case 'counter':
-      case 'del':
-        return 'run';
-      default:
-        return 'all';
-    }
   }
 
 }

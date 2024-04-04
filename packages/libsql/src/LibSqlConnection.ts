@@ -1,19 +1,19 @@
 import { ensureDir, readFile } from 'fs-extra';
 import { dirname } from 'path';
-import { AbstractSqlConnection, SqliteKnexDialect, type Knex } from '@mikro-orm/knex';
+import { AbstractSqlConnection, LibSqlKnexDialect, type Knex } from '@mikro-orm/knex';
 import { Utils } from '@mikro-orm/core';
 
-export class SqliteConnection extends AbstractSqlConnection {
+export class LibSqlConnection extends AbstractSqlConnection {
 
   override createKnex() {
-    this.client = this.createKnexClient(SqliteKnexDialect as any);
+    this.client = this.createKnexClient(LibSqlKnexDialect as any);
     this.connected = true;
   }
 
   override async connect(): Promise<void> {
     this.createKnex();
     await ensureDir(dirname(this.config.get('dbName')!));
-    await this.getKnex().raw('pragma foreign_keys = on');
+    await this.client.raw('pragma foreign_keys = on');
   }
 
   getDefaultClientUrl(): string {
@@ -25,9 +25,9 @@ export class SqliteConnection extends AbstractSqlConnection {
   }
 
   override async loadFile(path: string): Promise<void> {
-    const conn = await this.getKnex().client.acquireConnection();
+    const conn = await this.client.client.acquireConnection();
     await conn.exec((await readFile(path)).toString());
-    await this.getKnex().client.releaseConnection(conn);
+    await this.client.client.releaseConnection(conn);
   }
 
   protected override getKnexOptions(type: string): Knex.Config {
@@ -60,7 +60,7 @@ export class SqliteConnection extends AbstractSqlConnection {
     }
 
     return {
-      insertId: res.lastID,
+      insertId: res.lastInsertRowid,
       affectedRows: res.changes,
     } as unknown as T;
   }
