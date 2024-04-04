@@ -140,7 +140,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
               alias?: string,
               private connectionType?: ConnectionType,
               private readonly em?: SqlEntityManager,
-              private readonly loggerContext?: LoggingOptions) {
+              private loggerContext?: LoggingOptions & Dictionary) {
     this.platform = this.driver.getPlatform();
     this.knex = this.driver.getConnection(this.connectionType).getKnex();
 
@@ -785,7 +785,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     const write = method === 'run' || !this.platform.getConfig().get('preferReadReplicas');
     const type = this.connectionType || (write ? 'write' : 'read');
-    const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context, this.loggerContext);
+    const loggerContext = { id: this.em?.id, ...this.loggerContext };
+    const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context, loggerContext);
     const meta = this.mainAlias.metadata;
 
     if (!options.mapResults || !meta) {
@@ -1013,6 +1014,21 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     return qb;
+  }
+
+  /**
+   * Sets logger context for this query builder.
+   */
+  setLoggerContext(context: LoggingOptions & Dictionary): void {
+    this.loggerContext = context as LoggingOptions;
+  }
+
+  /**
+   * Gets logger context for this query builder.
+   */
+  getLoggerContext<T extends Dictionary & LoggingOptions = Dictionary>(): T {
+    this.loggerContext ??= {};
+    return this.loggerContext as T;
   }
 
   private fromVirtual<T extends object>(meta: EntityMetadata<T>): string {

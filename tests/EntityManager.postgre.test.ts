@@ -408,9 +408,24 @@ describe('EntityManagerPostgre', () => {
     await expect(orm.em.rollback()).rejects.toThrow('An open transaction is required for this operation');
   });
 
-  test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates]', async () => {
+  test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates2]', async () => {
     expect(Test2Subscriber.log).toEqual([]);
-    const a = await orm.em.createQueryBuilder(Test2).insert({ name: '123' });
+    const qb = orm.em.createQueryBuilder(Test2).insert({ name: '123' });
+    qb.setLoggerContext({ label: 'foo', bar: 123 });
+    expect(qb.getLoggerContext()).toEqual({ label: 'foo', bar: 123 });
+    const logSpy = jest.spyOn(DefaultLogger.prototype, 'log');
+    const a = await qb;
+    expect(logSpy).toHaveBeenCalledTimes(1);
+    expect(logSpy.mock.calls[0][2]).toMatchObject({
+      id: orm.em.id,
+      label: 'foo',
+      bar: 123,
+      query: expect.any(String),
+      affected: 1,
+      took: expect.any(Number),
+    });
+    logSpy.mockRestore();
+
     const r1 = await orm.em.createQueryBuilder(Test2).where({ name: '123' });
     orm.em.clear();
     const test = new Test2();
