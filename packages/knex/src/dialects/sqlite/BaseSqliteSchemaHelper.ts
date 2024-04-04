@@ -27,6 +27,7 @@ export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
       return '';
     }
 
+    /* istanbul ignore if */
     return `drop database if exists ${this.platform.quoteIdentifier(name)}`;
   }
 
