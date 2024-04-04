@@ -145,6 +145,7 @@ To select driver, you can either use `type` option, or provide the driver class 
 | `postgresql`    | `PostgreSqlDriver`   | `pg`             | compatible with CockroachDB |
 | `sqlite`        | `SqliteDriver`       | `sqlite3`        | -                           |
 | `better-sqlite` | `BetterSqliteDriver` | `better-sqlite3` | -                           |
+| `libsql`        | `LibSqlDriver`       | `libsql`         | -                           |
 
 > Driver and connection implementations are not directly exported from `@mikro-orm/core` module. You can import them from the driver packages (e.g. `import { PostgreSqlDriver } from '@mikro-orm/postgresql'`).
 

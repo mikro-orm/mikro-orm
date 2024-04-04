@@ -13,6 +13,8 @@ import PostgresDialectTableCompiler from 'knex/lib/dialects/postgres/schema/pg-t
 // @ts-ignore
 import Sqlite3Dialect from 'knex/lib/dialects/sqlite3';
 // @ts-ignore
+import BetterSqlite3Dialect from 'knex/lib/dialects/better-sqlite3';
+// @ts-ignore
 import Sqlite3DialectTableCompiler from 'knex/lib/dialects/sqlite3/schema/sqlite-tablecompiler';
 // @ts-ignore
 import TableCompiler from 'knex/lib/schema/tablecompiler';
@@ -30,5 +32,6 @@ export const MonkeyPatchable = {
   PostgresDialectTableCompiler,
   Sqlite3Dialect,
   Sqlite3DialectTableCompiler,
+  BetterSqlite3Dialect,
   TableCompiler,
 };

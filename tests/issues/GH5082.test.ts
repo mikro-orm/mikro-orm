@@ -9,7 +9,7 @@ import {
   ref,
   Ref,
   wrap,
-} from '@mikro-orm/sqlite';
+} from '@mikro-orm/libsql';
 
 @Entity()
 class Item {

@@ -2,15 +2,16 @@
 import { escape } from 'sqlstring-sqlite';
 import { JsonProperty, Utils, type EntityProperty } from '@mikro-orm/core';
 import { BaseSqlitePlatform } from '@mikro-orm/knex';
-import { SqliteSchemaHelper } from './SqliteSchemaHelper';
-import { SqliteExceptionConverter } from './SqliteExceptionConverter';
+import { LibSqlSchemaHelper } from './LibSqlSchemaHelper';
+import { LibSqlExceptionConverter } from './LibSqlExceptionConverter';
 
-export class SqlitePlatform extends BaseSqlitePlatform {
+export class LibSqlPlatform extends BaseSqlitePlatform {
 
-  protected override readonly schemaHelper: SqliteSchemaHelper = new SqliteSchemaHelper(this);
-  protected override readonly exceptionConverter = new SqliteExceptionConverter();
+  protected override readonly schemaHelper: LibSqlSchemaHelper = new LibSqlSchemaHelper(this);
+  protected override readonly exceptionConverter = new LibSqlExceptionConverter();
 
   override quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
+    /* istanbul ignore if */
     if (prop.runtimeType === 'Date') {
       return escape(value, true, this.timezone).replace(/^'|\.\d{3}'$/g, '');
     }

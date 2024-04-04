@@ -2,7 +2,7 @@
   <a href="https://mikro-orm.io"><img src="https://raw.githubusercontent.com/mikro-orm/mikro-orm/master/docs/static/img/logo-readme.svg?sanitize=true" alt="MikroORM" /></a>
 </h1>
 
-TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-orm.io/docs/unit-of-work/) and [Identity Map](https://mikro-orm.io/docs/identity-map/) patterns. Supports MongoDB, MySQL, MariaDB, PostgreSQL and SQLite databases. 
+TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-orm.io/docs/unit-of-work/) and [Identity Map](https://mikro-orm.io/docs/identity-map/) patterns. Supports MongoDB, MySQL, MariaDB, PostgreSQL and SQLite (including libSQL) databases. 
 
 > Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Hibernate](https://hibernate.org/).
 
@@ -175,21 +175,25 @@ First install the module via `yarn` or `npm` and do not forget to install the da
 > Since v4, you should install the driver package, but not the db connector itself, e.g. install `@mikro-orm/sqlite`, but not `sqlite3` as that is already included in the driver package.
 
 ```sh
-yarn add @mikro-orm/core @mikro-orm/mongodb     # for mongo
-yarn add @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
-yarn add @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
-yarn add @mikro-orm/core @mikro-orm/postgresql  # for postgresql
-yarn add @mikro-orm/core @mikro-orm/sqlite      # for sqlite
+yarn add @mikro-orm/core @mikro-orm/mongodb       # for mongo
+yarn add @mikro-orm/core @mikro-orm/mysql         # for mysql/mariadb
+yarn add @mikro-orm/core @mikro-orm/mariadb       # for mysql/mariadb
+yarn add @mikro-orm/core @mikro-orm/postgresql    # for postgresql
+yarn add @mikro-orm/core @mikro-orm/sqlite        # for sqlite
+yarn add @mikro-orm/core @mikro-orm/better-sqlite # for better-sqlite
+yarn add @mikro-orm/core @mikro-orm/libsql        # for libsql
 ```
 
 or
 
 ```sh
-npm i -s @mikro-orm/core @mikro-orm/mongodb     # for mongo
-npm i -s @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
-npm i -s @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
-npm i -s @mikro-orm/core @mikro-orm/postgresql  # for postgresql
-npm i -s @mikro-orm/core @mikro-orm/sqlite      # for sqlite
+npm i -s @mikro-orm/core @mikro-orm/mongodb       # for mongo
+npm i -s @mikro-orm/core @mikro-orm/mysql         # for mysql/mariadb
+npm i -s @mikro-orm/core @mikro-orm/mariadb       # for mysql/mariadb
+npm i -s @mikro-orm/core @mikro-orm/postgresql    # for postgresql
+npm i -s @mikro-orm/core @mikro-orm/sqlite        # for sqlite
+npm i -s @mikro-orm/core @mikro-orm/better-sqlite # for better-sqlite
+npm i -s @mikro-orm/core @mikro-orm/libsql        # for libsql
 ```
 
 Next, if you want to use decorators for your entity definition, you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) as well as `esModuleInterop` in `tsconfig.json` via:
