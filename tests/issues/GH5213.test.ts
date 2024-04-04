@@ -8,7 +8,7 @@ import {
   PrimaryKey,
   Property,
   Ref,
-} from '@mikro-orm/sqlite';
+} from '@mikro-orm/libsql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -70,7 +70,7 @@ class D {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({
+  orm = MikroORM.initSync({
     dbName: ':memory:',
     entities: [A, B, C, D],
   });

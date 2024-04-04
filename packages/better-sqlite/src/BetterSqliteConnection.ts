@@ -1,68 +1,10 @@
-import { ensureDir, readFile } from 'fs-extra';
-import { dirname } from 'path';
-import { AbstractSqlConnection, BetterSqliteKnexDialect, type Knex } from '@mikro-orm/knex';
-import { Utils } from '@mikro-orm/core';
+import { BetterSqliteKnexDialect, BaseSqliteConnection } from '@mikro-orm/knex';
 
-export class BetterSqliteConnection extends AbstractSqlConnection {
+export class BetterSqliteConnection extends BaseSqliteConnection {
 
   override createKnex() {
     this.client = this.createKnexClient(BetterSqliteKnexDialect as any);
     this.connected = true;
-  }
-
-  override async connect(): Promise<void> {
-    this.createKnex();
-    await ensureDir(dirname(this.config.get('dbName')!));
-    await this.client.raw('pragma foreign_keys = on');
-  }
-
-  getDefaultClientUrl(): string {
-    return '';
-  }
-
-  override getClientUrl(): string {
-    return '';
-  }
-
-  override async loadFile(path: string): Promise<void> {
-    const conn = await this.client.client.acquireConnection();
-    await conn.exec((await readFile(path)).toString());
-    await this.client.client.releaseConnection(conn);
-  }
-
-  protected override getKnexOptions(type: string): Knex.Config {
-    return Utils.mergeConfig({
-      client: type,
-      connection: {
-        filename: this.config.get('dbName'),
-      },
-      pool: this.config.get('pool'),
-      useNullAsDefault: true,
-    }, this.config.get('driverOptions'));
-  }
-
-  protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
-    if (method === 'get') {
-      return res[0];
-    }
-
-    if (method === 'all') {
-      return res;
-    }
-
-    if (Array.isArray(res)) {
-      return {
-        insertId: res[res.length - 1]?.id ?? 0,
-        affectedRows: res.length,
-        row: res[0],
-        rows: res,
-      } as T;
-    }
-
-    return {
-      insertId: res.lastInsertRowid,
-      affectedRows: res.changes,
-    } as unknown as T;
   }
 
 }

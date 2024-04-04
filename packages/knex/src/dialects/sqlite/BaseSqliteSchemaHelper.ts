@@ -3,7 +3,7 @@ import type { AbstractSqlConnection } from '../../AbstractSqlConnection';
 import { SchemaHelper } from '../../schema/SchemaHelper';
 import type { CheckDef, Column, IndexDef } from '../../typings';
 
-export class BaseSqliteSchemaHelper extends SchemaHelper {
+export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
 
   override disableForeignKeysSQL(): string {
     return 'pragma foreign_keys = off;';

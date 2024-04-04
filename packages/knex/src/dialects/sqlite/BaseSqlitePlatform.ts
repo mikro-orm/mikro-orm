@@ -1,7 +1,7 @@
 import { Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '../../AbstractSqlPlatform';
 
-export class BaseSqlitePlatform extends AbstractSqlPlatform {
+export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
 
   override usesDefaultKeyword(): boolean {
     return false;
