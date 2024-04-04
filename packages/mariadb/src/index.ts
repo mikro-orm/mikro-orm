@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 export * from '@mikro-orm/knex';
 export * from './MariaDbConnection';
 export * from './MariaDbSchemaHelper';
