@@ -45,13 +45,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
       return super.getDefaultMappedType('boolean');
     }
 
-    const normalizedType = this.extractSimpleType(type);
-    const map = {
-      int: 'integer',
-      timestamp: 'datetime',
-    } as Dictionary;
-
-    return super.getDefaultMappedType(map[normalizedType] ?? type);
+    return super.getDefaultMappedType(type);
   }
 
   override supportsUnsigned(): boolean {

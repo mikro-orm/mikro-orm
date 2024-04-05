@@ -258,6 +258,7 @@ export abstract class Platform {
       case 'varchar': return Type.getType(StringType);
       case 'interval': return Type.getType(IntervalType);
       case 'text': return Type.getType(TextType);
+      case 'int':
       case 'number': return Type.getType(IntegerType);
       case 'bigint': return Type.getType(BigIntType);
       case 'smallint': return Type.getType(SmallIntType);
@@ -274,7 +275,7 @@ export abstract class Platform {
       case 'uint8array': return Type.getType(Uint8ArrayType);
       case 'uuid': return Type.getType(UuidType);
       case 'date': return Type.getType(DateType);
-      case 'datetime': return Type.getType(DateTimeType);
+      case 'datetime':
       case 'timestamp': return Type.getType(DateTimeType);
       case 'time': return Type.getType(TimeType);
       case 'object':

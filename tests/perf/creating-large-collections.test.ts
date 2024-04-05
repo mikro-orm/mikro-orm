@@ -44,6 +44,7 @@ beforeAll(async () => {
     entities: [TestCaseEntity],
     dbName: ':memory:',
     driver: BetterSqliteDriver,
+    flushMode: 'commit',
   });
   await orm.schema.createSchema();
 });
