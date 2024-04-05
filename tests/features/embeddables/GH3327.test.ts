@@ -32,7 +32,7 @@ class Field {
 
 }
 
-describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as const)('GH #3327 (%s)', type => {
+describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('GH #3327 (%s)', type => {
 
   let orm: MikroORM;
 
@@ -41,6 +41,10 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
 
     if (type === 'mysql') {
       options.port = 3308;
+    }
+
+    if (type === 'mssql') {
+      options.password = 'Root.Root';
     }
 
     orm = await MikroORM.init({

@@ -718,7 +718,7 @@ export class MetadataDiscovery {
     }
 
     // handle self-referenced m:n with same default field names
-    if (meta.name === targetType && prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])) {
+    if (meta.className === targetType && prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])) {
       prop.joinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.className + '_1', name, meta.compositePK));
       prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.className + '_2', name, meta.compositePK));
 
@@ -729,8 +729,8 @@ export class MetadataDiscovery {
       }
     }
 
-    data.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.className, targetType + '_inverse', true);
-    data.properties[targetType + '_inverse'] = this.definePivotProperty(prop, targetType + '_inverse', targetType, meta.name + '_owner', false);
+    data.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.className, targetType + '_inverse', true, meta.className === targetType);
+    data.properties[targetType + '_inverse'] = this.definePivotProperty(prop, targetType + '_inverse', targetType, meta.name + '_owner', false, meta.className === targetType);
 
     return this.metadata.set(data.className, data);
   }
@@ -758,7 +758,7 @@ export class MetadataDiscovery {
     return primaryProp;
   }
 
-  private definePivotProperty(prop: EntityProperty, name: string, type: string, inverse: string, owner: boolean): EntityProperty {
+  private definePivotProperty(prop: EntityProperty, name: string, type: string, inverse: string, owner: boolean, selfReferencing: boolean): EntityProperty {
     const ret = {
       name,
       type,
@@ -772,6 +772,11 @@ export class MetadataDiscovery {
       updateRule: prop.updateRule,
       deleteRule: prop.deleteRule,
     } as EntityProperty;
+
+    if (selfReferencing && !this.platform.supportsMultipleCascadePaths()) {
+      ret.updateRule ??= 'no action';
+      ret.deleteRule ??= 'no action';
+    }
 
     const meta = this.metadata.get(type);
     ret.targetMeta = meta;
@@ -1117,6 +1122,14 @@ export class MetadataDiscovery {
       if (match) {
         prop.columnTypes[0] = match[1];
         prop.generated = match[2];
+
+        return;
+      }
+
+      const match2 = prop.columnTypes[0]?.trim().match(/^as (.*)/i);
+
+      if (match2) {
+        prop.generated = match2[1];
       }
 
       return;

@@ -99,48 +99,49 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /** @internal */
   readonly rawFragments = new Set<string>();
 
-  private aliasCounter = 0;
-  private flags: Set<QueryFlag> = new Set([QueryFlag.CONVERT_CUSTOM_TYPES]);
-  private finalized = false;
-  private _joins: Dictionary<JoinOptions> = {};
-  private _explicitAlias = false;
-  private _schema?: string;
-  private _cond: Dictionary = {};
-  private _data!: Dictionary;
-  private _orderBy: QueryOrderMap<T>[] = [];
-  private _groupBy: Field<T>[] = [];
-  private _having: Dictionary = {};
-  private _returning?: Field<T>[];
-  private _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[];
-  private _limit?: number;
-  private _offset?: number;
-  private _distinctOn?: string[];
-  private _joinedProps = new Map<string, PopulateOptions<any>>();
-  private _cache?: boolean | number | [string, number];
-  private _indexHint?: string;
-  private _comments: string[] = [];
-  private _hintComments: string[] = [];
-  private flushMode?: FlushMode;
-  private lockMode?: LockMode;
-  private lockTables?: string[];
-  private subQueries: Dictionary<string> = {};
-  private _mainAlias?: Alias<T>;
-  private _aliases: Dictionary<Alias<any>> = {};
-  private _helper?: QueryBuilderHelper;
-  private readonly platform: AbstractSqlPlatform;
-  private readonly knex: Knex;
+  protected aliasCounter = 0;
+  protected flags: Set<QueryFlag> = new Set([QueryFlag.CONVERT_CUSTOM_TYPES]);
+  protected finalized = false;
+  protected _joins: Dictionary<JoinOptions> = {};
+  protected _explicitAlias = false;
+  protected _schema?: string;
+  protected _cond: Dictionary = {};
+  protected _data!: Dictionary;
+  protected _orderBy: QueryOrderMap<T>[] = [];
+  protected _groupBy: Field<T>[] = [];
+  protected _having: Dictionary = {};
+  protected _returning?: Field<T>[];
+  protected _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[];
+  protected _limit?: number;
+  protected _offset?: number;
+  protected _distinctOn?: string[];
+  protected _joinedProps = new Map<string, PopulateOptions<any>>();
+  protected _cache?: boolean | number | [string, number];
+  protected _indexHint?: string;
+  protected _comments: string[] = [];
+  protected _hintComments: string[] = [];
+  protected flushMode?: FlushMode;
+  protected lockMode?: LockMode;
+  protected lockTables?: string[];
+  protected subQueries: Dictionary<string> = {};
+  protected _mainAlias?: Alias<T>;
+  protected _aliases: Dictionary<Alias<any>> = {};
+  protected _helper?: QueryBuilderHelper;
+  protected _query?: { sql?: string; _sql?: Knex.Sql; params?: readonly unknown[]; qb: Knex.QueryBuilder<T> };
+  protected readonly platform: AbstractSqlPlatform;
+  protected readonly knex: Knex;
 
   /**
    * @internal
    */
   constructor(entityName: EntityName<T> | QueryBuilder<T>,
-              private readonly metadata: MetadataStorage,
-              private readonly driver: AbstractSqlDriver,
-              private readonly context?: Knex.Transaction,
+              protected readonly metadata: MetadataStorage,
+              protected readonly driver: AbstractSqlDriver,
+              protected readonly context?: Knex.Transaction,
               alias?: string,
-              private connectionType?: ConnectionType,
-              private readonly em?: SqlEntityManager,
-              private loggerContext?: LoggingOptions & Dictionary) {
+              protected connectionType?: ConnectionType,
+              protected em?: SqlEntityManager,
+              protected loggerContext?: LoggingOptions & Dictionary) {
     this.platform = this.driver.getPlatform();
     this.knex = this.driver.getConnection(this.connectionType).getKnex();
 
@@ -600,11 +601,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   getKnexQuery(processVirtualEntity = true): Knex.QueryBuilder {
-    if (this.#query) {
-      return this.#query.qb;
+    if (this._query?.qb) {
+      return this._query.qb;
     }
 
-    this.#query = {} as any;
+    this._query = {} as any;
     this.finalize();
     const qb = this.getQueryBase(processVirtualEntity);
     const type = this.type ?? QueryType.SELECT;
@@ -629,7 +630,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(type, this._onConflict!, qb), this._onConflict);
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
-      return this.#query!.qb = this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
+      return this._query!.qb = this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
     }
 
     if (this.lockMode) {
@@ -639,7 +640,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this.helper.finalize(type, qb, this.mainAlias.metadata, this._data, this._returning);
     this.clearRawFragmentsCache();
 
-    return this.#query!.qb = qb;
+    return this._query!.qb = qb;
   }
 
   /**
@@ -657,21 +658,19 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this.toQuery().sql;
   }
 
-  #query?: { sql?: string; _sql?: Knex.Sql; params?: readonly unknown[]; qb: Knex.QueryBuilder<T> };
-
   toQuery(): { sql: string; _sql: Knex.Sql; params: readonly unknown[] } {
-    if (this.#query?.sql) {
-      return { sql: this.#query.sql, _sql: this.#query._sql!, params: this.#query.params! };
+    if (this._query?.sql) {
+      return { sql: this._query.sql, _sql: this._query._sql!, params: this._query.params! };
     }
 
     const sql = this.getKnexQuery().toSQL();
     const query = sql.toNative();
 
-    this.#query!.sql = query.sql;
-    this.#query!._sql = sql;
-    this.#query!.params = query.bindings ?? [];
+    this._query!.sql = query.sql;
+    this._query!._sql = sql;
+    this._query!.params = query.bindings ?? [];
 
-    return { sql: this.#query!.sql, _sql: this.#query!._sql, params: this.#query!.params };
+    return { sql: this._query!.sql, _sql: this._query!._sql, params: this._query!.params };
   }
 
   /**

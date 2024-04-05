@@ -447,6 +447,10 @@ export class SchemaComparator {
       return true;
     }
 
+    if (key1.localTableName === key1.referencedTableName && !this.platform.supportsMultipleCascadePaths()) {
+      return false;
+    }
+
     const defaultRule = ['restrict', 'no action'];
     const rule = (key: ForeignKey, method: 'updateRule' | 'deleteRule') => {
       return (key[method] ?? defaultRule[0]).toLowerCase().replace(defaultRule[1], defaultRule[0]);
@@ -476,10 +480,8 @@ export class SchemaComparator {
 
     if (
       fromColumnType !== toColumnType &&
-      !(
-        fromColumn.ignoreSchemaChanges?.includes('type') ||
-        toColumn.ignoreSchemaChanges?.includes('type')
-      )
+      !(fromColumn.ignoreSchemaChanges?.includes('type') || toColumn.ignoreSchemaChanges?.includes('type')) &&
+      !fromColumn.generated && !toColumn.generated
     ) {
       log(`'type' changed for column ${tableName}.${fromColumn.name}`, { fromColumnType, toColumnType });
       changedProperties.add('type');

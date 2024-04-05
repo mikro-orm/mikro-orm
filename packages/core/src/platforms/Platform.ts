@@ -44,6 +44,10 @@ export abstract class Platform {
     return false;
   }
 
+  usesOutputStatement(): boolean {
+    return false;
+  }
+
   usesCascadeStatement(): boolean {
     return false;
   }
@@ -115,7 +119,7 @@ export abstract class Platform {
     return 'current_timestamp' + (length ? `(${length})` : '');
   }
 
-  getDateTimeTypeDeclarationSQL(column: { length?: number } = { length: 0 }): string {
+  getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
     return 'datetime' + (column.length ? `(${column.length})` : '');
   }
 
@@ -283,6 +287,10 @@ export abstract class Platform {
       case 'enum': return Type.getType(EnumType);
       default: return Type.getType(UnknownType);
     }
+  }
+
+  supportsMultipleCascadePaths(): boolean {
+    return true;
   }
 
   supportsMultipleStatements(): boolean {

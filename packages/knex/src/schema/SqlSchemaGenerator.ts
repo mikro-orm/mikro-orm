@@ -21,8 +21,8 @@ import { SchemaComparator } from './SchemaComparator';
 
 export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> implements ISchemaGenerator {
 
-  private readonly helper = this.platform.getSchemaHelper()!;
-  private readonly options = this.config.get('schemaGenerator');
+  protected readonly helper = this.platform.getSchemaHelper()!;
+  protected readonly options = this.config.get('schemaGenerator');
   protected lastEnsuredDatabase?: string;
 
   static register(orm: MikroORM): void {
@@ -89,7 +89,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         continue;
       }
 
-      ret += await this.dump(this.knex.schema.createSchemaIfNotExists(namespace));
+      const sql = this.helper.getCreateNamespaceSQL(namespace);
+      ret += await this.dump(this.knex.schema.raw(sql), '\n');
     }
 
     if (this.platform.supportsNativeEnums()) {
@@ -128,6 +129,16 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     await this.execute(sql);
   }
 
+  async createNamespace(name: string): Promise<void> {
+    const sql = await this.helper.getCreateNamespaceSQL(name);
+    await this.execute(sql);
+  }
+
+  async dropNamespace(name: string): Promise<void> {
+    const sql = await this.helper.getDropNamespaceSQL(name);
+    await this.execute(sql);
+  }
+
   override async clearDatabase(options?: ClearDatabaseOptions): Promise<void> {
     // truncate by default, so no value is considered as true
     /* istanbul ignore if */
@@ -144,13 +155,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     await this.execute(this.helper.enableForeignKeysSQL());
-
-    if (this.em) {
-      const allowGlobalContext = this.config.get('allowGlobalContext');
-      this.config.set('allowGlobalContext', true);
-      this.em.clear();
-      this.config.set('allowGlobalContext', allowGlobalContext);
-    }
+    this.clearIdentityMap();
   }
 
   override async getDropSchemaSQL(options: Omit<DropSchemaOptions, 'dropDb'> = {}): Promise<string> {
@@ -248,8 +253,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     if (this.platform.supportsSchemas()) {
       for (const newNamespace of schemaDiff.newNamespaces) {
-        // schema might already exist, e.g. explicit usage of `public` in postgres
-        ret += await this.dump(this.knex.schema.createSchemaIfNotExists(newNamespace));
+        const sql = this.helper.getCreateNamespaceSQL(newNamespace);
+        ret += await this.dump(this.knex.schema.raw(sql), '\n');
       }
     }
 
@@ -312,7 +317,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     if (options.dropTables && !options.safe) {
       for (const removedNamespace of schemaDiff.removedNamespaces) {
-        ret += await this.dump(this.knex.schema.dropSchema(removedNamespace));
+        const sql = this.helper.getDropNamespaceSQL(removedNamespace);
+        ret += await this.dump(this.knex.schema.raw(sql), '\n');
       }
     }
 
@@ -346,12 +352,14 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       .inTable(this.getReferencedTableName(foreignKey.referencedTableName, schema))
       .withKeyName(foreignKey.constraintName);
 
-    if (foreignKey.updateRule) {
-      builder.onUpdate(foreignKey.updateRule);
-    }
+    if (foreignKey.localTableName !== foreignKey.referencedTableName || this.platform.supportsMultipleCascadePaths()) {
+      if (foreignKey.updateRule) {
+        builder.onUpdate(foreignKey.updateRule);
+      }
 
-    if (foreignKey.deleteRule) {
-      builder.onDelete(foreignKey.deleteRule);
+      if (foreignKey.deleteRule) {
+        builder.onDelete(foreignKey.deleteRule);
+      }
     }
 
     if (foreignKey.deferMode) {

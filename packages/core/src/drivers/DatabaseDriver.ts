@@ -1,14 +1,14 @@
 import {
-  EntityManagerType,
   type CountOptions,
-  type LockOptions,
   type DeleteOptions,
+  type DriverMethodOptions,
+  EntityManagerType,
   type FindOneOptions,
   type FindOptions,
   type IDatabaseDriver,
+  type LockOptions,
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
-  type DriverMethodOptions,
   type OrderDefinition,
 } from './IDatabaseDriver';
 import type {
@@ -26,8 +26,8 @@ import type {
 } from '../typings';
 import type { MetadataStorage } from '../metadata';
 import type { Connection, QueryResult, Transaction } from '../connections';
-import { EntityComparator, Utils, type Configuration, type ConnectionOptions, Cursor, raw } from '../utils';
-import { type QueryOrder, ReferenceKind, type QueryOrderKeys, QueryOrderNumeric } from '../enums';
+import { type Configuration, type ConnectionOptions, Cursor, EntityComparator, raw, Utils } from '../utils';
+import { type QueryOrder, type QueryOrderKeys, QueryOrderNumeric, ReferenceKind } from '../enums';
 import type { Platform } from '../platforms';
 import type { Collection } from '../entity/Collection';
 import { EntityManager } from '../EntityManager';
@@ -58,7 +58,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   abstract nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
-  abstract nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
+  abstract nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>, transform?: (sql: string) => string): Promise<QueryResult<T>>;
 
   abstract nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
@@ -456,15 +456,22 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   /**
    * @internal
    */
-  getTableName<T>(meta: EntityMetadata<T>, options: NativeInsertUpdateManyOptions<T>): string {
-    const tableName = this.platform.quoteIdentifier(meta.tableName);
+  getTableName<T>(meta: EntityMetadata<T>, options: NativeInsertUpdateManyOptions<T>, quote = true): string {
     const schema = this.getSchemaName(meta, options);
 
     if (schema) {
-      return this.platform.quoteIdentifier(schema) + '.' + tableName;
+      if (quote) {
+        return this.platform.quoteIdentifier(schema + '.' + meta.tableName);
+      }
+
+      return schema + '.' + meta.tableName;
     }
 
-    return tableName;
+    if (quote) {
+      return this.platform.quoteIdentifier(meta.tableName);
+    }
+
+    return meta.tableName;
   }
 
   /**

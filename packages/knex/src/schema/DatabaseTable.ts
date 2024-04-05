@@ -108,6 +108,10 @@ export class DatabaseTable {
         }
       }
 
+      if (prop.length == null && prop.columnTypes[idx]) {
+        prop.length = this.platform.getSchemaHelper()!.inferLengthFromColumnType(prop.columnTypes[idx]);
+      }
+
       const primary = !meta.compositePK && !!prop.primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType);
       this.columns[field] = {
         name: prop.fieldNames[idx],
@@ -155,8 +159,20 @@ export class DatabaseTable {
         this.foreignKeys[constraintName].deleteRule = prop.deleteRule || (cascade ? 'cascade' : 'set null');
       }
 
-      if (prop.updateRule || prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL)) {
+      if (prop.updateRule) {
         this.foreignKeys[constraintName].updateRule = prop.updateRule || 'cascade';
+      }
+
+      if ((prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL))) {
+        const hasCascadePath = Object.values(this.foreignKeys).some(fk => {
+          return fk.constraintName !== constraintName
+            && ((fk.updateRule && fk.updateRule !== 'no action') || (fk.deleteRule && fk.deleteRule !== 'no action'))
+            && fk.referencedTableName === this.foreignKeys[constraintName].referencedTableName;
+        });
+
+        if (!hasCascadePath || this.platform.supportsMultipleCascadePaths()) {
+          this.foreignKeys[constraintName].updateRule ??= 'cascade';
+        }
       }
 
       if (prop.deferMode) {
@@ -745,7 +761,7 @@ export class DatabaseTable {
       return namingStrategy.getClassName(this.name + '_' + column.name, '_');
     }
 
-    return column.mappedType?.compareAsType() ?? 'unknown';
+    return column.mappedType?.runtimeType ?? 'unknown';
   }
 
   private getPropertyDefaultValue(schemaHelper: SchemaHelper, column: Column, propType: string, raw = false): any {

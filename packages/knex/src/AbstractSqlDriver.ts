@@ -455,7 +455,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
-  async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}, transform?: (sql: string) => string): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.find<T>(entityName)?.root;
@@ -476,6 +476,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const tableName = meta ? this.getTableName(meta, options) : this.platform.quoteIdentifier(entityName);
     let sql = `insert into ${tableName} `;
     sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : `(${this.platform.quoteIdentifier(pks[0])})`;
+
+    if (meta && this.platform.usesOutputStatement()) {
+      const returningProps = meta.props
+        .filter(prop => prop.persist !== false && prop.defaultRaw || prop.autoincrement || prop.generated)
+        .filter(prop => !(prop.name in data[0]) || Utils.isRawSql(data[0][prop.name]));
+      const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
+      sql += returningFields.length > 0 ? ` output ${returningFields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}` : '';
+    }
 
     if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
       sql += ' values ';
@@ -547,6 +555,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       /* istanbul ignore next */
       sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
+    }
+
+    if (transform) {
+      sql = transform(sql);
     }
 
     const res = await this.execute<QueryResult<T>>(sql, params, 'run', options.ctx);
@@ -1210,16 +1222,17 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   }
 
   /** @internal */
-  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions): QueryBuilder<T> {
-    const connectionType = this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
+  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): QueryBuilder<T> {
+    // do not compute the connectionType if EM is provided as it will be computed from it in the QB later on
+    const connectionType = em ? preferredConnectionType : this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
     const qb = new QueryBuilder<T>(
       entityName,
       this.metadata,
       this,
       ctx,
-      undefined,
+      alias,
       connectionType,
-      undefined,
+      em,
       loggerContext,
     );
 

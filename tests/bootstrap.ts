@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import type { Options } from '@mikro-orm/core';
-import { LoadStrategy, MikroORM, ReflectMetadataProvider, Utils, SimpleLogger } from '@mikro-orm/core';
+import { LoadStrategy, MikroORM, ReflectMetadataProvider, SimpleLogger, Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -15,27 +15,28 @@ import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 import { LibSqlDriver } from '@mikro-orm/libsql';
+import { MsSqlDriver } from '@mikro-orm/mssql';
 
 import {
+  Address2,
   Author2,
+  BaseUser2,
   Book2,
   BookTag2,
+  CarOwner2,
+  CompanyOwner2,
+  Configuration2,
+  Employee2,
   FooBar2,
   FooBaz2,
+  FooParam2,
+  Label2,
+  Manager2,
   Publisher2,
   Test2,
-  Label2,
-  Configuration2,
-  Address2,
-  FooParam2,
   User2,
-  CompanyOwner2,
-  BaseUser2,
-  Manager2,
-  Employee2,
-  CarOwner2,
 } from './entities-sql';
-import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, IdentitySchema } from './entities-schema';
+import { Author4, Book4, BookTag4, FooBar4, FooBaz4, IdentitySchema, Publisher4, Test4 } from './entities-schema';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
@@ -49,6 +50,7 @@ const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./
 export const PLATFORMS = {
   'mongo': MongoDriver,
   'mysql': MySqlDriver,
+  'mssql': MsSqlDriver,
   'mariadb': MariaDbDriver,
   'postgresql': PostgreSqlDriver,
   'sqlite': SqliteDriver,
@@ -177,6 +179,33 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
   await connection.loadFile(__dirname + '/postgre-schema.sql');
   Author2Subscriber.log.length = 0;
   Test2Subscriber.log.length = 0;
+  EverythingSubscriber.log.length = 0;
+  FlushSubscriber.log.length = 0;
+
+  return orm;
+}
+
+export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDriver>> = {}, createSchema = true) {
+  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
+  const orm = await MikroORM.init({
+    entities: ['entities-mssql'],
+    dbName,
+    baseDir: BASE_DIR,
+    driver: MsSqlDriver,
+    password: 'Root.Root',
+    debug: true,
+    forceUtcTimezone: true,
+    autoJoinOneToOneOwner: false,
+    logger: i => i,
+    extensions: [Migrator, SeedManager, EntityGenerator],
+    ...additionalOptions,
+  });
+
+  if (createSchema) {
+    await orm.schema.refreshDatabase();
+  }
+
+  Author2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
   FlushSubscriber.log.length = 0;
 

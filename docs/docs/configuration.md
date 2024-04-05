@@ -143,6 +143,7 @@ To select driver, you can either use `type` option, or provide the driver class 
 | `mysql`         | `MySqlDriver`        | `mysql2`         | compatible with MariaDB     |
 | `mariadb`       | `MariaDbDriver`      | `mariadb`        | compatible with MySQL       |
 | `postgresql`    | `PostgreSqlDriver`   | `pg`             | compatible with CockroachDB |
+| `mssql`         | `MsSqlDriver`        | `tedious`        | -                           |
 | `sqlite`        | `SqliteDriver`       | `sqlite3`        | -                           |
 | `better-sqlite` | `BetterSqliteDriver` | `better-sqlite3` | -                           |
 | `libsql`        | `LibSqlDriver`       | `libsql`         | -                           |

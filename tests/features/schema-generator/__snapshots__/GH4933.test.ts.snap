@@ -5,7 +5,6 @@ exports[`GH #4933 1`] = `
 set session_replication_role = 'replica';
 
 create schema if not exists "example";
-
 create table "example"."users" ("id" varchar(255) not null, "type" text check ("type" in ('one', 'two')) not null, constraint "users_pkey" primary key ("id"));
 create index "users_type_index" on "example"."users" ("type");
 

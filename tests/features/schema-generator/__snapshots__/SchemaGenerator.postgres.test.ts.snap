@@ -5,7 +5,6 @@ exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: po
 set session_replication_role = 'replica';
 
 create schema if not exists "label_schema";
-
 create table "book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);
 
 create table "foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));
@@ -134,7 +133,6 @@ exports[`SchemaGenerator [postgres] update empty schema from metadata [postgres]
 set session_replication_role = 'replica';
 
 create schema if not exists "label_schema";
-
 create table "book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);
 
 create table "foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));
@@ -352,7 +350,6 @@ create index "author2_name_age_in_years_index" on "author2" ("name", "age_in_yea
 
 exports[`SchemaGenerator [postgres] update schema - entity in different namespace [postgres] (GH #1215): postgres-update-schema-1215 1`] = `
 "create schema if not exists "other";
-
 create table "other"."new_table" ("id" serial primary key, "column_name" varchar(255) not null);
 alter table "other"."new_table" add constraint "new_table_column_name_unique" unique ("column_name");
 
@@ -362,8 +359,7 @@ alter table "other"."new_table" add constraint "new_table_column_name_unique" un
 exports[`SchemaGenerator [postgres] update schema - entity in different namespace [postgres] (GH #1215): postgres-update-schema-1215 2`] = `
 "drop table if exists "other"."new_table" cascade;
 
-drop schema "other";
-
+drop schema if exists "other";
 "
 `;
 

@@ -2,7 +2,6 @@
 
 exports[`native enums in postgres enum diffing: postgres-update-schema-enums-1 1`] = `
 "create schema if not exists "different_schema";
-
 create table "different_schema"."new_table" ("id" serial primary key, "enum_test" varchar(255) not null);
 
 "

@@ -23,7 +23,7 @@ export class ChangeSetPersister {
               private readonly config: Configuration) {
     this.platform = this.driver.getPlatform();
     this.comparator = this.config.getComparator(this.metadata);
-    this.usesReturningStatement = this.platform.usesReturningStatement();
+    this.usesReturningStatement = this.platform.usesReturningStatement() || this.platform.usesOutputStatement();
   }
 
   async executeInserts<T extends object>(changeSets: ChangeSet<T>[], options?: DriverMethodOptions, withSchema?: boolean): Promise<void> {

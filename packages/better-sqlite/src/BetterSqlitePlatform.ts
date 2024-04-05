@@ -11,6 +11,7 @@ export class BetterSqlitePlatform extends BaseSqlitePlatform {
   protected override readonly exceptionConverter = new BetterSqliteExceptionConverter();
 
   override quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
+    /* istanbul ignore if */
     if (prop.runtimeType === 'Date') {
       return escape(value, true, this.timezone).replace(/^'|\.\d{3}'$/g, '');
     }

@@ -16,14 +16,16 @@ const packages = [
   'cli',
   'migrations',
   'entity-generator',
+  'seeder',
   'reflection',
+  'postgresql',
+  'mysql',
+  'mariadb',
   'sqlite',
   'better-sqlite',
-  'mariadb',
+  'libsql',
+  'mssql',
   'mongodb',
-  'mysql',
-  'postgresql',
-  'seeder',
 ].map(d => ({ path: `packages/${d}` }));
 
 const docsFooterLinks = {

@@ -3,24 +3,32 @@ title: Usage with MySQL, MariaDB, PostgreSQL or SQLite
 sidebar_label: Usage with SQL Drivers
 ---
 
-To use `mikro-orm` with MySQL database, simply install the `@mikro-orm/mysql` dependency and set the type option to `mysql` when initializing ORM. Since v4 it is no longer needed to install the `mysql2` package manually.
+To use `mikro-orm` with MySQL database, install the `@mikro-orm/mysql` dependency and set the type option to `mysql` when initializing ORM. Since v4 it is no longer needed to install the `mysql2` package manually.
 
-```sh
-yarn add @mikro-orm/core @mikro-orm/mongodb     # for mongo
-yarn add @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
-yarn add @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
-yarn add @mikro-orm/core @mikro-orm/postgresql  # for postgresql
-yarn add @mikro-orm/core @mikro-orm/sqlite      # for sqlite
-```
+```bash npm2yarn
+# for mongodb
+npm install @mikro-orm/core @mikro-orm/mongodb
 
-or
+# for mysql (works with mariadb too)
+npm install @mikro-orm/core @mikro-orm/mysql
 
-```sh
-npm i -s @mikro-orm/core @mikro-orm/mongodb     # for mongo
-npm i -s @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
-npm i -s @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
-npm i -s @mikro-orm/core @mikro-orm/postgresql  # for postgresql
-npm i -s @mikro-orm/core @mikro-orm/sqlite      # for sqlite
+# for mariadb (works with mysql too)
+npm install @mikro-orm/core @mikro-orm/mariadb
+
+# for postgresql (works with cockroachdb too)
+npm install @mikro-orm/core @mikro-orm/postgresql
+
+# for sqlite
+npm install @mikro-orm/core @mikro-orm/sqlite
+
+# for better-sqlite
+npm install @mikro-orm/core @mikro-orm/better-sqlite
+
+# for libsql
+npm install @mikro-orm/core @mikro-orm/libsql
+
+# for mssql
+npm install @mikro-orm/core @mikro-orm/mssql
 ```
 
 Then call `MikroORM.init` as part of bootstrapping your app:
@@ -209,3 +217,11 @@ const orm = await MikroORM.init({
   },
 });
 ```
+
+## MS SQL Server limitations
+
+- UUID values are returned in upper case
+- cycles in cascade paths are not supported
+- schema diffing capabilities are limited
+- no native support for fulltext search
+- upsert support is limited

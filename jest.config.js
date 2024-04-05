@@ -24,7 +24,6 @@ module.exports = {
   coveragePathIgnorePatterns: [
     '<rootDir>/packages/cli/src/cli.ts',
     '<rootDir>/packages/cli/src/esm.ts',
-    '<rootDir>/packages/better-sqlite',
   ],
   setupFiles: [
     '<rootDir>/tests/setup.ts',
