@@ -16,6 +16,11 @@ export enum PopulateHint {
   ALL = 'all',
 }
 
+export enum PopulatePath {
+  INFER = '$infer',
+  ALL = '*',
+}
+
 export enum GroupOperator {
   $and = 'and',
   $or = 'or',

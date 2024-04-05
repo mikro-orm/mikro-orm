@@ -75,6 +75,7 @@ import {
   LoadStrategy,
   LockMode,
   PopulateHint,
+  PopulatePath,
   QueryFlag,
   ReferenceKind,
   SCALAR_TYPES,
@@ -196,7 +197,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async find<
     Entity extends object,
     Hint extends string = never,
-    Fields extends string = '*',
+    Fields extends string = PopulatePath.ALL,
     Excludes extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint, Fields, Excludes> = {}): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
@@ -1816,7 +1817,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entities: Entity, populate: AutoPath<Naked, Hint, '*'>[] | false, options: EntityLoaderOptions<Naked, Fields, Excludes> = {}): Promise<Entity extends object[] ? MergeLoaded<ArrayElement<Entity>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Entity, Naked, Hint, Fields, Excludes>> {
+  >(entities: Entity, populate: AutoPath<Naked, Hint, PopulatePath.ALL>[] | false, options: EntityLoaderOptions<Naked, Fields, Excludes> = {}): Promise<Entity extends object[] ? MergeLoaded<ArrayElement<Entity>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Entity, Naked, Hint, Fields, Excludes>> {
     const arr = Utils.asArray(entities);
 
     if (arr.length === 0) {
@@ -2045,7 +2046,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         const ret: string[] = [];
 
         for (const field of fields) {
-          if (field === '*' || field.startsWith('*.')) {
+          if (field === PopulatePath.ALL || field.startsWith(`${PopulatePath.ALL}.`)) {
             ret.push(...meta.props.filter(prop => prop.lazy || [ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind)).map(prop => prop.name));
             continue;
           }
@@ -2086,12 +2087,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     if (typeof options.populate !== 'boolean') {
       options.populate = Utils.asArray(options.populate).map(field => {
         /* istanbul ignore next */
-        if (typeof field === 'boolean' || field === '*') {
+        if (typeof field === 'boolean' || field === PopulatePath.ALL) {
           return [{ field: meta.primaryKeys[0], strategy: options.strategy, all: !!field }]; //
         }
 
         // will be handled in QueryBuilder when processing the where condition via CriteriaNode
-        if (field === '$infer') {
+        if (field === PopulatePath.INFER) {
           options.flags ??= [];
           options.flags.push(QueryFlag.INFER_POPULATE);
 

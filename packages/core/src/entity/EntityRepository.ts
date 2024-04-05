@@ -1,3 +1,4 @@
+import type { PopulatePath } from '../enums';
 import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager';
 import type { AssignOptions } from './EntityAssigner';
 import type {
@@ -240,7 +241,7 @@ export class EntityRepository<Entity extends object> {
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entities: Ent, populate: AutoPath<Naked, Hint, '*'>[] | false, options?: EntityLoaderOptions<Naked, Fields, Excludes>): Promise<Ent extends object[] ? MergeLoaded<ArrayElement<Ent>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Ent, Naked, Hint, Fields, Excludes>> {
+  >(entities: Ent, populate: AutoPath<Naked, Hint, PopulatePath.ALL>[] | false, options?: EntityLoaderOptions<Naked, Fields, Excludes>): Promise<Ent extends object[] ? MergeLoaded<ArrayElement<Ent>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Ent, Naked, Hint, Fields, Excludes>> {
     this.validateRepositoryType(entities, 'populate');
     // @ts-ignore hard to type
     return this.getEntityManager().populate(entities, populate, options);
