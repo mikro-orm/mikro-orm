@@ -5,7 +5,6 @@ exports[`adding FK column schema: adding 1:1 relation 1`] = `
 set session_replication_role = 'replica';
 
 create schema if not exists "test";
-
 create table "test"."profile" ("id" varchar(255) not null, constraint "profile_pkey" primary key ("id"));
 
 create table "test"."user" ("id" varchar(255) not null, constraint "user_pkey" primary key ("id"));
@@ -24,7 +23,6 @@ exports[`adding FK column schema: adding 1:1 relation 2`] = `
 set session_replication_role = 'replica';
 
 create schema if not exists "test";
-
 create table "test"."profile" ("id" varchar(255) not null, constraint "profile_pkey" primary key ("id"));
 
 create table "test"."user" ("id" varchar(255) not null, constraint "user_pkey" primary key ("id"));

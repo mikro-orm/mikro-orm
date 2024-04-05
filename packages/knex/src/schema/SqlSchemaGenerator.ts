@@ -89,7 +89,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         continue;
       }
 
-      ret += await this.dump(this.knex.schema.createSchemaIfNotExists(namespace));
+      const sql = this.helper.getCreateNamespaceSQL(namespace);
+      ret += await this.dump(this.knex.schema.raw(sql), '\n');
     }
 
     if (this.platform.supportsNativeEnums()) {
@@ -242,8 +243,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     if (this.platform.supportsSchemas()) {
       for (const newNamespace of schemaDiff.newNamespaces) {
-        // schema might already exist, e.g. explicit usage of `public` in postgres
-        ret += await this.dump(this.knex.schema.createSchemaIfNotExists(newNamespace));
+        const sql = this.helper.getCreateNamespaceSQL(newNamespace);
+        ret += await this.dump(this.knex.schema.raw(sql), '\n');
       }
     }
 
@@ -306,7 +307,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     if (options.dropTables && !options.safe) {
       for (const removedNamespace of schemaDiff.removedNamespaces) {
-        ret += await this.dump(this.knex.schema.dropSchema(removedNamespace));
+        const sql = this.helper.getDropNamespaceSQL(removedNamespace);
+        ret += await this.dump(this.knex.schema.raw(sql), '\n');
       }
     }
 

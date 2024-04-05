@@ -312,6 +312,16 @@ export abstract class SchemaHelper {
     return `drop database if exists ${this.platform.quoteIdentifier(name)}`;
   }
 
+  /* istanbul ignore next */
+  getCreateNamespaceSQL(name: string): string {
+    return `create schema if not exists ${this.platform.quoteIdentifier(name)}`;
+  }
+
+  /* istanbul ignore next */
+  getDropNamespaceSQL(name: string): string {
+    return `drop schema if exists ${this.platform.quoteIdentifier(name)}`;
+  }
+
   getDatabaseExistsSQL(name: string): string {
     return `select 1 from information_schema.schemata where schema_name = '${name}'`;
   }

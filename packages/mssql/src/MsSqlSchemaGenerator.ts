@@ -18,8 +18,8 @@ export class MsSqlSchemaGenerator extends SchemaGenerator {
       const res = await this.driver.nativeDelete(meta.className, {}, options);
 
       if (meta.getPrimaryProps().some(pk => pk.autoincrement)) {
-        const tableName = this.driver.getTableName(meta, { schema: options?.schema });
-        await this.execute(`dbcc checkident (${tableName}, reseed, ${res.affectedRows > 0 ? 0 : 1})`, {
+        const tableName = this.driver.getTableName(meta, { schema: options?.schema }, false);
+        await this.execute(`dbcc checkident ('${tableName}', reseed, ${res.affectedRows > 0 ? 0 : 1})`, {
           ctx: this.em?.getTransactionContext(),
         });
       }

@@ -5,7 +5,6 @@ exports[`GH #4918 1`] = `
 set session_replication_role = 'replica';
 
 create schema if not exists "test";
-
 create table "two" ("id" varchar(255) not null, "one_id" varchar(255) not null, constraint "two_pkey" primary key ("id"));
 
 create table "test"."one" ("id" varchar(255) not null, "two_id" varchar(255) not null, constraint "one_pkey" primary key ("id"));

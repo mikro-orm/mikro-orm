@@ -91,7 +91,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       inner join sys.columns sc on sc.name = ic.column_name and sc.object_id = object_id(ic.table_schema + '.' + ic.table_name)
       left join sys.computed_columns cmp on cmp.name = ic.column_name and cmp.object_id = object_id(ic.table_schema + '.' + ic.table_name)
       left join sys.extended_properties t4 on t4.major_id = object_id(ic.table_schema + '.' + ic.table_name) and t4.name = 'MS_Description' and t4.minor_id = sc.column_id
-      where table_schema = schema_name() and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))})
+      where table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))})
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql);
     const str = (val?: string | number) => val != null ? '' + val : val;
@@ -195,7 +195,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       kcu.column_name referenced_column_name,
       kcu.table_name referenced_table_name,
       rc.update_rule,
-      rc.delete_rule,*
+      rc.delete_rule
       from information_schema.constraint_column_usage ccu
     inner join information_schema.REFERENTIAL_CONSTRAINTS rc on ccu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME
     inner join information_schema.KEY_COLUMN_USAGE kcu on kcu.CONSTRAINT_NAME = rc.UNIQUE_CONSTRAINT_NAME
@@ -360,6 +360,14 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     }
 
     return ret.join(';\n');
+  }
+
+  override getCreateNamespaceSQL(name: string): string {
+    return `if (schema_id(${this.platform.quoteValue(name)}) is null) begin exec ('create schema ${this.platform.quoteIdentifier(name)} authorization [dbo]') end`;
+  }
+
+  override getDropNamespaceSQL(name: string): string {
+    return `drop schema if exists ${this.platform.quoteIdentifier(name)}`;
   }
 
   override getDropIndexSQL(tableName: string, index: IndexDef): string {

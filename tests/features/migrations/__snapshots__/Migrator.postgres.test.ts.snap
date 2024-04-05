@@ -8,7 +8,6 @@ export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
     this.addSql('create schema if not exists "custom";');
-
     this.addSql('create table "custom"."book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);');
 
     this.addSql('create table "custom"."foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));');
@@ -99,7 +98,6 @@ export class Migration20191013214813 extends Migration {
     "down": [],
     "up": [
       "create schema if not exists "custom";",
-      "",
       "create table "custom"."book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);",
       "",
       "create table "custom"."foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));",
@@ -196,7 +194,6 @@ export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
     this.addSql('create schema if not exists "custom";');
-
     this.addSql('create table "custom"."book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);');
 
     this.addSql('create table "custom"."foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));');
@@ -287,7 +284,6 @@ export class Migration20191013214813 extends Migration {
     "down": [],
     "up": [
       "create schema if not exists "custom";",
-      "",
       "create table "custom"."book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);",
       "",
       "create table "custom"."foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));",

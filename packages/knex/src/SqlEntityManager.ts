@@ -12,7 +12,7 @@ import {
   type LoggingOptions,
 } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from './AbstractSqlDriver';
-import { QueryBuilder } from './query';
+import type { QueryBuilder } from './query';
 import type { SqlEntityRepository } from './SqlEntityRepository';
 
 /**
@@ -25,7 +25,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
    */
   createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, alias?: string, type?: ConnectionType, loggerContext?: LoggingOptions): QueryBuilder<T> {
     const context = this.getContext(false);
-    return new QueryBuilder<T>(entityName, this.getMetadata(), this.getDriver(), context.getTransactionContext(), alias, type, context, loggerContext ?? context.loggerContext);
+    return this.driver.createQueryBuilder(entityName, context.getTransactionContext(), type, true, loggerContext ?? context.loggerContext, alias, this);
   }
 
   /**

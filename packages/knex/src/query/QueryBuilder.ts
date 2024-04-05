@@ -127,6 +127,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   protected _mainAlias?: Alias<T>;
   protected _aliases: Dictionary<Alias<any>> = {};
   protected _helper?: QueryBuilderHelper;
+  protected _query?: { sql?: string; _sql?: Knex.Sql; params?: readonly unknown[]; qb: Knex.QueryBuilder<T> };
   protected readonly platform: AbstractSqlPlatform;
   protected readonly knex: Knex;
 
@@ -600,11 +601,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   getKnexQuery(processVirtualEntity = true): Knex.QueryBuilder {
-    if (this.#query) {
-      return this.#query.qb;
+    if (this._query?.qb) {
+      return this._query.qb;
     }
 
-    this.#query = {} as any;
+    this._query = {} as any;
     this.finalize();
     const qb = this.getQueryBase(processVirtualEntity);
     const type = this.type ?? QueryType.SELECT;
@@ -629,7 +630,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(type, this._onConflict!, qb), this._onConflict);
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
-      return this.#query!.qb = this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
+      return this._query!.qb = this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
     }
 
     if (this.lockMode) {
@@ -639,7 +640,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this.helper.finalize(type, qb, this.mainAlias.metadata, this._data, this._returning);
     this.clearRawFragmentsCache();
 
-    return this.#query!.qb = qb;
+    return this._query!.qb = qb;
   }
 
   /**
@@ -657,21 +658,19 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this.toQuery().sql;
   }
 
-  #query?: { sql?: string; _sql?: Knex.Sql; params?: readonly unknown[]; qb: Knex.QueryBuilder<T> };
-
   toQuery(): { sql: string; _sql: Knex.Sql; params: readonly unknown[] } {
-    if (this.#query?.sql) {
-      return { sql: this.#query.sql, _sql: this.#query._sql!, params: this.#query.params! };
+    if (this._query?.sql) {
+      return { sql: this._query.sql, _sql: this._query._sql!, params: this._query.params! };
     }
 
     const sql = this.getKnexQuery().toSQL();
     const query = sql.toNative();
 
-    this.#query!.sql = query.sql;
-    this.#query!._sql = sql;
-    this.#query!.params = query.bindings ?? [];
+    this._query!.sql = query.sql;
+    this._query!._sql = sql;
+    this._query!.params = query.bindings ?? [];
 
-    return { sql: this.#query!.sql, _sql: this.#query!._sql, params: this.#query!.params };
+    return { sql: this._query!.sql, _sql: this._query!._sql, params: this._query!.params };
   }
 
   /**

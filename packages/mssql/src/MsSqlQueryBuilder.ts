@@ -1,5 +1,5 @@
-import { QueryFlag, Utils, type AnyEntity, type RequiredEntityData } from '@mikro-orm/core';
-import { QueryBuilder, type InsertQueryBuilder, type Knex } from '@mikro-orm/knex';
+import { type AnyEntity, QueryFlag, type RequiredEntityData, Utils } from '@mikro-orm/core';
+import { type InsertQueryBuilder, type Knex, QueryBuilder, QueryType } from '@mikro-orm/knex';
 
 export class MsSqlQueryBuilder<T extends AnyEntity<T> = AnyEntity> extends QueryBuilder<T> {
 
@@ -16,6 +16,19 @@ export class MsSqlQueryBuilder<T extends AnyEntity<T> = AnyEntity> extends Query
     }
 
     return qb;
+  }
+
+  override getKnexQuery(processVirtualEntity = true): Knex.QueryBuilder {
+    if (this.type === QueryType.TRUNCATE) {
+      const tableName = this.driver.getTableName(this.mainAlias.metadata!, { schema: this._schema }, false);
+      const tableNameQuoted = this.platform.quoteIdentifier(tableName);
+      const sql = `delete from ${tableNameQuoted}; declare @count int = case @@rowcount when 0 then 1 else 0 end; dbcc checkident ('${tableName}', reseed, @count)`;
+      this._query = {} as any;
+
+      return this._query!.qb = this.knex.raw(sql) as any;
+    }
+
+    return super.getKnexQuery(processVirtualEntity);
   }
 
   private appendIdentityInsert(qb: Knex.QueryBuilder) {

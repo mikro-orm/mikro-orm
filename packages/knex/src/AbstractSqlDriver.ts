@@ -1221,16 +1221,17 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   }
 
   /** @internal */
-  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions): QueryBuilder<T> {
-    const connectionType = this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
+  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): QueryBuilder<T> {
+    // do not compute the connectionType if EM is provided as it will be computed from it in the QB later on
+    const connectionType = em ? preferredConnectionType : this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
     const qb = new QueryBuilder<T>(
       entityName,
       this.metadata,
       this,
       ctx,
-      undefined,
+      alias,
       connectionType,
-      undefined,
+      em,
       loggerContext,
     );
 

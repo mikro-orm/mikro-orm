@@ -51,6 +51,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return false;
   }
 
+  override supportsSchemas(): boolean {
+    return true;
+  }
+
   override getCurrentTimestampSQL(length: number): string {
     return `current_timestamp`;
   }
