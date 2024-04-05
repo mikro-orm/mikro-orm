@@ -104,7 +104,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   override getDefaultMappedType(type: string): Type<unknown> {
     const normalizedType = this.extractSimpleType(type);
 
-    if (normalizedType === 'string' || normalizedType === 'nvarchar') {
+    if (normalizedType !== 'uuid' && ['string', 'nvarchar'].includes(normalizedType)) {
       return Type.getType(UnicodeStringType);
     }
 
@@ -136,6 +136,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     for (const prop of meta.props) {
       if (
         (prop.runtimeType === 'string' || ['string', 'nvarchar'].includes(prop.type))
+        && !['uuid'].includes(prop.type)
         && !prop.columnTypes[0].startsWith('varchar')
       ) {
         prop.customType ??= new UnicodeStringType();
@@ -144,8 +145,6 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
         prop.customType.meta = meta;
       }
     }
-
-    return;
   }
 
   override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
@@ -167,6 +166,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | string): T {
+    /* istanbul ignore if */
     if (data instanceof UnicodeString) {
       return data.value as T;
     }

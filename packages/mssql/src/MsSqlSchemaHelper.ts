@@ -19,7 +19,6 @@ import {
 } from '@mikro-orm/knex';
 import { UnicodeStringType } from './UnicodeStringType';
 
-// TODO verify schema names
 export class MsSqlSchemaHelper extends SchemaHelper {
 
   static readonly DEFAULT_VALUES = {

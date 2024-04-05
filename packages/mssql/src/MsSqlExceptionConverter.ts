@@ -11,7 +11,6 @@ import {
   type DriverException,
 } from '@mikro-orm/core';
 
-// TODO
 export class MsSqlExceptionConverter extends ExceptionConverter {
 
   /* istanbul ignore next */

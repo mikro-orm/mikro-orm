@@ -224,3 +224,4 @@ const orm = await MikroORM.init({
 - cycles in cascade paths are not supported
 - schema diffing capabilities are limited
 - no native support for fulltext search
+- upsert support is limited

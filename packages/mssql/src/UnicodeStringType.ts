@@ -40,6 +40,7 @@ export class UnicodeStringType extends Type<string | null, string | null> {
   }
 
   override convertToDatabaseValue(value: string | null): string | null {
+    /* istanbul ignore if */
     if (typeof value === 'string') {
       return new UnicodeString(value) as any;
     }

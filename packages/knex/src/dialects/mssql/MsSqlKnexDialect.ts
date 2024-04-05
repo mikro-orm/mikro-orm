@@ -1,6 +1,7 @@
 import { MonkeyPatchable } from '../../MonkeyPatchable';
 import { MsSqlTableCompiler } from './MsSqlTableCompiler';
 import { MsSqlColumnCompiler } from './MsSqlColumnCompiler';
+import { MsSqlQueryCompiler } from './MsSqlQueryCompiler';
 
 export class MsSqlKnexDialect extends MonkeyPatchable.MsSqlDialect {
 
@@ -12,6 +13,11 @@ export class MsSqlKnexDialect extends MonkeyPatchable.MsSqlDialect {
   columnCompiler() {
     // eslint-disable-next-line prefer-rest-params
     return new (MsSqlColumnCompiler as any)(this, ...arguments);
+  }
+
+  queryCompiler() {
+    // eslint-disable-next-line prefer-rest-params
+    return new (MsSqlQueryCompiler as any)(this, ...arguments);
   }
 
 }
