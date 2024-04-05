@@ -1,5 +1,6 @@
 import type { Transaction } from './connections';
 import {
+  type PopulatePath,
   type DeferMode,
   type Cascade,
   type EventType,
@@ -927,7 +928,7 @@ export type FilterDef = {
   args?: boolean;
 };
 
-export type Populate<T, P extends string = never> = readonly AutoPath<T, P, '*' | '$infer'>[] | false;
+export type Populate<T, P extends string = never> = readonly AutoPath<T, P, `${PopulatePath}`>[] | false;
 
 export type PopulateOptions<T> = {
   field: EntityKey<T>;

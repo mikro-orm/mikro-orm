@@ -1,3 +1,4 @@
+import type { PopulatePath } from '../enums';
 import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
 import type {
@@ -149,7 +150,7 @@ export class WrappedEntity<Entity extends object> {
   }
 
   async populate<Hint extends string = never>(
-    populate: AutoPath<Entity, Hint, '*'>[] | false,
+    populate: AutoPath<Entity, Hint, PopulatePath.ALL>[] | false,
     options: EntityLoaderOptions<Entity> = {},
   ): Promise<Loaded<Entity, Hint>> {
     if (!this.__em) {

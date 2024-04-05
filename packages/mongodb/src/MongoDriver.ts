@@ -19,6 +19,7 @@ import {
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
   type PopulateOptions,
+  type PopulatePath,
   type QueryResult,
   ReferenceKind,
   type Transaction,
@@ -89,7 +90,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return res.map(r => this.mapResult<T>(r, this.metadata.find<T>(entityName))!);
   }
 
-  async findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T, P, F, E> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
+  async findOne<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T, P, F, E> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
     if (this.metadata.find(entityName)?.virtual) {
       const [item] = await this.findVirtual(entityName, where, options as FindOptions<T, any, any, any>);
       /* istanbul ignore next */

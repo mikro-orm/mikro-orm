@@ -15,7 +15,14 @@ import { QueryHelper } from '../utils/QueryHelper';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import type { Collection } from './Collection';
-import { LoadStrategy, type LockMode, type PopulateHint, type QueryOrderMap, ReferenceKind } from '../enums';
+import {
+  LoadStrategy,
+  type LockMode,
+  type PopulateHint,
+  PopulatePath,
+  type QueryOrderMap,
+  ReferenceKind,
+} from '../enums';
 import { Reference, type ScalarReference } from './Reference';
 import type { EntityField, FindOptions, IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
@@ -24,7 +31,7 @@ import { helper } from './wrap';
 import type { LoggingOptions } from '../logging/Logger';
 import { raw, RawQueryFragment } from '../utils/RawQueryFragment';
 
-export type EntityLoaderOptions<Entity, Fields extends string = '*', Excludes extends string = never> = {
+export type EntityLoaderOptions<Entity, Fields extends string = PopulatePath.ALL, Excludes extends string = never> = {
   where?: FilterQuery<Entity>;
   populateWhere?: PopulateHint | `${PopulateHint}`;
   fields?: readonly EntityField<Entity, Fields>[];
@@ -57,7 +64,7 @@ export class EntityLoader {
    * Loads specified relations in batch.
    * This will execute one query for each relation, that will populate it on all the specified entities.
    */
-  async populate<Entity extends object, Fields extends string = '*'>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): Promise<void> {
+  async populate<Entity extends object, Fields extends string = PopulatePath.ALL>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): Promise<void> {
     if (entities.length === 0 || Utils.isEmpty(populate)) {
       return this.setSerializationContext(entities, populate, options);
     }
@@ -98,7 +105,7 @@ export class EntityLoader {
   normalizePopulate<Entity>(entityName: string, populate: (PopulateOptions<Entity> | boolean)[] | PopulateOptions<Entity> | boolean, strategy?: LoadStrategy, lookup = true): PopulateOptions<Entity>[] {
     const meta = this.metadata.find(entityName)!;
     let normalized = Utils.asArray(populate).map(field => {
-      return typeof field === 'boolean' || field.field === '*' ? { all: !!field, field: meta.primaryKeys[0] } as PopulateOptions<Entity> : field;
+      return typeof field === 'boolean' || field.field === PopulatePath.ALL ? { all: !!field, field: meta.primaryKeys[0] } as PopulateOptions<Entity> : field;
     });
 
     if (normalized.some(p => p.all)) {
@@ -119,7 +126,7 @@ export class EntityLoader {
     return this.mergeNestedPopulate(normalized);
   }
 
-  private setSerializationContext<Entity extends object, Fields extends string = '*'>(entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): void {
+  private setSerializationContext<Entity extends object, Fields extends string = PopulatePath.ALL>(entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): void {
     const exclude = options.exclude as string[] ?? [];
 
     for (const entity of entities) {
@@ -132,7 +139,7 @@ export class EntityLoader {
       } else if (options.fields) {
         context.fields = new Set(options.fields as string[]);
       } else {
-        context.fields = new Set(['*']);
+        context.fields = new Set([PopulatePath.ALL]);
       }
     }
   }
@@ -149,7 +156,7 @@ export class EntityLoader {
       const prop = meta.properties[f];
       p.strategy ??= prop.strategy;
 
-      if (parts[0] === '*') {
+      if (parts[0] === PopulatePath.ALL) {
         prop.targetMeta!.props
           .filter(prop => prop.lazy || prop.kind !== ReferenceKind.SCALAR)
           .forEach(prop => p.children!.push({ field: prop.name as EntityKey, strategy: p.strategy }));
@@ -165,7 +172,7 @@ export class EntityLoader {
    */
   private mergeNestedPopulate<Entity>(populate: PopulateOptions<Entity>[]): PopulateOptions<Entity>[] {
     const tmp = populate.reduce((ret, item) => {
-      if (item.field === '*') {
+      if (item.field === PopulatePath.ALL) {
         return ret;
       }
 

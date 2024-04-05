@@ -3,7 +3,7 @@ import type {
   IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath, ObjectQuery, FilterObject, Populate,
 } from '../typings';
 import type { Connection, QueryResult, Transaction } from '../connections';
-import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint } from '../enums';
+import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint, PopulatePath } from '../enums';
 import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata';
 import type { Collection } from '../entity/Collection';
@@ -90,7 +90,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
 }
 
-export type EntityField<T, P extends string = '*'> = keyof T | '*' | AutoPath<T, P, '*'>;
+export type EntityField<T, P extends string = PopulatePath.ALL> = keyof T | PopulatePath.ALL | AutoPath<T, P, `${PopulatePath.ALL}`>;
 
 export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
 
@@ -103,13 +103,13 @@ export type FilterOptions = Dictionary<boolean | Dictionary> | string[] | boolea
 export interface FindOptions<
   Entity,
   Hint extends string = never,
-  Fields extends string = '*',
+  Fields extends string = PopulatePath.ALL,
   Excludes extends string = never,
 > {
   populate?: Populate<Entity, Hint>;
   populateWhere?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`;
   populateOrderBy?: OrderDefinition<Entity>;
-  fields?: readonly AutoPath<Entity, Fields, '*'>[];
+  fields?: readonly AutoPath<Entity, Fields, `${PopulatePath.ALL}`>[];
   exclude?: readonly AutoPath<Entity, Excludes>[];
   orderBy?: OrderDefinition<Entity>;
   cache?: boolean | number | [string, number];

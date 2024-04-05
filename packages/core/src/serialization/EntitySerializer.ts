@@ -18,7 +18,7 @@ import type {
 import { helper } from '../entity/wrap';
 import type { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
-import { ReferenceKind } from '../enums';
+import { type PopulatePath, ReferenceKind } from '../enums';
 import { Reference } from '../entity/Reference';
 import { SerializationContext } from './SerializationContext';
 import { RawQueryFragment } from '../utils/RawQueryFragment';
@@ -266,7 +266,7 @@ export class EntitySerializer {
 
 export interface SerializeOptions<T, P extends string = never, E extends string = never> {
   /** Specify which relation should be serialized as populated and which as a FK. */
-  populate?: readonly AutoPath<T, P, '*'>[];
+  populate?: readonly AutoPath<T, P, `${PopulatePath.ALL}`>[];
 
   /** Specify which properties should be omitted. */
   exclude?: readonly AutoPath<T, E>[];
