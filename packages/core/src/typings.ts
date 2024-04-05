@@ -44,6 +44,7 @@ export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never 
 export type IsAny<T> = 0 extends (1 & T) ? true : false;
 export type IsNever<T, True = true, False = false> = [T] extends [never] ? True : False;
 export type MaybePromise<T> = T | Promise<T>;
+export type NoInfer<T> = [T][T extends any ? 0 : never];
 
 export type DeepPartial<T> = T & {
   [P in keyof T]?: T[P] extends (infer U)[]
