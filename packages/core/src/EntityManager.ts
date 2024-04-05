@@ -198,7 +198,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint, Fields, Excludes> = {}): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: FindOptions<Entity, Hint, Fields, Excludes> = {}): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
       const fork = em.fork();
@@ -284,7 +284,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entityName: EntityName<Entity>, options?: FindAllOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
+  >(entityName: EntityName<Entity>, options?: FindAllOptions<NoInfer<Entity>, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
     return this.find(entityName, options?.where ?? {}, options);
   }
 
@@ -562,7 +562,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint, Fields, Excludes> = {}): Promise<[Loaded<Entity, Hint, Fields, Excludes>[], number]> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: FindOptions<Entity, Hint, Fields, Excludes> = {}): Promise<[Loaded<Entity, Hint, Fields, Excludes>[], number]> {
     const em = this.getContext(false);
     const copy = Utils.copy(where);
     const [entities, count] = await Promise.all([
@@ -630,7 +630,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindByCursorOptions<Entity, Hint, Fields, Excludes>): Promise<Cursor<Entity, Hint, Fields, Excludes>> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: FindByCursorOptions<Entity, Hint, Fields, Excludes>): Promise<Cursor<Entity, Hint, Fields, Excludes>> {
     const em = this.getContext(false);
     entityName = Utils.className(entityName);
     options.overfetch ??= true;
@@ -711,7 +711,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOneOptions<Entity, Hint, Fields, Excludes> = {}): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: FindOneOptions<Entity, Hint, Fields, Excludes> = {}): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
       const fork = em.fork();
@@ -800,7 +800,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOneOrFailOptions<Entity, Hint, Fields, Excludes> = {}): Promise<Loaded<Entity, Hint, Fields, Excludes>> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: FindOneOrFailOptions<Entity, Hint, Fields, Excludes> = {}): Promise<Loaded<Entity, Hint, Fields, Excludes>> {
     let entity: Loaded<Entity, Hint, Fields, Excludes> | null;
     let isStrictViolation = false;
 
@@ -1430,7 +1430,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Fires native update query. Calling this has no side effects on the context (identity map).
    */
-  async nativeUpdate<Entity extends object>(entityName: EntityName<Entity>, where: FilterQuery<Entity>, data: EntityData<Entity>, options: UpdateOptions<Entity> = {}): Promise<number> {
+  async nativeUpdate<Entity extends object>(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, data: EntityData<Entity>, options: UpdateOptions<Entity> = {}): Promise<number> {
     const em = this.getContext(false);
     em.prepareOptions(options);
 
@@ -1447,7 +1447,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Fires native delete query. Calling this has no side effects on the context (identity map).
    */
-  async nativeDelete<Entity extends object>(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: DeleteOptions<Entity> = {}): Promise<number> {
+  async nativeDelete<Entity extends object>(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: DeleteOptions<Entity> = {}): Promise<number> {
     const em = this.getContext(false);
     em.prepareOptions(options);
 
@@ -1643,7 +1643,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async count<
     Entity extends object,
     Hint extends string = never,
-  >(entityName: EntityName<Entity>, where: FilterQuery<Entity> = {} as FilterQuery<Entity>, options: CountOptions<Entity, Hint> = {}): Promise<number> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>> = {} as FilterQuery<Entity>, options: CountOptions<Entity, Hint> = {}): Promise<number> {
     const em = this.getContext(false);
 
     // Shallow copy options since the object will be modified when deleting orderBy
