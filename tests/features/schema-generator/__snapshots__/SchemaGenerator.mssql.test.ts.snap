@@ -127,35 +127,35 @@ exec sp_MSforeachtable 'alter table ? check constraint all';
 exports[`SchemaGenerator generate schema from metadata [mssql]: mssql-drop-schema-dump 1`] = `
 "exec sp_MSforeachtable 'alter table ? nocheck constraint all';
 
-ALTER TABLE [user2_sandwiches] DROP CONSTRAINT [user2_sandwiches_sandwich_id_foreign];
-ALTER TABLE [user2_sandwiches] DROP CONSTRAINT [user2_sandwiches_user2_first_name_user2_last_name_foreign];
-ALTER TABLE [user2_cars] DROP CONSTRAINT [user2_cars_car2_name_car2_year_foreign];
-ALTER TABLE [user2_cars] DROP CONSTRAINT [user2_cars_user2_first_name_user2_last_name_foreign];
-ALTER TABLE [user2] DROP CONSTRAINT [user2_favourite_car_name_favourite_car_year_foreign];
-ALTER TABLE [configuration2] DROP CONSTRAINT [configuration2_test_id_foreign];
-ALTER TABLE [publisher2_tests] DROP CONSTRAINT [publisher2_tests_publisher2_id_foreign];
-ALTER TABLE [publisher2_tests] DROP CONSTRAINT [publisher2_tests_test2_id_foreign];
-ALTER TABLE [test2] DROP CONSTRAINT [test2_book_uuid_pk_foreign];
-ALTER TABLE [address2] DROP CONSTRAINT [address2_author_id_foreign];
-ALTER TABLE [author_to_friend] DROP CONSTRAINT [author_to_friend_author2_1_id_foreign];
-ALTER TABLE [author_to_friend] DROP CONSTRAINT [author_to_friend_author2_2_id_foreign];
-ALTER TABLE [author2_following] DROP CONSTRAINT [author2_following_author2_1_id_foreign];
-ALTER TABLE [author2_following] DROP CONSTRAINT [author2_following_author2_2_id_foreign];
-ALTER TABLE [book_to_tag_unordered] DROP CONSTRAINT [book_to_tag_unordered_book_tag2_id_foreign];
-ALTER TABLE [book_to_tag_unordered] DROP CONSTRAINT [book_to_tag_unordered_book2_uuid_pk_foreign];
-ALTER TABLE [book2_tags] DROP CONSTRAINT [book2_tags_book_tag2_id_foreign];
-ALTER TABLE [book2_tags] DROP CONSTRAINT [book2_tags_book2_uuid_pk_foreign];
-ALTER TABLE [book2] DROP CONSTRAINT [book2_author_id_foreign];
-ALTER TABLE [book2] DROP CONSTRAINT [book2_publisher_id_foreign];
-ALTER TABLE [author2] DROP CONSTRAINT [author2_favourite_author_id_foreign];
-ALTER TABLE [author2] DROP CONSTRAINT [author2_favourite_book_uuid_pk_foreign];
-ALTER TABLE [foo_param2] DROP CONSTRAINT [foo_param2_bar_id_foreign];
-ALTER TABLE [foo_param2] DROP CONSTRAINT [foo_param2_baz_id_foreign];
-ALTER TABLE [foo_bar2] DROP CONSTRAINT [foo_bar2_foo_bar_id_foreign];
-ALTER TABLE [foo_bar2] DROP CONSTRAINT [foo_bar2_baz_id_foreign];
-ALTER TABLE [car_owner2] DROP CONSTRAINT [car_owner2_car_name_car_year_foreign];
-ALTER TABLE [base_user2] DROP CONSTRAINT [base_user2_favourite_employee_id_foreign];
-ALTER TABLE [base_user2] DROP CONSTRAINT [base_user2_favourite_manager_id_foreign];
+alter table [user2_sandwiches] drop constraint [user2_sandwiches_sandwich_id_foreign];
+alter table [user2_sandwiches] drop constraint [user2_sandwiches_user2_first_name_user2_last_name_foreign];
+alter table [user2_cars] drop constraint [user2_cars_car2_name_car2_year_foreign];
+alter table [user2_cars] drop constraint [user2_cars_user2_first_name_user2_last_name_foreign];
+alter table [user2] drop constraint [user2_favourite_car_name_favourite_car_year_foreign];
+alter table [configuration2] drop constraint [configuration2_test_id_foreign];
+alter table [publisher2_tests] drop constraint [publisher2_tests_publisher2_id_foreign];
+alter table [publisher2_tests] drop constraint [publisher2_tests_test2_id_foreign];
+alter table [test2] drop constraint [test2_book_uuid_pk_foreign];
+alter table [address2] drop constraint [address2_author_id_foreign];
+alter table [author_to_friend] drop constraint [author_to_friend_author2_1_id_foreign];
+alter table [author_to_friend] drop constraint [author_to_friend_author2_2_id_foreign];
+alter table [author2_following] drop constraint [author2_following_author2_1_id_foreign];
+alter table [author2_following] drop constraint [author2_following_author2_2_id_foreign];
+alter table [book_to_tag_unordered] drop constraint [book_to_tag_unordered_book_tag2_id_foreign];
+alter table [book_to_tag_unordered] drop constraint [book_to_tag_unordered_book2_uuid_pk_foreign];
+alter table [book2_tags] drop constraint [book2_tags_book_tag2_id_foreign];
+alter table [book2_tags] drop constraint [book2_tags_book2_uuid_pk_foreign];
+alter table [book2] drop constraint [book2_author_id_foreign];
+alter table [book2] drop constraint [book2_publisher_id_foreign];
+alter table [author2] drop constraint [author2_favourite_author_id_foreign];
+alter table [author2] drop constraint [author2_favourite_book_uuid_pk_foreign];
+alter table [foo_param2] drop constraint [foo_param2_bar_id_foreign];
+alter table [foo_param2] drop constraint [foo_param2_baz_id_foreign];
+alter table [foo_bar2] drop constraint [foo_bar2_foo_bar_id_foreign];
+alter table [foo_bar2] drop constraint [foo_bar2_baz_id_foreign];
+alter table [car_owner2] drop constraint [car_owner2_car_name_car_year_foreign];
+alter table [base_user2] drop constraint [base_user2_favourite_employee_id_foreign];
+alter table [base_user2] drop constraint [base_user2_favourite_manager_id_foreign];
 if object_id('[user2_sandwiches]', 'U') is not null DROP TABLE [user2_sandwiches];
 if object_id('[user2_cars]', 'U') is not null DROP TABLE [user2_cars];
 if object_id('[user2]', 'U') is not null DROP TABLE [user2];
@@ -187,7 +187,7 @@ exec sp_MSforeachtable 'alter table ? check constraint all';
 exports[`SchemaGenerator generate schema from metadata [mssql]: mssql-update-schema-dump 1`] = `""`;
 
 exports[`SchemaGenerator rename column [mssql]: mssql-update-schema-rename-column 1`] = `
-"ALTER TABLE [author2] DROP CONSTRAINT [author2_favourite_author_id_foreign];
+"alter table [author2] drop constraint [author2_favourite_author_id_foreign];
 
 DROP INDEX [author2_name_age_index] ON [author2];
 
@@ -224,7 +224,7 @@ exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-alter-column
 "drop index [author2_born_index] on [author2];
 alter table [author2] alter column [born] nvarchar(max);
 
-ALTER TABLE [author2] DROP CONSTRAINT [author2_favourite_author_id_foreign];
+alter table [author2] drop constraint [author2_favourite_author_id_foreign];
 
 declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'age') if @constraint0 is not null exec('alter table author2 drop constraint ' + @constraint0);
 declare @constraint1 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'born') if @constraint1 is not null exec('alter table author2 drop constraint ' + @constraint1);
@@ -246,7 +246,7 @@ exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-create-table
 `;
 
 exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-1:1 1`] = `
-"ALTER TABLE [foo_bar2] DROP CONSTRAINT [foo_bar2_baz_id_foreign];
+"alter table [foo_bar2] drop constraint [foo_bar2_baz_id_foreign];
 
 DROP INDEX [foo_bar2_baz_id_unique] ON [foo_bar2];
 declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'foo_bar2' and all_columns.name = 'baz_id') if @constraint0 is not null exec('alter table [foo_bar2] drop constraint ' + @constraint0);
@@ -256,7 +256,7 @@ alter table [foo_bar2] drop column [baz_id];
 `;
 
 exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-column 1`] = `
-"ALTER TABLE [author2] DROP CONSTRAINT [author2_favourite_book_uuid_pk_foreign];
+"alter table [author2] drop constraint [author2_favourite_book_uuid_pk_foreign];
 
 ALTER TABLE [new_table] DROP CONSTRAINT [PK__new_tabl__123];
 declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'new_table' and all_columns.name = 'id') if @constraint0 is not null exec('alter table [new_table] drop constraint ' + @constraint0);
@@ -276,17 +276,17 @@ exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-index 1
 `;
 
 exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-table 1`] = `
-"ALTER TABLE [book2] DROP CONSTRAINT [book2_author_id_foreign];
+"alter table [book2] drop constraint [book2_author_id_foreign];
 
-ALTER TABLE [author2_following] DROP CONSTRAINT [author2_following_author2_1_id_foreign];
+alter table [author2_following] drop constraint [author2_following_author2_1_id_foreign];
 
-ALTER TABLE [author2_following] DROP CONSTRAINT [author2_following_author2_2_id_foreign];
+alter table [author2_following] drop constraint [author2_following_author2_2_id_foreign];
 
-ALTER TABLE [author_to_friend] DROP CONSTRAINT [author_to_friend_author2_1_id_foreign];
+alter table [author_to_friend] drop constraint [author_to_friend_author2_1_id_foreign];
 
-ALTER TABLE [author_to_friend] DROP CONSTRAINT [author_to_friend_author2_2_id_foreign];
+alter table [author_to_friend] drop constraint [author_to_friend_author2_2_id_foreign];
 
-ALTER TABLE [address2] DROP CONSTRAINT [address2_author_id_foreign];
+alter table [address2] drop constraint [address2_author_id_foreign];
 
 if object_id('[new_table]', 'U') is not null DROP TABLE [new_table];
 
@@ -296,17 +296,17 @@ if object_id('[author2]', 'U') is not null DROP TABLE [author2];
 `;
 
 exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-table-disabled 1`] = `
-"ALTER TABLE [book2] DROP CONSTRAINT [book2_author_id_foreign];
+"alter table [book2] drop constraint [book2_author_id_foreign];
 
-ALTER TABLE [author2_following] DROP CONSTRAINT [author2_following_author2_1_id_foreign];
+alter table [author2_following] drop constraint [author2_following_author2_1_id_foreign];
 
-ALTER TABLE [author2_following] DROP CONSTRAINT [author2_following_author2_2_id_foreign];
+alter table [author2_following] drop constraint [author2_following_author2_2_id_foreign];
 
-ALTER TABLE [author_to_friend] DROP CONSTRAINT [author_to_friend_author2_1_id_foreign];
+alter table [author_to_friend] drop constraint [author_to_friend_author2_1_id_foreign];
 
-ALTER TABLE [author_to_friend] DROP CONSTRAINT [author_to_friend_author2_2_id_foreign];
+alter table [author_to_friend] drop constraint [author_to_friend_author2_2_id_foreign];
 
-ALTER TABLE [address2] DROP CONSTRAINT [address2_author_id_foreign];
+alter table [address2] drop constraint [address2_author_id_foreign];
 
 "
 `;

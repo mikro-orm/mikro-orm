@@ -196,10 +196,10 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       rc.update_rule,
       rc.delete_rule
       from information_schema.constraint_column_usage ccu
-    inner join information_schema.REFERENTIAL_CONSTRAINTS rc on ccu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME
-    inner join information_schema.KEY_COLUMN_USAGE kcu on kcu.CONSTRAINT_NAME = rc.UNIQUE_CONSTRAINT_NAME
-    where (${tables.map(t => `(ccu.table_name = '${t.table_name}' and ccu.table_schema = '${t.schema_name}')`).join(' or ')})
-    order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
+      inner join information_schema.referential_constraints rc on ccu.constraint_name = rc.constraint_name and rc.constraint_schema = ccu.constraint_schema
+      inner join information_schema.key_column_usage kcu on kcu.constraint_name = rc.unique_constraint_name and rc.unique_constraint_schema = kcu.constraint_schema
+      where (${tables.map(t => `(ccu.table_name = '${t.table_name}' and ccu.table_schema = '${t.schema_name}')`).join(' or ')})
+      order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
 

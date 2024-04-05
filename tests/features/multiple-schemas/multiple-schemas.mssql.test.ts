@@ -343,7 +343,7 @@ describe('multiple connected schemas in postgres', () => {
     expect(n5tags).toHaveLength(0);
   });
 
-  test.skip(`schema diffing won't remove other schemas or tables`, async () => {
+  test(`schema diffing won't remove other schemas or tables`, async () => {
     // `*` schema is found in metadata, so no schema deletes should be triggered
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toBe('');

@@ -30,4 +30,11 @@ export class MsSqlTableCompiler extends MonkeyPatchable.MsSqlTableCompiler {
     });
   }
 
+  dropForeign(this: any, columns: any, constraintName: any) {
+    constraintName = constraintName
+      ? this.formatter.wrap(constraintName)
+      : this._indexCommand('foreign', this.tableNameRaw, columns);
+    this.pushQuery(`alter table ${this.tableName()} drop constraint ${constraintName}`);
+  }
+
 }
