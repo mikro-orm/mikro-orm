@@ -32,6 +32,7 @@ export class UnicodeStringType extends Type<string | null, string | null> {
   }
 
   override convertToJSValue(value: string | null | UnicodeString): string | null {
+    /* istanbul ignore if */
     if (value instanceof UnicodeString) {
       return value.value;
     }
@@ -40,7 +41,6 @@ export class UnicodeStringType extends Type<string | null, string | null> {
   }
 
   override convertToDatabaseValue(value: string | null): string | null {
-    /* istanbul ignore if */
     if (typeof value === 'string') {
       return new UnicodeString(value) as any;
     }

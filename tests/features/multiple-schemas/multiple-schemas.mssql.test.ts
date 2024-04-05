@@ -62,10 +62,12 @@ describe('multiple connected schemas in postgres', () => {
       extensions: [EntityGenerator],
     });
 
+    await orm.schema.createNamespace('dbo');
+
     // `n1` needs to go last as other schemas have FKs pointing to it
     for (const ns of ['n2', 'n3', 'n4', 'n5', 'n1']) {
       await orm.schema.dropSchema({ schema: ns });
-      await orm.schema.execute(`drop schema if exists ${ns}`);
+      await orm.schema.dropNamespace(ns);
     }
 
     // `*` schema will be ignored
@@ -192,9 +194,10 @@ describe('multiple connected schemas in postgres', () => {
     expect(n5tags).toHaveLength(0);
   });
 
-  test.skip('use different schema via options', async () => {
+  test('use different schema via options', async () => {
     // author is always in schema `n1`
     const author = new Author();
+    author.id = 1;
     author.name = 'a1';
 
     // each book has different schema, such collection can be used for persisting, but it can't be loaded (as we can load only from single schema at a time)
@@ -220,6 +223,7 @@ describe('multiple connected schemas in postgres', () => {
     const mock = mockLogger(orm);
     await orm.em.persistAndFlush(author);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
+      'Author-n1:1',
       'BookTag-n3:1',
       'BookTag-n3:2',
       'BookTag-n3:3',
@@ -232,7 +236,6 @@ describe('multiple connected schemas in postgres', () => {
       'BookTag-n4:1',
       'BookTag-n4:2',
       'BookTag-n4:3',
-      'Author-n1:1',
       'Book-n3:1',
       'Book-n5:1',
       'Book-n5:2',
@@ -242,7 +245,7 @@ describe('multiple connected schemas in postgres', () => {
     expect(mock.mock.calls[1][0]).toMatch(`merge into [n3].[book_tag] using (select * from (values (0),(1),(2)) v (id) where 1 = 1) s on 1 = 0 when not matched then insert default values output inserted.[id]`);
     expect(mock.mock.calls[2][0]).toMatch(`merge into [n5].[book_tag] using (select * from (values (0),(1),(2),(3),(4),(5)) v (id) where 1 = 1) s on 1 = 0 when not matched then insert default values output inserted.[id]`);
     expect(mock.mock.calls[3][0]).toMatch(`merge into [n4].[book_tag] using (select * from (values (0),(1),(2)) v (id) where 1 = 1) s on 1 = 0 when not matched then insert default values output inserted.[id]`);
-    expect(mock.mock.calls[4][0]).toMatch(`insert into [n1].[author] ([name]) output inserted.[id] values (N'a1')`);
+    expect(mock.mock.calls[4][0]).toMatch(`set identity_insert [n1].[author] on; insert into [n1].[author] ([id], [name]) values (1, N'a1'); set identity_insert [n1].[author] off`);
     expect(mock.mock.calls[5][0]).toMatch(`insert into [n3].[book] ([author_id]) output inserted.[id] values (1)`);
     expect(mock.mock.calls[6][0]).toMatch(`insert into [n5].[book] ([author_id]) output inserted.[id] values (1), (1)`);
     expect(mock.mock.calls[7][0]).toMatch(`insert into [n4].[book] ([author_id]) output inserted.[id] values (1)`);
@@ -278,13 +281,13 @@ describe('multiple connected schemas in postgres', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`update [n1].[author] set [name] = N'new name' where [id] = 1`);
-    expect(mock.mock.calls[2][0]).toMatch(`update [n3].[book] set [name] = N'new name 1' where [id] = 1`);
-    expect(mock.mock.calls[3][0]).toMatch(`update [n4].[book] set [name] = N'new name 2' where [id] = 1`);
-    expect(mock.mock.calls[4][0]).toMatch(`update [n5].[book] set [name] = case when ([id] = 1) then N'new name 3' when ([id] = 2) then N'new name 4' else [name] end where [id] in (1, 2)`);
-    expect(mock.mock.calls[5][0]).toMatch(`update [n3].[book_tag] set [name] = N'new name 1' where [id] = 1`);
-    expect(mock.mock.calls[6][0]).toMatch(`update [n5].[book_tag] set [name] = case when ([id] = 1) then N'new name 3' when ([id] = 4) then N'new name 4' else [name] end where [id] in (1, 4)`);
-    expect(mock.mock.calls[7][0]).toMatch(`update [n4].[book_tag] set [name] = N'new name 2' where [id] = 1`);
+    expect(mock.mock.calls[1][0]).toMatch(`update [n3].[book_tag] set [name] = N'new name 1' where [id] = 1;select @@rowcount`);
+    expect(mock.mock.calls[2][0]).toMatch(`update [n4].[book_tag] set [name] = N'new name 2' where [id] = 1;select @@rowcount`);
+    expect(mock.mock.calls[3][0]).toMatch(`update [n5].[book_tag] set [name] = case when ([id] = 1) then N'new name 3' when ([id] = 4) then N'new name 4' else [name] end where [id] in (1, 4)`);
+    expect(mock.mock.calls[4][0]).toMatch(`update [n1].[author] set [name] = N'new name' where [id] = 1;select @@rowcount`);
+    expect(mock.mock.calls[5][0]).toMatch(`update [n3].[book] set [name] = N'new name 1' where [id] = 1;select @@rowcount`);
+    expect(mock.mock.calls[6][0]).toMatch(`update [n4].[book] set [name] = N'new name 2' where [id] = 1;select @@rowcount`);
+    expect(mock.mock.calls[7][0]).toMatch(`update [n5].[book] set [name] = case when ([id] = 1) then N'new name 3' when ([id] = 2) then N'new name 4' else [name] end where [id] in (1, 2)`);
     expect(mock.mock.calls[8][0]).toMatch(`commit`);
     mock.mockReset();
 
@@ -374,19 +377,24 @@ describe('multiple connected schemas in postgres', () => {
     expect(entities).toMatchSnapshot();
   });
 
-  test.skip('use different schema via options in em.insert/Many', async () => {
+  test('use different schema via options in em.insert/Many', async () => {
     const mock = mockLogger(orm);
 
     // author is always in schema `n1`
     const author = new Author();
+    author.id = 1;
     author.name = 'a1';
     await orm.em.insert(author);
 
     // each book has different schema, such collection can be used for persisting, but it can't be loaded (as we can load only from single schema at a time)
     const book31 = new Book();
+    book31.id = 1;
     const book41 = new Book();
+    book41.id = 1;
     const book51 = new Book();
+    book51.id = 1;
     const book52 = new Book();
+    book52.id = 2;
     author.books.add(book31, book41, book51, book52);
 
     await orm.em.insertMany(Book, [book51, book52], { schema: 'n5' });
@@ -404,10 +412,10 @@ describe('multiple connected schemas in postgres', () => {
       'Book-n5:1',
       'Book-n5:2',
     ]);
-    expect(mock.mock.calls[0][0]).toMatch(`insert into [n1].[author] ([name]) output inserted.[id] values (N'a1')`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into [n5].[book] ([author_id]) output inserted.[id] values (1), (1)`);
-    expect(mock.mock.calls[2][0]).toMatch(`insert into [n3].[book] ([author_id]) output inserted.[id] values (1)`);
-    expect(mock.mock.calls[3][0]).toMatch(`insert into [n4].[book] ([author_id]) output inserted.[id] values (1)`);
+    expect(mock.mock.calls[0][0]).toMatch(`set identity_insert [n1].[author] on; insert into [n1].[author] ([id], [name]) values (1, N'a1'); set identity_insert [n1].[author] off`);
+    expect(mock.mock.calls[1][0]).toMatch(`set identity_insert [n5].[book] on; insert into [n5].[book] ([id], [author_id]) values (1, 1), (2, 1); set identity_insert [n5].[book] off`);
+    expect(mock.mock.calls[2][0]).toMatch(`set identity_insert [n3].[book] on; insert into [n3].[book] ([id], [author_id]) values (1, 1); set identity_insert [n3].[book] off`);
+    expect(mock.mock.calls[3][0]).toMatch(`set identity_insert [n4].[book] on; insert into [n4].[book] ([id], [author_id]) values (1, 1); set identity_insert [n4].[book] off`);
     mock.mockReset();
 
     // schema is saved after flush as if the entity was loaded from db

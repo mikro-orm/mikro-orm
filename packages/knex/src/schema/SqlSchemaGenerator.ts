@@ -129,6 +129,16 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     await this.execute(sql);
   }
 
+  async createNamespace(name: string): Promise<void> {
+    const sql = await this.helper.getCreateNamespaceSQL(name);
+    await this.execute(sql);
+  }
+
+  async dropNamespace(name: string): Promise<void> {
+    const sql = await this.helper.getDropNamespaceSQL(name);
+    await this.execute(sql);
+  }
+
   override async clearDatabase(options?: ClearDatabaseOptions): Promise<void> {
     // truncate by default, so no value is considered as true
     /* istanbul ignore if */
