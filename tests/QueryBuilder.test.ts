@@ -701,7 +701,7 @@ describe('QueryBuilder', () => {
       .orderBy({ booksTotal: QueryOrder.ASC });
 
     await qb;
-    expect(qb.getQuery()).toEqual('select `a`.*, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` where `a`.`id` in (select `a`.`id` from (select `a`.`id`, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` where `e1`.`title` = ? group by `a`.`id` order by min(`books_total`) asc limit ?) as `a`) order by `books_total` asc');
+    expect(qb.getQuery()).toEqual('select `a`.*, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` where `a`.`id` in (select `a`.`id` from (select `a`.`id`, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` where `e1`.`title` = ? group by `a`.`id` order by min(`books_total`) asc limit ?) as `a`) order by `books_total` asc');
     expect(qb.getParams()).toEqual(['foo', 1]);
   });
 

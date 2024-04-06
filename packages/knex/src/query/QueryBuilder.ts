@@ -1229,7 +1229,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     for (const f of Object.keys(this._populateMap)) {
-      if (type === 'where') {
+      if (type === 'where' && this._joins[f]) {
         const cols = this.helper.mapJoinColumns(this.type ?? QueryType.SELECT, this._joins[f]);
 
         for (const col of cols) {
@@ -1548,6 +1548,34 @@ export class QueryBuilder<T extends object = AnyEntity> {
     (subSubQuery as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
     this._limit = undefined;
     this._offset = undefined;
+
+    // remove joins that are not used for population or ordering to improve performance
+    const populate = new Set<string>();
+    const orderByAliases = this._orderBy
+      .flatMap(hint => Object.keys(hint))
+      .map(k => k.split('.')[0]);
+
+    function addPath(hints: PopulateOptions<any>[], prefix = '') {
+      for (const hint of hints) {
+        const field = hint.field.split(':')[0];
+        populate.add((prefix ? prefix + '.' : '') + field);
+
+        if (hint.children) {
+          addPath(hint.children, (prefix ? prefix + '.' : '') + field);
+        }
+      }
+    }
+
+    addPath(this._populate);
+
+    for (const [key, join] of Object.entries(this._joins)) {
+      const path = join.path?.replace(/\[populate]|\[pivot]|:ref/g, '').replace(new RegExp(`^${meta.className}.`), '');
+
+      if (!populate.has(path ?? '') && !orderByAliases.includes(join.alias)) {
+        delete this._joins[key];
+      }
+    }
+
     this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
   }
 
