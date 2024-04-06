@@ -1,9 +1,8 @@
 import { v4 } from 'uuid';
-import { Collection, Configuration, EntityManager, MikroORM, QueryOrder, Reference, wrap } from '@mikro-orm/core';
+import { Collection, Configuration, EntityManager, MikroORM, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql';
-import { initORMMySql } from './bootstrap';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import { initORMMySql, mockLogger } from './bootstrap';
 
 describe('EntityManagerMariaDb', () => {
 
@@ -38,7 +37,7 @@ describe('EntityManagerMariaDb', () => {
 
   test('getConnectionOptions()', async () => {
     const config = new Configuration({
-      driver: MySqlDriver,
+      driver: MariaDbDriver,
       clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -240,6 +239,77 @@ describe('EntityManagerMariaDb', () => {
     expect(lastBook[0].author).toBeInstanceOf(Author2);
     expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
     await orm.em.remove(lastBook[0]).flush();
+  });
+
+  test('pagination', async () => {
+    for (let i = 1; i <= 10; i++) {
+      const num = `${i}`.padStart(2, '0');
+      const god = new Author2(`God ${num}`, `hello${num}@heaven.god`);
+      const b1 = new Book2(`Bible ${num}.1`, god);
+      const b2 = new Book2(`Bible ${num}.2`, god);
+      const b3 = new Book2(`Bible ${num}.3`, god);
+      await orm.em.persistAndFlush([b1, b2, b3]);
+      orm.em.persist(god);
+    }
+
+    await orm.em.flush();
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+
+    // without paginate flag it fails to get only 2 records (we need to explicitly disable it)
+    const res1 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
+      orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
+      limit: 5,
+      groupBy: ['id', 'name', 'b1.title'],
+      having: { $or: [{ age: { $gt: 0 } }, { age: { $lte: 0 } }, { age: null }] }, // no-op just for testing purposes
+      strategy: 'select-in',
+    });
+
+    expect(res1).toHaveLength(2);
+    expect(res1.map(a => a.name)).toEqual(['God 01', 'God 02']);
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a2`.`author_id` as `a2__author_id` ' +
+      'from `author2` as `a0` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
+      'where `b1`.`title` like ? ' +
+      'group by `a0`.`id`, `a0`.`name`, `b1`.`title` ' +
+      'having (`a0`.`age` > ? or `a0`.`age` <= ? or `a0`.`age` is null) ' +
+      'order by `a0`.`name` asc, `b1`.`title` asc ' +
+      'limit ?');
+
+    // with paginate flag (and a bit of dark sql magic) we get what we want
+    const res2 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
+      orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
+      offset: 3,
+      limit: 5,
+      flags: [QueryFlag.PAGINATE],
+      strategy: 'select-in',
+    });
+
+    expect(res2).toHaveLength(5);
+    expect(res2.map(a => a.name)).toEqual(['God 04', 'God 05', 'God 06', 'God 07', 'God 08']);
+    expect(mock.mock.calls[1][0]).toMatch('select `a0`.*, `a2`.`author_id` as `a2__author_id` ' +
+      'from `author2` as `a0` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
+      'where (json_contains((select json_arrayagg(`a0`.`id`) from (select `a0`.`id` from `author2` as `a0` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
+      'where `b1`.`title` like \'Bible%\' ' +
+      'group by `a0`.`id` ' +
+      'order by min(`a0`.`name`) asc, min(`b1`.`title`) asc limit 5 offset 3) as `a0`), `a0`.`id`)) ' +
+      'order by `a0`.`name` asc, `b1`.`title` asc');
+
+    // with paginate flag without offset
+    const res3 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
+      orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
+      limit: 5,
+      flags: [QueryFlag.PAGINATE],
+    });
+
+    expect(res3).toHaveLength(5);
+    expect(res3.map(a => a.name)).toEqual(['God 01', 'God 02', 'God 03', 'God 04', 'God 05']);
   });
 
 });

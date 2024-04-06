@@ -1142,7 +1142,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return prop;
   }
 
-  private prepareFields<T, U extends string | Knex.Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
+  protected prepareFields<T, U extends string | Knex.Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
     const ret: Field<T>[] = [];
     const getFieldName = (name: string) => {
       if (type === 'groupBy') {
@@ -1475,7 +1475,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     });
   }
 
-  private wrapPaginateSubQuery(meta: EntityMetadata): void {
+  protected wrapPaginateSubQuery(meta: EntityMetadata): void {
     const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
     const subQuery = this.clone(['_orderBy', '_fields']).select(pks).groupBy(pks).limit(this._limit!);
     // revert the on conditions added via populateWhere, we want to apply those only once

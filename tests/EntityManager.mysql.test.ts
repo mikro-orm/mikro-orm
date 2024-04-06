@@ -2499,16 +2499,6 @@ describe('EntityManagerMySql', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    // select `a0`.*, `a1`.`author_id` as `a1__author_id`
-    // from `author2` as `a0`
-    // left join `address2` as `a1` on `a0`.`id` = `a1`.`author_id`
-    // left join `book2` as `b2` on `a0`.`id` = `b2`.`author_id`
-    // where `b2`.`title` like 'Bible%'
-    // group by `a0`.`id`, `a0`.`name`, `b1`.`title`
-    // having (`a0`.`age` > 0 or `a0`.`age` <= 0 or `a0`.`age` is null)
-    // order by `a0`.`name` asc, `b2`.`title` asc limit 5
-    // Unknown column 'b1.title' in 'group statement'
-
     // without paginate flag it fails to get only 2 records (we need to explicitly disable it)
     const res1 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
       orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },

@@ -1,7 +1,18 @@
-import type { Configuration, EntityDictionary, NativeInsertUpdateManyOptions, QueryResult, Transaction } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
+import {
+  type AnyEntity,
+  type Configuration,
+  type ConnectionType,
+  type EntityDictionary,
+  type LoggingOptions,
+  type NativeInsertUpdateManyOptions,
+  type QueryResult,
+  type Transaction,
+  QueryFlag,
+} from '@mikro-orm/core';
+import { AbstractSqlDriver, type Knex, type SqlEntityManager } from '@mikro-orm/knex';
 import { MariaDbConnection } from './MariaDbConnection';
 import { MariaDbPlatform } from './MariaDbPlatform';
+import { MariaDbQueryBuilder } from './MariaDbQueryBuilder';
 
 export class MariaDbDriver extends AbstractSqlDriver<MariaDbConnection, MariaDbPlatform> {
 
@@ -38,6 +49,18 @@ export class MariaDbDriver extends AbstractSqlDriver<MariaDbConnection, MariaDbP
     res.row = res.rows![0];
 
     return res;
+  }
+
+  override createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MariaDbQueryBuilder<T> {
+    // do not compute the connectionType if EM is provided as it will be computed from it in the QB later on
+    const connectionType = em ? preferredConnectionType : this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
+    const qb = new MariaDbQueryBuilder<T>(entityName, this.metadata, this, ctx, alias, connectionType, em, loggerContext);
+
+    if (!convertCustomTypes) {
+      qb.unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
+    }
+
+    return qb;
   }
 
 }
