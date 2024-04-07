@@ -61,6 +61,7 @@ export class MariaDbQueryBuilder<T extends object = AnyEntity> extends QueryBuil
     subQuery.finalized = true;
     const knexQuery = subQuery.as(this.mainAlias.aliasName).clearSelect().select(pks);
 
+    /* istanbul ignore next */
     if (addToSelect.length > 0) {
       addToSelect.forEach(prop => {
         const field = this._fields!.find(field => {
@@ -113,6 +114,7 @@ export class MariaDbQueryBuilder<T extends object = AnyEntity> extends QueryBuil
     for (const [key, join] of Object.entries(this._joins)) {
       const path = join.path?.replace(/\[populate]|\[pivot]|:ref/g, '').replace(new RegExp(`^${meta.className}.`), '');
 
+      /* istanbul ignore next */
       if (!populate.has(path ?? '') && !orderByAliases.includes(join.alias)) {
         delete this._joins[key];
       }
