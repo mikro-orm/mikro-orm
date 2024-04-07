@@ -111,7 +111,7 @@ app.use((req, res, next) => {
 
 Middlewares are executed only for regular HTTP request handlers, what if you need a request scoped method outside that? One example of that is queue handlers or scheduled tasks (e.g. CRON jobs).
 
-In those cases, you can use the `@CreateRequestContext()` decorator. It requires you to first inject the `MikroORM` instance (or an `EntityManager` or some `EntityRepository`) to current context, it will be then used to create a new context for us. Under the hood, the decorator will register the new request context for our method and execute it inside it (vi `RequestContext.create()`).
+In those cases, you can use the `@CreateRequestContext()` decorator. It requires you to first inject the `MikroORM` instance (or an `EntityManager` or some `EntityRepository`) to current context, it will be then used to create a new context for us. Under the hood, the decorator will register the new request context for our method and execute it inside the method (via `RequestContext.create()`).
 
 > `@CreateRequestContext()` should be used only on the top level methods. It should not be nested - a method decorated with it should not call another method that is also decorated with it.
 
