@@ -1,7 +1,5 @@
 import type { Configuration, EntityDictionary, NativeInsertUpdateManyOptions, QueryResult, Transaction } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
-import { MySqlConnection } from './MySqlConnection';
-import { MySqlPlatform } from './MySqlPlatform';
+import { AbstractSqlDriver, MySqlConnection, MySqlPlatform } from '@mikro-orm/knex';
 
 export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatform> {
 

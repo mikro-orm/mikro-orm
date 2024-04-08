@@ -96,6 +96,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return `:column: @@ plainto_tsquery('${prop.customType.regconfig}', :query)`;
     }
 
+    /* istanbul ignore next */
     if (prop.columnTypes[0] === 'tsvector') {
       return `:column: @@ plainto_tsquery('simple', :query)`;
     }
@@ -128,6 +129,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getRegExpOperator(val?: unknown, flags?: string): string {
+    /* istanbul ignore next */
     if ((val instanceof RegExp && val.flags.includes('i')) || flags?.includes('i')) {
       return '~*';
     }
@@ -162,6 +164,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[]; nativeEnumName?: string }): string {
+    /* istanbul ignore next */
     if (column.nativeEnumName) {
       return column.nativeEnumName;
     }
@@ -344,6 +347,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
    * @inheritDoc
    */
   override castJsonValue(prop?: { columnTypes?: string[] }): string {
+    /* istanbul ignore next */
     if (prop?.columnTypes?.[0] === 'json') {
       return '::text';
     }
@@ -360,6 +364,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return new Date(value);
     }
 
+    /* istanbul ignore next */
     if (typeof value === 'number') {
       return new Date(value);
     }

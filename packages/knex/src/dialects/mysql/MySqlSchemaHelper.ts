@@ -1,5 +1,10 @@
-import { SchemaHelper, type AbstractSqlConnection, type CheckDef, type Column, type IndexDef, type Knex, type TableDifference, type DatabaseTable, type DatabaseSchema, type Table, type ForeignKey } from '@mikro-orm/knex';
+import type { Knex } from 'knex';
+import type { CheckDef, Column, IndexDef, TableDifference, Table, ForeignKey } from '../../typings';
 import { EnumType, StringType, TextType, MediumIntType, type Dictionary, type Type } from '@mikro-orm/core';
+import type { AbstractSqlConnection } from '../../AbstractSqlConnection';
+import { SchemaHelper } from '../../schema/SchemaHelper';
+import type { DatabaseSchema } from '../../schema/DatabaseSchema';
+import type { DatabaseTable } from '../../schema/DatabaseTable';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
@@ -310,7 +315,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return this._cache.supportsCheckConstraints = res.length > 0;
   }
 
-  private getChecksSQL(tables: Table[]): string {
+  protected getChecksSQL(tables: Table[]): string {
     return `select cc.constraint_schema as table_schema, tc.table_name as table_name, cc.constraint_name as name, cc.check_clause as expression
       from information_schema.check_constraints cc
       join information_schema.table_constraints tc
@@ -349,7 +354,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return super.normalizeDefaultValue(defaultValue, length, MySqlSchemaHelper.DEFAULT_VALUES);
   }
 
-  protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {
+  protected wrap(val: string | null | undefined, type: Type<unknown>): string | null | undefined {
     const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
   }

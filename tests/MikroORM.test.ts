@@ -5,7 +5,7 @@ const knex = jest.fn();
 const raw = jest.fn();
 const destroy = jest.fn();
 knex.mockReturnValue({
-  on: jest.fn(() => ({ raw, destroy, Client: {} })),
+  on: jest.fn(() => ({ raw, destroy, client: {} })),
 });
 jest.mock('knex', () => ({ knex }));
 
