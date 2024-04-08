@@ -1,41 +1,18 @@
-import { SchemaHelper, type AbstractSqlConnection, type CheckDef, type Column, type IndexDef, type Knex, type TableDifference, type DatabaseTable, type DatabaseSchema, type Table, type ForeignKey } from '@mikro-orm/knex';
-import { MediumIntType, type Dictionary, type Type } from '@mikro-orm/core';
+import {
+  type AbstractSqlConnection,
+  type CheckDef,
+  type Column,
+  type IndexDef,
+  type DatabaseSchema,
+  type Table,
+  MySqlSchemaHelper,
+} from '@mikro-orm/knex';
+import { type Dictionary, type Type } from '@mikro-orm/core';
 
-/* istanbul ignore next */
-export class MariaDbSchemaHelper extends SchemaHelper {
-
-  static readonly DEFAULT_VALUES = {
-    'now()': ['now()', 'current_timestamp'],
-    'current_timestamp(?)': ['current_timestamp(?)'],
-    '0': ['0', 'false'],
-  };
-
-  override getSchemaBeginning(charset: string): string {
-    return `set names ${charset};\n${this.disableForeignKeysSQL()}\n\n`;
-  }
-
-  override disableForeignKeysSQL(): string {
-    return 'set foreign_key_checks = 0;';
-  }
-
-  override enableForeignKeysSQL(): string {
-    return 'set foreign_key_checks = 1;';
-  }
-
-  override finalizeTable(table: Knex.CreateTableBuilder, charset: string, collate?: string): void {
-    table.engine('InnoDB');
-    table.charset(charset);
-
-    if (collate) {
-      table.collate(collate);
-    }
-  }
-
-  override getListTablesSQL(): string {
-    return `select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()`;
-  }
+export class MariaDbSchemaHelper extends MySqlSchemaHelper {
 
   override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
+    /* istanbul ignore next */
     if (tables.length === 0) {
       return;
     }
@@ -54,7 +31,7 @@ export class MariaDbSchemaHelper extends SchemaHelper {
     }
   }
 
-  async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<IndexDef[]>> {
+  override async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<IndexDef[]>> {
     const sql = `select table_name as table_name, nullif(table_schema, schema()) as schema_name, index_name as index_name, non_unique as non_unique, column_name as column_name
         from information_schema.statistics where table_schema = database()
         and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
@@ -81,7 +58,7 @@ export class MariaDbSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllColumns(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Column[]>> {
+  override async getAllColumns(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Column[]>> {
     const sql = `select table_name as table_name,
       nullif(table_schema, schema()) as schema_name,
       column_name as column_name,
@@ -137,7 +114,7 @@ export class MariaDbSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllChecks(connection: AbstractSqlConnection, tables: Table[], columns?: Dictionary<Column[]>): Promise<Dictionary<CheckDef[]>> {
+  override async getAllChecks(connection: AbstractSqlConnection, tables: Table[], columns?: Dictionary<Column[]>): Promise<Dictionary<CheckDef[]>> {
     const sql = this.getChecksSQL(tables);
     const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
     const ret = {} as Dictionary;
@@ -166,136 +143,7 @@ export class MariaDbSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
-    const sql = `select k.constraint_name as constraint_name, nullif(k.table_schema, schema()) as schema_name, k.table_name as table_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule
-        from information_schema.key_column_usage k
-        inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = k.table_name
-        where k.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
-        and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null
-        order by constraint_name, k.ordinal_position`;
-    const allFks = await connection.execute<any[]>(sql);
-    const ret = {} as Dictionary;
-
-    for (const fk of allFks) {
-      const key = this.getTableKey(fk);
-      ret[key] ??= [];
-      ret[key].push(fk);
-    }
-
-    Object.keys(ret).forEach(key => {
-      const parts = key.split('.');
-      const schemaName = parts.length > 1 ? parts[0] : undefined;
-      ret[key] = this.mapForeignKeys(ret[key], key, schemaName);
-    });
-
-    return ret;
-  }
-
-  async getAllEnumDefinitions(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<string[]>>> {
-    const sql = `select column_name as column_name, column_type as column_type, table_name as table_name
-      from information_schema.columns
-      where data_type = 'enum' and table_name in (${tables.map(t => `'${t.table_name}'`).join(', ')}) and table_schema = database()`;
-    const enums = await connection.execute<any[]>(sql);
-
-    return enums.reduce((o, item) => {
-      o[item.table_name] ??= {};
-      o[item.table_name][item.column_name] = item.column_type.match(/enum\((.*)\)/)[1].split(',').map((item: string) => item.match(/'(.*)'/)![1]);
-      return o;
-    }, {} as Dictionary<string[]>);
-  }
-
-  override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
-    // Dropping primary keys requires to unset autoincrement attribute on the particular column first.
-    const pk = Object.values(tableDiff.removedIndexes).find(idx => idx.primary);
-
-    if (!pk || safe) {
-      return '';
-    }
-
-    return pk.columnNames
-      .filter(col => tableDiff.fromTable.hasColumn(col))
-      .map(col => tableDiff.fromTable.getColumn(col)!)
-      .filter(col => col.autoincrement)
-      .map(col => `alter table \`${tableDiff.name}\` modify \`${col.name}\` ${this.getColumnDeclarationSQL({ ...col, autoincrement: false })}`)
-      .join(';\n');
-  }
-
-  override configureColumnDefault(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
-    if (changedProperties || column.default !== undefined) {
-      if (column.default == null) {
-        col.defaultTo(null);
-      } else {
-        col.defaultTo(knex.raw(column.default + (column.extra ? ' ' + column.extra : '')));
-      }
-    }
-
-    return col;
-  }
-
-  override getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column): string {
-    tableName = this.platform.quoteIdentifier(tableName);
-    oldColumnName = this.platform.quoteIdentifier(oldColumnName);
-    const columnName = this.platform.quoteIdentifier(to.name);
-
-    return `alter table ${tableName} change ${oldColumnName} ${columnName} ${this.getColumnDeclarationSQL(to)}`;
-  }
-
-  override getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {
-    tableName = this.platform.quoteIdentifier(tableName);
-    oldIndexName = this.platform.quoteIdentifier(oldIndexName);
-    const keyName = this.platform.quoteIdentifier(index.keyName);
-
-    return `alter table ${tableName} rename index ${oldIndexName} to ${keyName}`;
-  }
-
-  override getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
-    tableName = this.platform.quoteIdentifier(tableName);
-    const columnName = this.platform.quoteIdentifier(to.name);
-
-    return `alter table ${tableName} modify ${columnName} ${this.getColumnDeclarationSQL(to)}`;
-  }
-
-  override createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
-    if (column.mappedType instanceof MediumIntType) {
-      return table.specificType(column.name, this.getColumnDeclarationSQL(column, true));
-    }
-
-    return super.createTableColumn(table, column, fromTable, changedProperties);
-  }
-
-  override configureColumn(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
-    if (column.mappedType instanceof MediumIntType) {
-      return col;
-    }
-
-    return super.configureColumn(column, col, knex, changedProperties);
-  }
-
-  private getColumnDeclarationSQL(col: Column, addPrimary = false): string {
-    let ret = col.type;
-    ret += col.unsigned ? ' unsigned' : '';
-    ret += col.autoincrement ? ' auto_increment' : '';
-    ret += ' ';
-    ret += col.nullable ? 'null' : 'not null';
-    ret += col.default ? ' default ' + col.default : '';
-
-    if (addPrimary && col.primary) {
-      ret += ' primary key';
-    }
-
-    ret += col.comment ? ` comment ${this.platform.quoteValue(col.comment)}` : '';
-
-    return ret;
-  }
-
-  override getForeignKeysSQL(tableName: string, schemaName?: string): string {
-    return `select distinct k.constraint_name as constraint_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule `
-      + `from information_schema.key_column_usage k `
-      + `inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = '${tableName}' `
-      + `where k.table_name = '${tableName}' and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null`;
-  }
-
-  private getChecksSQL(tables: Table[]): string {
+  protected override getChecksSQL(tables: Table[]): string {
     return `select tc.constraint_schema as table_schema, tc.table_name as table_name, tc.constraint_name as name, tc.check_clause as expression,
       case when tc.level = 'Column' then tc.constraint_name else null end as column_name
       from information_schema.check_constraints tc
@@ -303,31 +151,13 @@ export class MariaDbSchemaHelper extends SchemaHelper {
       order by tc.constraint_name`;
   }
 
+  /* istanbul ignore next */
   override async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<CheckDef[]> {
     const res = await this.getAllChecks(connection, [{ table_name: tableName, schema_name: schemaName }], { [tableName]: columns! });
     return res[tableName];
   }
 
-  override async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
-    const res = await this.getAllEnumDefinitions(connection, [{ table_name: tableName, schema_name: schemaName }]);
-    return res[tableName];
-  }
-
-  override async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
-    const res = await this.getAllColumns(connection, [{ table_name: tableName, schema_name: schemaName }]);
-    return res[tableName];
-  }
-
-  override async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
-    const res = await this.getAllIndexes(connection, [{ table_name: tableName, schema_name: schemaName }]);
-    return res[tableName];
-  }
-
-  override normalizeDefaultValue(defaultValue: string, length: number) {
-    return super.normalizeDefaultValue(defaultValue, length, MariaDbSchemaHelper.DEFAULT_VALUES);
-  }
-
-  protected wrap(val: string | undefined | null, type: Type<unknown>): string | undefined | null {
+  protected override wrap(val: string | undefined | null, type: Type<unknown>): string | undefined | null {
     return val;
   }
 

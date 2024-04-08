@@ -1,16 +1,20 @@
-import {
-  AbstractSqlPlatform,
-  type IndexDef,
-  QueryOrder,
-} from '@mikro-orm/knex';
+import { Utils, type SimpleColumnMeta, type Type, type TransformContext, QueryOrder } from '@mikro-orm/core';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
-import { Utils, type SimpleColumnMeta, type Type, type TransformContext } from '@mikro-orm/core';
+import { AbstractSqlPlatform } from '../../AbstractSqlPlatform';
+import type { IndexDef } from '../../typings';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
 
   protected override readonly schemaHelper: MySqlSchemaHelper = new MySqlSchemaHelper(this);
   protected override readonly exceptionConverter = new MySqlExceptionConverter();
+
+  protected readonly ORDER_BY_NULLS_TRANSLATE = {
+    [QueryOrder.asc_nulls_first]: 'is not null',
+    [QueryOrder.asc_nulls_last]: 'is null',
+    [QueryOrder.desc_nulls_first]: 'is not null',
+    [QueryOrder.desc_nulls_last]: 'is null',
+  } as const;
 
   override getDefaultCharset(): string {
     return 'utf8mb4';
@@ -62,6 +66,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     }
 
     const indexName = super.getIndexName(tableName, columns, type);
+
     if (indexName.length > 64) {
       return `${indexName.substring(0, 56 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
     }
@@ -89,13 +94,6 @@ export class MySqlPlatform extends AbstractSqlPlatform {
 
     return `alter table ${quotedTableName} add fulltext index ${quotedIndexName}(${quotedColumnNames.join(',')})`;
   }
-
-  private readonly ORDER_BY_NULLS_TRANSLATE = {
-    [QueryOrder.asc_nulls_first]: 'is not null',
-    [QueryOrder.asc_nulls_last]: 'is null',
-    [QueryOrder.desc_nulls_first]: 'is not null',
-    [QueryOrder.desc_nulls_last]: 'is null',
-  } as const;
 
   override getOrderByExpression(column: string, direction: string): string[] {
     const ret: string[] = [];
