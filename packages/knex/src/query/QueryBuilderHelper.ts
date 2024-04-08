@@ -631,7 +631,7 @@ export class QueryBuilderHelper {
       const raw = RawQueryFragment.getKnownFragment(key);
 
       if (raw) {
-        ret.push(`${this.platform.formatQuery(raw.sql, raw.params)} ${order.toLowerCase()}`);
+        ret.push(...this.platform.getOrderByExpression(this.platform.formatQuery(raw.sql, raw.params), order));
         continue;
       }
 

@@ -132,7 +132,7 @@ test('qb.joinAndSelect', async () => {
       [raw('coalesce(`u`.`name`, ?)', ['abc'])]: { $gte: 0.3 },
     })
     .orderBy({
-      [raw('coalesce(`u`.`name`, ?)', ['def'])]: QueryOrder.DESC,
+      [raw('coalesce(`u`.`name`, ?)', ['def'])]: QueryOrder.DESC_NULLS_LAST,
     })
     .limit(100)
     .offset(0);
@@ -140,8 +140,8 @@ test('qb.joinAndSelect', async () => {
     'from `tag` as `u` ' +
     'left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` ' +
     'left join `job` as `a` on `t1`.`job_id` = `a`.`id` ' +
-    'where (json_contains((select json_arrayagg(`u`.`id`) from (select `u`.`id` from `tag` as `u` left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` left join `job` as `a` on `t1`.`job_id` = `a`.`id` where coalesce(`u`.`name`, \'abc\') >= 0.3 group by `u`.`id` order by coalesce(`u`.`name`, \'def\') desc limit 100) as `u`), `u`.`id`)) ' +
-    'order by coalesce(`u`.`name`, \'def\') desc');
+    'where (json_contains((select json_arrayagg(`u`.`id`) from (select `u`.`id` from `tag` as `u` left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` left join `job` as `a` on `t1`.`job_id` = `a`.`id` where coalesce(`u`.`name`, \'abc\') >= 0.3 group by `u`.`id` order by coalesce(`u`.`name`, \'def\') is null, coalesce(`u`.`name`, \'def\') desc limit 100) as `u`), `u`.`id`)) ' +
+    'order by coalesce(`u`.`name`, \'def\') is null, coalesce(`u`.`name`, \'def\') desc');
   await query;
   expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
