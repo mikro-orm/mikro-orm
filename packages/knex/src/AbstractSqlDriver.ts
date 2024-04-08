@@ -1400,7 +1400,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         }
 
         const order = typeof childOrder === 'object' ? childOrder[propName] : childOrder;
-        orderBy.push({ [`${propAlias}.${propName}` as EntityKey]: order } as QueryOrderMap<T>);
+
+        if (order) {
+          orderBy.push({ [`${propAlias}.${propName}` as EntityKey]: order } as QueryOrderMap<T>);
+        }
       }
     }
 
