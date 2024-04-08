@@ -780,7 +780,13 @@ export class QueryBuilderHelper {
     } else {
       const [a, ...rest] = field.split('.');
       const f = rest.join('.');
-      ret = a + '.' + this.fieldName(f, a, always, idx);
+      const fieldName = this.fieldName(f, a, always, idx) as string | RawQueryFragment;
+
+      if (fieldName instanceof RawQueryFragment) {
+        return fieldName.sql;
+      }
+
+      ret = a + '.' + fieldName;
     }
 
     if (quote) {
