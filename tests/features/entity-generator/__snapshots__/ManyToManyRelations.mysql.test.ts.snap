@@ -200,7 +200,7 @@ export const CompletedOrdersSchema = new EntitySchema({
     { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
   ],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -227,7 +227,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
   },
 });
@@ -243,7 +243,7 @@ export class Flags {
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
   },
 });
@@ -259,7 +259,7 @@ export class Orders {
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
+    orderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
   },
 });
@@ -416,7 +416,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userEmails: {
       kind: 'm:n',
@@ -660,7 +660,7 @@ export const CompletedOrdersSchema = new EntitySchema({
     { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
   ],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -687,7 +687,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
   },
 });
@@ -703,7 +703,7 @@ export class Flags {
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
   },
 });
@@ -719,7 +719,7 @@ export class Orders {
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
+    orderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
   },
 });
@@ -882,7 +882,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userEmailAvatars: {
       kind: 'm:n',
@@ -1153,7 +1153,7 @@ export const CompletedOrdersSchema = new EntitySchema({
     { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
   ],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -1180,7 +1180,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
   },
 });
@@ -1196,7 +1196,7 @@ export class Flags {
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
   },
 });
@@ -1212,7 +1212,7 @@ export class Orders {
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
+    orderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
   },
 });
@@ -1376,7 +1376,7 @@ export const UserOrdersSchema = new EntitySchema({
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
-      type: 'number',
+      type: 'integer',
       unsigned: true,
       autoincrement: true,
       unique: 'priority_UNIQUE',
@@ -1397,7 +1397,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userFlags: {
       kind: 'm:n',
@@ -1624,7 +1624,7 @@ export const CompletedOrdersSchema = new EntitySchema({
     { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
   ],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -1651,7 +1651,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
   },
 });
@@ -1667,7 +1667,7 @@ export class Flags {
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
   },
 });
@@ -1683,7 +1683,7 @@ export class Orders {
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
+    orderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
   },
 });
@@ -1847,7 +1847,7 @@ export const UserOrdersSchema = new EntitySchema({
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
-      type: 'number',
+      type: 'integer',
       unsigned: true,
       autoincrement: true,
       unique: 'priority_UNIQUE',
@@ -1868,7 +1868,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userFlags: {
       kind: 'm:n',
@@ -2110,7 +2110,7 @@ export const CompletedOrdersSchema = new EntitySchema({
     { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
   ],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -2141,7 +2141,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
     userEmailsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userEmails' },
@@ -2163,7 +2163,7 @@ export class Flags {
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
@@ -2185,7 +2185,7 @@ export class Orders {
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
+    orderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     orderInverse: { kind: '1:m', entity: () => UserEmailOrders, mappedBy: 'order' },
     userOrdersInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userOrders' },
@@ -2345,7 +2345,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userEmails: {
       kind: 'm:n',
@@ -2626,7 +2626,7 @@ export const CompletedOrdersSchema = new EntitySchema({
     { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
   ],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -2660,7 +2660,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
     userEmailAvatarsInverse: {
@@ -2695,7 +2695,7 @@ export class Flags {
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
@@ -2717,7 +2717,7 @@ export class Orders {
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
+    orderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     orderInverse: { kind: '1:m', entity: () => UserEmailOrders, mappedBy: 'order' },
     userOrdersInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userOrders' },
@@ -2883,7 +2883,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userEmailAvatars: {
       kind: 'm:n',
@@ -3175,7 +3175,7 @@ export const CompletedOrdersSchema = new EntitySchema({
     { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
   ],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -3204,7 +3204,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
   },
@@ -3225,7 +3225,7 @@ export class Flags {
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
@@ -3245,7 +3245,7 @@ export class Orders {
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
+    orderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     orderInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'order' },
   },
@@ -3410,7 +3410,7 @@ export const UserOrdersSchema = new EntitySchema({
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
-      type: 'number',
+      type: 'integer',
       unsigned: true,
       autoincrement: true,
       unique: 'priority_UNIQUE',
@@ -3433,7 +3433,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userFlags: {
       kind: 'm:n',
@@ -3681,7 +3681,7 @@ export const CompletedOrdersSchema = new EntitySchema({
     { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
   ],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -3710,7 +3710,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
   },
@@ -3731,7 +3731,7 @@ export class Flags {
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
@@ -3751,7 +3751,7 @@ export class Orders {
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
+    orderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     orderInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'order' },
   },
@@ -3916,7 +3916,7 @@ export const UserOrdersSchema = new EntitySchema({
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
-      type: 'number',
+      type: 'integer',
       unsigned: true,
       autoincrement: true,
       unique: 'priority_UNIQUE',
@@ -3939,7 +3939,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userFlags: {
       kind: 'm:n',

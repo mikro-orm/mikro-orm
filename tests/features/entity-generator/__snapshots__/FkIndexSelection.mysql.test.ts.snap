@@ -121,7 +121,7 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
@@ -263,7 +263,7 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
@@ -413,7 +413,7 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
@@ -562,7 +562,7 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
@@ -693,7 +693,7 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
@@ -820,7 +820,7 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
@@ -955,7 +955,7 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
@@ -1089,7 +1089,7 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
@@ -1221,7 +1221,7 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
@@ -1353,7 +1353,7 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
@@ -1493,7 +1493,7 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
@@ -1632,7 +1632,7 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,

@@ -9,7 +9,7 @@ export class Users {
 
   [PrimaryKeyProp]?: 'userId';
 
-  @PrimaryKey({ type: 'number' })
+  @PrimaryKey({ type: 'integer' })
   userId!: number;
 
   @Property({ type: 'string', length: 255 })
@@ -21,7 +21,7 @@ export class Users {
   @Property({ type: 'boolean' })
   enabled!: boolean;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }

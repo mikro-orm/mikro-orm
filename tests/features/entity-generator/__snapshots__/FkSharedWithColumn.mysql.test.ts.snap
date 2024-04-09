@@ -114,7 +114,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     userCountry: { type: 'unknown', persist: false, index: 'fk_users_countries_idx' },
     userCountryBorn: { type: 'unknown', persist: false, index: 'fk_users_countries1_idx' },
     fkUserCountry: {
@@ -263,7 +263,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     userCountry: { type: 'unknown', persist: false, index: 'fk_users_countries_idx' },
     userCountryBorn: { type: 'unknown', persist: false, index: 'fk_users_countries1_idx' },
     fkUserCountry: {
@@ -435,7 +435,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     userCountry: { type: 'unknown', persist: false, index: 'fk_users_countries_idx' },
     userCountryBorn: { type: 'unknown', persist: false, index: 'fk_users_countries1_idx' },
     fkUserCountry: {
@@ -615,7 +615,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     userCountry: { type: 'unknown', persist: false, index: 'fk_users_countries_idx' },
     userCountryBorn: { type: 'unknown', persist: false, index: 'fk_users_countries1_idx' },
     fkUserCountry: {
@@ -746,7 +746,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     userCountryBorn: {
       kind: 'm:1',
       entity: () => Countries,
@@ -878,7 +878,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     userCountryBorn: {
       kind: 'm:1',
       entity: () => Countries,
@@ -1033,7 +1033,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     userCountryBorn: {
       kind: 'm:1',
       entity: () => Countries,
@@ -1196,7 +1196,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     userCountryBorn: {
       kind: 'm:1',
       entity: () => Countries,
@@ -1325,7 +1325,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     userCountryBorn: {
       kind: 'm:1',
       entity: () => Countries,
@@ -1457,7 +1457,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     userCountryBorn: {
       kind: 'm:1',
       entity: () => Countries,
@@ -1612,7 +1612,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     userCountryBorn: {
       kind: 'm:1',
       entity: () => Countries,
@@ -1775,7 +1775,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     userCountryBorn: {
       kind: 'm:1',
       entity: () => Countries,

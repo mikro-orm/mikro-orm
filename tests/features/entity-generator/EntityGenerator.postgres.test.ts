@@ -15,8 +15,9 @@ describe('EntityGenerator', () => {
       columns: {
         name: {
           name: 'name',
-          type: 'varchar(50)',
-          maxLength: 50,
+          type: 'varchar(45)',
+          mappedType: orm.em.getPlatform().getMappedType('varchar(45)'),
+          maxLength: 45,
           nullable: true,
           default: 'null::character varying',
           indexes: [],
@@ -24,6 +25,7 @@ describe('EntityGenerator', () => {
         test: {
           name: 'test',
           type: 'varchar(50)',
+          mappedType: orm.em.getPlatform().getMappedType('varchar(50)'),
           maxLength: 50,
           nullable: true,
           default: `'foo'`,
@@ -37,7 +39,7 @@ describe('EntityGenerator', () => {
     expect(meta.properties.name.default).toBeUndefined();
     expect(meta.properties.name.defaultRaw).toBeUndefined();
     expect(meta.properties.name.nullable).toBe(true);
-    expect(meta.properties.name.columnTypes[0]).toBe('varchar(50)');
+    expect(meta.properties.name.columnTypes[0]).toBe('varchar(45)');
     expect(meta.properties.test.default).toBe('foo');
     expect(meta.properties.test.defaultRaw).toBe(`'foo'`);
     expect(meta.properties.test.nullable).toBe(true);

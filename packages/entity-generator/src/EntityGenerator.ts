@@ -5,6 +5,7 @@ import {
   type MikroORM,
   type NamingStrategy,
   ReferenceKind,
+  types,
   Utils,
 } from '@mikro-orm/core';
 import {
@@ -89,8 +90,11 @@ export class EntityGenerator {
       for (const prop of meta.relations) {
         if (!this.isTableNameAllowed(prop.referencedTableName, options)) {
           prop.kind = ReferenceKind.SCALAR;
-          const meta2 = metadata.find(m => m.className === prop.type)!;
-          prop.type = meta2.getPrimaryProps().map(pk => pk.type).join(' | ');
+          const mappedTypes = prop.columnTypes.map((t, i) => this.platform.getMappedType(t));
+
+          const runtimeTypes = mappedTypes.map(t => t.runtimeType);
+          prop.runtimeType = (runtimeTypes.length === 1 ? runtimeTypes[0] : `[${runtimeTypes.join(', ')}]`) as typeof prop.runtimeType;
+          prop.type = mappedTypes.length === 1 ? (Utils.entries(types).find(([k, v]) => Object.getPrototypeOf(mappedTypes[0]) === v.prototype)?.[0] ?? mappedTypes[0].name) : 'unknown';
         }
       }
     }

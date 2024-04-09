@@ -13,7 +13,7 @@ export class Schema1Test {
   @Property({ nullable: true })
   name?: string;
 
-  @Property({ length: 6, nullable: true })
+  @Property({ nullable: true })
   created?: Date;
 
   @ManyToOne({ entity: () => Schema1Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -32,7 +32,7 @@ export class Schema2Test {
   @Property({ nullable: true })
   name?: string;
 
-  @Property({ length: 6, nullable: true })
+  @Property({ nullable: true })
   created?: Date;
 
   @ManyToOne({ entity: () => Schema2Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -51,7 +51,7 @@ export class Test {
   @Property({ nullable: true })
   name?: string;
 
-  @Property({ length: 6, nullable: true })
+  @Property({ nullable: true })
   created?: Date;
 
   @ManyToOne({ entity: () => Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -75,7 +75,7 @@ export class Schema1Test {
   @Property({ nullable: true })
   name?: string;
 
-  @Property({ length: 6, nullable: true })
+  @Property({ nullable: true })
   created?: Date;
 
   @ManyToOne({ entity: () => Schema1Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -94,7 +94,7 @@ export class Schema2Test {
   @Property({ nullable: true })
   name?: string;
 
-  @Property({ length: 6, nullable: true })
+  @Property({ nullable: true })
   created?: Date;
 
   @ManyToOne({ entity: () => Schema2Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -113,7 +113,7 @@ export class PublicTest {
   @Property({ nullable: true })
   name?: string;
 
-  @Property({ length: 6, nullable: true })
+  @Property({ nullable: true })
   created?: Date;
 
   @ManyToOne({ entity: () => PublicTest, updateRule: 'cascade', deleteRule: 'set null', nullable: true })

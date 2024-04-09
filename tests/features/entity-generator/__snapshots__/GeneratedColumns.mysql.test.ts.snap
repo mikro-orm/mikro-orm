@@ -9,7 +9,7 @@ export class AllowedAgesAtCreation {
 
   [PrimaryKeyProp]?: 'age';
 
-  @PrimaryKey({ columnType: 'tinyint', autoincrement: false })
+  @PrimaryKey({ type: 'tinyint', autoincrement: false })
   age!: number;
 
 }
@@ -32,10 +32,10 @@ export class Users {
   @Property({ type: 'string', length: 200, generated: () => "(concat(\`first_name\`,_utf8mb4' ',\`last_name\`)) virtual" })
   fullName!: string & Opt;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
-  @Property({ columnType: 'date' })
+  @Property({ type: 'date' })
   dateOfBirth!: string;
 
   @ManyToOne({ entity: () => AllowedAgesAtCreation, fieldName: 'age_at_creation', deleteRule: 'cascade', generated: () => "(timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`)) stored", nullable: true, index: 'fk_users_allowed_ages_at_creation_idx' })
@@ -55,7 +55,7 @@ export class AllowedAgesAtCreation {
 
   [PrimaryKeyProp]?: 'age';
 
-  @PrimaryKey({ columnType: 'tinyint', autoincrement: false })
+  @PrimaryKey({ type: 'tinyint', autoincrement: false })
   age!: number;
 
 }
@@ -78,10 +78,10 @@ export class Users {
   @Property({ type: 'string', length: 200, generated: '(concat(\`first_name\`,_utf8mb4\\' \\',\`last_name\`)) virtual' })
   fullName!: string & Opt;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
-  @Property({ columnType: 'date' })
+  @Property({ type: 'date' })
   dateOfBirth!: string;
 
   @ManyToOne({ entity: () => AllowedAgesAtCreation, fieldName: 'age_at_creation', deleteRule: 'cascade', generated: '(timestampdiff(YEAR,\`date_of_birth\`,\`created_at\`)) stored', nullable: true, index: 'fk_users_allowed_ages_at_creation_idx' })
@@ -104,7 +104,7 @@ export class AllowedAgesAtCreation {
 export const AllowedAgesAtCreationSchema = new EntitySchema({
   class: AllowedAgesAtCreation,
   properties: {
-    age: { primary: true, type: 'number', columnType: 'tinyint', autoincrement: false },
+    age: { primary: true, type: 'tinyint', autoincrement: false },
   },
 });
 ",
@@ -124,7 +124,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     firstName: { type: 'string', length: 100 },
     lastName: { type: 'string', length: 100 },
     fullName: {
@@ -132,8 +132,8 @@ export const UsersSchema = new EntitySchema({
       length: 200,
       generated: () => "(concat(\`first_name\`,_utf8mb4' ',\`last_name\`)) virtual",
     },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
-    dateOfBirth: { type: 'string', columnType: 'date' },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
+    dateOfBirth: { type: 'date' },
     ageAtCreation: {
       kind: 'm:1',
       entity: () => AllowedAgesAtCreation,
@@ -161,7 +161,7 @@ export class AllowedAgesAtCreation {
 export const AllowedAgesAtCreationSchema = new EntitySchema({
   class: AllowedAgesAtCreation,
   properties: {
-    age: { primary: true, type: 'number', columnType: 'tinyint', autoincrement: false },
+    age: { primary: true, type: 'tinyint', autoincrement: false },
   },
 });
 ",
@@ -181,7 +181,7 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     firstName: { type: 'string', length: 100 },
     lastName: { type: 'string', length: 100 },
     fullName: {
@@ -189,8 +189,8 @@ export const UsersSchema = new EntitySchema({
       length: 200,
       generated: '(concat(\`first_name\`,_utf8mb4\\' \\',\`last_name\`)) virtual',
     },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
-    dateOfBirth: { type: 'string', columnType: 'date' },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
+    dateOfBirth: { type: 'date' },
     ageAtCreation: {
       kind: 'm:1',
       entity: () => AllowedAgesAtCreation,
