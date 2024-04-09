@@ -127,7 +127,10 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     populateAfterFlush: false,
     entityRepository: SqlEntityRepository,
     driver: type === 'mysql' ? MySqlDriver : MariaDbDriver,
-    replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
+    replicas: [
+      { name: 'read-1', driverOptions: { connection: { enableKeepAlive: true } } },
+      { name: 'read-2', driverOptions: { connection: { enableKeepAlive: false } } },
+    ],
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     extensions: [Migrator, SeedManager, EntityGenerator],
     subscribers: [new Test2Subscriber()],

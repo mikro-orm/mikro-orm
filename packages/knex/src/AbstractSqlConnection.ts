@@ -179,7 +179,7 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   protected createKnexClient(type: string): Knex {
-    const driverOptions = this.config.get('driverOptions');
+    const driverOptions = this.config.get('driverOptions')!;
 
     if (driverOptions.context?.client instanceof knex.Client) {
       this.logger.log('info', 'Reusing knex client provided via `driverOptions`');
@@ -199,7 +199,7 @@ export abstract class AbstractSqlConnection extends Connection {
       client: type,
       connection: this.getConnectionOptions(),
       pool: this.config.get('pool'),
-    }, this.config.get('driverOptions'));
+    }, this.config.get('driverOptions'), this.options.driverOptions);
     const options = config.connection as ConnectionOptions;
     const password = options.password;
 

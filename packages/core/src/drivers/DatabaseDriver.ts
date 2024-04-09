@@ -420,14 +420,32 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   protected createReplicas(cb: (c: ConnectionOptions) => C): C[] {
-    const replicas = this.config.get('replicas', [])!;
+    const replicas = this.config.get('replicas', []) as ConnectionOptions[];
     const ret: C[] = [];
-    const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool', 'name'] as const;
+    const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool', 'name', 'driverOptions'] as const;
 
-    replicas.forEach((conf: Partial<ConnectionOptions>) => {
-      props.forEach(prop => (conf[prop] as any) = prop in conf ? conf[prop] : this.config.get(prop));
-      ret.push(cb(conf as ConnectionOptions));
-    });
+    for (const conf of replicas) {
+      const replicaConfig = Utils.copy(conf) as Dictionary;
+
+      for (const prop of props) {
+        if (conf[prop]) {
+          continue;
+        }
+
+        // do not copy options that can be inferred from explicitly provided `clientUrl`
+        if (conf.clientUrl && ['clientUrl', 'host', 'port', 'user', 'password'].includes(prop)) {
+          continue;
+        }
+
+        if (conf.clientUrl && prop === 'dbName' && new URL(conf.clientUrl).pathname) {
+          continue;
+        }
+
+        replicaConfig[prop] = this.config.get(prop);
+      }
+
+      ret.push(cb(replicaConfig as ConnectionOptions));
+    }
 
     return ret;
   }

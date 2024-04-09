@@ -463,6 +463,7 @@ export interface ConnectionOptions {
   collate?: string;
   multipleStatements?: boolean; // for mysql driver
   pool?: PoolConfig;
+  driverOptions?: Dictionary;
 }
 
 export type MigrationsOptions = {
@@ -540,7 +541,6 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
   discovery: MetadataDiscoveryOptions;
   driver?: { new(config: Configuration): D };
-  driverOptions: Dictionary;
   namingStrategy?: { new(): NamingStrategy };
   implicitTransactions?: boolean;
   disableTransactions?: boolean;
@@ -574,7 +574,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   flushMode: FlushMode | 'commit' | 'auto' | 'always';
   entityRepository?: EntityClass<EntityRepository<any>>;
   entityManager?: Constructor<EM>;
-  replicas?: Partial<ConnectionOptions>[];
+  replicas?: ConnectionOptions[];
   strict: boolean;
   validate: boolean;
   validateRequired: boolean;

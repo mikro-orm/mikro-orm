@@ -21,9 +21,9 @@ export abstract class Connection {
     this.logger = this.config.getLogger();
 
     if (options) {
-      this.options = options;
+      this.options = Utils.copy(options);
     } else {
-      const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool', 'schema'] as const;
+      const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool', 'schema', 'driverOptions'] as const;
       this.options = props.reduce((o, i) => {
         (o[i] as any) = this.config.get(i);
         return o;
