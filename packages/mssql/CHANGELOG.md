@@ -8,5 +8,4 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Features
 
-* **libsql:** add libSQL driver ([#5417](https://github.com/mikro-orm/mikro-orm/issues/5417)) ([6c63e4b](https://github.com/mikro-orm/mikro-orm/commit/6c63e4bd45c81b3a09b668f13dc0ce240e85107c)), closes [#5283](https://github.com/mikro-orm/mikro-orm/issues/5283)
 * **mssql:** add MS SQL Server driver ([#1375](https://github.com/mikro-orm/mikro-orm/issues/1375)) ([eeaad45](https://github.com/mikro-orm/mikro-orm/commit/eeaad45a60b3ef4732d5ba9eafc8719998e52181)), closes [#771](https://github.com/mikro-orm/mikro-orm/issues/771)

@@ -3,6 +3,42 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.2.0](https://github.com/mikro-orm/mikro-orm/compare/v6.1.12...v6.2.0) (2024-04-09)
+
+
+### Bug Fixes
+
+* **core:** fix support for custom repositories in `@CreateRequestContext` on type level ([aacac83](https://github.com/mikro-orm/mikro-orm/commit/aacac830e7185fb923ad287bfd485fcc04fe0c4a))
+* **core:** ignore current context when creating repository instance ([4c12fc5](https://github.com/mikro-orm/mikro-orm/commit/4c12fc5bd3b8d3dbad6711eaeaf839cf3470dcc8)), closes [#5395](https://github.com/mikro-orm/mikro-orm/issues/5395)
+* **core:** prefer entity type inference from the first parameter of entity manager methods ([523963b](https://github.com/mikro-orm/mikro-orm/commit/523963b459c0f5af4d9d0d78c03be9487efc9e9a))
+* **core:** respect custom `EntityManager` type in `em.fork()` ([bb1a3f9](https://github.com/mikro-orm/mikro-orm/commit/bb1a3f917d9ed56aa274c9f3baf4d69aa893051e)), closes [#5415](https://github.com/mikro-orm/mikro-orm/issues/5415)
+* **core:** support passing `Configuration` instance to `MikroORM.init` ([54a37d0](https://github.com/mikro-orm/mikro-orm/commit/54a37d016755f989545145e43abb56771b1e19ba)), closes [#5413](https://github.com/mikro-orm/mikro-orm/issues/5413)
+* **entity-generator:** allow arbitrary class and prop names as identifiers ([#5359](https://github.com/mikro-orm/mikro-orm/issues/5359)) ([b0c0236](https://github.com/mikro-orm/mikro-orm/commit/b0c0236ac8a2154e7181ac737baccbe95782f337))
+
+
+### Features
+
+* **core:** add support for serialization groups ([#5416](https://github.com/mikro-orm/mikro-orm/issues/5416)) ([818c290](https://github.com/mikro-orm/mikro-orm/commit/818c29001a448e3d06fdc88e71f6a65ce9ff8b45))
+* **core:** allow better type-safety for custom types via `IType` ([#5383](https://github.com/mikro-orm/mikro-orm/issues/5383)) ([0e18346](https://github.com/mikro-orm/mikro-orm/commit/0e183461026efb6d20c71623f366e7baa8041c40))
+* **core:** allow configuring `driverOptions` on replica level ([05e81f8](https://github.com/mikro-orm/mikro-orm/commit/05e81f893a32b990d8bc0bebd22d86603242f156))
+* **core:** include all dirty collections to `UoW.getCollectionUpdates()` ([e7bd66f](https://github.com/mikro-orm/mikro-orm/commit/e7bd66f523f6a12d89e16b4480a76321018c7e8b))
+* **core:** make `assign` options configurable globally ([bc9f6f5](https://github.com/mikro-orm/mikro-orm/commit/bc9f6f5bbecac302f0beb227703a9654f71d967b)), closes [#5410](https://github.com/mikro-orm/mikro-orm/issues/5410)
+* **libsql:** add libSQL driver ([#5417](https://github.com/mikro-orm/mikro-orm/issues/5417)) ([6c63e4b](https://github.com/mikro-orm/mikro-orm/commit/6c63e4bd45c81b3a09b668f13dc0ce240e85107c)), closes [#5283](https://github.com/mikro-orm/mikro-orm/issues/5283)
+* **mssql:** add MS SQL Server driver ([#1375](https://github.com/mikro-orm/mikro-orm/issues/1375)) ([eeaad45](https://github.com/mikro-orm/mikro-orm/commit/eeaad45a60b3ef4732d5ba9eafc8719998e52181)), closes [#771](https://github.com/mikro-orm/mikro-orm/issues/771)
+* **postgres:** allow defining deferred FK constraints ([#5384](https://github.com/mikro-orm/mikro-orm/issues/5384)) ([f42d171](https://github.com/mikro-orm/mikro-orm/commit/f42d171f8bc7604c7b36f15f680f37402990bf9e)), closes [#5306](https://github.com/mikro-orm/mikro-orm/issues/5306)
+* **schema:** allow configuring `updateRule` and `deleteRule` for pivot tables ([cc69c3c](https://github.com/mikro-orm/mikro-orm/commit/cc69c3c391259c6160b3522c89b0852b3366921a))
+* **schema:** improve `orm.schema.execute()` to support executing batches ([3c5a347](https://github.com/mikro-orm/mikro-orm/commit/3c5a347d0ce277dc8b33ed6f3dd6e6e4315aa4eb))
+* **schema:** support recreating the whole database via `orm.schema.refreshDatabase()` ([2e4ab49](https://github.com/mikro-orm/mikro-orm/commit/2e4ab49e5abbb3ee6a6f19fd028cbce6d93e4aa0))
+
+
+### Performance Improvements
+
+* **core:** optimize metadata discovery ([c322f9b](https://github.com/mikro-orm/mikro-orm/commit/c322f9bcca087180a77c5ed006b1624dd4879790))
+
+
+
+
+
 ## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
 
 

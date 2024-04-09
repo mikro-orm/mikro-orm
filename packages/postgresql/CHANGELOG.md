@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.2.0](https://github.com/mikro-orm/mikro-orm/compare/v6.1.12...v6.2.0) (2024-04-09)
+
+
+### Bug Fixes
+
+* **entity-generator:** allow arbitrary class and prop names as identifiers ([#5359](https://github.com/mikro-orm/mikro-orm/issues/5359)) ([b0c0236](https://github.com/mikro-orm/mikro-orm/commit/b0c0236ac8a2154e7181ac737baccbe95782f337))
+* **postgres:** drop text enum check constraints only when necessary ([#5414](https://github.com/mikro-orm/mikro-orm/issues/5414)) ([5162345](https://github.com/mikro-orm/mikro-orm/commit/516234542373b6d62135b88e45df17d4e41cdf08)), closes [#4112](https://github.com/mikro-orm/mikro-orm/issues/4112)
+* **postgres:** removed erroneous duplicates in FK discovery query ([#5376](https://github.com/mikro-orm/mikro-orm/issues/5376)) ([eec2b38](https://github.com/mikro-orm/mikro-orm/commit/eec2b387f165b5390185887b695e219c09bd9b60))
+
+
+### Features
+
+* **mssql:** add MS SQL Server driver ([#1375](https://github.com/mikro-orm/mikro-orm/issues/1375)) ([eeaad45](https://github.com/mikro-orm/mikro-orm/commit/eeaad45a60b3ef4732d5ba9eafc8719998e52181)), closes [#771](https://github.com/mikro-orm/mikro-orm/issues/771)
+* **postgres:** allow defining deferred FK constraints ([#5384](https://github.com/mikro-orm/mikro-orm/issues/5384)) ([f42d171](https://github.com/mikro-orm/mikro-orm/commit/f42d171f8bc7604c7b36f15f680f37402990bf9e)), closes [#5306](https://github.com/mikro-orm/mikro-orm/issues/5306)
+* **schema:** improve `orm.schema.execute()` to support executing batches ([3c5a347](https://github.com/mikro-orm/mikro-orm/commit/3c5a347d0ce277dc8b33ed6f3dd6e6e4315aa4eb))
+
+
+
+
+
 ## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
 
 

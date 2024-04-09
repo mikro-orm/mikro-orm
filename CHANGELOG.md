@@ -3,6 +3,55 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.2.0](https://github.com/mikro-orm/mikro-orm/compare/v6.1.12...v6.2.0) (2024-04-09)
+
+
+### Bug Fixes
+
+* **core:** do not select 1:1 owning FK twice ([fa69276](https://github.com/mikro-orm/mikro-orm/commit/fa6927617f490c272ba2c7fe30d8bac688c6b613))
+* **core:** fix querying by embedded properties inside relations ([2e74699](https://github.com/mikro-orm/mikro-orm/commit/2e746991f964072d3afcad621b10424485e8466e)), closes [#5391](https://github.com/mikro-orm/mikro-orm/issues/5391)
+* **core:** fix support for custom repositories in `@CreateRequestContext` on type level ([aacac83](https://github.com/mikro-orm/mikro-orm/commit/aacac830e7185fb923ad287bfd485fcc04fe0c4a))
+* **core:** fix TypeError when ordering by embedded populating properties ([2c472ab](https://github.com/mikro-orm/mikro-orm/commit/2c472abaeb033347bca2cddd8820d0c97201a91d)), closes [#5389](https://github.com/mikro-orm/mikro-orm/issues/5389)
+* **core:** ignore current context when creating repository instance ([4c12fc5](https://github.com/mikro-orm/mikro-orm/commit/4c12fc5bd3b8d3dbad6711eaeaf839cf3470dcc8)), closes [#5395](https://github.com/mikro-orm/mikro-orm/issues/5395)
+* **core:** prefer entity type inference from the first parameter of entity manager methods ([523963b](https://github.com/mikro-orm/mikro-orm/commit/523963b459c0f5af4d9d0d78c03be9487efc9e9a))
+* **core:** respect custom `EntityManager` type in `em.fork()` ([bb1a3f9](https://github.com/mikro-orm/mikro-orm/commit/bb1a3f917d9ed56aa274c9f3baf4d69aa893051e)), closes [#5415](https://github.com/mikro-orm/mikro-orm/issues/5415)
+* **core:** support passing `Configuration` instance to `MikroORM.init` ([54a37d0](https://github.com/mikro-orm/mikro-orm/commit/54a37d016755f989545145e43abb56771b1e19ba)), closes [#5413](https://github.com/mikro-orm/mikro-orm/issues/5413)
+* **entity-generator:** allow arbitrary class and prop names as identifiers ([#5359](https://github.com/mikro-orm/mikro-orm/issues/5359)) ([b0c0236](https://github.com/mikro-orm/mikro-orm/commit/b0c0236ac8a2154e7181ac737baccbe95782f337))
+* **mariadb:** rework pagination mechanism to fix extra results ([a57cb19](https://github.com/mikro-orm/mikro-orm/commit/a57cb198654c541968e0c90d89d7186e7bb71b1a))
+* **mysql:** support `order by nulls first/last` for raw query fragments in order by keys ([a2a8f0d](https://github.com/mikro-orm/mikro-orm/commit/a2a8f0df09c5e6f5420ecc352d1d034d84816a37))
+* **postgres:** drop text enum check constraints only when necessary ([#5414](https://github.com/mikro-orm/mikro-orm/issues/5414)) ([5162345](https://github.com/mikro-orm/mikro-orm/commit/516234542373b6d62135b88e45df17d4e41cdf08)), closes [#4112](https://github.com/mikro-orm/mikro-orm/issues/4112)
+* **postgres:** removed erroneous duplicates in FK discovery query ([#5376](https://github.com/mikro-orm/mikro-orm/issues/5376)) ([eec2b38](https://github.com/mikro-orm/mikro-orm/commit/eec2b387f165b5390185887b695e219c09bd9b60))
+* **query-builder:** fix serialization hint of nested `qb.joinAndSelect()` calls ([c2843b9](https://github.com/mikro-orm/mikro-orm/commit/c2843b9fc5598b5f3af57cbf9f6105a35b0d3536))
+* **schema:** improve detection of renamed columns ([4d13c58](https://github.com/mikro-orm/mikro-orm/commit/4d13c585e0b0ea5552eba606897370c8aeab4b57))
+* **schema:** rework dropping columns to support custom schemas and merge drop column queries ([255f425](https://github.com/mikro-orm/mikro-orm/commit/255f42594652453ba39676ff22af88dbb5f1990d))
+
+
+### Features
+
+* **core:** add support for serialization groups ([#5416](https://github.com/mikro-orm/mikro-orm/issues/5416)) ([818c290](https://github.com/mikro-orm/mikro-orm/commit/818c29001a448e3d06fdc88e71f6a65ce9ff8b45))
+* **core:** allow better type-safety for custom types via `IType` ([#5383](https://github.com/mikro-orm/mikro-orm/issues/5383)) ([0e18346](https://github.com/mikro-orm/mikro-orm/commit/0e183461026efb6d20c71623f366e7baa8041c40))
+* **core:** allow configuring `driverOptions` on replica level ([05e81f8](https://github.com/mikro-orm/mikro-orm/commit/05e81f893a32b990d8bc0bebd22d86603242f156))
+* **core:** include all dirty collections to `UoW.getCollectionUpdates()` ([e7bd66f](https://github.com/mikro-orm/mikro-orm/commit/e7bd66f523f6a12d89e16b4480a76321018c7e8b))
+* **core:** make `assign` options configurable globally ([bc9f6f5](https://github.com/mikro-orm/mikro-orm/commit/bc9f6f5bbecac302f0beb227703a9654f71d967b)), closes [#5410](https://github.com/mikro-orm/mikro-orm/issues/5410)
+* **libsql:** add libSQL driver ([#5417](https://github.com/mikro-orm/mikro-orm/issues/5417)) ([6c63e4b](https://github.com/mikro-orm/mikro-orm/commit/6c63e4bd45c81b3a09b668f13dc0ce240e85107c)), closes [#5283](https://github.com/mikro-orm/mikro-orm/issues/5283)
+* **mssql:** add MS SQL Server driver ([#1375](https://github.com/mikro-orm/mikro-orm/issues/1375)) ([eeaad45](https://github.com/mikro-orm/mikro-orm/commit/eeaad45a60b3ef4732d5ba9eafc8719998e52181)), closes [#771](https://github.com/mikro-orm/mikro-orm/issues/771)
+* **postgres:** allow defining deferred FK constraints ([#5384](https://github.com/mikro-orm/mikro-orm/issues/5384)) ([f42d171](https://github.com/mikro-orm/mikro-orm/commit/f42d171f8bc7604c7b36f15f680f37402990bf9e)), closes [#5306](https://github.com/mikro-orm/mikro-orm/issues/5306)
+* **query-builder:** add `limit 1` when executing query via `getSingleResult()` or `execute('get')` ([c2b22e8](https://github.com/mikro-orm/mikro-orm/commit/c2b22e80c47eabd2284dca41cedd7c871a78eac4)), closes [#5379](https://github.com/mikro-orm/mikro-orm/issues/5379)
+* **query-builder:** add `qb.getLoggerContext()` and `qb.setLoggerContext()` ([779fa15](https://github.com/mikro-orm/mikro-orm/commit/779fa15ac762a9bae843a8b2f009e1861527469f)), closes [#5358](https://github.com/mikro-orm/mikro-orm/issues/5358)
+* **schema:** allow configuring `updateRule` and `deleteRule` for pivot tables ([cc69c3c](https://github.com/mikro-orm/mikro-orm/commit/cc69c3c391259c6160b3522c89b0852b3366921a))
+* **schema:** improve `orm.schema.execute()` to support executing batches ([3c5a347](https://github.com/mikro-orm/mikro-orm/commit/3c5a347d0ce277dc8b33ed6f3dd6e6e4315aa4eb))
+* **schema:** support recreating the whole database via `orm.schema.refreshDatabase()` ([2e4ab49](https://github.com/mikro-orm/mikro-orm/commit/2e4ab49e5abbb3ee6a6f19fd028cbce6d93e4aa0))
+
+
+### Performance Improvements
+
+* **core:** optimize metadata discovery ([c322f9b](https://github.com/mikro-orm/mikro-orm/commit/c322f9bcca087180a77c5ed006b1624dd4879790))
+* **query-builder:** remove unnecessary join branches when pagination is applied ([d228976](https://github.com/mikro-orm/mikro-orm/commit/d228976d9ca4b8a2e69361ad31f63ef88977ee9e))
+
+
+
+
+
 ## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
 
 

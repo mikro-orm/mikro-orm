@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.2.0](https://github.com/mikro-orm/mikro-orm/compare/v6.1.12...v6.2.0) (2024-04-09)
+
+
+### Bug Fixes
+
+* **core:** respect custom `EntityManager` type in `em.fork()` ([bb1a3f9](https://github.com/mikro-orm/mikro-orm/commit/bb1a3f917d9ed56aa274c9f3baf4d69aa893051e)), closes [#5415](https://github.com/mikro-orm/mikro-orm/issues/5415)
+
+
+
+
+
 ## [6.1.12](https://github.com/mikro-orm/mikro-orm/compare/v6.1.11...v6.1.12) (2024-03-24)
 
 **Note:** Version bump only for package @mikro-orm/mongodb
