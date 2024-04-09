@@ -172,16 +172,12 @@ export class ChangeSetComputer {
       return;
     }
 
+    this.collectionUpdates.add(target);
+
     if (prop.owner || target.getItems(false).filter(item => !item.__helper!.__initialized).length > 0) {
-      if (this.platform.usesPivotTable()) {
-        this.collectionUpdates.add(target);
-      } else {
+      if (!this.platform.usesPivotTable()) {
         changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) => item.__helper!.__identifier ?? item.__helper!.getPrimaryKey());
       }
-    } else if (prop.kind === ReferenceKind.ONE_TO_MANY && target.getSnapshot() === undefined) {
-      this.collectionUpdates.add(target);
-    } else if (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner) {
-      this.collectionUpdates.add(target);
     }
   }
 

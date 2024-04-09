@@ -891,11 +891,7 @@ export class UnitOfWork {
     await this.commitExtraUpdates(ctx);
 
     // 6. collection updates
-    await this.em.getDriver().syncCollections(this.collectionUpdates, { ctx });
-
-    for (const coll of this.collectionUpdates) {
-      coll.takeSnapshot();
-    }
+    await this.commitCollectionUpdates(ctx);
 
     // 7. delete - entity deletions need to be in reverse commit order
     for (const name of commitOrderReversed) {
@@ -1044,6 +1040,28 @@ export class UnitOfWork {
       if (extraUpdate[1]) {
         Object.assign(extraUpdate[1].payload, extraUpdate[0].payload);
       }
+    }
+  }
+
+  private async commitCollectionUpdates(ctx?: Transaction): Promise<void> {
+    const collectionUpdates = [];
+
+    for (const coll of this.collectionUpdates) {
+      if (coll.property.owner || coll.getItems(false).filter(item => !item.__helper!.__initialized).length > 0) {
+        if (this.platform.usesPivotTable()) {
+          collectionUpdates.push(coll);
+        }
+      } else if (coll.property.kind === ReferenceKind.ONE_TO_MANY && coll.getSnapshot() === undefined) {
+        collectionUpdates.push(coll);
+      } else if (coll.property.kind === ReferenceKind.MANY_TO_MANY && !coll.property.owner) {
+        collectionUpdates.push(coll);
+      }
+    }
+
+    await this.em.getDriver().syncCollections(collectionUpdates, { ctx });
+
+    for (const coll of this.collectionUpdates) {
+      coll.takeSnapshot();
     }
   }
 
