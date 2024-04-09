@@ -99,6 +99,20 @@ export class EntityGenerator {
 
     await options.onInitialMetadata?.(metadata, this.platform);
 
+    // enforce schema usage in class names only on duplicates
+    const duplicates = Utils.findDuplicates(metadata.map(meta => meta.className));
+
+    for (const duplicate of duplicates) {
+      for (const meta of metadata.filter(meta => meta.className === duplicate)) {
+        meta.className = this.namingStrategy.getEntityName(`${meta.schema ?? schema.name}_${meta.className}`);
+        metadata.forEach(relMeta => relMeta.relations.forEach(prop => {
+          if (prop.type === duplicate && (prop.referencedTableName === meta.collection || prop.referencedTableName === `${meta.schema ?? schema.name}.${meta.collection}`)) {
+            prop.type = meta.className;
+          }
+        }));
+      }
+    }
+
     this.detectManyToManyRelations(metadata, options.onlyPurePivotTables!, options.readOnlyPivotTables!);
 
     if (options.bidirectionalRelations) {
@@ -111,20 +125,6 @@ export class EntityGenerator {
 
     if (options.customBaseEntityName) {
       this.generateAndAttachCustomBaseEntity(metadata, options.customBaseEntityName);
-    }
-
-    // enforce schema usage in class names only on duplicates
-    const duplicates = Utils.findDuplicates(metadata.map(meta => meta.className));
-
-    for (const duplicate of duplicates) {
-      for (const meta of metadata.filter(meta => meta.className === duplicate)) {
-        meta.className = this.namingStrategy.getEntityName(`${meta.schema}_${meta.className}`);
-        metadata.forEach(meta => meta.relations.forEach(prop => {
-          if (prop.type === duplicate) {
-            prop.type = meta.className;
-          }
-        }));
-      }
     }
 
     await options.onProcessedMetadata?.(metadata, this.platform);

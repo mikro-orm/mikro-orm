@@ -603,7 +603,7 @@ export class SchemaComparator {
   diffExpression(expr1: string, expr2: string): boolean {
     // expressions like check constraints might be normalized by the driver,
     // e.g. quotes might be added (https://github.com/mikro-orm/mikro-orm/issues/3827)
-    const simplify = (str?: string) => str?.replace(/_\w+\\'(.*?)\\'/g, '$1').replace(/['"`()]|::\w+| +/g, '').toLowerCase();
+    const simplify = (str?: string) => str?.replace(/_\w+'(.*?)'/g, '$1').replace(/['"`()]|::\w+| +/g, '').toLowerCase();
     return simplify(expr1) !== simplify(expr2);
   }
 

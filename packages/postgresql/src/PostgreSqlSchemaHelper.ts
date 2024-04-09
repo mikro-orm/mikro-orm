@@ -138,7 +138,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         from pg_catalog.pg_class c
         where c.oid = (select ('"' || cols.table_schema || '"."' || cols.table_name || '"')::regclass::oid) and c.relname = cols.table_name) as column_comment
       from information_schema.columns cols
-      where (${tables.map(t => `(table_schema = '${t.schema_name}' and table_name = '${t.table_name}')`).join(' or ')})
+      where (${tables.map(t => `(table_schema = ${this.platform.quoteValue(t.schema_name)} and table_name = ${this.platform.quoteValue(t.table_name)})`).join(' or ')})
       order by ordinal_position`;
 
     const allColumns = await connection.execute<any[]>(sql);
@@ -221,7 +221,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_class cls1 on cls1.oid = con.conrelid
       join pg_class cls2 on cls2.oid = confrelid
       join pg_namespace nsp2 on nsp2.oid = cls2.relnamespace
-      where (${tables.map(t => `(cls1.relname = '${t.table_name}' and nsp1.nspname = '${t.schema_name}')`).join(' or ')})
+      where (${tables.map(t => `(cls1.relname = ${this.platform.quoteValue(t.table_name)} and nsp1.nspname = ${this.platform.quoteValue(t.schema_name)})`).join(' or ')})
       and confrelid > 0
       order by nsp1.nspname, cls1.relname, constraint_name, ord`;
 
@@ -261,12 +261,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   async getNativeEnumDefinitions(connection: AbstractSqlConnection, schemas: string[]): Promise<Dictionary<{ name: string; schema?: string; items: string[] }>> {
-    const res = await connection.execute('select t.typname as enum_name, min(n.nspname) as schema_name, array_agg(e.enumlabel order by e.enumsortorder) as enum_value ' +
-      'from pg_type t ' +
-      'join pg_enum e on t.oid = e.enumtypid ' +
-      'join pg_catalog.pg_namespace n on n.oid = t.typnamespace ' +
-      'where n.nspname in (?) ' +
-      'group by t.typname', [Utils.unique(schemas)]);
+    const uniqueSchemas = Utils.unique(schemas);
+    const res = await connection.execute(
+      `select t.typname as enum_name, min(n.nspname) as schema_name, array_agg(e.enumlabel order by e.enumsortorder) as enum_value
+        from pg_type t
+        join pg_enum e on t.oid = e.enumtypid
+        join pg_catalog.pg_namespace n on n.oid = t.typnamespace
+        where n.nspname in (${Array(uniqueSchemas.length).fill('?').join(', ')})
+        group by t.typname`,
+      uniqueSchemas,
+    );
 
     return res.reduce((o, row) => {
       let name = row.enum_name;
@@ -566,7 +570,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_class as i on i.oid = idx.indexrelid
       join pg_namespace as ns on i.relnamespace = ns.oid
       left join pg_constraint as c on c.conname = i.relname
-      where indrelid in (${tables.map(t => `'"${t.schema_name}"."${t.table_name}"'::regclass`).join(', ')})
+      where indrelid in (${tables.map(t => `${this.platform.quoteValue(`${this.platform.quoteIdentifier(t.schema_name ?? this.platform.getDefaultSchemaName() ?? '')}.${this.platform.quoteIdentifier(t.table_name)}`)}::regclass`).join(', ')})
       order by relname`;
   }
 
@@ -576,7 +580,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_namespace nsp on nsp.oid = pgc.connamespace
       join pg_class cls on pgc.conrelid = cls.oid
       join information_schema.constraint_column_usage ccu on pgc.conname = ccu.constraint_name and nsp.nspname = ccu.constraint_schema
-      where contype = 'c' and (${tables.map(t => `ccu.table_name = '${t.table_name}' and ccu.table_schema = '${t.schema_name}'`).join(' or ')})
+      where contype = 'c' and (${tables.map(t => `ccu.table_name = ${this.platform.quoteValue(t.table_name)} and ccu.table_schema = ${this.platform.quoteValue(t.schema_name ?? this.platform.getDefaultSchemaName() ?? '')}`).join(' or ')})
       order by pgc.conname`;
   }
 
