@@ -200,7 +200,6 @@ export class ChangeSetPersister {
 
   private checkConcurrencyKeys<T extends object>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, cond: Dictionary): void {
     const tmp: string[] = [];
-    cond = Utils.isPlainObject(cond) ? cond : { [meta.primaryKeys[0]]: cond };
 
     for (const key of meta.concurrencyCheckKeys) {
       cond[key] = changeSet.originalEntity![key];

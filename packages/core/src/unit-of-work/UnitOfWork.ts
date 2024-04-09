@@ -120,6 +120,7 @@ export class UnitOfWork {
           data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
         } else if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
           for (const p of prop.targetMeta!.props) {
+            /* istanbul ignore next */
             const prefix = prop.prefix === false ? '' : prop.prefix === true ? prop.name + '_' : prop.prefix;
             data[prefix + p.name as EntityKey] = data[prop.name as EntityKey][p.name];
           }
