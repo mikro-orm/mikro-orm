@@ -60,7 +60,7 @@ exports[`onCreate and onUpdate in embeddables (GH 2283 and 2391) result mapper 1
     ret.barAudit2 = result.bar_audit2 == null ? result.bar_audit2 : mapEmbeddedResult_0(result.bar_audit2);
     mapped.bar_audit2 = true;
   }
-  for (let k in result) { if (result.hasOwnProperty(k) && !mapped[k]) ret[k] = result[k]; }
+  for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k]) ret[k] = result[k]; }
   return ret;
 }"
 `;

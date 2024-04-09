@@ -100,8 +100,7 @@ export class EntityAssigner {
     }
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop?.kind) && value != null) {
-      // eslint-disable-next-line no-prototype-builtins
-      if (options.updateNestedEntities && (entity as object).hasOwnProperty(propName) && Utils.isEntity(entity[propName as EntityKey<T>], true) && Utils.isPlainObject(value)) {
+      if (options.updateNestedEntities && Object.hasOwn(entity, propName) && Utils.isEntity(entity[propName as EntityKey<T>], true) && Utils.isPlainObject(value)) {
         const unwrappedEntity = Reference.unwrapReference(entity[propName as EntityKey<T>] as object);
         const wrapped = helper(unwrappedEntity);
 

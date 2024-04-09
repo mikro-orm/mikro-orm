@@ -76,7 +76,7 @@ export function compareObjects(a: any, b: any) {
   }
 
   for (let i = length; i-- !== 0;) {
-    if (!Object.prototype.hasOwnProperty.call(b, keys[i])) {
+    if (!Object.hasOwn(b, keys[i])) {
       return false;
     }
   }
@@ -267,7 +267,7 @@ export class Utils {
 
     for (const key in object) {
       /* istanbul ignore else */
-      if (Object.prototype.hasOwnProperty.call(object, key)) {
+      if (Object.hasOwn(object, key)) {
         size++;
       }
     }
@@ -282,7 +282,7 @@ export class Utils {
   static hasObjectKeys(object: Dictionary): boolean {
     for (const key in object) {
       /* istanbul ignore else */
-      if (Object.prototype.hasOwnProperty.call(object, key)) {
+      if (Object.hasOwn(object, key)) {
         return true;
       }
     }
@@ -840,8 +840,7 @@ export class Utils {
       value !== null
       && typeof value === 'object'
       && typeof value.constructor === 'function'
-      // eslint-disable-next-line no-prototype-builtins
-      && (value.constructor.prototype.hasOwnProperty('isPrototypeOf') || Object.getPrototypeOf(value.constructor.prototype) === null)
+      && (Object.hasOwn(value.constructor.prototype, 'isPrototypeOf') || Object.getPrototypeOf(value.constructor.prototype) === null)
     )
       || (value && Object.getPrototypeOf(value) === null)
       || value instanceof PlainObject;
