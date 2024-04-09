@@ -134,6 +134,8 @@ class MyType extends Type<MyClass, string> {
 Now let's use it together with the `IType`:
 
 ```ts
+import { IType } from '@mikro-orm/core';
+
 @Entity()
 class MyEntity {
 
