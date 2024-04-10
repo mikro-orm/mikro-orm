@@ -245,7 +245,7 @@ export class QueryBuilderHelper {
         table = `${schema}.${table}`;
       }
 
-      if (!join.subquery) {
+      if (join.prop.name !== '__subquery__') {
         join.primaryKeys!.forEach((primaryKey, idx) => {
           const right = `${join.alias}.${join.joinColumns![idx]}`;
 

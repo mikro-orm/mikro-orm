@@ -2085,10 +2085,10 @@ describe('QueryBuilder', () => {
     // using knex subquery to hydrate existing relation
     const qb4 = orm.em.createQueryBuilder(Author2, 'a');
     qb4.select(['*'])
-      .leftJoinAndSelect(['a.books', qb1.getKnexQuery()], 'sub', { author: sql.ref('a.id') })
+      .leftJoinAndSelect(['a.books', qb1.getKnexQuery()], 'sub')
       .leftJoinAndSelect('sub.tags', 't')
       .where({ 'sub.title': /^foo/ });
-    expect(qb4.getFormattedQuery()).toEqual('select `a`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.price * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id`, `t`.`id` as `t__id`, `t`.`name` as `t__name` from `author2` as `a` left join (select `b`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `sub`.`author_id` = `a`.`id` left join `book2_tags` as `e1` on `sub`.`uuid_pk` = `e1`.`book2_uuid_pk` left join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id` where `sub`.`title` like \'foo%\'');
+    expect(qb4.getFormattedQuery()).toEqual('select `a`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.price * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id`, `t`.`id` as `t__id`, `t`.`name` as `t__name` from `author2` as `a` left join (select `b`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `a`.`id` = `sub`.`author_id` left join `book2_tags` as `e1` on `sub`.`uuid_pk` = `e1`.`book2_uuid_pk` left join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id` where `sub`.`title` like \'foo%\'');
     const res4 = await qb4.getResult();
     expect(res4).toHaveLength(1);
     expect(res4[0]).toMatchObject({
@@ -2107,12 +2107,34 @@ describe('QueryBuilder', () => {
     // with a regular join we get two books, as there is no limit
     const qb5 = orm.em.createQueryBuilder(Author2, 'a');
     qb5.select(['*', 'sub.*'])
-      .leftJoinAndSelect('a.books', 'sub', { author: sql.ref('a.id') })
+      .leftJoinAndSelect('a.books', 'sub')
       .where({ 'sub.title': /^foo/ });
-    expect(qb5.getFormattedQuery()).toEqual('select `a`.*, `sub`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.price * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id` from `author2` as `a` left join `book2` as `sub` on `a`.`id` = `sub`.`author_id` and `sub`.`author_id` = `a`.`id` where `sub`.`title` like \'foo%\'');
+    expect(qb5.getFormattedQuery()).toEqual('select `a`.*, `sub`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.price * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id` from `author2` as `a` left join `book2` as `sub` on `a`.`id` = `sub`.`author_id` where `sub`.`title` like \'foo%\'');
     const res5 = await qb5.getResult();
     expect(res5).toHaveLength(1);
     expect(res5[0].books).toHaveLength(2);
+    orm.em.clear();
+
+    // using ORM subquery to hydrate existing relation, without explicit join condition
+    const qb6 = orm.em.createQueryBuilder(Author2, 'a');
+    qb6.select(['*'])
+      .leftJoinAndSelect(['a.books', qb1.getKnexQuery()], 'sub')
+      .leftJoinAndSelect('sub.tags', 't')
+      .where({ 'sub.title': /^foo/ });
+    expect(qb6.getFormattedQuery()).toEqual('select `a`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.price * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id`, `t`.`id` as `t__id`, `t`.`name` as `t__name` from `author2` as `a` left join (select `b`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `a`.`id` = `sub`.`author_id` left join `book2_tags` as `e1` on `sub`.`uuid_pk` = `e1`.`book2_uuid_pk` left join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id` where `sub`.`title` like \'foo%\'');
+    const res6 = await qb6.getResult();
+    expect(res6).toHaveLength(1);
+    expect(res6[0]).toMatchObject({
+      name: 'a',
+      email: 'e',
+    });
+    expect(res6[0].books).toHaveLength(1);
+    expect(res6[0].books[0]).toMatchObject({
+      title: 'foo 1',
+      price: 123.00,
+      priceTaxed: '146.3700',
+    });
+    expect(res6[0].books[0].tags).toHaveLength(3);
     orm.em.clear();
   });
 
@@ -2912,10 +2934,10 @@ describe('QueryBuilder', () => {
       // using knex subquery to hydrate existing relation
       const qb4 = pg.em.createQueryBuilder(Author2, 'a');
       qb4.select(['*'])
-        .innerJoinLateralAndSelect(['a.books', qb1.getKnexQuery()], 'sub', { author: sql.ref('a.id') })
+        .innerJoinLateralAndSelect(['a.books', qb1.getKnexQuery()], 'sub')
         .leftJoinAndSelect('sub.tags', 't')
         .where({ 'sub.title': /^foo/ });
-      expect(qb4.getFormattedQuery()).toEqual('select "a".*, "sub"."uuid_pk" as "sub__uuid_pk", "sub"."created_at" as "sub__created_at", "sub"."title" as "sub__title", "sub"."price" as "sub__price", "sub".price * 1.19 as "sub__price_taxed", "sub"."double" as "sub__double", "sub"."meta" as "sub__meta", "sub"."author_id" as "sub__author_id", "sub"."publisher_id" as "sub__publisher_id", "t"."id" as "t__id", "t"."name" as "t__name" from "author2" as "a" inner join lateral (select "b".*, "b".price * 1.19 as "price_taxed" from "book2" as "b" order by "b"."title" asc limit 1) as "sub" on "sub"."author_id" = "a"."id" left join "book2_tags" as "b1" on "sub"."uuid_pk" = "b1"."book2_uuid_pk" left join "public"."book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "sub"."title" like \'foo%\'');
+      expect(qb4.getFormattedQuery()).toEqual('select "a".*, "sub"."uuid_pk" as "sub__uuid_pk", "sub"."created_at" as "sub__created_at", "sub"."title" as "sub__title", "sub"."price" as "sub__price", "sub".price * 1.19 as "sub__price_taxed", "sub"."double" as "sub__double", "sub"."meta" as "sub__meta", "sub"."author_id" as "sub__author_id", "sub"."publisher_id" as "sub__publisher_id", "t"."id" as "t__id", "t"."name" as "t__name" from "author2" as "a" inner join lateral (select "b".*, "b".price * 1.19 as "price_taxed" from "book2" as "b" order by "b"."title" asc limit 1) as "sub" on "a"."id" = "sub"."author_id" left join "book2_tags" as "b1" on "sub"."uuid_pk" = "b1"."book2_uuid_pk" left join "public"."book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "sub"."title" like \'foo%\'');
       const res4 = await qb4.getResult();
       expect(res4).toHaveLength(1);
       expect(res4[0]).toMatchObject({
