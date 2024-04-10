@@ -20,16 +20,26 @@ export class MsSqlConnection extends AbstractSqlConnection {
   }
 
   override getConnectionOptions(): Knex.MsSqlConnectionConfig {
-    const config = super.getConnectionOptions() as Knex.MsSqlConnectionConfig;
-    const overrides = {
+    const config = super.getConnectionOptions();
+    const overrides: Dictionary = {
       options: {
         enableArithAbort: true,
         fallbackToDefaultDb: true,
       },
-    } satisfies Knex.MsSqlConnectionConfig | Dictionary;
+    };
+
+    /* istanbul ignore next */
+    if (config.host?.includes('\\')) {
+      const [host, ...name] = config.host.split('\\');
+      overrides.server = host;
+      overrides.options.instanceName = name.join('\\');
+      delete config.host;
+      delete config.port;
+    }
+
     Utils.mergeConfig(config, overrides);
 
-    return config;
+    return config as Knex.MsSqlConnectionConfig;
   }
 
   override async begin(options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
