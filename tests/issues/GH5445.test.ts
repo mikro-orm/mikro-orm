@@ -159,8 +159,8 @@ test('define joined columns in leftJoinAndSelect()', async () => {
       },
       [
         'comments.content',
-        'comments.createdAt',
-        'comments.updatedAt',
+        'comments.created_at',
+        'comments.updated_at',
       ],
     )
     .where({ id: 5 })

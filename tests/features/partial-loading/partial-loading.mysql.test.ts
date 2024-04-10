@@ -160,7 +160,7 @@ describe('partial loading (mysql)', () => {
     expect(r3[0].books[0].title).toBe('Bible 1');
     expect(r3[0].books[0].price).toBeUndefined();
     expect(r3[0].books[0].author).toBeDefined();
-    expect(mock.mock.calls[0][0]).toMatch('select `a`.`id`, `b`.`uuid_pk` as `b__uuid_pk`, `b`.`title` as `b__title`, `b`.`author_id` as `b__author_id` from `author2` as `a` inner join `book2` as `b` on `a`.`id` = `b`.`author_id` where `a`.`id` = ? order by `b`.`title` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `a`.`id`, `b`.`uuid_pk` as `b__uuid_pk`, `b`.`author_id` as `b__author_id`, `b`.`title` as `b__title` from `author2` as `a` inner join `book2` as `b` on `a`.`id` = `b`.`author_id` where `a`.`id` = ? order by `b`.`title` asc');
     orm.em.clear();
     mock.mock.calls.length = 0;
 

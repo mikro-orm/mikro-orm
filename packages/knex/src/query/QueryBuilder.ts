@@ -313,6 +313,23 @@ export class QueryBuilder<T extends object = AnyEntity> {
       populate.push(...children);
     }
 
+    for (const p of prop.targetMeta!.getPrimaryProps()) {
+      fields.push(...this.driver.mapPropToFieldNames<T>(this, p, alias));
+    }
+
+    if (explicitFields) {
+      for (const field of explicitFields) {
+        const [a, f] = this.helper.splitField(field as EntityKey<T>);
+        const p = prop.targetMeta!.properties[f];
+
+        if (p) {
+          fields.push(...this.driver.mapPropToFieldNames<T>(this, p, alias));
+        } else {
+          fields.push(`${a}.${f} as ${a}__${f}`);
+        }
+      }
+    }
+
     prop.targetMeta!.props
       .filter(prop => explicitFields
         ? explicitFields.includes(prop.name) || explicitFields.includes(`${alias}.${prop.name}`) || prop.primary
