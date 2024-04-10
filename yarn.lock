@@ -1346,7 +1346,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.2.0"
     "@mikro-orm/knex": "npm:6.2.0"
-    better-sqlite3: "npm:9.4.5"
+    better-sqlite3: "npm:9.5.0"
     fs-extra: "npm:11.2.0"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
@@ -1550,7 +1550,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.12"
-    "@types/node": "npm:20.12.6"
+    "@types/node": "npm:20.12.7"
     "@types/pg": "npm:8.11.5"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:9.0.8"
@@ -2452,12 +2452,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:20.12.6, @types/node@npm:>=18, @types/node@npm:^20.11.17":
+"@types/node@npm:*, @types/node@npm:>=18, @types/node@npm:^20.11.17":
   version: 20.12.6
   resolution: "@types/node@npm:20.12.6"
   dependencies:
     undici-types: "npm:~5.26.4"
   checksum: 10/9feaa7f1c86b2541638f5446bdc4fd949a0ef6a53784db3d01296c503bb6e3e224bec4964f9a55b3ea669a200de824bfc6c944caf573019975e3c83fdc5f696e
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:20.12.7":
+  version: 20.12.7
+  resolution: "@types/node@npm:20.12.7"
+  dependencies:
+    undici-types: "npm:~5.26.4"
+  checksum: 10/b4a28a3b593a9bdca5650880b6a9acef46911d58cf7cfa57268f048e9a7157a7c3196421b96cea576850ddb732e3b54bc982c8eb5e1e5ef0635d4424c2fce801
   languageName: node
   linkType: hard
 
@@ -3259,14 +3268,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:9.4.5":
-  version: 9.4.5
-  resolution: "better-sqlite3@npm:9.4.5"
+"better-sqlite3@npm:9.5.0":
+  version: 9.5.0
+  resolution: "better-sqlite3@npm:9.5.0"
   dependencies:
     bindings: "npm:^1.5.0"
     node-gyp: "npm:latest"
     prebuild-install: "npm:^7.1.1"
-  checksum: 10/bca9c8e5d48062c5dfd0555c727d5a6da7fae0ba82a7d64f32fbc7b229a62d68789e8ca697d80b0c6b56a31a18267c5ecfe816d93fc9f0f417d740f64b691440
+  checksum: 10/c4e48ca118fefb6f79e2a66b3cc6eb020b7fedf263b2324007337a462d0e25a44bd53334a187a0b072f06fa763d58d3702fdfb3d857cc2eb91e1c1f6169be6ed
   languageName: node
   linkType: hard
 
