@@ -134,11 +134,11 @@ There are two notable changes here:
 
 ## One more thing…
 
-Finally, I have some exciting news to share! Since last month, MikroORM has a new major sponsor, [CDN77](https://www.cdn77.com/), thanks to which I can spend more time working on it.
+Finally, I'm thrilled to announce some exciting news! Starting last month, MikroORM welcomed a major sponsor, [CDN77](https://www.cdn77.com/)—a leading content delivery network serving over a billion users monthly, ensuring top-notch online experiences. This support enables me to dedicate more time to its development.
 
 [![CDN77.com][cdn77logo]][cdn77link]
 
 [cdn77link]: https://www.cdn77.com/
-[cdn77logo]: https://avatars.githubusercontent.com/u/7156390?s=200&v=4
+[cdn77logo]: /img/cdn77-logo-dark.svg
 
 If you are using MikroORM, please [consider donating](https://github.com/sponsors/B4nan) to support the development too. 
