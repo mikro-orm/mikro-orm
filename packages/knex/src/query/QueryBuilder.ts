@@ -314,7 +314,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     prop.targetMeta!.props
-      .filter(prop => explicitFields ? explicitFields.includes(prop.name) || prop.primary : this.platform.shouldHaveColumn(prop, populate))
+      .filter(prop => explicitFields
+        ? explicitFields.includes(prop.name) || explicitFields.includes(`${alias}.${prop.name}`) || prop.primary
+        : this.platform.shouldHaveColumn(prop, populate))
       .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<T>(this, prop, alias)));
 
     return fields;
