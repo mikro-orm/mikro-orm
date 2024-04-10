@@ -44,7 +44,7 @@ export class Book2 {
   @ManyToOne(() => Publisher2, { cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, ref: true })
   publisher?: Ref<Publisher2>;
 
-  @OneToOne({ cascade: [], mappedBy: 'book', nullable: true })
+  @OneToOne({ cascade: [], mappedBy: 'book', nullable: true, lazy: true })
   test?: Test2;
 
   @ManyToMany({ entity: () => BookTag2, cascade: [], fixedOrderColumn: 'order' })

@@ -198,7 +198,6 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
     password: 'Root.Root',
     debug: true,
     forceUtcTimezone: true,
-    autoJoinOneToOneOwner: false,
     logger: i => i,
     extensions: [Migrator, SeedManager, EntityGenerator],
     ...additionalOptions,

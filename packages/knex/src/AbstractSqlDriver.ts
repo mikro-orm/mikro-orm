@@ -1021,7 +1021,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const relationsToPopulate = populate.map(({ field }) => field.split(':')[0]);
     const toPopulate: PopulateOptions<T>[] = meta.relations
-      .filter(prop => prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
+      .filter(prop => prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !prop.lazy && !relationsToPopulate.includes(prop.name))
       .filter(prop => fields.length === 0 || fields.some(f => prop.name === f || prop.name.startsWith(`${String(f)}.`)))
       .map(prop => ({ field: `${prop.name}:ref` as any, strategy: prop.strategy }));
 
@@ -1541,7 +1541,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       if (!options.fields.includes('*') && !options.fields.includes(`${qb.alias}.*`)) {
         ret.unshift(...meta.primaryKeys.filter(pk => !options.fields!.includes(pk)));
       }
-    } else if (!Utils.isEmpty(options.exclude) || lazyProps.some(p => !p.formula)) {
+    } else if (!Utils.isEmpty(options.exclude) || lazyProps.some(p => !p.formula && (p.kind !== '1:1' || p.owner))) {
       const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate, options.exclude as string[], false));
       ret.push(...props.filter(p => !lazyProps.includes(p)).map(p => p.name));
       addFormulas = true;

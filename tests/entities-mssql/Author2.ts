@@ -56,7 +56,7 @@ export class Author2 extends BaseEntity2 {
   @OneToMany({ entity: () => Book2, mappedBy: 'author', strategy: LoadStrategy.JOINED, orderBy: { title: QueryOrder.ASC } })
   books2 = new Collection<Book2>(this);
 
-  @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL] })
+  @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL], lazy: true })
   address?: Address2;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend' })
