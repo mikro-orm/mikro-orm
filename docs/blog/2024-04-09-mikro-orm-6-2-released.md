@@ -13,6 +13,16 @@ I am pleased to announce [MikroORM v6.2](https://github.com/mikro-orm/mikro-orm/
 
 <!--truncate-->
 
+### In case you don’t know…
+
+If you never heard of [MikroORM](https://github.com/mikro-orm/mikro-orm), it’s a TypeScript data-mapper ORM with Unit of Work and Identity Map. It supports MongoDB, MySQL, PostgreSQL, SQLite, and since this new version also MS SQL Server and libSQL/Turso. Key features of the ORM are:
+
+- [Implicit transactions](https://github.com/mikro-orm/mikro-orm#implicit-transactions)
+- [ChangeSet based persistence](https://github.com/mikro-orm/mikro-orm#changeset-based-persistence)
+- [Identity map](https://mikro-orm.io/docs/identity-map/)
+
+Take a look at the full introductory article [here](./2019-04-08-introducing-mikroorm-typescript-data-mapper-orm-with-identity-map.md) (but note that many things have changed since that was written, for the better, of course!).
+
 ## New drivers
 
 Adding the new **Microsoft SQL Server** support was far away from a simple task. In fact, it took almost 4 years to finish it, and a huge part of it was implemented by [Michael Walters](https://github.com/UTGuy), so let me use this opportunity thank him again!
@@ -136,9 +146,10 @@ There are two notable changes here:
 
 Finally, I'm thrilled to announce some exciting news! Starting last month, MikroORM welcomed a major sponsor, [CDN77](https://www.cdn77.com/)—a leading content delivery network serving over a billion users monthly, ensuring top-notch online experiences. This support enables me to dedicate more time to its development.
 
-[![CDN77.com][cdn77logo]][cdn77link]
+[![CDN77.com][cdn77logo-light]![CDN77.com][cdn77logo-dark]][cdn77link]
 
 [cdn77link]: https://www.cdn77.com/
-[cdn77logo]: /img/cdn77-logo-dark.svg
+[cdn77logo-light]: /img/blog/logo-cdn77-light.svg#gh-light-mode-only
+[cdn77logo-dark]: /img/blog/logo-cdn77-dark.svg#gh-dark-mode-only
 
 If you are using MikroORM, please [consider donating](https://github.com/sponsors/B4nan) to support the development too. 
