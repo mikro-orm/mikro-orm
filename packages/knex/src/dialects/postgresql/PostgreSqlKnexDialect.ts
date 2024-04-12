@@ -1,9 +1,8 @@
-// @ts-ignore
-import PostgresDialect from 'knex/lib/dialects/postgres';
+import { MonkeyPatchable } from '@mikro-orm/knex';
 import type { Configuration } from '@mikro-orm/core';
 import { PostgreSqlTableCompiler } from './PostgreSqlTableCompiler';
 
-export class PostgreSqlKnexDialect extends PostgresDialect {
+export class PostgreSqlKnexDialect extends MonkeyPatchable.PostgresDialect {
 
   ormConfig!: Configuration;
 

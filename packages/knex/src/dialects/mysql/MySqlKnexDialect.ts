@@ -1,9 +1,8 @@
-// @ts-ignore
-import MySql2Dialect from 'knex/lib/dialects/mysql2';
+import { MonkeyPatchable } from '@mikro-orm/knex';
 import { MySqlQueryCompiler } from './MySqlQueryCompiler';
 import { MySqlColumnCompiler } from './MySqlColumnCompiler';
 
-export class MySqlKnexDialect extends MySql2Dialect {
+export class MySqlKnexDialect extends MonkeyPatchable.MySqlDialect {
 
   queryCompiler() {
     // eslint-disable-next-line prefer-rest-params
