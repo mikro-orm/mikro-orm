@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.1](https://github.com/mikro-orm/mikro-orm/compare/v6.2.0...v6.2.1) (2024-04-12)
+
+
+### Bug Fixes
+
+* **core:** skip 1:1 owner auto-joins for lazy properties ([6442e57](https://github.com/mikro-orm/mikro-orm/commit/6442e5739fb8e3ed8284ec3bba64c7ee14808b97))
+* **knex:** rework postgres and mysql dialect imports to fix compilation errors ([ffdca15](https://github.com/mikro-orm/mikro-orm/commit/ffdca15b5aa897f07988eb2218be893301636a5f))
+* **query-builder:** do not ignore unmatching partial loading hints in `qb.joinAndSelect` ([ccdf018](https://github.com/mikro-orm/mikro-orm/commit/ccdf018efd879419729b3fab4d08b2d4c6b29140)), closes [#5445](https://github.com/mikro-orm/mikro-orm/issues/5445)
+* **query-builder:** fix partial loading via `qb.joinAndSelect` with explicit aliasing ([da68503](https://github.com/mikro-orm/mikro-orm/commit/da6850329b93a5e6104acd2aa3ab946a805f045c)), closes [#5445](https://github.com/mikro-orm/mikro-orm/issues/5445)
+* **query-builder:** generate join on condition for subquery joins with known property name ([3dfbbde](https://github.com/mikro-orm/mikro-orm/commit/3dfbbde23b576aec2a0c8ed455627e2ee5e78749)), closes [#5445](https://github.com/mikro-orm/mikro-orm/issues/5445)
+* **query-builder:** respect collection property where conditions (declarative partial loading) ([3b4fc41](https://github.com/mikro-orm/mikro-orm/commit/3b4fc417c9f85f7309d78faddcf11985667c5c20)), closes [#5445](https://github.com/mikro-orm/mikro-orm/issues/5445)
+
+
+
+
+
 # [6.2.0](https://github.com/mikro-orm/mikro-orm/compare/v6.1.12...v6.2.0) (2024-04-09)
 
 
