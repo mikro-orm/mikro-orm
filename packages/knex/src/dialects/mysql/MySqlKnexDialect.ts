@@ -1,6 +1,6 @@
-import { MonkeyPatchable } from '@mikro-orm/knex';
 import { MySqlQueryCompiler } from './MySqlQueryCompiler';
 import { MySqlColumnCompiler } from './MySqlColumnCompiler';
+import { MonkeyPatchable } from '../../MonkeyPatchable';
 
 export class MySqlKnexDialect extends MonkeyPatchable.MySqlDialect {
 

@@ -11,6 +11,11 @@ import {
   Opt,
 } from '@mikro-orm/postgresql';
 
+export enum CommentObjectTypeEnum {
+  comment = 'comment',
+  post = 'post',
+}
+
 abstract class BaseEntity {
 
   [OptionalProps]?: 'createdAt' | 'updatedAt';
@@ -65,6 +70,9 @@ class Post extends BaseEntity {
   @OneToMany({
     entity: () => Comment,
     mappedBy: 'post',
+    where: {
+      objectType: CommentObjectTypeEnum.post,
+    },
   })
   comments = new Collection<Comment>(this);
 
@@ -101,11 +109,6 @@ class Comment {
 
 }
 
-export enum CommentObjectTypeEnum {
-  comment = 'comment',
-  post = 'post',
-}
-
 let orm: MikroORM;
 
 beforeAll(async () => {
@@ -134,6 +137,13 @@ beforeAll(async () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   });
+  orm.em.create(Comment, {
+    objectType: CommentObjectTypeEnum.comment,
+    post: 5,
+    content: 'bad comment content',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
   await orm.em.flush();
   orm.em.clear();
 });
@@ -146,56 +156,25 @@ test('define joined columns in leftJoinAndSelect()', async () => {
   const posts = await orm.em
     .createQueryBuilder(Post, 'post')
     .leftJoinAndSelect('post.author', 'author', {}, [
-      'author.id',
-      'author.name',
-      'author.biography',
+      'id',
+      'name',
+      'biography',
     ])
-    .leftJoinAndSelect(
-      'post.comments',
-      'comments',
-      {
-        objectType: CommentObjectTypeEnum.post,
-        content: { $ne: null },
-      },
-      [
-        'comments.content',
-        'comments.created_at',
-        'comments.updated_at',
-      ],
-    )
+    .leftJoinAndSelect('post.comments', 'comments')
     .where({ id: 5 })
     .getResult();
 
-  expect(posts[0].id).toBe(5);
-  expect(posts[0].author).toBeDefined();
-  expect(posts[0].author.id).toBe(3);
-  expect(posts[0].author.name).toBe('author name');
-  expect(posts[0].author.biography).toBe('author bio');
   expect(posts[0].comments).toBeDefined();
-  expect(posts[0].comments![0]).toBeDefined();
-  expect(posts[0].comments![0].content).toBe('comment content');
-  expect(posts[0].comments![0].createdAt).toBeDefined();
-  expect(posts[0].comments![0].updatedAt).toBeDefined();
+  expect(posts[0].comments.length).toBe(1);
 });
 
-test('use subquery for comments', async () => {
-  const commentsSubQuery = orm.em
-    .createQueryBuilder(Comment, 'comments')
-    .select([
-      'post',
-      'objectType',
-      'content',
-      'createdAt',
-      'updatedAt',
-    ]);
-
+test('em.find', async () => {
   const posts = await orm.em
-    .createQueryBuilder(Post, 'post')
-    .leftJoinAndSelect('post.author', 'author')
-    .leftJoinAndSelect(['post.comments', commentsSubQuery], 'comments', {
-      objectType: CommentObjectTypeEnum.post,
-      content: { $ne: null },
-    })
-    .where({ id: 5 })
-    .getResult();
+    .find(Post, { id: 5 }, {
+      populate: ['author', 'comments'],
+      fields: ['author.name', 'author.biography'],
+    });
+
+  expect(posts[0].comments).toBeDefined();
+  expect(posts[0].comments.length).toBe(1);
 });

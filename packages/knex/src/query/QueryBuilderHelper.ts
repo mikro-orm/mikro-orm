@@ -186,6 +186,7 @@ export class QueryBuilderHelper {
     const inverseJoinColumns = prop.referencedColumnNames;
     const primaryKeys = prop.owner ? prop.joinColumns : prop2.referencedColumnNames;
     schema ??= prop.targetMeta?.schema === '*' ? '*' : this.driver.getSchemaName(prop.targetMeta);
+    cond = Utils.merge(cond, prop.where);
 
     return {
       prop, type, cond, ownerAlias, alias, table, schema,

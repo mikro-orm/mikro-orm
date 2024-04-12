@@ -1,6 +1,6 @@
-import { MonkeyPatchable } from '@mikro-orm/knex';
 import type { Configuration } from '@mikro-orm/core';
 import { PostgreSqlTableCompiler } from './PostgreSqlTableCompiler';
+import { MonkeyPatchable } from '../../MonkeyPatchable';
 
 export class PostgreSqlKnexDialect extends MonkeyPatchable.PostgresDialect {
 
