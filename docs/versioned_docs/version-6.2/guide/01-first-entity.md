@@ -482,9 +482,9 @@ Now back to the validation error about global context. With the freshly gained k
 
    Now when someone requests the same article via both of those endpoints, we could end up with both returning the same output:
 
-    1. `GET /article/1` returns `Book` without populating its property `author` property
-    2. `GET /article-with-author/1` returns `Book`, this time with `author` populated
-    3. `GET /article/1` returns `Book`, but this time also with `author` populated
+    1. `GET /article/1` returns `Article` without populating its property `author` property
+    2. `GET /article-with-author/1` returns `Article`, this time with `author` populated
+    3. `GET /article/1` returns `Article`, but this time also with `author` populated
 
    This happens because the information about entity association being populated is stored in the Identity Map.
 
