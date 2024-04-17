@@ -32,6 +32,7 @@ body:
         - "@mikro-orm/mysql"
         - "@mikro-orm/postgresql"
         - "@mikro-orm/sqlite"
+        - "@mikro-orm/libsql"
         - "@mikro-orm/mssql"
     validations:
       required: false
