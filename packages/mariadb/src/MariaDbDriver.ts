@@ -33,6 +33,7 @@ export class MariaDbDriver extends AbstractSqlDriver<MariaDbConnection, MariaDbP
         { enabled: false },
       );
       /* istanbul ignore next */
+      // see https://github.com/mikro-orm/mikro-orm/issues/5460
       this.autoIncrementIncrement = res?.Value ? +res?.Value : 1;
     }
 

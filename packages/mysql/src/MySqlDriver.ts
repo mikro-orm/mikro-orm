@@ -20,6 +20,7 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
         { enabled: false },
       );
       /* istanbul ignore next */
+      // see https://github.com/mikro-orm/mikro-orm/issues/5460
       this.autoIncrementIncrement = res?.Value ? +res?.Value : 1;
     }
 
