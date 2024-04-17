@@ -53,14 +53,17 @@ describe('MikroORM', () => {
   });
 
   test('should NOT throw when multiple entities in same file were discovered', async () => {
-    await expect(MikroORM.init({
+    const orm = await MikroORM.init({
       driver: SqliteDriver,
       dbName: ':memory:',
       baseDir: BASE_DIR,
       connect: false,
       entities: ['complex-entities/**/*.entity.js'],
       entitiesTs: ['complex-entities/**/*.entity.ts'],
-     })).resolves.not.toBeUndefined();
+    });
+
+    expect(orm).toBeInstanceOf(MikroORM);
+    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['AbstractClass', 'ClassA', 'ClassB']);
   });
 
   test('should NOT throw when multiple entities with same file name discovered ("checkDuplicateEntities" false)', async () => {
