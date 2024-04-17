@@ -12,7 +12,7 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
   private async getAutoIncrementIncrement(ctx?: Transaction): Promise<number> {
     if (this.autoIncrementIncrement == null) {
       // the increment step may differ when running a cluster, see https://github.com/mikro-orm/mikro-orm/issues/3828
-      const res = await this.connection.execute<{ auto_increment_increment: number }>(
+      const res = await this.connection.execute<{ Value: string }>(
         `show variables like 'auto_increment_increment'`,
         [],
         'get',
@@ -20,7 +20,7 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
         { enabled: false },
       );
       /* istanbul ignore next */
-      this.autoIncrementIncrement = res?.auto_increment_increment ? +res?.auto_increment_increment : 1;
+      this.autoIncrementIncrement = res?.Value ? +res?.Value : 1;
     }
 
     return this.autoIncrementIncrement;
