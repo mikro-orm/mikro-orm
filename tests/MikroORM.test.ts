@@ -52,6 +52,17 @@ describe('MikroORM', () => {
     await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'] })).rejects.toThrow('Duplicate entity names are not allowed: Dup1, Dup2');
   });
 
+  test('should NOT throw when multiple entities in same file were discovered', async () => {
+    const orm = await MikroORM.init({
+      driver: SqliteDriver,
+      dbName: ':memory:',
+      baseDir: BASE_DIR,
+      connect: false,
+      entities: ['complex-entities/**/*.entity.js'],
+      entitiesTs: ['complex-entities/**/*.entity.ts'],
+     });
+  });
+
   test('should NOT throw when multiple entities with same file name discovered ("checkDuplicateEntities" false)', async () => {
     const ormInitCommandPromise = MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'], discovery: { checkDuplicateEntities: false } });
 

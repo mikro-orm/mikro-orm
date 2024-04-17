@@ -267,9 +267,8 @@ export class MetadataDiscovery {
           continue;
         }
 
-        this.metadata.set(name, Utils.copy(MetadataStorage.getMetadata(name, path), false));
         const entity = this.prepare(target) as Constructor<AnyEntity>;
-        const schema = this.getSchema(entity);
+        const schema = this.getSchema(entity, path);
         const meta = schema.init().meta;
         this.metadata.set(meta.className, meta);
 
@@ -323,16 +322,21 @@ export class MetadataDiscovery {
       return entity.schema;
     }
 
+    if (EntitySchema.REGISTRY.has(entity)) {
+      return EntitySchema.REGISTRY.get(entity)!;
+    }
+
     return entity as EntityClass<T>;
   }
 
-  private getSchema<T>(entity: Constructor<T> | EntitySchema<T>): EntitySchema<T> {
+  private getSchema<T>(entity: Constructor<T> | EntitySchema<T>, filepath?: string): EntitySchema<T> {
     if (entity instanceof EntitySchema) {
+      if (filepath) {
+        // This will initialize global metadata for 'entity.meta.className'
+        const meta = Utils.copy(MetadataStorage.getMetadata(entity.meta.className, filepath), false);
+        this.metadata.set(entity.meta.className, meta);
+      }
       return entity;
-    }
-
-    if (EntitySchema.REGISTRY.has(entity)) {
-      return EntitySchema.REGISTRY.get(entity)!;
     }
 
     const path = (entity as Dictionary).__path;
