@@ -11,7 +11,6 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "skipLibCheck": true, // because of ts-morph being not compatible with TS 5.4 yet
   },
   "exclude": [
     "**/node_modules",
