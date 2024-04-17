@@ -332,10 +332,10 @@ export class MetadataDiscovery {
   private getSchema<T>(entity: Constructor<T> | EntitySchema<T>, filepath?: string): EntitySchema<T> {
     if (entity instanceof EntitySchema) {
       if (filepath) {
-        // This will initialize global metadata for 'entity.meta.className'
-        const meta = Utils.copy(MetadataStorage.getMetadata(entity.meta.className, filepath), false);
-        this.metadata.set(entity.meta.className, meta);
+        // initialize global metadata for given entity
+        MetadataStorage.getMetadata(entity.meta.className, filepath);
       }
+
       return entity;
     }
 
