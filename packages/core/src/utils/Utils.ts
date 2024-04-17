@@ -1063,16 +1063,7 @@ export class Utils {
     return createRequire(resolve(from))(id);
   }
 
-  /**
-   * Hack to keep dynamic imports even when compiling to CJS.
-   * We can't use it always, as it would break ts-node.
-   * @see https://github.com/microsoft/TypeScript/issues/43329#issuecomment-922544562
-   */
   static async dynamicImport<T = any>(id: string): Promise<T> {
-    if (id.endsWith('.json') || process.env.TS_JEST) {
-      return require(id);
-    }
-
     /* istanbul ignore next */
     if (platform() === 'win32') {
       try {
