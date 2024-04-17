@@ -80,8 +80,9 @@ export class Migrator implements IMigrator {
       return { fileName: '', code: '', diff };
     }
 
-    await this.storeCurrentSchema();
     const migration = await this.generator.generate(diff, path, name);
+    await this.storeCurrentSchema();
+
     return {
       fileName: migration[1],
       code: migration[0],
@@ -102,8 +103,8 @@ export class Migrator implements IMigrator {
     await this.ensureMigrationsDirExists();
     const schemaExists = await this.validateInitialMigration();
     const diff = await this.getSchemaDiff(false, true);
-    await this.storeCurrentSchema();
     const migration = await this.generator.generate(diff, path, name);
+    await this.storeCurrentSchema();
 
     if (schemaExists) {
       await this.storage.logMigration({ name: migration[1], context: null });
