@@ -4079,3 +4079,111 @@ export const E123TableNameSchema = new EntitySchema({
 ",
 ]
 `;
+
+exports[`EntityGenerator takeTables [mysql]: mysql-entity-dump-takeTables 1`] = `
+[
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class FooBar2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ fieldName: 'name with space', length: 255, nullable: true })
+  nameWithSpace?: string;
+
+  @Unique({ name: 'foo_bar2_baz_id_unique' })
+  @Property({ fieldName: 'baz_id', unsigned: true, nullable: true })
+  baz?: number;
+
+  @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  fooBar?: FooBar2;
+
+  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  version!: Date & Opt;
+
+  @Property({ length: 65535, nullable: true })
+  blob?: Buffer;
+
+  @Property({ length: 65535, nullable: true })
+  blob2?: Buffer;
+
+  @Property({ columnType: 'text', nullable: true })
+  array?: string;
+
+  @Property({ columnType: 'json', nullable: true })
+  objectProperty?: any;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
+
+@Entity()
+export class Test2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255, nullable: true })
+  name?: string;
+
+  @Unique({ name: 'test2_book_uuid_pk_unique' })
+  @Property({ fieldName: 'book_uuid_pk', length: 36, nullable: true })
+  book?: string;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  parent?: Test2;
+
+  @Property({ type: 'number' })
+  version: number & Opt = 1;
+
+  @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  fooBar?: FooBar2;
+
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
+  fooBaz?: number;
+
+}
+",
+]
+`;
+
+exports[`EntityGenerator takeTables and skipTables [mysql]: mysql-entity-dump-takeTables-skipTables 1`] = `
+[
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+
+@Entity()
+export class Test2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255, nullable: true })
+  name?: string;
+
+  @Unique({ name: 'test2_book_uuid_pk_unique' })
+  @Property({ fieldName: 'book_uuid_pk', length: 36, nullable: true })
+  book?: string;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  parent?: Test2;
+
+  @Property({ type: 'number' })
+  version: number & Opt = 1;
+
+  @Unique({ name: 'test2_foo___bar_unique' })
+  @Property({ fieldName: 'foo___bar', unsigned: true, nullable: true })
+  fooBar?: number;
+
+  @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
+  fooBaz?: number;
+
+}
+",
+]
+`;
