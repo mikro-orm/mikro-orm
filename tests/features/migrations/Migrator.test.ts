@@ -107,6 +107,38 @@ describe('Migrator', () => {
     downMock.mockRestore();
   });
 
+  test('snapshot should not be updated when custom migration fileName function throws', async () => {
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const migrationsSettings = orm.config.get('migrations');
+    orm.config.set('migrations', {
+      ...migrationsSettings,
+      fileName: (timestamp, name?) => {
+        if (!name) {
+          throw new Error('Migration name is required');
+        }
+
+        return `migration-${timestamp}-${name}`;
+      },
+      snapshot: true,
+    });
+    const migrator = orm.migrator;
+    await expect(migrator.createMigration()).rejects.toThrow(
+      'Migration name is required',
+    );
+    // retry creating migration with specified name
+    const migration = await migrator.createMigration(
+      undefined,
+      false,
+      false,
+      'with-custom-name',
+    );
+    expect(migration.fileName).toEqual('migration-20191013214813-with-custom-name.ts');
+    expect(migration).toMatchSnapshot('migration-dump');
+    orm.config.set('migrations', migrationsSettings); // Revert migration config changes
+    await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
+  });
+
   test('generate schema migration', async () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');

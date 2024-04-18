@@ -822,6 +822,52 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
+exports[`Migrator snapshot should not be updated when custom migration fileName function throws: migration-dump 1`] = `
+{
+  "code": "import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20191013214813_with-custom-name extends Migration {
+
+  async up(): Promise<void> {
+    this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
+
+    this.addSql('alter table \`book2\` drop column \`foo\`;');
+
+    this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
+    this.addSql('alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;');
+  }
+
+  async down(): Promise<void> {
+    this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\'lol\\';');
+
+    this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');
+    this.addSql('alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;');
+    this.addSql('alter table \`test2\` add unique \`test2_foo___bar_unique\`(\`foo___bar\`);');
+  }
+
+}
+",
+  "diff": {
+    "down": [
+      "alter table \`book2\` add \`foo\` varchar(255) null default 'lol';",
+      "",
+      "alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;",
+      "alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;",
+      "alter table \`test2\` add unique \`test2_foo___bar_unique\`(\`foo___bar\`);",
+    ],
+    "up": [
+      "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
+      "",
+      "alter table \`book2\` drop column \`foo\`;",
+      "",
+      "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
+      "alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;",
+    ],
+  },
+  "fileName": "migration-20191013214813-with-custom-name.ts",
+}
+`;
+
 exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
 [
   "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations' (via write connection '127.0.0.1')",
