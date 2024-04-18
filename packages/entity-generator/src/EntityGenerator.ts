@@ -6,6 +6,7 @@ import {
   type NamingStrategy,
   ReferenceKind,
   Utils,
+  matchName,
 } from '@mikro-orm/core';
 import {
   type AbstractSqlConnection,
@@ -77,7 +78,7 @@ export class EntityGenerator {
         const skipColumns = options.skipColumns?.[table.getShortestName()];
         if (skipColumns) {
           table.getColumns().forEach(col => {
-            if (skipColumns.includes(col.name)) {
+            if (skipColumns.some(matchColumnName => matchName(col.name, matchColumnName))) {
               table.removeColumn(col.name);
             }
           });
@@ -87,7 +88,7 @@ export class EntityGenerator {
 
     for (const meta of metadata) {
       for (const prop of meta.relations) {
-        if (options.skipTables?.includes(prop.referencedTableName)) {
+        if (!this.isTableNameAllowed(prop.referencedTableName, options)) {
           prop.kind = ReferenceKind.SCALAR;
           const meta2 = metadata.find(m => m.className === prop.type)!;
           prop.type = meta2.getPrimaryProps().map(pk => pk.type).join(' | ');
@@ -95,7 +96,7 @@ export class EntityGenerator {
       }
     }
 
-    metadata = metadata.filter(table => !options.skipTables?.includes(table.tableName));
+    metadata = metadata.filter(table => this.isTableNameAllowed(table.tableName, options));
 
     await options.onInitialMetadata?.(metadata, this.platform);
 
@@ -130,6 +131,13 @@ export class EntityGenerator {
     await options.onProcessedMetadata?.(metadata, this.platform);
 
     return metadata;
+  }
+
+  private isTableNameAllowed(tableName: string, { takeTables, skipTables }: GenerateOptions) {
+    return (
+      (takeTables?.some(tableNameToMatch => matchName(tableName, tableNameToMatch)) ?? true) &&
+      !(skipTables?.some(tableNameToMatch => matchName(tableName, tableNameToMatch)) ?? false)
+    );
   }
 
   private detectManyToManyRelations(metadata: EntityMetadata[], onlyPurePivotTables: boolean, readOnlyPivotTables: boolean): void {

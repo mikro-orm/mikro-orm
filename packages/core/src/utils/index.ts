@@ -11,3 +11,4 @@ export * from './EntityComparator';
 export * from './AbstractSchemaGenerator';
 export * from './RawQueryFragment';
 export * from './upsert-utils';
+export * from './match-name';
