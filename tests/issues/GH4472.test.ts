@@ -1,4 +1,14 @@
-import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity,
+  Enum,
+  LoadStrategy,
+  ManyToOne,
+  MikroORM,
+  OneToMany,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 
@@ -10,6 +20,18 @@ class Topic {
 
   @Property()
   name!: string;
+
+  @Enum({
+    nativeEnumName: 'enum_type_local_schema',
+    items: ['foo', 'bar'],
+  })
+  enum1?: 'foo' | 'bar';
+
+  @Enum({
+    nativeEnumName: 'n1.enum_type_specific_schema',
+    items: ['foo', 'bar'],
+  })
+  enum2?: 'foo' | 'bar';
 
   @OneToMany(() => Category, e => e.topic)
   category = new Collection<Category>(this);
@@ -36,9 +58,8 @@ describe('multiple connected schemas in postgres', () => {
       dbName: `mikro_orm_test_multi_schemas2`,
       driver: PostgreSqlDriver,
     });
-    await orm.schema.ensureDatabase();
 
-    for (const ns of ['n2', 'n5']) {
+    for (const ns of ['n1', 'n2', 'n5']) {
       await orm.schema.execute(`drop schema if exists ${ns} cascade`);
     }
 
@@ -102,5 +123,47 @@ describe('multiple connected schemas in postgres', () => {
     expect(mock.mock.calls[0][0]).toMatch(
       'select "t0"."id" from "n2"."topic" as "t0" where "t0"."id" = 1',
     );
+  });
+
+  test('#5456', async () => {
+    await orm.schema.execute(`drop schema if exists n1 cascade`);
+    await orm.schema.execute(`drop schema if exists n2 cascade`);
+
+    const sql = await orm.schema.getCreateSchemaSQL({ schema: 'n2', wrap: false });
+    expect(sql).toMatch(`create schema if not exists "n1";
+create schema if not exists "n2";
+create type "n2"."enum_type_local_schema" as enum ('foo', 'bar');
+create type "n1"."enum_type_specific_schema" as enum ('foo', 'bar');
+create table "n2"."topic" ("id" serial primary key, "name" varchar(255) not null, "enum1" "n2"."enum_type_local_schema" not null, "enum2" "n1"."enum_type_specific_schema" not null);
+
+create table "n2"."category" ("id" serial primary key, "topic_id" int null);
+
+alter table "n2"."category" add constraint "category_topic_id_foreign" foreign key ("topic_id") references "n2"."topic" ("id") on update cascade on delete set null;`);
+
+    const diff = await orm.schema.getUpdateSchemaSQL({ schema: 'n2', wrap: false });
+    expect(diff).toMatch(`create schema if not exists "n1";
+create schema if not exists "n2";
+create type "n2"."enum_type_local_schema" as enum ('foo', 'bar');
+create type "n1"."enum_type_specific_schema" as enum ('foo', 'bar');
+create table "n2"."topic" ("id" serial primary key, "name" varchar(255) not null, "enum1" "n2"."enum_type_local_schema" not null, "enum2" "n1"."enum_type_specific_schema" not null);
+
+create table "n2"."category" ("id" serial primary key, "topic_id" int null);
+
+alter table "n2"."category" add constraint "category_topic_id_foreign" foreign key ("topic_id") references "n2"."topic" ("id") on update cascade on delete set null;`);
+
+    await orm.schema.updateSchema({ schema: 'n2' });
+    const diff2 = await orm.schema.getUpdateSchemaSQL({ schema: 'n2', wrap: false });
+    expect(diff2).toBe('');
+
+    orm.getMetadata(Topic).properties.enum1.items!.push('baz');
+    // TODO how to handle updates to the n1 enum?
+    // orm.getMetadata(Topic).properties.enum2.items!.push('baz');
+
+    const diff4 = await orm.schema.getUpdateSchemaSQL({ schema: 'n2', wrap: false });
+    expect(diff4).toBe(`alter type "n2"."enum_type_local_schema" add value if not exists 'baz';\n\n`);
+    await orm.em.execute(diff4);
+
+    const diff5 = await orm.schema.getUpdateSchemaSQL({ schema: 'n2', wrap: false });
+    expect(diff5).toBe('');
   });
 });

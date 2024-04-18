@@ -44,7 +44,12 @@ export class DatabaseSchema {
 
   setNativeEnums(nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }>): void {
     this.nativeEnums = nativeEnums;
-    this.tables.forEach(t => t.nativeEnums = nativeEnums);
+
+    for (const nativeEnum of Object.values(nativeEnums)) {
+      if (nativeEnum.schema && nativeEnum.schema !== '*') {
+        this.namespaces.add(nativeEnum.schema);
+      }
+    }
   }
 
   getNativeEnums(): Dictionary<{ name: string; schema?: string; items: string[] }> {
@@ -87,15 +92,23 @@ export class DatabaseSchema {
       for (const prop of meta.props) {
         if (prop.nativeEnumName) {
           let key = prop.nativeEnumName;
-          const s = meta.schema ?? schema.name;
+          let enumName = prop.nativeEnumName;
+          let enumSchema = meta.schema ?? schema.name;
 
-          if (s && s !== platform.getDefaultSchemaName()) {
-            key = s + '.' + key;
+          if (key.includes('.')) {
+            const [explicitSchema, ...parts] = prop.nativeEnumName.split('.');
+            enumName = parts.join('.');
+            key = enumName;
+            enumSchema = explicitSchema;
+          }
+
+          if (enumSchema && enumSchema !== '*' && enumSchema !== platform.getDefaultSchemaName()) {
+            key = enumSchema + '.' + key;
           }
 
           nativeEnums[key] = {
-            name: prop.nativeEnumName,
-            schema: meta.schema ?? schema.name,
+            name: enumName,
+            schema: enumSchema,
             items: prop.items?.map(val => '' + val) ?? [],
           };
         }
@@ -162,8 +175,13 @@ export class DatabaseSchema {
         || table.schema === schema                                  // specified schema matches the table's one
         || (!schema && !wildcardSchemaTables.includes(table.name)); // no schema specified and the table has fixed one provided
     });
+
     // remove namespaces of ignored tables
-    this.namespaces.forEach(ns => !this.tables.find(t => t.schema === ns) && this.namespaces.delete(ns));
+    for (const ns of this.namespaces) {
+      if (!this.tables.some(t => t.schema === ns) && !Object.values(this.nativeEnums).some(e => e.schema === ns)) {
+        this.namespaces.delete(ns);
+      }
+    }
   }
 
 }

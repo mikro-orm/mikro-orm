@@ -66,20 +66,28 @@ export class SchemaComparator {
       diff.removedNamespaces.add(namespace);
     }
 
-    for (const nativeEnum of Object.keys(toSchema.getNativeEnums())) {
-      if (fromSchema.hasNativeEnum(nativeEnum)) {
+    for (const [key, nativeEnum] of Object.entries(toSchema.getNativeEnums())) {
+      if (fromSchema.hasNativeEnum(key)) {
         continue;
       }
 
-      diff.newNativeEnums.push(toSchema.getNativeEnum(nativeEnum));
+      if (nativeEnum.schema === '*' && fromSchema.hasNativeEnum(`${toSchema.name}.${key}`)) {
+        continue;
+      }
+
+      diff.newNativeEnums.push(nativeEnum);
     }
 
-    for (const nativeEnum of Object.keys(fromSchema.getNativeEnums())) {
-      if (toSchema.hasNativeEnum(nativeEnum)) {
+    for (const [key, nativeEnum] of Object.entries(fromSchema.getNativeEnums())) {
+      if (toSchema.hasNativeEnum(key)) {
         continue;
       }
 
-      diff.removedNativeEnums.push(fromSchema.getNativeEnum(nativeEnum));
+      if (key.startsWith(`${fromSchema.name}.`) && (fromSchema.name !== toSchema.name || toSchema.getNativeEnum(key.substring(fromSchema.name.length + 1))?.schema === '*')) {
+        continue;
+      }
+
+      diff.removedNativeEnums.push(nativeEnum);
     }
 
     for (const table of toSchema.getTables()) {
@@ -203,7 +211,7 @@ export class SchemaComparator {
       }
 
       // See if column has changed properties in "to" table.
-      const changedProperties = this.diffColumn(column, toTable.getColumn(column.name)!, tableName);
+      const changedProperties = this.diffColumn(column, toTable.getColumn(column.name)!, fromTable, tableName);
 
       if (changedProperties.size === 0) {
         continue;
@@ -344,7 +352,7 @@ export class SchemaComparator {
 
     for (const addedColumn of Object.values(tableDifferences.addedColumns)) {
       for (const removedColumn of Object.values(tableDifferences.removedColumns)) {
-        const diff = this.diffColumn(addedColumn, removedColumn);
+        const diff = this.diffColumn(addedColumn, removedColumn, tableDifferences.fromTable);
 
         if (diff.size !== 0) {
           continue;
@@ -464,11 +472,12 @@ export class SchemaComparator {
    * Returns the difference between the columns
    * If there are differences this method returns field2, otherwise the boolean false.
    */
-  diffColumn(fromColumn: Column, toColumn: Column, tableName?: string): Set<string> {
+  diffColumn(fromColumn: Column, toColumn: Column, fromTable: DatabaseTable, tableName?: string): Set<string> {
     const changedProperties = new Set<string>();
     const fromProp = this.mapColumnToProperty({ ...fromColumn, autoincrement: false });
     const toProp = this.mapColumnToProperty({ ...toColumn, autoincrement: false });
     const fromColumnType = fromColumn.mappedType.getColumnType(fromProp, this.platform).toLowerCase();
+    const fromNativeEnum = fromTable.nativeEnums[fromColumnType] ?? Object.values(fromTable.nativeEnums).find(e => e.name === fromColumnType && e.schema !== '*');
     const toColumnType = toColumn.mappedType.getColumnType(toProp, this.platform).toLowerCase();
     const log = (msg: string, params: Dictionary) => {
       if (tableName) {
@@ -480,6 +489,7 @@ export class SchemaComparator {
 
     if (
       fromColumnType !== toColumnType &&
+      (!fromNativeEnum || `${fromNativeEnum.schema}.${fromNativeEnum.name}` !== toColumnType) &&
       !(fromColumn.ignoreSchemaChanges?.includes('type') || toColumn.ignoreSchemaChanges?.includes('type')) &&
       !fromColumn.generated && !toColumn.generated
     ) {

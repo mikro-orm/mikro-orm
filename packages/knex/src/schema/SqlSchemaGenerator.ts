@@ -6,7 +6,6 @@ import {
   type Dictionary,
   type DropSchemaOptions,
   type EnsureDatabaseOptions,
-  type EntityMetadata,
   type ISchemaGenerator,
   type MikroORM,
   type Transaction,
@@ -103,7 +102,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         }
 
         created.push(enumName);
-        const sql = this.helper.getCreateNativeEnumSQL(enumName, enumOptions.items, options.schema ?? this.config.get('schema'));
+
+        const sql = this.helper.getCreateNativeEnumSQL(enumOptions.name, enumOptions.items, this.getSchemaName(enumOptions, options));
         ret += await this.dump(this.knex.schema.raw(sql), '\n');
       }
     }
@@ -198,7 +198,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return this.wrapSchema(ret + '\n', { wrap });
   }
 
-  private getSchemaName(meta: EntityMetadata, options: { schema?: string }): string | undefined {
+  private getSchemaName(meta: { schema?: string }, options: { schema?: string }): string | undefined {
     const schemaName = options.schema ?? this.config.get('schema');
     /* istanbul ignore next */
     return meta.schema && meta.schema === '*' ? schemaName : (meta.schema ?? schemaName);
@@ -260,7 +260,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     if (this.platform.supportsNativeEnums()) {
       for (const newNativeEnum of schemaDiff.newNativeEnums) {
-        const sql = this.helper.getCreateNativeEnumSQL(newNativeEnum.name, newNativeEnum.items, newNativeEnum.schema ?? options.schema ?? this.config.get('schema'));
+        const sql = this.helper.getCreateNativeEnumSQL(newNativeEnum.name, newNativeEnum.items, this.getSchemaName(newNativeEnum, options));
         ret += await this.dump(this.knex.schema.raw(sql), '\n');
       }
     }

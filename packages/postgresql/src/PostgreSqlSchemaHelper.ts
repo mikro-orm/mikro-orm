@@ -365,8 +365,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
 
     if (column.nativeEnumName && column.enumItems) {
-      const schemaPrefix = fromTable.schema && fromTable.schema !== this.platform.getDefaultSchemaName() ? `${fromTable.schema}.` : '';
-      const type = this.platform.quoteIdentifier(schemaPrefix + column.nativeEnumName);
+      let schemaPrefix = fromTable.schema && fromTable.schema !== this.platform.getDefaultSchemaName() ? `${fromTable.schema}.` : '';
+      let enumName = column.nativeEnumName;
+
+      if (enumName.includes('.')) {
+        const [schemaName, ...parts] = enumName.split('.');
+        enumName = parts.join('.');
+        schemaPrefix = schemaName + '.';
+      }
+
+      const type = this.platform.quoteIdentifier(schemaPrefix + enumName);
 
       if (column.type.endsWith('[]')) {
         return table.specificType(column.name, type + '[]');
