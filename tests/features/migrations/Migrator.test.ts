@@ -133,6 +133,7 @@ describe('Migrator', () => {
       false,
       'with-custom-name',
     );
+    expect(migration.fileName).toEqual('migration-20191013214813-with-custom-name.ts');
     expect(migration).toMatchSnapshot('migration-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
