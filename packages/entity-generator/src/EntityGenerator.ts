@@ -6,7 +6,6 @@ import {
   type NamingStrategy,
   ReferenceKind,
   Utils,
-  matchName,
 } from '@mikro-orm/core';
 import {
   type AbstractSqlConnection,
@@ -78,7 +77,7 @@ export class EntityGenerator {
         const skipColumns = options.skipColumns?.[table.getShortestName()];
         if (skipColumns) {
           table.getColumns().forEach(col => {
-            if (skipColumns.some(matchColumnName => matchName(col.name, matchColumnName))) {
+            if (skipColumns.some(matchColumnName => this.matchName(col.name, matchColumnName))) {
               table.removeColumn(col.name);
             }
           });
@@ -133,10 +132,17 @@ export class EntityGenerator {
     return metadata;
   }
 
+  private matchName(name: string, nameToMatch: string | RegExp) {
+  return typeof nameToMatch === 'string'
+    ? name.toLocaleLowerCase() === nameToMatch.toLocaleLowerCase()
+    : nameToMatch.test(name);
+}
+
+
   private isTableNameAllowed(tableName: string, { takeTables, skipTables }: GenerateOptions) {
     return (
-      (takeTables?.some(tableNameToMatch => matchName(tableName, tableNameToMatch)) ?? true) &&
-      !(skipTables?.some(tableNameToMatch => matchName(tableName, tableNameToMatch)) ?? false)
+      (takeTables?.some(tableNameToMatch => this.matchName(tableName, tableNameToMatch)) ?? true) &&
+      !(skipTables?.some(tableNameToMatch => this.matchName(tableName, tableNameToMatch)) ?? false)
     );
   }
 
