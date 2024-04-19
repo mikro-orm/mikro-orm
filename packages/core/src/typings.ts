@@ -804,7 +804,7 @@ export interface GenerateOptions {
   schema?: string;
   takeTables?: (RegExp | string)[];
   skipTables?: (RegExp | string)[];
-  skipColumns?: Record<string, (RegExp | string)[]>;
+  skipColumns?: Dictionary<(RegExp | string)[]>;
   bidirectionalRelations?: boolean;
   identifiedReferences?: boolean;
   entitySchema?: boolean;
