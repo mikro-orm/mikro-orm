@@ -133,11 +133,10 @@ export class EntityGenerator {
   }
 
   private matchName(name: string, nameToMatch: string | RegExp) {
-  return typeof nameToMatch === 'string'
-    ? name.toLocaleLowerCase() === nameToMatch.toLocaleLowerCase()
-    : nameToMatch.test(name);
-}
-
+    return typeof nameToMatch === 'string'
+      ? name.toLocaleLowerCase() === nameToMatch.toLocaleLowerCase()
+      : nameToMatch.test(name);
+  }
 
   private isTableNameAllowed(tableName: string, { takeTables, skipTables }: GenerateOptions) {
     return (
