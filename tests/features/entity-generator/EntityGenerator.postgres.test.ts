@@ -56,6 +56,43 @@ describe('EntityGenerator', () => {
     });
     expect(dump).toMatchSnapshot('postgres-entity-dump-skipTables');
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
+    await expect(pathExists('./temp/entities/Test2.ts')).resolves.toBe(false);
+    await expect(pathExists('./temp/entities/FooBar2.ts')).resolves.toBe(true);
+    await remove('./temp/entities');
+
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
+
+  test('takeTables [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const dump = await orm.entityGenerator.generate({
+      save: true,
+      path: './temp/entities',
+      takeTables: ['test2', /^foo_bar\d$/],
+    });
+    expect(dump).toMatchSnapshot('postgres-entity-dump-takeTables');
+    await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(false);
+    await expect(pathExists('./temp/entities/Test2.ts')).resolves.toBe(true);
+    await expect(pathExists('./temp/entities/FooBar2.ts')).resolves.toBe(true);
+    await remove('./temp/entities');
+
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
+
+  test('takeTables and skipTables [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const dump = await orm.entityGenerator.generate({
+      save: true,
+      path: './temp/entities',
+      takeTables: ['test2', 'foo_bar2'],
+      skipTables: [/^foo_bar\d$/],
+    });
+    expect(dump).toMatchSnapshot('postgres-entity-dump-takeTables-skipTables');
+    await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(false);
+    await expect(pathExists('./temp/entities/Test2.ts')).resolves.toBe(true);
+    await expect(pathExists('./temp/entities/FooBar2.ts')).resolves.toBe(false);
     await remove('./temp/entities');
 
     await orm.schema.dropDatabase();
