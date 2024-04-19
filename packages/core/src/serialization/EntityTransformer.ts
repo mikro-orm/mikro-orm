@@ -88,7 +88,7 @@ export class EntityTransformer {
         return [prop, val] as const;
       })
       .filter(([, value]) => typeof value !== 'undefined')
-      .forEach(([prop, value]) => ret[this.propertyName(meta, prop!, wrapped.__platform) as any] = value as any);
+      .forEach(([prop, value]) => ret[raw ? prop : this.propertyName(meta, prop!, wrapped.__platform) as any] = value as any);
 
     if (!visited) {
       root.visited.delete(entity);
@@ -102,13 +102,13 @@ export class EntityTransformer {
     meta.props
       .filter(prop => prop.getter && prop.getterName === undefined && !prop.hidden && typeof entity[prop.name] !== 'undefined')
       // @ts-ignore
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform) as any] = this.processProperty(prop.name, entity, raw));
+      .forEach(prop => ret[raw ? prop.name : this.propertyName(meta, prop.name, wrapped.__platform) as any] = this.processProperty(prop.name, entity, raw));
 
     // decorated get methods
     meta.props
       .filter(prop => prop.getterName && !prop.hidden && entity[prop.getterName] instanceof Function)
       // @ts-ignore
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.getterName as keyof Entity & string, entity, raw));
+      .forEach(prop => ret[raw ? prop.name : this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.getterName as keyof Entity & string, entity, raw));
 
     if (contextCreated) {
       root.close();

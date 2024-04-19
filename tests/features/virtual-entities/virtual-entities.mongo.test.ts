@@ -167,8 +167,8 @@ describe('virtual entities (mongo)', () => {
     // toPOJO ignores `hidden` flag
     const pojos4 = someBooks4.map(b => wrap(b).toPOJO());
     expect(pojos4).toEqual([
-      { author: 'The value is: Jon Snow 2', title: 'My Life on the Wall, part 1/2' },
-      { author: 'The value is: Jon Snow 3', title: 'My Life on the Wall, part 1/3' },
+      { authorName: 'The value is: Jon Snow 2', title: 'My Life on the Wall, part 1/2' },
+      { authorName: 'The value is: Jon Snow 3', title: 'My Life on the Wall, part 1/3' },
     ]);
   });
 
