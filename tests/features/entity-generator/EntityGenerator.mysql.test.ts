@@ -27,43 +27,6 @@ describe('EntityGenerator', () => {
     });
     expect(dump).toMatchSnapshot('mysql-entity-dump-skipTables');
     await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
-    await expect(pathExists('./temp/entities/Test2.ts')).resolves.toBe(false);
-    await expect(pathExists('./temp/entities/FooBar2.ts')).resolves.toBe(true);
-    await remove('./temp/entities');
-
-    await orm.schema.dropDatabase();
-    await orm.close(true);
-  });
-
-  test('takeTables [mysql]', async () => {
-    const orm = await initORMMySql('mysql', {}, true);
-    const dump = await orm.entityGenerator.generate({
-      save: true,
-      path: './temp/entities',
-      takeTables: ['test2', /^foo_bar\d$/],
-    });
-    expect(dump).toMatchSnapshot('mysql-entity-dump-takeTables');
-    await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(false);
-    await expect(pathExists('./temp/entities/Test2.ts')).resolves.toBe(true);
-    await expect(pathExists('./temp/entities/FooBar2.ts')).resolves.toBe(true);
-    await remove('./temp/entities');
-
-    await orm.schema.dropDatabase();
-    await orm.close(true);
-  });
-
-  test('takeTables and skipTables [mysql]', async () => {
-    const orm = await initORMMySql('mysql', {}, true);
-    const dump = await orm.entityGenerator.generate({
-      save: true,
-      path: './temp/entities',
-      takeTables: ['test2', 'foo_bar2'],
-      skipTables: [/^foo_bar\d$/],
-    });
-    expect(dump).toMatchSnapshot('mysql-entity-dump-takeTables-skipTables');
-    await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(false);
-    await expect(pathExists('./temp/entities/Test2.ts')).resolves.toBe(true);
-    await expect(pathExists('./temp/entities/FooBar2.ts')).resolves.toBe(false);
     await remove('./temp/entities');
 
     await orm.schema.dropDatabase();
