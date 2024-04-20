@@ -14,6 +14,7 @@ import {
   type FlushMode,
   type GroupOperator,
   helper,
+  type Loaded,
   LoadStrategy,
   LockMode,
   type LoggingOptions,
@@ -49,6 +50,33 @@ export interface ExecuteOptions {
   mergeResults?: boolean;
 }
 
+type Compute<T> = { [K in keyof T]: T[K] } & {};
+type IsNever<T, True = true, False = false> = [T] extends [never] ? True : False;
+type GetAlias<T extends string> = T extends `${infer A}.${string}` ? A : never;
+type GetPropName<T extends string> = T extends `${string}.${infer P}` ? P : T;
+type AppendToHint<Parent extends string, Child extends string> = `${Parent}.${Child}`;
+type AddToContext<Context, Field extends string, Alias extends string> = { [K in Alias]: GetPath<Context, Field> };
+
+type GetPath<Context, Field extends string> = GetAlias<Field> extends infer Alias
+  ? Alias extends keyof Context
+    ? AppendToHint<Context[Alias] & string, GetPropName<Field>>
+    : GetPropName<Field>
+  : GetPropName<Field>;
+
+type AddToHint<RootAlias, Context, Field extends string> = GetAlias<Field> extends infer Alias
+  ? Alias extends RootAlias
+    ? GetPropName<Field>
+    : Alias extends keyof Context
+      ? AppendToHint<Context[Alias] & string, GetPropName<Field>>
+      : GetPropName<Field>
+  : GetPropName<Field>;
+
+type ModifyHint<RootAlias, Context, Hint extends string, Field extends string> = Hint | AddToHint<RootAlias, Context, Field>;
+
+type ModifyContext<Context, Field extends string, Alias extends string> = IsNever<Context> extends true
+  ? AddToContext<object, Field, Alias>
+  : Compute<Context & AddToContext<Context, Field, Alias>>;
+
 /**
  * SQL query builder with fluent interface.
  *
@@ -68,9 +96,14 @@ export interface ExecuteOptions {
  * const publisher = await qb.getSingleResult();
  * ```
  */
-export class QueryBuilder<T extends object = AnyEntity> {
+export class QueryBuilder<
+  Entity extends object = AnyEntity,
+  RootAlias extends string = never,
+  Hint extends string = never,
+  Context extends object = never,
+> {
 
-  get mainAlias(): Alias<T> {
+  get mainAlias(): Alias<Entity> {
     this.ensureFromClause();
     return this._mainAlias!;
   }
@@ -87,13 +120,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /** @internal */
   type?: QueryType;
   /** @internal */
-  _fields?: Field<T>[];
+  _fields?: Field<Entity>[];
   /** @internal */
-  _populate: PopulateOptions<T>[] = [];
+  _populate: PopulateOptions<Entity>[] = [];
   /** @internal */
-  _populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
+  _populateWhere?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`;
   /** @internal */
-  __populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
+  __populateWhere?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`;
   /** @internal */
   _populateMap: Dictionary<string> = {};
   /** @internal */
@@ -107,11 +140,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
   protected _schema?: string;
   protected _cond: Dictionary = {};
   protected _data!: Dictionary;
-  protected _orderBy: QueryOrderMap<T>[] = [];
-  protected _groupBy: Field<T>[] = [];
+  protected _orderBy: QueryOrderMap<Entity>[] = [];
+  protected _groupBy: Field<Entity>[] = [];
   protected _having: Dictionary = {};
-  protected _returning?: Field<T>[];
-  protected _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[];
+  protected _returning?: Field<Entity>[];
+  protected _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<Entity> | Field<Entity>[]; where?: QBFilterQuery<Entity> }[];
   protected _limit?: number;
   protected _offset?: number;
   protected _distinctOn?: string[];
@@ -124,24 +157,26 @@ export class QueryBuilder<T extends object = AnyEntity> {
   protected lockMode?: LockMode;
   protected lockTables?: string[];
   protected subQueries: Dictionary<string> = {};
-  protected _mainAlias?: Alias<T>;
+  protected _mainAlias?: Alias<Entity>;
   protected _aliases: Dictionary<Alias<any>> = {};
   protected _helper?: QueryBuilderHelper;
-  protected _query?: { sql?: string; _sql?: Knex.Sql; params?: readonly unknown[]; qb: Knex.QueryBuilder<T> };
+  protected _query?: { sql?: string; _sql?: Knex.Sql; params?: readonly unknown[]; qb: Knex.QueryBuilder<Entity> };
   protected readonly platform: AbstractSqlPlatform;
   protected readonly knex: Knex;
 
   /**
    * @internal
    */
-  constructor(entityName: EntityName<T> | QueryBuilder<T>,
-              protected readonly metadata: MetadataStorage,
-              protected readonly driver: AbstractSqlDriver,
-              protected readonly context?: Knex.Transaction,
-              alias?: string,
-              protected connectionType?: ConnectionType,
-              protected em?: SqlEntityManager,
-              protected loggerContext?: LoggingOptions & Dictionary) {
+  constructor(
+    entityName: EntityName<Entity> | QueryBuilder<Entity, any, any>,
+    protected readonly metadata: MetadataStorage,
+    protected readonly driver: AbstractSqlDriver,
+    protected readonly context?: Knex.Transaction,
+    alias?: string,
+    protected connectionType?: ConnectionType,
+    protected em?: SqlEntityManager,
+    protected loggerContext?: LoggingOptions & Dictionary,
+  ) {
     this.platform = this.driver.getPlatform();
     this.knex = this.driver.getConnection(this.connectionType).getKnex();
 
@@ -154,7 +189,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this.from(entityName, alias);
   }
 
-  select(fields: Field<T> | Field<T>[], distinct = false): SelectQueryBuilder<T> {
+  select(fields: Field<Entity> | Field<Entity>[], distinct = false): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
     this._fields = Utils.asArray(fields);
 
@@ -162,48 +197,48 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.flags.add(QueryFlag.DISTINCT);
     }
 
-    return this.init(QueryType.SELECT) as SelectQueryBuilder<T>;
+    return this.init(QueryType.SELECT) as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
   }
 
-  addSelect(fields: Field<T> | Field<T>[]): SelectQueryBuilder<T> {
+  addSelect(fields: Field<Entity> | Field<Entity>[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
 
     if (this.type && this.type !== QueryType.SELECT) {
-      return this as SelectQueryBuilder<T>;
+      return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
     }
 
     return this.select([...Utils.asArray(this._fields), ...Utils.asArray(fields)]);
   }
 
-  distinct(): SelectQueryBuilder<T> {
+  distinct(): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
-    return this.setFlag(QueryFlag.DISTINCT) as SelectQueryBuilder<T>;
+    return this.setFlag(QueryFlag.DISTINCT) as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
   }
 
   /** postgres only */
-  distinctOn(fields: string | string[]): SelectQueryBuilder<T> {
+  distinctOn(fields: string | string[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
     this._distinctOn = Utils.asArray(fields);
-    return this as SelectQueryBuilder<T>;
+    return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
   }
 
-  insert(data: RequiredEntityData<T> | RequiredEntityData<T>[]): InsertQueryBuilder<T> {
-    return this.init(QueryType.INSERT, data) as InsertQueryBuilder<T>;
+  insert(data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[]): InsertQueryBuilder<Entity> {
+    return this.init(QueryType.INSERT, data) as InsertQueryBuilder<Entity>;
   }
 
-  update(data: EntityData<T>): UpdateQueryBuilder<T> {
-    return this.init(QueryType.UPDATE, data) as UpdateQueryBuilder<T>;
+  update(data: EntityData<Entity>): UpdateQueryBuilder<Entity> {
+    return this.init(QueryType.UPDATE, data) as UpdateQueryBuilder<Entity>;
   }
 
-  delete(cond?: QBFilterQuery): DeleteQueryBuilder<T> {
-    return this.init(QueryType.DELETE, undefined, cond) as DeleteQueryBuilder<T>;
+  delete(cond?: QBFilterQuery): DeleteQueryBuilder<Entity> {
+    return this.init(QueryType.DELETE, undefined, cond) as DeleteQueryBuilder<Entity>;
   }
 
-  truncate(): TruncateQueryBuilder<T> {
-    return this.init(QueryType.TRUNCATE) as TruncateQueryBuilder<T>;
+  truncate(): TruncateQueryBuilder<Entity> {
+    return this.init(QueryType.TRUNCATE) as TruncateQueryBuilder<Entity>;
   }
 
-  count(field?: string | string[], distinct = false): CountQueryBuilder<T> {
+  count(field?: string | string[], distinct = false): CountQueryBuilder<Entity> {
     if (field) {
       this._fields = Utils.asArray(field);
     } else if (this.hasToManyJoins()) {
@@ -216,7 +251,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.flags.add(QueryFlag.DISTINCT);
     }
 
-    return this.init(QueryType.COUNT) as CountQueryBuilder<T>;
+    return this.init(QueryType.COUNT) as CountQueryBuilder<Entity>;
   }
 
   join(field: string | Knex.QueryBuilder | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, type = JoinType.innerJoin, path?: string, schema?: string): this {
@@ -242,7 +277,15 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this.join(field, alias, cond, JoinType.leftJoinLateral, undefined, schema);
   }
 
-  joinAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, type = JoinType.innerJoin, path?: string, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  joinAndSelect<Field extends string, Alias extends string>(
+    field: Field | [field: Field, qb: Knex.QueryBuilder | QueryBuilder<any>],
+    alias: Alias,
+    cond: QBFilterQuery = {},
+    type = JoinType.innerJoin,
+    path?: string,
+    fields?: string[],
+    schema?: string,
+  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Context, Field, Alias>> {
     if (!this.type) {
       this.select('*');
     }
@@ -255,7 +298,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     const prop = this.joinReference(field, alias, cond, type, path, schema, subquery);
-    const [fromAlias] = this.helper.splitField(field as EntityKey<T>);
+    const [fromAlias] = this.helper.splitField(field as EntityKey<Entity>);
 
     if (subquery) {
       this._joins[`${fromAlias}.${prop.name}#${alias}`].subquery = subquery;
@@ -273,28 +316,52 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this._joinedProps.set(alias, item);
     this.addSelect(this.getFieldsForJoinedLoad(prop, alias, fields));
 
-    return this as SelectQueryBuilder<T>;
+    return this as any;
   }
 
-  leftJoinAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  leftJoinAndSelect<Field extends string, Alias extends string>(
+    field: Field | [field: Field, qb: Knex.QueryBuilder | QueryBuilder<any>],
+    alias: Alias,
+    cond: QBFilterQuery = {},
+    fields?: string[],
+    schema?: string,
+  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Context, Field, Alias>> {
     return this.joinAndSelect(field, alias, cond, JoinType.leftJoin, undefined, fields, schema);
   }
 
-  leftJoinLateralAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  leftJoinLateralAndSelect<Field extends string, Alias extends string>(
+    field: Field | [field: Field, qb: Knex.QueryBuilder | QueryBuilder<any>],
+    alias: Alias,
+    cond: QBFilterQuery = {},
+    fields?: string[],
+    schema?: string,
+  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Context, Field, Alias>> {
     return this.joinAndSelect(field, alias, cond, JoinType.leftJoinLateral, undefined, fields, schema);
   }
 
-  innerJoinAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  innerJoinAndSelect<Field extends string, Alias extends string>(
+    field: Field | [field: Field, qb: Knex.QueryBuilder | QueryBuilder<any>],
+    alias: Alias,
+    cond: QBFilterQuery = {},
+    fields?: string[],
+    schema?: string,
+  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Context, Field, Alias>> {
     return this.joinAndSelect(field, alias, cond, JoinType.innerJoin, undefined, fields, schema);
   }
 
-  innerJoinLateralAndSelect(field: string | [field: string, qb: Knex.QueryBuilder | QueryBuilder<any>], alias: string, cond: QBFilterQuery = {}, fields?: string[], schema?: string): SelectQueryBuilder<T> {
+  innerJoinLateralAndSelect<Field extends string, Alias extends string>(
+    field: Field | [field: Field, qb: Knex.QueryBuilder | QueryBuilder<any>],
+    alias: Alias,
+    cond: QBFilterQuery = {},
+    fields?: string[],
+    schema?: string,
+  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Context, Field, Alias>> {
     return this.joinAndSelect(field, alias, cond, JoinType.innerJoinLateral, undefined, fields, schema);
   }
 
-  protected getFieldsForJoinedLoad(prop: EntityProperty<T>, alias: string, explicitFields?: string[]): Field<T>[] {
-    const fields: Field<T>[] = [];
-    const populate: PopulateOptions<T>[] = [];
+  protected getFieldsForJoinedLoad(prop: EntityProperty<Entity>, alias: string, explicitFields?: string[]): Field<Entity>[] {
+    const fields: Field<Entity>[] = [];
+    const populate: PopulateOptions<Entity>[] = [];
     const joinKey = Object.keys(this._joins).find(join => join.endsWith(`#${alias}`));
 
     if (joinKey) {
@@ -303,7 +370,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
       for (let i = 0; i < path.length; i++) {
         const child = children.filter(hint => {
-          const [propName] = hint.field.split(':', 2) as [EntityKey<T>];
+          const [propName] = hint.field.split(':', 2) as [EntityKey<Entity>];
           return propName === path[i];
         });
 
@@ -314,16 +381,16 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     for (const p of prop.targetMeta!.getPrimaryProps()) {
-      fields.push(...this.driver.mapPropToFieldNames<T>(this, p, alias));
+      fields.push(...this.driver.mapPropToFieldNames<Entity>(this, p, alias));
     }
 
     if (explicitFields) {
       for (const field of explicitFields) {
-        const [a, f] = this.helper.splitField(field as EntityKey<T>);
+        const [a, f] = this.helper.splitField(field as EntityKey<Entity>);
         const p = prop.targetMeta!.properties[f];
 
         if (p) {
-          fields.push(...this.driver.mapPropToFieldNames<T>(this, p, alias));
+          fields.push(...this.driver.mapPropToFieldNames<Entity>(this, p, alias));
         } else {
           fields.push(`${a}.${f} as ${a}__${f}`);
         }
@@ -334,7 +401,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       .filter(prop => explicitFields
         ? explicitFields.includes(prop.name) || explicitFields.includes(`${alias}.${prop.name}`) || prop.primary
         : this.platform.shouldHaveColumn(prop, populate))
-      .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<T>(this, prop, alias)));
+      .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<Entity>(this, prop, alias)));
 
     return fields;
   }
@@ -345,9 +412,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this;
   }
 
-  where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
+  where(cond: QBFilterQuery<Entity>, operator?: keyof typeof GroupOperator): this;
   where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
-  where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this {
+  where(cond: QBFilterQuery<Entity> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this {
     this.ensureNotFinalized();
     const rawField = RawQueryFragment.getKnownFragment(cond as string);
 
@@ -360,19 +427,19 @@ export class QueryBuilder<T extends object = AnyEntity> {
       operator ??= '$and';
     } else {
       cond = QueryHelper.processWhere({
-        where: cond as FilterQuery<T>,
+        where: cond as FilterQuery<Entity>,
         entityName: this.mainAlias.entityName,
         metadata: this.metadata,
         platform: this.platform,
         aliasMap: this.getAliasMap(),
         aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
         convertCustomTypes: this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES),
-      }) as FilterQuery<T>;
+      }) as FilterQuery<Entity>;
     }
 
     const op = operator || params as keyof typeof GroupOperator;
     const topLevel = !op || !Utils.hasObjectKeys(this._cond);
-    const criteriaNode = CriteriaNodeFactory.createNode<T>(this.metadata, this.mainAlias.entityName, cond);
+    const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, cond);
     const ignoreBranching = this.__populateWhere === 'infer';
 
     if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type!) && criteriaNode.willAutoJoin(this, undefined, { ignoreBranching })) {
@@ -398,22 +465,22 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this;
   }
 
-  andWhere(cond: QBFilterQuery<T>): this;
+  andWhere(cond: QBFilterQuery<Entity>): this;
   andWhere(cond: string, params?: any[]): this;
-  andWhere(cond: QBFilterQuery<T> | string, params?: any[]): this {
+  andWhere(cond: QBFilterQuery<Entity> | string, params?: any[]): this {
     return this.where(cond as string, params, '$and');
   }
 
-  orWhere(cond: QBFilterQuery<T>): this;
+  orWhere(cond: QBFilterQuery<Entity>): this;
   orWhere(cond: string, params?: any[]): this;
-  orWhere(cond: QBFilterQuery<T> | string, params?: any[]): this {
+  orWhere(cond: QBFilterQuery<Entity> | string, params?: any[]): this {
     return this.where(cond as string, params, '$or');
   }
 
-  orderBy(orderBy: QBQueryOrderMap<T> | QBQueryOrderMap<T>[]): SelectQueryBuilder<T> {
+  orderBy(orderBy: QBQueryOrderMap<Entity> | QBQueryOrderMap<Entity>[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
     this._orderBy = [];
-    Utils.asArray<QBQueryOrderMap<T>>(orderBy).forEach(o => {
+    Utils.asArray<QBQueryOrderMap<Entity>>(orderBy).forEach(o => {
       const processed = QueryHelper.processWhere({
         where: o as Dictionary,
         entityName: this.mainAlias.entityName,
@@ -424,43 +491,43 @@ export class QueryBuilder<T extends object = AnyEntity> {
         convertCustomTypes: false,
         type: 'orderBy',
       })!;
-      this._orderBy.push(CriteriaNodeFactory.createNode<T>(this.metadata, this.mainAlias.entityName, processed).process(this, { matchPopulateJoins: true }));
+      this._orderBy.push(CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, processed).process(this, { matchPopulateJoins: true }));
     });
 
-    return this as SelectQueryBuilder<T>;
+    return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
   }
 
-  groupBy(fields: (string | keyof T) | readonly (string | keyof T)[]): SelectQueryBuilder<T> {
+  groupBy(fields: (string | keyof Entity) | readonly (string | keyof Entity)[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
     this._groupBy = Utils.asArray(fields);
 
-    return this as SelectQueryBuilder<T>;
+    return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
   }
 
-  having(cond: QBFilterQuery | string = {}, params?: any[]): SelectQueryBuilder<T> {
+  having(cond: QBFilterQuery | string = {}, params?: any[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
 
     if (Utils.isString(cond)) {
       cond = { [raw(`(${cond})`, params)]: [] };
     }
 
-    this._having = CriteriaNodeFactory.createNode<T>(this.metadata, this.mainAlias.entityName, cond).process(this);
+    this._having = CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, cond).process(this);
 
-    return this as SelectQueryBuilder<T>;
+    return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
   }
 
-  onConflict(fields: Field<T> | Field<T>[] = []): InsertQueryBuilder<T> {
-    const meta = this.mainAlias.metadata as EntityMetadata<T>;
+  onConflict(fields: Field<Entity> | Field<Entity>[] = []): InsertQueryBuilder<Entity> {
+    const meta = this.mainAlias.metadata as EntityMetadata<Entity>;
     this.ensureNotFinalized();
     this._onConflict ??= [];
     this._onConflict.push({
       fields: Utils.asArray(fields).flatMap(f => {
-        const key = f.toString() as EntityKey<T>;
+        const key = f.toString() as EntityKey<Entity>;
         /* istanbul ignore next */
         return meta.properties[key]?.fieldNames ?? [key];
       }),
     });
-    return this as InsertQueryBuilder<T>;
+    return this as InsertQueryBuilder<Entity>;
   }
 
   ignore(): this {
@@ -472,7 +539,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this;
   }
 
-  merge(data?: EntityData<T> | Field<T>[]): this {
+  merge(data?: EntityData<Entity> | Field<Entity>[]): this {
     if (!this._onConflict) {
       throw new Error('You need to call `qb.onConflict()` first to use `qb.merge()`');
     }
@@ -485,7 +552,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this;
   }
 
-  returning(fields?: Field<T> | Field<T>[]): this {
+  returning(fields?: Field<Entity> | Field<Entity>[]): this {
     this._returning = Utils.asArray(fields);
     return this;
   }
@@ -493,7 +560,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /**
    * @internal
    */
-  populate(populate: PopulateOptions<T>[], populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`): this {
+  populate(populate: PopulateOptions<Entity>[], populateWhere?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`): this {
     this.ensureNotFinalized();
     this._populate = populate;
     this._populateWhere = populateWhere;
@@ -501,7 +568,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this;
   }
 
-  limit(limit?: number, offset = 0): SelectQueryBuilder<T> {
+  limit(limit?: number, offset = 0): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
     this._limit = limit;
 
@@ -509,13 +576,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.offset(offset);
     }
 
-    return this as SelectQueryBuilder<T>;
+    return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
   }
 
-  offset(offset?: number): SelectQueryBuilder<T> {
+  offset(offset?: number): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
     this._offset = offset;
-    return this as SelectQueryBuilder<T>;
+    return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
   }
 
   withSchema(schema?: string): this {
@@ -599,9 +666,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Specifies FROM which entity's table select/update/delete will be executed, removing all previously set FROM-s.
    * Allows setting a main string alias of the selection data.
    */
-  from<T extends AnyEntity<T> = AnyEntity>(target: QueryBuilder<T>, aliasName?: string): SelectQueryBuilder<T>;
-  from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T>): SelectQueryBuilder<T>;
-  from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T> | QueryBuilder<T>, aliasName?: string): SelectQueryBuilder<T> {
+  from<Entity extends AnyEntity<Entity> = AnyEntity>(target: QueryBuilder<Entity>, aliasName?: string): SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
+  from<Entity extends AnyEntity<Entity> = AnyEntity>(target: EntityName<Entity>): SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
+  from<Entity extends AnyEntity<Entity> = AnyEntity>(target: EntityName<Entity> | QueryBuilder<Entity>, aliasName?: string): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
 
     if (target instanceof QueryBuilder) {
@@ -616,7 +683,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.fromEntityName(entityName, aliasName);
     }
 
-    return this as unknown as SelectQueryBuilder<T>;
+    return this as unknown as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
   }
 
   getKnexQuery(processVirtualEntity = true): Knex.QueryBuilder {
@@ -795,7 +862,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     const query = this.toQuery()._sql;
-    const cached = await this.em?.tryCache<T, U>(this.mainAlias.entityName, this._cache, ['qb.execute', query.sql, query.bindings, method]);
+    const cached = await this.em?.tryCache<Entity, U>(this.mainAlias.entityName, this._cache, ['qb.execute', query.sql, query.bindings, method]);
 
     if (cached?.data) {
       return cached.data;
@@ -817,17 +884,17 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     const joinedProps = this.driver.joinedProps(meta, this._populate);
-    let mapped: EntityData<T>[];
+    let mapped: EntityData<Entity>[];
 
     if (Array.isArray(res)) {
       const map: Dictionary = {};
-      mapped = res.map(r => this.driver.mapResult<T>(r as T, meta, this._populate, this, map)!);
+      mapped = res.map(r => this.driver.mapResult<Entity>(r as Entity, meta, this._populate, this, map)!);
 
       if (options.mergeResults && joinedProps.length > 0) {
         mapped = this.driver.mergeJoinedResult(mapped, this.mainAlias.metadata!, joinedProps);
       }
     } else {
-      mapped = [this.driver.mapResult<T>(res, meta, joinedProps, this)!];
+      mapped = [this.driver.mapResult<Entity>(res, meta, joinedProps, this)!];
     }
 
     await this.em?.storeCache(this._cache, cached!, mapped);
@@ -842,22 +909,22 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /**
    * Alias for `qb.getResultList()`
    */
-  async getResult(): Promise<T[]> {
+  async getResult(): Promise<Loaded<Entity, Hint>[]> {
     return this.getResultList();
   }
 
   /**
    * Executes the query, returning array of results
    */
-  async getResultList(limit?: number): Promise<T[]> {
+  async getResultList(limit?: number): Promise<Loaded<Entity, Hint>[]> {
     await this.em!.tryFlush(this.mainAlias.entityName, { flushMode: this.flushMode });
-    const res = await this.execute<EntityData<T>[]>('all', true);
-    const entities: T[] = [];
+    const res = await this.execute<EntityData<Entity>[]>('all', true);
+    const entities: Loaded<Entity, Hint>[] = [];
 
     function propagatePopulateHint<U extends object>(entity: U, hint: PopulateOptions<U>[]) {
       helper(entity).__serializationContext.populate ??= hint;
       hint.forEach(hint => {
-        const [propName] = hint.field.split(':', 2) as [EntityKey<T>];
+        const [propName] = hint.field.split(':', 2) as [EntityKey<Entity>];
         const value = Reference.unwrapReference(entity[propName] as object);
 
         if (Utils.isEntity<U>(value)) {
@@ -871,7 +938,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     for (const r of res) {
-      const entity = this.em!.map<T>(this.mainAlias.entityName, r, { schema: this._schema });
+      const entity = this.em!.map<Entity>(this.mainAlias.entityName, r, { schema: this._schema }) as Loaded<Entity, Hint>;
       propagatePopulateHint(entity, this._populate);
       entities.push(entity);
 
@@ -886,7 +953,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /**
    * Executes the query, returning the first result or null
    */
-  async getSingleResult(): Promise<T | null> {
+  async getSingleResult(): Promise<Entity | null> {
     if (!this.finalized) {
       this.limit(1);
     }
@@ -915,7 +982,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /**
    * Executes the query, returning both array of results and total count query (without offset and limit).
    */
-  async getResultAndCount(): Promise<[T[], number]> {
+  async getResultAndCount(): Promise<[Entity[], number]> {
     return [
       await this.clone().getResultList(),
       await this.clone().getCount(),
@@ -925,7 +992,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /**
    * Provides promise-like interface so we can await the QB instance.
    */
-  then<TResult1 = any, TResult2 = never>(onfulfilled?: ((value: any) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<T[] | number | QueryResult<T>> {
+  then<TResult1 = any, TResult2 = never>(onfulfilled?: ((value: any) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<Loaded<Entity, Hint>[] | number | QueryResult<Entity>> {
     let type = this.type ?? QueryType.SELECT;
 
     if (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY)) {
@@ -966,8 +1033,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return ret;
   }
 
-  clone(reset?: boolean | string[]): QueryBuilder<T> {
-    const qb = new QueryBuilder<T>(this.mainAlias.entityName, this.metadata, this.driver, this.context, this.mainAlias.aliasName, this.connectionType, this.em);
+  clone(reset?: boolean | string[]): QueryBuilder<Entity> {
+    const qb = new QueryBuilder<Entity>(this.mainAlias.entityName, this.metadata, this.driver, this.context, this.mainAlias.aliasName, this.connectionType, this.em);
 
     if (reset === true) {
       return qb;
@@ -1074,7 +1141,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return res as unknown as string;
   }
 
-  private joinReference(field: string | Knex.QueryBuilder | QueryBuilder, alias: string, cond: Dictionary, type: JoinType, path?: string, schema?: string, subquery?: string): EntityProperty<T> {
+  private joinReference(field: string | Knex.QueryBuilder | QueryBuilder, alias: string, cond: Dictionary, type: JoinType, path?: string, schema?: string, subquery?: string): EntityProperty<Entity> {
     this.ensureNotFinalized();
 
     if (typeof field === 'object') {
@@ -1106,7 +1173,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       throw new Error(`Lateral join can be used only with a sub-query.`);
     }
 
-    const [fromAlias, fromField] = this.helper.splitField(field as EntityKey<T>);
+    const [fromAlias, fromField] = this.helper.splitField(field as EntityKey<Entity>);
     const q = (str: string) => `'${str}'`;
 
     if (!this._aliases[fromAlias]) {
@@ -1274,7 +1341,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     if (data) {
       if (Utils.isEntity(data)) {
-        data = this.em?.getComparator().prepareEntity(data as T) ?? serialize(data as T);
+        data = this.em?.getComparator().prepareEntity(data as Entity) ?? serialize(data as Entity);
       }
 
       this._data = this.helper.processData(data, this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES), false);
@@ -1371,7 +1438,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.select('*');
     }
 
-    const meta = this.mainAlias.metadata as EntityMetadata<T>;
+    const meta = this.mainAlias.metadata as EntityMetadata<Entity>;
     this.applyDiscriminatorCondition();
 
     if (meta && this.flags.has(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)) {
@@ -1393,7 +1460,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       }
 
       if (meta && this.helper.isOneToOneInverse(fromField)) {
-        const prop = meta.properties[fromField as EntityKey<T>];
+        const prop = meta.properties[fromField as EntityKey<Entity>];
         const alias = this.getNextAlias(prop.pivotEntity ?? prop.type);
         const aliasedName = `${fromAlias}.${prop.name}#${alias}`;
         this._joins[aliasedName] = this.helper.joinOneToReference(prop, this.mainAlias.aliasName, alias, JoinType.leftJoin);
@@ -1464,7 +1531,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
           return replaceOnConditions(cond[k], k);
         }
 
-        const [alias] = this.helper.splitField(k as EntityKey<T>);
+        const [alias] = this.helper.splitField(k as EntityKey<Entity>);
         const join = joins.find(j => j.alias === alias);
 
         if (join) {
@@ -1482,7 +1549,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     if (typeof this._populateWhere === 'object') {
       const cond = CriteriaNodeFactory
-          .createNode<T>(this.metadata, this.mainAlias.entityName, this._populateWhere)
+          .createNode<Entity>(this.metadata, this.mainAlias.entityName, this._populateWhere)
           .process(this, { matchPopulateJoins: true, ignoreBranching: true, preferNoBranch: true });
       replaceOnConditions(cond);
     }
@@ -1523,7 +1590,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
             continue;
           }
 
-          const [a, f] = this.helper.splitField(field as EntityKey<T>);
+          const [a, f] = this.helper.splitField(field as EntityKey<Entity>);
           const prop = this.helper.getProperty(f, a);
           const type = this.platform.castColumn(prop);
           const fieldName = this.helper.mapper(field, this.type, undefined, null);
@@ -1633,7 +1700,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const method = this.flags.has(QueryFlag.UPDATE_SUB_QUERY) ? 'update' : 'delete';
     this._cond = {}; // otherwise we would trigger validation error
 
-    this[method](this._data as EntityData<T>).where({
+    this[method](this._data as EntityData<Entity>).where({
       [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery },
     });
   }
@@ -1651,7 +1718,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return alias;
   }
 
-  private createMainAlias(entityName: string, aliasName: string, subQuery?: Knex.QueryBuilder): Alias<T> {
+  private createMainAlias(entityName: string, aliasName: string, subQuery?: Knex.QueryBuilder): Alias<Entity> {
     this._mainAlias = this.createAlias(entityName, aliasName, subQuery);
     this._helper = this.createQueryBuilderHelper();
     return this._mainAlias;
@@ -1727,25 +1794,30 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
 }
 
-export interface RunQueryBuilder<T extends object> extends Omit<QueryBuilder<T>, 'getResult' | 'getSingleResult' | 'getResultList' | 'where'> {
-  where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this;
-  execute<U = QueryResult<T>>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
-  then<TResult1 = QueryResult<T>, TResult2 = never>(onfulfilled?: ((value: QueryResult<T>) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<QueryResult<T>>;
+export interface RunQueryBuilder<Entity extends object> extends Omit<QueryBuilder<Entity, any, any>, 'getResult' | 'getSingleResult' | 'getResultList' | 'where'> {
+  where(cond: QBFilterQuery<Entity> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this;
+  execute<Result = QueryResult<Entity>>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<Result>;
+  then<TResult1 = QueryResult<Entity>, TResult2 = never>(onfulfilled?: ((value: QueryResult<Entity>) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<QueryResult<Entity>>;
 }
 
-export interface SelectQueryBuilder<T extends object> extends QueryBuilder<T> {
-  execute<U = T[]>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
-  execute<U = T[]>(method: 'all', mapResults?: boolean): Promise<U>;
-  execute<U = T>(method: 'get', mapResults?: boolean): Promise<U>;
-  execute<U = QueryResult<T>>(method: 'run', mapResults?: boolean): Promise<U>;
-  then<TResult1 = T[], TResult2 = never>(onfulfilled?: ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<T[]>;
+export interface SelectQueryBuilder<
+  Entity extends object = AnyEntity,
+  RootAlias extends string = never,
+  Hint extends string = never,
+  Context extends object = never,
+> extends QueryBuilder<Entity, RootAlias, Hint, Context> {
+  execute<Result = Entity[]>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<Result>;
+  execute<Result = Entity[]>(method: 'all', mapResults?: boolean): Promise<Result>;
+  execute<Result = Entity>(method: 'get', mapResults?: boolean): Promise<Result>;
+  execute<Result = QueryResult<Entity>>(method: 'run', mapResults?: boolean): Promise<Result>;
+  then<TResult1 = Entity[], TResult2 = never>(onfulfilled?: ((value: Loaded<Entity, Hint>[]) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<Loaded<Entity, Hint>[]>;
 }
 
-export interface CountQueryBuilder<T extends object> extends QueryBuilder<T> {
-  execute<U = { count: number }[]>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
-  execute<U = { count: number }[]>(method: 'all', mapResults?: boolean): Promise<U>;
-  execute<U = { count: number }>(method: 'get', mapResults?: boolean): Promise<U>;
-  execute<U = QueryResult<{ count: number }>>(method: 'run', mapResults?: boolean): Promise<U>;
+export interface CountQueryBuilder<Entity extends object> extends QueryBuilder<Entity, any, any> {
+  execute<Result = { count: number }[]>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<Result>;
+  execute<Result = { count: number }[]>(method: 'all', mapResults?: boolean): Promise<Result>;
+  execute<Result = { count: number }>(method: 'get', mapResults?: boolean): Promise<Result>;
+  execute<Result = QueryResult<{ count: number }>>(method: 'run', mapResults?: boolean): Promise<Result>;
   then<TResult1 = number, TResult2 = never>(onfulfilled?: ((value: number) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<number>;
 }
 

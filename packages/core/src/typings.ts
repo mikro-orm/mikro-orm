@@ -371,12 +371,12 @@ export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
         ? PrimaryOrObject<E, U, C>
         : T extends ScalarReference<infer U>
           ? U
-          : T extends { getItems(check?: boolean): infer U }
-            ? (U extends readonly (infer V)[] ? EntityDTO<V, C>[] : EntityDTO<U, C>)
-            : T extends { $: infer U }
-              ? (U extends readonly (infer V)[] ? EntityDTO<V, C>[] : EntityDTO<U, C>)
+          : T extends LoadedCollection<infer U>
+            ? EntityDTO<U, C>[]
+            : T extends Collection<infer U>
+              ? PrimaryOrObject<E, U, C>[]
               : T extends readonly (infer U)[]
-                ? (T extends readonly [infer U, ...infer V] ? T : U[])
+                ? (T extends readonly any[] ? T : U[])
                 : T extends Relation<T>
                   ? EntityDTO<T, C>
                   : T;
