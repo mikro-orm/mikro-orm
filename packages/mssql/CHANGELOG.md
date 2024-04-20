@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.2](https://github.com/mikro-orm/mikro-orm/compare/v6.2.1...v6.2.2) (2024-04-20)
+
+
+### Bug Fixes
+
+* **mssql:** declare `import` types explicitly ([02494bf](https://github.com/mikro-orm/mikro-orm/commit/02494bf129e15261ba17218288a840120fedb089)), closes [#5462](https://github.com/mikro-orm/mikro-orm/issues/5462)
+
+
+
+
+
 ## [6.2.1](https://github.com/mikro-orm/mikro-orm/compare/v6.2.0...v6.2.1) (2024-04-12)
 
 

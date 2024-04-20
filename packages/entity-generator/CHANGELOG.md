@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.2](https://github.com/mikro-orm/mikro-orm/compare/v6.2.1...v6.2.2) (2024-04-20)
+
+
+### Features
+
+* **entity-generator:** extend filtering options for EntityGenerator ([#5473](https://github.com/mikro-orm/mikro-orm/issues/5473)) ([0894ac9](https://github.com/mikro-orm/mikro-orm/commit/0894ac963bc3886e7a52596b4627c08627877afd)), closes [#5469](https://github.com/mikro-orm/mikro-orm/issues/5469)
+
+
+
+
+
 ## [6.2.1](https://github.com/mikro-orm/mikro-orm/compare/v6.2.0...v6.2.1) (2024-04-12)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

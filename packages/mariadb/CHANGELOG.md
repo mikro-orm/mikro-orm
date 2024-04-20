@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.2](https://github.com/mikro-orm/mikro-orm/compare/v6.2.1...v6.2.2) (2024-04-20)
+
+
+### Bug Fixes
+
+* **mysql:** fix reading `auto_increment_increment` value ([1da88af](https://github.com/mikro-orm/mikro-orm/commit/1da88af065d17e7550d12b67bfac715a7041e9f9)), closes [#5460](https://github.com/mikro-orm/mikro-orm/issues/5460)
+
+
+
+
+
 ## [6.2.1](https://github.com/mikro-orm/mikro-orm/compare/v6.2.0...v6.2.1) (2024-04-12)
 
 **Note:** Version bump only for package @mikro-orm/mariadb

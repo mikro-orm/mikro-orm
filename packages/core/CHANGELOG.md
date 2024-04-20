@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.2](https://github.com/mikro-orm/mikro-orm/compare/v6.2.1...v6.2.2) (2024-04-20)
+
+
+### Bug Fixes
+
+* **core:** do not enforce `require()` when running via ts-jest or on JSON imports ([7e8409b](https://github.com/mikro-orm/mikro-orm/commit/7e8409bb86ca6a35c755700b77e17b425c5ab186)), closes [#5461](https://github.com/mikro-orm/mikro-orm/issues/5461)
+* **core:** fix folder-based discovery for multiple entities in single file ([#5464](https://github.com/mikro-orm/mikro-orm/issues/5464)) ([d64be7e](https://github.com/mikro-orm/mikro-orm/commit/d64be7ef5ba7c2a655ea014992905d8afde3c231))
+* **core:** ignore serialization options when using `toPOJO()` ([#5481](https://github.com/mikro-orm/mikro-orm/issues/5481)) ([46d6eb4](https://github.com/mikro-orm/mikro-orm/commit/46d6eb4248903f6729b6263dbafd171b8782178c)), closes [#5479](https://github.com/mikro-orm/mikro-orm/issues/5479)
+
+
+### Features
+
+* **entity-generator:** extend filtering options for EntityGenerator ([#5473](https://github.com/mikro-orm/mikro-orm/issues/5473)) ([0894ac9](https://github.com/mikro-orm/mikro-orm/commit/0894ac963bc3886e7a52596b4627c08627877afd)), closes [#5469](https://github.com/mikro-orm/mikro-orm/issues/5469)
+* **query-builder:** allow returning promise from virtual entity `expression` ([ee98412](https://github.com/mikro-orm/mikro-orm/commit/ee9841287c2fe312ef342e16d1396f620e575d3e)), closes [#5475](https://github.com/mikro-orm/mikro-orm/issues/5475)
+
+
+
+
+
 ## [6.2.1](https://github.com/mikro-orm/mikro-orm/compare/v6.2.0...v6.2.1) (2024-04-12)
 
 **Note:** Version bump only for package @mikro-orm/core

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.2](https://github.com/mikro-orm/mikro-orm/compare/v6.2.1...v6.2.2) (2024-04-20)
+
+
+### Bug Fixes
+
+* **postgres:** support wildcard native enums ([e183de3](https://github.com/mikro-orm/mikro-orm/commit/e183de3588437db2c41c9fb9d18940116f591a25)), closes [#5456](https://github.com/mikro-orm/mikro-orm/issues/5456)
+
+
+### Features
+
+* **query-builder:** allow returning promise from virtual entity `expression` ([ee98412](https://github.com/mikro-orm/mikro-orm/commit/ee9841287c2fe312ef342e16d1396f620e575d3e)), closes [#5475](https://github.com/mikro-orm/mikro-orm/issues/5475)
+
+
+
+
+
 ## [6.2.1](https://github.com/mikro-orm/mikro-orm/compare/v6.2.0...v6.2.1) (2024-04-12)
 
 
