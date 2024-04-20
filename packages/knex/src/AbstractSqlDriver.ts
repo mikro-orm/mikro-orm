@@ -213,7 +213,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return this.wrapVirtualExpressionInSubquery(meta, res.getFormattedQuery(), where, options as FindOptions<T, any>, type);
     }
 
-    if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(res)) {
+    if (!(res instanceof Promise) && Utils.isObject<Knex.QueryBuilder | Knex.Raw>(res)) {
       const { sql, bindings } = res.toSQL();
       const query = this.platform.formatQuery(sql, bindings);
       return this.wrapVirtualExpressionInSubquery(meta, query, where, options as FindOptions<T, any>, type);
