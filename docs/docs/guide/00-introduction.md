@@ -11,7 +11,7 @@ This Getting Started Guide was written as a step-by-step tutorial, accompanied b
 
 ## The Stack
 
-The goal of this guide is to provide show off the most important features of MikroORM as well as some of the more niche ones. It will walk you through creating a simple API for a blog, with the following technologies:
+The goal of this guide is to show off the most important features of MikroORM as well as some of the more niche ones. It will walk you through creating a simple API for a blog, with the following technologies:
 
 - [MikroORM](https://mikro-orm.io) with SQLite driver
 - [Fastify](https://www.fastify.io) as the web framework
