@@ -1109,7 +1109,7 @@ npx mikro-orm-esm cache:generate
 But our production dependencies still contain the `@mikro-orm/reflection` package now, and that depends on TypeScript itself, making the bundle unnecessarily larger. To resolve this, we can generate a metadata cache bundle and use that via `GeneratedCacheAdapter`. This way you can keep the `@mikro-orm/reflection` package as a development dependency only, use the CLI to create the cache bundle, and depend only on that in your production build.
 
 ```bash
-npx mikro-orm cache:generate --combined
+npx mikro-orm-esm cache:generate --combined
 ```
 
 This will create `./temp/metadata.json` file which can be used together with `GeneratedCacheAdapter` in your production configuration. Let's adjust our ORM config to dynamically use it when `NODE_ENV` is set to `production`:
