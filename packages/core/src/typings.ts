@@ -32,13 +32,22 @@ import type { FindOneOptions, FindOptions } from './drivers';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
-export type EntityKey<T = unknown> = string & keyof { [K in keyof T as CleanKeys<T, K>]?: unknown };
+// `EntityKey<T, true>` will skip scalar properties (and some other scalar like types like Date or Buffer)
+export type EntityKey<T = unknown, B extends boolean = false> = string & keyof { [K in keyof T as CleanKeys<T, K, B>]?: unknown };
 export type EntityValue<T> = T[EntityKey<T>];
 export type FilterKey<T> = keyof FilterQuery<T>;
 export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
 export type Compute<T> = { [K in keyof T]: T[K] } & {};
 type InternalKeys = 'EntityRepositoryType' | 'PrimaryKeyProp' | 'OptionalProps' | 'EagerProps' | 'HiddenProps' | '__selectedType' | '__loadedType';
-export type CleanKeys<T, K extends keyof T> = (T[K] & {}) extends Function ? never : (K extends symbol | InternalKeys ? never : K);
+export type CleanKeys<T, K extends keyof T, B extends boolean = false> = (T[K] & {}) extends Function
+  ? never
+  : K extends symbol | InternalKeys
+    ? never
+    : B extends true
+      ? (T[K] & {}) extends Scalar
+        ? never
+        : K
+      : K;
 export type FunctionKeys<T, K extends keyof T> = T[K] extends Function ? K : never;
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;

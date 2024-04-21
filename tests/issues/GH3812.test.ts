@@ -203,11 +203,18 @@ test('GH 3812', async () => {
   orm.em.clear();
 
   type T11 = ModifyHint<'sn', never, never, 'logs'>;
-  type T12 = ModifyHint<'sn', { l: 'logs' }, 'logs', 'l.step'>;
-  type T13 = ModifyHint<'sn', { l: 'logs'; s: 'logs.step' }, 'logs' | 'logs.step', 's.subStep'>;
-  type T21 = ModifyContext<never, 'logs', 'l'>;
-  type T22 = ModifyContext<{ l: 'logs' }, 'l.step', 's'>;
-  type T23 = ModifyContext<{ l: 'logs'; s: 'logs.step' }, 's.subStep', 's2'>;
+  type T12 = ModifyHint<'sn', { l: ['logs', 'l', Log] }, 'logs', 'l.step'>;
+  type T13 = ModifyHint<'sn', { l: ['logs', 'l', Log]; s: ['logs.step', 's', Step] }, 'logs' | 'logs.step', 's.subStep'>;
+  type T21 = ModifyContext<SerialNumber, never, 'logs', 'l'>;
+  type T22 = ModifyContext<Log, { l: ['logs', 'l', Log] }, 'l.step', 's'>;
+  type T23 = ModifyContext<Step, { l: ['logs', 'l', Log]; s: ['logs.step', 's', Step] }, 's.subStep', 's2'>;
+  // type T31 = AddAliasesFromContext<{ l: ['logs', 'l', Log]; s: ['logs.step', 's', Step]; s2: ['logs.step.subStep', 's2', Step] }>;
+  // type T32 = CleanKeys<Log, keyof Log, true>;
+  // type T33 = EntityRelations<Log>;
+  // type T41 = GetType<SerialNumber, object, 'sn.logs'>;
+  // type T42 = GetType<SerialNumber, { l: ['logs', 'l', Log]; s: ['logs.step', 's', Step] }, 'l.step'>;
+  // type T43 = GetType<SerialNumber, { l: ['logs', 'l', Log]; s: ['logs.step', 's', Step] }, 's.subStep'>;
+  // type T51 = QBField<SerialNumber, 'sn', { l: ['logs', 'l', Log]; s: ['logs.step', 's', Step]; s2: ['logs.step.subStep', 's2', Step] }>;
 
   const res2 = await orm.em
     .createQueryBuilder(SerialNumber, 'sn')

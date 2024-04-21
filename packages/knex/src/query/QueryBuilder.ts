@@ -36,6 +36,7 @@ import {
   serialize,
   Utils,
   ValidationError,
+  type ExpandProperty,
 } from '@mikro-orm/core';
 import { JoinType, QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
@@ -50,20 +51,33 @@ export interface ExecuteOptions {
   mergeResults?: boolean;
 }
 
+type AnyString = string & {};
 type Compute<T> = { [K in keyof T]: T[K] } & {};
 type IsNever<T, True = true, False = false> = [T] extends [never] ? True : False;
 type GetAlias<T extends string> = T extends `${infer A}.${string}` ? A : never;
 type GetPropName<T extends string> = T extends `${string}.${infer P}` ? P : T;
 type AppendToHint<Parent extends string, Child extends string> = `${Parent}.${Child}`;
-type AddToContext<Context, Field extends string, Alias extends string> = { [K in Alias]: GetPath<Context, Field> };
+type AddToContext<Type extends object, Context, Field extends string, Alias extends string> = { [K in Alias]: [GetPath<Context, Field>, K, ExpandProperty<Type[GetPropName<Field> & keyof Type]>] };
 
 type GetPath<Context, Field extends string> = GetAlias<Field> extends infer Alias
   ? IsNever<Alias> extends true
     ? GetPropName<Field>
     : Alias extends keyof Context
-      ? AppendToHint<Context[Alias] & string, GetPropName<Field>>
+      ? Context[Alias] extends [infer Path, ...any[]]
+        ? AppendToHint<Path & string, GetPropName<Field>>
+        : GetPropName<Field>
       : GetPropName<Field>
-    : GetPropName<Field>;
+  : GetPropName<Field>;
+
+type GetType<Type extends object, Context, Field extends string> = GetAlias<Field> extends infer Alias
+  ? IsNever<Alias> extends true
+    ? Type
+    : Alias extends keyof Context
+      ? Context[Alias] extends [string, string, infer PropType]
+        ? PropType & object
+        : Type
+      : Type
+  : Type;
 
 type AddToHint<RootAlias, Context, Field extends string> = GetAlias<Field> extends infer Alias
   ? IsNever<Alias> extends true
@@ -71,15 +85,28 @@ type AddToHint<RootAlias, Context, Field extends string> = GetAlias<Field> exten
     : Alias extends RootAlias
       ? GetPropName<Field>
       : Alias extends keyof Context
-        ? AppendToHint<Context[Alias] & string, GetPropName<Field>>
+        ? Context[Alias] extends [infer Path, ...any[]]
+          ? AppendToHint<Path & string, GetPropName<Field>>
+          : GetPropName<Field>
         : GetPropName<Field>
   : GetPropName<Field>;
 
 export type ModifyHint<RootAlias, Context, Hint extends string, Field extends string> = Hint | AddToHint<RootAlias, Context, Field>;
 
-export type ModifyContext<Context, Field extends string, Alias extends string> = IsNever<Context> extends true
-  ? AddToContext<object, Field, Alias>
-  : Compute<Context & AddToContext<Context, Field, Alias>>;
+export type ModifyContext<Entity extends object, Context, Field extends string, Alias extends string> = IsNever<Context> extends true
+  ? AddToContext<GetType<Entity, object, Field>, object, Field, Alias>
+  : Compute<Context & AddToContext<GetType<Entity, Context, Field>, Context, Field, Alias>>;
+
+type EntityRelations<T> = EntityKey<T, true>;
+type AddAliasesFromContext<Context> = Context[keyof Context] extends infer Join
+  ? Join extends any
+    ? Join extends [string, infer Alias, infer Type]
+      ? `${Alias & string}.${EntityRelations<Type & {}>}`
+      : never
+    : never
+  : never;
+
+export type QBField<Entity, RootAlias extends string, Context> = (EntityRelations<Entity> | `${RootAlias}.${EntityRelations<Entity>}` | AddAliasesFromContext<Context>) & {} | AnyString;
 
 /**
  * SQL query builder with fluent interface.
@@ -281,7 +308,7 @@ export class QueryBuilder<
     return this.join(field, alias, cond, JoinType.leftJoinLateral, undefined, schema);
   }
 
-  joinAndSelect<Field extends string, Alias extends string>(
+  joinAndSelect<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | [field: Field, qb: Knex.QueryBuilder | QueryBuilder<any>],
     alias: Alias,
     cond: QBFilterQuery = {},
@@ -289,7 +316,7 @@ export class QueryBuilder<
     path?: string,
     fields?: string[],
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Context, Field, Alias>> {
+  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Entity, Context, Field, Alias>> {
     if (!this.type) {
       this.select('*');
     }
@@ -323,43 +350,43 @@ export class QueryBuilder<
     return this as any;
   }
 
-  leftJoinAndSelect<Field extends string, Alias extends string>(
+  leftJoinAndSelect<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | [field: Field, qb: Knex.QueryBuilder | QueryBuilder<any>],
     alias: Alias,
     cond: QBFilterQuery = {},
     fields?: string[],
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Context, Field, Alias>> {
+  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Entity, Context, Field, Alias>> {
     return this.joinAndSelect(field, alias, cond, JoinType.leftJoin, undefined, fields, schema);
   }
 
-  leftJoinLateralAndSelect<Field extends string, Alias extends string>(
+  leftJoinLateralAndSelect<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | [field: Field, qb: Knex.QueryBuilder | QueryBuilder<any>],
     alias: Alias,
     cond: QBFilterQuery = {},
     fields?: string[],
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Context, Field, Alias>> {
+  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Entity, Context, Field, Alias>> {
     return this.joinAndSelect(field, alias, cond, JoinType.leftJoinLateral, undefined, fields, schema);
   }
 
-  innerJoinAndSelect<Field extends string, Alias extends string>(
+  innerJoinAndSelect<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | [field: Field, qb: Knex.QueryBuilder | QueryBuilder<any>],
     alias: Alias,
     cond: QBFilterQuery = {},
     fields?: string[],
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Context, Field, Alias>> {
+  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Entity, Context, Field, Alias>> {
     return this.joinAndSelect(field, alias, cond, JoinType.innerJoin, undefined, fields, schema);
   }
 
-  innerJoinLateralAndSelect<Field extends string, Alias extends string>(
+  innerJoinLateralAndSelect<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | [field: Field, qb: Knex.QueryBuilder | QueryBuilder<any>],
     alias: Alias,
     cond: QBFilterQuery = {},
     fields?: string[],
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Context, Field, Alias>> {
+  ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field> & {}, ModifyContext<Entity, Context, Field, Alias>> {
     return this.joinAndSelect(field, alias, cond, JoinType.innerJoinLateral, undefined, fields, schema);
   }
 
