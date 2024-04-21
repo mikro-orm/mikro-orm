@@ -93,9 +93,9 @@ type AddToHint<RootAlias, Context, Field extends string> = GetAlias<Field> exten
 
 export type ModifyHint<RootAlias, Context, Hint extends string, Field extends string> = Hint | AddToHint<RootAlias, Context, Field>;
 
-export type ModifyContext<Entity extends object, Context, Field extends string, Alias extends string> = IsNever<Context> extends true
+export type ModifyContext<Entity extends object, Context, Field extends string, Alias extends string> = Compute<IsNever<Context> extends true
   ? AddToContext<GetType<Entity, object, Field>, object, Field, Alias>
-  : Compute<Context & AddToContext<GetType<Entity, Context, Field>, Context, Field, Alias>>;
+  : Context & AddToContext<GetType<Entity, Context, Field>, Context, Field, Alias>>;
 
 type EntityRelations<T> = EntityKey<T, true>;
 type AddAliasesFromContext<Context> = Context[keyof Context] extends infer Join
@@ -106,6 +106,7 @@ type AddAliasesFromContext<Context> = Context[keyof Context] extends infer Join
     : never
   : never;
 
+// TODO(v7): remove the `AnyString` and force people to keep the context on type level (either fluent interface or reassigning the QB)?
 export type QBField<Entity, RootAlias extends string, Context> = (EntityRelations<Entity> | `${RootAlias}.${EntityRelations<Entity>}` | AddAliasesFromContext<Context>) & {} | AnyString;
 
 /**
