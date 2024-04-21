@@ -58,22 +58,26 @@ type AppendToHint<Parent extends string, Child extends string> = `${Parent}.${Ch
 type AddToContext<Context, Field extends string, Alias extends string> = { [K in Alias]: GetPath<Context, Field> };
 
 type GetPath<Context, Field extends string> = GetAlias<Field> extends infer Alias
-  ? Alias extends keyof Context
-    ? AppendToHint<Context[Alias] & string, GetPropName<Field>>
-    : GetPropName<Field>
-  : GetPropName<Field>;
-
-type AddToHint<RootAlias, Context, Field extends string> = GetAlias<Field> extends infer Alias
-  ? Alias extends RootAlias
+  ? IsNever<Alias> extends true
     ? GetPropName<Field>
     : Alias extends keyof Context
       ? AppendToHint<Context[Alias] & string, GetPropName<Field>>
       : GetPropName<Field>
+    : GetPropName<Field>;
+
+type AddToHint<RootAlias, Context, Field extends string> = GetAlias<Field> extends infer Alias
+  ? IsNever<Alias> extends true
+    ? GetPropName<Field>
+    : Alias extends RootAlias
+      ? GetPropName<Field>
+      : Alias extends keyof Context
+        ? AppendToHint<Context[Alias] & string, GetPropName<Field>>
+        : GetPropName<Field>
   : GetPropName<Field>;
 
-type ModifyHint<RootAlias, Context, Hint extends string, Field extends string> = Hint | AddToHint<RootAlias, Context, Field>;
+export type ModifyHint<RootAlias, Context, Hint extends string, Field extends string> = Hint | AddToHint<RootAlias, Context, Field>;
 
-type ModifyContext<Context, Field extends string, Alias extends string> = IsNever<Context> extends true
+export type ModifyContext<Context, Field extends string, Alias extends string> = IsNever<Context> extends true
   ? AddToContext<object, Field, Alias>
   : Compute<Context & AddToContext<Context, Field, Alias>>;
 

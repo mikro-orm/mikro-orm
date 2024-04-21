@@ -2,6 +2,8 @@ import {
   Collection,
   Entity,
   MikroORM,
+  ModifyContext,
+  ModifyHint,
   ManyToOne,
   OneToMany,
   PrimaryKey,
@@ -199,6 +201,13 @@ test('GH 3812', async () => {
   expect(wrap(res1[0]).toJSON().logs[0].step?.name).toBe('ASSY');
 
   orm.em.clear();
+
+  type T11 = ModifyHint<'sn', never, never, 'logs'>;
+  type T12 = ModifyHint<'sn', { l: 'logs' }, 'logs', 'l.step'>;
+  type T13 = ModifyHint<'sn', { l: 'logs'; s: 'logs.step' }, 'logs' | 'logs.step', 's.subStep'>;
+  type T21 = ModifyContext<never, 'logs', 'l'>;
+  type T22 = ModifyContext<{ l: 'logs' }, 'l.step', 's'>;
+  type T23 = ModifyContext<{ l: 'logs'; s: 'logs.step' }, 's.subStep', 's2'>;
 
   const res2 = await orm.em
     .createQueryBuilder(SerialNumber, 'sn')
