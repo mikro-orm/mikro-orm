@@ -268,9 +268,9 @@ This can be done by adding bodyparser to your main.ts file
 import { NestFactory } from '@nestjs/core';
 import express from 'express';
 async function bootstrap() {
- const app = await NestFactory.create(AppModule,{ bodyParser: false });
- app.use(express.json());
- await app.listen(5555);
+  const app = await NestFactory.create(AppModule,{ bodyParser: false });
+  app.use(express.json());
+  await app.listen(5555);
 }
 ```
 
@@ -278,11 +278,11 @@ And at the same time disabling the bodyparser in the GraphQL Module
 
 ```ts
 @Module({
- imports: [
-   GraphQLModule.forRoot({
-     bodyParserConfig: false,
-   }),
- ],
+  imports: [
+    GraphQLModule.forRoot({
+      bodyParserConfig: false,
+    }),
+  ],
 })
 ```
 
@@ -441,6 +441,22 @@ export class AuthorSubscriber implements EventSubscriber<Author> {
 
   async afterUpdate(args: EventArgs<Author>): Promise<void> {
     // ...
+  }
+
+}
+```
+
+## GraphQL resolvers
+
+MikroORM supports [dataloaders](./dataloaders.md) natively since v6 for `Reference.load()` and `Collection.load()` methods.
+
+```ts
+@Resolver(() => Book)
+class BookResolver {
+
+  @ResolveField(() => Author)
+  async author(@Parent() book: Book) {
+    return book.author.load({ dataloader: true }); // can be also enabled globally
   }
 
 }

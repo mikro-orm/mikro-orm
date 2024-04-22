@@ -446,6 +446,22 @@ export class AuthorSubscriber implements EventSubscriber<Author> {
 }
 ```
 
+## GraphQL resolvers
+
+MikroORM supports [dataloaders](./dataloaders.md) natively since v6 for `Reference.load()` and `Collection.load()` methods.
+
+```ts
+@Resolver(() => Book)
+class BookResolver {
+
+  @ResolveField(() => Author)
+  async author(@Parent() book: Book) {
+    return book.author.load({ dataloader: true }); // can be also enabled globally
+  }
+
+}
+```
+
 ## Example
 
 A real world example of NestJS with MikroORM can be found [here](https://github.com/mikro-orm/nestjs-realworld-example-app)
