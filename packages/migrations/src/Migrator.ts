@@ -1,6 +1,6 @@
 import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
 import { basename, join } from 'path';
-import { ensureDir, pathExistsSync, writeJSON } from 'fs-extra';
+import { ensureDir, pathExistsSync, readJSONSync, writeJSON } from 'fs-extra';
 import {
   t,
   Type,
@@ -262,12 +262,12 @@ export class Migrator implements IMigrator {
     };
   }
 
-  protected async getSchemaFromSnapshot() {
+  protected getSchemaFromSnapshot() {
     if (!this.options.snapshot || !pathExistsSync(this.snapshotPath)) {
       return undefined;
     }
 
-    const data = await Utils.dynamicImport(this.snapshotPath);
+    const data = readJSONSync(this.snapshotPath);
     const schema = new DatabaseSchema(this.driver.getPlatform(), this.config.get('schema'));
     const { tables, namespaces, ...rest } = data;
     const tableInstances = tables.map((tbl: Dictionary) => {
@@ -321,7 +321,7 @@ export class Migrator implements IMigrator {
         wrap: false,
         safe: this.options.safe,
         dropTables: this.options.dropTables,
-        fromSchema: await this.getSchemaFromSnapshot(),
+        fromSchema: this.getSchemaFromSnapshot(),
       });
       up.push(...diff.up.split('\n'));
       down.push(...diff.down.split('\n'));
