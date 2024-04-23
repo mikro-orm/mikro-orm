@@ -1568,6 +1568,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this._limit = undefined;
     this._offset = undefined;
 
+    if (this._fields!.some(f => RawQueryFragment.isKnownFragment(f as string))) {
+      this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
+      return;
+    }
+
     // remove joins that are not used for population or ordering to improve performance
     const populate = new Set<string>();
     const orderByAliases = this._orderBy
