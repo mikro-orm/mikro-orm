@@ -345,9 +345,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this;
   }
 
-    where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): Omit<this, 'where'>;
-    where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): Omit<this, 'where'>;
-    where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): Omit<this, 'where'> {
+  where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): Omit<this, 'where'>;
+  where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): Omit<this, 'where'>;
+  where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): Omit<this, 'where'> {
     return this._where(cond as string, params, operator);
   }
 
