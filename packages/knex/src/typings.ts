@@ -160,8 +160,8 @@ export interface IQueryBuilder<T> {
   leftJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;
   innerJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;
   withSubQuery(subQuery: Knex.QueryBuilder, alias: string): this;
-  where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
-  where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
+  where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): Omit<this, 'where'>;
+  where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): Omit<this, 'where'>;
   andWhere(cond: QBFilterQuery<T>): this;
   andWhere(cond: string, params?: any[]): this;
   orWhere(cond: QBFilterQuery<T>): this;

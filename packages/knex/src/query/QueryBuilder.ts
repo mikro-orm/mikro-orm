@@ -345,9 +345,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this;
   }
 
-  where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
-  where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
-  where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this {
+    where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): Omit<this, 'where'>;
+    where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): Omit<this, 'where'>;
+    where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): Omit<this, 'where'> {
+    return this._where(cond as string, params, operator);
+  }
+
+  private _where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this {
     this.ensureNotFinalized();
     const rawField = RawQueryFragment.getKnownFragment(cond as string);
 
@@ -401,13 +405,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
   andWhere(cond: QBFilterQuery<T>): this;
   andWhere(cond: string, params?: any[]): this;
   andWhere(cond: QBFilterQuery<T> | string, params?: any[]): this {
-    return this.where(cond as string, params, '$and');
+    return this._where(cond as string, params, '$and');
   }
 
   orWhere(cond: QBFilterQuery<T>): this;
   orWhere(cond: string, params?: any[]): this;
   orWhere(cond: QBFilterQuery<T> | string, params?: any[]): this {
-    return this.where(cond as string, params, '$or');
+    return this._where(cond as string, params, '$or');
   }
 
   orderBy(orderBy: QBQueryOrderMap<T> | QBQueryOrderMap<T>[]): SelectQueryBuilder<T> {
@@ -1281,7 +1285,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     if (cond) {
-      this.where(cond);
+      this._where(cond);
     }
 
     return this;
@@ -1708,7 +1712,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 }
 
 export interface RunQueryBuilder<T extends object> extends Omit<QueryBuilder<T>, 'getResult' | 'getSingleResult' | 'getResultList' | 'where'> {
-  where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this;
+  where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): Omit<this, 'where'>;
   execute<U = QueryResult<T>>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
   then<TResult1 = QueryResult<T>, TResult2 = never>(onfulfilled?: ((value: QueryResult<T>) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<QueryResult<T>>;
 }
