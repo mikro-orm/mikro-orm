@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.3](https://github.com/mikro-orm/mikro-orm/compare/v6.2.2...v6.2.3) (2024-04-24)
+
+
+### Bug Fixes
+
+* **core:** ignore upsert with inlined embedded properties ([7d2bed6](https://github.com/mikro-orm/mikro-orm/commit/7d2bed627ef0ed65206b59c4d5143eff9fe0326b)), closes [#5500](https://github.com/mikro-orm/mikro-orm/issues/5500)
+* **query-builder:** do not prune join branches when paginating and there are raw fragments in select clause ([4d0fe15](https://github.com/mikro-orm/mikro-orm/commit/4d0fe152c1ca9479668b6a8bf9a5019575388917)), closes [#5490](https://github.com/mikro-orm/mikro-orm/issues/5490)
+
+
+
+
+
 ## [6.2.2](https://github.com/mikro-orm/mikro-orm/compare/v6.2.1...v6.2.2) (2024-04-20)
 
 

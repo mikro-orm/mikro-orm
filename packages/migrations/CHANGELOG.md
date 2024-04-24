@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.3](https://github.com/mikro-orm/mikro-orm/compare/v6.2.2...v6.2.3) (2024-04-24)
+
+
+### Bug Fixes
+
+* **migrations:** fix reading migration snapshot ([096dcee](https://github.com/mikro-orm/mikro-orm/commit/096dcee04994d9c53f7e1bef6a6edf16589dddd4)), closes [#5497](https://github.com/mikro-orm/mikro-orm/issues/5497)
+
+
+
+
+
 ## [6.2.2](https://github.com/mikro-orm/mikro-orm/compare/v6.2.1...v6.2.2) (2024-04-20)
 
 

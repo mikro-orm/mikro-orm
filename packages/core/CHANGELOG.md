@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.3](https://github.com/mikro-orm/mikro-orm/compare/v6.2.2...v6.2.3) (2024-04-24)
+
+
+### Bug Fixes
+
+* **core:** fix handling of `first/last: 0` with cursor-based pagination ([508389e](https://github.com/mikro-orm/mikro-orm/commit/508389ea71cf63f4965d42b74a993572f388092b)), closes [#5501](https://github.com/mikro-orm/mikro-orm/issues/5501)
+* **core:** ignore upsert with inlined embedded properties ([7d2bed6](https://github.com/mikro-orm/mikro-orm/commit/7d2bed627ef0ed65206b59c4d5143eff9fe0326b)), closes [#5500](https://github.com/mikro-orm/mikro-orm/issues/5500)
+
+
+
+
+
 ## [6.2.2](https://github.com/mikro-orm/mikro-orm/compare/v6.2.1...v6.2.2) (2024-04-20)
 
 
