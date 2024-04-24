@@ -74,7 +74,7 @@ export class Cursor<
     meta: EntityMetadata<Entity>,
   ) {
     const { first, last, before, after, orderBy, overfetch } = options;
-    const limit = first || last;
+    const limit = first ?? last;
     const isLast = !first && !!last;
     const hasMorePages = !!overfetch && limit != null && items.length > limit;
     this.hasPrevPage = isLast ? hasMorePages : !!after;

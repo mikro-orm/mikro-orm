@@ -65,6 +65,14 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mssql', 'mongo
   test('using `first` and `after` (id asc)', async () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
 
+    // empty page
+    const cursor0 = await orm.em.findByCursor(User, {}, {
+      first: 0,
+      orderBy: { id: 'asc' },
+    });
+    expect(cursor0).toBeInstanceOf(Cursor);
+    expect(cursor0.length).toBe(0);
+
     // 1. page
     const cursor1 = await orm.em.findByCursor(User, {}, {
       first: 3,

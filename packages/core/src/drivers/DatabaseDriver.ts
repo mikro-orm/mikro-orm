@@ -174,7 +174,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   protected processCursorOptions<T extends object, P extends string>(meta: EntityMetadata<T>, options: FindOptions<T, P, any, any>, orderBy: OrderDefinition<T>): { orderBy: OrderDefinition<T>[]; where: FilterQuery<T> } {
     const { first, last, before, after, overfetch } = options;
-    const limit = first || last;
+    const limit = first ?? last;
     const isLast = !first && !!last;
     const definition = Cursor.getDefinition(meta, orderBy);
     const $and: FilterQuery<T>[] = [];
@@ -209,7 +209,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       $and.push(createCursor(before, 'startCursor', true));
     }
 
-    if (limit) {
+    if (limit != null) {
       options.limit = limit + (overfetch ? 1 : 0);
     }
 
