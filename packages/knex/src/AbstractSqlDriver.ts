@@ -606,7 +606,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           .returning(returning);
 
         if (!options.onConflictAction || options.onConflictAction === 'merge') {
-          const fields = getOnConflictFields(data, uniqueFields, options);
+          const fields = getOnConflictFields(meta, data, uniqueFields, options);
           qb.merge(fields);
         }
 
@@ -649,7 +649,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         .returning(returning);
 
       if (!options.onConflictAction || options.onConflictAction === 'merge') {
-        const fields = getOnConflictFields(data[0], uniqueFields, options);
+        const fields = getOnConflictFields(meta, data[0], uniqueFields, options);
         qb.merge(fields);
       }
 

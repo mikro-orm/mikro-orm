@@ -1,13 +1,15 @@
-import type { EntityData, EntityMetadata } from '../typings';
+import type { EntityData, EntityKey, EntityMetadata } from '../typings';
 import type { UpsertOptions } from '../drivers/IDatabaseDriver';
 
 /** @internal */
-export function getOnConflictFields<T>(data: EntityData<T>, uniqueFields: (keyof T)[], options: UpsertOptions<T>): (keyof T)[] {
+export function getOnConflictFields<T>(meta: EntityMetadata<T> | undefined, data: EntityData<T>, uniqueFields: (keyof T)[], options: UpsertOptions<T>): (keyof T)[] {
   if (options.onConflictMergeFields) {
     return options.onConflictMergeFields;
   }
 
-  const keys = Object.keys(data).filter(f => !uniqueFields.includes(f as keyof T)) as (keyof T)[];
+  const keys = Object.keys(data).filter(f => {
+    return !uniqueFields.includes(f as keyof T) && !meta?.properties[f as EntityKey<T>]?.embeddable;
+  }) as (keyof T)[];
 
   if (options.onConflictExcludeFields) {
     return keys.filter(f => !options.onConflictExcludeFields!.includes(f));
