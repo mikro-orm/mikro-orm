@@ -202,7 +202,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: FindOptions<Entity, Hint, Fields, Excludes> = {}): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
-      const fork = em.fork();
+      const fork = em.fork({ keepTransactionContext: true });
       const ret = await fork.find(entityName, where, { ...options, disableIdentityMap: false });
       fork.clear();
 
@@ -715,7 +715,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: FindOneOptions<Entity, Hint, Fields, Excludes> = {}): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
-      const fork = em.fork();
+      const fork = em.fork({ keepTransactionContext: true });
       const ret = await fork.findOne(entityName, where, { ...options, disableIdentityMap: false });
       fork.clear();
 
@@ -1857,6 +1857,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     fork.disableTransactions = options.disableTransactions ?? this.disableTransactions ?? this.config.get('disableTransactions');
     em.config.set('allowGlobalContext', allowGlobalContext);
 
+    if (options.keepTransactionContext) {
+      fork.transactionContext = em.transactionContext;
+    }
+
     fork.filters = { ...em.filters };
     fork.filterParams = Utils.copy(em.filterParams);
     fork.loggerContext = Utils.merge({}, em.loggerContext, options.loggerContext);
@@ -2326,6 +2330,8 @@ export interface ForkOptions {
   flushMode?: FlushMode;
   /** disable transactions for this fork */
   disableTransactions?: boolean;
+  /** should we keep the transaction context of the parent EM? */
+  keepTransactionContext?: boolean;
   /** default schema to use for this fork */
   schema?: string;
   /** default logger context, can be overridden via {@apilink FindOptions} */
