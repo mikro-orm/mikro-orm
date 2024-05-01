@@ -64,7 +64,7 @@ export class EntityFactory {
     }
 
     entityName = Utils.className(entityName);
-    const meta = this.metadata.get(entityName);
+    const meta = this.metadata.get<T>(entityName);
 
     if (meta.virtual) {
       data = { ...data };
@@ -75,7 +75,7 @@ export class EntityFactory {
     }
 
     if (this.platform.usesDifferentSerializedPrimaryKey()) {
-      meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk, meta.properties[pk]));
+      meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk as EntityKey, meta.properties[pk]));
     }
 
     const meta2 = this.processDiscriminatorColumn<T>(meta, data);
@@ -102,6 +102,17 @@ export class EntityFactory {
       const tmp = { ...data };
       meta.constructorParams.forEach(prop => delete tmp[prop as EntityKey<T>]);
       this.hydrate(entity, meta2, tmp, options);
+
+      // since we now process only a copy of the `data` via hydrator, but later we register the state with the full snapshot,
+      // we need to go through all props with custom types that have `ensureComparable: true` and ensure they are comparable
+      // even if they are not part of constructor parameters (as this is otherwise normalized during hydration, here only in `tmp`)
+      if (options.convertCustomTypes) {
+        for (const prop of meta.props) {
+          if (prop.customType?.ensureComparable(meta, prop) && data[prop.name]) {
+            data[prop.name] = prop.customType!.convertToDatabaseValue(data[prop.name], this.platform, { key: prop.name, mode: 'hydration' });
+          }
+        }
+      }
     } else {
       this.hydrate(entity, meta2, data, options);
     }
