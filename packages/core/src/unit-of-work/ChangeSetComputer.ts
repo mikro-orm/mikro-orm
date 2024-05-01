@@ -2,7 +2,7 @@ import { Utils, type Configuration, type EntityComparator } from '../utils';
 import type { MetadataStorage } from '../metadata';
 import type { AnyEntity, EntityData, EntityKey, EntityProperty, EntityValue } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { helper, type Collection, type EntityValidator } from '../entity';
+import { helper, type Collection, type EntityValidator, type Reference } from '../entity';
 import type { Platform } from '../platforms';
 import { ReferenceKind } from '../enums';
 import type { EntityManager } from '../EntityManager';
@@ -85,7 +85,14 @@ export class ChangeSetComputer {
    * Traverses entity graph and executes `onCreate` and `onUpdate` methods, assigning the values to given properties.
    */
   private processPropertyInitializers<T>(entity: T, prop: EntityProperty<T>, type: ChangeSetType, map: Map<T, [string, unknown][]>, nested?: boolean): void {
-    if (prop.onCreate && type === ChangeSetType.CREATE && entity[prop.name] == null) {
+    if (
+      prop.onCreate
+      && type === ChangeSetType.CREATE
+      && (
+        entity[prop.name] == null
+        || (Utils.isScalarReference(entity[prop.name]) && (entity[prop.name] as Reference<any>).unwrap() == null)
+      )
+    ) {
       entity[prop.name] = prop.onCreate(entity, this.em);
     }
 
