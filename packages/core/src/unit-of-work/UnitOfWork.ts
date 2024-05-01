@@ -531,6 +531,18 @@ export class UnitOfWork {
       return;
     }
 
+    let conflicts = false;
+
+    for (const cs of this.changeSets.values()) {
+      if (cs.rootName === changeSet.rootName) {
+        conflicts = true;
+      }
+    }
+
+    if (!conflicts) {
+      return;
+    }
+
     this.extraUpdates.add([changeSet.entity, props.map(p => p.name), props.map(p => changeSet.entity[p.name]), changeSet]);
 
     for (const p of props) {
