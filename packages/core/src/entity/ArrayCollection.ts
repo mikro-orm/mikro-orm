@@ -477,7 +477,7 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   /** @ignore */
-  [inspect.custom](depth: number) {
+  [inspect.custom](depth = 2) {
     const object = { ...this } as Dictionary;
     const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_snapshot', '_lazyInitialized', '_em', 'readonly'];
     hidden.forEach(k => delete object[k]);

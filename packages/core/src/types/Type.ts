@@ -110,7 +110,7 @@ export abstract class Type<JSType = string, DBType = JSType> {
   }
 
   /** @ignore */
-  [inspect.custom](depth: number) {
+  [inspect.custom](depth = 2) {
     const object = { ...this };
     const hidden = ['prop', 'platform', 'meta'] as const;
     hidden.forEach(k => delete object[k]);

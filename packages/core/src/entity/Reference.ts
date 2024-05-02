@@ -177,7 +177,7 @@ export class Reference<T extends object> {
 
   /* istanbul ignore next */
   /** @ignore */
-  [inspect.custom](depth: number) {
+  [inspect.custom](depth = 2) {
     const object = { ...this };
     const hidden = ['meta'];
     hidden.forEach(k => delete object[k as keyof this]);

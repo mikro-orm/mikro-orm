@@ -1670,7 +1670,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
   /* istanbul ignore next */
   /** @ignore */
-  [inspect.custom](depth: number) {
+  [inspect.custom](depth = 2) {
     const object = { ...this } as Dictionary;
     const hidden = ['metadata', 'driver', 'context', 'platform', 'knex', 'type'];
     Object.keys(object).filter(k => k.startsWith('_')).forEach(k => delete object[k]);

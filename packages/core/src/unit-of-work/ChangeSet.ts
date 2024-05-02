@@ -40,7 +40,7 @@ export class ChangeSet<T extends object> {
   }
 
   /** @ignore */
-  [inspect.custom](depth: number) {
+  [inspect.custom](depth = 2) {
     const object = { ...this } as Dictionary;
     const hidden = ['meta', 'serializedPrimaryKey'];
     hidden.forEach(k => delete object[k]);

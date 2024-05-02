@@ -141,7 +141,7 @@ export class EntityHelper {
 
   static defineCustomInspect<T extends object>(meta: EntityMetadata<T>): void {
     // @ts-ignore
-    meta.prototype[inspect.custom] ??= function (this: T, depth: number) {
+    meta.prototype[inspect.custom] ??= function (this: T, depth = 2) {
       const object = { ...this } as any;
       // ensure we dont have internal symbols in the POJO
       [OptionalProps, EntityRepositoryType, PrimaryKeyProp, EagerProps, HiddenProps].forEach(sym => delete object[sym]);
