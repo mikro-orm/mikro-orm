@@ -383,6 +383,18 @@ id3: number;
 
 > JavaScript cannot represent all the possible values of a `bigint` when mapping to the `number` type - only values up to `Number.MAX_SAFE_INTEGER` (2^53 - 1) are safely supported.
 
+### DecimalType
+
+DecimalType represents a `decimal` or `numeric` column type. By default, it maps to a JS `string`, as mapping it to `number` could result is precision lost. If you are fine with that, you can force mapping to a `number` with its constructor (just like with the `BigIntType`).
+
+```ts
+@Property({ type: DecimalType })
+price1: string;
+
+@PrimaryKey({ type: new DecimalType('number') })
+price2: number;
+```
+
 ### BlobType
 
 Blob type can be used to store binary data in the database.

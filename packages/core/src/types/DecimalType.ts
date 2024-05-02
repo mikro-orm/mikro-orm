@@ -7,8 +7,12 @@ import type { EntityProperty } from '../typings';
  */
 export class DecimalType extends Type<string | number, string> {
 
+  constructor(public mode?: 'number' | 'string') {
+    super();
+  }
+
   override convertToJSValue(value: string): number | string {
-    if (this.prop?.runtimeType === 'number') {
+    if ((this.mode ?? this.prop?.runtimeType) === 'number') {
       return +value;
     }
 
@@ -20,7 +24,7 @@ export class DecimalType extends Type<string | number, string> {
   }
 
   override compareAsType(): string {
-    return this.prop?.runtimeType ?? 'string';
+    return this.mode ?? this.prop?.runtimeType ?? 'string';
   }
 
 }
