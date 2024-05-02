@@ -26,6 +26,10 @@ export function getOnConflictReturningFields<T>(meta: EntityMetadata<T> | undefi
 
   const keys = meta.comparableProps.filter(p => !p.lazy && !p.embeddable && !uniqueFields.includes(p.name)).map(p => p.name) as (keyof T)[];
 
+  if (meta.versionProperty) {
+    keys.push(meta.versionProperty);
+  }
+
   if (options.onConflictAction === 'ignore') {
     return keys;
   }

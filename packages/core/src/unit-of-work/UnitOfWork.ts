@@ -534,7 +534,7 @@ export class UnitOfWork {
     let conflicts = false;
 
     for (const cs of this.changeSets.values()) {
-      if (cs.rootName === changeSet.rootName) {
+      if (cs.rootName === changeSet.rootName && cs.type === changeSet.type) {
         conflicts = true;
       }
     }
