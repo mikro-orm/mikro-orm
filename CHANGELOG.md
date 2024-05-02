@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.4](https://github.com/mikro-orm/mikro-orm/compare/v6.2.3...v6.2.4) (2024-05-02)
+
+
+### Bug Fixes
+
+* **core:** do not issue extra updates when there are no matching changesets ([03934d0](https://github.com/mikro-orm/mikro-orm/commit/03934d072d545f4f6b01754eec9120b55dfbfc0a)), closes [#5510](https://github.com/mikro-orm/mikro-orm/issues/5510)
+* **core:** fix extra updates with `forceEntityConstructor` and JSON properties ([5ef57b6](https://github.com/mikro-orm/mikro-orm/commit/5ef57b684bf19c5ed7abed66e2a07cab1e5e655a)), closes [#5499](https://github.com/mikro-orm/mikro-orm/issues/5499)
+* **core:** keep transaction context when forking for `disableIdentityMap` ([ed88a02](https://github.com/mikro-orm/mikro-orm/commit/ed88a02470f3da101db4abfae125b318da8bc8c2)), closes [#5527](https://github.com/mikro-orm/mikro-orm/issues/5527)
+* **core:** keep transaction context when forking for `disableIdentityMap` ([8d4fe98](https://github.com/mikro-orm/mikro-orm/commit/8d4fe985bdd2aa331415fa0e9fa0c62295b41921)), closes [#5528](https://github.com/mikro-orm/mikro-orm/issues/5528)
+* **core:** support `onCreate` with `ScalarReference` properties ([09e5ca8](https://github.com/mikro-orm/mikro-orm/commit/09e5ca89e7eeedfed3f4d155bf4844ee99f1d2a8)), closes [#5506](https://github.com/mikro-orm/mikro-orm/issues/5506)
+
+
+
+
+
 ## [6.2.3](https://github.com/mikro-orm/mikro-orm/compare/v6.2.2...v6.2.3) (2024-04-24)
 
 
