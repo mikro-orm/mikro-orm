@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Ref, types } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
@@ -5,7 +6,7 @@ abstract class BaseEntity {
 
   @PrimaryKey({
     type: types.uuid,
-    onCreate: () => crypto.randomUUID(),
+    onCreate: () => randomUUID(),
   })
   id!: string;
 
