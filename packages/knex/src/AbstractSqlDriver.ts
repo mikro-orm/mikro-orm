@@ -496,6 +496,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (prop.kind === ReferenceKind.EMBEDDED && prop.object) {
         if (prop.array && value) {
+          value = this.platform.cloneEmbeddable(value);
+
           for (let i = 0; i < (value as Dictionary[]).length; i++) {
             const item = (value as Dictionary[])[i];
             value[i] = this.mapDataToFieldNames(item, false, prop.embeddedProps, options.convertCustomTypes);
