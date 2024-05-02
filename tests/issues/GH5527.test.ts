@@ -30,7 +30,6 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: '5527',
-    debug: true,
     entities: [Test],
   });
   await orm.schema.refreshDatabase();

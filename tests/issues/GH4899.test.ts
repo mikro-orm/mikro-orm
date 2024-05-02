@@ -47,7 +47,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: ':memory:',
     entities: [UserSkill, User, Skill],
-    // debug: true,
   });
   await orm.schema.createSchema();
 });
