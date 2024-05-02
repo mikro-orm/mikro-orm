@@ -174,7 +174,7 @@ export class ObjectHydrator extends Hydrator {
       if (prop.customType?.ensureComparable(meta, prop)) {
         context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType!.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
-        ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
+        ret.push(`  if (data${dataKey} != null && typeof data${dataKey} !== 'object' && convertCustomTypes) {`);
         ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}.__helper.getPrimaryKey());`);
         ret.push(`  }`);
       }

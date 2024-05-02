@@ -12,4 +12,8 @@ export class UuidType extends Type<string | null | undefined> {
     return 'string';
   }
 
+  override ensureComparable(): boolean {
+    return false;
+  }
+
 }
