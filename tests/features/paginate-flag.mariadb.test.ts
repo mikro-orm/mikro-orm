@@ -62,7 +62,7 @@ export class C {
 
 @Filter({
   name: 'vis',
-  cond: (args, type) => {
+  cond: args => {
     return {
       $or: [
         {
