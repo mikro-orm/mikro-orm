@@ -1494,7 +1494,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.2.4"
     "@mikro-orm/mongodb": "npm:6.2.4"
     fs-extra: "npm:11.2.0"
-    mongodb: "npm:6.5.0"
+    mongodb: "npm:6.6.0"
     umzug: "npm:3.8.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1528,8 +1528,8 @@ __metadata:
   resolution: "@mikro-orm/mongodb@workspace:packages/mongodb"
   dependencies:
     "@mikro-orm/core": "npm:^6.2.4"
-    bson: "npm:^6.4.0"
-    mongodb: "npm:6.5.0"
+    bson: "npm:^6.7.0"
+    mongodb: "npm:6.6.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -3431,6 +3431,13 @@ __metadata:
   version: 6.5.0
   resolution: "bson@npm:6.5.0"
   checksum: 10/52454e4af16942d130ccc2c7dc3b4db9e78f8103bd9cd73210bc010583adf0bc1892d944085ed1d0ac8388483ce17e2dd2e016f0749f27b1fcbeebae158e2e38
+  languageName: node
+  linkType: hard
+
+"bson@npm:^6.7.0":
+  version: 6.7.0
+  resolution: "bson@npm:6.7.0"
+  checksum: 10/d4bc1d9514c67dbcb8451b7be95704e6e7cb262f0d11c938715c21297ab5550b0e2f3badf5480d53c4b3f899a84f2ed8708f3f46cad83ec52059f076aad8e1cd
   languageName: node
   linkType: hard
 
@@ -8405,6 +8412,40 @@ __metadata:
     socks:
       optional: true
   checksum: 10/537fcb59035c907b5e0a85f806893c4a0936e8d04a0cf788f0720b539195160036d6c43e40bdc0c48432d24c42e969c296adcb1eabbf70a2c5a7aafe5459e800
+  languageName: node
+  linkType: hard
+
+"mongodb@npm:6.6.0":
+  version: 6.6.0
+  resolution: "mongodb@npm:6.6.0"
+  dependencies:
+    "@mongodb-js/saslprep": "npm:^1.1.5"
+    bson: "npm:^6.7.0"
+    mongodb-connection-string-url: "npm:^3.0.0"
+  peerDependencies:
+    "@aws-sdk/credential-providers": ^3.188.0
+    "@mongodb-js/zstd": ^1.1.0
+    gcp-metadata: ^5.2.0
+    kerberos: ^2.0.1
+    mongodb-client-encryption: ">=6.0.0 <7"
+    snappy: ^7.2.2
+    socks: ^2.7.1
+  peerDependenciesMeta:
+    "@aws-sdk/credential-providers":
+      optional: true
+    "@mongodb-js/zstd":
+      optional: true
+    gcp-metadata:
+      optional: true
+    kerberos:
+      optional: true
+    mongodb-client-encryption:
+      optional: true
+    snappy:
+      optional: true
+    socks:
+      optional: true
+  checksum: 10/6c314cddc882c093292a092e2b9ac0554d30035224d89464843d89dde4126406e9abc82bab716d30595ed91fa1979b927cbba3255499b107d1374e3302bd11ad
   languageName: node
   linkType: hard
 
