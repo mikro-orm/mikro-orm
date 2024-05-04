@@ -1291,24 +1291,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/darwin-arm64@npm:0.3.16":
-  version: 0.3.16
-  resolution: "@libsql/darwin-arm64@npm:0.3.16"
-  conditions: os=darwin & cpu=arm64
-  languageName: node
-  linkType: hard
-
 "@libsql/darwin-arm64@npm:0.3.18":
   version: 0.3.18
   resolution: "@libsql/darwin-arm64@npm:0.3.18"
   conditions: os=darwin & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@libsql/darwin-x64@npm:0.3.16":
-  version: 0.3.16
-  resolution: "@libsql/darwin-x64@npm:0.3.16"
-  conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
@@ -1319,23 +1305,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm64-gnu@npm:0.3.16":
-  version: 0.3.16
-  resolution: "@libsql/linux-arm64-gnu@npm:0.3.16"
-  conditions: os=linux & cpu=arm64
-  languageName: node
-  linkType: hard
-
 "@libsql/linux-arm64-gnu@npm:0.3.18":
   version: 0.3.18
   resolution: "@libsql/linux-arm64-gnu@npm:0.3.18"
-  conditions: os=linux & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@libsql/linux-arm64-musl@npm:0.3.16":
-  version: 0.3.16
-  resolution: "@libsql/linux-arm64-musl@npm:0.3.16"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
@@ -1347,23 +1319,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/linux-x64-gnu@npm:0.3.16":
-  version: 0.3.16
-  resolution: "@libsql/linux-x64-gnu@npm:0.3.16"
-  conditions: os=linux & cpu=x64
-  languageName: node
-  linkType: hard
-
 "@libsql/linux-x64-gnu@npm:0.3.18":
   version: 0.3.18
   resolution: "@libsql/linux-x64-gnu@npm:0.3.18"
-  conditions: os=linux & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@libsql/linux-x64-musl@npm:0.3.16":
-  version: 0.3.16
-  resolution: "@libsql/linux-x64-musl@npm:0.3.16"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
@@ -1372,13 +1330,6 @@ __metadata:
   version: 0.3.18
   resolution: "@libsql/linux-x64-musl@npm:0.3.18"
   conditions: os=linux & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@libsql/win32-x64-msvc@npm:0.3.16":
-  version: 0.3.16
-  resolution: "@libsql/win32-x64-msvc@npm:0.3.16"
-  conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
@@ -2501,16 +2452,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=18, @types/node@npm:^20.11.17":
-  version: 20.12.6
-  resolution: "@types/node@npm:20.12.6"
-  dependencies:
-    undici-types: "npm:~5.26.4"
-  checksum: 10/9feaa7f1c86b2541638f5446bdc4fd949a0ef6a53784db3d01296c503bb6e3e224bec4964f9a55b3ea669a200de824bfc6c944caf573019975e3c83fdc5f696e
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:20.12.7":
+"@types/node@npm:*, @types/node@npm:20.12.7, @types/node@npm:>=18, @types/node@npm:^20.11.17":
   version: 20.12.7
   resolution: "@types/node@npm:20.12.7"
   dependencies:
@@ -3427,14 +3369,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bson@npm:^6.4.0":
-  version: 6.5.0
-  resolution: "bson@npm:6.5.0"
-  checksum: 10/52454e4af16942d130ccc2c7dc3b4db9e78f8103bd9cd73210bc010583adf0bc1892d944085ed1d0ac8388483ce17e2dd2e016f0749f27b1fcbeebae158e2e38
-  languageName: node
-  linkType: hard
-
-"bson@npm:^6.7.0":
+"bson@npm:^6.4.0, bson@npm:^6.7.0":
   version: 6.7.0
   resolution: "bson@npm:6.7.0"
   checksum: 10/d4bc1d9514c67dbcb8451b7be95704e6e7cb262f0d11c938715c21297ab5550b0e2f3badf5480d53c4b3f899a84f2ed8708f3f46cad83ec52059f076aad8e1cd
@@ -7479,7 +7414,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libsql@npm:0.3.18":
+"libsql@npm:0.3.18, libsql@npm:^0.3.15":
   version: 0.3.18
   resolution: "libsql@npm:0.3.18"
   dependencies:
@@ -7509,40 +7444,6 @@ __metadata:
     "@libsql/win32-x64-msvc":
       optional: true
   checksum: 10/3e952800710ac9a45bb9627fd70645c19f03d67d5cadeda0708d86c88e256882d009666bb3e466d8ce5d82e55b598ed94947777348ce5995c864659eb3f48089
-  conditions: (os=darwin | os=linux | os=win32) & (cpu=x64 | cpu=arm64 | cpu=wasm32)
-  languageName: node
-  linkType: hard
-
-"libsql@npm:^0.3.15":
-  version: 0.3.16
-  resolution: "libsql@npm:0.3.16"
-  dependencies:
-    "@libsql/darwin-arm64": "npm:0.3.16"
-    "@libsql/darwin-x64": "npm:0.3.16"
-    "@libsql/linux-arm64-gnu": "npm:0.3.16"
-    "@libsql/linux-arm64-musl": "npm:0.3.16"
-    "@libsql/linux-x64-gnu": "npm:0.3.16"
-    "@libsql/linux-x64-musl": "npm:0.3.16"
-    "@libsql/win32-x64-msvc": "npm:0.3.16"
-    "@neon-rs/load": "npm:^0.0.4"
-    detect-libc: "npm:2.0.2"
-    libsql: "npm:^0.3.15"
-  dependenciesMeta:
-    "@libsql/darwin-arm64":
-      optional: true
-    "@libsql/darwin-x64":
-      optional: true
-    "@libsql/linux-arm64-gnu":
-      optional: true
-    "@libsql/linux-arm64-musl":
-      optional: true
-    "@libsql/linux-x64-gnu":
-      optional: true
-    "@libsql/linux-x64-musl":
-      optional: true
-    "@libsql/win32-x64-msvc":
-      optional: true
-  checksum: 10/33f6865e2134902ba07d9e9849248d911d10c33493a6687051f0d55cc0e88ff89bc9b1b8684636bc7b9bdf9b3976c9b3dff34c709dfc497f20c40795901e4d6e
   conditions: (os=darwin | os=linux | os=win32) & (cpu=x64 | cpu=arm64 | cpu=wasm32)
   languageName: node
   linkType: hard
@@ -11509,7 +11410,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:5.4.5":
+"typescript@npm:5.4.5, typescript@npm:>=3 < 6":
   version: 5.4.5
   resolution: "typescript@npm:5.4.5"
   bin:
@@ -11519,33 +11420,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:>=3 < 6":
-  version: 5.4.4
-  resolution: "typescript@npm:5.4.4"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 10/bade322d88fd93c8179e262aca9ba7f7b4417c09117879819c87946578c782ab123e3acb4733046a6e38714c47ef927360045a1f9292a1bff3a05a6577d27ca2
-  languageName: node
-  linkType: hard
-
-"typescript@patch:typescript@npm%3A5.4.5#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A5.4.5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>":
   version: 5.4.5
   resolution: "typescript@patch:typescript@npm%3A5.4.5#optional!builtin<compat/typescript>::version=5.4.5&hash=5adc0c"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 10/760f7d92fb383dbf7dee2443bf902f4365db2117f96f875cf809167f6103d55064de973db9f78fe8f31ec08fff52b2c969aee0d310939c0a3798ec75d0bca2e1
-  languageName: node
-  linkType: hard
-
-"typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>":
-  version: 5.4.4
-  resolution: "typescript@patch:typescript@npm%3A5.4.4#optional!builtin<compat/typescript>::version=5.4.4&hash=5adc0c"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 10/88aff3244c31d4c6ede05b4fd28732fc8935a7fc638f2a3dcbbb767d1ac98e4b077f21ec74bc97f43c9307bc3f27e2359def1d793f9918c3429a744408fd75b4
   languageName: node
   linkType: hard
 
