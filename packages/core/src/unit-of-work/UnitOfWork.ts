@@ -613,7 +613,10 @@ export class UnitOfWork {
     }
 
     // when changing a unique nullable property (or a 1:1 relation), we can't do it in a single query as it would cause unique constraint violations
-    const uniqueProps = changeSet.meta.uniqueProps.filter(prop => prop.nullable && changeSet.payload[prop.name] != null);
+    const uniqueProps = changeSet.meta.uniqueProps.filter(prop => {
+      return (prop.nullable || changeSet.type !== ChangeSetType.CREATE)
+        && changeSet.payload[prop.name] != null;
+    });
     this.scheduleExtraUpdate(changeSet, uniqueProps);
 
     return changeSet.type === ChangeSetType.UPDATE && !Utils.hasObjectKeys(changeSet.payload);
