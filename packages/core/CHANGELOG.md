@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.5](https://github.com/mikro-orm/mikro-orm/compare/v6.2.4...v6.2.5) (2024-05-05)
+
+
+### Bug Fixes
+
+* **core:** fix hydration of relations with custom types via joined strategy ([07f10c8](https://github.com/mikro-orm/mikro-orm/commit/07f10c83606e71ff59f94884a8d1402d17ff8efd)), closes [#5518](https://github.com/mikro-orm/mikro-orm/issues/5518)
+* **core:** improve support for mapping `DecimalType` to `number` ([5a3e30e](https://github.com/mikro-orm/mikro-orm/commit/5a3e30e526f66d8ee7ae6ba323c6737050661bae))
+* **core:** limit depth in custom `inspect` methods to get around debugging issues in vscode ([f706c06](https://github.com/mikro-orm/mikro-orm/commit/f706c06ff0219093644d90934d0b342ec4cbd075)), closes [#5525](https://github.com/mikro-orm/mikro-orm/issues/5525)
+* **core:** support path detection from decorators in bun ([6683bcc](https://github.com/mikro-orm/mikro-orm/commit/6683bcc13561f009189e78325b9e9e476f452524)), closes [#5496](https://github.com/mikro-orm/mikro-orm/issues/5496)
+* **mongo:** support cursor pagination on `Date` properties ([4281320](https://github.com/mikro-orm/mikro-orm/commit/4281320f233efb56d012da4fe60d380e8aa701a3)), closes [#5496](https://github.com/mikro-orm/mikro-orm/issues/5496)
+* **mysql:** infer unsigned value for FKs based on the target PK ([b7ae145](https://github.com/mikro-orm/mikro-orm/commit/b7ae1450121b4e6a024ce4069f4f378e36064016)), closes [#5485](https://github.com/mikro-orm/mikro-orm/issues/5485)
+
+
+### Features
+
+* **core:** allow specifying the `runtimeType` explicitly ([e9c0c07](https://github.com/mikro-orm/mikro-orm/commit/e9c0c0758dd20c7674ed5df421bc3795212068a8))
+
+
+
+
+
 ## [6.2.4](https://github.com/mikro-orm/mikro-orm/compare/v6.2.3...v6.2.4) (2024-05-02)
 
 

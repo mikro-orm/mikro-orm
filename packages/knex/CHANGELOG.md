@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.5](https://github.com/mikro-orm/mikro-orm/compare/v6.2.4...v6.2.5) (2024-05-05)
+
+
+### Bug Fixes
+
+* **core:** fix extra updates on embedded array properties ([48fde11](https://github.com/mikro-orm/mikro-orm/commit/48fde11a78f9566885881c0f55fb4085896bfb26)), closes [#5530](https://github.com/mikro-orm/mikro-orm/issues/5530)
+* **core:** limit depth in custom `inspect` methods to get around debugging issues in vscode ([f706c06](https://github.com/mikro-orm/mikro-orm/commit/f706c06ff0219093644d90934d0b342ec4cbd075)), closes [#5525](https://github.com/mikro-orm/mikro-orm/issues/5525)
+* **query-builder:** do not reset join conditions when paginating ([0b851e5](https://github.com/mikro-orm/mikro-orm/commit/0b851e50b1fa64c76ead91c046aa5d3e231cfab4)), closes [#5538](https://github.com/mikro-orm/mikro-orm/issues/5538)
+* **schema:** skip extra columns in nested pivot entities ([f34e4d7](https://github.com/mikro-orm/mikro-orm/commit/f34e4d77fa75e842b898ee1a554d1bc6fd960aac)), closes [#5276](https://github.com/mikro-orm/mikro-orm/issues/5276)
+
+
+
+
+
 ## [6.2.4](https://github.com/mikro-orm/mikro-orm/compare/v6.2.3...v6.2.4) (2024-05-02)
 
 **Note:** Version bump only for package @mikro-orm/knex
