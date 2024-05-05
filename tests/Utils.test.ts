@@ -453,6 +453,34 @@ describe('Utils', () => {
     ])).toBe('/opt/app/entity/requirement.ts');
   });
 
+  test('lookup path from decorator with bun', () => {
+    expect(Utils.lookupPathFromDecorator('Requirement', [
+      'Error',
+      '    at lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:636:20)',
+      '    at getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:28:51)',
+      '    at <anonymous> (/opt/app/node_modules/@mikro-orm/core/decorators/PrimaryKey.js:9:67)',
+      '    at DecorateProperty (/opt/app/node_modules/reflect-metadata/Reflect.js:561:67)',
+      '    at A (bun:wrap:1:2617)',
+      '    at module code (/opt/app/src/entities/Book.ts:11:42)',
+      '    at moduleEvaluation (:1:11)',
+      '    at <anonymous> (:2:1)',
+      '    at processTicksAndRejections (:12:39)',
+    ])).toBe('/opt/app/src/entities/Book.ts');
+
+    expect(Utils.lookupPathFromDecorator('Requirement', [
+      'Error',
+      '    at lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:636:20)',
+      '    at getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:28:51)',
+      '    at <anonymous> (/opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:47)',
+      '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:549:67)',
+      '    at A (bun:wrap:1:2617)',
+      '    at module code (/opt/app/src/entities/Book.ts:9:8)',
+      '    at moduleEvaluation (:1:11)',
+      '    at <anonymous> (:2:1)',
+      '    at processTicksAndRejections (:12:39)',
+    ])).toBe('/opt/app/src/entities/Book.ts');
+  });
+
   test('lookup path from decorator on windows', () => {
     // with tslib, via ts-node
     const stack1 = [

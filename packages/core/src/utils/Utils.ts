@@ -790,7 +790,13 @@ export class Utils {
     // In some situations (e.g. swc 1.3.4+), the presence of a source map can obscure the call to
     // __decorate(), replacing it with the constructor name. To support these cases we look for
     // Reflect.decorate() as well.
-    let line = stack.findIndex(line => line.includes('__decorate') || line.includes('Reflect.decorate'))!;
+    let line = stack.findIndex(line => line.match(/__decorate|Reflect\.decorate/));
+
+    // bun does not have those lines at all, only the DecorateProperty/DecorateConstructor,
+    // but those are also present in node, so we need to check this only if they weren't found.
+    if (line === -1) {
+      line = stack.findIndex(line => line.match(/DecorateProperty|DecorateConstructor/));
+    }
 
     if (line === -1) {
       return name;
@@ -798,6 +804,10 @@ export class Utils {
 
     if (stack[line].includes('Reflect.decorate')) {
       line++;
+    }
+
+    if (stack[line].match(/DecorateProperty|DecorateConstructor/)) {
+      line += 2;
     }
 
     if (Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
