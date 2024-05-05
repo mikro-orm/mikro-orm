@@ -96,10 +96,10 @@ describe(dbName, () => {
     orm.config.get('entityGenerator').entitySchema = entitySchema;
     const dump = await orm.entityGenerator.generate({
       save: true,
-      path: './temp/entities',
+      path: './temp/entities-2',
     });
     expect(dump).toMatchSnapshot('postgre');
-    await expect(pathExists('./temp/entities/E123TableName.ts')).resolves.toBe(true);
-    await remove('./temp/entities');
+    await expect(pathExists('./temp/entities-2/E123TableName.ts')).resolves.toBe(true);
+    await remove('./temp/entities-2');
   });
 });

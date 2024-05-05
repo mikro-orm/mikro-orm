@@ -118,10 +118,10 @@ describe(schemaName, () => {
     orm.config.get('entityGenerator').entitySchema = entitySchema;
     const dump = await orm.entityGenerator.generate({
       save: true,
-      path: './temp/entities',
+      path: './temp/entities-1',
     });
     expect(dump).toMatchSnapshot('mysql');
-    await expect(pathExists('./temp/entities/E123TableName.ts')).resolves.toBe(true);
-    await remove('./temp/entities');
+    await expect(pathExists('./temp/entities-1/E123TableName.ts')).resolves.toBe(true);
+    await remove('./temp/entities-1');
   });
 });
