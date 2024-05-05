@@ -1444,15 +1444,16 @@ export class MetadataDiscovery {
   }
 
   private initUnsigned(prop: EntityProperty): void {
+    if (prop.unsigned != null) {
+      return;
+    }
+
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
       const meta2 = this.metadata.get(prop.type);
-
-      meta2.primaryKeys.forEach(primaryKey => {
-        const pk = meta2.properties[primaryKey];
-        // if at least one of the target columns is unsigned, we need to mark the property as unsigned
-        prop.unsigned ||= this.platform.supportsUnsigned() && this.isNumericProperty(pk);
+      prop.unsigned = meta2.getPrimaryProps().some(pk => {
+        this.initUnsigned(pk);
+        return pk.unsigned;
       });
-
       return;
     }
 
