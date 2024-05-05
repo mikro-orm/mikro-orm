@@ -795,7 +795,14 @@ export class Utils {
     // bun does not have those lines at all, only the DecorateProperty/DecorateConstructor,
     // but those are also present in node, so we need to check this only if they weren't found.
     if (line === -1) {
-      line = stack.findIndex(line => line.match(/DecorateProperty|DecorateConstructor/));
+      // here we handle bun which stack is different from nodejs so we search for reflect-metadata
+      const reflectLine = stack.findIndex(line => Utils.normalizePath(line).includes('node_modules/reflect-metadata/Reflect.js'));
+
+      if (reflectLine === -1 || reflectLine + 2 >= stack.length || !stack[reflectLine + 1].includes('bun:wrap')) {
+        return name;
+      }
+
+      line = reflectLine + 2;
     }
 
     if (line === -1) {

@@ -479,6 +479,20 @@ describe('Utils', () => {
       '    at <anonymous> (:2:1)',
       '    at processTicksAndRejections (:12:39)',
     ])).toBe('/opt/app/src/entities/Book.ts');
+
+    // using bun build for generating a standalone binary will ignore the path as there is no reflect-metadata in the stack trace
+    expect(Utils.lookupPathFromDecorator('Book', [
+      'Error',
+      '    at lookupPathFromDecorator (/$bunfs/root/app-build:40282:33)',
+      '    at getMetadataFromDecorator (/$bunfs/root/app-build:52487:57)',
+      '    at <anonymous> (/$bunfs/root/app-build:55177:71)',
+      '    at DecorateProperty (/$bunfs/root/app-build:41850:36)',
+      '    at __legacyDecorateClassTS (/$bunfs/root/app-build:50:25)',
+      '    at module code (/$bunfs/root/app-build:284492:24)',
+      '    at moduleEvaluation (:1:11)',
+      '    at moduleEvaluation (:1:11)',
+      '    at <anonymous> (:2:1)',
+    ])).toBe('Book');
   });
 
   test('lookup path from decorator on windows', () => {
