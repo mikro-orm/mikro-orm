@@ -163,7 +163,13 @@ export class Cursor<
   }
 
   static decode(value: string): unknown[] {
-    return JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
+    return JSON.parse(Buffer.from(value, 'base64url').toString('utf8')).map((value: unknown) => {
+      if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}/)) {
+        return new Date(value);
+      }
+
+      return value;
+    });
   }
 
   static getDefinition<Entity extends object>(meta: EntityMetadata<Entity>, orderBy: OrderDefinition<Entity>) {
