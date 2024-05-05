@@ -149,7 +149,7 @@ export class DatabaseSchema {
       return false;
     }
 
-    if (meta.pivotTable || (prop.kind === ReferenceKind.EMBEDDED && prop.object)) {
+    if (prop.kind === ReferenceKind.EMBEDDED && prop.object) {
       return true;
     }
 
