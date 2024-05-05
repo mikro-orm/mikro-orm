@@ -1497,8 +1497,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
   protected wrapPaginateSubQuery(meta: EntityMetadata): void {
     const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
     const subQuery = this.clone(['_orderBy', '_fields']).select(pks).groupBy(pks).limit(this._limit!);
+
     // revert the on conditions added via populateWhere, we want to apply those only once
-    Object.values(subQuery._joins).forEach(join => join.cond = join.cond_ ?? {});
+    for (const join of Object.values(subQuery._joins)) {
+      if (join.cond_) {
+        join.cond = join.cond_;
+      }
+    }
 
     if (this._offset) {
       subQuery.offset(this._offset);
