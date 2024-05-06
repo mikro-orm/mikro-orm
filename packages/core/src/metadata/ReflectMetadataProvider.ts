@@ -47,7 +47,7 @@ export class ReflectMetadataProvider extends MetadataProvider {
     }
 
     prop.type ??= typeName;
-    prop.runtimeType = typeName;
+    prop.runtimeType ??= typeName;
   }
 
 }
