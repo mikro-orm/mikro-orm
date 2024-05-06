@@ -369,7 +369,13 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return new Date(value);
     }
 
-    return parseDate(value) as Date;
+    const parsed = parseDate(value);
+
+    if (parsed === null) {
+      return value as unknown as Date;
+    }
+
+    return parsed as Date;
   }
 
 }

@@ -371,7 +371,13 @@ export abstract class Platform {
   }
 
   parseDate(value: string | number): Date {
-    return new Date(value);
+    const date = new Date(value);
+
+    if (isNaN(date.getTime())) {
+      return value as unknown as Date;
+    }
+
+    return date;
   }
 
   getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
