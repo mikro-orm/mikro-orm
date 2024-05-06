@@ -329,7 +329,7 @@ export class MetadataDiscovery {
     return entity as EntityClass<T>;
   }
 
-  private getSchema<T>(entity: Constructor<T> | EntitySchema<T>, filepath?: string): EntitySchema<T> {
+  private getSchema<T>(entity: (Constructor<T> & { [MetadataStorage.PATH_SYMBOL]?: string }) | EntitySchema<T>, filepath?: string): EntitySchema<T> {
     if (entity instanceof EntitySchema) {
       if (filepath) {
         // initialize global metadata for given entity
@@ -339,7 +339,7 @@ export class MetadataDiscovery {
       return entity;
     }
 
-    const path = (entity as Dictionary).__path;
+    const path = entity[MetadataStorage.PATH_SYMBOL];
 
     if (path) {
       const meta = Utils.copy(MetadataStorage.getMetadata(entity.name, path), false);
