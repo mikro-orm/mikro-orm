@@ -1445,7 +1445,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.2.5"
     "@mikro-orm/mongodb": "npm:6.2.5"
     fs-extra: "npm:11.2.0"
-    mongodb: "npm:6.6.0"
+    mongodb: "npm:6.6.1"
     umzug: "npm:3.8.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1480,7 +1480,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.2.5"
     bson: "npm:^6.7.0"
-    mongodb: "npm:6.6.0"
+    mongodb: "npm:6.6.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1550,11 +1550,11 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.12"
-    "@types/node": "npm:20.12.9"
+    "@types/node": "npm:20.12.10"
     "@types/pg": "npm:8.11.6"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:9.0.8"
-    "@types/webpack-env": "npm:1.18.4"
+    "@types/webpack-env": "npm:1.18.5"
     "@typescript-eslint/eslint-plugin": "npm:7.8.0"
     "@typescript-eslint/parser": "npm:7.8.0"
     bson: "npm:^6.4.0"
@@ -1569,7 +1569,7 @@ __metadata:
     jest: "npm:29.7.0"
     lerna: "npm:8.1.2"
     lint-staged: "npm:15.2.2"
-    mongodb: "npm:6.6.0"
+    mongodb: "npm:6.6.1"
     mongodb-memory-server: "npm:9.2.0"
     rimraf: "npm:5.0.5"
     ts-jest: "npm:29.1.2"
@@ -2461,12 +2461,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.12.9":
-  version: 20.12.9
-  resolution: "@types/node@npm:20.12.9"
+"@types/node@npm:20.12.10":
+  version: 20.12.10
+  resolution: "@types/node@npm:20.12.10"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 10/289445d9cfe49ad21fe55d25ccad44d786a616a96118916332a7d5d338632329fc8a281d486afd0929934641fa55b82ca23171a120b37d6f540d400df6d2ca68
+  checksum: 10/b3ab044969880084e4da22a0173fc234239de81c22fb9418bd992de98369a3065c0c6119216476711af69ff520331cf06711acdeb1959554de6bbf0912a0494e
   languageName: node
   linkType: hard
 
@@ -2533,10 +2533,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/webpack-env@npm:1.18.4":
-  version: 1.18.4
-  resolution: "@types/webpack-env@npm:1.18.4"
-  checksum: 10/a1c37f8eb93fa86077b2406d3b8dd50c7505cd2b6ec46044786aa9681b0114ad6c3c3cd6402f8ecce9e4de6626c2fd91e5acda62d5d450c1f531533c3812b7c0
+"@types/webpack-env@npm:1.18.5":
+  version: 1.18.5
+  resolution: "@types/webpack-env@npm:1.18.5"
+  checksum: 10/3c8dd0b23d45e2d33abdfbae7f1d8f75ce23d54588b08943e833f4dba81eb683ac68672a75eccbdba8e008bc1647638803c1bcadc8cdfd1dd7142fa2c3f612de
   languageName: node
   linkType: hard
 
@@ -8291,9 +8291,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:6.6.0":
-  version: 6.6.0
-  resolution: "mongodb@npm:6.6.0"
+"mongodb@npm:6.6.1":
+  version: 6.6.1
+  resolution: "mongodb@npm:6.6.1"
   dependencies:
     "@mongodb-js/saslprep": "npm:^1.1.5"
     bson: "npm:^6.7.0"
@@ -8321,7 +8321,7 @@ __metadata:
       optional: true
     socks:
       optional: true
-  checksum: 10/6c314cddc882c093292a092e2b9ac0554d30035224d89464843d89dde4126406e9abc82bab716d30595ed91fa1979b927cbba3255499b107d1374e3302bd11ad
+  checksum: 10/0107bb35147e60a1aa06319983fdde3ba34f2d786a72e80cb6493002f8298c3e474cd5b831cf98669abf9942f35cbea520a1854c91d26b89a152c73ead0bbf5a
   languageName: node
   linkType: hard
 
