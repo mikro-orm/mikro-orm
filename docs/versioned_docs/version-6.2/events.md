@@ -32,7 +32,7 @@ All hooks support async methods with one exception - `@OnInit`.
 
 > `@OnInit` is not fired when you create an entity manually via its constructor (`new MyEntity()`)
 
-> `@OnInit` can be sometimes fired twice, once when an entity reference is created, and once after its populated. To distinguish betyouen those you can use `wrap(this).isInitialized()`.
+> `@OnInit` can be sometimes fired twice, once when an entity reference is created, and once after its populated. To distinguish between those you can use `wrap(this).isInitialized()`.
 
 ### Upsert hooks
 
