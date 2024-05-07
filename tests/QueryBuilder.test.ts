@@ -250,8 +250,8 @@ describe('QueryBuilder', () => {
   });
 
   test('select leftJoin 1:1 owner', async () => {
-    const qb = orm.em.createQueryBuilder(FooBar2, 'fb');
-    qb.select(['fb.*', 'fz.*'])
+    const qb = orm.em.createQueryBuilder(FooBar2, 'fb')
+      .select(['fb.*', 'fz.*'])
       .leftJoin('fb.baz', 'fz')
       .where({ 'fz.name': 'test 123' })
       .limit(2, 1);
@@ -3006,8 +3006,12 @@ describe('QueryBuilder', () => {
       pg.em.clear();
 
       const qb5 = pg.em.createQueryBuilder(Author2, 'a');
+      // @ts-expect-error
       expect(() => qb5.leftJoinLateralAndSelect('a.books', 'sub', { author: sql.ref('a.id') })).toThrow('Lateral join can be used only with a sub-query.');
+      // @ts-expect-error
       expect(() => qb5.leftJoinLateralAndSelect('a.books', 'sub')).toThrow('Lateral join can be used only with a sub-query.');
+      // @ts-expect-error
+      expect(() => qb5.leftJoinLateral('a.books', 'sub')).toThrow('Lateral join can be used only with a sub-query.');
       pg.em.clear();
     }
 

@@ -202,12 +202,14 @@ test('GH 3812', async () => {
 
   orm.em.clear();
 
-  type T11 = ModifyHint<'sn', never, never, 'logs'>;
-  type T12 = ModifyHint<'sn', { l: ['logs', 'l', Log] }, 'logs', 'l.step'>;
+  type T10 = ModifyHint<'sn', { l: ['logs', 'l', Log] }, 'logs', 'l.step', true>;
+  type T11 = ModifyHint<'sn', never, never, 'logs', true>;
+  type T12 = ModifyHint<'sn', { l: ['logs', 'l', Log] }, 'logs', 'l.step', true>;
   type T13 = ModifyHint<'sn', { l: ['logs', 'l', Log]; s: ['logs.step', 's', Step] }, 'logs' | 'logs.step', 's.subStep'>;
-  type T21 = ModifyContext<SerialNumber, never, 'logs', 'l'>;
-  type T22 = ModifyContext<Log, { l: ['logs', 'l', Log] }, 'l.step', 's'>;
-  type T23 = ModifyContext<Step, { l: ['logs', 'l', Log]; s: ['logs.step', 's', Step] }, 's.subStep', 's2'>;
+  type T20 = ModifyContext<SerialNumber, never, 'logs', 'l', false>;
+  type T21 = ModifyContext<SerialNumber, never, 'logs', 'l', true>;
+  type T22 = ModifyContext<Log, { l: ['logs', 'l', Log, false] }, 'l.step', 's'>;
+  type T23 = ModifyContext<Step, { l: ['logs', 'l', Log, false]; s: ['logs.step', 's', Step, true] }, 's.subStep', 's2'>;
   // type T31 = AddAliasesFromContext<{ l: ['logs', 'l', Log]; s: ['logs.step', 's', Step]; s2: ['logs.step.subStep', 's2', Step] }>;
   // type T32 = CleanKeys<Log, keyof Log, true>;
   // type T33 = EntityRelations<Log>;
