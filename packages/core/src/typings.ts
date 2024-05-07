@@ -1097,8 +1097,9 @@ export type Selected<T, L extends string = never, F extends string = '*'> = {
   [K in keyof T as FunctionKeys<T, K>]: T[K];
 } & { [__selectedType]?: T };
 
-export type EntityType<T> = T | { [__loadedType]?: T } | { [__selectedType]?: T };
-export type FromEntityType<T> = T extends EntityType<infer U> ? U : T;
+type LoadedEntityType<T> = { [__loadedType]?: T } | { [__selectedType]?: T };
+export type EntityType<T> = T | LoadedEntityType<T>;
+export type FromEntityType<T> = T extends LoadedEntityType<infer U> ? U : T;
 
 type LoadedInternal<T, L extends string = never, F extends string = '*', E extends string = never> =
   [F] extends ['*']
