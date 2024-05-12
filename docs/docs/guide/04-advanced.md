@@ -660,7 +660,7 @@ Read more about upserting in [Entity Manager](../entity-manager.md#upsert) secti
 
 ### Removing entities
 
-There are several approaches to removing an entity. In this case, we first load the entity, if it does not exist, we return `notFount: true` in the response, if it does, we remove it via `em.remove()`, which marks the entity for removal on the following `flush()` call.
+There are several approaches to removing an entity. In this case, we first load the entity, if it does not exist, we return `notFound: true` in the response, if it does, we remove it via `em.remove()`, which marks the entity for removal on the following `flush()` call.
 
 ```ts title='modules/article/routes.ts'
 app.delete('/:id', async request => {
