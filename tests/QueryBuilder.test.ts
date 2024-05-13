@@ -705,6 +705,18 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['foo', 1]);
   });
 
+  test('GH #5565', async () => {
+    const qb = orm.em.createQueryBuilder(Author2, 'a');
+    qb.select('*')
+      .limit(1)
+      .orderBy({ books: { tags: { id: QueryOrder.ASC } } })
+      .populate([{ field: 'friends' }]);
+
+    await qb;
+    expect(qb.getQuery()).toEqual('');
+    expect(qb.getParams()).toEqual([1]);
+  });
+
   test('select by 1:m', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ books: { $in: ['123', '321'] } });
