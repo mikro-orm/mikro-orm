@@ -93,6 +93,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     this.processWrapper(prop, 'Ref');
     this.processWrapper(prop, 'Reference');
+    this.processWrapper(prop, 'ScalarReference');
     this.processWrapper(prop, 'Ref');
     this.processWrapper(prop, 'Collection');
 

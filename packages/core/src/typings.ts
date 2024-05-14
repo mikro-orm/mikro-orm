@@ -344,11 +344,13 @@ export type EntityRef<T extends object> = true extends IsUnknown<PrimaryProperty
  * Ref type represents a `Reference` instance, and adds the primary keys to its prototype automatically, so you can do
  * `ref.id` instead of `ref.unwrap().id`. It resolves to either `ScalarRef` or `EntityRef`, based on the type argument.
  */
-export type Ref<T> = IsAny<T> extends true
-  ? Reference<T & object>
-  : T extends Scalar
-    ? ScalarReference<T>
-    : EntityRef<T & object>;
+export type Ref<T> = T extends any // we need this to get around `Ref<boolean>` expansion to `Ref<true> | Ref<false>`
+  ? IsAny<T> extends true
+    ? Reference<T & object>
+    : T extends Scalar
+      ? ScalarReference<T>
+      : EntityRef<T & object>
+  : never;
 
 type ExtractHiddenProps<T> = (T extends { [HiddenProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Hidden ? K : never }[keyof T] & {});
 type ExcludeHidden<T, K extends keyof T> = K extends ExtractHiddenProps<T> ? never : K;
