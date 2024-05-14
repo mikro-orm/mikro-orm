@@ -923,7 +923,7 @@ const res2 = await qb.execute('get'); // returns single object
 const res3 = await qb.execute('run'); // returns object like `{ affectedRows: number, insertId: number, row: any }`
 ```
 
-The second argument can be used to customize the mapping of database columns to property names. In the following example, the `Article` entity has a `createdAt` property defined with implicit underscored field name `created_at`:
+The second argument can be used to disable the mapping of database columns to property names. In the following example, the `Article` entity has a `createdAt` property defined with implicit underscored field name `created_at`:
 
 ```ts
 const res1 = await em.createQueryBuilder(Article).select('*').execute('get', true);
