@@ -713,7 +713,7 @@ describe('QueryBuilder', () => {
       .populate([{ field: 'friends' }]);
 
     await qb;
-    expect(qb.getQuery()).toEqual('');
+    expect(qb.getQuery()).toEqual('select `a`.* from `author2` as `a` left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` left join `book2_tags` as `e2` on `e1`.`uuid_pk` = `e2`.`book2_uuid_pk` where `a`.`id` in (select `a`.`id` from (select `a`.`id` from `author2` as `a` left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` left join `book2_tags` as `e2` on `e1`.`uuid_pk` = `e2`.`book2_uuid_pk` group by `a`.`id` order by min(`e2`.`book_tag2_id`) asc limit ?) as `a`) order by `e2`.`book_tag2_id` asc');
     expect(qb.getParams()).toEqual([1]);
   });
 

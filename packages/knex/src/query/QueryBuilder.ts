@@ -1583,6 +1583,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const orderByAliases = this._orderBy
       .flatMap(hint => Object.keys(hint))
       .map(k => k.split('.')[0]);
+      const ownerAliases = Object.values(this._joins).map(join => join.ownerAlias);
 
     function addPath(hints: PopulateOptions<any>[], prefix = '') {
       for (const hint of hints) {
@@ -1600,7 +1601,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     for (const [key, join] of Object.entries(this._joins)) {
       const path = join.path?.replace(/\[populate]|\[pivot]|:ref/g, '').replace(new RegExp(`^${meta.className}.`), '');
 
-      if (!populate.has(path ?? '') && !orderByAliases.includes(join.alias)) {
+      if (!populate.has(path ?? '') && !orderByAliases.includes(join.alias) && !ownerAliases.includes(join.alias)) {
         delete this._joins[key];
       }
     }
