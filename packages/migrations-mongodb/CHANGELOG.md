@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.6](https://github.com/mikro-orm/mikro-orm/compare/v6.2.5...v6.2.6) (2024-05-14)
+
+**Note:** Version bump only for package @mikro-orm/migrations-mongodb
+
+
+
+
+
 ## [6.2.5](https://github.com/mikro-orm/mikro-orm/compare/v6.2.4...v6.2.5) (2024-05-05)
 
 **Note:** Version bump only for package @mikro-orm/migrations-mongodb

@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.6](https://github.com/mikro-orm/mikro-orm/compare/v6.2.5...v6.2.6) (2024-05-14)
+
+
+### Bug Fixes
+
+* **core:** quote column name for the returning statement when using `convertToJSValueSQL` ([4783945](https://github.com/mikro-orm/mikro-orm/commit/4783945b22ab3acb0893df52e4534963269444cf)), closes [#5563](https://github.com/mikro-orm/mikro-orm/issues/5563)
+* **query-builder:** don't remove joins used by other joins during pagination ([#5566](https://github.com/mikro-orm/mikro-orm/issues/5566)) ([b05c434](https://github.com/mikro-orm/mikro-orm/commit/b05c434485d3a85dd775d6c084faafb8899ac6c3)), closes [#5565](https://github.com/mikro-orm/mikro-orm/issues/5565)
+* **sqlite:** fix mapping of joined results with `DateTimeType` properties ([4001d2b](https://github.com/mikro-orm/mikro-orm/commit/4001d2b4e50efe9ecdcb95c114ddd5c1bb9ccb9c)), closes [#5550](https://github.com/mikro-orm/mikro-orm/issues/5550)
+
+
+
+
+
 ## [6.2.5](https://github.com/mikro-orm/mikro-orm/compare/v6.2.4...v6.2.5) (2024-05-05)
 
 

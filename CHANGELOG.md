@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.6](https://github.com/mikro-orm/mikro-orm/compare/v6.2.5...v6.2.6) (2024-05-14)
+
+
+### Bug Fixes
+
+* **core:** fix mapping of `Date` properties from `bigint` values ([05c802b](https://github.com/mikro-orm/mikro-orm/commit/05c802b5c33ed87cf57c119208dd34294c09c8b5)), closes [#5540](https://github.com/mikro-orm/mikro-orm/issues/5540)
+* **core:** quote column name for the returning statement when using `convertToJSValueSQL` ([4783945](https://github.com/mikro-orm/mikro-orm/commit/4783945b22ab3acb0893df52e4534963269444cf)), closes [#5563](https://github.com/mikro-orm/mikro-orm/issues/5563)
+* **core:** respect `runtimeType` override with reflect-metadata provider ([f1c9740](https://github.com/mikro-orm/mikro-orm/commit/f1c9740d940af0f2c09af1464fa8f6e7caef0ba3))
+* **query-builder:** don't remove joins used by other joins during pagination ([#5566](https://github.com/mikro-orm/mikro-orm/issues/5566)) ([b05c434](https://github.com/mikro-orm/mikro-orm/commit/b05c434485d3a85dd775d6c084faafb8899ac6c3)), closes [#5565](https://github.com/mikro-orm/mikro-orm/issues/5565)
+* **reflection:** allow inference of `Ref<boolean> & Opt` ([534f088](https://github.com/mikro-orm/mikro-orm/commit/534f0883667a126fd06e7c9ba4da44883f1996a6)), closes [#5557](https://github.com/mikro-orm/mikro-orm/issues/5557)
+* **sqlite:** fix mapping of joined results with `DateTimeType` properties ([4001d2b](https://github.com/mikro-orm/mikro-orm/commit/4001d2b4e50efe9ecdcb95c114ddd5c1bb9ccb9c)), closes [#5550](https://github.com/mikro-orm/mikro-orm/issues/5550)
+
+
+
+
+
 ## [6.2.5](https://github.com/mikro-orm/mikro-orm/compare/v6.2.4...v6.2.5) (2024-05-05)
 
 

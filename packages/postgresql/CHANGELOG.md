@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.6](https://github.com/mikro-orm/mikro-orm/compare/v6.2.5...v6.2.6) (2024-05-14)
+
+
+### Bug Fixes
+
+* **core:** fix mapping of `Date` properties from `bigint` values ([05c802b](https://github.com/mikro-orm/mikro-orm/commit/05c802b5c33ed87cf57c119208dd34294c09c8b5)), closes [#5540](https://github.com/mikro-orm/mikro-orm/issues/5540)
+
+
+
+
+
 ## [6.2.5](https://github.com/mikro-orm/mikro-orm/compare/v6.2.4...v6.2.5) (2024-05-05)
 
 **Note:** Version bump only for package @mikro-orm/postgresql
