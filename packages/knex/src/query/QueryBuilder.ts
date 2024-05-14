@@ -1583,7 +1583,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const orderByAliases = this._orderBy
       .flatMap(hint => Object.keys(hint))
       .map(k => k.split('.')[0]);
-      const ownerAliases = Object.values(this._joins).map(join => join.ownerAlias);
+    const ownerAliases = Object.values(this._joins).map(join => join.ownerAlias);
 
     function addPath(hints: PopulateOptions<any>[], prefix = '') {
       for (const hint of hints) {
