@@ -1615,7 +1615,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     for (const [key, join] of joins) {
       const path = join.path?.replace(/\[populate]|\[pivot]|:ref/g, '').replace(new RegExp(`^${meta.className}.`), '');
 
-      if (!populate.has(path ?? '') && !orderByAliases.includes(join.alias) && !ownerAliases.includes(join.alias)) {
+      if (!populate.has(path ?? '') && !orderByAliases.includes(join.alias)) {
         delete this._joins[key];
       }
     }
