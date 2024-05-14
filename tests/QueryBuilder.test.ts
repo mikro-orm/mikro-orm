@@ -705,6 +705,18 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['foo', 1]);
   });
 
+  test('GH #5565', async () => {
+    const qb = orm.em.createQueryBuilder(Author2, 'a');
+    qb.select('*')
+      .limit(1)
+      .orderBy({ books: { tags: { id: QueryOrder.ASC } } })
+      .populate([{ field: 'friends' }]);
+
+    await qb;
+    expect(qb.getQuery()).toEqual('select `a`.* from `author2` as `a` left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` left join `book2_tags` as `e2` on `e1`.`uuid_pk` = `e2`.`book2_uuid_pk` where `a`.`id` in (select `a`.`id` from (select `a`.`id` from `author2` as `a` left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` left join `book2_tags` as `e2` on `e1`.`uuid_pk` = `e2`.`book2_uuid_pk` group by `a`.`id` order by min(`e2`.`book_tag2_id`) asc limit ?) as `a`) order by `e2`.`book_tag2_id` asc');
+    expect(qb.getParams()).toEqual([1]);
+  });
+
   test('select by 1:m', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ books: { $in: ['123', '321'] } });
