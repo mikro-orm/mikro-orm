@@ -699,7 +699,8 @@ export class QueryBuilderHelper {
       if (returningProps.length > 0) {
         qb.returning(returningProps.flatMap(prop => {
           if (prop.hasConvertToJSValueSQL) {
-            const sql = prop.customType!.convertToJSValueSQL!(prop.fieldNames[0], this.platform) + ' as ' + this.platform.quoteIdentifier(prop.fieldNames[0]);
+            const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
+            const sql = prop.customType!.convertToJSValueSQL!(aliased, this.platform) + ' as ' + this.platform.quoteIdentifier(prop.fieldNames[0]);
             return [this.knex.raw(sql) as any];
           }
           return prop.fieldNames;
