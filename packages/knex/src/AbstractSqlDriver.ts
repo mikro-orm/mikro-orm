@@ -371,7 +371,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           relationPojo[prop.name] = pk.every(val => val != null) ? pk as EntityValue<T> : null;
         } else if (prop.runtimeType === 'Date') {
           const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
-          relationPojo[prop.name] = (typeof root![alias] === 'string' ? new Date(root![alias] as string) : root![alias]) as EntityValue<T>;
+          const type = typeof root![alias];
+          relationPojo[prop.name] = (['string', 'number'].includes(type) ? this.platform.parseDate(root![alias] as string) : root![alias]) as EntityValue<T>;
         } else {
           const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
           relationPojo[prop.name] = root![alias];
