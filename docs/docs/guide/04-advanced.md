@@ -923,7 +923,7 @@ const res2 = await qb.execute('get'); // returns single object
 const res3 = await qb.execute('run'); // returns object like `{ affectedRows: number, insertId: number, row: any }`
 ```
 
-Second argument can be used to disable mapping of database columns to property namesIn following example, `Article` entity has `createdAt` property defined with implicit underscored field name `created_at`:
+The second argument can be used to disable the mapping of database columns to property names. In the following example, the `Article` entity has a `createdAt` property defined with implicit underscored field name `created_at`:
 
 ```ts
 const res1 = await em.createQueryBuilder(Article).select('*').execute('get', true);
@@ -933,7 +933,7 @@ const res2 = await em.createQueryBuilder(Article).select('*').execute('get', fal
 console.log(res2); // `created_at` will be defined, while `createdAt` will be missing
 ```
 
-To get entity instances from the `QueryBuilder` result, you can use `getResult()` and `getSingleResult()` methods:
+To get the entity instances from the `QueryBuilder` result, you can use the `getResult()` and `getSingleResult()` methods:
 
 ```ts
 const article = await em.createQueryBuilder(Article)
@@ -952,7 +952,7 @@ console.log(articles[0] instanceof Article); // true
 
 ### Awaiting the QueryBuilder
 
-You can also await the `QueryBuilder` instance, which will automatically execute the `QueryBuilder` and return appropriate response automatically. The `QueryBuilder` instance is typed based on usage of `select/insert/update/delete/truncate` methods to one of:
+You can also await the `QueryBuilder` instance, which will automatically execute the `QueryBuilder` and return an appropriate response automatically. The `QueryBuilder` instance is typed based on the usage of `select/insert/update/delete/truncate` methods to one of:
 
 - `SelectQueryBuilder`
     - awaiting yields array of entities (as `qb.getResultList()`)
