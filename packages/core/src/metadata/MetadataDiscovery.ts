@@ -963,7 +963,7 @@ export class MetadataDiscovery {
     this.initFieldName(embeddedProp, rootProperty !== embeddedProp && object);
     const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_' : embeddedProp.prefix;
 
-    for (const prop of Object.values(embeddable.properties).filter(p => p.persist !== false)) {
+    for (const prop of Object.values(embeddable.properties)) {
       const name = (embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_') + prop.name;
 
       meta.properties[name] = Utils.copy(prop, false);
