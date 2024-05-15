@@ -101,6 +101,8 @@ class Statistic {
     @Property({ type: DoubleType })
     total: number;
 
+    @Property({ type: DoubleType, persist: true })
+    views!: number;
 
     constructor(total: number) {
       this.total = total;
