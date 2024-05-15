@@ -4,7 +4,7 @@ import { Collection, Embeddable, Embedded, Entity, ManyToOne, MikroORM, OneToMan
 @Embeddable()
 class Statistic {
 
-  @Property({ persist: false })
+  @Property()
   revenue!: number;
 
 }
@@ -21,7 +21,7 @@ class Event {
   @OneToMany({ entity: () => Order,  mappedBy: order => order.event })
   orders = new Collection<Order>(this);
 
-  @Embedded({ entity: () => Statistic, nullable: true, prefix: false })
+  @Embedded({ entity: () => Statistic, nullable: true, prefix: false, persist: false })
   statistic?: Statistic;
 
 }

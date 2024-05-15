@@ -971,6 +971,7 @@ export class MetadataDiscovery {
       meta.properties[name].embedded = [embeddedProp.name, prop.name];
       meta.propertyOrder.set(name, (order += 0.01));
       embeddedProp.embeddedProps[prop.name] = meta.properties[name];
+      meta.properties[name].persist ??= embeddedProp.persist;
 
       if (embeddedProp.nullable) {
         meta.properties[name].nullable = true;

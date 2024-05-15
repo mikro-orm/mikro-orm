@@ -30,4 +30,5 @@ export type EmbeddedOptions = {
   serializer?: (value: any) => any;
   serializedName?: string;
   groups?: string[];
+  persist?: boolean;
 };
