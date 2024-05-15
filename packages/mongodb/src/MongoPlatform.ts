@@ -65,7 +65,7 @@ export class MongoPlatform extends Platform {
   }
 
   override convertJsonToDatabaseValue(value: unknown): unknown {
-    return value;
+    return Utils.copy(value);
   }
 
   override convertJsonToJSValue(value: unknown): unknown {
