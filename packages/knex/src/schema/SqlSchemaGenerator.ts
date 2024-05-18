@@ -565,6 +565,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     this.config.set('dbName', this.helper.getManagementDbName());
     await this.driver.reconnect();
     await this.execute(this.helper.getDropDatabaseSQL(name));
+    this.config.set('dbName', name);
   }
 
   override async execute(sql: string, options: { wrap?: boolean; ctx?: Transaction } = {}) {
