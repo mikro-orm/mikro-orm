@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.7](https://github.com/mikro-orm/mikro-orm/compare/v6.2.6...v6.2.7) (2024-05-18)
+
+
+### Bug Fixes
+
+* **core:** fix ordering by joined embedded object properties ([cbd7c3e](https://github.com/mikro-orm/mikro-orm/commit/cbd7c3eaac520fdd9eda61fcb7321fea87bb9bdf)), closes [#5560](https://github.com/mikro-orm/mikro-orm/issues/5560)
+* **query-builder:** improve handling of nested `$and/$or` queries ([567d65a](https://github.com/mikro-orm/mikro-orm/commit/567d65ae27ea3627518d8d06119ac4b412d6e622))
+* **schema:** revert the `dbName` after dropping the database ([725f7e9](https://github.com/mikro-orm/mikro-orm/commit/725f7e9e0940bfd60a6cd9992f567b21fb7c96fa)), closes [#5583](https://github.com/mikro-orm/mikro-orm/issues/5583)
+
+
+
+
+
 ## [6.2.6](https://github.com/mikro-orm/mikro-orm/compare/v6.2.5...v6.2.6) (2024-05-14)
 
 
