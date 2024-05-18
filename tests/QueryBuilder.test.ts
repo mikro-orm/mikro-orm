@@ -705,6 +705,46 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['foo', 1]);
   });
 
+  test('missing where clause', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a')
+      .select('*').where({
+        books: {
+          $and: [
+            {
+              publisher: {
+                $and: [
+                  {
+                    name: 'name',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      });
+    expect(qb1.getQuery()).toBe('select `a`.* from `author2` as `a` ' +
+      'left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` ' +
+      'left join `publisher2` as `e2` on `e1`.`publisher_id` = `e2`.`id` ' +
+      'where `e2`.`name` = ?');
+
+    const qb2 = orm.em.createQueryBuilder(Author2, 'a')
+      .select('*').where({
+        $or: [
+          {
+            $and: [
+              { books2: { $and: [{ publisher: { $and: [{ tests: { $and: [{ name: { $in: ['name'] } }] } }] } }] } },
+            ],
+          },
+        ],
+      });
+    expect(qb2.getQuery()).toBe('select `a`.* from `author2` as `a` ' +
+      'left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` ' +
+      'left join `publisher2` as `e2` on `e1`.`publisher_id` = `e2`.`id` ' +
+      'left join `publisher2_tests` as `e4` on `e2`.`id` = `e4`.`publisher2_id` ' +
+      'left join `test2` as `e3` on `e4`.`test2_id` = `e3`.`id` ' +
+      'where `e3`.`name` in (?)');
+  });
+
   test('GH #5565', async () => {
     const qb = orm.em.createQueryBuilder(Author2, 'a');
     qb.select('*')
