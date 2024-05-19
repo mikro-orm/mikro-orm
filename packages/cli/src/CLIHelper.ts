@@ -23,6 +23,7 @@ export class CLIHelper {
     options.set('allowGlobalContext', true);
     options.set('debug', !!settings.verbose);
     options.getLogger().setDebugMode(!!settings.verbose);
+    options.set('connect', false);
 
     if (settings.useTsNode) {
       options.set('tsNode', true);
