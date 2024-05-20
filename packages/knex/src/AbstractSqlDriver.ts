@@ -363,6 +363,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const targetProps = ref
         ? meta2.getPrimaryProps()
         : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, hint.children as any || []));
+      const tz = this.platform.getTimezone();
 
       for (const prop of targetProps) {
         if (prop.fieldNames.length > 1) { // composite keys
@@ -371,8 +372,15 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           relationPojo[prop.name] = pk.every(val => val != null) ? pk as EntityValue<T> : null;
         } else if (prop.runtimeType === 'Date') {
           const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
-          const type = typeof root![alias];
-          relationPojo[prop.name] = (['string', 'number'].includes(type) ? this.platform.parseDate(root![alias] as string) : root![alias]) as EntityValue<T>;
+          const value = root![alias] as unknown;
+
+          if (tz && tz !== 'local' && typeof value === 'string' && !value.includes('+') && !value.endsWith('Z')) {
+            relationPojo[prop.name] = this.platform.parseDate(value + tz) as EntityValue<T>;
+          } else if (['string', 'number'].includes(typeof value)) {
+            relationPojo[prop.name] = this.platform.parseDate(value as string) as EntityValue<T>;
+          } else {
+            relationPojo[prop.name] = value as EntityValue<T>;
+          }
         } else {
           const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
           relationPojo[prop.name] = root![alias];
