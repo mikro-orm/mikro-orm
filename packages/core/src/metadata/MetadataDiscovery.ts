@@ -962,7 +962,7 @@ export class MetadataDiscovery {
     this.initFieldName(embeddedProp, rootProperty !== embeddedProp && object);
     const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_' : embeddedProp.prefix;
 
-    for (const prop of Object.values(embeddable.properties).filter(p => p.persist !== false)) {
+    for (const prop of Object.values(embeddable.properties)) {
       const name = (embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_') + prop.name;
 
       meta.properties[name] = Utils.copy(prop, false);
@@ -970,6 +970,7 @@ export class MetadataDiscovery {
       meta.properties[name].embedded = [embeddedProp.name, prop.name];
       meta.propertyOrder.set(name, (order += 0.01));
       embeddedProp.embeddedProps[prop.name] = meta.properties[name];
+      meta.properties[name].persist ??= embeddedProp.persist;
 
       if (embeddedProp.nullable) {
         meta.properties[name].nullable = true;

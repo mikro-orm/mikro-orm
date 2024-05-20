@@ -1,5 +1,5 @@
 import type { EntityProperty, Platform } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { DoubleType, Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
@@ -95,6 +95,21 @@ class Savings {
 
 }
 
+@Embeddable()
+class Statistic {
+
+  @Property({ type: DoubleType })
+  total: number;
+
+  @Property({ type: DoubleType, persist: true })
+  views!: number;
+
+  constructor(total: number) {
+    this.total = total;
+  }
+
+}
+
 @Entity()
 class User {
 
@@ -103,6 +118,9 @@ class User {
 
   @Embedded(() => Savings)
   savings!: Savings;
+
+  @Embedded(() => Statistic, { prefix: false, nullable: true, persist: false })
+  statistic?: Statistic;
 
   @Property({ nullable: true })
   after?: number; // property after embeddables to verify order props in resulting schema
