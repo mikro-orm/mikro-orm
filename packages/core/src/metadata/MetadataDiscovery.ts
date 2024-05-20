@@ -494,6 +494,7 @@ export class MetadataDiscovery {
   }
 
   private initManyToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
+    meta = meta.root;
     const meta2 = this.metadata.get(prop.type);
     Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
     const pivotMeta = this.metadata.find(prop.pivotEntity);
@@ -669,6 +670,7 @@ export class MetadataDiscovery {
   }
 
   private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
+    meta = meta.root;
     const pivotMeta = this.metadata.find(prop.pivotEntity);
 
     // ensure inverse side exists so we can join it when populating via pivot tables
