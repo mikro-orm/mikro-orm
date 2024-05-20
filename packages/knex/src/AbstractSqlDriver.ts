@@ -958,20 +958,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       qb.limit(options.limit, options.offset);
     }
 
-    // console.log('pivot qb', qb, qb._fields);
     const res = owners.length ? await this.rethrow(qb.execute('all', { mergeResults: false, mapResults: false })) : [];
-    // console.log(res);
-    // const items = res.map((row: Dictionary) => super.mapResult(row, prop.targetMeta));
     const tmp: Dictionary = {};
-    // const items = res.map((row: Dictionary) => this.mapResult(row, prop.targetMeta!, populate, qb, tmp));
-    // const items = res.map((row: Dictionary) => this.mapResult(row, pivotMeta, populate, qb, tmp));
     const items = res.map((row: Dictionary) => {
       const root = super.mapResult(row, prop.targetMeta);
       this.mapJoinedProps<T>(root!, prop.targetMeta!, populate, qb, root!, tmp, pivotMeta.className + '.' + pivotProp1.name);
 
       return root;
     });
-    // console.log(prop.name, prop.targetMeta!.className, items);
     qb.clearRawFragmentsCache();
 
     const map: Dictionary<T[]> = {};
@@ -1140,7 +1134,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       // ignore ref joins of known FKs unless it's a filter hint
       if (ref && !hint.filter && (prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner))) {
-        // // console.log('wat', hint);
         return;
       }
 
@@ -1185,11 +1178,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       if (!ref) {
         fields.push(...this.getFieldsForJoinedLoad(qb, meta2, childExplicitFields.length === 0 ? undefined : childExplicitFields, childExclude, hint.children as any, options, tableAlias, path));
       } else if (hint.filter) {
-        // fields.push(field);
         fields.push(...prop.referencedColumnNames!.map(col => qb.helper.mapper(`${tableAlias}.${col}`, qb.type, undefined, `${tableAlias}__${col}`)));
       }
     });
-    // // console.log(fields, joinedProps);
 
     return fields;
   }
