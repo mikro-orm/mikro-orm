@@ -398,6 +398,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return where;
   }
 
+  // this method only handles the problem for mongo driver, SQL drivers have their implementation inside QueryBuilder
   protected applyDiscriminatorCondition<Entity extends object>(entityName: string, where: FilterQuery<Entity>): FilterQuery<Entity> {
     const meta = this.metadata.find<Entity>(entityName);
 

@@ -70,8 +70,6 @@ class AdminUser extends User {}
 let orm: MikroORM;
 
 beforeAll(async () => {
-  // It should create a pivot table using privilege_id and user_id columns.
-  // Instead, it creates a pivot table using privilege_id and admin_user_id columns.
   orm = await MikroORM.init({
     dbName: ':memory:',
     entities: [User, Privilege, PrivilegeGroup, SuperUser, AdminUser],

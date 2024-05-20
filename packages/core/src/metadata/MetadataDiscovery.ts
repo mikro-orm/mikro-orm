@@ -25,14 +25,15 @@ import {
   ArrayType,
   BigIntType,
   BlobType,
-  DoubleType,
   DecimalType,
+  DoubleType,
   EnumArrayType,
+  IntervalType,
   JsonType,
   t,
   Type,
   Uint8ArrayType,
-  UnknownType, IntervalType,
+  UnknownType,
 } from '../types';
 import { colors } from '../logging/colors';
 import { raw, RawQueryFragment } from '../utils/RawQueryFragment';
@@ -494,7 +495,6 @@ export class MetadataDiscovery {
   }
 
   private initManyToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
-    meta = meta.root;
     const meta2 = this.metadata.get(prop.type);
     Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
     const pivotMeta = this.metadata.find(prop.pivotEntity);
@@ -515,8 +515,8 @@ export class MetadataDiscovery {
     if (pivotMeta && (pks.length === 2 || fks.length >= 2)) {
       const owner = prop.mappedBy ? meta2.properties[prop.mappedBy] : prop;
       const [first, second] = this.ensureCorrectFKOrderInPivotEntity(pivotMeta, owner);
-      prop.joinColumns = first!.fieldNames;
-      prop.inverseJoinColumns = second!.fieldNames;
+      prop.joinColumns ??= first!.fieldNames;
+      prop.inverseJoinColumns ??= second!.fieldNames;
     }
 
     if (!prop.pivotTable && prop.owner && this.platform.usesPivotTable()) {
@@ -534,18 +534,9 @@ export class MetadataDiscovery {
       prop.inverseJoinColumns = prop2.joinColumns;
     }
 
-    if (!prop.referencedColumnNames) {
-      prop.referencedColumnNames = Utils.flatten(meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames));
-    }
-
-    if (!prop.joinColumns) {
-      prop.joinColumns = prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.className, referencedColumnName, meta.compositePK));
-    }
-
-    if (!prop.inverseJoinColumns) {
-      const meta2 = this.metadata.get(prop.type);
-      prop.inverseJoinColumns = this.initManyToOneFieldName(prop, meta2.className);
-    }
+    prop.referencedColumnNames ??= Utils.flatten(meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames));
+    prop.joinColumns ??= prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.root.className, referencedColumnName, meta.compositePK));
+    prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className);
   }
 
   private initManyToOneFields(prop: EntityProperty): void {
@@ -670,7 +661,6 @@ export class MetadataDiscovery {
   }
 
   private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
-    meta = meta.root;
     const pivotMeta = this.metadata.find(prop.pivotEntity);
 
     // ensure inverse side exists so we can join it when populating via pivot tables
@@ -696,6 +686,13 @@ export class MetadataDiscovery {
     if (pivotMeta) {
       this.ensureCorrectFKOrderInPivotEntity(pivotMeta, prop);
       return pivotMeta;
+    }
+
+    const exists = this.metadata.find(prop.pivotTable);
+
+    if (exists) {
+      prop.pivotEntity = exists.className;
+      return exists;
     }
 
     let tableName = prop.pivotTable;

@@ -154,7 +154,7 @@ describe('GH issue 4422', () => {
       },
     });
     expect(mock.mock.calls[0][0]).toMatch(
-      "select `c0`.* from `company` as `c0` left join `tag_companies` as `t2` on `c0`.`id` = `t2`.`company_id` left join `tag` as `t1` on `t2`.`tag1_id` = `t1`.`id` and `t1`.`type` = 'tag1' where `t1`.`name` = 'tag1'",
+      "select `c0`.* from `company` as `c0` left join `tag_companies` as `t2` on `c0`.`id` = `t2`.`company_id` left join `tag` as `t1` on `t2`.`tag_id` = `t1`.`id` and `t1`.`type` = 'tag1' where `t1`.`name` = 'tag1'",
     );
   });
 
@@ -167,7 +167,7 @@ describe('GH issue 4422', () => {
       },
     });
     expect(mock.mock.calls[0][0]).toMatch(
-      "select `c0`.* from `company` as `c0` left join `company_tags2` as `c2` on `c0`.`id` = `c2`.`company_id` left join `tag` as `c1` on `c2`.`tag2_id` = `c1`.`id` and `c1`.`type` = 'tag2' where `c1`.`name` = 'tag2'",
+      "select `c0`.* from `company` as `c0` left join `company_tags2` as `c2` on `c0`.`id` = `c2`.`company_id` left join `tag` as `c1` on `c2`.`tag_id` = `c1`.`id` and `c1`.`type` = 'tag2' where `c1`.`name` = 'tag2'",
     );
   });
 

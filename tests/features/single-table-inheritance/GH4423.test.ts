@@ -86,7 +86,7 @@ describe('GH issue 4423', () => {
     await orm.em.findAll(Task, {
       populate: ['managers'],
     });
-    expect(mock.mock.calls[0][0]).toMatch("select `t0`.*, `m1`.`id` as `m1__id`, `m1`.`name` as `m1__name`, `m1`.`type` as `m1__type`, `m1`.`favorite_task_id` as `m1__favorite_task_id` from `task` as `t0` left join `task_managers` as `t2` on `t0`.`id` = `t2`.`task_id` left join `user` as `m1` on `t2`.`manager_id` = `m1`.`id` and `m1`.`type` = 'manager'");
+    expect(mock.mock.calls[0][0]).toMatch("select `t0`.*, `m1`.`id` as `m1__id`, `m1`.`name` as `m1__name`, `m1`.`type` as `m1__type`, `m1`.`favorite_task_id` as `m1__favorite_task_id` from `task` as `t0` left join `task_managers` as `t2` on `t0`.`id` = `t2`.`task_id` left join `user` as `m1` on `t2`.`user_id` = `m1`.`id` and `m1`.`type` = 'manager'");
   });
 
   test('The owning side is in the relation, This one works normally', async () => {
@@ -95,6 +95,6 @@ describe('GH issue 4423', () => {
       populate: ['tasks'],
     });
 
-    expect(mock.mock.calls[0][0]).toMatch("select `m0`.*, `t1`.`id` as `t1__id`, `t1`.`name` as `t1__name` from `user` as `m0` left join `task_managers` as `t2` on `m0`.`id` = `t2`.`manager_id` left join `task` as `t1` on `t2`.`task_id` = `t1`.`id` where `m0`.`type` = 'manager'");
+    expect(mock.mock.calls[0][0]).toMatch("select `m0`.*, `t1`.`id` as `t1__id`, `t1`.`name` as `t1__name` from `user` as `m0` left join `task_managers` as `t2` on `m0`.`id` = `t2`.`user_id` left join `task` as `t1` on `t2`.`task_id` = `t1`.`id` where `m0`.`type` = 'manager'");
   });
 });
