@@ -21,6 +21,8 @@ import PostgresDialect from 'knex/lib/dialects/postgres';
 // @ts-ignore
 import PostgresDialectTableCompiler from 'knex/lib/dialects/postgres/schema/pg-tablecompiler';
 // @ts-ignore
+import PostgresQueryCompiler from 'knex/lib/dialects/postgres/query/pg-querycompiler';
+// @ts-ignore
 import Sqlite3Dialect from 'knex/lib/dialects/sqlite3';
 // @ts-ignore
 import BetterSqlite3Dialect from 'knex/lib/dialects/better-sqlite3';
@@ -45,6 +47,7 @@ export const MonkeyPatchable = {
   MsSqlDialect,
   PostgresDialect,
   PostgresDialectTableCompiler,
+  PostgresQueryCompiler,
   Sqlite3Dialect,
   Sqlite3DialectTableCompiler,
   BetterSqlite3Dialect,
