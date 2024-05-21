@@ -230,8 +230,13 @@ exports[`embedded entities in postgres diffing 2`] = `
     entity.name = data.name;
   }
   if (data.profile1_username !== undefined || data.profile1_identity_email !== undefined || data.profile1_identity_meta_foo != null || data.profile1_identity_meta_bar != null || data.profile1_identity_meta_source != null || data.profile1_identity_links !== undefined || data.profile1_identity_source !== undefined || data.profile1_source !== undefined) {
+    const embeddedData = {
+      username: data.profile1_username,
+      identity: data.profile1_identity,
+      source: data.profile1_source,
+    };
     if (entity.profile1 == null) {
-      entity.profile1 = factory.createEmbeddable('Profile', data, { newEntity, convertCustomTypes });
+      entity.profile1 = factory.createEmbeddable('Profile', embeddedData, { newEntity, convertCustomTypes });
     }
     if (data.profile1_username === null) {
       entity.profile1.username = null;
@@ -239,8 +244,14 @@ exports[`embedded entities in postgres diffing 2`] = `
       entity.profile1.username = data.profile1_username;
     }
     if (data.profile1_identity_email !== undefined || data.profile1_identity_meta_foo != null || data.profile1_identity_meta_bar != null || data.profile1_identity_meta_source != null || data.profile1_identity_links !== undefined || data.profile1_identity_source !== undefined) {
+      const embeddedData = {
+        email: data.profile1_identity_email,
+        meta: data.profile1_identity_meta,
+        links: data.profile1_identity_links,
+        source: data.profile1_identity_source,
+      };
       if (entity.profile1.identity == null) {
-        entity.profile1.identity = factory.createEmbeddable('Identity', data, { newEntity, convertCustomTypes });
+        entity.profile1.identity = factory.createEmbeddable('Identity', embeddedData, { newEntity, convertCustomTypes });
       }
       if (data.profile1_identity_email === null) {
         entity.profile1.identity.email = null;
@@ -248,8 +259,13 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.identity.email = data.profile1_identity_email;
       }
       if (data.profile1_identity_meta_foo != null || data.profile1_identity_meta_bar != null || data.profile1_identity_meta_source != null) {
+        const embeddedData = {
+          foo: data.profile1_identity_meta_foo,
+          bar: data.profile1_identity_meta_bar,
+          source: data.profile1_identity_meta_source,
+        };
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data, { newEntity, convertCustomTypes });
+          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
         }
         if (data.profile1_identity_meta_foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -274,8 +290,9 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.identity.meta = null;
       }
       if (data.profile1_identity_meta != null) {
+        const embeddedData = data.profile1_identity_meta;
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data.profile1_identity_meta, { newEntity, convertCustomTypes });
+          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
         }
         if (data.profile1_identity_meta.foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -303,8 +320,9 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.identity.links = [];
         data.profile1_identity_links.forEach((_, idx_8) => {
           if (data.profile1_identity_links[idx_8] != null) {
+            const embeddedData = data.profile1_identity_links[idx_8];
             if (entity.profile1.identity.links[idx_8] == null) {
-              entity.profile1.identity.links[idx_8] = factory.createEmbeddable('IdentityLink', data.profile1_identity_links[idx_8], { newEntity, convertCustomTypes });
+              entity.profile1.identity.links[idx_8] = factory.createEmbeddable('IdentityLink', embeddedData, { newEntity, convertCustomTypes });
             }
             if (data.profile1_identity_links[idx_8].url === null) {
               entity.profile1.identity.links[idx_8].url = null;
@@ -321,8 +339,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               }
             }
             if (data.profile1_identity_links[idx_8].meta != null) {
+              const embeddedData = data.profile1_identity_links[idx_8].meta;
               if (entity.profile1.identity.links[idx_8].meta == null) {
-                entity.profile1.identity.links[idx_8].meta = factory.createEmbeddable('IdentityMeta', data.profile1_identity_links[idx_8].meta, { newEntity, convertCustomTypes });
+                entity.profile1.identity.links[idx_8].meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
               }
               if (data.profile1_identity_links[idx_8].meta.foo === null) {
                 entity.profile1.identity.links[idx_8].meta.foo = null;
@@ -350,8 +369,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               entity.profile1.identity.links[idx_8].metas = [];
               data.profile1_identity_links[idx_8].metas.forEach((_, idx_13) => {
                 if (data.profile1_identity_links[idx_8].metas[idx_13] != null) {
+                  const embeddedData = data.profile1_identity_links[idx_8].metas[idx_13];
                   if (entity.profile1.identity.links[idx_8].metas[idx_13] == null) {
-                    entity.profile1.identity.links[idx_8].metas[idx_13] = factory.createEmbeddable('IdentityMeta', data.profile1_identity_links[idx_8].metas[idx_13], { newEntity, convertCustomTypes });
+                    entity.profile1.identity.links[idx_8].metas[idx_13] = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
                   }
                   if (data.profile1_identity_links[idx_8].metas[idx_13].foo === null) {
                     entity.profile1.identity.links[idx_8].metas[idx_13].foo = null;
@@ -404,8 +424,9 @@ exports[`embedded entities in postgres diffing 2`] = `
       entity.profile1.identity = null;
     }
     if (data.profile1_identity != null) {
+      const embeddedData = data.profile1_identity;
       if (entity.profile1.identity == null) {
-        entity.profile1.identity = factory.createEmbeddable('Identity', data.profile1_identity, { newEntity, convertCustomTypes });
+        entity.profile1.identity = factory.createEmbeddable('Identity', embeddedData, { newEntity, convertCustomTypes });
       }
       if (data.profile1_identity.email === null) {
         entity.profile1.identity.email = null;
@@ -413,8 +434,13 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.identity.email = data.profile1_identity.email;
       }
       if (data.profile1_identity_meta_foo != null || data.profile1_identity_meta_bar != null || data.profile1_identity_meta_source != null) {
+        const embeddedData = {
+          foo: data.profile1_identity_meta_foo,
+          bar: data.profile1_identity_meta_bar,
+          source: data.profile1_identity_meta_source,
+        };
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data, { newEntity, convertCustomTypes });
+          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
         }
         if (data.profile1_identity_meta_foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -439,8 +465,9 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.identity.meta = null;
       }
       if (data.profile1_identity.meta != null) {
+        const embeddedData = data.profile1_identity.meta;
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data.profile1_identity.meta, { newEntity, convertCustomTypes });
+          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
         }
         if (data.profile1_identity.meta.foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -468,8 +495,9 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.identity.links = [];
         data.profile1_identity.links.forEach((_, idx_21) => {
           if (data.profile1_identity.links[idx_21] != null) {
+            const embeddedData = data.profile1_identity.links[idx_21];
             if (entity.profile1.identity.links[idx_21] == null) {
-              entity.profile1.identity.links[idx_21] = factory.createEmbeddable('IdentityLink', data.profile1_identity.links[idx_21], { newEntity, convertCustomTypes });
+              entity.profile1.identity.links[idx_21] = factory.createEmbeddable('IdentityLink', embeddedData, { newEntity, convertCustomTypes });
             }
             if (data.profile1_identity.links[idx_21].url === null) {
               entity.profile1.identity.links[idx_21].url = null;
@@ -486,8 +514,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               }
             }
             if (data.profile1_identity.links[idx_21].meta != null) {
+              const embeddedData = data.profile1_identity.links[idx_21].meta;
               if (entity.profile1.identity.links[idx_21].meta == null) {
-                entity.profile1.identity.links[idx_21].meta = factory.createEmbeddable('IdentityMeta', data.profile1_identity.links[idx_21].meta, { newEntity, convertCustomTypes });
+                entity.profile1.identity.links[idx_21].meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
               }
               if (data.profile1_identity.links[idx_21].meta.foo === null) {
                 entity.profile1.identity.links[idx_21].meta.foo = null;
@@ -515,8 +544,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               entity.profile1.identity.links[idx_21].metas = [];
               data.profile1_identity.links[idx_21].metas.forEach((_, idx_26) => {
                 if (data.profile1_identity.links[idx_21].metas[idx_26] != null) {
+                  const embeddedData = data.profile1_identity.links[idx_21].metas[idx_26];
                   if (entity.profile1.identity.links[idx_21].metas[idx_26] == null) {
-                    entity.profile1.identity.links[idx_21].metas[idx_26] = factory.createEmbeddable('IdentityMeta', data.profile1_identity.links[idx_21].metas[idx_26], { newEntity, convertCustomTypes });
+                    entity.profile1.identity.links[idx_21].metas[idx_26] = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
                   }
                   if (data.profile1_identity.links[idx_21].metas[idx_26].foo === null) {
                     entity.profile1.identity.links[idx_21].metas[idx_26].foo = null;
@@ -581,8 +611,9 @@ exports[`embedded entities in postgres diffing 2`] = `
     entity.profile1 = null;
   }
   if (data.profile1 != null) {
+    const embeddedData = data.profile1;
     if (entity.profile1 == null) {
-      entity.profile1 = factory.createEmbeddable('Profile', data.profile1, { newEntity, convertCustomTypes });
+      entity.profile1 = factory.createEmbeddable('Profile', embeddedData, { newEntity, convertCustomTypes });
     }
     if (data.profile1.username === null) {
       entity.profile1.username = null;
@@ -590,8 +621,14 @@ exports[`embedded entities in postgres diffing 2`] = `
       entity.profile1.username = data.profile1.username;
     }
     if (data.profile1_identity_email !== undefined || data.profile1_identity_meta_foo != null || data.profile1_identity_meta_bar != null || data.profile1_identity_meta_source != null || data.profile1_identity_links !== undefined || data.profile1_identity_source !== undefined) {
+      const embeddedData = {
+        email: data.profile1_identity_email,
+        meta: data.profile1_identity_meta,
+        links: data.profile1_identity_links,
+        source: data.profile1_identity_source,
+      };
       if (entity.profile1.identity == null) {
-        entity.profile1.identity = factory.createEmbeddable('Identity', data, { newEntity, convertCustomTypes });
+        entity.profile1.identity = factory.createEmbeddable('Identity', embeddedData, { newEntity, convertCustomTypes });
       }
       if (data.profile1_identity_email === null) {
         entity.profile1.identity.email = null;
@@ -599,8 +636,13 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.identity.email = data.profile1_identity_email;
       }
       if (data.profile1_identity_meta_foo != null || data.profile1_identity_meta_bar != null || data.profile1_identity_meta_source != null) {
+        const embeddedData = {
+          foo: data.profile1_identity_meta_foo,
+          bar: data.profile1_identity_meta_bar,
+          source: data.profile1_identity_meta_source,
+        };
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data, { newEntity, convertCustomTypes });
+          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
         }
         if (data.profile1_identity_meta_foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -625,8 +667,9 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.identity.meta = null;
       }
       if (data.profile1_identity_meta != null) {
+        const embeddedData = data.profile1_identity_meta;
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data.profile1_identity_meta, { newEntity, convertCustomTypes });
+          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
         }
         if (data.profile1_identity_meta.foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -654,8 +697,9 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.identity.links = [];
         data.profile1_identity_links.forEach((_, idx_35) => {
           if (data.profile1_identity_links[idx_35] != null) {
+            const embeddedData = data.profile1_identity_links[idx_35];
             if (entity.profile1.identity.links[idx_35] == null) {
-              entity.profile1.identity.links[idx_35] = factory.createEmbeddable('IdentityLink', data.profile1_identity_links[idx_35], { newEntity, convertCustomTypes });
+              entity.profile1.identity.links[idx_35] = factory.createEmbeddable('IdentityLink', embeddedData, { newEntity, convertCustomTypes });
             }
             if (data.profile1_identity_links[idx_35].url === null) {
               entity.profile1.identity.links[idx_35].url = null;
@@ -672,8 +716,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               }
             }
             if (data.profile1_identity_links[idx_35].meta != null) {
+              const embeddedData = data.profile1_identity_links[idx_35].meta;
               if (entity.profile1.identity.links[idx_35].meta == null) {
-                entity.profile1.identity.links[idx_35].meta = factory.createEmbeddable('IdentityMeta', data.profile1_identity_links[idx_35].meta, { newEntity, convertCustomTypes });
+                entity.profile1.identity.links[idx_35].meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
               }
               if (data.profile1_identity_links[idx_35].meta.foo === null) {
                 entity.profile1.identity.links[idx_35].meta.foo = null;
@@ -701,8 +746,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               entity.profile1.identity.links[idx_35].metas = [];
               data.profile1_identity_links[idx_35].metas.forEach((_, idx_40) => {
                 if (data.profile1_identity_links[idx_35].metas[idx_40] != null) {
+                  const embeddedData = data.profile1_identity_links[idx_35].metas[idx_40];
                   if (entity.profile1.identity.links[idx_35].metas[idx_40] == null) {
-                    entity.profile1.identity.links[idx_35].metas[idx_40] = factory.createEmbeddable('IdentityMeta', data.profile1_identity_links[idx_35].metas[idx_40], { newEntity, convertCustomTypes });
+                    entity.profile1.identity.links[idx_35].metas[idx_40] = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
                   }
                   if (data.profile1_identity_links[idx_35].metas[idx_40].foo === null) {
                     entity.profile1.identity.links[idx_35].metas[idx_40].foo = null;
@@ -755,8 +801,9 @@ exports[`embedded entities in postgres diffing 2`] = `
       entity.profile1.identity = null;
     }
     if (data.profile1.identity != null) {
+      const embeddedData = data.profile1.identity;
       if (entity.profile1.identity == null) {
-        entity.profile1.identity = factory.createEmbeddable('Identity', data.profile1.identity, { newEntity, convertCustomTypes });
+        entity.profile1.identity = factory.createEmbeddable('Identity', embeddedData, { newEntity, convertCustomTypes });
       }
       if (data.profile1.identity.email === null) {
         entity.profile1.identity.email = null;
@@ -764,8 +811,13 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.identity.email = data.profile1.identity.email;
       }
       if (data.profile1_identity_meta_foo != null || data.profile1_identity_meta_bar != null || data.profile1_identity_meta_source != null) {
+        const embeddedData = {
+          foo: data.profile1_identity_meta_foo,
+          bar: data.profile1_identity_meta_bar,
+          source: data.profile1_identity_meta_source,
+        };
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data, { newEntity, convertCustomTypes });
+          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
         }
         if (data.profile1_identity_meta_foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -790,8 +842,9 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.identity.meta = null;
       }
       if (data.profile1.identity.meta != null) {
+        const embeddedData = data.profile1.identity.meta;
         if (entity.profile1.identity.meta == null) {
-          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data.profile1.identity.meta, { newEntity, convertCustomTypes });
+          entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
         }
         if (data.profile1.identity.meta.foo === null) {
           entity.profile1.identity.meta.foo = null;
@@ -819,8 +872,9 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.identity.links = [];
         data.profile1.identity.links.forEach((_, idx_48) => {
           if (data.profile1.identity.links[idx_48] != null) {
+            const embeddedData = data.profile1.identity.links[idx_48];
             if (entity.profile1.identity.links[idx_48] == null) {
-              entity.profile1.identity.links[idx_48] = factory.createEmbeddable('IdentityLink', data.profile1.identity.links[idx_48], { newEntity, convertCustomTypes });
+              entity.profile1.identity.links[idx_48] = factory.createEmbeddable('IdentityLink', embeddedData, { newEntity, convertCustomTypes });
             }
             if (data.profile1.identity.links[idx_48].url === null) {
               entity.profile1.identity.links[idx_48].url = null;
@@ -837,8 +891,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               }
             }
             if (data.profile1.identity.links[idx_48].meta != null) {
+              const embeddedData = data.profile1.identity.links[idx_48].meta;
               if (entity.profile1.identity.links[idx_48].meta == null) {
-                entity.profile1.identity.links[idx_48].meta = factory.createEmbeddable('IdentityMeta', data.profile1.identity.links[idx_48].meta, { newEntity, convertCustomTypes });
+                entity.profile1.identity.links[idx_48].meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
               }
               if (data.profile1.identity.links[idx_48].meta.foo === null) {
                 entity.profile1.identity.links[idx_48].meta.foo = null;
@@ -866,8 +921,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               entity.profile1.identity.links[idx_48].metas = [];
               data.profile1.identity.links[idx_48].metas.forEach((_, idx_53) => {
                 if (data.profile1.identity.links[idx_48].metas[idx_53] != null) {
+                  const embeddedData = data.profile1.identity.links[idx_48].metas[idx_53];
                   if (entity.profile1.identity.links[idx_48].metas[idx_53] == null) {
-                    entity.profile1.identity.links[idx_48].metas[idx_53] = factory.createEmbeddable('IdentityMeta', data.profile1.identity.links[idx_48].metas[idx_53], { newEntity, convertCustomTypes });
+                    entity.profile1.identity.links[idx_48].metas[idx_53] = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
                   }
                   if (data.profile1.identity.links[idx_48].metas[idx_53].foo === null) {
                     entity.profile1.identity.links[idx_48].metas[idx_53].foo = null;
@@ -932,8 +988,9 @@ exports[`embedded entities in postgres diffing 2`] = `
     entity.profile1 = null;
   }
   if (data.profile2 != null) {
+    const embeddedData = data.profile2;
     if (entity.profile2 == null) {
-      entity.profile2 = factory.createEmbeddable('Profile', data.profile2, { newEntity, convertCustomTypes });
+      entity.profile2 = factory.createEmbeddable('Profile', embeddedData, { newEntity, convertCustomTypes });
     }
     if (data.profile2.username === null) {
       entity.profile2.username = null;
@@ -941,8 +998,9 @@ exports[`embedded entities in postgres diffing 2`] = `
       entity.profile2.username = data.profile2.username;
     }
     if (data.profile2.identity != null) {
+      const embeddedData = data.profile2.identity;
       if (entity.profile2.identity == null) {
-        entity.profile2.identity = factory.createEmbeddable('Identity', data.profile2.identity, { newEntity, convertCustomTypes });
+        entity.profile2.identity = factory.createEmbeddable('Identity', embeddedData, { newEntity, convertCustomTypes });
       }
       if (data.profile2.identity.email === null) {
         entity.profile2.identity.email = null;
@@ -950,8 +1008,9 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile2.identity.email = data.profile2.identity.email;
       }
       if (data.profile2.identity.meta != null) {
+        const embeddedData = data.profile2.identity.meta;
         if (entity.profile2.identity.meta == null) {
-          entity.profile2.identity.meta = factory.createEmbeddable('IdentityMeta', data.profile2.identity.meta, { newEntity, convertCustomTypes });
+          entity.profile2.identity.meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
         }
         if (data.profile2.identity.meta.foo === null) {
           entity.profile2.identity.meta.foo = null;
@@ -979,8 +1038,9 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile2.identity.links = [];
         data.profile2.identity.links.forEach((_, idx_60) => {
           if (data.profile2.identity.links[idx_60] != null) {
+            const embeddedData = data.profile2.identity.links[idx_60];
             if (entity.profile2.identity.links[idx_60] == null) {
-              entity.profile2.identity.links[idx_60] = factory.createEmbeddable('IdentityLink', data.profile2.identity.links[idx_60], { newEntity, convertCustomTypes });
+              entity.profile2.identity.links[idx_60] = factory.createEmbeddable('IdentityLink', embeddedData, { newEntity, convertCustomTypes });
             }
             if (data.profile2.identity.links[idx_60].url === null) {
               entity.profile2.identity.links[idx_60].url = null;
@@ -997,8 +1057,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               }
             }
             if (data.profile2.identity.links[idx_60].meta != null) {
+              const embeddedData = data.profile2.identity.links[idx_60].meta;
               if (entity.profile2.identity.links[idx_60].meta == null) {
-                entity.profile2.identity.links[idx_60].meta = factory.createEmbeddable('IdentityMeta', data.profile2.identity.links[idx_60].meta, { newEntity, convertCustomTypes });
+                entity.profile2.identity.links[idx_60].meta = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
               }
               if (data.profile2.identity.links[idx_60].meta.foo === null) {
                 entity.profile2.identity.links[idx_60].meta.foo = null;
@@ -1026,8 +1087,9 @@ exports[`embedded entities in postgres diffing 2`] = `
               entity.profile2.identity.links[idx_60].metas = [];
               data.profile2.identity.links[idx_60].metas.forEach((_, idx_65) => {
                 if (data.profile2.identity.links[idx_60].metas[idx_65] != null) {
+                  const embeddedData = data.profile2.identity.links[idx_60].metas[idx_65];
                   if (entity.profile2.identity.links[idx_60].metas[idx_65] == null) {
-                    entity.profile2.identity.links[idx_60].metas[idx_65] = factory.createEmbeddable('IdentityMeta', data.profile2.identity.links[idx_60].metas[idx_65], { newEntity, convertCustomTypes });
+                    entity.profile2.identity.links[idx_60].metas[idx_65] = factory.createEmbeddable('IdentityMeta', embeddedData, { newEntity, convertCustomTypes });
                   }
                   if (data.profile2.identity.links[idx_60].metas[idx_65].foo === null) {
                     entity.profile2.identity.links[idx_60].metas[idx_65].foo = null;
