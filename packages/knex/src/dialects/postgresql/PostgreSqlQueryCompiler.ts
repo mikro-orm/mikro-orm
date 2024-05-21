@@ -1,4 +1,4 @@
-import { MonkeyPatchable } from '@mikro-orm/knex';
+import { MonkeyPatchable } from '../../MonkeyPatchable';
 
 export class PostgreSqlQueryCompiler extends MonkeyPatchable.PostgresQueryCompiler {
 
