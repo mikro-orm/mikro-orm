@@ -1392,7 +1392,14 @@ export class MetadataDiscovery {
 
     if (prop.kind === ReferenceKind.SCALAR) {
       const mappedType = this.getMappedType(prop);
-      prop.columnTypes = [mappedType.getColumnType(prop, this.platform)];
+      const SCALAR_TYPES = ['string', 'number', 'boolean', 'bigint', 'Date', 'Buffer', 'RegExp', 'any', 'unknown'];
+
+      if (mappedType instanceof UnknownType && !prop.columnTypes && !SCALAR_TYPES.includes(prop.type)) {
+        prop.columnTypes = [prop.type];
+      } else {
+        prop.columnTypes = [mappedType.getColumnType(prop, this.platform)];
+      }
+
       return;
     }
 

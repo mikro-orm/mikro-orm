@@ -116,7 +116,7 @@ export enum QueryFlag {
   IDENTITY_INSERT = 'IDENTITY_INSERT', // mssql only
 }
 
-export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];
+export const SCALAR_TYPES = ['string', 'number', 'boolean', 'bigint', 'Date', 'Buffer', 'RegExp'];
 
 export enum ReferenceKind {
   SCALAR = 'scalar',

@@ -10,6 +10,15 @@ export class Book1 {
   @Property({ columnType: 'int' })
   changingField!: number;
 
+  @Property({ lazy: true, type: 'tinyblob', nullable: true })
+  blob3?: Buffer;
+
+  @Property({ lazy: true, type: 'mediumblob', nullable: true })
+  blob4?: Buffer;
+
+  @Property({ lazy: true, type: 'longblob', nullable: true })
+  blob5?: Buffer;
+
 }
 
 @Entity({ tableName: 'book' })
@@ -20,6 +29,15 @@ export class Book2 {
 
   @Property({ columnType: 'timestamp', ignoreSchemaChanges: ['type'] })
   changingField!: Date;
+
+  @Property({ lazy: true, type: 'tinyblob', nullable: true })
+  blob3?: Buffer;
+
+  @Property({ lazy: true, type: 'mediumblob', nullable: true })
+  blob4?: Buffer;
+
+  @Property({ lazy: true, type: 'longblob', nullable: true })
+  blob5?: Buffer;
 
 }
 
@@ -36,6 +54,15 @@ export class Book3 {
   })
   changingField!: number;
 
+  @Property({ lazy: true, type: 'tinyblob', nullable: true })
+  blob3?: Buffer;
+
+  @Property({ lazy: true, type: 'mediumblob', nullable: true })
+  blob4?: Buffer;
+
+  @Property({ lazy: true, type: 'longblob', nullable: true })
+  blob5?: Buffer;
+
 }
 
 @Entity({ tableName: 'book' })
@@ -51,6 +78,15 @@ export class Book4 {
   })
   changingField!: Date;
 
+  @Property({ lazy: true, type: 'tinyblob', nullable: true })
+  blob3?: Buffer;
+
+  @Property({ lazy: true, type: 'mediumblob', nullable: true })
+  blob4?: Buffer;
+
+  @Property({ lazy: true, type: 'longblob', nullable: true })
+  blob5?: Buffer;
+
 }
 
 @Entity({ tableName: 'book' })
@@ -61,6 +97,15 @@ export class Book5 {
 
   @Property({ columnType: 'timestamp' })
   changingField!: Date;
+
+  @Property({ lazy: true, type: 'tinyblob', nullable: true })
+  blob3?: Buffer;
+
+  @Property({ lazy: true, type: 'mediumblob', nullable: true })
+  blob4?: Buffer;
+
+  @Property({ lazy: true, type: 'longblob', nullable: true })
+  blob5?: Buffer;
 
 }
 
@@ -78,6 +123,11 @@ describe('ignore specific schema changes (GH 1904)', () => {
   });
 
   afterEach(() => orm.close(true));
+
+  test('create schema with various blobs', async () => {
+    const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
+    expect(sql.trim()).toBe('create table `book` (`id` int unsigned not null auto_increment primary key, `changing_field` int not null, `blob3` tinyblob null, `blob4` mediumblob null, `blob5` longblob null) default character set utf8mb4 engine = InnoDB;');
+  });
 
   test('schema generator respects ignoreSchemaChanges for `type`', async () => {
     const diff0 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
