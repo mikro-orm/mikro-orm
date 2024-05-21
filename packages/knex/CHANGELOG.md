@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.8](https://github.com/mikro-orm/mikro-orm/compare/v6.2.7...v6.2.8) (2024-05-21)
+
+
+### Bug Fixes
+
+* **postgres:** support `lockTableAliases` with explicit schema name in config ([3fdb077](https://github.com/mikro-orm/mikro-orm/commit/3fdb077893144111cf4d8b2ea5a22271d0f405df)), closes [#5125](https://github.com/mikro-orm/mikro-orm/issues/5125) [#5404](https://github.com/mikro-orm/mikro-orm/issues/5404)
+* **sql:** respect `timezone` when mapping joined properties to `Date` ([7f9bb0b](https://github.com/mikro-orm/mikro-orm/commit/7f9bb0be291088b0098b839753bc7ca65fed1e99)), closes [#5577](https://github.com/mikro-orm/mikro-orm/issues/5577)
+
+
+
+
+
 ## [6.2.7](https://github.com/mikro-orm/mikro-orm/compare/v6.2.6...v6.2.7) (2024-05-18)
 
 

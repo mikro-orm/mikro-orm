@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.8](https://github.com/mikro-orm/mikro-orm/compare/v6.2.7...v6.2.8) (2024-05-21)
+
+
+### Bug Fixes
+
+* **cli:** disable eager connection when creating the ORM instance ([ef5d14a](https://github.com/mikro-orm/mikro-orm/commit/ef5d14ad0f0ccf153c373991e2545851d10566cf)), closes [#5030](https://github.com/mikro-orm/mikro-orm/issues/5030)
+* **core:** allow hydration of non persistent embedded properties ([#5579](https://github.com/mikro-orm/mikro-orm/issues/5579)) ([e8c0c3f](https://github.com/mikro-orm/mikro-orm/commit/e8c0c3fe1d539d363f254ba039182eca4f15d39c)), closes [#5578](https://github.com/mikro-orm/mikro-orm/issues/5578)
+* **core:** always use root entity when computing M:N field names with STI ([568e57f](https://github.com/mikro-orm/mikro-orm/commit/568e57f7b513c2af774d74492474a6d5183d7658)), closes [#5586](https://github.com/mikro-orm/mikro-orm/issues/5586)
+* **core:** map embedded constructor parameters ([24f3ee6](https://github.com/mikro-orm/mikro-orm/commit/24f3ee6acfd7636102f1d438c19472374d5c6ca7))
+* **postgres:** support `lockTableAliases` with explicit schema name in config ([3fdb077](https://github.com/mikro-orm/mikro-orm/commit/3fdb077893144111cf4d8b2ea5a22271d0f405df)), closes [#5125](https://github.com/mikro-orm/mikro-orm/issues/5125) [#5404](https://github.com/mikro-orm/mikro-orm/issues/5404)
+* **schema:** use `type` as `columnType` when no matching mapping found ([cd7f85c](https://github.com/mikro-orm/mikro-orm/commit/cd7f85c576f3424479bb161972a7152b84dbf2f8)), closes [#5587](https://github.com/mikro-orm/mikro-orm/issues/5587)
+* **sql:** respect `timezone` when mapping joined properties to `Date` ([7f9bb0b](https://github.com/mikro-orm/mikro-orm/commit/7f9bb0be291088b0098b839753bc7ca65fed1e99)), closes [#5577](https://github.com/mikro-orm/mikro-orm/issues/5577)
+
+
+
+
+
 ## [6.2.7](https://github.com/mikro-orm/mikro-orm/compare/v6.2.6...v6.2.7) (2024-05-18)
 
 
