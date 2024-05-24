@@ -107,7 +107,7 @@ $ ts-node create-schema
 
 When using generated columns, we'll get a perpetual diff on every `SchemaGenerator` run unless we set `ignoreSchemaChanges` to ignore changes to `type` and `extra`.
 
-See the [SQL Generated columns](./defining-entities.md#SQL Generated columns) section for more details.
+See the [SQL Generated columns](./defining-entities.md#sql-generated-columns) section for more details.
 
 ## Limitations of SQLite
 
