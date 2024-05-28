@@ -382,8 +382,8 @@ export class SchemaComparator {
       }
 
       const [removedColumn, addedColumn] = candidateColumns[0];
-      const removedColumnName = removedColumn.name.toLowerCase();
-      const addedColumnName = addedColumn.name.toLowerCase();
+      const removedColumnName = removedColumn.name;
+      const addedColumnName = addedColumn.name;
 
       /* istanbul ignore if */
       if (tableDifferences.renamedColumns[removedColumnName]) {
@@ -424,8 +424,8 @@ export class SchemaComparator {
       }
 
       const [removedIndex, addedIndex] = candidateIndexes[0];
-      const removedIndexName = removedIndex.keyName.toLowerCase();
-      const addedIndexName = addedIndex.keyName.toLowerCase();
+      const removedIndexName = removedIndex.keyName;
+      const addedIndexName = addedIndex.keyName;
 
       if (tableDifferences.renamedIndexes[removedIndexName]) {
         continue;
