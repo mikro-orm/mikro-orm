@@ -6,6 +6,8 @@ import { EntityHelper } from '../entity/EntityHelper';
 
 export class MetadataStorage {
 
+  static readonly PATH_SYMBOL = Symbol('MetadataStorage.PATH_SYMBOL');
+
   private static readonly metadata: Dictionary<EntityMetadata> = Utils.getGlobalStorage('metadata');
   private readonly metadata: Dictionary<EntityMetadata>;
 
@@ -33,12 +35,16 @@ export class MetadataStorage {
     return !!Object.values(this.metadata).find(meta => meta.className === name);
   }
 
-  static getMetadataFromDecorator<T = any>(target: T & Dictionary): EntityMetadata<T> {
-    const path = Utils.lookupPathFromDecorator(target.name);
-    const meta = MetadataStorage.getMetadata(target.name, path);
-    Object.defineProperty(target, '__path', { value: path, writable: true });
+  static getMetadataFromDecorator<T = any>(target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string }): EntityMetadata<T> {
+    if (!Object.hasOwn(target, MetadataStorage.PATH_SYMBOL)) {
+      Object.defineProperty(
+        target,
+        MetadataStorage.PATH_SYMBOL,
+        { value: Utils.lookupPathFromDecorator(target.name), writable: true },
+      );
+    }
 
-    return meta;
+    return MetadataStorage.getMetadata(target.name, target[MetadataStorage.PATH_SYMBOL]!);
   }
 
   static init(): MetadataStorage {

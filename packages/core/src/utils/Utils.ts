@@ -798,7 +798,7 @@ export class Utils {
       // here we handle bun which stack is different from nodejs so we search for reflect-metadata
       const reflectLine = stack.findIndex(line => Utils.normalizePath(line).includes('node_modules/reflect-metadata/Reflect.js'));
 
-      if (reflectLine === -1 || reflectLine + 1 > stack.length || !stack[reflectLine + 1].includes('bun:wrap')) {
+      if (reflectLine === -1 || reflectLine + 2 >= stack.length || !stack[reflectLine + 1].includes('bun:wrap')) {
         return name;
       }
 
@@ -807,10 +807,6 @@ export class Utils {
 
     if (stack[line].includes('Reflect.decorate')) {
       line++;
-    }
-
-    if (stack[line].match(/DecorateProperty|DecorateConstructor/)) {
-      line += 2;
     }
 
     if (Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {

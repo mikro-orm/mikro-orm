@@ -493,6 +493,16 @@ describe('Utils', () => {
       '    at moduleEvaluation (:1:11)',
       '    at <anonymous> (:2:1)',
     ])).toBe('Book');
+
+    // invalid stack trace - not complete
+    expect(Utils.lookupPathFromDecorator('Book', [
+      'Error',
+      '    at lookupPathFromDecorator (/home/ruby/workspace/bun-playground/node_modules/@mikro-orm/core/utils/Utils.js:400:33)',
+      '    at getMetadataFromDecorator (/home/ruby/workspace/bun-playground/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:27:57)',
+      '    at <anonymous> (/home/ruby/workspace/bun-playground/node_modules/@mikro-orm/core/decorators/Entity.js:4:71)',
+      '    at DecorateConstructor (/home/ruby/workspace/bun-playground/node_modules/reflect-metadata/Reflect.js:171:61)',
+      '    at A (bun:wrap:1:2617)',
+    ])).toBe('Book');
   });
 
   test('lookup path from decorator on windows', () => {
