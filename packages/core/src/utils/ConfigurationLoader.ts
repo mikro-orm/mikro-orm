@@ -306,7 +306,7 @@ export class ConfigurationLoader {
     }
   }
 
-  // inspired by https://github.com/facebook/mikro-orm/pull/3386
+  // inspired by https://github.com/facebook/docusaurus/pull/3386
   static checkPackageVersion(): string {
     const coreVersion = Utils.getORMVersion();
 
