@@ -127,7 +127,7 @@
     "mongodb": "6.6.2",
     "mongodb-memory-server": "9.2.0",
     "rimraf": "5.0.7",
-    "ts-jest": "29.1.3",
+    "ts-jest": "29.1.4",
     "ts-node": "10.9.2",
     "typescript": "5.4.5",
     "uuid": "9.0.1"

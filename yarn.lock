@@ -1572,7 +1572,7 @@ __metadata:
     mongodb: "npm:6.6.2"
     mongodb-memory-server: "npm:9.2.0"
     rimraf: "npm:5.0.7"
-    ts-jest: "npm:29.1.3"
+    ts-jest: "npm:29.1.4"
     ts-node: "npm:10.9.2"
     typescript: "npm:5.4.5"
     uuid: "npm:9.0.1"
@@ -11119,9 +11119,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:29.1.3":
-  version: 29.1.3
-  resolution: "ts-jest@npm:29.1.3"
+"ts-jest@npm:29.1.4":
+  version: 29.1.4
+  resolution: "ts-jest@npm:29.1.4"
   dependencies:
     bs-logger: "npm:0.x"
     fast-json-stable-stringify: "npm:2.x"
@@ -11151,7 +11151,7 @@ __metadata:
       optional: true
   bin:
     ts-jest: cli.js
-  checksum: 10/cc1f608bb5859e112ffb8a6d84ddb5c20954b7ec8c89a8c7f95e373368d8946b5843594fe7779078eec2b7e825962848f1a1ba7a44c71b8a08ed4e75d3a3f8d8
+  checksum: 10/3103c0e2f9937ae6bb51918105883565bb2d11cae1121ae20aedd1c4374f843341463a4a1986e02a958d119be0d3a9b996d761bc4aac85152a29385e609fed3c
   languageName: node
   linkType: hard
 
