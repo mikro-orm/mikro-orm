@@ -1,5 +1,4 @@
-import { SqliteTableCompiler } from './SqliteTableCompiler';
-import { MonkeyPatchable } from '../../MonkeyPatchable';
+import { MonkeyPatchable, SqliteTableCompiler } from '@mikro-orm/knex';
 
 export class BetterSqliteKnexDialect extends MonkeyPatchable.BetterSqlite3Dialect {
 

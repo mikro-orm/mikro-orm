@@ -1,5 +1,6 @@
 import type { QueryConfig } from 'mariadb';
-import { MySqlConnection, type Knex, MariaDbKnexDialect } from '@mikro-orm/knex';
+import { MySqlConnection, type Knex } from '@mikro-orm/knex';
+import { MariaDbKnexDialect } from './MariaDbKnexDialect';
 
 export class MariaDbConnection extends MySqlConnection {
 

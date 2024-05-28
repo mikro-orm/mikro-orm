@@ -1,4 +1,4 @@
-import { MySqlKnexDialect } from './MySqlKnexDialect';
+import { MySqlKnexDialect } from '@mikro-orm/knex';
 
 export class MariaDbKnexDialect extends MySqlKnexDialect {
 
