@@ -89,9 +89,10 @@ export class ConfigurationLoader {
 
   static getConfigPaths(): string[] {
     const options = Utils.parseArgs();
+    const configArgName = process.env.MIKRO_ORM_CONFIG_ARG_NAME ?? 'config';
 
-    if (options.config) {
-      return [options.config];
+    if (options[configArgName]) {
+      return [options[configArgName]];
     }
 
     const paths: string[] = [];
