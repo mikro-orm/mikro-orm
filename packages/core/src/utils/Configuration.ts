@@ -354,10 +354,18 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       this.options.implicitTransactions = this.platform.usesImplicitTransactions();
     }
 
-    const url = this.getClientUrl().match(/:\/\/.*\/([^?]+)/);
+    try {
+      const url = new URL(this.getClientUrl());
 
-    if (url) {
-      this.options.dbName = this.get('dbName', decodeURIComponent(url[1]));
+      if (url.pathname) {
+        this.options.dbName = this.get('dbName', decodeURIComponent(url.pathname).substring(1));
+      }
+    } catch {
+      const url = this.getClientUrl().match(/:\/\/.*\/([^?]+)/);
+
+      if (url) {
+        this.options.dbName = this.get('dbName', decodeURIComponent(url[1]));
+      }
     }
 
     if (!this.options.charset) {
