@@ -1,6 +1,7 @@
 import TypeOverrides from 'pg/lib/type-overrides';
 import array from 'postgres-array';
-import { AbstractSqlConnection, type Knex, PostgreSqlKnexDialect } from '@mikro-orm/knex';
+import { AbstractSqlConnection, type Knex } from '@mikro-orm/knex';
+import { PostgreSqlKnexDialect } from '@mikro-orm/knex-patches';
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
 

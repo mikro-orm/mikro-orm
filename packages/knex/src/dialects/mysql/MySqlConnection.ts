@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import { MySqlKnexDialect } from './MySqlKnexDialect';
+import { MySqlKnexDialect } from '@mikro-orm/knex-patches';
 import { AbstractSqlConnection } from '../../AbstractSqlConnection';
 
 export class MySqlConnection extends AbstractSqlConnection {

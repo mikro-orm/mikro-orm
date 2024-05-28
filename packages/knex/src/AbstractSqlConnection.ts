@@ -16,7 +16,7 @@ import {
   type LoggingOptions,
 } from '@mikro-orm/core';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
-import { MonkeyPatchable } from './MonkeyPatchable';
+import { MonkeyPatchable } from '@mikro-orm/knex-patches';
 
 const parentTransactionSymbol = Symbol('parentTransaction');
 

@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import { MonkeyPatchable } from '../../MonkeyPatchable';
+import { MonkeyPatchable } from '../MonkeyPatchable';
 import { Utils } from '@mikro-orm/core';
 
 // upsert support from https://github.com/knex/knex/pull/6050

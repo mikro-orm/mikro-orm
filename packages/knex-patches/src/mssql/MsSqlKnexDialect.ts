@@ -1,4 +1,4 @@
-import { MonkeyPatchable } from '../../MonkeyPatchable';
+import { MonkeyPatchable } from '../MonkeyPatchable';
 import { MsSqlTableCompiler } from './MsSqlTableCompiler';
 import { MsSqlColumnCompiler } from './MsSqlColumnCompiler';
 import { MsSqlQueryCompiler } from './MsSqlQueryCompiler';

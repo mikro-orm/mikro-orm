@@ -1,4 +1,4 @@
-import { MySqlKnexDialect } from './MySqlKnexDialect';
+import { MySqlKnexDialect } from '../mysql/MySqlKnexDialect';
 
 export class MariaDbKnexDialect extends MySqlKnexDialect {
 

@@ -1,4 +1,5 @@
-import { SqliteKnexDialect, BaseSqliteConnection } from '@mikro-orm/knex';
+import { BaseSqliteConnection } from '@mikro-orm/knex';
+import { SqliteKnexDialect } from '@mikro-orm/knex-patches';
 
 export class SqliteConnection extends BaseSqliteConnection {
 

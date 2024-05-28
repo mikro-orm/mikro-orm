@@ -1399,11 +1399,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mikro-orm/knex-patches@npm:6.2.8, @mikro-orm/knex-patches@workspace:packages/knex-patches":
+  version: 0.0.0-use.local
+  resolution: "@mikro-orm/knex-patches@workspace:packages/knex-patches"
+  dependencies:
+    "@mikro-orm/core": "npm:^6.2.8"
+    knex: "npm:3.1.0"
+  peerDependencies:
+    "@mikro-orm/core": ^6.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mikro-orm/knex@npm:6.2.8, @mikro-orm/knex@workspace:packages/knex":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/knex@workspace:packages/knex"
   dependencies:
     "@mikro-orm/core": "npm:^6.2.8"
+    "@mikro-orm/knex-patches": "npm:6.2.8"
     fs-extra: "npm:11.2.0"
     knex: "npm:3.1.0"
     sqlstring: "npm:2.3.3"

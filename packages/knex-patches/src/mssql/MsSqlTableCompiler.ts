@@ -1,4 +1,4 @@
-import { MonkeyPatchable } from '../../MonkeyPatchable';
+import { MonkeyPatchable } from '../MonkeyPatchable';
 
 export class MsSqlTableCompiler extends MonkeyPatchable.MsSqlTableCompiler {
 

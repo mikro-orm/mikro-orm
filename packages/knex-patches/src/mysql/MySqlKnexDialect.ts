@@ -1,6 +1,6 @@
 import { MySqlQueryCompiler } from './MySqlQueryCompiler';
 import { MySqlColumnCompiler } from './MySqlColumnCompiler';
-import { MonkeyPatchable } from '../../MonkeyPatchable';
+import { MonkeyPatchable } from '../MonkeyPatchable';
 
 export class MySqlKnexDialect extends MonkeyPatchable.MySqlDialect {
 

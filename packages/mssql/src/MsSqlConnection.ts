@@ -2,10 +2,10 @@ import {
   AbstractSqlConnection,
   type IsolationLevel,
   type Knex,
-  MsSqlKnexDialect,
   type TransactionEventBroadcaster,
   Utils,
 } from '@mikro-orm/knex';
+import { MsSqlKnexDialect } from '@mikro-orm/knex-patches';
 import type { Dictionary } from '@mikro-orm/core';
 
 export class MsSqlConnection extends AbstractSqlConnection {
