@@ -91,5 +91,5 @@ test(`GH issue 5622`, async () => {
   orm.em.create(SomethingThatBelongsToSomethingThatBelongsToSomething, { tenant, something, somethingThatBelongsToSomething });
 
 
-  expect(await orm.em.flush()).not.toThrow();
+  await expect(orm.em.flush()).resolves.not.toThrow();
 });
