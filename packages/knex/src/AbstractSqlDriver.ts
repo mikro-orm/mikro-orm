@@ -530,12 +530,24 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         const usedDups: string[] = [];
         props.forEach(prop => {
           if (prop.fieldNames.length > 1) {
-            const param = [...row[prop.name] ?? prop.fieldNames.map(() => null)];
-            const key = param.map(() => '?');
+            const newFields: string[] = [];
+            const allParam = [...row[prop.name] ?? prop.fieldNames.map(() => null)];
+            const newParam: typeof allParam = [];
+
             prop.fieldNames.forEach((field, idx) => {
+              if (usedDups.includes(field)) {
+                return;
+              }
+              newFields.push(field);
+              newParam.push(allParam[idx]);
+            });
+
+            const param = Utils.flatten(newParam);
+
+            newFields.forEach((field, idx) => {
               if (!duplicates.includes(field) || !usedDups.includes(field)) {
                 params.push(param[idx]);
-                keys.push(key[idx]);
+                keys.push('?');
                 usedDups.push(field);
               }
             });
