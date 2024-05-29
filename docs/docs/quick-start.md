@@ -311,6 +311,8 @@ $ MIKRO_ORM_CONFIG_ARG_NAME=mikro-orm-config \
   npx mikro-orm debug --mikro-orm-config ./my-config.ts
 ```
 
+> `jest` does not allow unrecognised parameters, to run tests with a custom configuration you can use this together with `MIKRO_ORM_CLI_CONFIG` environment variable to point to an test config. 
+
 MikroORM will always try to load the first available config file, based on the order in `configPaths`. When you have `useTsNode` disabled or `ts-node` is not already registered nor detected, TS config files will be ignored.
 
 Preferred way of creating to the configuration object is with the `defineConfig` helper. It will provide intellisense even in JavaScript files, without the need for type hints via jsdoc:
