@@ -268,14 +268,19 @@ export class EntityComparator {
     // respects nested composite keys, e.g. `[1, [2, 3]]`
     const createCompositeKeyArray = (prop: EntityProperty, fieldNames = prop.fieldNames, idx = 0): string => {
       if (!prop.targetMeta) {
-        return propName(fieldNames[idx++]);
+        return propName(fieldNames[idx]);
       }
 
       const parts: string[] = [];
+      const foundFields = new Set<string>();
 
       for (const pk of prop.targetMeta.getPrimaryProps()) {
+        const oldSize = foundFields.size;
+
+        pk.fieldNames.forEach(field => foundFields.add(field));
+        const added = foundFields.size - oldSize;
         parts.push(createCompositeKeyArray(pk, fieldNames, idx));
-        idx += pk.fieldNames.length;
+        idx += added;
       }
 
       if (parts.length < 2) {
