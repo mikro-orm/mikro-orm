@@ -63,7 +63,6 @@ test('basic CRUD example', async () => {
   const newBs = getRange(2001, 1001).map(i => em.create(B, { id: i }));
   await em.persistAndFlush(newBs);
 
-  a.b.remove(bs);
-  a.b.add(newBs);
+  a.b.set(newBs);
   await em.persistAndFlush(a);
 });

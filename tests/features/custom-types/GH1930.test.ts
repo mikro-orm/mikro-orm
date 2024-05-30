@@ -1,6 +1,7 @@
 import { v4, parse, stringify } from 'uuid';
 import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ref, Ref, Type } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
+import { mockLogger } from '../../helpers';
 
 export class UuidBinaryType extends Type<string, Buffer> {
 
@@ -92,6 +93,15 @@ describe('GH issue 1930', () => {
     expect(a1.fields[0].id).toBe(a.fields[0].id);
     expect(a1.fields[1].id).toBe(a.fields[1].id);
     expect(a1.fields[2].id).toBe(a.fields[2].id);
+
+    a1.fields.set([a1.fields[0], new B('b4'), new B('b5'), new B('b6')]);
+    const mock = mockLogger(orm);
+    await orm.em.flush();
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch(/insert into `b` .* 3 rows affected/); // created 3 new B entities
+    expect(mock.mock.calls[2][0]).toMatch(/delete from `a_fields` .* 2 rows affected/); // removed 2 old items
+    expect(mock.mock.calls[3][0]).toMatch(/insert into `a_fields` .* 3 rows affected/); // added 3 new items
+    expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 
 });

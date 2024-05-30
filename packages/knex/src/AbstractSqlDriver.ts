@@ -821,6 +821,27 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return this.rethrow(qb.execute('run', false));
   }
 
+  /**
+   * Fast comparison for collection snapshots that are represented by PK arrays.
+   * Compares scalars via `===` and fallbacks to Utils.equals()` for more complex types like Buffer.
+   * Always expects the same length of the arrays, since we only compare PKs of the same entity type.
+   */
+  private comparePrimaryKeyArrays(a: unknown[], b: unknown[]) {
+    for (let i = a.length; i-- !== 0;) {
+      if (['number', 'string', 'bigint', 'boolean'].includes(typeof a[i])) {
+        if (a[i] !== b[i]) {
+          return false;
+        }
+      } else {
+        if (!Utils.equals(a[i], b[i])) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
   override async syncCollections<T extends object, O extends object>(collections: Iterable<Collection<T, O>>, options?: DriverMethodOptions): Promise<void> {
     const groups = {} as Dictionary<PivotCollectionPersister<any>>;
 
@@ -829,7 +850,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const meta = wrapped.__meta;
       const pks = wrapped.getPrimaryKeys(true)!;
       const snap = coll.getSnapshot();
-      const includes = <T>(arr: T[], item: T) => !!arr.find(i => Utils.equals(i, item));
+      const includes = <T>(arr: T[][], item: T[]) => !!arr.find(i => this.comparePrimaryKeyArrays(i, item));
       const snapshot = snap ? snap.map(item => helper(item).getPrimaryKeys(true)!) : [];
       const current = coll.getItems(false).map(item => helper(item).getPrimaryKeys(true)!);
       const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
@@ -840,8 +861,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       // wrong order if we just delete and insert to the end (only owning sides can have fixed order)
       if (coll.property.owner && coll.property.fixedOrder && !equals && Array.isArray(deleteDiff)) {
         deleteDiff.length = insertDiff.length = 0;
-        deleteDiff.push(...snapshot);
-        insertDiff.push(...current);
+
+        for (const item of snapshot) {
+          deleteDiff.push(item);
+        }
+
+        for (const item of current) {
+          insertDiff.push(item);
+        }
       }
 
       if (coll.property.kind === ReferenceKind.ONE_TO_MANY) {
