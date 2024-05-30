@@ -31,7 +31,6 @@ class SomethingThatBelongsToSomething extends BaseEntity {
   tenant!: Tenant;
 
   @ManyToOne(() => Something, {
-    fieldName: 'something_id',
     joinColumns: ['tenant_id', 'something_id'],
     referencedColumnNames: ['tenant_id', 'id'],
     primary: true,
@@ -44,15 +43,14 @@ class SomethingThatBelongsToSomething extends BaseEntity {
 }
 
 @Entity()
-class SomethingThatBelongsToSomethingThatBelongsToSomething extends BaseEntity {
+class SomethingThatBelongsX2 extends BaseEntity {
 
-  [PrimaryKeyProp]?: ['tenant', 'something', 'somethingThatBelongsToSomething'];
+  [PrimaryKeyProp]?: ['tenant', 'something', 'x1', 'id'];
 
   @ManyToOne(() => Tenant, { fieldName: 'tenant_id', primary: true })
   tenant!: Tenant;
 
   @ManyToOne(() => Something, {
-    fieldName: 'something_id',
     joinColumns: ['tenant_id', 'something_id'],
     referencedColumnNames: ['tenant_id', 'id'],
     primary: true,
@@ -60,12 +58,86 @@ class SomethingThatBelongsToSomethingThatBelongsToSomething extends BaseEntity {
   something!: Something;
 
   @ManyToOne(() => SomethingThatBelongsToSomething, {
-    fieldName: 'something_that_belongs_to_something_id',
-    joinColumns: ['tenant_id', 'something_id', 'something_that_belongs_to_something_id'],
+    joinColumns: ['tenant_id', 'something_id', 'x1_id'],
     referencedColumnNames: ['tenant_id', 'something_id', 'id'],
     primary: true,
   })
-  somethingThatBelongsToSomething!: SomethingThatBelongsToSomething;
+  x1!: SomethingThatBelongsToSomething;
+
+  @PrimaryKey()
+  id!: string;
+
+}
+
+@Entity()
+class SomethingThatBelongsX3 extends BaseEntity {
+
+  [PrimaryKeyProp]?: ['tenant', 'something', 'x1', 'x2', 'id'];
+
+  @ManyToOne(() => Tenant, { fieldName: 'tenant_id', primary: true })
+  tenant!: Tenant;
+
+  @ManyToOne(() => Something, {
+    joinColumns: ['tenant_id', 'something_id'],
+    referencedColumnNames: ['tenant_id', 'id'],
+    primary: true,
+  })
+  something!: Something;
+
+  @ManyToOne(() => SomethingThatBelongsToSomething, {
+    joinColumns: ['tenant_id', 'something_id', 'x1_id'],
+    referencedColumnNames: ['tenant_id', 'something_id', 'id'],
+    primary: true,
+  })
+  x1!: SomethingThatBelongsToSomething;
+
+  @ManyToOne(() => SomethingThatBelongsX2, {
+    joinColumns: ['tenant_id', 'something_id', 'x1_id', 'x2_id'],
+    referencedColumnNames: ['tenant_id', 'something_id', 'x1_id', 'id'],
+    primary: true,
+  })
+  x2!: SomethingThatBelongsX2;
+
+  @PrimaryKey()
+  id!: string;
+
+}
+
+@Entity()
+class SomethingThatBelongsX4 extends BaseEntity {
+
+  [PrimaryKeyProp]?: ['tenant', 'something', 'x1', 'x2', 'x3'];
+
+  @ManyToOne(() => Tenant, { fieldName: 'tenant_id', primary: true })
+  tenant!: Tenant;
+
+  @ManyToOne(() => Something, {
+    joinColumns: ['tenant_id', 'something_id'],
+    referencedColumnNames: ['tenant_id', 'id'],
+    primary: true,
+  })
+  something!: Something;
+
+  @ManyToOne(() => SomethingThatBelongsToSomething, {
+    joinColumns: ['tenant_id', 'something_id', 'x1_id'],
+    referencedColumnNames: ['tenant_id', 'something_id', 'id'],
+    primary: true,
+  })
+  x1!: SomethingThatBelongsToSomething;
+
+  @ManyToOne(() => SomethingThatBelongsX2, {
+    joinColumns: ['tenant_id', 'something_id', 'x1_id', 'x2_id'],
+    referencedColumnNames: ['tenant_id', 'something_id', 'x1_id', 'id'],
+    primary: true,
+  })
+  x2!: SomethingThatBelongsX2;
+
+  @ManyToOne(() => SomethingThatBelongsX3, {
+    joinColumns: ['tenant_id', 'something_id', 'x1_id', 'x2_id', 'x3_id'],
+    referencedColumnNames: ['tenant_id', 'something_id', 'x1_id', 'x2_id', 'id'],
+    primary: true,
+  })
+  x3!: SomethingThatBelongsX3;
 
 }
 
@@ -73,7 +145,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [SomethingThatBelongsToSomethingThatBelongsToSomething],
+    entities: [SomethingThatBelongsX4],
     dbName: `:memory:`,
     loggerFactory: options => new SimpleLogger(options),
   });
@@ -87,14 +159,38 @@ test(`GH issue 5629`, async () => {
 
   const tenant = orm.em.create(Tenant, { id: '1' });
   const something = orm.em.create(Something, { tenant, id: '2' });
-  const somethingThatBelongsToSomething = orm.em.create(SomethingThatBelongsToSomething, { tenant, something, id: '3' });
-  orm.em.create(SomethingThatBelongsToSomethingThatBelongsToSomething, { tenant, something, somethingThatBelongsToSomething });
+  const x1 = orm.em.create(SomethingThatBelongsToSomething, { tenant, something, id: '3' });
+  const x2 = orm.em.create(SomethingThatBelongsX2, { tenant, something, x1, id: '4' });
+  const x3 = orm.em.create(SomethingThatBelongsX3, { tenant, something, x1, x2, id: '5' });
+
+  const x4 = orm.em.create(SomethingThatBelongsX4, { tenant, something, x1, x2, x3 });
 
   await orm.em.flush();
 
-  await expect(orm.em.findOne(SomethingThatBelongsToSomethingThatBelongsToSomething, {
+  const resolved = (await orm.em.findOne(SomethingThatBelongsX4, {
     tenant: { id: '1' },
     something: { id: '2' },
-    somethingThatBelongsToSomething: { id: '3' },
-  })).resolves.not.toThrow();
+    x1: { id: '3' },
+    x2: { id: '4' },
+    x3: { id: '5' },
+  }))!;
+
+  expect(resolved).toMatchObject({
+    tenant: { id: '1' },
+    something: { id: '2' },
+    x1: { id: '3' },
+    x2: { id: '4' },
+    x3: { id: '5' },
+  });
+});
+
+
+test('GH issue 5629, createCompositeKeyArray', async () => {
+  const metadata = orm.getMetadata().get(SomethingThatBelongsX4);
+
+  const compositeKeys = metadata.props.map(p => ({
+    fieldNames: p.fieldNames,
+    compositeKey: orm.em.getComparator().createCompositeKeyArray(p),
+  }));
+  expect(compositeKeys).toMatchSnapshot();
 });
