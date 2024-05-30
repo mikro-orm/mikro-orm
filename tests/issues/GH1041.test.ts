@@ -66,7 +66,7 @@ describe('GH issue 1041, 1043', () => {
     await expect(orm.em.flush()).resolves.toBeUndefined();
 
     expect(log.mock.calls[0][0]).toMatch('begin');
-    expect(log.mock.calls[1][0]).toMatch('delete from `user_apps` where (`app_id` = 2 and `user_id` = 123)');
+    expect(log.mock.calls[1][0]).toMatch('delete from `user_apps` where `app_id` = 2 and `user_id` = 123');
     expect(log.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -79,7 +79,7 @@ describe('GH issue 1041, 1043', () => {
     await expect(orm.em.flush()).resolves.toBeUndefined();
 
     expect(log.mock.calls[0][0]).toMatch('begin');
-    expect(log.mock.calls[1][0]).toMatch('delete from `user_apps` where (`app_id` = 3 and `user_id` = 123)');
+    expect(log.mock.calls[1][0]).toMatch('delete from `user_apps` where `app_id` = 3 and `user_id` = 123');
     expect(log.mock.calls[2][0]).toMatch('commit');
   });
 
