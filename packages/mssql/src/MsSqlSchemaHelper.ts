@@ -198,7 +198,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       from information_schema.constraint_column_usage ccu
       inner join information_schema.referential_constraints rc on ccu.constraint_name = rc.constraint_name and rc.constraint_schema = ccu.constraint_schema
       inner join information_schema.key_column_usage kcu on kcu.constraint_name = rc.unique_constraint_name and rc.unique_constraint_schema = kcu.constraint_schema
-      where (${tables.map(t => `(ccu.table_name = '${t.table_name}' and ccu.table_schema = '${t.schema_name}')`).join(' or ')})
+      where (${tables.map(t => `(ccu.table_name = ${this.platform.quoteValue(t.table_name)} and ccu.table_schema = '${t.schema_name}')`).join(' or ')})
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
@@ -254,7 +254,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       from sys.check_constraints con
       left outer join sys.objects t on con.parent_object_id = t.object_id
       left outer join sys.all_columns col on con.parent_column_id = col.column_id and con.parent_object_id = col.object_id
-      where (${tables.map(t => `t.name = '${t.table_name}' and schema_name(t.schema_id) = '${t.schema_name}'`).join(' or ')})
+      where (${tables.map(t => `t.name = ${this.platform.quoteValue(t.table_name)} and schema_name(t.schema_id) = '${t.schema_name}'`).join(' or ')})
       order by con.name`;
   }
 
