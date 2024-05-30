@@ -40,7 +40,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override getDatabaseExistsSQL(name: string): string {
-    return `select 1 from master.sys.databases where name = N'${name}'`;
+    return `select 1 from sys.databases where name = N'${name}'`;
   }
 
   override getListTablesSQL(): string {
