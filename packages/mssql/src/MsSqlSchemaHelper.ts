@@ -50,6 +50,14 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0`;
   }
 
+  override async getNamespaces(
+    connection: AbstractSqlConnection,
+  ): Promise<string[]> {
+    const sql = `SELECT name AS schema_name FROM sys.schemas ORDER BY name`;
+    const res = await connection.execute<{ schema_name: string }[]>(sql);
+    return res.map(row => row.schema_name);
+  }
+
   override normalizeDefaultValue(defaultValue: string, length: number, defaultValues: Dictionary<string[]> = {}, stripQuotes = false) {
     let match = defaultValue?.match(/^\((.*)\)$/);
 
