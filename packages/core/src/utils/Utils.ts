@@ -789,8 +789,9 @@ export class Utils {
     stack = stack || new Error().stack!.split('\n');
     // In some situations (e.g. swc 1.3.4+), the presence of a source map can obscure the call to
     // __decorate(), replacing it with the constructor name. To support these cases we look for
-    // Reflect.decorate() as well.
-    let line = stack.findIndex(line => line.match(/__decorate|Reflect\.decorate/));
+    // Reflect.decorate() as well. Also when babel is used, we need to check
+    // the `_applyDecoratedDescriptor` method instead.
+    let line = stack.findIndex(line => line.match(/__decorate|Reflect\.decorate|_applyDecoratedDescriptor/));
 
     // bun does not have those lines at all, only the DecorateProperty/DecorateConstructor,
     // but those are also present in node, so we need to check this only if they weren't found.
