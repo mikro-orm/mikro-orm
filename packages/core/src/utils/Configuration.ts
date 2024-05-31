@@ -186,7 +186,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       this.platform = this.driver.getPlatform();
       this.platform.setConfig(this);
       this.detectSourceFolder(options);
-      this.init();
+      this.init(validate);
     }
   }
 
@@ -337,7 +337,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     this.cache.clear();
   }
 
-  private init(): void {
+  private init(validate: boolean): void {
     if (!this.getMetadataProvider().useCache()) {
       this.options.metadataCache.adapter = NullCacheAdapter;
     }
@@ -366,6 +366,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       if (url) {
         this.options.dbName = this.get('dbName', decodeURIComponent(url[1]));
       }
+    }
+
+    if (validate && !this.options.dbName && this.options.clientUrl) {
+      throw new Error("No database specified, `clientUrl` option provided but it's missing the pathname.");
     }
 
     if (!this.options.charset) {
