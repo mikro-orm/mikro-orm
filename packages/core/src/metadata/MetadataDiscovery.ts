@@ -1394,7 +1394,14 @@ export class MetadataDiscovery {
       const mappedType = this.getMappedType(prop);
       const SCALAR_TYPES = ['string', 'number', 'boolean', 'bigint', 'Date', 'Buffer', 'RegExp', 'any', 'unknown'];
 
-      if (mappedType instanceof UnknownType && !prop.columnTypes && !SCALAR_TYPES.includes(prop.type)) {
+      if (
+        mappedType instanceof UnknownType
+        && !prop.columnTypes
+        // it could be a runtime type from reflect-metadata
+        && !SCALAR_TYPES.includes(prop.type)
+        // or it might be inferred via ts-morph to some generic type alias
+        && !prop.type.match(/[<>:"';{}]/)
+      ) {
         prop.columnTypes = [prop.type];
       } else {
         prop.columnTypes = [mappedType.getColumnType(prop, this.platform)];
