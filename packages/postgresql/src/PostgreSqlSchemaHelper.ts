@@ -40,6 +40,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       + `from information_schema.tables `
       + `where ${this.getIgnoredNamespacesConditionSQL('table_schema')} `
       + `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' `
+      + `and table_name not in (select inhrelid::regclass::text from pg_inherits) `
       + `order by table_name`;
   }
 
