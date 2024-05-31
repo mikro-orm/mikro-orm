@@ -357,7 +357,7 @@ describe('Migrator (mssql)', () => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
-        .replace(/ trx\d+/, 'trx\\d+');
+        .replace(/\[trx\d+]/, '[trx_xx]');
     });
     expect(calls).toMatchSnapshot('all-or-nothing');
   });
@@ -397,7 +397,7 @@ describe('Migrator (mssql)', () => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
-        .replace(/ trx\d+/, 'trx_xx');
+        .replace(/\[trx\d+]/, '[trx_xx]');
     });
     expect(calls).toMatchSnapshot('explicit-tx');
   });
