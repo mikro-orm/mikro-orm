@@ -130,12 +130,12 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   }
 
   async createNamespace(name: string): Promise<void> {
-    const sql = await this.helper.getCreateNamespaceSQL(name);
+    const sql = this.helper.getCreateNamespaceSQL(name);
     await this.execute(sql);
   }
 
   async dropNamespace(name: string): Promise<void> {
-    const sql = await this.helper.getDropNamespaceSQL(name);
+    const sql = this.helper.getDropNamespaceSQL(name);
     await this.execute(sql);
   }
 
@@ -475,7 +475,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         }
       }
 
-      for (const { column, changedProperties, fromColumn } of Object.values(diff.changedColumns)) {
+      for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
         if (changedProperties.size === 1 && changedProperties.has('comment')) {
           continue;
         }
