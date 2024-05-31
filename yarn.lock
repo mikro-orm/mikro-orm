@@ -1346,7 +1346,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.2.8"
     "@mikro-orm/knex": "npm:6.2.8"
-    better-sqlite3: "npm:10.1.0"
+    better-sqlite3: "npm:11.0.0"
     fs-extra: "npm:11.2.0"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
@@ -3250,14 +3250,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:10.1.0":
-  version: 10.1.0
-  resolution: "better-sqlite3@npm:10.1.0"
+"better-sqlite3@npm:11.0.0":
+  version: 11.0.0
+  resolution: "better-sqlite3@npm:11.0.0"
   dependencies:
     bindings: "npm:^1.5.0"
     node-gyp: "npm:latest"
     prebuild-install: "npm:^7.1.1"
-  checksum: 10/7c2a9a5cbee6c205866a45d99d986e7eef88c44e7c427cbcc8ecec1d8e176c4e37a6678d3fc6e556c4bf8d224d272f86eaea28cb638e46179730a8a00eaaa585
+  checksum: 10/2fe3743ff5744cac0b76a7d4eb0b1318f576bdaf643ab994f4ae257082063c5649a878e3748e55ca2ae1b457afb327ca123d5961d0f6e4b53a165a91c024d1b3
   languageName: node
   linkType: hard
 
