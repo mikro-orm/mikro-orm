@@ -66,6 +66,20 @@
     "@mikro-orm/core": "^6.2.8"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^6.0.0"
+    "@mikro-orm/core": "^6.0.0",
+    "better-sqlite3": "*",
+    "libsql": "*",
+    "mariadb": "*"
+  },
+  "peerDependenciesMeta": {
+    "better-sqlite3": {
+      "optional": true
+    },
+    "libsql": {
+      "optional": true
+    },
+    "mariadb": {
+      "optional": true
+    }
   }
 }
