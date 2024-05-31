@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Migrator (postgres) generate initial migration: initial-migration-dump 1`] = `
+exports[`Migrator (mssql) generate initial migration: initial-migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -184,7 +184,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (postgres) generate initial migration: initial-migration-dump 2`] = `
+exports[`Migrator (mssql) generate initial migration: initial-migration-dump 2`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -368,7 +368,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (postgres) generate js schema migration: migration-js-dump 1`] = `
+exports[`Migrator (mssql) generate js schema migration: migration-js-dump 1`] = `
 {
   "code": "'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -425,7 +425,7 @@ exports.Migration20191013214813 = Migration20191013214813;
 }
 `;
 
-exports[`Migrator (postgres) generate migration with custom migrator: migration-ts-dump 1`] = `
+exports[`Migrator (mssql) generate migration with custom migrator: migration-ts-dump 1`] = `
 {
   "code": "// this file was generated via custom migration generator
 
@@ -481,7 +481,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (postgres) generate migration with custom name with name option: migration-dump 1`] = `
+exports[`Migrator (mssql) generate migration with custom name with name option: migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -535,7 +535,7 @@ export class Migration20191013214813_custom_name extends Migration {
 }
 `;
 
-exports[`Migrator (postgres) generate migration with custom name: migration-dump 1`] = `
+exports[`Migrator (mssql) generate migration with custom name: migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -589,7 +589,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (postgres) generate migration with snapshot: migration-snapshot-dump-1 1`] = `
+exports[`Migrator (mssql) generate migration with snapshot: migration-snapshot-dump-1 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -643,7 +643,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (postgres) generate migration with snapshot: migration-snapshot-dump-2 1`] = `
+exports[`Migrator (mssql) generate migration with snapshot: migration-snapshot-dump-2 1`] = `
 {
   "code": "",
   "diff": {
@@ -654,7 +654,7 @@ exports[`Migrator (postgres) generate migration with snapshot: migration-snapsho
 }
 `;
 
-exports[`Migrator (postgres) generate schema migration: migration-dump 1`] = `
+exports[`Migrator (mssql) generate schema migration: migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -708,7 +708,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
+exports[`Migrator (mssql) up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
 [
   "select 1 from sys.databases where name = N'mikro_orm_test_migrations'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0",
@@ -751,7 +751,7 @@ exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-no
 ]
 `;
 
-exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-nothing 1`] = `
+exports[`Migrator (mssql) up/down params [all or nothing enabled]: all-or-nothing 1`] = `
 [
   "select 1 from sys.databases where name = N'mikro_orm_test_migrations'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0",
@@ -808,7 +808,7 @@ exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-not
 ]
 `;
 
-exports[`Migrator (postgres) up/down with explicit transaction: explicit-tx 1`] = `
+exports[`Migrator (mssql) up/down with explicit transaction: explicit-tx 1`] = `
 [
   "begin",
   "select 1 from sys.databases where name = N'mikro_orm_test_migrations'",

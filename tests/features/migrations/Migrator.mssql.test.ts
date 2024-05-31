@@ -44,7 +44,7 @@ class MigrationTest2 extends Migration {
 
 }
 
-describe('Migrator (postgres)', () => {
+describe('Migrator (mssql)', () => {
 
   let orm: MikroORM;
 
