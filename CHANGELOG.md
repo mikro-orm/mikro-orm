@@ -3,6 +3,43 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
+
+
+### Bug Fixes
+
+* **cli:** use `module: 'nodenext'` when registering ts-node ([#5514](https://github.com/mikro-orm/mikro-orm/issues/5514)) ([8695524](https://github.com/mikro-orm/mikro-orm/commit/869552411c65e5a42362277555f71549a64fccc7)), closes [#5427](https://github.com/mikro-orm/mikro-orm/issues/5427)
+* **core:** detect path from decorator for each class only once ([#5545](https://github.com/mikro-orm/mikro-orm/issues/5545)) ([9af0e38](https://github.com/mikro-orm/mikro-orm/commit/9af0e3815c9e8200ace3e6a09e5ebd23c6f768f8))
+* **core:** improve support for `clientUrl` with additional query parameters ([1472705](https://github.com/mikro-orm/mikro-orm/commit/1472705bc1e974b09aa00a495b79f07cb776f5b8)), closes [#5608](https://github.com/mikro-orm/mikro-orm/issues/5608)
+* **core:** improve support for sharing columns in composite PK and FK ([#5623](https://github.com/mikro-orm/mikro-orm/issues/5623)) ([7190879](https://github.com/mikro-orm/mikro-orm/commit/7190879bdf64e51d31b61b275b98df84de02004e)), closes [#5622](https://github.com/mikro-orm/mikro-orm/issues/5622)
+* **core:** improve validation for missing `dbName` when `clientUrl` is provided ([c21359e](https://github.com/mikro-orm/mikro-orm/commit/c21359efe92c7abb22f706b00ac1aa1da38cffdf))
+* **core:** respect `ignoreNestedTransactions` from upper context ([eab4df6](https://github.com/mikro-orm/mikro-orm/commit/eab4df67b22d636c0a76703c6f48dc0c76cc2433)), closes [#5585](https://github.com/mikro-orm/mikro-orm/issues/5585)
+* **core:** use explicit `NoInfer` type helper to support TS<5.4 ([c38b366](https://github.com/mikro-orm/mikro-orm/commit/c38b36609a5264a2b2a49a87a89091003fcf6f42)), closes [#5613](https://github.com/mikro-orm/mikro-orm/issues/5613)
+* **knex:** explicitly declare all the extended drivers as optional peer dependencies ([#5647](https://github.com/mikro-orm/mikro-orm/issues/5647)) ([64045ad](https://github.com/mikro-orm/mikro-orm/commit/64045adadae9f6c98e205927210de62ebb095adb))
+* **mssql:** account for quotes in table names ([#5637](https://github.com/mikro-orm/mikro-orm/issues/5637)) ([0343609](https://github.com/mikro-orm/mikro-orm/commit/0343609c3e99d1fe5e4024a7afe0aaa2b2d6d980))
+* **mssql:** fix creating migrations due to a missing helper method ([#5644](https://github.com/mikro-orm/mikro-orm/issues/5644)) ([90e27c2](https://github.com/mikro-orm/mikro-orm/commit/90e27c275d7db46269ee721e049dcfe09b274abe)), closes [#5633](https://github.com/mikro-orm/mikro-orm/issues/5633)
+* **mssql:** fix creating schema for migrations table ([fe1be6f](https://github.com/mikro-orm/mikro-orm/commit/fe1be6f099888ad9e289f091d53428a4498f4b0d)), closes [#5644](https://github.com/mikro-orm/mikro-orm/issues/5644)
+* **mssql:** fix ensuring the database exists on older SQL Server versions ([f0a5790](https://github.com/mikro-orm/mikro-orm/commit/f0a5790de0b08978983a3af82122e0f5045531dc)), closes [#5638](https://github.com/mikro-orm/mikro-orm/issues/5638)
+* **postgres:** respect `deferMode` option in 1:1 relations ([#5641](https://github.com/mikro-orm/mikro-orm/issues/5641)) ([101c0a8](https://github.com/mikro-orm/mikro-orm/commit/101c0a85cacfd20e7d4857646d7c7242e4ec1cd1))
+* **reflection:** detect complex runtime types and don't use them as column types ([0c8a587](https://github.com/mikro-orm/mikro-orm/commit/0c8a58726c0a69f91c1494570029e36c89d1a64a)), closes [#5601](https://github.com/mikro-orm/mikro-orm/issues/5601)
+* **reflection:** support entities compiled by babel ([#5628](https://github.com/mikro-orm/mikro-orm/issues/5628)) ([26f627e](https://github.com/mikro-orm/mikro-orm/commit/26f627e3df2b66782e446de2419c350cf17c74ac)), closes [#5610](https://github.com/mikro-orm/mikro-orm/issues/5610)
+* **schema:** fix diffing renamed indexes and columns when the names are not lowercase ([4019dc3](https://github.com/mikro-orm/mikro-orm/commit/4019dc336f24bd79daeb8fd7997c06d055d23933)), closes [#5617](https://github.com/mikro-orm/mikro-orm/issues/5617)
+* **sql:** implement batching of M:N collection update queries ([d97979b](https://github.com/mikro-orm/mikro-orm/commit/d97979b236b8a7e40f64848e88602c531b8ebb84)), closes [#5627](https://github.com/mikro-orm/mikro-orm/issues/5627)
+
+
+### Features
+
+* **core:** allow overriding the `--config` argument name ([8b304ab](https://github.com/mikro-orm/mikro-orm/commit/8b304abecad740ac6b7f7820dafc6e7f8d6f5e6f))
+
+
+### Performance Improvements
+
+* **sql:** optimize diffing M:N collection state ([f46e7c8](https://github.com/mikro-orm/mikro-orm/commit/f46e7c86e29727b57f3220901ac5b14a6f1719c1)), closes [#5627](https://github.com/mikro-orm/mikro-orm/issues/5627)
+
+
+
+
+
 ## [6.2.8](https://github.com/mikro-orm/mikro-orm/compare/v6.2.7...v6.2.8) (2024-05-21)
 
 

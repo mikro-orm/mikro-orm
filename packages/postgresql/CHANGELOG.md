@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
+
+
+### Bug Fixes
+
+* **postgres:** respect `deferMode` option in 1:1 relations ([#5641](https://github.com/mikro-orm/mikro-orm/issues/5641)) ([101c0a8](https://github.com/mikro-orm/mikro-orm/commit/101c0a85cacfd20e7d4857646d7c7242e4ec1cd1))
+
+
+
+
+
 ## [6.2.8](https://github.com/mikro-orm/mikro-orm/compare/v6.2.7...v6.2.8) (2024-05-21)
 
 **Note:** Version bump only for package @mikro-orm/postgresql
