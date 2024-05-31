@@ -1,14 +1,14 @@
 import dotenv from 'dotenv';
 import { pathExistsSync, readJSONSync, realpathSync } from 'fs-extra';
-import { isAbsolute, join } from 'path';
 import { platform } from 'os';
+import { isAbsolute, join } from 'path';
 import { fileURLToPath } from 'url';
+import type { EntityManager } from '../EntityManager';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers';
+import { colors } from '../logging/colors';
+import type { Dictionary } from '../typings';
 import { Configuration, type Options } from './Configuration';
 import { Utils } from './Utils';
-import type { Dictionary } from '../typings';
-import { colors } from '../logging/colors';
-import type { EntityManager } from '../EntityManager';
 
 /**
  * @internal
@@ -145,7 +145,7 @@ export class ConfigurationLoader {
       project: tsConfigPath,
       transpileOnly: true,
       compilerOptions: {
-        module: 'commonjs',
+        module: 'nodenext',
       },
     }).config;
 
