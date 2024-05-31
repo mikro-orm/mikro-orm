@@ -1346,7 +1346,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.2.8"
     "@mikro-orm/knex": "npm:6.2.8"
-    better-sqlite3: "npm:10.0.0"
+    better-sqlite3: "npm:11.0.0"
     fs-extra: "npm:11.2.0"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
@@ -1445,7 +1445,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.2.8"
     "@mikro-orm/mongodb": "npm:6.2.8"
     fs-extra: "npm:11.2.0"
-    mongodb: "npm:6.6.2"
+    mongodb: "npm:6.7.0"
     umzug: "npm:3.8.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1480,7 +1480,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.2.8"
     bson: "npm:^6.7.0"
-    mongodb: "npm:6.6.2"
+    mongodb: "npm:6.7.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1505,7 +1505,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.2.8"
     "@mikro-orm/knex": "npm:6.2.8"
-    mysql2: "npm:3.9.8"
+    mysql2: "npm:3.10.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1550,7 +1550,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.12"
-    "@types/node": "npm:20.12.12"
+    "@types/node": "npm:20.12.13"
     "@types/pg": "npm:8.11.6"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:9.0.8"
@@ -1569,8 +1569,8 @@ __metadata:
     jest: "npm:29.7.0"
     lerna: "npm:8.1.3"
     lint-staged: "npm:15.2.5"
-    mongodb: "npm:6.6.2"
-    mongodb-memory-server: "npm:9.2.0"
+    mongodb: "npm:6.7.0"
+    mongodb-memory-server: "npm:9.3.0"
     rimraf: "npm:5.0.7"
     ts-jest: "npm:29.1.4"
     ts-node: "npm:10.9.2"
@@ -2455,12 +2455,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.12.12":
-  version: 20.12.12
-  resolution: "@types/node@npm:20.12.12"
+"@types/node@npm:20.12.13":
+  version: 20.12.13
+  resolution: "@types/node@npm:20.12.13"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 10/e3945da0a3017bdc1f88f15bdfb823f526b2a717bd58d4640082d6eb0bd2794b5c99bfb914b9e9324ec116dce36066990353ed1c777e8a7b0641f772575793c4
+  checksum: 10/c9f02cfe342bce4aa9221f389115c1f9e3bd9abc87d45e3b2c3a5b92d99523c02b72dd67f50cbbc5edddbaf7dd458cf61dd3289d7a8c14fde80c998df10fee82
   languageName: node
   linkType: hard
 
@@ -3250,14 +3250,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:10.0.0":
-  version: 10.0.0
-  resolution: "better-sqlite3@npm:10.0.0"
+"better-sqlite3@npm:11.0.0":
+  version: 11.0.0
+  resolution: "better-sqlite3@npm:11.0.0"
   dependencies:
     bindings: "npm:^1.5.0"
     node-gyp: "npm:latest"
     prebuild-install: "npm:^7.1.1"
-  checksum: 10/3e86fda806a58acf83479b4f48e90d4e831d972c7275458f2ffe79cfc930756693683080c18bbba19d9034265f37e2a14f16d8b3e03601939c9538f07ebc1df5
+  checksum: 10/2fe3743ff5744cac0b76a7d4eb0b1318f576bdaf643ab994f4ae257082063c5649a878e3748e55ca2ae1b457afb327ca123d5961d0f6e4b53a165a91c024d1b3
   languageName: node
   linkType: hard
 
@@ -8271,9 +8271,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb-memory-server-core@npm:9.2.0":
-  version: 9.2.0
-  resolution: "mongodb-memory-server-core@npm:9.2.0"
+"mongodb-memory-server-core@npm:9.3.0":
+  version: 9.3.0
+  resolution: "mongodb-memory-server-core@npm:9.3.0"
   dependencies:
     async-mutex: "npm:^0.4.0"
     camelcase: "npm:^6.3.0"
@@ -8283,27 +8283,27 @@ __metadata:
     https-proxy-agent: "npm:^7.0.4"
     mongodb: "npm:^5.9.1"
     new-find-package-json: "npm:^2.0.0"
-    semver: "npm:^7.6.0"
+    semver: "npm:^7.6.2"
     tar-stream: "npm:^3.1.7"
     tslib: "npm:^2.6.2"
     yauzl: "npm:^3.1.3"
-  checksum: 10/41fcad2f938d63dc059627fdcc0f5ddcfc21bb5387c1d729ea41a27a28c3b8e168e7770be96ce520b0b02b3639b6529a4a05ed497a030ca8b6ef3ec3d8107336
+  checksum: 10/80a69c65c74151205372fe0b78d63f74ad5e87c474c95879c7801ccee7fed8594f9f247a469f6df00ea2742f7c90c3b851f227e0ca1b7b1e9275d30995efe61b
   languageName: node
   linkType: hard
 
-"mongodb-memory-server@npm:9.2.0":
-  version: 9.2.0
-  resolution: "mongodb-memory-server@npm:9.2.0"
+"mongodb-memory-server@npm:9.3.0":
+  version: 9.3.0
+  resolution: "mongodb-memory-server@npm:9.3.0"
   dependencies:
-    mongodb-memory-server-core: "npm:9.2.0"
+    mongodb-memory-server-core: "npm:9.3.0"
     tslib: "npm:^2.6.2"
-  checksum: 10/7d8926b36416033faf8a452685a5b02b0500b3f1c2e413a2d8d9141a3619446eeb5899d15078f80aa3289302f72dc94ecd7febb1fd558708b7ec518a6d74826f
+  checksum: 10/36dfece22f16186372f547a7330ff8d524fb14f128f7b82ceb5fbaa5d69670f939a98409caaafedc8bc1e95df692919c04dddd89cec39124a5dd495b60086f2a
   languageName: node
   linkType: hard
 
-"mongodb@npm:6.6.2":
-  version: 6.6.2
-  resolution: "mongodb@npm:6.6.2"
+"mongodb@npm:6.7.0":
+  version: 6.7.0
+  resolution: "mongodb@npm:6.7.0"
   dependencies:
     "@mongodb-js/saslprep": "npm:^1.1.5"
     bson: "npm:^6.7.0"
@@ -8331,7 +8331,7 @@ __metadata:
       optional: true
     socks:
       optional: true
-  checksum: 10/ccc4c952970c6f626d69396dcca07ee5f5b58871555e28b563a38c5cd2147b3d2844254f6e0aaffc7d807efa6a8a7ab7dbade41e83aa2de35bea18876ea426db
+  checksum: 10/47695b6668098e3e468446ecf070c5bf823b1c3a769e99e5659aa949575c36cb488fff4a05c7fd00cece2cd19ceda1e7f2862fc68631cc77d98d2b116a24a82d
   languageName: node
   linkType: hard
 
@@ -8408,9 +8408,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.9.8":
-  version: 3.9.8
-  resolution: "mysql2@npm:3.9.8"
+"mysql2@npm:3.10.0":
+  version: 3.10.0
+  resolution: "mysql2@npm:3.10.0"
   dependencies:
     denque: "npm:^2.1.0"
     generate-function: "npm:^2.3.1"
@@ -8420,7 +8420,7 @@ __metadata:
     named-placeholders: "npm:^1.1.3"
     seq-queue: "npm:^0.0.5"
     sqlstring: "npm:^2.3.2"
-  checksum: 10/f4110e59ae222018d011254827ae63ff658a2e41e192f8d8b83590afb3a440d498fd6e69f406d94f60e3f08b62d57915d6bf8749044292b5266b2964b670ec50
+  checksum: 10/81426e2b64b2b193c6652a45caef2aec00ddcc849dfaf7e36750f4b2cc8f4bf235b98b1ed385bb541f3a019bcd4310c57ee1522f609c02e1bb3b8964e95acf8b
   languageName: node
   linkType: hard
 
@@ -10245,6 +10245,15 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: 10/1b41018df2d8aca5a1db4729985e8e20428c650daea60fcd16e926e9383217d00f574fab92d79612771884a98d2ee2a1973f49d630829a8d54d6570defe62535
+  languageName: node
+  linkType: hard
+
+"semver@npm:^7.6.2":
+  version: 7.6.2
+  resolution: "semver@npm:7.6.2"
+  bin:
+    semver: bin/semver.js
+  checksum: 10/296b17d027f57a87ef645e9c725bff4865a38dfc9caf29b26aa084b85820972fbe7372caea1ba6857162fa990702c6d9c1d82297cecb72d56c78ab29070d2ca2
   languageName: node
   linkType: hard
 

@@ -1,4 +1,13 @@
-import { DeferMode, Entity, ManyToOne, PrimaryKey, MikroORM, Ref, Reference } from '@mikro-orm/postgresql';
+import {
+  DeferMode,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  MikroORM,
+  Ref,
+  Reference,
+  OneToOne,
+} from '@mikro-orm/postgresql';
 
 @Entity()
 class Parent {
@@ -19,13 +28,24 @@ class Child {
 
 }
 
+@Entity()
+class Child1 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @OneToOne(() => Parent, { ref: true, deferMode: DeferMode.INITIALLY_DEFERRED })
+  parent!: Ref<Parent>;
+
+}
+
 describe('deferrable constraints in postgres', () => {
 
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Parent, Child],
+      entities: [Parent, Child, Child1],
       dbName: `mikro_orm_test_deferrable`,
     });
     await orm.schema.refreshDatabase();
@@ -46,6 +66,31 @@ describe('deferrable constraints in postgres', () => {
 
       await em.persistAndFlush(child);
       await em.persistAndFlush(parent);
+    });
+  });
+
+  test('replace one-to-one', async () => {
+    const parent1 = new Parent();
+    parent1.id = 1;
+    const parent2 = new Parent();
+    parent2.id = 2;
+    const child1 = new Child1();
+    child1.id = 1;
+    child1.parent = Reference.createFromPK(Parent, 1);
+    const child2 = new Child1();
+    child2.id = 2;
+    child2.parent = Reference.createFromPK(Parent, 2);
+
+    await orm.em.persistAndFlush(parent1);
+    await orm.em.persistAndFlush(parent2);
+    await orm.em.persistAndFlush(child1);
+    await orm.em.persistAndFlush(child2);
+
+    await orm.em.transactional(async em => {
+      child2.parent = Reference.createFromPK(Parent, 1);
+      child1.parent = Reference.createFromPK(Parent, 2);
+
+      em.persist([child1, child2]);
     });
   });
 

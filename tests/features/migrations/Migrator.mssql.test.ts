@@ -1,9 +1,7 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import { Umzug } from 'umzug';
-import { MetadataStorage, MikroORM } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
-import type { DatabaseTable } from '@mikro-orm/postgresql';
-import { DatabaseSchema, PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { DatabaseSchema, MetadataStorage, DatabaseTable, MikroORM } from '@mikro-orm/mssql';
 import { remove } from 'fs-extra';
 import {
   Address2,
@@ -16,7 +14,7 @@ import {
   FooParam2,
   Publisher2,
   Test2,
-} from '../../entities-sql';
+} from '../../entities-mssql';
 import { BASE_DIR, mockLogger } from '../../bootstrap';
 
 class MigrationTest1 extends Migration {
@@ -48,24 +46,24 @@ class MigrationTest2 extends Migration {
 
 describe('Migrator (postgres)', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init<PostgreSqlDriver>({
+    orm = await MikroORM.init({
       entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
       dbName: `mikro_orm_test_migrations`,
-      driver: PostgreSqlDriver,
       schema: 'custom',
+      password: 'Root.Root',
       logger: () => void 0,
-      migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
+      migrations: { path: BASE_DIR + '/../temp/migrations-222', snapshot: false },
       extensions: [Migrator],
     });
 
     await orm.schema.refreshDatabase();
-    await orm.schema.execute('alter table "custom"."book2" add column "foo" varchar null default \'lol\';');
-    await orm.schema.execute('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
-    await orm.schema.execute('alter table "custom"."test2" add column "path" polygon null default null;');
-    await remove(process.cwd() + '/temp/migrations-456');
+    await orm.schema.execute('alter table [custom].[book2] add [foo] varchar null default \'lol\';');
+    await orm.schema.execute('alter table [custom].[book2] alter column [double] numeric;');
+    await orm.schema.execute('alter table [custom].[test2] add [path] text null default null;');
+    await remove(process.cwd() + '/temp/migrations-222');
   });
   beforeEach(() => orm.config.resetServiceCache());
   afterAll(async () => orm.close(true));
@@ -78,7 +76,7 @@ describe('Migrator (postgres)', () => {
     const migration = await orm.migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations-456/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-222/' + migration.fileName);
   });
 
   test('generate migration with custom migrator', async () => {
@@ -103,7 +101,7 @@ describe('Migrator (postgres)', () => {
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-ts-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations-456/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-222/' + migration.fileName);
   });
 
   test('generate migration with custom name', async () => {
@@ -125,7 +123,7 @@ describe('Migrator (postgres)', () => {
     await migrator.up();
     await migrator.down(migration.fileName.replace('migration-', '').replace('.ts', ''));
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations-456/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-222/' + migration.fileName);
     upMock.mockRestore();
     downMock.mockRestore();
   });
@@ -149,7 +147,7 @@ describe('Migrator (postgres)', () => {
     await migrator.down(migration.fileName);
     await migrator.up();
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations-456/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-222/' + migration.fileName);
     upMock.mockRestore();
     downMock.mockRestore();
   });
@@ -160,7 +158,7 @@ describe('Migrator (postgres)', () => {
     const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
-    await remove(process.cwd() + '/temp/migrations-456/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations-222/' + migration.fileName);
   });
 
   test('generate migration with snapshot', async () => {
@@ -172,7 +170,7 @@ describe('Migrator (postgres)', () => {
     const migrator = orm.migrator;
     const migration1 = await migrator.createMigration();
     expect(migration1).toMatchSnapshot('migration-snapshot-dump-1');
-    await remove(process.cwd() + '/temp/migrations-456/' + migration1.fileName);
+    await remove(process.cwd() + '/temp/migrations-222/' + migration1.fileName);
 
     // will use the snapshot, so should be empty
     const migration2 = await migrator.createMigration();
@@ -216,13 +214,13 @@ describe('Migrator (postgres)', () => {
     const migration1 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).not.toHaveBeenCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
-    await remove(process.cwd() + '/temp/migrations-456/' + migration1.fileName);
+    await remove(process.cwd() + '/temp/migrations-222/' + migration1.fileName);
 
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
     const migration2 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
-    await remove(process.cwd() + '/temp/migrations-456/' + migration2.fileName);
+    await remove(process.cwd() + '/temp/migrations-222/' + migration2.fileName);
   });
 
   test('migration storage getter', async () => {
@@ -270,7 +268,7 @@ describe('Migrator (postgres)', () => {
   });
 
   test('run schema migration without existing migrations folder (GH #907)', async () => {
-    await remove(process.cwd() + '/temp/migrations-456');
+    await remove(process.cwd() + '/temp/migrations-222');
     const migrator = orm.migrator;
     await migrator.up();
   });
@@ -306,13 +304,12 @@ describe('Migrator (postgres)', () => {
     mock.mock.calls.length = 0;
     await runner.run(migration1, 'up');
     expect(spy1).toHaveBeenCalledWith('select 1 + 1');
-    expect(mock.mock.calls.length).toBe(6);
+    expect(mock.mock.calls.length).toBe(5);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('set names \'utf8\';');
-    expect(mock.mock.calls[2][0]).toMatch('set session_replication_role = \'replica\';');
-    expect(mock.mock.calls[3][0]).toMatch('select 1 + 1');
-    expect(mock.mock.calls[4][0]).toMatch('set session_replication_role = \'origin\';');
-    expect(mock.mock.calls[5][0]).toMatch('commit');
+    expect(mock.mock.calls[1][0]).toMatch('exec sp_MSforeachtable \'alter table @p0 nocheck constraint all\';');
+    expect(mock.mock.calls[2][0]).toMatch('select 1 + 1');
+    expect(mock.mock.calls[3][0]).toMatch('exec sp_MSforeachtable \'alter table @p0 check constraint all\';');
+    expect(mock.mock.calls[4][0]).toMatch('commit');
     mock.mock.calls.length = 0;
 
     await expect(runner.run(migration1, 'down')).rejects.toThrow('This migration cannot be reverted');
@@ -327,7 +324,7 @@ describe('Migrator (postgres)', () => {
     expect(mock.mock.calls.length).toBe(7);
     expect(mock.mock.calls[0][0]).toMatch('select 1 + 1 as count1');
     expect(mock.mock.calls[1][0]).toMatch('begin');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "custom"."foo_bar2" ("name") values ($1) returning "id", "version"');
+    expect(mock.mock.calls[2][0]).toMatch('insert into [custom].[foo_bar2] ([name]) output inserted.[id], inserted.[version] values (@p0)');
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch('select 1 + 1');
     expect(mock.mock.calls[5][0]).toMatch('select 1 + 1');
@@ -339,7 +336,7 @@ describe('Migrator (postgres)', () => {
     const migrator = orm.migrator;
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
-    const path = process.cwd() + '/temp/migrations-456';
+    const path = process.cwd() + '/temp/migrations-222';
 
     const migration = await migrator.createMigration(path, true);
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
@@ -368,7 +365,7 @@ describe('Migrator (postgres)', () => {
   test('up/down with explicit transaction', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom').withSchema('custom');
     const migrator = orm.migrator;
-    const path = process.cwd() + '/temp/migrations-456';
+    const path = process.cwd() + '/temp/migrations-222';
 
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
@@ -412,7 +409,7 @@ describe('Migrator (postgres)', () => {
     migrator.options.disableForeignKeys = false;
     // @ts-ignore
     migrator.options.allOrNothing = false;
-    const path = process.cwd() + '/temp/migrations-456';
+    const path = process.cwd() + '/temp/migrations-222';
 
     const migration = await migrator.createMigration(path, true);
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
@@ -441,23 +438,24 @@ describe('Migrator (postgres)', () => {
 });
 
 test('ensureTable when the schema does not exist', async () => {
-  const orm = await MikroORM.init<PostgreSqlDriver>({
+  const orm = await MikroORM.init({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
     dbName: `mikro_orm_test_migrations2`,
-    driver: PostgreSqlDriver,
     schema: 'custom2',
-    migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
+    password: 'Root.Root',
+    migrations: { path: BASE_DIR + '/../temp/migrations-222', snapshot: false },
     extensions: [Migrator],
   });
   await orm.schema.ensureDatabase();
-  await orm.schema.execute('drop schema if exists "custom2" cascade');
+  await orm.schema.execute('drop table if exists custom2.mikro_orm_migrations');
+  await orm.schema.execute('drop schema if exists custom2');
   const storage = orm.migrator.getStorage();
 
   const mock = mockLogger(orm);
   await storage.ensureTable!(); // ensures the schema first
-  expect(mock.mock.calls[0][0]).toMatch(`select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name`);
-  expect(mock.mock.calls[1][0]).toMatch(`select schema_name from information_schema.schemata where "schema_name" not like 'pg_%' and "schema_name" not like 'crdb_%' and "schema_name" not like '_timescaledb_%' and "schema_name" not in ('information_schema', 'tiger', 'topology') order by schema_name`);
-  expect(mock.mock.calls[2][0]).toMatch(`create schema if not exists "custom2"`);
-  expect(mock.mock.calls[3][0]).toMatch(`create table "custom2"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255), "executed_at" timestamptz default current_timestamp)`);
+  expect(mock.mock.calls[0][0]).toMatch(`select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0`);
+  expect(mock.mock.calls[1][0]).toMatch(`select name as schema_name from sys.schemas order by name`);
+  expect(mock.mock.calls[2][0]).toMatch(`if (schema_id('custom2') is null) begin exec ('create schema [custom2] authorization [dbo]') end`);
+  expect(mock.mock.calls[3][0]).toMatch(`create table [custom2].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] nvarchar(255), [executed_at] datetime2 constraint [mikro_orm_migrations_executed_at_default] default current_timestamp)`);
   await orm.close();
 });
