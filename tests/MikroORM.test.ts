@@ -110,7 +110,7 @@ describe('MikroORM', () => {
     });
     jest.mock('../mikro-orm.config.ts', () => options, { virtual: true });
     jest.mock(Utils.normalizePath(process.cwd()) + '/mikro-orm.config.ts', () => options, { virtual: true });
-    const pkg = { 'mikro-orm': { useTsNode: true } } as any;
+    const pkg = { 'mikro-orm': { alwaysAllowTs: true } } as any;
     jest.spyOn(require('fs-extra'), 'readJSONSync').mockImplementation(() => pkg);
     jest.spyOn(Utils, 'dynamicImport').mockImplementation(async () => options);
 
