@@ -611,7 +611,7 @@ export class DatabaseTable {
   ) {
     const prop = this.getPropertyName(namingStrategy, propNameBase, fk);
     const kind = (fkIndex?.unique && !fkIndex.primary) ? this.getReferenceKind(fk, fkIndex) : this.getReferenceKind(fk);
-    const type = this.getPropertyTypeForForeignKey(namingStrategy, fk);
+    const runtimeType = this.getPropertyTypeForForeignKey(namingStrategy, fk);
 
     const fkOptions: Partial<EntityProperty> = {};
     fkOptions.fieldNames = fk.columnNames;
@@ -644,7 +644,8 @@ export class DatabaseTable {
 
     return {
       name: prop,
-      type,
+      type: runtimeType,
+      runtimeType,
       kind,
       ...columnOptions,
       nullable,
@@ -670,10 +671,10 @@ export class DatabaseTable {
     const unique = compositeFkUniques[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary);
 
     const kind = this.getReferenceKind(fk, unique);
-    const type = this.getPropertyTypeForColumn(namingStrategy, column, fk);
+    const runtimeType = this.getPropertyTypeForColumn(namingStrategy, column, fk);
 
-    const defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, type, true);
-    const defaultParsed = this.getPropertyDefaultValue(schemaHelper, column, type);
+    const defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, runtimeType, true);
+    const defaultParsed = this.getPropertyDefaultValue(schemaHelper, column, runtimeType);
     const defaultTs = defaultRaw !== defaultParsed ? defaultParsed : undefined;
     const fkOptions: Partial<EntityProperty> = {};
 
@@ -688,7 +689,8 @@ export class DatabaseTable {
 
     return {
       name: prop,
-      type,
+      type: fk ? runtimeType : (Utils.entries(t).find(([k, v]) => Object.getPrototypeOf(column.mappedType) === v.prototype)?.[0] ?? runtimeType),
+      runtimeType,
       kind,
       generated: column.generated,
       optional: defaultRaw !== 'null' || defaultTs != null || typeof column.generated !== 'undefined',

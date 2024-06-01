@@ -38,7 +38,7 @@ export class EmailSendingLogs {
   @Property({ nullable: true, persist: false })
   replyEmailId?: number;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -173,8 +173,8 @@ export class EmailSendingLogs {
 export const EmailSendingLogsSchema = new EntitySchema({
   class: EmailSendingLogs,
   properties: {
-    logId: { primary: true, type: 'number' },
-    senderId: { type: 'number', persist: false },
+    logId: { primary: true, type: 'integer' },
+    senderId: { type: 'integer', persist: false },
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
@@ -184,7 +184,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       ],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
-    recepientId: { type: 'number', persist: false },
+    recepientId: { type: 'integer', persist: false },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
@@ -194,8 +194,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       ],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
-    senderEmailId: { type: 'number', persist: false },
-    recepientEmailId: { type: 'number', persist: false },
+    senderEmailId: { type: 'integer', persist: false },
+    recepientEmailId: { type: 'integer', persist: false },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
@@ -206,8 +206,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
-    replyEmailId: { type: 'number', nullable: true, persist: false },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    replyEmailId: { type: 'integer', nullable: true, persist: false },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
   },
 });
 ",
@@ -222,7 +222,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
   },
 });
@@ -248,7 +248,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Recepients,
       fieldName: 'recepient_id',
     },
-    recepientId: { type: 'number', persist: false },
+    recepientId: { type: 'integer', persist: false },
     email: {
       primary: true,
       kind: 'm:1',
@@ -256,7 +256,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailId: { type: 'number', persist: false, index: 'fk_recepient_emails_emails1_idx' },
+    emailId: { type: 'integer', persist: false, index: 'fk_recepient_emails_emails1_idx' },
   },
 });
 ",
@@ -274,7 +274,7 @@ export class Recepients {
 export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
-    recepientId: { primary: true, type: 'number' },
+    recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
       kind: 'm:n',
@@ -303,7 +303,7 @@ export const SenderEmailsSchema = new EntitySchema({
   class: SenderEmails,
   properties: {
     sender: { primary: true, kind: 'm:1', entity: () => Senders, fieldName: 'sender_id' },
-    senderId: { type: 'number', persist: false },
+    senderId: { type: 'integer', persist: false },
     email: {
       primary: true,
       kind: 'm:1',
@@ -311,7 +311,7 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailId: { type: 'number', persist: false, index: 'fk_sender_emails_emails1_idx' },
+    emailId: { type: 'integer', persist: false, index: 'fk_sender_emails_emails1_idx' },
   },
 });
 ",
@@ -329,7 +329,7 @@ export class Senders {
 export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
-    senderId: { primary: true, type: 'number' },
+    senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
       kind: 'm:n',
@@ -383,7 +383,7 @@ export class EmailSendingLogs {
   @Property({ nullable: true, persist: false })
   replyEmailId?: number;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -518,8 +518,8 @@ export class EmailSendingLogs {
 export const EmailSendingLogsSchema = new EntitySchema({
   class: EmailSendingLogs,
   properties: {
-    logId: { primary: true, type: 'number' },
-    senderId: { type: 'number', persist: false },
+    logId: { primary: true, type: 'integer' },
+    senderId: { type: 'integer', persist: false },
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
@@ -530,7 +530,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       ],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
-    recepientId: { type: 'number', persist: false },
+    recepientId: { type: 'integer', persist: false },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
@@ -541,8 +541,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       ],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
-    senderEmailId: { type: 'number', persist: false },
-    recepientEmailId: { type: 'number', persist: false },
+    senderEmailId: { type: 'integer', persist: false },
+    recepientEmailId: { type: 'integer', persist: false },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
@@ -554,8 +554,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
-    replyEmailId: { type: 'number', nullable: true, persist: false },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    replyEmailId: { type: 'integer', nullable: true, persist: false },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
   },
 });
 ",
@@ -570,7 +570,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
   },
 });
@@ -597,7 +597,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       ref: true,
       fieldName: 'recepient_id',
     },
-    recepientId: { type: 'number', persist: false },
+    recepientId: { type: 'integer', persist: false },
     email: {
       primary: true,
       kind: 'm:1',
@@ -606,7 +606,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailId: { type: 'number', persist: false, index: 'fk_recepient_emails_emails1_idx' },
+    emailId: { type: 'integer', persist: false, index: 'fk_recepient_emails_emails1_idx' },
   },
 });
 ",
@@ -624,7 +624,7 @@ export class Recepients {
 export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
-    recepientId: { primary: true, type: 'number' },
+    recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
       kind: 'm:n',
@@ -659,7 +659,7 @@ export const SenderEmailsSchema = new EntitySchema({
       ref: true,
       fieldName: 'sender_id',
     },
-    senderId: { type: 'number', persist: false },
+    senderId: { type: 'integer', persist: false },
     email: {
       primary: true,
       kind: 'm:1',
@@ -668,7 +668,7 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailId: { type: 'number', persist: false, index: 'fk_sender_emails_emails1_idx' },
+    emailId: { type: 'integer', persist: false, index: 'fk_sender_emails_emails1_idx' },
   },
 });
 ",
@@ -686,7 +686,7 @@ export class Senders {
 export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
-    senderId: { primary: true, type: 'number' },
+    senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
       kind: 'm:n',
@@ -740,7 +740,7 @@ export class EmailSendingLogs {
   @Property({ nullable: true, persist: false })
   replyEmailId?: number;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -904,8 +904,8 @@ export class EmailSendingLogs {
 export const EmailSendingLogsSchema = new EntitySchema({
   class: EmailSendingLogs,
   properties: {
-    logId: { primary: true, type: 'number' },
-    senderId: { type: 'number', persist: false },
+    logId: { primary: true, type: 'integer' },
+    senderId: { type: 'integer', persist: false },
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
@@ -915,7 +915,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       ],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
-    recepientId: { type: 'number', persist: false },
+    recepientId: { type: 'integer', persist: false },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
@@ -925,8 +925,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       ],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
-    senderEmailId: { type: 'number', persist: false },
-    recepientEmailId: { type: 'number', persist: false },
+    senderEmailId: { type: 'integer', persist: false },
+    recepientEmailId: { type: 'integer', persist: false },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
@@ -937,8 +937,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
-    replyEmailId: { type: 'number', nullable: true, persist: false },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    replyEmailId: { type: 'integer', nullable: true, persist: false },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
   },
 });
 ",
@@ -959,7 +959,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
     recepientEmailsInverse: { kind: 'm:n', entity: () => Recepients, mappedBy: 'recepientEmails' },
@@ -990,7 +990,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       entity: () => Recepients,
       fieldName: 'recepient_id',
     },
-    recepientId: { type: 'number', persist: false },
+    recepientId: { type: 'integer', persist: false },
     email: {
       primary: true,
       kind: 'm:1',
@@ -998,7 +998,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailId: { type: 'number', persist: false, index: 'fk_recepient_emails_emails1_idx' },
+    emailId: { type: 'integer', persist: false, index: 'fk_recepient_emails_emails1_idx' },
     recepientInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'recepient' },
   },
 });
@@ -1018,7 +1018,7 @@ export class Recepients {
 export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
-    recepientId: { primary: true, type: 'number' },
+    recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
       kind: 'm:n',
@@ -1051,7 +1051,7 @@ export const SenderEmailsSchema = new EntitySchema({
   class: SenderEmails,
   properties: {
     sender: { primary: true, kind: 'm:1', entity: () => Senders, fieldName: 'sender_id' },
-    senderId: { type: 'number', persist: false },
+    senderId: { type: 'integer', persist: false },
     email: {
       primary: true,
       kind: 'm:1',
@@ -1059,7 +1059,7 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailId: { type: 'number', persist: false, index: 'fk_sender_emails_emails1_idx' },
+    emailId: { type: 'integer', persist: false, index: 'fk_sender_emails_emails1_idx' },
     senderInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'sender' },
     replyInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'reply' },
   },
@@ -1080,7 +1080,7 @@ export class Senders {
 export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
-    senderId: { primary: true, type: 'number' },
+    senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
       kind: 'm:n',
@@ -1135,7 +1135,7 @@ export class EmailSendingLogs {
   @Property({ nullable: true, persist: false })
   replyEmailId?: number;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -1299,8 +1299,8 @@ export class EmailSendingLogs {
 export const EmailSendingLogsSchema = new EntitySchema({
   class: EmailSendingLogs,
   properties: {
-    logId: { primary: true, type: 'number' },
-    senderId: { type: 'number', persist: false },
+    logId: { primary: true, type: 'integer' },
+    senderId: { type: 'integer', persist: false },
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
@@ -1311,7 +1311,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       ],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
-    recepientId: { type: 'number', persist: false },
+    recepientId: { type: 'integer', persist: false },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
@@ -1322,8 +1322,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       ],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
-    senderEmailId: { type: 'number', persist: false },
-    recepientEmailId: { type: 'number', persist: false },
+    senderEmailId: { type: 'integer', persist: false },
+    recepientEmailId: { type: 'integer', persist: false },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
@@ -1335,8 +1335,8 @@ export const EmailSendingLogsSchema = new EntitySchema({
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
-    replyEmailId: { type: 'number', nullable: true, persist: false },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    replyEmailId: { type: 'integer', nullable: true, persist: false },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
   },
 });
 ",
@@ -1357,7 +1357,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
     recepientEmailsInverse: { kind: 'm:n', entity: () => Recepients, mappedBy: 'recepientEmails' },
@@ -1389,7 +1389,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       ref: true,
       fieldName: 'recepient_id',
     },
-    recepientId: { type: 'number', persist: false },
+    recepientId: { type: 'integer', persist: false },
     email: {
       primary: true,
       kind: 'm:1',
@@ -1398,7 +1398,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailId: { type: 'number', persist: false, index: 'fk_recepient_emails_emails1_idx' },
+    emailId: { type: 'integer', persist: false, index: 'fk_recepient_emails_emails1_idx' },
     recepientInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'recepient' },
   },
 });
@@ -1418,7 +1418,7 @@ export class Recepients {
 export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
-    recepientId: { primary: true, type: 'number' },
+    recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
       kind: 'm:n',
@@ -1457,7 +1457,7 @@ export const SenderEmailsSchema = new EntitySchema({
       ref: true,
       fieldName: 'sender_id',
     },
-    senderId: { type: 'number', persist: false },
+    senderId: { type: 'integer', persist: false },
     email: {
       primary: true,
       kind: 'm:1',
@@ -1466,7 +1466,7 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailId: { type: 'number', persist: false, index: 'fk_sender_emails_emails1_idx' },
+    emailId: { type: 'integer', persist: false, index: 'fk_sender_emails_emails1_idx' },
     senderInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'sender' },
     replyInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'reply' },
   },
@@ -1487,7 +1487,7 @@ export class Senders {
 export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
-    senderId: { primary: true, type: 'number' },
+    senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
       kind: 'm:n',
@@ -1527,7 +1527,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -1643,7 +1643,7 @@ export class EmailSendingLogs {
 export const EmailSendingLogsSchema = new EntitySchema({
   class: EmailSendingLogs,
   properties: {
-    logId: { primary: true, type: 'number' },
+    logId: { primary: true, type: 'integer' },
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
@@ -1672,7 +1672,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
   },
 });
 ",
@@ -1687,7 +1687,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
   },
 });
@@ -1735,7 +1735,7 @@ export class Recepients {
 export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
-    recepientId: { primary: true, type: 'number' },
+    recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
       kind: 'm:n',
@@ -1786,7 +1786,7 @@ export class Senders {
 export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
-    senderId: { primary: true, type: 'number' },
+    senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
       kind: 'm:n',
@@ -1825,7 +1825,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -1941,7 +1941,7 @@ export class EmailSendingLogs {
 export const EmailSendingLogsSchema = new EntitySchema({
   class: EmailSendingLogs,
   properties: {
-    logId: { primary: true, type: 'number' },
+    logId: { primary: true, type: 'integer' },
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
@@ -1973,7 +1973,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
   },
 });
 ",
@@ -1988,7 +1988,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
   },
 });
@@ -2038,7 +2038,7 @@ export class Recepients {
 export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
-    recepientId: { primary: true, type: 'number' },
+    recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
       kind: 'm:n',
@@ -2096,7 +2096,7 @@ export class Senders {
 export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
-    senderId: { primary: true, type: 'number' },
+    senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
       kind: 'm:n',
@@ -2135,7 +2135,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -2280,7 +2280,7 @@ export class EmailSendingLogs {
 export const EmailSendingLogsSchema = new EntitySchema({
   class: EmailSendingLogs,
   properties: {
-    logId: { primary: true, type: 'number' },
+    logId: { primary: true, type: 'integer' },
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
@@ -2309,7 +2309,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
   },
 });
 ",
@@ -2330,7 +2330,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
     recepientEmailsInverse: { kind: 'm:n', entity: () => Recepients, mappedBy: 'recepientEmails' },
@@ -2385,7 +2385,7 @@ export class Recepients {
 export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
-    recepientId: { primary: true, type: 'number' },
+    recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
       kind: 'm:n',
@@ -2443,7 +2443,7 @@ export class Senders {
 export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
-    senderId: { primary: true, type: 'number' },
+    senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
       kind: 'm:n',
@@ -2483,7 +2483,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -2628,7 +2628,7 @@ export class EmailSendingLogs {
 export const EmailSendingLogsSchema = new EntitySchema({
   class: EmailSendingLogs,
   properties: {
-    logId: { primary: true, type: 'number' },
+    logId: { primary: true, type: 'integer' },
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
@@ -2660,7 +2660,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
   },
 });
 ",
@@ -2681,7 +2681,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
     recepientEmailsInverse: { kind: 'm:n', entity: () => Recepients, mappedBy: 'recepientEmails' },
@@ -2738,7 +2738,7 @@ export class Recepients {
 export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
-    recepientId: { primary: true, type: 'number' },
+    recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
       kind: 'm:n',
@@ -2803,7 +2803,7 @@ export class Senders {
 export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
-    senderId: { primary: true, type: 'number' },
+    senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
       kind: 'm:n',
@@ -2843,7 +2843,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -2959,7 +2959,7 @@ export class EmailSendingLogs {
 export const EmailSendingLogsSchema = new EntitySchema({
   class: EmailSendingLogs,
   properties: {
-    logId: { primary: true, type: 'number' },
+    logId: { primary: true, type: 'integer' },
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
@@ -2988,7 +2988,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
   },
 });
 ",
@@ -3003,7 +3003,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
   },
 });
@@ -3051,7 +3051,7 @@ export class Recepients {
 export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
-    recepientId: { primary: true, type: 'number' },
+    recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
       kind: 'm:n',
@@ -3102,7 +3102,7 @@ export class Senders {
 export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
-    senderId: { primary: true, type: 'number' },
+    senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
       kind: 'm:n',
@@ -3141,7 +3141,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -3257,7 +3257,7 @@ export class EmailSendingLogs {
 export const EmailSendingLogsSchema = new EntitySchema({
   class: EmailSendingLogs,
   properties: {
-    logId: { primary: true, type: 'number' },
+    logId: { primary: true, type: 'integer' },
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
@@ -3289,7 +3289,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
   },
 });
 ",
@@ -3304,7 +3304,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
   },
 });
@@ -3354,7 +3354,7 @@ export class Recepients {
 export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
-    recepientId: { primary: true, type: 'number' },
+    recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
       kind: 'm:n',
@@ -3412,7 +3412,7 @@ export class Senders {
 export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
-    senderId: { primary: true, type: 'number' },
+    senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
       kind: 'm:n',
@@ -3451,7 +3451,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: SenderEmails;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -3596,7 +3596,7 @@ export class EmailSendingLogs {
 export const EmailSendingLogsSchema = new EntitySchema({
   class: EmailSendingLogs,
   properties: {
-    logId: { primary: true, type: 'number' },
+    logId: { primary: true, type: 'integer' },
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
@@ -3625,7 +3625,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
   },
 });
 ",
@@ -3646,7 +3646,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
     recepientEmailsInverse: { kind: 'm:n', entity: () => Recepients, mappedBy: 'recepientEmails' },
@@ -3701,7 +3701,7 @@ export class Recepients {
 export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
-    recepientId: { primary: true, type: 'number' },
+    recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
       kind: 'm:n',
@@ -3759,7 +3759,7 @@ export class Senders {
 export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
-    senderId: { primary: true, type: 'number' },
+    senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
       kind: 'm:n',
@@ -3799,7 +3799,7 @@ export class EmailSendingLogs {
   @ManyToOne({ entity: () => SenderEmails, ref: true, fieldNames: ['sender_id', 'reply_email_id'], nullable: true, index: 'fk_email_sending_logs_sender_emails2_idx' })
   reply?: Ref<SenderEmails>;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
 }
@@ -3944,7 +3944,7 @@ export class EmailSendingLogs {
 export const EmailSendingLogsSchema = new EntitySchema({
   class: EmailSendingLogs,
   properties: {
-    logId: { primary: true, type: 'number' },
+    logId: { primary: true, type: 'integer' },
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
@@ -3976,7 +3976,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
-    createdAt: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
+    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
   },
 });
 ",
@@ -3997,7 +3997,7 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
+    emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
     recepientEmailsInverse: { kind: 'm:n', entity: () => Recepients, mappedBy: 'recepientEmails' },
@@ -4054,7 +4054,7 @@ export class Recepients {
 export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
-    recepientId: { primary: true, type: 'number' },
+    recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
       kind: 'm:n',
@@ -4119,7 +4119,7 @@ export class Senders {
 export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
-    senderId: { primary: true, type: 'number' },
+    senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
       kind: 'm:n',

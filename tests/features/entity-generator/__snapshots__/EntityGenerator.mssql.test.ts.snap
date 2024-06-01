@@ -30,10 +30,10 @@ export class Author2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp\` })
   createdAt!: Date & Opt;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp\` })
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
@@ -55,15 +55,15 @@ export class Author2 {
   @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 2147483647, nullable: true })
   identities?: string;
 
   @Index({ name: 'author2_born_index' })
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
   @Index({ name: 'born_time_idx' })
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', length: 7, nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
@@ -144,22 +144,22 @@ export class Book2 {
 
   [PrimaryKeyProp]?: 'uuidPk';
 
-  @PrimaryKey({ columnType: 'uniqueidentifier' })
+  @PrimaryKey({ type: 'uuid' })
   uuidPk!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp\` })
   createdAt!: Date & Opt;
 
   @Property({ length: 255, nullable: true })
   title?: string;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 2147483647, nullable: true })
   perex?: string;
 
-  @Property({ columnType: 'numeric(8,2)', nullable: true })
+  @Property({ type: 'decimal', precision: 8, scale: 2, nullable: true })
   price?: string;
 
-  @Property({ columnType: 'float(24)', nullable: true })
+  @Property({ type: 'float', nullable: true })
   double?: number;
 
   @Property({ length: -1, nullable: true })
@@ -280,13 +280,13 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
   @Property({ length: -1, nullable: true })
   blob?: Buffer;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 2147483647, nullable: true })
   array?: string;
 
   @Property({ length: -1, nullable: true })
@@ -305,7 +305,7 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -347,13 +347,13 @@ export class Publisher2 {
   @Enum({ items: () => Publisher2Type2 })
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum1?: number;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum2?: number;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum3?: number;
 
   @Enum({ items: () => Publisher2Enum4, nullable: true })
@@ -426,7 +426,7 @@ export class Test2 {
   @OneToOne({ entity: () => Book2, nullable: true })
   book?: Book2;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }

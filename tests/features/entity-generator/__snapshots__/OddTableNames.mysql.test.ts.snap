@@ -148,7 +148,7 @@ export const E123TableNameSchema = new EntitySchema({
     { name: 'dollar\\'s index', properties: ['$$', '$$infer'] },
   ],
   properties: {
-    $: { primary: true, type: 'number', unsigned: false, autoincrement: false },
+    $: { primary: true, type: 'integer', unsigned: false, autoincrement: false },
     $$: { type: 'bigint' },
     prototype: {
       kind: 'm:1',
@@ -180,7 +180,7 @@ export const E50$37$32of$32stuffSchema = new EntitySchema({
     { name: 'odd columns\\' unique index', properties: ['columnWithApostropheInIt\\'sName', 'columnWithBacktickInIt\`sName'] },
   ],
   properties: {
-    '+20%': { primary: true, type: 'number', fieldName: '+-20%' },
+    '+20%': { primary: true, type: 'integer', fieldName: '+-20%' },
     'my@odd.column': { type: 'string', length: 45 },
     'columnWithApostropheInIt\\'sName': {
       type: 'string',
@@ -204,7 +204,7 @@ export const NsSubnsTheNameSchema = new EntitySchema({
   class: NsSubnsTheName,
   tableName: 'ns___subns__the_name',
   properties: {
-    id: { primary: true, type: 'number', autoincrement: false },
+    id: { primary: true, type: 'integer', autoincrement: false },
     rNB: { type: 'string', fieldName: 'r_n_b', length: 45 },
     '$*': { type: 'string', fieldName: '*', length: 45 },
     '$$*': { type: 'string', fieldName: '$*', length: 35 },

@@ -53,6 +53,6 @@ export const types = {
   text: TextType,
   interval: IntervalType,
   unknown: UnknownType,
-};
+} as const;
 
 export const t = types;
