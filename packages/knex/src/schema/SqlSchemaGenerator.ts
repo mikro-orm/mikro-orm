@@ -130,12 +130,12 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   }
 
   async createNamespace(name: string): Promise<void> {
-    const sql = await this.helper.getCreateNamespaceSQL(name);
+    const sql = this.helper.getCreateNamespaceSQL(name);
     await this.execute(sql);
   }
 
   async dropNamespace(name: string): Promise<void> {
-    const sql = await this.helper.getDropNamespaceSQL(name);
+    const sql = this.helper.getDropNamespaceSQL(name);
     await this.execute(sql);
   }
 
@@ -463,15 +463,19 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
         if (foreignKey && this.options.createForeignKeyConstraints) {
           delete diff.addedForeignKeys[foreignKey.constraintName];
-          col.references(foreignKey.referencedColumnNames[0])
+          const builder = col.references(foreignKey.referencedColumnNames[0])
             .inTable(this.getReferencedTableName(foreignKey.referencedTableName))
             .withKeyName(foreignKey.constraintName)
             .onUpdate(foreignKey.updateRule!)
             .onDelete(foreignKey.deleteRule!);
+
+          if (foreignKey.deferMode) {
+            builder.deferrable(foreignKey.deferMode);
+          }
         }
       }
 
-      for (const { column, changedProperties, fromColumn } of Object.values(diff.changedColumns)) {
+      for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
         if (changedProperties.size === 1 && changedProperties.has('comment')) {
           continue;
         }
@@ -565,6 +569,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     this.config.set('dbName', this.helper.getManagementDbName());
     await this.driver.reconnect();
     await this.execute(this.helper.getDropDatabaseSQL(name));
+    this.config.set('dbName', name);
   }
 
   override async execute(sql: string, options: { wrap?: boolean; ctx?: Transaction } = {}) {
@@ -671,7 +676,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         const columns = this.platform.getJsonIndexDefinition(index);
         table.index(columns.map(column => this.knex.raw(column)), index.keyName, { indexType: 'unique' });
       } else {
-        table.unique(index.columnNames, { indexName: index.keyName });
+        table.unique(index.columnNames, { indexName: index.keyName, deferrable: index.deferMode });
       }
     } else if (index.expression) {
       this.helper.pushTableQuery(table, index.expression);

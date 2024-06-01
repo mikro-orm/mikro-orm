@@ -42,8 +42,8 @@ import { EntityGenerator } from '@mikro-orm/entity-generator';
     discovery: {
       // we need to disable validation for no entities
       warnWhenNoEntities: false,
-      extensions: [EntityGenerator],
     },
+    extensions: [EntityGenerator],
     dbName: 'your-db-name',
     // ...
   });

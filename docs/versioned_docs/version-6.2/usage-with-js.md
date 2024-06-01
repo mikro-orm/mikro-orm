@@ -10,9 +10,9 @@ Since MikroORM 3.2, we can use `EntitySchema` helper to define own entities with
 Here is an example of such entity:
 
 ```js title="./entities/Author.js"
-const { Collection, EntitySchema } = require('@mikro-orm/core');
-const { Book } = require('./Book');
-const { BaseEntity } = require('./BaseEntity');
+import { Collection, EntitySchema } from '@mikro-orm/core';
+import { Book } from './Book.js';
+import { BaseEntity } from './BaseEntity.js';
 
 /**
  * @property {number} id
@@ -29,7 +29,7 @@ const { BaseEntity } = require('./BaseEntity');
  * @property {number} version
  * @property {string} versionAsString
  */
-class Author extends BaseEntity {
+export class Author extends BaseEntity {
 
   /**
    * @param {string} name
@@ -61,10 +61,6 @@ export const schema = new EntitySchema({
     version: { type: 'number', persist: false },
   },
 });
-
-module.exports.Author = Author;
-module.exports.entity = Author;
-module.exports.schema = schema;
 ```
 
 > Do not forget to provide `name` and `path` schema parameters as well as `entity` and `schema` exports.
@@ -72,7 +68,7 @@ module.exports.schema = schema;
 Reference `kind` parameter can be one of (where `SCALAR` is the default one):
 
 ```ts
-export enum ReferenceKind {
+enum ReferenceKind {
   SCALAR = 'scalar',
   ONE_TO_ONE = '1:1',
   MANY_TO_ONE = 'm:1',

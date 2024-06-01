@@ -21,7 +21,7 @@ describe('SchemaGenerator', () => {
     await orm.schema.ensureDatabase();
     await orm.schema.dropDatabase(dbName);
     await orm.close(true);
-    await expect(orm.schema.ensureDatabase()).rejects.toThrow('Unable to acquire a connection');
+    await orm.schema.ensureDatabase();
   });
 
   test('create schema also creates the database if not exists [mariadb]', async () => {
@@ -39,7 +39,6 @@ describe('SchemaGenerator', () => {
     await orm.schema.createSchema();
     await orm.schema.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
-    await expect(orm.schema.ensureDatabase()).rejects.toThrow('Unable to acquire a connection');
   });
 
   test('generate schema from metadata [mariadb]', async () => {

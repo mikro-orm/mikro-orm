@@ -66,6 +66,10 @@ export class ObjectHydrator extends Hydrator {
       const idx = this.tmpIndex++;
       const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
 
+      if (prop.getter && !prop.setter) {
+        return [];
+      }
+
       if (prop.ref) {
         context.set('ScalarReference', ScalarReference);
         ret.push(`  const oldValue_${idx} = entity${entityKey};`);
@@ -262,18 +266,31 @@ export class ObjectHydrator extends Hydrator {
 
       ret.push(`  if (${createCond(prop, dataKey).join(' || ')}) {`);
 
+      if (prop.object) {
+        ret.push(`    const embeddedData = data${dataKey};`);
+      } else {
+        ret.push(`    const embeddedData = {`);
+
+        for (const childProp of Object.values(prop.embeddedProps)) {
+          const key = childProp.embedded![1].match(/^\w+$/) ? childProp.embedded![1] : `'${childProp.embedded![1]}'`;
+          ret.push(`      ${key}: data${this.wrap(childProp.name)},`);
+        }
+
+        ret.push(`    };`);
+      }
+
       if (prop.targetMeta?.polymorphs) {
         prop.targetMeta.polymorphs!.forEach(meta => {
           const childProp = prop.embeddedProps[prop.targetMeta!.discriminatorColumn!];
           const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
           // weak comparison as we can have numbers that might have been converted to strings due to being object keys
           ret.push(`    if (data${childDataKey} == '${meta.discriminatorValue}' && entity${entityKey} == null) {`);
-          ret.push(`      entity${entityKey} = factory.createEmbeddable('${meta.className}', data${prop.object ? dataKey : ''}, { newEntity, convertCustomTypes });`);
+          ret.push(`      entity${entityKey} = factory.createEmbeddable('${meta.className}', embeddedData, { newEntity, convertCustomTypes });`);
           ret.push(`    }`);
         });
       } else {
         ret.push(`    if (entity${entityKey} == null) {`);
-        ret.push(`      entity${entityKey} = factory.createEmbeddable('${prop.targetMeta!.className}', data${prop.object ? dataKey : ''}, { newEntity, convertCustomTypes });`);
+        ret.push(`      entity${entityKey} = factory.createEmbeddable('${prop.targetMeta!.className}', embeddedData, { newEntity, convertCustomTypes });`);
         ret.push(`    }`);
       }
 

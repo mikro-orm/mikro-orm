@@ -25,14 +25,15 @@ import {
   ArrayType,
   BigIntType,
   BlobType,
-  DoubleType,
   DecimalType,
+  DoubleType,
   EnumArrayType,
+  IntervalType,
   JsonType,
   t,
   Type,
   Uint8ArrayType,
-  UnknownType, IntervalType,
+  UnknownType,
 } from '../types';
 import { colors } from '../logging/colors';
 import { raw, RawQueryFragment } from '../utils/RawQueryFragment';
@@ -329,7 +330,7 @@ export class MetadataDiscovery {
     return entity as EntityClass<T>;
   }
 
-  private getSchema<T>(entity: Constructor<T> | EntitySchema<T>, filepath?: string): EntitySchema<T> {
+  private getSchema<T>(entity: (Constructor<T> & { [MetadataStorage.PATH_SYMBOL]?: string }) | EntitySchema<T>, filepath?: string): EntitySchema<T> {
     if (entity instanceof EntitySchema) {
       if (filepath) {
         // initialize global metadata for given entity
@@ -339,7 +340,7 @@ export class MetadataDiscovery {
       return entity;
     }
 
-    const path = (entity as Dictionary).__path;
+    const path = entity[MetadataStorage.PATH_SYMBOL];
 
     if (path) {
       const meta = Utils.copy(MetadataStorage.getMetadata(entity.name, path), false);
@@ -514,8 +515,8 @@ export class MetadataDiscovery {
     if (pivotMeta && (pks.length === 2 || fks.length >= 2)) {
       const owner = prop.mappedBy ? meta2.properties[prop.mappedBy] : prop;
       const [first, second] = this.ensureCorrectFKOrderInPivotEntity(pivotMeta, owner);
-      prop.joinColumns = first!.fieldNames;
-      prop.inverseJoinColumns = second!.fieldNames;
+      prop.joinColumns ??= first!.fieldNames;
+      prop.inverseJoinColumns ??= second!.fieldNames;
     }
 
     if (!prop.pivotTable && prop.owner && this.platform.usesPivotTable()) {
@@ -533,18 +534,9 @@ export class MetadataDiscovery {
       prop.inverseJoinColumns = prop2.joinColumns;
     }
 
-    if (!prop.referencedColumnNames) {
-      prop.referencedColumnNames = Utils.flatten(meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames));
-    }
-
-    if (!prop.joinColumns) {
-      prop.joinColumns = prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.className, referencedColumnName, meta.compositePK));
-    }
-
-    if (!prop.inverseJoinColumns) {
-      const meta2 = this.metadata.get(prop.type);
-      prop.inverseJoinColumns = this.initManyToOneFieldName(prop, meta2.className);
-    }
+    prop.referencedColumnNames ??= Utils.flatten(meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames));
+    prop.joinColumns ??= prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.root.className, referencedColumnName, meta.compositePK));
+    prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className);
   }
 
   private initManyToOneFields(prop: EntityProperty): void {
@@ -694,6 +686,13 @@ export class MetadataDiscovery {
     if (pivotMeta) {
       this.ensureCorrectFKOrderInPivotEntity(pivotMeta, prop);
       return pivotMeta;
+    }
+
+    const exists = this.metadata.find(prop.pivotTable);
+
+    if (exists) {
+      prop.pivotEntity = exists.className;
+      return exists;
     }
 
     let tableName = prop.pivotTable;
@@ -963,7 +962,7 @@ export class MetadataDiscovery {
     this.initFieldName(embeddedProp, rootProperty !== embeddedProp && object);
     const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_' : embeddedProp.prefix;
 
-    for (const prop of Object.values(embeddable.properties).filter(p => p.persist !== false)) {
+    for (const prop of Object.values(embeddable.properties)) {
       const name = (embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_') + prop.name;
 
       meta.properties[name] = Utils.copy(prop, false);
@@ -971,6 +970,7 @@ export class MetadataDiscovery {
       meta.properties[name].embedded = [embeddedProp.name, prop.name];
       meta.propertyOrder.set(name, (order += 0.01));
       embeddedProp.embeddedProps[prop.name] = meta.properties[name];
+      meta.properties[name].persist ??= embeddedProp.persist;
 
       if (embeddedProp.nullable) {
         meta.properties[name].nullable = true;
@@ -1392,7 +1392,21 @@ export class MetadataDiscovery {
 
     if (prop.kind === ReferenceKind.SCALAR) {
       const mappedType = this.getMappedType(prop);
-      prop.columnTypes = [mappedType.getColumnType(prop, this.platform)];
+      const SCALAR_TYPES = ['string', 'number', 'boolean', 'bigint', 'Date', 'Buffer', 'RegExp', 'any', 'unknown'];
+
+      if (
+        mappedType instanceof UnknownType
+        && !prop.columnTypes
+        // it could be a runtime type from reflect-metadata
+        && !SCALAR_TYPES.includes(prop.type)
+        // or it might be inferred via ts-morph to some generic type alias
+        && !prop.type.match(/[<>:"';{}]/)
+      ) {
+        prop.columnTypes = [prop.type];
+      } else {
+        prop.columnTypes = [mappedType.getColumnType(prop, this.platform)];
+      }
+
       return;
     }
 

@@ -115,6 +115,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         indexDef.expression = index.expression;
       }
 
+      if (index.deferrable) {
+        indexDef.deferMode = index.initially_deferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
+      }
+
       ret[key] ??= [];
       ret[key].push(indexDef);
     }
@@ -573,7 +577,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         from generate_subscripts(idx.indkey, 1) as k
         order by k
       ) as index_def,
-      pg_get_indexdef(idx.indexrelid) as expression
+      pg_get_indexdef(idx.indexrelid) as expression,
+      c.condeferrable as deferrable,
+      c.condeferred as initially_deferred
       from pg_index idx
       join pg_class as i on i.oid = idx.indexrelid
       join pg_namespace as ns on i.relnamespace = ns.oid

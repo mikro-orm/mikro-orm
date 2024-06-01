@@ -56,6 +56,7 @@ export class PivotCollectionPersister<Entity extends object> {
   private readonly platform: AbstractSqlPlatform;
   private readonly inserts = new Map<string, InsertStatement<Entity>>();
   private readonly deletes = new Map<string, DeleteStatement<Entity>>();
+  private readonly batchSize: number;
   private order = 0;
 
   constructor(
@@ -65,6 +66,7 @@ export class PivotCollectionPersister<Entity extends object> {
     private readonly schema?: string,
   ) {
     this.platform = this.driver.getPlatform();
+    this.batchSize = this.driver.config.get('batchSize');
   }
 
   enqueueUpdate(
@@ -119,15 +121,21 @@ export class PivotCollectionPersister<Entity extends object> {
 
   async execute(): Promise<void> {
     if (this.deletes.size > 0) {
-      const knex = this.driver.createQueryBuilder(this.meta.className, this.ctx, 'write')
-        .withSchema(this.schema)
-        .getKnex();
+      const deletes = [...this.deletes.values()];
 
-      for (const item of this.deletes.values()) {
-        knex.orWhere(item.getCondition());
+      for (let i = 0; i < deletes.length; i += this.batchSize) {
+        const chunk = deletes.slice(i, i + this.batchSize);
+        const cond = { $or: [] } as Dictionary;
+
+        for (const item of chunk) {
+          cond.$or.push(item.getCondition());
+        }
+
+        await this.driver.nativeDelete(this.meta.className, cond, {
+          ctx: this.ctx,
+          schema: this.schema,
+        });
       }
-
-      await this.driver.execute(knex.delete());
     }
 
     if (this.inserts.size === 0) {
@@ -144,12 +152,15 @@ export class PivotCollectionPersister<Entity extends object> {
 
     /* istanbul ignore else */
     if (this.platform.allowsMultiInsert()) {
-      await this.driver.nativeInsertMany<Entity>(this.meta.className, items as EntityData<Entity>[], {
-        ctx: this.ctx,
-        schema: this.schema,
-        convertCustomTypes: false,
-        processCollections: false,
-      });
+      for (let i = 0; i < items.length; i += this.batchSize) {
+        const chunk = items.slice(i, i + this.batchSize);
+        await this.driver.nativeInsertMany<Entity>(this.meta.className, chunk, {
+          ctx: this.ctx,
+          schema: this.schema,
+          convertCustomTypes: false,
+          processCollections: false,
+        });
+      }
     } else {
       await Utils.runSerial(items, item => {
         return this.driver.createQueryBuilder(this.meta.className, this.ctx, 'write')

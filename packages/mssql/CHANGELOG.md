@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
+
+
+### Bug Fixes
+
+* **mssql:** account for quotes in table names ([#5637](https://github.com/mikro-orm/mikro-orm/issues/5637)) ([0343609](https://github.com/mikro-orm/mikro-orm/commit/0343609c3e99d1fe5e4024a7afe0aaa2b2d6d980))
+* **mssql:** fix creating migrations due to a missing helper method ([#5644](https://github.com/mikro-orm/mikro-orm/issues/5644)) ([90e27c2](https://github.com/mikro-orm/mikro-orm/commit/90e27c275d7db46269ee721e049dcfe09b274abe)), closes [#5633](https://github.com/mikro-orm/mikro-orm/issues/5633)
+* **mssql:** fix ensuring the database exists on older SQL Server versions ([f0a5790](https://github.com/mikro-orm/mikro-orm/commit/f0a5790de0b08978983a3af82122e0f5045531dc)), closes [#5638](https://github.com/mikro-orm/mikro-orm/issues/5638)
+
+
+
+
+
+## [6.2.8](https://github.com/mikro-orm/mikro-orm/compare/v6.2.7...v6.2.8) (2024-05-21)
+
+**Note:** Version bump only for package @mikro-orm/mssql
+
+
+
+
+
+## [6.2.7](https://github.com/mikro-orm/mikro-orm/compare/v6.2.6...v6.2.7) (2024-05-18)
+
+**Note:** Version bump only for package @mikro-orm/mssql
+
+
+
+
+
 ## [6.2.6](https://github.com/mikro-orm/mikro-orm/compare/v6.2.5...v6.2.6) (2024-05-14)
 
 **Note:** Version bump only for package @mikro-orm/mssql

@@ -1,14 +1,14 @@
 import dotenv from 'dotenv';
 import { pathExistsSync, readJSONSync, realpathSync } from 'fs-extra';
-import { isAbsolute, join } from 'path';
 import { platform } from 'os';
+import { isAbsolute, join } from 'path';
 import { fileURLToPath } from 'url';
+import type { EntityManager } from '../EntityManager';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers';
+import { colors } from '../logging/colors';
+import type { Dictionary } from '../typings';
 import { Configuration, type Options } from './Configuration';
 import { Utils } from './Utils';
-import type { Dictionary } from '../typings';
-import { colors } from '../logging/colors';
-import type { EntityManager } from '../EntityManager';
 
 /**
  * @internal
@@ -89,9 +89,10 @@ export class ConfigurationLoader {
 
   static getConfigPaths(): string[] {
     const options = Utils.parseArgs();
+    const configArgName = process.env.MIKRO_ORM_CONFIG_ARG_NAME ?? 'config';
 
-    if (options.config) {
-      return [options.config];
+    if (options[configArgName]) {
+      return [options[configArgName]];
     }
 
     const paths: string[] = [];
@@ -144,7 +145,7 @@ export class ConfigurationLoader {
       project: tsConfigPath,
       transpileOnly: true,
       compilerOptions: {
-        module: 'commonjs',
+        module: 'nodenext',
       },
     }).config;
 
@@ -306,7 +307,7 @@ export class ConfigurationLoader {
     }
   }
 
-  // inspired by https://github.com/facebook/mikro-orm/pull/3386
+  // inspired by https://github.com/facebook/docusaurus/pull/3386
   static checkPackageVersion(): string {
     const coreVersion = Utils.getORMVersion();
 

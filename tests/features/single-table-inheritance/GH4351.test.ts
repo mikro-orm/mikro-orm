@@ -92,6 +92,6 @@ test('it should add discriminator to the query', async () => {
 
   const qb3 = orm.em.qb(User, 'u').join('u.posts2', 'p');
   const res3 = await qb3;
-  expect(qb3.getFormattedQuery()).toMatch("select `u`.* from `user` as `u` inner join `user_posts2` as `u1` on `u`.`id` = `u1`.`user_id` inner join `base_entity` as `p` on `u1`.`post_id` = `p`.`id` and `p`.`type` = 'post'");
+  expect(qb3.getFormattedQuery()).toMatch("select `u`.* from `user` as `u` inner join `user_posts2` as `u1` on `u`.`id` = `u1`.`user_id` inner join `base_entity` as `p` on `u1`.`base_entity_id` = `p`.`id` and `p`.`type` = 'post'");
   expect(res3).toHaveLength(1);
 });

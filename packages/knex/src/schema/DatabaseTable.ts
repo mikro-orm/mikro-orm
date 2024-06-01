@@ -199,6 +199,7 @@ export class DatabaseTable {
         constraint: !prop.fieldNames.some((d: string) => d.includes('.')),
         primary: false,
         unique: true,
+        deferMode: prop.deferMode,
       });
     }
   }

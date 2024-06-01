@@ -5,7 +5,7 @@ exports[`SchemaGenerator [sqlite] generate schema from metadata [sqlite]: sqlite
 
 create table \`book_tag3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
-create table \`publisher3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`type\` text not null);
+create table \`publisher3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`type\` PublisherType not null);
 
 create table \`author3\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date(3) null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, constraint \`author3_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book3\`(\`id\`) on delete set null on update cascade);
 create unique index \`author3_email_unique\` on \`author3\` (\`email\`);
@@ -65,7 +65,7 @@ exports[`SchemaGenerator [sqlite] update empty schema from metadata [sqlite]: sq
 
 create table \`book_tag3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
-create table \`publisher3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null default 'asd', \`type\` text not null default 'local');
+create table \`publisher3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null default 'asd', \`type\` PublisherType not null default 'local');
 
 create table \`author3\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date(3) null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, constraint \`author3_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book3\`(\`id\`) on delete set null on update cascade);
 create unique index \`author3_email_unique\` on \`author3\` (\`email\`);

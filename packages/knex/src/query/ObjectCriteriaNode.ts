@@ -143,20 +143,18 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     return !!this.prop && this.prop.kind !== ReferenceKind.SCALAR && !scalar && !operator;
   }
 
-  private getChildKey(k: EntityKey, prop: EntityProperty, childAlias?: string): string {
+  private getChildKey(k: EntityKey, prop: EntityProperty, childAlias?: string, alias?: string): string {
     const idx = prop.referencedPKs.indexOf(k as EntityKey);
-    return idx !== -1 && !childAlias && ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) ? prop.joinColumns[idx] : k;
+    return idx !== -1 && !childAlias && ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)
+      ? this.aliased(prop.joinColumns[idx], alias)
+      : k;
   }
 
-  private inlineArrayChildPayload(obj: Dictionary, payload: Dictionary[], k: string, prop: EntityProperty, childAlias?: string) {
+  private inlineArrayChildPayload(obj: Dictionary, payload: Dictionary[], k: string, prop: EntityProperty, childAlias?: string, alias?: string) {
     const key = this.getChildKey(k as EntityKey, prop, childAlias);
     const value = payload.map((child: Dictionary) => Object.keys(child).reduce((inner, childKey) => {
-      if (Utils.isGroupOperator(childKey) && Array.isArray(child[childKey])) {
-        this.inlineArrayChildPayload(child, child[childKey], childKey, prop, childAlias);
-      } else {
-        const key = (this.isPrefixed(childKey) || Utils.isOperator(childKey)) ? childKey : this.aliased(childKey, childAlias);
-        inner[key] = child[childKey];
-      }
+      const key = (this.isPrefixed(childKey) || Utils.isOperator(childKey)) ? childKey : this.aliased(childKey, childAlias);
+      inner[key] = child[childKey];
 
       return inner;
     }, {} as Dictionary));
@@ -173,9 +171,9 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         delete payload[k];
         o[this.aliased(field, alias)] = { [k]: tmp, ...o[this.aliased(field, alias)] };
       } else if (Utils.isGroupOperator(k) && Array.isArray(payload[k])) {
-        this.inlineArrayChildPayload(o, payload[k], k, prop, childAlias);
+        this.inlineArrayChildPayload(o, payload[k], k, prop, childAlias, alias);
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
-        const key = this.getChildKey(k as EntityKey, prop, childAlias);
+        const key = this.getChildKey(k as EntityKey, prop, childAlias, alias);
         this.inlineCondition(key, o, payload[k]);
       } else if (RawQueryFragment.isKnownFragment(k)) {
         o[k] = payload[k];
@@ -192,6 +190,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       return;
     }
 
+    /* istanbul ignore next */
     if (key === '$and') {
       o.$and.push({ [key]: value });
       return;

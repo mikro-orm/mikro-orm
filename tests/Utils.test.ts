@@ -354,8 +354,7 @@ describe('Utils', () => {
     ];
     expect(Utils.lookupPathFromDecorator('Customer', stack3)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
 
-    // using babel will ignore the path, as there is no `__decorate` and there can be other issues too
-    // @see https://github.com/mikro-orm/mikro-orm/issues/790
+    // with babel we search for `_applyDecoratedDescriptor`
     const stack4 = [
       '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/utils/Utils.js:360:26)',
       '    at Function.getMetadataFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:21:36)',
@@ -368,9 +367,10 @@ describe('Utils', () => {
       '    at Object.Module._extensions..js (internal/modules/cjs/loader.js:1158:10)',
       '    at Module.load (internal/modules/cjs/loader.js:986:32)',
     ];
-    expect(Utils.lookupPathFromDecorator('Customer', stack4)).toBe('Customer');
+    expect(Utils.lookupPathFromDecorator('Customer', stack4)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
 
-    // using babel will ignore the path, as there is no `__decorate`
+    // using babel will ignore the path when there is no `__decorate` or `_applyDecoratedDescriptor`
+    // @see https://github.com/mikro-orm/mikro-orm/issues/790
     const stack5 = [
       '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/utils/Utils.js:360:26)',
       '    at Function.getMetadataFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:21:36)',
@@ -492,6 +492,16 @@ describe('Utils', () => {
       '    at moduleEvaluation (:1:11)',
       '    at moduleEvaluation (:1:11)',
       '    at <anonymous> (:2:1)',
+    ])).toBe('Book');
+
+    // invalid stack trace - not complete
+    expect(Utils.lookupPathFromDecorator('Book', [
+      'Error',
+      '    at lookupPathFromDecorator (/home/ruby/workspace/bun-playground/node_modules/@mikro-orm/core/utils/Utils.js:400:33)',
+      '    at getMetadataFromDecorator (/home/ruby/workspace/bun-playground/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:27:57)',
+      '    at <anonymous> (/home/ruby/workspace/bun-playground/node_modules/@mikro-orm/core/decorators/Entity.js:4:71)',
+      '    at DecorateConstructor (/home/ruby/workspace/bun-playground/node_modules/reflect-metadata/Reflect.js:171:61)',
+      '    at A (bun:wrap:1:2617)',
     ])).toBe('Book');
   });
 

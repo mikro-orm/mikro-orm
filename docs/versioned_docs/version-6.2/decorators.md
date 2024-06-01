@@ -293,7 +293,6 @@ See [Defining Entities](./relationships.md#onetoone) for more examples, includin
 | `primary`       | `boolean`                                     | yes      | Use this relation as primary key.                                                                                                                           |
 | `deleteRule`    | `string`                                      | yes      | [Referential integrity](./cascading.md#declarative-referential-integrity).                                                                                  |
 | `updateRule`    | `string`                                      | yes      | [Referential integrity](./cascading.md#declarative-referential-integrity).                                                                                  |
->>>>>>> 8bdda20b8 (refactor: rename various options)
 
 ```ts
 // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side

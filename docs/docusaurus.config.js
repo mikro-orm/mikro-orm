@@ -32,7 +32,6 @@ const docsFooterLinks = {
   title: 'Docs',
   items: [
     { label: 'Quick Start', to: 'docs/quick-start' },
-    { label: 'Quick Start', to: 'docs/guide/type-safety' },
     { label: 'Getting Started', to: 'docs/guide' },
     { label: 'Migration from v5 to v6', to: 'docs/upgrading-v5-to-v6' },
     { label: 'Version 5.9 docs', to: 'docs/5.9/installation' },

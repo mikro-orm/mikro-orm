@@ -3,6 +3,52 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
+
+
+### Bug Fixes
+
+* **core:** improve support for sharing columns in composite PK and FK ([#5623](https://github.com/mikro-orm/mikro-orm/issues/5623)) ([7190879](https://github.com/mikro-orm/mikro-orm/commit/7190879bdf64e51d31b61b275b98df84de02004e)), closes [#5622](https://github.com/mikro-orm/mikro-orm/issues/5622)
+* **knex:** explicitly declare all the extended drivers as optional peer dependencies ([#5647](https://github.com/mikro-orm/mikro-orm/issues/5647)) ([64045ad](https://github.com/mikro-orm/mikro-orm/commit/64045adadae9f6c98e205927210de62ebb095adb))
+* **mssql:** fix creating schema for migrations table ([fe1be6f](https://github.com/mikro-orm/mikro-orm/commit/fe1be6f099888ad9e289f091d53428a4498f4b0d)), closes [#5644](https://github.com/mikro-orm/mikro-orm/issues/5644)
+* **postgres:** respect `deferMode` option in 1:1 relations ([#5641](https://github.com/mikro-orm/mikro-orm/issues/5641)) ([101c0a8](https://github.com/mikro-orm/mikro-orm/commit/101c0a85cacfd20e7d4857646d7c7242e4ec1cd1))
+* **schema:** fix diffing renamed indexes and columns when the names are not lowercase ([4019dc3](https://github.com/mikro-orm/mikro-orm/commit/4019dc336f24bd79daeb8fd7997c06d055d23933)), closes [#5617](https://github.com/mikro-orm/mikro-orm/issues/5617)
+* **sql:** implement batching of M:N collection update queries ([d97979b](https://github.com/mikro-orm/mikro-orm/commit/d97979b236b8a7e40f64848e88602c531b8ebb84)), closes [#5627](https://github.com/mikro-orm/mikro-orm/issues/5627)
+
+
+### Performance Improvements
+
+* **sql:** optimize diffing M:N collection state ([f46e7c8](https://github.com/mikro-orm/mikro-orm/commit/f46e7c86e29727b57f3220901ac5b14a6f1719c1)), closes [#5627](https://github.com/mikro-orm/mikro-orm/issues/5627)
+
+
+
+
+
+## [6.2.8](https://github.com/mikro-orm/mikro-orm/compare/v6.2.7...v6.2.8) (2024-05-21)
+
+
+### Bug Fixes
+
+* **postgres:** support `lockTableAliases` with explicit schema name in config ([3fdb077](https://github.com/mikro-orm/mikro-orm/commit/3fdb077893144111cf4d8b2ea5a22271d0f405df)), closes [#5125](https://github.com/mikro-orm/mikro-orm/issues/5125) [#5404](https://github.com/mikro-orm/mikro-orm/issues/5404)
+* **sql:** respect `timezone` when mapping joined properties to `Date` ([7f9bb0b](https://github.com/mikro-orm/mikro-orm/commit/7f9bb0be291088b0098b839753bc7ca65fed1e99)), closes [#5577](https://github.com/mikro-orm/mikro-orm/issues/5577)
+
+
+
+
+
+## [6.2.7](https://github.com/mikro-orm/mikro-orm/compare/v6.2.6...v6.2.7) (2024-05-18)
+
+
+### Bug Fixes
+
+* **core:** fix ordering by joined embedded object properties ([cbd7c3e](https://github.com/mikro-orm/mikro-orm/commit/cbd7c3eaac520fdd9eda61fcb7321fea87bb9bdf)), closes [#5560](https://github.com/mikro-orm/mikro-orm/issues/5560)
+* **query-builder:** improve handling of nested `$and/$or` queries ([567d65a](https://github.com/mikro-orm/mikro-orm/commit/567d65ae27ea3627518d8d06119ac4b412d6e622))
+* **schema:** revert the `dbName` after dropping the database ([725f7e9](https://github.com/mikro-orm/mikro-orm/commit/725f7e9e0940bfd60a6cd9992f567b21fb7c96fa)), closes [#5583](https://github.com/mikro-orm/mikro-orm/issues/5583)
+
+
+
+
+
 ## [6.2.6](https://github.com/mikro-orm/mikro-orm/compare/v6.2.5...v6.2.6) (2024-05-14)
 
 

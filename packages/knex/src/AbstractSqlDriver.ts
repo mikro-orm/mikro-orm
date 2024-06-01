@@ -363,6 +363,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const targetProps = ref
         ? meta2.getPrimaryProps()
         : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, hint.children as any || []));
+      const tz = this.platform.getTimezone();
 
       for (const prop of targetProps) {
         if (prop.fieldNames.length > 1) { // composite keys
@@ -371,8 +372,15 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           relationPojo[prop.name] = pk.every(val => val != null) ? pk as EntityValue<T> : null;
         } else if (prop.runtimeType === 'Date') {
           const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
-          const type = typeof root![alias];
-          relationPojo[prop.name] = (['string', 'number'].includes(type) ? this.platform.parseDate(root![alias] as string) : root![alias]) as EntityValue<T>;
+          const value = root![alias] as unknown;
+
+          if (tz && tz !== 'local' && typeof value === 'string' && !value.includes('+') && !value.endsWith('Z')) {
+            relationPojo[prop.name] = this.platform.parseDate(value + tz) as EntityValue<T>;
+          } else if (['string', 'number'].includes(typeof value)) {
+            relationPojo[prop.name] = this.platform.parseDate(value as string) as EntityValue<T>;
+          } else {
+            relationPojo[prop.name] = value as EntityValue<T>;
+          }
         } else {
           const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
           relationPojo[prop.name] = root![alias];
@@ -522,12 +530,24 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         const usedDups: string[] = [];
         props.forEach(prop => {
           if (prop.fieldNames.length > 1) {
-            const param = Utils.flatten([...row[prop.name] ?? prop.fieldNames.map(() => null)]);
-            const key = param.map(() => '?');
+            const newFields: string[] = [];
+            const allParam = [...row[prop.name] ?? prop.fieldNames.map(() => null)];
+            const newParam: typeof allParam = [];
+
             prop.fieldNames.forEach((field, idx) => {
+              if (usedDups.includes(field)) {
+                return;
+              }
+              newFields.push(field);
+              newParam.push(allParam[idx]);
+            });
+
+            const param = Utils.flatten(newParam);
+
+            newFields.forEach((field, idx) => {
               if (!duplicates.includes(field) || !usedDups.includes(field)) {
                 params.push(param[idx]);
-                keys.push(key[idx]);
+                keys.push('?');
                 usedDups.push(field);
               }
             });
@@ -801,6 +821,27 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return this.rethrow(qb.execute('run', false));
   }
 
+  /**
+   * Fast comparison for collection snapshots that are represented by PK arrays.
+   * Compares scalars via `===` and fallbacks to Utils.equals()` for more complex types like Buffer.
+   * Always expects the same length of the arrays, since we only compare PKs of the same entity type.
+   */
+  private comparePrimaryKeyArrays(a: unknown[], b: unknown[]) {
+    for (let i = a.length; i-- !== 0;) {
+      if (['number', 'string', 'bigint', 'boolean'].includes(typeof a[i])) {
+        if (a[i] !== b[i]) {
+          return false;
+        }
+      } else {
+        if (!Utils.equals(a[i], b[i])) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
   override async syncCollections<T extends object, O extends object>(collections: Iterable<Collection<T, O>>, options?: DriverMethodOptions): Promise<void> {
     const groups = {} as Dictionary<PivotCollectionPersister<any>>;
 
@@ -809,7 +850,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const meta = wrapped.__meta;
       const pks = wrapped.getPrimaryKeys(true)!;
       const snap = coll.getSnapshot();
-      const includes = <T>(arr: T[], item: T) => !!arr.find(i => Utils.equals(i, item));
+      const includes = <T>(arr: T[][], item: T[]) => !!arr.find(i => this.comparePrimaryKeyArrays(i, item));
       const snapshot = snap ? snap.map(item => helper(item).getPrimaryKeys(true)!) : [];
       const current = coll.getItems(false).map(item => helper(item).getPrimaryKeys(true)!);
       const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
@@ -820,8 +861,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       // wrong order if we just delete and insert to the end (only owning sides can have fixed order)
       if (coll.property.owner && coll.property.fixedOrder && !equals && Array.isArray(deleteDiff)) {
         deleteDiff.length = insertDiff.length = 0;
-        deleteDiff.push(...snapshot);
-        insertDiff.push(...current);
+
+        for (const item of snapshot) {
+          deleteDiff.push(item);
+        }
+
+        for (const item of current) {
+          insertDiff.push(item);
+        }
       }
 
       if (coll.property.kind === ReferenceKind.ONE_TO_MANY) {
@@ -950,20 +997,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       qb.limit(options.limit, options.offset);
     }
 
-    // console.log('pivot qb', qb, qb._fields);
     const res = owners.length ? await this.rethrow(qb.execute('all', { mergeResults: false, mapResults: false })) : [];
-    // console.log(res);
-    // const items = res.map((row: Dictionary) => super.mapResult(row, prop.targetMeta));
     const tmp: Dictionary = {};
-    // const items = res.map((row: Dictionary) => this.mapResult(row, prop.targetMeta!, populate, qb, tmp));
-    // const items = res.map((row: Dictionary) => this.mapResult(row, pivotMeta, populate, qb, tmp));
     const items = res.map((row: Dictionary) => {
       const root = super.mapResult(row, prop.targetMeta);
       this.mapJoinedProps<T>(root!, prop.targetMeta!, populate, qb, root!, tmp, pivotMeta.className + '.' + pivotProp1.name);
 
       return root;
     });
-    // console.log(prop.name, prop.targetMeta!.className, items);
     qb.clearRawFragmentsCache();
 
     const map: Dictionary<T[]> = {};
@@ -1132,7 +1173,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       // ignore ref joins of known FKs unless it's a filter hint
       if (ref && !hint.filter && (prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner))) {
-        // // console.log('wat', hint);
         return;
       }
 
@@ -1177,11 +1217,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       if (!ref) {
         fields.push(...this.getFieldsForJoinedLoad(qb, meta2, childExplicitFields.length === 0 ? undefined : childExplicitFields, childExclude, hint.children as any, options, tableAlias, path));
       } else if (hint.filter) {
-        // fields.push(field);
         fields.push(...prop.referencedColumnNames!.map(col => qb.helper.mapper(`${tableAlias}.${col}`, qb.type, undefined, `${tableAlias}__${col}`)));
       }
     });
-    // // console.log(fields, joinedProps);
 
     return fields;
   }

@@ -270,6 +270,8 @@ To enable TypeScript support, add `useTsNode` flag to the `mikro-orm` section in
 
 > The `useTsNode` is a flag only for the CLI, it has no effect on your application.
 
+> Remember to install `ts-node` when enabling `useTsNode` flag.
+
 You can also set up array of possible paths to `mikro-orm.config.*` file in the `package.json`, as well as use different file name. The `package.json` file can be located in the current working directory, or in one of its parent folders.
 
 ```json title="./package.json"
@@ -300,9 +302,16 @@ Alternatively, you can also specify the config path via `--config` option:
 $ npx mikro-orm debug --config ./my-config.ts
 ```
 
-The `--config` flag will be respected also when you run your app (as long as it is part of `process.argv`), not just when you use the CLI.
+The `--config` flag will be respected also when you run your app (as long as it is part of `process.argv`), not just when you use the CLI. 
 
-> Do not forget to install `ts-node` when enabling `useTsNode` flag.
+For the app support, this might introduce a conflict with other tools like `jest` that also support overriding the config path via `--config` argument, in those cases you can use the `MIKRO_ORM_CONFIG_ARG_NAME` environment variable to change the argument name to something else than `config`:
+
+```sh
+$ MIKRO_ORM_CONFIG_ARG_NAME=mikro-orm-config \
+  npx mikro-orm debug --mikro-orm-config ./my-config.ts
+```
+
+> `jest` does not allow unrecognised parameters, to run tests with a custom configuration you can use this together with `MIKRO_ORM_CLI_CONFIG` environment variable to point to an test config. 
 
 MikroORM will always try to load the first available config file, based on the order in `configPaths`. When you have `useTsNode` disabled or `ts-node` is not already registered nor detected, TS config files will be ignored.
 

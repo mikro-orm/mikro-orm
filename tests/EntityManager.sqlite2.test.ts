@@ -77,6 +77,19 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     expect(q2).toBe(`select * from author4 where id in ('1', '2', '3') limit 3`);
   });
 
+  test('disable nested transactions', async () => {
+    const mock = mockLogger(orm);
+    await orm.em.transactional(async () => {
+      await orm.em.transactional(async () => {
+        await orm.em.execute('select 1');
+      });
+    }, { ignoreNestedTransactions: true });
+    expect(mock.mock.calls).toHaveLength(3);
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select 1');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+  });
+
   test('transactions', async () => {
     const god1 = orm.em.create(Author4, { name: 'God1', email: 'hello@heaven1.god' });
 

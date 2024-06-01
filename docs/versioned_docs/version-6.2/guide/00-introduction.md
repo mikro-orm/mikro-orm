@@ -43,7 +43,9 @@ Full list of currently available drivers:
 - `@mikro-orm/mariadb`
 - `@mikro-orm/postgresql`
 - `@mikro-orm/sqlite`
+- `@mikro-orm/libsql`
 - `@mikro-orm/better-sqlite`
+- `@mikro-orm/mssql`
 - `@mikro-orm/mongodb`
 
 :::

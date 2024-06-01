@@ -3,6 +3,51 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
+
+
+### Bug Fixes
+
+* **cli:** use `module: 'nodenext'` when registering ts-node ([#5514](https://github.com/mikro-orm/mikro-orm/issues/5514)) ([8695524](https://github.com/mikro-orm/mikro-orm/commit/869552411c65e5a42362277555f71549a64fccc7)), closes [#5427](https://github.com/mikro-orm/mikro-orm/issues/5427)
+* **core:** detect path from decorator for each class only once ([#5545](https://github.com/mikro-orm/mikro-orm/issues/5545)) ([9af0e38](https://github.com/mikro-orm/mikro-orm/commit/9af0e3815c9e8200ace3e6a09e5ebd23c6f768f8))
+* **core:** improve support for `clientUrl` with additional query parameters ([1472705](https://github.com/mikro-orm/mikro-orm/commit/1472705bc1e974b09aa00a495b79f07cb776f5b8)), closes [#5608](https://github.com/mikro-orm/mikro-orm/issues/5608)
+* **core:** improve validation for missing `dbName` when `clientUrl` is provided ([c21359e](https://github.com/mikro-orm/mikro-orm/commit/c21359efe92c7abb22f706b00ac1aa1da38cffdf))
+* **core:** respect `ignoreNestedTransactions` from upper context ([eab4df6](https://github.com/mikro-orm/mikro-orm/commit/eab4df67b22d636c0a76703c6f48dc0c76cc2433)), closes [#5585](https://github.com/mikro-orm/mikro-orm/issues/5585)
+* **core:** use explicit `NoInfer` type helper to support TS<5.4 ([c38b366](https://github.com/mikro-orm/mikro-orm/commit/c38b36609a5264a2b2a49a87a89091003fcf6f42)), closes [#5613](https://github.com/mikro-orm/mikro-orm/issues/5613)
+* **reflection:** detect complex runtime types and don't use them as column types ([0c8a587](https://github.com/mikro-orm/mikro-orm/commit/0c8a58726c0a69f91c1494570029e36c89d1a64a)), closes [#5601](https://github.com/mikro-orm/mikro-orm/issues/5601)
+* **reflection:** support entities compiled by babel ([#5628](https://github.com/mikro-orm/mikro-orm/issues/5628)) ([26f627e](https://github.com/mikro-orm/mikro-orm/commit/26f627e3df2b66782e446de2419c350cf17c74ac)), closes [#5610](https://github.com/mikro-orm/mikro-orm/issues/5610)
+
+
+### Features
+
+* **core:** allow overriding the `--config` argument name ([8b304ab](https://github.com/mikro-orm/mikro-orm/commit/8b304abecad740ac6b7f7820dafc6e7f8d6f5e6f))
+
+
+
+
+
+## [6.2.8](https://github.com/mikro-orm/mikro-orm/compare/v6.2.7...v6.2.8) (2024-05-21)
+
+
+### Bug Fixes
+
+* **core:** allow hydration of non persistent embedded properties ([#5579](https://github.com/mikro-orm/mikro-orm/issues/5579)) ([e8c0c3f](https://github.com/mikro-orm/mikro-orm/commit/e8c0c3fe1d539d363f254ba039182eca4f15d39c)), closes [#5578](https://github.com/mikro-orm/mikro-orm/issues/5578)
+* **core:** always use root entity when computing M:N field names with STI ([568e57f](https://github.com/mikro-orm/mikro-orm/commit/568e57f7b513c2af774d74492474a6d5183d7658)), closes [#5586](https://github.com/mikro-orm/mikro-orm/issues/5586)
+* **core:** map embedded constructor parameters ([24f3ee6](https://github.com/mikro-orm/mikro-orm/commit/24f3ee6acfd7636102f1d438c19472374d5c6ca7))
+* **schema:** use `type` as `columnType` when no matching mapping found ([cd7f85c](https://github.com/mikro-orm/mikro-orm/commit/cd7f85c576f3424479bb161972a7152b84dbf2f8)), closes [#5587](https://github.com/mikro-orm/mikro-orm/issues/5587)
+
+
+
+
+
+## [6.2.7](https://github.com/mikro-orm/mikro-orm/compare/v6.2.6...v6.2.7) (2024-05-18)
+
+**Note:** Version bump only for package @mikro-orm/core
+
+
+
+
+
 ## [6.2.6](https://github.com/mikro-orm/mikro-orm/compare/v6.2.5...v6.2.6) (2024-05-14)
 
 
