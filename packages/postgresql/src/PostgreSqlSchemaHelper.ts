@@ -111,6 +111,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         primary: index.primary,
       };
 
+      if (index.condeferrable) {
+        indexDef.deferMode = index.condeferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
+      }
+
       if (index.index_def.some((col: string) => col.match(/[(): ,"'`]/)) || index.expression?.match(/ where /i)) {
         indexDef.expression = index.expression;
       }
@@ -571,7 +575,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   private getIndexesSQL(tables: Table[]): string {
-    return `select indrelid::regclass as table_name, ns.nspname as schema_name, relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary, contype,
+    return `select indrelid::regclass as table_name, ns.nspname as schema_name, relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary, contype, condeferrable, condeferred,
       array(
         select pg_get_indexdef(idx.indexrelid, k + 1, true)
         from generate_subscripts(idx.indkey, 1) as k

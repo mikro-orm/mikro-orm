@@ -1,6 +1,7 @@
 import { MetadataStorage } from '../metadata';
 import type { AnyEntity, Dictionary } from '../typings';
 import { Utils } from '../utils/Utils';
+import type { DeferMode } from '../enums';
 
 function createDecorator<T>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
   return function (target: AnyEntity, propertyName?: string) {
@@ -25,13 +26,17 @@ export function Unique<T>(options: UniqueOptions<T> = {}) {
   return createDecorator(options, true);
 }
 
-export interface UniqueOptions<T> {
+interface BaseOptions<T> {
   name?: string;
   properties?: keyof T | (keyof T)[];
   options?: Dictionary;
   expression?: string;
 }
 
-export interface IndexOptions<T> extends UniqueOptions<T> {
+export interface UniqueOptions<T> extends BaseOptions<T> {
+  deferMode?: DeferMode | `${DeferMode}`;
+}
+
+export interface IndexOptions<T> extends BaseOptions<T> {
   type?: string;
 }

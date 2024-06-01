@@ -20,5 +20,5 @@ export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOp
   mapToPk?: boolean;
   deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
   updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
-  deferMode?: DeferMode;
+  deferMode?: DeferMode | `${DeferMode}`;
 }
