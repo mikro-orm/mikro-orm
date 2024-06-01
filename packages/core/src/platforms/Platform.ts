@@ -406,12 +406,13 @@ export abstract class Platform {
       return extension;
     }
 
+    /* istanbul ignore next */
     const module = Utils.tryRequire({
       module: moduleName,
       warning: `Please install ${moduleName} package.`,
     });
 
-    /* istanbul ignore else */
+    /* istanbul ignore next */
     if (module) {
       return this.config.getCachedService(module[extensionName], em);
     }

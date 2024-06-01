@@ -7,7 +7,7 @@ describe('EntityGenerator', () => {
 
   test('not supported [mongodb]', async () => {
     const orm = await MikroORM.init({ driver: MongoDriver, dbName: 'mikro-orm-test', discovery: { warnWhenNoEntities: false }, connect: false });
-    expect(() => orm.entityGenerator).toThrow('EntityGenerator is not support for this driver.');
+    expect(() => orm.entityGenerator).toThrow('EntityGenerator is not supported for this driver.');
   });
 
   test('generate entities from schema [sqlite]', async () => {
