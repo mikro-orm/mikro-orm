@@ -399,6 +399,27 @@ export abstract class Platform {
     // no extensions by default
   }
 
+  getExtension<T>(extensionName: string, extensionKey: string, moduleName: string, em: EntityManager): T {
+    const extension = this.config.getExtension<T>(extensionKey);
+
+    if (extension) {
+      return extension;
+    }
+
+    const module = Utils.tryRequire({
+      module: moduleName,
+      warning: `Please install ${moduleName} package.`,
+    });
+
+    /* istanbul ignore else */
+    if (module) {
+      return this.config.getCachedService(module[extensionName], em);
+    }
+
+    /* istanbul ignore next */
+    throw new Error(`${extensionName} extension not registered.`);
+  }
+
   /* istanbul ignore next: kept for type inference only */
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): ISchemaGenerator {
     throw new Error(`${driver.constructor.name} does not support SchemaGenerator`);
