@@ -34,6 +34,7 @@ describe('DebugCommand', () => {
     expect(dumpDependencies).toHaveBeenCalledTimes(1);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
+      [' - ts-node enabled'],
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
@@ -115,6 +116,7 @@ describe('DebugCommand', () => {
     expect(dumpDependencies).toHaveBeenCalledTimes(6);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
+      [' - ts-node enabled'],
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
       [' - configuration found'],

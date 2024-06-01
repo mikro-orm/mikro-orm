@@ -161,14 +161,9 @@ Save this file into `src/mikro-orm.config.ts`, so it will get compiled together 
 {
   "type": "module",
   "dependencies": { ... },
-  "devDependencies": { ... },
-  "mikro-orm": {
-    "useTsNode": true
-  }
+  "devDependencies": { ... }
 }
 ```
-
-> The `useTsNode` option here tells the CLI to automatically enable TypeScript support, otherwise our `.ts` config file would be ignored. This option is _only_ for the CLI, when you run your app, it is your responsibility to bring the runtime TypeScript support if you want to (e.g. via `ts-node` as described in this guide).
 
 Lastly, add some NPM scripts to ease the development. We will build the app via `tsc`, test it via `vitest` and run it locally via `ts-node`. There is one gotcha with ESM and dynamic imports. While it works fine for regular JavaScript files, once we mix runtime support for TypeScript via `ts-node` or `vitest/esbuild`, you start hitting the wall with errors like `Unknown file extension ".ts"`. To get around that, we can use the `ts-node/esm` loader via `NODE_OPTIONS` environment variable - but that can get ugly, and we can do better - at least for the CLI, we have the `mikro-orm-esm` script, which automatically registers the `ts-node/esm` loader as well as disables the experimental warning.
 

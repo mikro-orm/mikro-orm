@@ -13,7 +13,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **core:** improve support for `clientUrl` with additional query parameters ([1472705](https://github.com/mikro-orm/mikro-orm/commit/1472705bc1e974b09aa00a495b79f07cb776f5b8)), closes [#5608](https://github.com/mikro-orm/mikro-orm/issues/5608)
 * **core:** improve validation for missing `dbName` when `clientUrl` is provided ([c21359e](https://github.com/mikro-orm/mikro-orm/commit/c21359efe92c7abb22f706b00ac1aa1da38cffdf))
 * **core:** respect `ignoreNestedTransactions` from upper context ([eab4df6](https://github.com/mikro-orm/mikro-orm/commit/eab4df67b22d636c0a76703c6f48dc0c76cc2433)), closes [#5585](https://github.com/mikro-orm/mikro-orm/issues/5585)
-* **core:** use explicit `NoInfer` type helper to support TS<5.4 ([c38b366](https://github.com/mikro-orm/mikro-orm/commit/c38b36609a5264a2b2a49a87a89091003fcf6f42)), closes [#5613](https://github.com/mikro-orm/mikro-orm/issues/5613)
+* **core:** use explicit `NoInfer` type helper to support TS\<5.4 ([c38b366](https://github.com/mikro-orm/mikro-orm/commit/c38b36609a5264a2b2a49a87a89091003fcf6f42)), closes [#5613](https://github.com/mikro-orm/mikro-orm/issues/5613)
 * **reflection:** detect complex runtime types and don't use them as column types ([0c8a587](https://github.com/mikro-orm/mikro-orm/commit/0c8a58726c0a69f91c1494570029e36c89d1a64a)), closes [#5601](https://github.com/mikro-orm/mikro-orm/issues/5601)
 * **reflection:** support entities compiled by babel ([#5628](https://github.com/mikro-orm/mikro-orm/issues/5628)) ([26f627e](https://github.com/mikro-orm/mikro-orm/commit/26f627e3df2b66782e446de2419c350cf17c74ac)), closes [#5610](https://github.com/mikro-orm/mikro-orm/issues/5610)
 
