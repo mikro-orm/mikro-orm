@@ -958,9 +958,14 @@ export class MetadataDiscovery {
       return prop.embedded ? isParentObject(meta.properties[prop.embedded[0]]) : false;
     };
     const rootProperty = getRootProperty(embeddedProp);
+    const parentProperty = meta.properties[embeddedProp.embedded?.[0] ?? ''];
     const object = isParentObject(embeddedProp);
     this.initFieldName(embeddedProp, rootProperty !== embeddedProp && object);
-    const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_' : embeddedProp.prefix;
+    const prefix = embeddedProp.prefix === false
+      ? (parentProperty?.prefix || '')
+      : embeddedProp.prefix === true
+        ? embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_'
+        : embeddedProp.prefix;
 
     for (const prop of Object.values(embeddable.properties)) {
       const name = (embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_') + prop.name;
