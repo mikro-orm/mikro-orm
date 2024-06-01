@@ -76,8 +76,8 @@ describe('hidden properties are still included when cached (GH 3294)', () => {
     expect(mockLog.mock.calls).toHaveLength(1); // cache hit, no new query fired
 
     // Expect both hidden and not hidden props to be accessible in cached and uncached versions
-    expect(res1.map(e => ({ hidden: e.hiddenProp, notHidden: e.notHiddenProp }))).
-      toEqual(res2.map(e => ({ hidden: e.hiddenProp, notHidden: e.notHiddenProp })));
+    expect(res1.map(e => ({ hidden: e.hiddenProp, notHidden: e.notHiddenProp })))
+      .toEqual(res2.map(e => ({ hidden: e.hiddenProp, notHidden: e.notHiddenProp })));
   });
 
 });

@@ -1,14 +1,17 @@
 import {
   Collection,
   Entity,
+  MikroORM,
+  ModifyContext,
+  ModifyHint,
   ManyToOne,
   OneToMany,
   PrimaryKey,
   Property,
   Enum,
   wrap,
-} from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+  Ref,
+} from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 
 export abstract class BaseEntity {
@@ -49,6 +52,9 @@ export class Step extends BaseEntity {
   @Enum(() => StepType)
   type!: StepType;
 
+  @ManyToOne(() => Step, { ref: true, nullable: true })
+  subStep?: Ref<Step>;
+
 }
 
 @Entity()
@@ -68,8 +74,8 @@ export class Log extends BaseEntity {
   @ManyToOne(() => SerialNumber)
   serialNumber!: SerialNumber;
 
-  @ManyToOne()
-  step?: Step;
+  @ManyToOne(() => Step, { ref: true, nullable: true })
+  step?: Ref<Step>;
 
   @Property({ type: 'date', nullable: true })
   operationDate?: string | null;
@@ -137,6 +143,16 @@ test('GH 3812', async () => {
           number: '3',
           order: 0,
           type: StepType.ASSY,
+          subStep: {
+            id: '29b64d55-d583-44ed-8407-65968a150057',
+            createdAt: '2022-11-30T15:26:16.000Z',
+            updatedAt: '2022-11-30T15:26:16.000Z',
+            deletedAt: null,
+            name: 'INSP',
+            number: '20',
+            order: 3,
+            type: StepType.INSP,
+          },
         },
         operationDate: '2022-11-30',
         current: false,
@@ -157,6 +173,16 @@ test('GH 3812', async () => {
           number: '50',
           order: 1,
           type: StepType.ASSY,
+          subStep: {
+            id: '19b64d55-d583-44ed-8407-65968a150057',
+            createdAt: '2022-11-30T15:26:16.000Z',
+            updatedAt: '2022-11-30T15:26:16.000Z',
+            deletedAt: null,
+            name: 'INSP',
+            number: '10',
+            order: 2,
+            type: StepType.INSP,
+          },
         },
         operationDate: '2022-11-30',
         current: false,
@@ -169,21 +195,38 @@ test('GH 3812', async () => {
   orm.em.clear();
 
   // with EM
-  const res1 = await orm.em.find(SerialNumber, {}, { populate: ['logs.step'] });
+  const res1 = await orm.em.find(SerialNumber, {}, { populate: ['logs.step.subStep'] });
   expect(res1).toHaveLength(1);
   expect(wrap(res1[0]).toJSON().logs[0].serialNumber).toBe('559fccf7-11f0-4e5a-8e15-ae29b98ddeb3');
   expect(wrap(res1[0]).toJSON().logs[0].step?.name).toBe('ASSY');
 
   orm.em.clear();
 
-  // with QB
+  type T10 = ModifyHint<'sn', { l: ['logs', 'l', Log] }, 'logs', 'l.step', true>;
+  type T11 = ModifyHint<'sn', never, never, 'logs', true>;
+  type T12 = ModifyHint<'sn', { l: ['logs', 'l', Log] }, 'logs', 'l.step', true>;
+  type T13 = ModifyHint<'sn', { l: ['logs', 'l', Log]; s: ['logs.step', 's', Step] }, 'logs' | 'logs.step', 's.subStep'>;
+  type T20 = ModifyContext<SerialNumber, never, 'logs', 'l', false>;
+  type T21 = ModifyContext<SerialNumber, never, 'logs', 'l', true>;
+  type T22 = ModifyContext<Log, { l: ['logs', 'l', Log, false] }, 'l.step', 's'>;
+  type T23 = ModifyContext<Step, { l: ['logs', 'l', Log, false]; s: ['logs.step', 's', Step, true] }, 's.subStep', 's2'>;
+  // type T31 = AddAliasesFromContext<{ l: ['logs', 'l', Log]; s: ['logs.step', 's', Step]; s2: ['logs.step.subStep', 's2', Step] }>;
+  // type T32 = CleanKeys<Log, keyof Log, true>;
+  // type T33 = EntityRelations<Log>;
+  // type T41 = GetType<SerialNumber, object, 'sn.logs'>;
+  // type T42 = GetType<SerialNumber, { l: ['logs', 'l', Log]; s: ['logs.step', 's', Step] }, 'l.step'>;
+  // type T43 = GetType<SerialNumber, { l: ['logs', 'l', Log]; s: ['logs.step', 's', Step] }, 's.subStep'>;
+  // type T51 = QBField<SerialNumber, 'sn', { l: ['logs', 'l', Log]; s: ['logs.step', 's', Step]; s2: ['logs.step.subStep', 's2', Step] }>;
+
   const res2 = await orm.em
     .createQueryBuilder(SerialNumber, 'sn')
     .select('*')
     .leftJoinAndSelect('sn.logs', 'l')
     .leftJoinAndSelect('l.step', 's')
+    .leftJoinAndSelect('s.subStep', 's2')
     .getResultList();
   expect(res2).toHaveLength(1);
   expect(wrap(res2[0]).toJSON().logs[0].serialNumber).toBe('559fccf7-11f0-4e5a-8e15-ae29b98ddeb3');
   expect(wrap(res2[0]).toJSON().logs[0].step?.name).toBe('ASSY');
+  expect(wrap(res2[0]).toJSON().logs[0].step?.subStep?.name).toBe('INSP');
 });

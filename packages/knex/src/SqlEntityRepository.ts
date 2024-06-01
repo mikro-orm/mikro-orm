@@ -3,24 +3,26 @@ import { EntityRepository, type ConnectionType, type EntityName } from '@mikro-o
 import type { SqlEntityManager } from './SqlEntityManager';
 import type { QueryBuilder } from './query';
 
-export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
+export class SqlEntityRepository<Entity extends object> extends EntityRepository<Entity> {
 
-  constructor(protected override readonly em: SqlEntityManager,
-              entityName: EntityName<T>) {
+  constructor(
+    protected override readonly em: SqlEntityManager,
+    entityName: EntityName<Entity>,
+  ) {
     super(em, entityName);
   }
 
   /**
    * Creates a QueryBuilder instance
    */
-  createQueryBuilder(alias?: string): QueryBuilder<T> {
+  createQueryBuilder<RootAlias extends string = never>(alias?: RootAlias): QueryBuilder<Entity, RootAlias> {
     return this.getEntityManager().createQueryBuilder(this.entityName, alias);
   }
 
   /**
    * Shortcut for `createQueryBuilder()`
    */
-  qb(alias?: string): QueryBuilder<T> {
+  qb<RootAlias extends string = never>(alias?: RootAlias): QueryBuilder<Entity, RootAlias> {
     return this.createQueryBuilder(alias);
   }
 

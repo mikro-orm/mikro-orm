@@ -1,4 +1,15 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/sqlite';
+import {
+  Collection,
+  EagerProps,
+  Entity,
+  ManyToOne,
+  MikroORM,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  wrap,
+} from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -16,6 +27,8 @@ export class A {
 
 @Entity()
 export class C {
+
+  [EagerProps]?: 'bCollection';
 
   @PrimaryKey({ type: Number })
   id!: number;

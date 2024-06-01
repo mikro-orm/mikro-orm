@@ -1,4 +1,4 @@
-import type { MikroORM } from '@mikro-orm/core';
+import type { Loaded, MikroORM } from '@mikro-orm/core';
 import { Reference, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql } from '../../bootstrap';
@@ -229,7 +229,7 @@ describe('EntityAssignerMySql', () => {
         { title: 'b1' },
         { title: 'b2' },
       ],
-    });
+    }) as Loaded<Author2, 'books'>;
     entity.books.populated();
     const updated = wrap(entity).toObject();
     updated.books[0].title = 'updated name';

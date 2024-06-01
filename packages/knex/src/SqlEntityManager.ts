@@ -23,15 +23,15 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
   /**
    * Creates a QueryBuilder instance
    */
-  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, alias?: string, type?: ConnectionType, loggerContext?: LoggingOptions): QueryBuilder<T> {
+  createQueryBuilder<Entity extends object, RootAlias extends string = never>(entityName: EntityName<Entity> | QueryBuilder<Entity>, alias?: RootAlias, type?: ConnectionType, loggerContext?: LoggingOptions): QueryBuilder<Entity, RootAlias> {
     const context = this.getContext(false);
-    return this.driver.createQueryBuilder(entityName, context.getTransactionContext(), type, true, loggerContext ?? context.loggerContext, alias, this);
+    return this.driver.createQueryBuilder(entityName as EntityName<Entity>, context.getTransactionContext(), type, true, loggerContext ?? context.loggerContext, alias, this) as any;
   }
 
   /**
    * Shortcut for `createQueryBuilder()`
    */
-  qb<T extends object>(entityName: EntityName<T>, alias?: string, type?: ConnectionType, loggerContext?: LoggingOptions) {
+  qb<Entity extends object, RootAlias extends string = never>(entityName: EntityName<Entity>, alias?: RootAlias, type?: ConnectionType, loggerContext?: LoggingOptions) {
     return this.createQueryBuilder(entityName, alias, type, loggerContext);
   }
 

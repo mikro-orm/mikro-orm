@@ -104,16 +104,15 @@ beforeEach(async () => {
 test(`GH4741 issue (1/3)`, async () => {
   const em = orm.em.fork();
   const qb = em.createQueryBuilder(Outer, 'o');
-
   qb.select('*');
-  qb.leftJoinAndSelect('o.activeDivision', 'ad');
-  qb.leftJoinAndSelect('ad.inners', 'ai');
-  qb.leftJoinAndSelect('ai.geometry', 'g');
+  const qb2 = qb.leftJoinAndSelect('o.activeDivision', 'ad');
+  const qb3 = qb2.leftJoinAndSelect('ad.inners', 'ai');
+  const qb4 = qb3.leftJoinAndSelect('ai.geometry', 'g');
 
   const q = qb.getKnexQuery().toSQL();
   expect(q.sql).toBe('select `o`.*, `ad`.`id` as `ad__id`, `ad`.`outer_id` as `ad__outer_id`, `ai`.`id` as `ai__id`, `ai`.`geometry_id` as `ai__geometry_id`, `ai`.`division_id` as `ai__division_id`, `g`.`id` as `g__id` from `outer` as `o` left join `division` as `ad` on `o`.`active_division_id` = `ad`.`id` left join `inner` as `ai` on `ad`.`id` = `ai`.`division_id` left join `geometry` as `g` on `ai`.`geometry_id` = `g`.`id`');
 
-  const res = await qb.getResult();
+  const res = await qb4.getResult();
   expect(res.length).toBe(1);
 
   const outer = res[0];
