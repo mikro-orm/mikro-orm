@@ -61,9 +61,9 @@ In a nutshell, for ESM project we need to:
 
 > You can read more about the ESM support in Node.js [here](https://nodejs.org/api/esm.html).
 
-In addition to this, there is one gotcha with defining entities using decorators. The default way MikroORM uses to obtain a property type is via `reflect-metadata`. While this itself introduces [some challenges and limitations](https://mikro-orm.io/docs/metadata-providers#limitations-and-requirements), we can't use it in an ESM project. This is because, with ES modules, the dependencies are resolved asynchronously, in parallel, which is incompatible with how the `reflect-metadata` module currently works. For this reason, we need to use other ways to define the entity metadata - in this guide, we will use the `@mikro-orm/reflection` package, which uses `ts-morph` under the hood to gain information from TypeScript Compiler API. This works fine with ESM projects, and also opens up new ways of compiling the TypeScript files, like `esbuild` (which does not support decorator metadata).
+In addition to this, there is one gotcha with defining entities using decorators. The default way MikroORM uses to obtain a property type is via `reflect-metadata`. While this itself introduces [some challenges and limitations](/docs/metadata-providers#limitations-and-requirements), we can't use it in an ESM project. This is because, with ES modules, the dependencies are resolved asynchronously, in parallel, which is incompatible with how the `reflect-metadata` module currently works. For this reason, we need to use other ways to define the entity metadata - in this guide, we will use the `@mikro-orm/reflection` package, which uses `ts-morph` under the hood to gain information from TypeScript Compiler API. This works fine with ESM projects, and also opens up new ways of compiling the TypeScript files, like `esbuild` (which does not support decorator metadata).
 
-> Another way to define your entities is via [`EntitySchema`](https://mikro-orm.io/docs/entity-schema), this approach works also for vanilla JavaScript projects, as well as allows to define entities via interfaces instead of classes. Check the [Defining Entities section](https://mikro-orm.io/docs/defining-entities), all examples there have code tabs with definitions via `EntitySchema` too.
+> Another way to define your entities is via [`EntitySchema`](/docs/entity-schema), this approach works also for vanilla JavaScript projects, as well as allows to define entities via interfaces instead of classes. Check the [Defining Entities section](/docs/defining-entities), all examples there have code tabs with definitions via `EntitySchema` too.
 
 The reflection with `ts-morph` is performance heavy, so the [metadata are cached](../metadata-cache.md) into `temp` folder and invalidated automatically when you change your entity definition (or update the ORM version). You should add this folder to `.gitignore` file. Note that when you build your production bundle, you can leverage the CLI to generate production cache on build time to get faster start-up times. See the [deployment section](../deployment.md) for more about this.
 
@@ -71,12 +71,13 @@ The reflection with `ts-morph` is performance heavy, so the [metadata are cached
 
 We will use the following TypeScript config, so create the `tsconfig.json` file and copy it there. If you know what you are doing, you can adjust the configuration to fit your needs.
 
-For ESM support to work, we need to set `module` and `moduleResolution` to `Node16` and target `ES2022`. We also enable `strict` mode and `experimentalDecorators`, as well as the `declaration` option to generate the `.d.ts` files, needed by the `@mikro-orm/reflection` package. Lastly, we tell TypeScript to compile into `dist` folder via `outDir` and make it `include` all `*.ts` files inside `src` folder.
+For ESM support to work, we need to set `module` and `moduleResolution` to `NodeNext` and target `ES2022`. We also enable `strict` mode and `experimentalDecorators`, as well as the `declaration` option to generate the `.d.ts` files, needed by the `@mikro-orm/reflection` package. Lastly, we tell TypeScript to compile into `dist` folder via `outDir` and make it `include` all `*.ts` files inside `src` folder.
 
 ```json title='tsconfig.json'
 {
   "compilerOptions": {
-    "module": "Node16",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "target": "ES2022",
     "strict": true,
     "outDir": "dist",
@@ -155,7 +156,7 @@ export default defineConfig({
 
 Save this file into `src/mikro-orm.config.ts`, so it will get compiled together with the rest of your app. Next, you need to tell the ORM to enable TypeScript support for CLI, via `mikro-orm` section in the `package.json` file.
 
-> Alternatively, you can use `mikro-orm.config.js` file in the root of your project, such a file will get loaded automatically. Consult [the documentation](https://mikro-orm.io/docs/installation#setting-up-the-commandline-tool) for more info.
+> Alternatively, you can use `mikro-orm.config.js` file in the root of your project, such a file will get loaded automatically. Consult [the documentation](/docs/installation#setting-up-the-commandline-tool) for more info.
 
 ```json title='package.json'
 {
@@ -247,7 +248,7 @@ This was quite a lot of setup, but don't worry, most of the heavy lifting is beh
 
 :::info
 
-Check out the [[Defining Entities](../defining-entities.md) section which provides many examples of various property types as well as different ways to define your entities.
+Check out the [Defining Entities](../defining-entities.md) section which provides many examples of various property types as well as different ways to define your entities.
 
 :::
 
@@ -306,7 +307,7 @@ uuid = uuid.v4();
 
 To map regular database columns we can use the `@Property()` decorator. It works the same as the `@PrimaryKey()` decorator describer above. You could say it extends it - all the properties you can pass to the `@Property()` decorator are also available in `@PrimaryKey()` too.
 
-> We are using the ts-morph metadata provider, which helps with advanced type inference. Check out [the documentation](https://mikro-orm.io/docs/metadata-providers#limitations-and-requirements) for the differences if you'd like to use the default metadata provider which is based on `reflect-metadata`.
+> We are using the ts-morph metadata provider, which helps with advanced type inference. Check out [the documentation](/docs/metadata-providers#limitations-and-requirements) for the differences if you'd like to use the default metadata provider which is based on `reflect-metadata`.
 
 The ORM will automatically map `string` properties to `varchar`, for the `User.bio` we want to use `text` instead, so we change it via the `type` decorator option:
 
@@ -344,15 +345,50 @@ bio = '';
 
 When using the `columnType`, be careful about options like `length` or `precision/scale` - `columnType` is always used as-is, without any modification. This means you need to pass the final value there, including the length, e.g. `columnType: 'decimal(10,2)'`.
 
+## Initializing the ORM
+
+The last missing step is to initialize the [`MikroORM`](/api/core/class/MikroORM) to get access to the [`EntityManager`](/api/core/class/EntityManager) and other handy tools (like the [`SchemaGenerator`](/api/knex/class/SqlSchemaGenerator)). 
+
+```ts title='server.ts'
+import { MikroORM } from '@mikro-orm/sqlite'; // or any other driver package
+
+// initialize the ORM, loading the config file dynamically
+const orm = await MikroORM.init();
+console.log(orm.em); // access EntityManager via `em` property
+console.log(orm.schema); // access SchemaGeneartor via `schema` property
+```
+
+We used the [`init()`](/api/core/class/MikroORM#init) method without any parameters, which results in the ORM loading the CLI config automatically. In a more explicit way, it's the same as the following code:
+
+```ts title='server.ts'
+import { MikroORM } from '@mikro-orm/sqlite';
+import config from './mikro-orm.config.js';
+
+const orm = await MikroORM.init(config);
+```
+
+:::info Synchronous initialization
+
+As opposed to the async [`MikroORM.init`](/api/core/class/MikroORM#init) method, you can prefer to use synchronous variant [`initSync()`](/api/core/class/MikroORM#initSync). This method has
+some limitations:
+
+- database connection will be established when you first interact with the database (or you can use [`orm.connect()`](/api/core/class/MikroORM#connect)
+  explicitly)
+- no loading of the `config` file, `options` parameter is mandatory
+- no support for folder-based discovery
+- no check for mismatched package versions
+
+:::
+
 ## Working with Entity Manager
 
-So now you have the access to `EntityManager`, let's talk about how it works and how you can use it.
+So now you have the access to [`EntityManager`](/api/core/class/EntityManager), let's talk about how it works and how you can use it.
 
 ### Persist and Flush
 
-There are 2 methods we should first describe to understand how persisting works in MikroORM: `em.persist()` and `em.flush()`.
+There are 2 methods we should first describe to understand how persisting works in MikroORM: [`em.persist()`](/api/core/class/EntityManager#persist) and [`em.flush()`](/api/core/class/EntityManager#flush).
 
-`em.persist(entity)` is used to mark new entities for future persisting. It will make the entity managed by the `EntityManager` and once `flush` will be called, it will be written to the database.
+[`em.persist(entity)`](/api/core/class/EntityManager#persist) is used to mark new entities for future persisting. It will make the entity managed by the [`EntityManager`](/api/core/class/EntityManager) and once `flush` will be called, it will be written to the database.
 
 ```ts
 const user = new User();
@@ -366,9 +402,9 @@ await em.flush();
 await em.persist(user).flush();
 ```
 
-To understand `flush`, let's first define what managed entity is: An entity is managed if it's fetched from the database (via `em.find()`) or registered as new through `em.persist()` and flushed later (only after the `flush` it becomes managed).
+To understand `flush`, let's first define what managed entity is: An entity is managed if it's fetched from the database (via [`em.find()`](/api/core/class/EntityManager#find)) or registered as new through [`em.persist()`](/api/core/class/EntityManager#persist) and flushed later (only after the `flush` it becomes managed).
 
-`em.flush()` will go through all managed entities, compute appropriate change sets and perform according database queries. As an entity loaded from the database becomes managed
+[`em.flush()`](/api/core/class/EntityManager#flush) will go through all managed entities, compute appropriate change sets and perform according database queries. As an entity loaded from the database becomes managed
 automatically, we do not have to call persist on those, and flush is enough to update them.
 
 ```ts
@@ -403,7 +439,7 @@ If you need to work with the global instance's identity map, use `allowGlobalCon
 or `fork()` instead.
 ```
 
-Remember we said the `orm.em` is a global `EntityManager` instance? Looks like it is not a good idea to use it, in fact, it is disallowed by default. Before we get to the bottom of this message, let's quickly define two more terms we haven't touched yet - the Identity Map and Unit of Work.
+Remember we said the `orm.em` is a global [`EntityManager`](/api/core/class/EntityManager) instance? Looks like it is not a good idea to use it, in fact, it is disallowed by default. Before we get to the bottom of this message, let's quickly define two more terms we haven't touched yet - the Identity Map and Unit of Work.
 
 - Unit of Work maintains a list of objects (entities) affected by a business transaction and coordinates the writing out of changes.
 - Identity Map ensures that each object (entity) gets loaded only once by keeping every loaded object in a map. Looks up objects using the map when referring to them.
@@ -426,9 +462,9 @@ The Identity Map only knows objects by id, so a query for different criteria has
 
 ### Change Tracking
 
-The identity map has a second, more important use-case. Whenever you call `em.flush()`, the ORM will iterate over the Identity Map, and for each entity it compares the original state with the values that are currently set on the entity. If changes are detected, the object is queued for an SQL `UPDATE` operation. Only the fields that changed are part of the update query.
+The identity map has a second, more important use-case. Whenever you call [`em.flush()`](/api/core/class/EntityManager#flush), the ORM will iterate over the Identity Map, and for each entity it compares the original state with the values that are currently set on the entity. If changes are detected, the object is queued for an SQL `UPDATE` operation. Only the fields that changed are part of the update query.
 
-The following code will update your database with the changes made to the `Author` object, even if you did not call `em.persist()`:
+The following code will update your database with the changes made to the `Author` object, even if you did not call [`em.persist()`](/api/core/class/EntityManager#persist):
 
 ```ts
 const jon = await em.findOne(Author, 1);
@@ -442,7 +478,7 @@ await em.flush();
 
 The most important implication of having Unit of Work is that it allows handling transactions automatically.
 
-When you call `em.flush()`, all computed changes are queried inside a database transaction. This means that you can control the boundaries of transactions by calling `em.persist()` and once all your changes are ready, calling `flush()` will run them inside a transaction.
+When you call [`em.flush()`](/api/core/class/EntityManager#flush), all computed changes are queried inside a database transaction. This means that you can control the boundaries of transactions by calling [`em.persist()`](/api/core/class/EntityManager#persist) and once all your changes are ready, calling `flush()` will run them inside a transaction.
 
 > You can also control the transaction boundaries manually via `em.transactional(cb)`.
 
@@ -460,7 +496,7 @@ You can find more information about transactions in [Transactions and concurrenc
 
 ### Why is Request Context needed?
 
-Now back to the validation error about global context. With the freshly gained knowledge, we know `EntityManager` maintains a reference to all the managed entities in the Identity Map. Imagine we would use a single Identity Map throughout our application (so a single global context, global `EntityManager`). It will be shared across all request handlers, that can run in parallel.
+Now back to the validation error about global context. With the freshly gained knowledge, we know [`EntityManager`](/api/core/class/EntityManager) maintains a reference to all the managed entities in the Identity Map. Imagine we would use a single Identity Map throughout our application (so a single global context, global [`EntityManager`](/api/core/class/EntityManager)). It will be shared across all request handlers, that can run in parallel.
 
 1. growing memory footprint
 
@@ -485,7 +521,7 @@ Now back to the validation error about global context. With the freshly gained k
 
 ### Fork to the win!
 
-So we understand the problem better now, what's the solution? The error suggests it - forking. With the `fork()` method we get a clean `EntityManager` instance, that has a fresh Unit of Work with its own context and Identity Map.
+So we understand the problem better now, what's the solution? The error suggests it - forking. With the `fork()` method we get a clean [`EntityManager`](/api/core/class/EntityManager) instance, that has a fresh Unit of Work with its own context and Identity Map.
 
 ```ts title='server.ts'
 // fork first to have a separate context
@@ -501,7 +537,7 @@ Running `npm start` again, we get past the global context validation error, but 
 TableNotFoundException: insert into `user` (`bio`, `email`, `full_name`, `password`) values ('', 'foo@bar.com', 'Foo Bar', '123456') - no such table: user
 ```
 
-We forgot to create the database schema. Fortunately, we have all the tools we need at hand. You can use the `SchemaGenerator` provided by MikroORM to create the schema, as well as to keep it in sync when you change your entities. For the initial testing, let's use the `refreshDatabase()` method, which is handy for testing - it will first drop the schema if it already exists and create it from scratch based on entity definition (metadata).
+We forgot to create the database schema. Fortunately, we have all the tools we need at hand. You can use the [`SchemaGenerator`](/api/knex/class/SqlSchemaGenerator) provided by MikroORM to create the schema, as well as to keep it in sync when you change your entities. For the initial testing, let's use the `refreshDatabase()` method, which is handy for testing - it will first drop the schema if it already exists and create it from scratch based on entity definition (metadata).
 
 ```ts title='server.ts'
 // recreate the database schema
@@ -519,7 +555,7 @@ Finally, `npm start` should succeed, and if you enabled the debug mode in your c
 user id is: 1
 ```
 
-You can see the insert query being wrapped inside a transaction. That is another effect of the Unit of Work. The `em.flush()` call will perform all the queries inside a transaction. If something fails, the whole transaction will be rolled back.
+You can see the insert query being wrapped inside a transaction. That is another effect of the Unit of Work. The [`em.flush()`](/api/core/class/EntityManager#flush) call will perform all the queries inside a transaction. If something fails, the whole transaction will be rolled back.
 
 ### Fetching Entities
 
@@ -557,7 +593,7 @@ users are the same? true
 [query] commit
 ```
 
-Next, let's try to do the same, but with an `EntityManager` fork:
+Next, let's try to do the same, but with an [`EntityManager`](/api/core/class/EntityManager) fork:
 
 ```ts title='server.ts'
 // now try to create a new fork, does not matter if from `orm.em` or our existing `em` fork, as by default we get a clean one
@@ -581,19 +617,19 @@ We just used `em.findOneOrFail()` instead of `em.findOne()`, as you may have gue
 
 :::
 
-You can see there is a select query to load the user. This is because we used a new fork, that is clean by default - it has an empty Identity Map, and therefore it needs to load the entity from the database. In the previous example, we already had it present by the time we were calling `em.findOne()`. You queried the entity by its primary key, and such query will always first check the identity map and prefer the results from it instead of querying the database.
+You can see there is a select query to load the user. This is because we used a new fork, that is clean by default—it has an empty Identity Map, and therefore it needs to load the entity from the database. In the previous example, we already had it present by the time we were calling `em.findOne()`. You queried the entity by its primary key, and such a query will always first check the identity map and prefer the results from it instead of querying the database.
 
 ### Refreshing loaded entities
 
 The behavior described above is often what we want and serves as a first-level cache, but what if you always want to reload that entity, regardless of the existing state? There are several options:
 
-> [`FindOptions`](https://mikro-orm.io/api/core/interface/FindOptions) is the last parameter of `em.find/findOne` methods.
+> [`FindOptions`](/api/core/interface/FindOptions) is the last parameter of `em.find/findOne` methods.
 
 1. fork first, to have a clear context
 2. use `disableIdentityMap: true` in the `FindOptions`
 3. use `em.refresh(entity)`
 
-The first two have pretty much the same effect, using `disableIdentityMap` just does the forking for us behind the scenes. Let's talk about the last one - refreshing. With `em.refresh()`, the `EntityManager` will ignore the contents of the Identity Map and always fetch the entity from the database.
+The first two have pretty much the same effect, using `disableIdentityMap` just does the forking for us behind the scenes. Let's talk about the last one - refreshing. With `em.refresh()`, the [`EntityManager`](/api/core/class/EntityManager) will ignore the contents of the Identity Map and always fetch the entity from the database.
 
 ```ts title='server.ts'
 // change the user
@@ -626,9 +662,9 @@ changes are lost User {
 
 ### Removing entities
 
-We touched on creating, reading and updating entities, the last piece of the puzzle to the CRUD riddle is the delete operation. To delete entities via `EntityManager`, we have two possibilities:
+We touched on creating, reading and updating entities, the last piece of the puzzle to the CRUD riddle is the delete operation. To delete entities via [`EntityManager`](/api/core/class/EntityManager), we have two possibilities:
 
-1. Mark entity instance via `em.remove()` - this means we first need to have the entity instance. But don't worry, you can get one even without loading it from the database - via `em.getReference()`.
+1. Mark entity instance via `em.remove()` - this means we first need to have the entity instance. But don't worry, you can get one even without loading it from the database - via [`em.getReference()`](/api/core/class/EntityManager#getReference).
 2. Fire `DELETE` query via `em.nativeDelete()` - when all you want is a simple delete query, it can be simple as that.
 
 Let's test the first approach with removing by entity instance:
@@ -640,7 +676,7 @@ await em2.remove(myUser3!).flush();
 
 ### Entity references
 
-So what does the `em.getReference()` method mentioned above do and what is an _entity reference_ in the first place?
+So what does the [`em.getReference()`](/api/core/class/EntityManager#getReference) method mentioned above do and what is an _entity reference_ in the first place?
 
 MikroORM represents every entity as an object, even those that are not fully loaded. Those are called entity references - they are in fact regular entity class instances, but only with their primary key available. This makes it possible to create them without querying the database. References are stored in the identity map just like any other entity.
 
@@ -651,7 +687,7 @@ const userRef = em.getReference(User, 1);
 await em.remove(userRef).flush();
 ```
 
-This concept is especially important for relationships and can be combined with the so-called `Reference` wrapper for added type safety, but we will get to that later.
+This concept is especially important for relationships and can be combined with the so-called [`Reference`](/api/core/class/Reference) wrapper for added type safety, but we will get to that later.
 
 ### Entity state and `WrappedEntity`
 
@@ -673,7 +709,7 @@ The `WrappedEntity` instance also holds the state of the entity at the time it w
 
 ## ⛳ Checkpoint 1
 
-Currently, our app consists of a single `User` entity and a `server.ts` file where we tested how to work with it using `EntityManager`. You can find working StackBlitz for the current state here:
+Currently, our app consists of a single `User` entity and a `server.ts` file where we tested how to work with it using [`EntityManager`](/api/core/class/EntityManager). You can find working StackBlitz for the current state here:
 
 > Due to the nature of how the ESM support in ts-node works, it is not possible to use it inside StackBlitz project - we need to use `node --loader` instead. We also use in-memory database, SQLite feature available via special database name `:memory:`.
 

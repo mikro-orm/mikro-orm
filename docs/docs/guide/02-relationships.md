@@ -119,7 +119,7 @@ author?: User;
 author?: User;
 ```
 
-Consult [the docs](https://mikro-orm.io/docs/metadata-providers#limitations-and-requirements) for more examples.
+Consult [the docs](/docs/metadata-providers#limitations-and-requirements) for more examples.
 
 :::
 
@@ -136,7 +136,7 @@ Relations can be unidirectional and bidirectional. Unidirectional relation is de
 
 > When modeling bidirectional relationship, you can also omit the `inversedBy` attribute, defining `mappedBy` on the inverse side is enough as it will be auto-wired.
 
-Check the [Modeling Entity Relationships](https://mikro-orm.io/docs/relationships) section in the documentation for more details and examples for each of the types.
+Check the [Modeling Entity Relationships](/docs/relationships) section in the documentation for more details and examples for each of the types.
 
 ## Working with relations
 
@@ -144,7 +144,7 @@ Let's get back to the `server.ts` file and try a few things out with our new `Ar
 
 ### Creating entity graph
 
-So far we used the entity constructor manually to create an entity instance. Sometimes we might want to create the whole entity graph, including relations. You can use `em.create()` for that, it is a synchronous method that creates the entity instance for you. It allows you to create a deep entity graph, mapping foreign keys of your relations to entity references of the correct type. This method will also call `em.persist()` on the created entity (unless disabled via `persistOnCreate` option).
+So far we used the entity constructor manually to create an entity instance. Sometimes we might want to create the whole entity graph, including relations. You can use [`em.create()`](/api/core/class/EntityManager#create) for that, it is a synchronous method that creates the entity instance for you. It allows you to create a deep entity graph, mapping foreign keys of your relations to entity references of the correct type. This method will also call [`em.persist()`](/api/core/class/EntityManager#persist) on the created entity (unless disabled via `persistOnCreate` option).
 
 > You can wipe most of the contents of `server.ts` file and keep only the initial part with ORM init, up to the point where the first `User` entity gets flushed, plus the `orm.close()` call at the end. We won't be using this code going forward, it is just a playground for you.
 
@@ -178,7 +178,7 @@ console.log(article);
 
 :::info `em.clear()`
 
-If you carefully checked this snippet, you probably found that new mysterious `em.clear()` call. What it does do? It clears the context for the `EntityManager`, meaning it will detach all the entities it was managing. It will bring the `EntityManager` to the same state as if you would create a fresh fork via `em.fork()`. You won't usually need this in your app, but it is very handy for unit testing, to simulate new requests coming in. You may as well use forks explicitly if you want.
+If you carefully checked this snippet, you probably found that new mysterious [`em.clear()`](/api/core/class/EntityManager#clear) call. What it does do? It clears the context for the [`EntityManager`](/api/core/class/EntityManager), meaning it will detach all the entities it was managing. It will bring the [`EntityManager`](/api/core/class/EntityManager) to the same state as if you would create a fresh fork via [`em.fork()`](/api/core/class/EntityManager#fork). You won't usually need this in your app, but it is very handy for unit testing, to simulate new requests coming in. You may as well use forks explicitly if you want.
 
 :::
 
@@ -189,7 +189,7 @@ Argument of type '{ slug: string; title: string; description: string; text: stri
   Type '{ slug: string; title: string; description: string; text: string; author: number; }' is missing the following properties from type '{ slug: string; title: string; description: string; text: string; author: EntityData<User> | { id?: number | null | undefined; fullName?: string | null | undefined; email?: string | ... 1 more ... | undefined; password?: string | ... 1 more ... | undefined; bio?: string | ... 1 more ... | undefined; } | EntityDataPr...': createdAt, updatedAt ts(2345)
 ```
 
-It's indeed a bit ugly, but if you look carefully, you will the important details at the very beginning and at the very end. This error tells us the object we are passing into `em.create()` is not complete - it is missing two properties, the `createdAt` and `updatedAt` timestamps. But we define the default value for them via property initializer, what's the problem here?
+It's indeed a bit ugly, but if you look carefully, you will the important details at the very beginning and at the very end. This error tells us the object we are passing into [`em.create()`](/api/core/class/EntityManager#create) is not complete - it is missing two properties, the `createdAt` and `updatedAt` timestamps. But we define the default value for them via property initializer, what's the problem here?
 
 The thing is, there is no easy way to tell whether an object property has an initializer or not - for TypeScript our `createdAt` and `updatedAt` properties are both mandatory. To get around this while preserving the strict type checking, you can use the `OptionalProps` symbol. As both of the problematic properties live in the `BaseEntity`, put it there:
 
@@ -292,7 +292,7 @@ export class Article extends BaseEntity {
 }
 ```
 
-With this change, the `slug` and `description` properties are optional too - but `em.create()` complains about them. You need to add them to the `OptionalProps` definition, as with the timestamps before. But these are the `Article` entity properties, so we should do it in the `Article` entity somehow. Maybe like this?
+With this change, the `slug` and `description` properties are optional too - but [`em.create()`](/api/core/class/EntityManager#create) complains about them. You need to add them to the `OptionalProps` definition, as with the timestamps before. But these are the `Article` entity properties, so we should do it in the `Article` entity somehow. Maybe like this?
 
 ```ts title='article.entity.ts'
 export class Article extends BaseEntity {
@@ -327,7 +327,7 @@ export class Article extends BaseEntity<'slug' | 'description'> {
 }
 ```
 
-Now the `em.create()` call work even without the `slug` and `description:
+Now the [`em.create()`](/api/core/class/EntityManager#create) call work even without the `slug` and `description:
 
 ```ts
 const article = em.create(Article, {
@@ -526,7 +526,7 @@ That should be good enough for the time being. Don't worry, we will improve on t
 
 ## Collections: OneToMany and ManyToMany
 
-You got the `User` entity opened, let's add one more property to it. You have the `Article.author` property that defines the owning side of this relationship between `Article` and `User` entities. Now define the inverse side - for ManyToOne relation it is the OneToMany kind - represented by a `Collection` of `Article` entities:
+You got the `User` entity opened, let's add one more property to it. You have the `Article.author` property that defines the owning side of this relationship between `Article` and `User` entities. Now define the inverse side—for ManyToOne relation it is the OneToMany kind—represented by a `Collection` of `Article` entities:
 
 ```ts
 @Entity()
@@ -673,7 +673,7 @@ article.tags.remove(t => t.id === oldTag.id);
 await em.flush();
 ```
 
-Refer to the [Collections section](https://mikro-orm.io/docs/collections) in the docs for more information and examples.
+Refer to the [Collections section](/docs/collections) in the docs for more information and examples.
 
 # Events and life cycle hooks
 

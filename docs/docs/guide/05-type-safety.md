@@ -22,7 +22,7 @@ console.log(wrap(user).isInitialized()); // true
 console.log(user.name); // defined
 ```
 
-The `isInitialized()` method can be used for runtime checks, but that could end up being quite tedious - we can do better! Instead of manual checks for entity state, we can use the `Reference` wrapper.
+The `isInitialized()` method can be used for runtime checks, but that could end up being quite tedious - we can do better! Instead of manual checks for entity state, we can use the [`Reference`](/api/core/class/Reference) wrapper.
 
 ## `Reference` wrapper
 
@@ -50,7 +50,7 @@ console.log(wrap(article.author).isInitialized()); // false
 console.log(article.author.name); // undefined as `User` is not loaded yet
 ```
 
-You can overcome this issue by using the `Reference` wrapper. It simply wraps the entity, defining `load(): Promise<T>` method that will first lazy load the association if not already available. You can also use `unwrap(): T` method to access the underlying entity without loading it.
+You can overcome this issue by using the [`Reference`](/api/core/class/Reference) wrapper. It simply wraps the entity, defining `load(): Promise<T>` method that will first lazy load the association if not already available. You can also use `unwrap(): T` method to access the underlying entity without loading it.
 
 You can also use `load<K extends keyof T>(prop: K): Promise<T[K]>`, which works like `load()` but returns the specified property.
 
@@ -124,7 +124,7 @@ await article2.author.load(); // no additional query, already loaded
 
 ### `ScalarReference` wrapper
 
-Similarly to the `Reference` wrapper, we can also wrap scalars with `Ref` into a `ScalarReference` object. This is handy for lazy scalar properties.
+Similarly to the [`Reference`](/api/core/class/Reference) wrapper, we can also wrap scalars with `Ref` into a `ScalarReference` object. This is handy for lazy scalar properties.
 
 ```ts
 @Property({ lazy: true, ref: true })
@@ -174,7 +174,7 @@ export class User {
 }
 ```
 
-The `Loaded` type will represent what relations of the entity are populated, and will add a special `$` symbol to them, allowing for type-safe synchronous access to the loaded properties. This works great in combination with the `Reference` wrapper:
+The `Loaded` type will represent what relations of the entity are populated, and will add a special `$` symbol to them, allowing for type-safe synchronous access to the loaded properties. This works great in combination with the [`Reference`](/api/core/class/Reference) wrapper:
 
 > If you don't like symbols with magic names like `$`, you can as well use the `get()` method, which is an alias for it.
 
@@ -234,7 +234,7 @@ checkIdentity(u2);
 
 ## Assigning to `Reference` properties
 
-When you define the property as `Reference` wrapper, you will need to assign the `Reference` instance to it instead of the entity. You can convert any entity to a `Reference` wrapper via `ref(entity)`, or use the `wrapped` option of `em.getReference()`:
+When you define the property as [`Reference`](/api/core/class/Reference) wrapper, you will need to assign the [`Reference`](/api/core/class/Reference) instance to it instead of the entity. You can convert any entity to a [`Reference`](/api/core/class/Reference) wrapper via `ref(entity)`, or use the `wrapped` option of [`em.getReference()`](/api/core/class/EntityManager#getReference):
 
 > `ref(e)` is a shortcut for `wrap(e).toReference()`, which is the same as `Reference.create(e)`.
 
@@ -251,7 +251,7 @@ article.author = ref(repo.getReference(2));
 await em.flush();
 ```
 
-Since v5 we can also create entity references without access to `EntityManager`. This can be handy if you want to create a reference from inside the entity constructor:
+Since v5 we can also create entity references without access to [`EntityManager`](/api/core/class/EntityManager). This can be handy if you want to create a reference from inside the entity constructor:
 
 ```ts
 import { Entity, ManyToOne, Rel, rel } from '@mikro-orm/core';
@@ -276,7 +276,7 @@ const author = new User(...)
 article.author = wrap(author).toReference();
 ```
 
-If the reference already exist, you need to re-assign it with a new `Reference` instance - they hold identity just like entities, so you need to replace them:
+If the reference already exist, you need to re-assign it with a new [`Reference`](/api/core/class/Reference) instance - they hold identity just like entities, so you need to replace them:
 
 ```ts
 article.author = ref(new User(...));
@@ -284,7 +284,7 @@ article.author = ref(new User(...));
 
 ## What is `Ref` type?
 
-`Ref` is an intersection type that adds primary key property to the `Reference` interface. It allows to get the primary key from `Reference` instance directly.
+`Ref` is an intersection type that adds primary key property to the [`Reference`](/api/core/class/Reference) interface. It allows to get the primary key from [`Reference`](/api/core/class/Reference) instance directly.
 
 By default, we try to detect the PK by checking if a property with a known name exists. We check for those in order: `_id`, `uuid`, `id` - with a way to manually set the property name via the `PrimaryKeyProp` symbol (`[PrimaryKeyProp]?: 'foo';`).
 
