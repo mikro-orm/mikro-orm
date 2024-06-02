@@ -70,6 +70,7 @@ test('validation', async () => {
   });
 
   user.lastName = 'Changed';
+  user.fullName = 'Changed'; // will be ignored
   await orm.em.flush();
 
   expect(user).toEqual({
