@@ -442,7 +442,7 @@ That should be enough for now, but don't you worry, we will get back to this top
 
 Earlier in the guide, when we needed to create the database for testing, we used the `SchemaGenerator` to recreate our database. Let's talk a bit more about this class.
 
-[`SchemaGenerator`](/docs/schema-generator) is responsible for generating the SQL queries based on your entity metadata. In other words, it translates the entity definition into the Data Definition Language (DDL). Moreover, it can also understand your current database schema and compare it with the metadata, resulting in queries needed to put your schema in sync.
+[`SchemaGenerator`](../schema-generator) is responsible for generating the SQL queries based on your entity metadata. In other words, it translates the entity definition into the Data Definition Language (DDL). Moreover, it can also understand your current database schema and compare it with the metadata, resulting in queries needed to put your schema in sync.
 
 It can be used programmatically:
 
@@ -559,7 +559,7 @@ MikroORM will generate the down migrations automatically (although not for the i
 
 > You can also execute queries inside the `up()`/`down()` method via `this.execute('...')`, which will run queries in the same transaction as the rest of the migration. The `this.addSql('...)` method also accepts instances of knex. Knex instance can be accessed via `this.getKnex()`;
 
-Read more about migrations in the [documentation](/docs/migrations).
+Read more about migrations in the [documentation](../migrations).
 
 ### One more entity
 

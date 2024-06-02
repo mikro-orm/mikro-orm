@@ -61,9 +61,9 @@ In a nutshell, for ESM project we need to:
 
 > You can read more about the ESM support in Node.js [here](https://nodejs.org/api/esm.html).
 
-In addition to this, there is one gotcha with defining entities using decorators. The default way MikroORM uses to obtain a property type is via `reflect-metadata`. While this itself introduces [some challenges and limitations](/docs/metadata-providers#limitations-and-requirements), we can't use it in an ESM project. This is because, with ES modules, the dependencies are resolved asynchronously, in parallel, which is incompatible with how the `reflect-metadata` module currently works. For this reason, we need to use other ways to define the entity metadata - in this guide, we will use the `@mikro-orm/reflection` package, which uses `ts-morph` under the hood to gain information from TypeScript Compiler API. This works fine with ESM projects, and also opens up new ways of compiling the TypeScript files, like `esbuild` (which does not support decorator metadata).
+In addition to this, there is one gotcha with defining entities using decorators. The default way MikroORM uses to obtain a property type is via `reflect-metadata`. While this itself introduces [some challenges and limitations](../metadata-providers#limitations-and-requirements), we can't use it in an ESM project. This is because, with ES modules, the dependencies are resolved asynchronously, in parallel, which is incompatible with how the `reflect-metadata` module currently works. For this reason, we need to use other ways to define the entity metadata - in this guide, we will use the `@mikro-orm/reflection` package, which uses `ts-morph` under the hood to gain information from TypeScript Compiler API. This works fine with ESM projects, and also opens up new ways of compiling the TypeScript files, like `esbuild` (which does not support decorator metadata).
 
-> Another way to define your entities is via [`EntitySchema`](/docs/entity-schema), this approach works also for vanilla JavaScript projects, as well as allows to define entities via interfaces instead of classes. Check the [Defining Entities section](/docs/defining-entities), all examples there have code tabs with definitions via `EntitySchema` too.
+> Another way to define your entities is via [`EntitySchema`](../entity-schema), this approach works also for vanilla JavaScript projects, as well as allows to define entities via interfaces instead of classes. Check the [Defining Entities section](../defining-entities), all examples there have code tabs with definitions via `EntitySchema` too.
 
 The reflection with `ts-morph` is performance heavy, so the [metadata are cached](../metadata-cache.md) into `temp` folder and invalidated automatically when you change your entity definition (or update the ORM version). You should add this folder to `.gitignore` file. Note that when you build your production bundle, you can leverage the CLI to generate production cache on build time to get faster start-up times. See the [deployment section](../deployment.md) for more about this.
 
@@ -156,7 +156,7 @@ export default defineConfig({
 
 Save this file into `src/mikro-orm.config.ts`, so it will get compiled together with the rest of your app. Next, you need to tell the ORM to enable TypeScript support for CLI, via `mikro-orm` section in the `package.json` file.
 
-> Alternatively, you can use `mikro-orm.config.js` file in the root of your project, such a file will get loaded automatically. Consult [the documentation](/docs/installation#setting-up-the-commandline-tool) for more info.
+> Alternatively, you can use `mikro-orm.config.js` file in the root of your project, such a file will get loaded automatically. Consult [the documentation](../quick-start#setting-up-the-commandline-tool) for more info.
 
 ```json title='package.json'
 {
@@ -307,7 +307,7 @@ uuid = uuid.v4();
 
 To map regular database columns we can use the `@Property()` decorator. It works the same as the `@PrimaryKey()` decorator describer above. You could say it extends it - all the properties you can pass to the `@Property()` decorator are also available in `@PrimaryKey()` too.
 
-> We are using the ts-morph metadata provider, which helps with advanced type inference. Check out [the documentation](/docs/metadata-providers#limitations-and-requirements) for the differences if you'd like to use the default metadata provider which is based on `reflect-metadata`.
+> We are using the ts-morph metadata provider, which helps with advanced type inference. Check out [the documentation](../metadata-providers#limitations-and-requirements) for the differences if you'd like to use the default metadata provider which is based on `reflect-metadata`.
 
 The ORM will automatically map `string` properties to `varchar`, for the `User.bio` we want to use `text` instead, so we change it via the `type` decorator option:
 
@@ -687,7 +687,7 @@ const userRef = em.getReference(User, 1);
 await em.remove(userRef).flush();
 ```
 
-This concept is especially important for relationships and can be combined with the so-called [`Reference`](/api/core/class/Reference) wrapper for added type safety, but we will get to that later.
+This concept is especially important for relationships and can be combined with the so-called `Reference` wrapper for added type safety, but we will get to that later.
 
 ### Entity state and `WrappedEntity`
 

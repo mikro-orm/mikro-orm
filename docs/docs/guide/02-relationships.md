@@ -119,7 +119,7 @@ author?: User;
 author?: User;
 ```
 
-Consult [the docs](/docs/metadata-providers#limitations-and-requirements) for more examples.
+Consult [the docs](../metadata-providers#limitations-and-requirements) for more examples.
 
 :::
 
@@ -136,7 +136,7 @@ Relations can be unidirectional and bidirectional. Unidirectional relation is de
 
 > When modeling bidirectional relationship, you can also omit the `inversedBy` attribute, defining `mappedBy` on the inverse side is enough as it will be auto-wired.
 
-Check the [Modeling Entity Relationships](/docs/relationships) section in the documentation for more details and examples for each of the types.
+Check the [Modeling Entity Relationships](../relationships) section in the documentation for more details and examples for each of the types.
 
 ## Working with relations
 
@@ -673,7 +673,7 @@ article.tags.remove(t => t.id === oldTag.id);
 await em.flush();
 ```
 
-Refer to the [Collections section](/docs/collections) in the docs for more information and examples.
+Refer to the [Collections section](../collections) in the docs for more information and examples.
 
 # Events and life cycle hooks
 
