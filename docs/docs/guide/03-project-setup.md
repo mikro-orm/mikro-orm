@@ -378,7 +378,7 @@ export class TestSeeder extends Seeder {
 }
 ```
 
-Remember the `em.create()` function we described earlier? It has one special option we didn't mention before - `persistOnCreate`. This option will effectively call `em.persist(entity)` before it gets returned, and can be enabled globally in your ORM config. And this option, while being set to `false` by default, is set to `true` in the context of a `Seeder`. This means you can create entities just by calling `em.create()`, ignoring the return value. Time to test it!
+We can use the `em.create()` function we described earlier. It effectively calls `em.persist(entity)` before it returns the created entity, so you don't even need to do anything with the entity itself, calling `em.create()` on its own will be enough. Time to test it!
 
 ```ts title='TestSeeder.ts'
 export class TestSeeder extends Seeder {

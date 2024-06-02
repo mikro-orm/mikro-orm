@@ -144,7 +144,7 @@ Let's get back to the `server.ts` file and try a few things out with our new `Ar
 
 ### Creating entity graph
 
-So far we used the entity constructor manually to create an entity instance. Sometimes we might want to create the whole entity graph, including relations. You can use `em.create()` for that, it is a synchronous method that creates the entity instance for you. It allows you to create a deep entity graph, mapping foreign keys of your relations to entity references of the correct type.
+So far we used the entity constructor manually to create an entity instance. Sometimes we might want to create the whole entity graph, including relations. You can use `em.create()` for that, it is a synchronous method that creates the entity instance for you. It allows you to create a deep entity graph, mapping foreign keys of your relations to entity references of the correct type. This method will also call `em.persist()` on the created entity (unless disabled via `persistOnCreate` option).
 
 > You can wipe most of the contents of `server.ts` file and keep only the initial part with ORM init, up to the point where the first `User` entity gets flushed, plus the `orm.close()` call at the end. We won't be using this code going forward, it is just a playground for you.
 
@@ -171,8 +171,8 @@ const article = em.create(Article, {
   author: user.id,
 });
 
-// and persist it to the database
-await em.persist(article).flush();
+// `em.create` calls `em.persist` automatically, so flush is enough
+await em.flush();
 console.log(article);
 ```
 
