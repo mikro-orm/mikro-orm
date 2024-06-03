@@ -50,7 +50,7 @@ exports[`GH issue 5629, createCompositeKeyArray 1`] = `
     ],
   },
   {
-    "compositeKey": "[result.tenant_id, [result.something_id, result.something_id], result.x1_id]",
+    "compositeKey": "[result.tenant_id, [result.tenant_id, result.something_id], result.x1_id]",
     "fieldNames": [
       "tenant_id",
       "something_id",
@@ -58,7 +58,7 @@ exports[`GH issue 5629, createCompositeKeyArray 1`] = `
     ],
   },
   {
-    "compositeKey": "[result.tenant_id, [result.something_id, result.something_id], [result.x1_id, [result.x1_id, result.x1_id], result.x1_id], result.x2_id]",
+    "compositeKey": "[result.tenant_id, [result.tenant_id, result.something_id], [result.tenant_id, [result.tenant_id, result.something_id], result.x1_id], result.x2_id]",
     "fieldNames": [
       "tenant_id",
       "something_id",
@@ -67,7 +67,7 @@ exports[`GH issue 5629, createCompositeKeyArray 1`] = `
     ],
   },
   {
-    "compositeKey": "[result.tenant_id, [result.something_id, result.something_id], [result.x1_id, [result.x1_id, result.x1_id], result.x1_id], [result.x2_id, [result.x2_id, result.x2_id], [result.x2_id, [result.x2_id, result.x2_id], result.x2_id], result.x2_id], result.x3_id]",
+    "compositeKey": "[result.tenant_id, [result.tenant_id, result.something_id], [result.tenant_id, [result.tenant_id, result.something_id], result.x1_id], [result.tenant_id, [result.tenant_id, result.something_id], [result.tenant_id, [result.tenant_id, result.something_id], result.x1_id], result.x2_id], result.x3_id]",
     "fieldNames": [
       "tenant_id",
       "something_id",

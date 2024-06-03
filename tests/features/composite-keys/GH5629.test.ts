@@ -162,8 +162,7 @@ test(`GH issue 5629`, async () => {
   const x1 = orm.em.create(SomethingThatBelongsToSomething, { tenant, something, id: '3' });
   const x2 = orm.em.create(SomethingThatBelongsX2, { tenant, something, x1, id: '4' });
   const x3 = orm.em.create(SomethingThatBelongsX3, { tenant, something, x1, x2, id: '5' });
-
-  const x4 = orm.em.create(SomethingThatBelongsX4, { tenant, something, x1, x2, x3 });
+  orm.em.create(SomethingThatBelongsX4, { tenant, something, x1, x2, x3 });
 
   await orm.em.flush();
 
@@ -176,11 +175,11 @@ test(`GH issue 5629`, async () => {
   }))!;
 
   expect(resolved).toMatchObject({
-    tenant: { id: '1' },
-    something: { id: '2' },
-    x1: { id: '3' },
-    x2: { id: '4' },
-    x3: { id: '5' },
+    tenant,
+    something,
+    x1,
+    x2,
+    x3,
   });
 });
 

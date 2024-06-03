@@ -19,6 +19,7 @@ type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
 type SnapshotGenerator<T> = (entity: T) => EntityData<T>;
 type PkGetter<T> = (entity: T) => Primary<T>;
 type PkSerializer<T> = (entity: T) => string;
+type CompositeKeyPart = string | CompositeKeyPart[];
 
 export class EntityComparator {
 
@@ -253,27 +254,48 @@ export class EntityComparator {
   propName = (name: string, parent = 'result') => parent + this.wrap(name);
 
   // respects nested composite keys, e.g. `[1, [2, 3]]`
-  createCompositeKeyArray = (prop: EntityProperty, fieldNames = prop.fieldNames, idx = 0, foundFields = new Set<string>()): string => {
+  createCompositeKeyArray = (prop: EntityProperty, parents: EntityProperty[] = []): string => {
     if (!prop.targetMeta) {
-      return this.propName(fieldNames[idx]);
+      let fieldName = prop.fieldNames[0];
+      for (let i = parents.length - 1; i >= 0; i--) {
+        const parent = parents[i];
+
+        // look for the field name in teh parents referencedColumnNames, except for M:N without a pivot entity
+        //   (in that case, the field names are the referenced PK's )
+        const target = parent.kind === ReferenceKind.MANY_TO_MANY  && parent.pivotEntity === parent.pivotTable ?
+          parent.referencedPKs : parent.referencedColumnNames;
+
+        // this behaves differently based on relationship type.
+        const idx = target.indexOf(fieldName);
+
+        fieldName = parent.fieldNames[idx];
+      }
+
+      return this.propName(fieldName);
     }
 
-    const parts: string[] = [];
+    const parts: CompositeKeyPart[] = [];
 
-    for (const pk of prop.targetMeta.getPrimaryProps()) {
-      const oldSize = foundFields.size;
+    prop.targetMeta.getPrimaryProps().forEach(pk => {
+      const part = this.createCompositeKeyArray(pk, [...parents, prop]);
+      parts.push(part);
+      // console.log(prop.name, pk.name, pk.fieldNames, part)
+    });
 
-      pk.fieldNames.forEach(field => foundFields.add(field));
-      const added = foundFields.size - oldSize;
-      parts.push(this.createCompositeKeyArray(pk, fieldNames, idx, foundFields));
-      idx += added;
+    return this.formatCompositeKeyPart(parts);
+  };
+
+  formatCompositeKeyPart = (part: CompositeKeyPart): string  => {
+    if (!Array.isArray(part)) {
+      return part;
     }
 
-    if (parts.length < 2) {
-      return parts[0];
+    if (part.length === 1) {
+      return this.formatCompositeKeyPart(part[0]);
     }
 
-    return '[' + parts.join(', ') + ']';
+    const formatted = part.map(this.formatCompositeKeyPart).join(', ');
+    return `[${formatted}]`;
   };
 
   /**
