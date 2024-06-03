@@ -281,7 +281,6 @@ export class EntityComparator {
     prop.targetMeta.getPrimaryProps().forEach(pk => {
       const part = this.createCompositeKeyArray(pk, [...parents, prop]);
       parts.push(part);
-      // console.log(prop.name, pk.name, pk.fieldNames, part)
     });
 
     return this.formatCompositeKeyPart(parts);
