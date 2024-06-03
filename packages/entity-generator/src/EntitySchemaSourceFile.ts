@@ -12,15 +12,11 @@ import { identifierRegex, SourceFile } from './SourceFile';
 export class EntitySchemaSourceFile extends SourceFile {
 
   override generate(): string {
-    this.coreImports.add('EntitySchema');
-
     let classBody = '';
     if (this.meta.className === this.options.customBaseEntityName) {
-      this.coreImports.add('Config');
-      this.coreImports.add('DefineConfig');
       const defineConfigTypeSettings: TypeConfig = {};
       defineConfigTypeSettings.forceObject = this.platform.getConfig().get('serialization').forceObject ?? false;
-      classBody += `${' '.repeat(2)}[Config]?: DefineConfig<${this.serializeObject(defineConfigTypeSettings)}>;\n`;
+      classBody += `${' '.repeat(2)}[${this.referenceCoreImport('Config')}]?: ${this.referenceCoreImport('DefineConfig')}<${this.serializeObject(defineConfigTypeSettings)}>;\n`;
     }
 
     const enumDefinitions: string[] = [];
@@ -46,20 +42,18 @@ export class EntitySchemaSourceFile extends SourceFile {
     }
 
     if (primaryProps.length > 0) {
-      this.coreImports.add('PrimaryKeyProp');
       const primaryPropNames = primaryProps.map(prop => `'${prop.name}'`);
 
       if (primaryProps.length > 1) {
-        classBody += `${' '.repeat(2)}[PrimaryKeyProp]?: [${primaryPropNames.join(', ')}];\n`;
+        classBody += `${' '.repeat(2)}[${this.referenceCoreImport('PrimaryKeyProp')}]?: [${primaryPropNames.join(', ')}];\n`;
       } else {
-        classBody += `${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames[0]};\n`;
+        classBody += `${' '.repeat(2)}[${this.referenceCoreImport('PrimaryKeyProp')}]?: ${primaryPropNames[0]};\n`;
       }
     }
 
     if (eagerProperties.length > 0) {
-      this.coreImports.add('EagerProps');
       const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
-      classBody += `${' '.repeat(2)}[EagerProps]?: ${eagerPropertyNames.join(' | ')};\n`;
+      classBody += `${' '.repeat(2)}[${this.referenceCoreImport('EagerProps')}]?: ${eagerPropertyNames.join(' | ')};\n`;
     }
 
     classBody += `${props.join('')}`;
@@ -70,7 +64,7 @@ export class EntitySchemaSourceFile extends SourceFile {
     }
 
     ret += `\n`;
-    ret += `export const ${this.meta.className}Schema = new EntitySchema({\n`;
+    ret += `export const ${this.meta.className}Schema = new ${this.referenceCoreImport('EntitySchema')}({\n`;
     ret += `  class: ${this.meta.className},\n`;
 
     if (this.meta.tableName && this.meta.tableName !== this.namingStrategy.classToTableName(this.meta.className)) {
