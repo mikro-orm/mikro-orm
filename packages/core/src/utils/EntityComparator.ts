@@ -259,15 +259,15 @@ export class EntityComparator {
   createCompositeKeyArray(prop: EntityProperty, parents: EntityProperty[] = []): string {
     if (!prop.targetMeta) {
       let fieldName = prop.fieldNames[0];
+      // traverse all parents, mapping my field name to each parent's field name until we reach the root
       for (let i = parents.length - 1; i >= 0; i--) {
         const parent = parents[i];
 
-        // look for the field name in teh parents referencedColumnNames, except for M:N without a pivot entity
+        // look for the field name in the parent's referencedColumnNames, except for M:N without a custom pivot entity
         //   (in that case, the field names are the referenced PK's )
         const target = parent.kind === ReferenceKind.MANY_TO_MANY  && parent.pivotEntity === parent.pivotTable ?
           parent.referencedPKs : parent.referencedColumnNames;
 
-        // this behaves differently based on relationship type.
         const idx = target.indexOf(fieldName);
 
         fieldName = parent.fieldNames[idx];
