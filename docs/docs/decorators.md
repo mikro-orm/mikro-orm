@@ -166,11 +166,12 @@ Use `@Index()` to create an index, or `@Unique()` to create unique constraint. Y
 
 See [Defining Entities](./defining-entities.md#indexes).
 
-| Parameter    | Type                       | Optional | Description                                                                                              |
-|--------------|----------------------------|----------|----------------------------------------------------------------------------------------------------------|
-| `name`       | `string`                   | yes      | index name                                                                                               |
-| `properties` | `string` &#124; `string[]` | yes      | list of properties, required when using on entity level                                                  |
-| `type`       | `string`                   | yes      | index type, not available for `@Unique()`. Use `fulltext` to enable support for the `$fulltext` operator |
+| Parameter     | Type                          | Optional | Description                                                                                              |
+|---------------|-------------------------------|----------|----------------------------------------------------------------------------------------------------------|
+| `name`        | `string`                      | yes      | index name                                                                                               |
+| `properties`  | `string` &#124; `string[]`    | yes      | list of properties, required when using on entity level                                                  |
+| `type`        | `string`                      | yes      | index type, not available for `@Unique()`. Use `fulltext` to enable support for the `$fulltext` operator |
+| `deferMode`   | `immediate` &#124; `deferred` | yes      | only for postgres unique constraints                                                                     |
 
 ```ts
 @Entity()
@@ -260,6 +261,7 @@ See [Defining Entities](./relationships.md#manytoone) for more examples.
 | `primary`    | `boolean`                                     | yes      | Use this relation as primary key.                                                                                                                           |
 | `deleteRule` | `string`                                      | yes      | [Referential integrity](./cascading.md#declarative-referential-integrity).                                                                                  |
 | `updateRule` | `string`                                      | yes      | [Referential integrity](./cascading.md#declarative-referential-integrity).                                                                                  |
+| `deferMode`  | `immediate` &#124; `deferred`                 | yes      | only for postgres unique constraints                                                                                                                        |
 
 ```ts
 @ManyToOne()
@@ -294,6 +296,7 @@ See [Defining Entities](./relationships.md#onetoone) for more examples, includin
 | `primary`       | `boolean`                                     | yes      | Use this relation as primary key.                                                                                                                           |
 | `deleteRule`    | `string`                                      | yes      | [Referential integrity](./cascading.md#declarative-referential-integrity).                                                                                  |
 | `updateRule`    | `string`                                      | yes      | [Referential integrity](./cascading.md#declarative-referential-integrity).                                                                                  |
+| `deferMode`     | `immediate` &#124; `deferred`                 | yes      | only for postgres unique constraints                                                                                                                        |
 
 ```ts
 // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side

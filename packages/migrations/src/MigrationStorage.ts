@@ -70,7 +70,8 @@ export class MigrationStorage implements UmzugStorage {
     const schemas = await this.helper.getNamespaces(this.connection);
 
     if (schemaName && !schemas.includes(schemaName)) {
-      await this.knex.schema.createSchema(schemaName);
+      const sql = this.helper.getCreateNamespaceSQL(schemaName);
+      await this.connection.execute(sql);
     }
 
     await this.knex.schema.createTable(tableName, table => {

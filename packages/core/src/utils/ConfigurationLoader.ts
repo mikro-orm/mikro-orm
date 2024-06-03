@@ -1,24 +1,24 @@
 import dotenv from 'dotenv';
 import { pathExistsSync, readJSONSync, realpathSync } from 'fs-extra';
-import { isAbsolute, join } from 'path';
 import { platform } from 'os';
+import { isAbsolute, join } from 'path';
 import { fileURLToPath } from 'url';
+import type { EntityManager } from '../EntityManager';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers';
+import { colors } from '../logging/colors';
+import type { Dictionary } from '../typings';
 import { Configuration, type Options } from './Configuration';
 import { Utils } from './Utils';
-import type { Dictionary } from '../typings';
-import { colors } from '../logging/colors';
-import type { EntityManager } from '../EntityManager';
 
 /**
  * @internal
  */
 export class ConfigurationLoader {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate = true, options: Partial<Options> = {}, cli = false): Promise<Configuration<D, EM>> {
     this.commonJSCompat(options);
     this.registerDotenv(options);
-    const paths = this.getConfigPaths();
+    const paths = this.getConfigPaths(cli);
     const env = this.loadEnvironmentVars();
 
     for (let path of paths) {
@@ -87,7 +87,7 @@ export class ConfigurationLoader {
     return settings;
   }
 
-  static getConfigPaths(): string[] {
+  static getConfigPaths(cli = false): string[] {
     const options = Utils.parseArgs();
     const configArgName = process.env.MIKRO_ORM_CONFIG_ARG_NAME ?? 'config';
 
@@ -104,7 +104,7 @@ export class ConfigurationLoader {
 
     paths.push(...(settings.configPaths || []));
 
-    if (settings.useTsNode || settings.alwaysAllowTs) {
+    if ((cli && settings.useTsNode !== false) || settings.alwaysAllowTs) {
       paths.push('./src/mikro-orm.config.ts');
       paths.push('./mikro-orm.config.ts');
     }
@@ -145,7 +145,7 @@ export class ConfigurationLoader {
       project: tsConfigPath,
       transpileOnly: true,
       compilerOptions: {
-        module: 'commonjs',
+        module: 'nodenext',
       },
     }).config;
 

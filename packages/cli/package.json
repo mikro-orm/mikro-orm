@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/cli",
-  "version": "6.2.8",
+  "version": "6.2.9",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -63,15 +63,15 @@
   },
   "dependencies": {
     "@jercle/yargonaut": "1.1.5",
-    "@mikro-orm/core": "6.2.8",
-    "@mikro-orm/knex": "6.2.8",
+    "@mikro-orm/core": "6.2.9",
+    "@mikro-orm/knex": "6.2.9",
     "fs-extra": "11.2.0",
     "tsconfig-paths": "4.2.0",
     "yargs": "17.7.2"
   },
   "devDependencies": {
-    "@mikro-orm/entity-generator": "^6.2.8",
-    "@mikro-orm/migrations": "^6.2.8",
-    "@mikro-orm/seeder": "^6.2.8"
+    "@mikro-orm/entity-generator": "^6.2.9",
+    "@mikro-orm/migrations": "^6.2.9",
+    "@mikro-orm/seeder": "^6.2.9"
   }
 }

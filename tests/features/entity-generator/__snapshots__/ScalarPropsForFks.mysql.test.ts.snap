@@ -32,10 +32,10 @@ export class Author2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
@@ -57,15 +57,15 @@ export class Author2 {
   @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 65535, nullable: true })
   identities?: string;
 
   @Index({ name: 'author2_born_index' })
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
   @Index({ name: 'born_time_idx' })
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
@@ -82,7 +82,7 @@ export class Author2 {
   @Property({ nullable: true, persist: false })
   favouriteAuthorId?: number;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
@@ -169,23 +169,23 @@ export class Book2 {
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
   @Index({ name: 'book2_title_index' })
   @Property({ length: 255, nullable: true })
   title?: string;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 65535, nullable: true })
   perex?: string;
 
-  @Property({ columnType: 'numeric(8,2)', nullable: true })
+  @Property({ type: 'decimal', precision: 8, scale: 2, nullable: true })
   price?: string;
 
-  @Property({ columnType: 'double', nullable: true })
+  @Property({ type: 'double', nullable: true })
   double?: number;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToOne({ entity: () => Author2 })
@@ -343,7 +343,7 @@ export class FooBar2 {
   @Property({ nullable: true, persist: false })
   fooBarId?: number;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date & Opt;
 
   @Property({ length: 65535, nullable: true })
@@ -352,10 +352,10 @@ export class FooBar2 {
   @Property({ length: 65535, nullable: true })
   blob2?: Buffer;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 65535, nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   objectProperty?: any;
 
 }
@@ -371,7 +371,7 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
@@ -402,7 +402,7 @@ export class FooParam2 {
   @Property({ length: 255 })
   value!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
@@ -424,13 +424,13 @@ export class Publisher2 {
   @Enum({ items: () => Publisher2Type2 })
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum1?: number;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum2?: number;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum3?: number;
 
   @Enum({ items: () => Publisher2Enum4, nullable: true })
@@ -530,7 +530,7 @@ export class Test2 {
   @Property({ nullable: true, persist: false })
   parentId?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Unique({ name: 'test2_foo___bar_unique' })
@@ -615,10 +615,10 @@ export class Author2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
@@ -640,15 +640,15 @@ export class Author2 {
   @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 65535, nullable: true })
   identities?: string;
 
   @Index({ name: 'author2_born_index' })
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
   @Index({ name: 'born_time_idx' })
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
@@ -657,7 +657,7 @@ export class Author2 {
   @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteAuthor?: Author2;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
@@ -736,23 +736,23 @@ export class Book2 {
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
   @Index({ name: 'book2_title_index' })
   @Property({ length: 255, nullable: true })
   title?: string;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 65535, nullable: true })
   perex?: string;
 
-  @Property({ columnType: 'numeric(8,2)', nullable: true })
+  @Property({ type: 'decimal', precision: 8, scale: 2, nullable: true })
   price?: string;
 
-  @Property({ columnType: 'double', nullable: true })
+  @Property({ type: 'double', nullable: true })
   double?: number;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToOne({ entity: () => Author2 })
@@ -876,7 +876,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date & Opt;
 
   @Property({ length: 65535, nullable: true })
@@ -885,10 +885,10 @@ export class FooBar2 {
   @Property({ length: 65535, nullable: true })
   blob2?: Buffer;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 65535, nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   objectProperty?: any;
 
 }
@@ -904,7 +904,7 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
@@ -927,7 +927,7 @@ export class FooParam2 {
   @Property({ length: 255 })
   value!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
@@ -949,13 +949,13 @@ export class Publisher2 {
   @Enum({ items: () => Publisher2Type2 })
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum1?: number;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum2?: number;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum3?: number;
 
   @Enum({ items: () => Publisher2Enum4, nullable: true })
@@ -1039,7 +1039,7 @@ export class Test2 {
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   parent?: Test2;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })

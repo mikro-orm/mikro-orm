@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
+
+
+### Bug Fixes
+
+* **reflection:** support entities compiled by babel ([#5628](https://github.com/mikro-orm/mikro-orm/issues/5628)) ([26f627e](https://github.com/mikro-orm/mikro-orm/commit/26f627e3df2b66782e446de2419c350cf17c74ac)), closes [#5610](https://github.com/mikro-orm/mikro-orm/issues/5610)
+
+
+
+
+
 ## [6.2.8](https://github.com/mikro-orm/mikro-orm/compare/v6.2.7...v6.2.8) (2024-05-21)
 
 **Note:** Version bump only for package @mikro-orm/reflection

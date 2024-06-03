@@ -28,6 +28,7 @@ describe('MikroORM', () => {
     const err = `No driver specified, please fill in the \`driver\` option or use \`defineConfig\` helper (to define your ORM config) or \`MikroORM\` class (to call the \`init\` method) exported from the driver package (e.g. \`import { defineConfig } from '@mikro-orm/mysql'; export defineConfig({ ... })\`).`;
     expect(() => new MikroORM({ entities: ['entities'], clientUrl: '' })).toThrow(err);
     expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities'], dbName: '' })).toThrow('No database specified, please fill in `dbName` or `clientUrl` option');
+    expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities'], clientUrl: '...' })).toThrow("No database specified, `clientUrl` option provided but it's missing the pathname.");
     expect(() => new MikroORM({ driver: MongoDriver, entities: [], dbName: 'test' })).toThrow('No entities found, please use `entities` option');
     expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities/*.js'], dbName: 'test' })).not.toThrow();
     expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities/*.ts'], dbName: 'test' })).not.toThrow();
@@ -109,7 +110,7 @@ describe('MikroORM', () => {
     });
     jest.mock('../mikro-orm.config.ts', () => options, { virtual: true });
     jest.mock(Utils.normalizePath(process.cwd()) + '/mikro-orm.config.ts', () => options, { virtual: true });
-    const pkg = { 'mikro-orm': { useTsNode: true } } as any;
+    const pkg = { 'mikro-orm': { alwaysAllowTs: true } } as any;
     jest.spyOn(require('fs-extra'), 'readJSONSync').mockImplementation(() => pkg);
     jest.spyOn(Utils, 'dynamicImport').mockImplementation(async () => options);
 

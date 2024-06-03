@@ -18,9 +18,13 @@ export class Address2 {
 
 }
 ",
-  "import { Cascade, Collection, EagerProps, Embedded, Entity, Formula, type Hidden, Index, ManyToMany, ManyToOne, OneToMany, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Cascade, Collection, EagerProps, Embedded, Entity, Formula, type Hidden, type IType, Index, ManyToMany, ManyToOne, OneToMany, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
+import { CustomBooleanRuntimeType } from './../runtimeTypes/CustomBooleanRuntimeType';
+import { CustomBooleanType } from './../types/CustomBooleanType';
+import { Email } from './../runtimeTypes/Email';
 import { IdentitiesContainer } from './IdentitiesContainer';
+import { MyExtendedDataClass } from './MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
@@ -32,11 +36,11 @@ export class Author2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'Date', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Hidden & Opt;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
-  updatedAt!: Date & Opt;
+  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: v => v.toString(), defaultRaw: \`current_timestamp(3)\` })
+  updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
   @Property({ length: 255, comment: 'author name' })
@@ -44,8 +48,8 @@ export class Author2 {
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ type: 'string', length: 255, hidden: true })
-  email!: string & Hidden;
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', hidden: true })
+  email!: IType<Email, string> & Hidden;
 
   @Property({ nullable: true, concurrencyCheck: true })
   age?: number;
@@ -54,18 +58,18 @@ export class Author2 {
   @Property({ type: 'boolean', lazy: true })
   termsAccepted: boolean & Opt = false;
 
-  @Property({ nullable: true })
-  optional?: boolean;
+  @Property({ type: CustomBooleanType, columnType: 'tinyint(1)', nullable: true })
+  optional?: IType<CustomBooleanRuntimeType, boolean>;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 65535, nullable: true })
   identities?: string;
 
   @Index({ name: 'author2_born_index' })
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
   @Index({ name: 'born_time_idx' })
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true, eager: true, cascade: [Cascade.PERSIST, Cascade.MERGE] })
@@ -170,10 +174,11 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
+import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -182,27 +187,27 @@ export class Book2 {
 
   [PrimaryKeyProp]?: 'uuidPk';
 
-  @PrimaryKey({ length: 36 })
+  @PrimaryKey({ type: 'uuid', length: 36 })
   uuidPk!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
   @Index({ name: 'book2_title_index' })
   @Property({ length: 255, nullable: true })
   title?: string;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 65535, nullable: true })
   perex?: string;
 
-  @Property({ columnType: 'numeric(8,2)', nullable: true })
+  @Property({ type: 'decimal', precision: 8, scale: 2, nullable: true })
   price?: string;
 
-  @Property({ columnType: 'double', nullable: true })
+  @Property({ type: 'double', nullable: true })
   double?: number;
 
-  @Property({ columnType: 'json', nullable: true })
-  meta?: any;
+  @Property({ type: 'json', columnType: 'json', nullable: true })
+  meta?: IType<MetaType, any>;
 
   @ManyToOne({ entity: () => Author2 })
   author!: Author2;
@@ -324,9 +329,10 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, type IType, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -347,7 +353,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date & Opt;
 
   @Property({ length: 65535, nullable: true })
@@ -356,11 +362,11 @@ export class FooBar2 {
   @Property({ length: 65535, nullable: true })
   blob2?: Buffer;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 65535, nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
-  objectProperty?: any;
+  @Property({ type: 'JsonObjectType', columnType: 'json', nullable: true })
+  objectProperty?: IType<JSONObject, object>;
 
   @OneToOne({ entity: () => Test2, mappedBy: 'fooBar' })
   fooBarInverse?: Test2;
@@ -385,7 +391,7 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
   @OneToMany({ entity: () => FooParam2, mappedBy: 'baz' })
@@ -411,7 +417,7 @@ export class FooParam2 {
   @Property({ length: 255 })
   value!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
@@ -435,13 +441,13 @@ export class Publisher2 {
   @Enum({ items: () => Publisher2Type2 })
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum1?: number;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum2?: number;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum3?: number;
 
   @Enum({ items: () => Publisher2Enum4, nullable: true })
@@ -537,7 +543,7 @@ export class Test2 {
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   parent?: Test2;
 
-  @Property({ type: 'number', version: true })
+  @Property({ type: 'integer', version: true })
   version: number & Opt = 1;
 
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -589,7 +595,8 @@ export class User2 {
 
 }
 ",
-  "import { Entity, type Hidden, Index, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, type Hidden, type IType, Index, Property, Unique } from '@mikro-orm/core';
+import { Email } from './../runtimeTypes/Email';
 
 @Entity({ expression: 'SELECT name, email FROM author2', comment: 'test', virtual: true })
 export class AuthorPartialView {
@@ -600,8 +607,8 @@ export class AuthorPartialView {
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ type: 'string', length: 255, hidden: true })
-  email!: string & Hidden;
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', hidden: true })
+  email!: IType<Email, string> & Hidden;
 
 }
 ",
@@ -691,20 +698,24 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Cascade, Collection, EagerProps, Embedded, EntitySchema, type Hidden, type Opt } from '@mikro-orm/core';
+  "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
+import { CustomBooleanRuntimeType } from './../runtimeTypes/CustomBooleanRuntimeType';
+import { CustomBooleanType } from './../types/CustomBooleanType';
+import { Email } from './../runtimeTypes/Email';
 import { IdentitiesContainer } from './IdentitiesContainer';
+import { MyExtendedDataClass } from './MyExtendedDataClass';
 
 export class Author2 {
   [EagerProps]?: 'favouriteBook';
   id!: number;
   createdAt!: Date & Hidden & Opt;
-  updatedAt!: Date & Opt;
+  updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
   name!: string;
-  email!: string & Hidden;
+  email!: IType<Email, string> & Hidden;
   age?: number;
   termsAccepted: boolean & Opt = false;
-  optional?: boolean;
+  optional?: IType<CustomBooleanRuntimeType, boolean>;
   identities?: string;
   born?: string;
   bornTime?: string;
@@ -729,9 +740,19 @@ export const Author2Schema = new EntitySchema({
     { name: 'author2_name_email_unique', properties: ['name', 'email'] },
   ],
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` },
-    updatedAt: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: {
+      type: 'datetime',
+      length: 3,
+      hidden: true,
+      defaultRaw: \`current_timestamp(3)\`,
+    },
+    updatedAt: {
+      type: 'datetime',
+      columnType: 'datetime(3)',
+      serializer: v => v.toString(),
+      defaultRaw: \`current_timestamp(3)\`,
+    },
     name: {
       type: 'string',
       length: 255,
@@ -739,23 +760,18 @@ export const Author2Schema = new EntitySchema({
       index: 'custom_idx_name_123',
     },
     email: {
-      type: 'string',
-      length: 255,
+      type: 'EmailType',
+      columnType: 'varchar(255)',
       hidden: true,
       index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
-    age: { type: 'number', nullable: true, concurrencyCheck: true },
+    age: { type: 'integer', nullable: true, concurrencyCheck: true },
     termsAccepted: { type: 'boolean', lazy: true, index: 'author2_terms_accepted_index' },
-    optional: { type: 'boolean', nullable: true },
-    identities: { type: 'string', columnType: 'text', nullable: true },
-    born: {
-      type: 'string',
-      columnType: 'date',
-      nullable: true,
-      index: 'author2_born_index',
-    },
-    bornTime: { type: 'string', columnType: 'time', nullable: true, index: 'born_time_idx' },
+    optional: { type: CustomBooleanType, columnType: 'tinyint(1)', nullable: true },
+    identities: { type: 'text', length: 65535, nullable: true },
+    born: { type: 'date', nullable: true, index: 'author2_born_index' },
+    bornTime: { type: 'time', nullable: true, index: 'born_time_idx' },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book2,
@@ -830,7 +846,7 @@ export enum BaseUser2Type {
 export const BaseUser2Schema = new EntitySchema({
   class: BaseUser2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     firstName: { type: 'string', length: 100 },
     lastName: { type: 'string', length: 100 },
     type: { enum: true, items: () => BaseUser2Type, index: 'base_user2_type_index' },
@@ -849,7 +865,7 @@ export const BaseUser2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    employeeProp: { type: 'number', nullable: true, unique: 'base_user2_employee_prop_unique' },
+    employeeProp: { type: 'integer', nullable: true, unique: 'base_user2_employee_prop_unique' },
     managerProp: { type: 'string', length: 255, nullable: true },
     favouriteEmployeeInverse: { kind: '1:m', entity: () => BaseUser2, mappedBy: 'favouriteEmployee' },
     favouriteManagerInverse: { kind: '1:1', entity: () => BaseUser2, mappedBy: 'favouriteManager' },
@@ -877,10 +893,11 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type IType, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
+import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -892,7 +909,7 @@ export class Book2 {
   perex?: string;
   price?: string;
   double?: number;
-  meta?: any;
+  meta?: IType<MetaType, any>;
   author!: Author2;
   publisher?: number;
   foo?: string & Opt = 'lol';
@@ -905,13 +922,13 @@ export class Book2 {
 export const Book2Schema = new EntitySchema({
   class: Book2,
   properties: {
-    uuidPk: { primary: true, type: 'string', length: 36 },
-    createdAt: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    uuidPk: { primary: true, type: 'uuid', length: 36 },
+    createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     title: { type: 'string', length: 255, nullable: true, index: 'book2_title_index' },
-    perex: { type: 'string', columnType: 'text', nullable: true },
-    price: { type: 'string', columnType: 'numeric(8,2)', nullable: true },
-    double: { type: 'number', columnType: 'double', nullable: true },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    perex: { type: 'text', length: 65535, nullable: true },
+    price: { type: 'decimal', precision: 8, scale: 2, nullable: true },
+    double: { type: 'double', nullable: true },
+    meta: { type: 'json', columnType: 'json', nullable: true },
     author: { kind: 'm:1', entity: () => Author2 },
     publisher: {
       kind: 'm:1',
@@ -950,7 +967,7 @@ export const Book2TagsSchema = new EntitySchema({
   class: Book2Tags,
   tableName: 'book2_tags',
   properties: {
-    order: { primary: true, type: 'number' },
+    order: { primary: true, type: 'integer' },
     book2: {
       kind: 'm:1',
       entity: () => Book2,
@@ -978,7 +995,7 @@ export class CarOwner2 {
 export const CarOwner2Schema = new EntitySchema({
   class: CarOwner2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     car: { kind: 'm:1', entity: () => Car2, updateRule: 'cascade' },
   },
@@ -1002,8 +1019,8 @@ export const Car2Schema = new EntitySchema({
   class: Car2,
   properties: {
     name: { primary: true, type: 'string', length: 100, index: 'car2_name_index' },
-    year: { primary: true, type: 'number', index: 'car2_year_index' },
-    price: { type: 'number' },
+    year: { primary: true, type: 'integer', index: 'car2_year_index' },
+    price: { type: 'integer' },
     carInverse: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
     favouriteCarInverse: { kind: '1:1', entity: () => User2, mappedBy: 'favouriteCar' },
     carsInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'cars' },
@@ -1038,13 +1055,14 @@ export class Dummy2 {
 export const Dummy2Schema = new EntitySchema({
   class: Dummy2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
   },
 });
 ",
-  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type IType, type Opt } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -1057,7 +1075,7 @@ export class FooBar2 {
   blob?: Buffer;
   blob2?: Buffer;
   array?: string;
-  objectProperty?: any;
+  objectProperty?: IType<JSONObject, object>;
   fooBarInverse?: Test2;
   barInverse = new Collection<FooParam2>(this);
   barsInverse = new Collection<Test2>(this);
@@ -1066,7 +1084,7 @@ export class FooBar2 {
 export const FooBar2Schema = new EntitySchema({
   class: FooBar2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     nameWithSpace: { type: 'string', fieldName: 'name with space', length: 255, nullable: true },
     baz: {
@@ -1083,11 +1101,11 @@ export const FooBar2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
-    blob: { type: 'Buffer', length: 65535, nullable: true },
-    blob2: { type: 'Buffer', length: 65535, nullable: true },
-    array: { type: 'string', columnType: 'text', nullable: true },
-    objectProperty: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
+    blob: { type: 'blob', length: 65535, nullable: true },
+    blob2: { type: 'blob', length: 65535, nullable: true },
+    array: { type: 'text', length: 65535, nullable: true },
+    objectProperty: { type: 'JsonObjectType', columnType: 'json', nullable: true },
     fooBarInverse: { kind: '1:1', entity: () => Test2, mappedBy: 'fooBar' },
     barInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
     barsInverse: { kind: 'm:n', entity: () => Test2, mappedBy: 'bars' },
@@ -1107,9 +1125,9 @@ export class FooBaz2 {
 export const FooBaz2Schema = new EntitySchema({
   class: FooBaz2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
-    version: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     bazInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
   },
 });
@@ -1132,7 +1150,7 @@ export const FooParam2Schema = new EntitySchema({
     bar: { primary: true, kind: 'm:1', entity: () => FooBar2, updateRule: 'cascade' },
     baz: { primary: true, kind: 'm:1', entity: () => FooBaz2, updateRule: 'cascade' },
     value: { type: 'string', length: 255 },
-    version: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
   },
 });
 ",
@@ -1177,13 +1195,13 @@ export enum Publisher2Enum5 {
 export const Publisher2Schema = new EntitySchema({
   class: Publisher2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     type: { enum: true, items: () => Publisher2Type },
     type2: { enum: true, items: () => Publisher2Type2 },
-    enum1: { type: 'number', columnType: 'tinyint', nullable: true },
-    enum2: { type: 'number', columnType: 'tinyint', nullable: true },
-    enum3: { type: 'number', columnType: 'tinyint', nullable: true },
+    enum1: { type: 'tinyint', nullable: true },
+    enum2: { type: 'tinyint', nullable: true },
+    enum3: { type: 'tinyint', nullable: true },
     enum4: { enum: true, items: () => Publisher2Enum4, nullable: true },
     enum5: { enum: true, items: () => Publisher2Enum5, nullable: true },
     publisherInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
@@ -1205,7 +1223,7 @@ export const Publisher2TestsSchema = new EntitySchema({
   class: Publisher2Tests,
   tableName: 'publisher2_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher2: {
       kind: 'm:1',
       entity: () => Publisher2,
@@ -1234,9 +1252,9 @@ export class Sandwich {
 export const SandwichSchema = new EntitySchema({
   class: Sandwich,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
-    price: { type: 'number' },
+    price: { type: 'integer' },
     sandwichesInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'sandwiches' },
   },
 });
@@ -1264,7 +1282,7 @@ export class Test2 {
 export const Test2Schema = new EntitySchema({
   class: Test2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, nullable: true },
     book: { kind: '1:1', entity: () => Book2, deleteRule: 'set null', nullable: true },
     parent: {
@@ -1274,7 +1292,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number', version: true },
+    version: { type: 'integer', version: true },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar2,
@@ -1283,7 +1301,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
+    fooBaz: { type: 'integer', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -1315,7 +1333,7 @@ export const User2Schema = new EntitySchema({
   properties: {
     firstName: { primary: true, type: 'string', length: 100 },
     lastName: { primary: true, type: 'string', length: 100 },
-    foo: { type: 'number', nullable: true },
+    foo: { type: 'integer', nullable: true },
     favouriteCar: {
       kind: '1:1',
       entity: () => Car2,
@@ -1339,11 +1357,12 @@ export const User2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Hidden } from '@mikro-orm/core';
+  "import { EntitySchema, type Hidden, type IType } from '@mikro-orm/core';
+import { Email } from './../runtimeTypes/Email';
 
 export class AuthorPartialView {
   name!: string;
-  email!: string & Hidden;
+  email!: IType<Email, string> & Hidden;
 }
 
 export const AuthorPartialViewSchema = new EntitySchema({
@@ -1356,8 +1375,8 @@ export const AuthorPartialViewSchema = new EntitySchema({
       index: 'custom_idx_name_123',
     },
     email: {
-      type: 'string',
-      length: 255,
+      type: 'EmailType',
+      columnType: 'varchar(255)',
       hidden: true,
       index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
@@ -1480,9 +1499,13 @@ export class Address2 {
 
 }
 ",
-  "import { Cascade, Collection, EagerProps, Embedded, Entity, Formula, type Hidden, Index, ManyToMany, ManyToOne, OneToMany, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Cascade, Collection, EagerProps, Embedded, Entity, Formula, type Hidden, type IType, Index, ManyToMany, ManyToOne, OneToMany, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
+import { CustomBooleanRuntimeType } from './../runtimeTypes/CustomBooleanRuntimeType';
+import { CustomBooleanType } from './../types/CustomBooleanType';
+import { Email } from './../runtimeTypes/Email';
 import { IdentitiesContainer } from './IdentitiesContainer';
+import { MyExtendedDataClass } from './MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
@@ -1494,11 +1517,11 @@ export class Author2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'Date', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Hidden & Opt;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
-  updatedAt!: Date & Opt;
+  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: v => v.toString(), defaultRaw: \`current_timestamp(3)\` })
+  updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
   @Property({ length: 255, comment: 'author name' })
@@ -1506,8 +1529,8 @@ export class Author2 {
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ type: 'string', length: 255, hidden: true })
-  email!: string & Hidden;
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', hidden: true })
+  email!: IType<Email, string> & Hidden;
 
   @Property({ nullable: true, concurrencyCheck: true })
   age?: number;
@@ -1516,18 +1539,18 @@ export class Author2 {
   @Property({ type: 'boolean', lazy: true, default: false })
   termsAccepted: Ref<boolean>;
 
-  @Property({ nullable: true })
-  optional?: boolean;
+  @Property({ type: CustomBooleanType, columnType: 'tinyint(1)', nullable: true })
+  optional?: IType<CustomBooleanRuntimeType, boolean>;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 65535, nullable: true })
   identities?: string;
 
   @Index({ name: 'author2_born_index' })
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
   @Index({ name: 'born_time_idx' })
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, ref: true, deleteRule: 'cascade', nullable: true, eager: true, cascade: [Cascade.PERSIST, Cascade.MERGE] })
@@ -1632,10 +1655,11 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
+import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -1644,27 +1668,27 @@ export class Book2 {
 
   [PrimaryKeyProp]?: 'uuidPk';
 
-  @PrimaryKey({ length: 36 })
+  @PrimaryKey({ type: 'uuid', length: 36 })
   uuidPk!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
   @Index({ name: 'book2_title_index' })
   @Property({ length: 255, nullable: true })
   title?: string;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 65535, nullable: true })
   perex?: string;
 
-  @Property({ columnType: 'numeric(8,2)', nullable: true })
+  @Property({ type: 'decimal', precision: 8, scale: 2, nullable: true })
   price?: string;
 
-  @Property({ columnType: 'double', nullable: true })
+  @Property({ type: 'double', nullable: true })
   double?: number;
 
-  @Property({ columnType: 'json', nullable: true })
-  meta?: any;
+  @Property({ type: 'json', columnType: 'json', nullable: true })
+  meta?: IType<MetaType, any>;
 
   @ManyToOne({ entity: () => Author2, ref: true })
   author!: Ref<Author2>;
@@ -1786,9 +1810,10 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, type IType, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -1809,7 +1834,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: Ref<FooBar2>;
 
-  @Property({ type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date & Opt;
 
   @Property({ length: 65535, nullable: true })
@@ -1818,11 +1843,11 @@ export class FooBar2 {
   @Property({ length: 65535, nullable: true })
   blob2?: Buffer;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ type: 'text', length: 65535, nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
-  objectProperty?: any;
+  @Property({ type: 'JsonObjectType', columnType: 'json', nullable: true })
+  objectProperty?: IType<JSONObject, object>;
 
   @OneToOne({ entity: () => Test2, ref: true, mappedBy: 'fooBar' })
   fooBarInverse?: Ref<Test2>;
@@ -1847,7 +1872,7 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
   @OneToMany({ entity: () => FooParam2, mappedBy: 'baz' })
@@ -1873,7 +1898,7 @@ export class FooParam2 {
   @Property({ length: 255 })
   value!: string;
 
-  @Property({ type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
 }
@@ -1897,13 +1922,13 @@ export class Publisher2 {
   @Enum({ items: () => Publisher2Type2 })
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum1?: number;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum2?: number;
 
-  @Property({ columnType: 'tinyint', nullable: true })
+  @Property({ type: 'tinyint', nullable: true })
   enum3?: number;
 
   @Enum({ items: () => Publisher2Enum4, nullable: true })
@@ -1999,7 +2024,7 @@ export class Test2 {
   @ManyToOne({ entity: () => Test2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   parent?: Ref<Test2>;
 
-  @Property({ type: 'number', version: true })
+  @Property({ type: 'integer', version: true })
   version: number & Opt = 1;
 
   @OneToOne({ entity: () => FooBar2, ref: true, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -2051,7 +2076,8 @@ export class User2 {
 
 }
 ",
-  "import { Entity, type Hidden, Index, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, type Hidden, type IType, Index, Property, Unique } from '@mikro-orm/core';
+import { Email } from './../runtimeTypes/Email';
 
 @Entity({ expression: 'SELECT name, email FROM author2', comment: 'test', virtual: true })
 export class AuthorPartialView {
@@ -2062,8 +2088,8 @@ export class AuthorPartialView {
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ type: 'string', length: 255, hidden: true })
-  email!: string & Hidden;
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', hidden: true })
+  email!: IType<Email, string> & Hidden;
 
 }
 ",
@@ -2154,20 +2180,24 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Cascade, Collection, EagerProps, Embedded, EntitySchema, type Hidden, type Opt, type Ref } from '@mikro-orm/core';
+  "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt, type Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
+import { CustomBooleanRuntimeType } from './../runtimeTypes/CustomBooleanRuntimeType';
+import { CustomBooleanType } from './../types/CustomBooleanType';
+import { Email } from './../runtimeTypes/Email';
 import { IdentitiesContainer } from './IdentitiesContainer';
+import { MyExtendedDataClass } from './MyExtendedDataClass';
 
 export class Author2 {
   [EagerProps]?: 'favouriteBook';
   id!: number;
   createdAt!: Date & Hidden & Opt;
-  updatedAt!: Date & Opt;
+  updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
   name!: string;
-  email!: string & Hidden;
+  email!: IType<Email, string> & Hidden;
   age?: number;
   termsAccepted: Ref<boolean>;
-  optional?: boolean;
+  optional?: IType<CustomBooleanRuntimeType, boolean>;
   identities?: string;
   born?: string;
   bornTime?: string;
@@ -2192,9 +2222,19 @@ export const Author2Schema = new EntitySchema({
     { name: 'author2_name_email_unique', properties: ['name', 'email'] },
   ],
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` },
-    updatedAt: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: {
+      type: 'datetime',
+      length: 3,
+      hidden: true,
+      defaultRaw: \`current_timestamp(3)\`,
+    },
+    updatedAt: {
+      type: 'datetime',
+      columnType: 'datetime(3)',
+      serializer: v => v.toString(),
+      defaultRaw: \`current_timestamp(3)\`,
+    },
     name: {
       type: 'string',
       length: 255,
@@ -2202,28 +2242,23 @@ export const Author2Schema = new EntitySchema({
       index: 'custom_idx_name_123',
     },
     email: {
-      type: 'string',
-      length: 255,
+      type: 'EmailType',
+      columnType: 'varchar(255)',
       hidden: true,
       index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
     },
-    age: { type: 'number', nullable: true, concurrencyCheck: true },
+    age: { type: 'integer', nullable: true, concurrencyCheck: true },
     termsAccepted: {
       type: 'boolean',
       lazy: true,
       default: false,
       index: 'author2_terms_accepted_index',
     },
-    optional: { type: 'boolean', nullable: true },
-    identities: { type: 'string', columnType: 'text', nullable: true },
-    born: {
-      type: 'string',
-      columnType: 'date',
-      nullable: true,
-      index: 'author2_born_index',
-    },
-    bornTime: { type: 'string', columnType: 'time', nullable: true, index: 'born_time_idx' },
+    optional: { type: CustomBooleanType, columnType: 'tinyint(1)', nullable: true },
+    identities: { type: 'text', length: 65535, nullable: true },
+    born: { type: 'date', nullable: true, index: 'author2_born_index' },
+    bornTime: { type: 'time', nullable: true, index: 'born_time_idx' },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book2,
@@ -2300,7 +2335,7 @@ export enum BaseUser2Type {
 export const BaseUser2Schema = new EntitySchema({
   class: BaseUser2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     firstName: { type: 'string', length: 100 },
     lastName: { type: 'string', length: 100 },
     type: { enum: true, items: () => BaseUser2Type, index: 'base_user2_type_index' },
@@ -2321,7 +2356,7 @@ export const BaseUser2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    employeeProp: { type: 'number', nullable: true, unique: 'base_user2_employee_prop_unique' },
+    employeeProp: { type: 'integer', nullable: true, unique: 'base_user2_employee_prop_unique' },
     managerProp: { type: 'string', length: 255, nullable: true },
     favouriteEmployeeInverse: { kind: '1:m', entity: () => BaseUser2, mappedBy: 'favouriteEmployee' },
     favouriteManagerInverse: {
@@ -2354,10 +2389,11 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type IType, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
+import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -2369,7 +2405,7 @@ export class Book2 {
   perex?: string;
   price?: string;
   double?: number;
-  meta?: any;
+  meta?: IType<MetaType, any>;
   author!: Ref<Author2>;
   publisher?: Ref<number>;
   foo?: string & Opt = 'lol';
@@ -2382,13 +2418,13 @@ export class Book2 {
 export const Book2Schema = new EntitySchema({
   class: Book2,
   properties: {
-    uuidPk: { primary: true, type: 'string', length: 36 },
-    createdAt: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    uuidPk: { primary: true, type: 'uuid', length: 36 },
+    createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     title: { type: 'string', length: 255, nullable: true, index: 'book2_title_index' },
-    perex: { type: 'string', columnType: 'text', nullable: true },
-    price: { type: 'string', columnType: 'numeric(8,2)', nullable: true },
-    double: { type: 'number', columnType: 'double', nullable: true },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    perex: { type: 'text', length: 65535, nullable: true },
+    price: { type: 'decimal', precision: 8, scale: 2, nullable: true },
+    double: { type: 'double', nullable: true },
+    meta: { type: 'json', columnType: 'json', nullable: true },
     author: { kind: 'm:1', entity: () => Author2, ref: true },
     publisher: {
       kind: 'm:1',
@@ -2428,7 +2464,7 @@ export const Book2TagsSchema = new EntitySchema({
   class: Book2Tags,
   tableName: 'book2_tags',
   properties: {
-    order: { primary: true, type: 'number' },
+    order: { primary: true, type: 'integer' },
     book2: {
       kind: 'm:1',
       entity: () => Book2,
@@ -2458,7 +2494,7 @@ export class CarOwner2 {
 export const CarOwner2Schema = new EntitySchema({
   class: CarOwner2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     car: { kind: 'm:1', entity: () => Car2, ref: true, updateRule: 'cascade' },
   },
@@ -2482,8 +2518,8 @@ export const Car2Schema = new EntitySchema({
   class: Car2,
   properties: {
     name: { primary: true, type: 'string', length: 100, index: 'car2_name_index' },
-    year: { primary: true, type: 'number', index: 'car2_year_index' },
-    price: { type: 'number' },
+    year: { primary: true, type: 'integer', index: 'car2_year_index' },
+    price: { type: 'integer' },
     carInverse: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
     favouriteCarInverse: { kind: '1:1', entity: () => User2, ref: true, mappedBy: 'favouriteCar' },
     carsInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'cars' },
@@ -2524,13 +2560,14 @@ export class Dummy2 {
 export const Dummy2Schema = new EntitySchema({
   class: Dummy2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
   },
 });
 ",
-  "import { Collection, EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type IType, type Opt, type Ref } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -2543,7 +2580,7 @@ export class FooBar2 {
   blob?: Buffer;
   blob2?: Buffer;
   array?: string;
-  objectProperty?: any;
+  objectProperty?: IType<JSONObject, object>;
   fooBarInverse?: Ref<Test2>;
   barInverse = new Collection<FooParam2>(this);
   barsInverse = new Collection<Test2>(this);
@@ -2552,7 +2589,7 @@ export class FooBar2 {
 export const FooBar2Schema = new EntitySchema({
   class: FooBar2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     nameWithSpace: { type: 'string', fieldName: 'name with space', length: 255, nullable: true },
     baz: {
@@ -2571,11 +2608,11 @@ export const FooBar2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'Date', length: 0, defaultRaw: \`CURRENT_TIMESTAMP\` },
-    blob: { type: 'Buffer', length: 65535, nullable: true },
-    blob2: { type: 'Buffer', length: 65535, nullable: true },
-    array: { type: 'string', columnType: 'text', nullable: true },
-    objectProperty: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
+    blob: { type: 'blob', length: 65535, nullable: true },
+    blob2: { type: 'blob', length: 65535, nullable: true },
+    array: { type: 'text', length: 65535, nullable: true },
+    objectProperty: { type: 'JsonObjectType', columnType: 'json', nullable: true },
     fooBarInverse: { kind: '1:1', entity: () => Test2, ref: true, mappedBy: 'fooBar' },
     barInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
     barsInverse: { kind: 'm:n', entity: () => Test2, mappedBy: 'bars' },
@@ -2595,9 +2632,9 @@ export class FooBaz2 {
 export const FooBaz2Schema = new EntitySchema({
   class: FooBaz2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
-    version: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     bazInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
   },
 });
@@ -2632,7 +2669,7 @@ export const FooParam2Schema = new EntitySchema({
       updateRule: 'cascade',
     },
     value: { type: 'string', length: 255 },
-    version: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
   },
 });
 ",
@@ -2677,13 +2714,13 @@ export enum Publisher2Enum5 {
 export const Publisher2Schema = new EntitySchema({
   class: Publisher2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     type: { enum: true, items: () => Publisher2Type },
     type2: { enum: true, items: () => Publisher2Type2 },
-    enum1: { type: 'number', columnType: 'tinyint', nullable: true },
-    enum2: { type: 'number', columnType: 'tinyint', nullable: true },
-    enum3: { type: 'number', columnType: 'tinyint', nullable: true },
+    enum1: { type: 'tinyint', nullable: true },
+    enum2: { type: 'tinyint', nullable: true },
+    enum3: { type: 'tinyint', nullable: true },
     enum4: { enum: true, items: () => Publisher2Enum4, nullable: true },
     enum5: { enum: true, items: () => Publisher2Enum5, nullable: true },
     publisherInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
@@ -2705,7 +2742,7 @@ export const Publisher2TestsSchema = new EntitySchema({
   class: Publisher2Tests,
   tableName: 'publisher2_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher2: {
       kind: 'm:1',
       entity: () => Publisher2,
@@ -2736,9 +2773,9 @@ export class Sandwich {
 export const SandwichSchema = new EntitySchema({
   class: Sandwich,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
-    price: { type: 'number' },
+    price: { type: 'integer' },
     sandwichesInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'sandwiches' },
   },
 });
@@ -2766,7 +2803,7 @@ export class Test2 {
 export const Test2Schema = new EntitySchema({
   class: Test2,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, nullable: true },
     book: {
       kind: '1:1',
@@ -2783,7 +2820,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number', version: true },
+    version: { type: 'integer', version: true },
     fooBar: {
       kind: '1:1',
       entity: () => FooBar2,
@@ -2793,7 +2830,7 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'number', fieldName: 'foo___baz', unsigned: true, nullable: true },
+    fooBaz: { type: 'integer', fieldName: 'foo___baz', unsigned: true, nullable: true },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -2825,7 +2862,7 @@ export const User2Schema = new EntitySchema({
   properties: {
     firstName: { primary: true, type: 'string', length: 100 },
     lastName: { primary: true, type: 'string', length: 100 },
-    foo: { type: 'number', nullable: true },
+    foo: { type: 'integer', nullable: true },
     favouriteCar: {
       kind: '1:1',
       entity: () => Car2,
@@ -2850,11 +2887,12 @@ export const User2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Hidden } from '@mikro-orm/core';
+  "import { EntitySchema, type Hidden, type IType } from '@mikro-orm/core';
+import { Email } from './../runtimeTypes/Email';
 
 export class AuthorPartialView {
   name!: string;
-  email!: string & Hidden;
+  email!: IType<Email, string> & Hidden;
 }
 
 export const AuthorPartialViewSchema = new EntitySchema({
@@ -2867,8 +2905,8 @@ export const AuthorPartialViewSchema = new EntitySchema({
       index: 'custom_idx_name_123',
     },
     email: {
-      type: 'string',
-      length: 255,
+      type: 'EmailType',
+      columnType: 'varchar(255)',
       hidden: true,
       index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',

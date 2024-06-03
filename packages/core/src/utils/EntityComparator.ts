@@ -692,7 +692,7 @@ export class EntityComparator {
    * perf: used to generate list of comparable properties during discovery, so we speed up the runtime comparison
    */
   static isComparable<T>(prop: EntityProperty<T>, root: EntityMetadata) {
-    const virtual = prop.persist === false;
+    const virtual = prop.persist === false || prop.generated;
     const inverse = prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
     const discriminator = prop.name === root.discriminatorColumn;
     const collection = prop.kind === ReferenceKind.ONE_TO_MANY || prop.kind === ReferenceKind.MANY_TO_MANY;

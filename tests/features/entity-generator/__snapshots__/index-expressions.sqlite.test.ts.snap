@@ -26,7 +26,7 @@ export class DcimDevice {
   @Property({ nullable: true })
   assetTag?: string;
 
-  @Property({ columnType: 'numeric(10,0)', nullable: true })
+  @Property({ type: 'decimal', nullable: true })
   position?: string;
 
   @Property()

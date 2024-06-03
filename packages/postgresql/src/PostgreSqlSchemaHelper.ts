@@ -111,8 +111,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         primary: index.primary,
       };
 
+      if (index.condeferrable) {
+        indexDef.deferMode = index.condeferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
+      }
+
       if (index.index_def.some((col: string) => col.match(/[(): ,"'`]/)) || index.expression?.match(/ where /i)) {
         indexDef.expression = index.expression;
+      }
+
+      if (index.deferrable) {
+        indexDef.deferMode = index.initially_deferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
       }
 
       ret[key] ??= [];
@@ -567,13 +575,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   private getIndexesSQL(tables: Table[]): string {
-    return `select indrelid::regclass as table_name, ns.nspname as schema_name, relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary, contype,
+    return `select indrelid::regclass as table_name, ns.nspname as schema_name, relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary, contype, condeferrable, condeferred,
       array(
         select pg_get_indexdef(idx.indexrelid, k + 1, true)
         from generate_subscripts(idx.indkey, 1) as k
         order by k
       ) as index_def,
-      pg_get_indexdef(idx.indexrelid) as expression
+      pg_get_indexdef(idx.indexrelid) as expression,
+      c.condeferrable as deferrable,
+      c.condeferred as initially_deferred
       from pg_index idx
       join pg_class as i on i.oid = idx.indexrelid
       join pg_namespace as ns on i.relnamespace = ns.oid

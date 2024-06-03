@@ -32,13 +32,22 @@ import type { FindOneOptions, FindOptions } from './drivers';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
-export type EntityKey<T = unknown> = string & keyof { [K in keyof T as CleanKeys<T, K>]?: unknown };
+// `EntityKey<T, true>` will skip scalar properties (and some other scalar like types like Date or Buffer)
+export type EntityKey<T = unknown, B extends boolean = false> = string & keyof { [K in keyof T as CleanKeys<T, K, B>]?: unknown };
 export type EntityValue<T> = T[EntityKey<T>];
 export type FilterKey<T> = keyof FilterQuery<T>;
 export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
 export type Compute<T> = { [K in keyof T]: T[K] } & {};
 type InternalKeys = 'EntityRepositoryType' | 'PrimaryKeyProp' | 'OptionalProps' | 'EagerProps' | 'HiddenProps' | '__selectedType' | '__loadedType';
-export type CleanKeys<T, K extends keyof T> = (T[K] & {}) extends Function ? never : (K extends symbol | InternalKeys ? never : K);
+export type CleanKeys<T, K extends keyof T, B extends boolean = false> = (T[K] & {}) extends Function
+  ? never
+  : K extends symbol | InternalKeys
+    ? never
+    : B extends true
+      ? (T[K] & {}) extends Scalar
+        ? never
+        : K
+      : K;
 export type FunctionKeys<T, K extends keyof T> = T[K] extends Function ? K : never;
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
@@ -371,12 +380,12 @@ export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
         ? PrimaryOrObject<E, U, C>
         : T extends ScalarReference<infer U>
           ? U
-          : T extends { getItems(check?: boolean): infer U }
-            ? (U extends readonly (infer V)[] ? EntityDTO<V, C>[] : EntityDTO<U, C>)
-            : T extends { $: infer U }
-              ? (U extends readonly (infer V)[] ? EntityDTO<V, C>[] : EntityDTO<U, C>)
+          : T extends LoadedCollection<infer U>
+            ? EntityDTO<U, C>[]
+            : T extends Collection<infer U>
+              ? PrimaryOrObject<E, U, C>[]
               : T extends readonly (infer U)[]
-                ? (T extends readonly [infer U, ...infer V] ? T : U[])
+                ? (T extends readonly any[] ? T : U[])
                 : T extends Relation<T>
                   ? EntityDTO<T, C>
                   : T;
@@ -414,7 +423,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   name: EntityKey<Owner>;
   entity: () => EntityName<Owner>;
   type: keyof typeof types | AnyString;
-  runtimeType: 'number' | 'string' | 'boolean' | 'bigint' | 'Buffer' | 'Date' | 'object' | 'any';
+  runtimeType: 'number' | 'string' | 'boolean' | 'bigint' | 'Buffer' | 'Date' | 'object' | 'any' | AnyString;
   targetMeta?: EntityMetadata<Target>;
   columnTypes: string[];
   generated?: string | GeneratedColumnCallback<Owner>;
@@ -725,7 +734,7 @@ export interface EntityMetadata<T = any> {
   hydrateProps: EntityProperty<T>[]; // for Hydrator
   uniqueProps: EntityProperty<T>[];
   indexes: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
-  uniques: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string }[];
+  uniques: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string; deferMode?: DeferMode }[];
   checks: CheckConstraint<T>[];
   repository: () => EntityClass<EntityRepository<any>>;
   hooks: { [K in EventType]?: (keyof T | EventSubscriber<T>[EventType])[] };

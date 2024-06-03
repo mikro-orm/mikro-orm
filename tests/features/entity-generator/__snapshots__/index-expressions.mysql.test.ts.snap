@@ -11,7 +11,7 @@ exports[`4911 1`] = `
 @Unique({ name: 'dcim_device_unique_virtual_chassis_vc_position', properties: ['virtualChassisId', 'vcPosition'] })
 export class DcimDevice {
 
-  @Property({ length: 0, nullable: true })
+  @Property({ nullable: true })
   created?: Date;
 
   @PrimaryKey({ unsigned: false, autoincrement: false })
@@ -28,16 +28,16 @@ export class DcimDevice {
   @Property({ length: 255, nullable: true })
   assetTag?: string;
 
-  @Property({ columnType: 'numeric(10,0)', nullable: true })
+  @Property({ type: 'decimal', precision: 10, scale: 0, nullable: true })
   position?: string;
 
   @Property({ length: 255 })
   face!: string;
 
-  @Property({ columnType: 'smallint', nullable: true })
+  @Property({ type: 'smallint', nullable: true })
   vcPosition?: number;
 
-  @Property({ columnType: 'smallint', nullable: true })
+  @Property({ type: 'smallint', nullable: true })
   vcPriority?: number;
 
   @Index({ name: 'dcim_device_cluster_id_cf852f78' })

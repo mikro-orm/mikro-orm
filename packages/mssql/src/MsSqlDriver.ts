@@ -67,10 +67,10 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     return super.nativeInsertMany(entityName, data, options);
   }
 
-  override createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MsSqlQueryBuilder<T> {
+  override createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MsSqlQueryBuilder<T, any, any, any> {
     // do not compute the connectionType if EM is provided as it will be computed from it in the QB later on
     const connectionType = em ? preferredConnectionType : this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
-    const qb = new MsSqlQueryBuilder<T>(entityName, this.metadata, this, ctx, alias, connectionType, em, loggerContext);
+    const qb = new MsSqlQueryBuilder<T, any, any, any>(entityName, this.metadata, this, ctx, alias, connectionType, em, loggerContext);
 
     if (!convertCustomTypes) {
       qb.unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);

@@ -62,7 +62,7 @@ This creates a new seeder class. By default, it will be generated in the `./seed
 
 As an example we will look at a very basic seeder.
 
-> Note that the `EntityManager` available in seeders will have `persistOnCreate` enabled, hence calling `em.create()` will automatically call `em.persist()` on the created entity. If we use entity constructor instead, we need to call `em.persist()` explicitly.
+> Note that the `EntityManager` available in seeders will have `persistOnCreate` enabled (even if you explicitly disable it in the ORM config), hence calling `em.create()` will automatically call `em.persist()` on the created entity. If we use entity constructor instead, we need to call `em.persist()` explicitly.
 
 ```ts title="./database/seeder/database.seeder.ts"
 import { EntityManager } from '@mikro-orm/core';

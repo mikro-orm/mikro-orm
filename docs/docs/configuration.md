@@ -133,6 +133,8 @@ export default defineConfig({
 
 > The `SchemaGenerator` (as well as `MongoSchemaGenerator`) is registered automatically as it does not require any 3rd party dependencies to be installed.
 
+Since v6.3, the extensions are again checked dynamically if not explicitly registered, so it should be enough to have the given package (e.g. `@mikro-orm/seeder`) installed as in v5.
+
 ## Driver
 
 To select driver, you can either use `type` option, or provide the driver class reference.

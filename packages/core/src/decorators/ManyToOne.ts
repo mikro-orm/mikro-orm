@@ -30,5 +30,5 @@ export interface ManyToOneOptions<Owner, Target> extends ReferenceOptions<Owner,
   referencedColumnNames?: string[];
   deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
   updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
-  deferMode?: DeferMode;
+  deferMode?: DeferMode | `${DeferMode}`;
 }

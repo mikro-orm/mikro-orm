@@ -162,7 +162,7 @@ export class EntitySchemaSourceFile extends SourceFile {
 
     if (prop.enum) {
       options.enum = true;
-      options.items = `() => ${prop.type}`;
+      options.items = `() => ${prop.runtimeType}`;
     }
 
     if (prop.formula) {

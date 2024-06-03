@@ -493,7 +493,7 @@ describe('composite keys in sqlite', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('delete from `user2_sandwiches` where (`sandwich_id` = 2 and `user2_first_name` = \'Henry\' and `user2_last_name` = \'Doe 2\') or (`sandwich_id` = 3 and `user2_first_name` = \'Henry\' and `user2_last_name` = \'Doe 2\')');
+    expect(mock.mock.calls[1][0]).toMatch('delete from `user2_sandwiches` where ((`sandwich_id` = 2 and `user2_first_name` = \'Henry\' and `user2_last_name` = \'Doe 2\') or (`sandwich_id` = 3 and `user2_first_name` = \'Henry\' and `user2_last_name` = \'Doe 2\'))');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 

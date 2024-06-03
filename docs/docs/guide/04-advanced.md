@@ -500,7 +500,7 @@ user.social = body.social as Social;
 await db.em.persist(user).flush();
 ```
 
-The code is getting a bit messy, let's use `em.create()` instead to make it clean again:
+The code is getting a bit messy, let's use [`em.create()`](/api/core/class/EntityManager#create) instead to make it clean again:
 
 ```diff file='modules/user/routes.ts'
 -const user = new User(body.fullName, body.email, body.password);
@@ -574,7 +574,7 @@ app.get('/:slug', async request => {
 
 ### Creating entities
 
-Then we define the endpoint for creating comments - here we use the `getUserFromToken` helper to access the current user based on the token, try to find the article (again based on the `slug` property) and create the comment entity. Since we use `em.create()` here, we don't have to `em.persist()` the new entity, as it happens automatically this way.
+Then we define the endpoint for creating comments - here we use the `getUserFromToken` helper to access the current user based on the token, try to find the article (again based on the `slug` property) and create the comment entity. Since we use [`em.create()`](/api/core/class/EntityManager#create) here, we don't have to [`em.persist()`](/api/core/class/EntityManager#persist) the new entity, as it happens automatically this way.
 
 ```ts title='modules/article/routes.ts'
 app.post('/:slug/comment', async request => {
@@ -688,7 +688,7 @@ await db.article.nativeDelete(+params.id);
 
 ### Batch inserts, updates and deletes
 
-While we do not have such a use case in this guide, a huge benefit of using the `EntityManager` with Unit of Work approach is automatic batching - all the `INSERT`, `UPDATE` and `DELETE` queries will be batched automatically into a single query per entity.
+While we do not have such a use case in this guide, a huge benefit of using the [`EntityManager`](/api/core/class/EntityManager) with Unit of Work approach is automatic batching - all the `INSERT`, `UPDATE` and `DELETE` queries will be batched automatically into a single query per entity.
 
 #### Insert
 
@@ -1073,7 +1073,7 @@ expect(res.json()).toMatchObject({
 
 ## Result cache
 
-MikroORM has a simple [result caching](../caching.md) mechanism, all you need to do is add `cache` option to your `em.find()` options. The value can be one of:
+MikroORM has a simple [result caching](../caching.md) mechanism, all you need to do is add `cache` option to your [`em.find()`](/api/core/class/EntityManager#find) options. The value can be one of:
 
 - `true` for default expiration (configurable globally, defaults to 1 second).
 - A number for explicit expiration (in milliseconds).

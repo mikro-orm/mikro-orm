@@ -206,7 +206,7 @@ describe('CLIHelper', () => {
 
   test('gets ORM configuration [no mikro-orm.config]', async () => {
     delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT;
-    await expect(CLIHelper.getConfiguration()).rejects.toThrow(`MikroORM config file not found in ['./src/mikro-orm.config.js', './mikro-orm.config.js']`);
+    await expect(CLIHelper.getConfiguration()).rejects.toThrow(`MikroORM config file not found in ['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']`);
 
     process.env.MIKRO_ORM_ENV = __dirname + '/../../mikro-orm.env';
     await expect(CLIHelper.getConfiguration()).resolves.toBeInstanceOf(Configuration);
@@ -301,8 +301,8 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     delete pkg['mikro-orm'].useTsNode;
     const orm = await CLIHelper.getORM(false);
     expect(orm).toBeInstanceOf(MikroORM);
-    expect(orm.config.get('tsNode')).toBe(undefined);
-    expect(orm.config.get('tsNode', Utils.detectTsNode())).toBe(true);
+    // defaults to true when used via CLI since v6.3
+    expect(orm.config.get('tsNode')).toBe(true);
     await orm.close(true);
   });
 
@@ -521,7 +521,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     (global as any).process.env.MIKRO_ORM_CLI_CONFIG = './override/orm-config.ts';
     expect(CLIHelper.getConfigPaths()).toEqual(['./override/orm-config.ts', './src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
     delete (global as any).process.env.MIKRO_ORM_CLI_CONFIG;
-    expect(CLIHelper.getConfigPaths()).toEqual(['./src/mikro-orm.config.js', './mikro-orm.config.js']);
+    expect(CLIHelper.getConfigPaths()).toEqual(['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
 
     (global as any).process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS = '1';
     expect(CLIHelper.getConfigPaths()).toEqual(['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
@@ -533,12 +533,16 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
     pathExistsMock.mockReturnValue(true);
     pkg['mikro-orm'] = { configPaths: ['orm-config'] };
+    expect(CLIHelper.getConfigPaths()).toEqual(['orm-config', './src/mikro-orm.config.ts', './mikro-orm.config.ts', './dist/mikro-orm.config.js', './mikro-orm.config.js']);
+
+    // allows explicit opt-out
+    pkg['mikro-orm'].useTsNode = false;
     expect(CLIHelper.getConfigPaths()).toEqual(['orm-config', './dist/mikro-orm.config.js', './mikro-orm.config.js']);
 
     pkg['mikro-orm'].useTsNode = true;
     expect(CLIHelper.getConfigPaths()).toEqual(['orm-config', './src/mikro-orm.config.ts', './mikro-orm.config.ts', './dist/mikro-orm.config.js', './mikro-orm.config.js']);
 
     pathExistsMock.mockReturnValue(false);
-    expect(CLIHelper.getConfigPaths()).toEqual(['./src/mikro-orm.config.js', './mikro-orm.config.js']);
+    expect(CLIHelper.getConfigPaths()).toEqual(['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
   });
 });

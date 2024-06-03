@@ -19,8 +19,9 @@ Alternatively we can use `toArray()` which will serialize the `Collection` to an
 ```ts
 const author = em.findOne(Author, '...', { populate: ['books'] }); // populating books collection
 
-// or we could lazy load books collection later via `init()` method
-await author.books.init();
+// Or we could lazy load books collection later via `load()` method.
+// Unlike `init()` it will check the state and do nothing if the collection is already initialized.
+// await author.books.load();
 
 for (const book of author.books) {
   console.log(book.title); // initialized

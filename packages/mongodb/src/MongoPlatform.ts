@@ -31,6 +31,20 @@ export class MongoPlatform extends Platform {
     MongoSchemaGenerator.register(orm);
   }
 
+  /** @inheritDoc */
+  override getExtension<T>(extensionName: string, extensionKey: string, moduleName: string, em: EntityManager): T {
+    if (extensionName === 'EntityGenerator') {
+      throw new Error('EntityGenerator is not supported for this driver.');
+    }
+
+    if (extensionName === 'Migrator') {
+      return super.getExtension('Migrator', '@mikro-orm/migrator', '@mikro-orm/migrations-mongodb', em);
+    }
+
+    /* istanbul ignore next */
+    return super.getExtension(extensionName, extensionKey, moduleName, em);
+  }
+
   /* istanbul ignore next: kept for type inference only */
   override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
     return new MongoSchemaGenerator(em ?? driver as any);

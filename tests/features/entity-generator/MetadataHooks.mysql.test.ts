@@ -1,6 +1,18 @@
-import { Cascade, EntityMetadata, GenerateOptions, Platform, ReferenceKind, MetadataProcessor } from '@mikro-orm/core';
+import {
+  Cascade,
+  EntityMetadata,
+  GenerateOptions,
+  JsonType,
+  Platform,
+  ReferenceKind,
+  MetadataProcessor,
+  TransformContext,
+  Type,
+} from '@mikro-orm/core';
 import { initORMMySql } from '../../bootstrap';
 import { Author2 } from '../../entities-sql';
+
+// #region Extensions
 
 const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
   expect(platform).toBeInstanceOf(Platform);
@@ -33,7 +45,8 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
         name: 'secondsSinceLastModified',
         fieldNames: [platform.getConfig().getNamingStrategy().propertyToColumnName('secondsSinceLastModified')],
         columnTypes: ['int'],
-        type: 'number',
+        type: 'integer',
+        runtimeType: 'number',
         lazy: true,
         formula: alias => `TIMESTAMPDIFF(SECONDS, NOW(), ${alias}.updated_at)`,
       });
@@ -60,10 +73,10 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
         }
 
         if (propName === 'identity') {
-          propOptions.prefix = false;
           propOptions.kind = ReferenceKind.EMBEDDED;
-          propOptions.object = true;
           propOptions.array = true;
+          propOptions.object = true;
+          propOptions.prefix = false;
           propOptions.type = 'IdentitiesContainer';
         }
       });
@@ -112,8 +125,9 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
   embeddableEntityMeta.addProperty(
     {
       name: 'github',
-      type: 'string',
+      runtimeType: 'string',
       fieldNames: ['github'],
+      type: 'string',
       columnTypes: ['varchar(255)'],
     },
   );
@@ -122,7 +136,8 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
       name: 'local',
       fieldNames: ['local'],
       columnTypes: ['int'],
-      type: 'number',
+      type: 'integer',
+      runtimeType: 'number',
     },
   );
   metadata.push(embeddableEntityMeta);
@@ -177,6 +192,21 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
 
     if (entity.className === 'Book2') {
       entity.properties.publisher.mapToPk = true;
+
+      entity.properties.uuidPk.type = 'uuid';
+      entity.properties.uuidPk.customType = platform.getMappedType('uuid');
+
+      const metaProp = entity.properties.meta;
+      metaProp.runtimeType = 'MetaType';
+    }
+
+    if (entity.className === 'FooBar2') {
+      const objectProp = entity.properties.objectProperty;
+      // Although it looks like a class name, this identifier is registered in the config,
+      // under the getMappedType() override.
+      // It should therefore be included as a string in the generated code.
+      objectProp.type = 'JsonObjectType';
+      objectProp.runtimeType = 'JSONObject';
     }
 
     if (entity.className === 'User2') {
@@ -191,16 +221,109 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
       const authorInversed = entity.properties.authorInverse;
       authorInversed.orphanRemoval = true;
       entity.properties.secondsSinceLastModified.ref = false;
+
+      const optionalProp = entity.properties.optional;
+      expect(optionalProp.type).toBe('boolean');
+      optionalProp.type = 'CustomBooleanType';
+      optionalProp.runtimeType = 'CustomBooleanRuntimeType';
+
+      const emailProp = entity.properties.email;
+      emailProp.type = 'EmailType';
+      emailProp.runtimeType = 'Email';
+
+      const updatedAtProp = entity.properties.updatedAt;
+      updatedAtProp.runtimeType = 'MyExtendedDataClass';
+      updatedAtProp.serializer = v => v.toString();
+      updatedAtProp.customType = new class extends Type<Date, string> {
+
+        get runtimeType(): string {
+          return 'string';
+        }
+
+};
     }
   });
 };
+
+class JsonObjectType extends JsonType {
+
+  override convertToDatabaseValue(value: unknown, platform: Platform, context?: TransformContext): string | null {
+    return super.convertToDatabaseValue(value, platform, context);
+  }
+
+  get runtimeType(): string {
+    return 'object';
+  }
+
+}
+
+class Email {
+
+  private readonly parts: [string, string];
+  constructor(email: string) {
+    this.parts = email.split('@', 1) as [string, string];
+  }
+
+  getDomain() {
+    return this.parts[1];
+  }
+
+  getLocal() {
+    return this.parts[0];
+  }
+
+}
+
+class EmailType extends Type<Email, string> {
+
+  convertToJSValue(value: string, platform: Platform): Email {
+    return new Email(value);
+  }
+
+  convertToDatabaseValue(value: Email, platform: Platform, context?: TransformContext): string {
+    return `${value.getLocal()}@${value.getDomain()}`;
+  }
+
+}
+
+const customFileNameResolver = (name: string) => {
+  return ({
+    CustomBooleanType: '../types/CustomBooleanType',
+    CustomBooleanRuntimeType: '../runtimeTypes/CustomBooleanRuntimeType',
+    JSONObject: '../runtimeTypes/JSONObject',
+    Email: '../runtimeTypes/Email',
+  })[name] ?? name;
+};
+
+const getMappedTypeOverride = (type: string, platform: Platform) => {
+  if (type === 'JsonObjectType') {
+    return Type.getType(JsonObjectType);
+  }
+  if (type === 'EmailType') {
+    return Type.getType(EmailType);
+  }
+  return platform.getDefaultMappedType(type);
+};
+
+// #endregion
 
 let orm: Awaited<ReturnType<typeof initORMMySql>>;
 
 describe('MetadataHooks [mysql]', () => {
 
   beforeEach(async () => {
-    orm = await initORMMySql();
+    orm = await initORMMySql('mysql', {
+      discovery: {
+        getMappedType: getMappedTypeOverride,
+      },
+      entityGenerator: {
+        save: false,
+        bidirectionalRelations: true,
+        fileName: customFileNameResolver,
+        onInitialMetadata: initialMetadataProcessor,
+        onProcessedMetadata: processedMetadataProcessor,
+      },
+    });
   });
 
   afterEach(async () => {
@@ -215,21 +338,14 @@ describe('MetadataHooks [mysql]', () => {
 
     test('metadata hooks with decorators', async () => {
       const dump = await orm.entityGenerator.generate({
-        save: false,
-        bidirectionalRelations: true,
-        onInitialMetadata: initialMetadataProcessor,
-        onProcessedMetadata: processedMetadataProcessor,
+        entitySchema: false,
       });
       expect(dump).toMatchSnapshot('mysql-defaults-dump');
     });
 
     test('metadata hooks with entity schema', async () => {
       const dump = await orm.entityGenerator.generate({
-        save: false,
-        bidirectionalRelations: true,
         entitySchema: true,
-        onInitialMetadata: initialMetadataProcessor,
-        onProcessedMetadata: processedMetadataProcessor,
       });
       expect(dump).toMatchSnapshot('mysql-EntitySchema-dump');
     });

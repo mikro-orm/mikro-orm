@@ -266,11 +266,7 @@ For CLI to be able to access your database, you will need to create `mikro-orm.c
 
 > ORM configuration file can export the Promise, like: `export default Promise.resolve({...});`.
 
-To enable TypeScript support, add `useTsNode` flag to the `mikro-orm` section in your `package.json` file. By default, when `useTsNode` is not enabled, CLI will ignore `.ts` files, so if you want to oup-out of this behaviour, enable the `alwaysAllowTs` option. This would be useful if you want to use MikroORM with [Bun](https://bun.sh), which has TypeScript support out of the box.
-
-> The `useTsNode` is a flag only for the CLI, it has no effect on your application.
-
-> Remember to install `ts-node` when enabling `useTsNode` flag.
+Since v6.3, the CLI will always try to use TS config file, even without explicitly enabling it via `useTsNode` flag in your `package.json` file. You can still use it to disable the TS support explicitly. Keep in mind that having `ts-node` installed is still required for the TS support to work. The `useTsNode` has effect only on the CLI. Alternatively, you can use the `alwaysAllowTs` option in your `package.json` file, which will enable checking the TS files even for your actual app and not just the CLI (in case you call `MikroORM.init()` without any parameters). This can be handly if you run your app via [Bun](https://bun.sh).
 
 You can also set up array of possible paths to `mikro-orm.config.*` file in the `package.json`, as well as use different file name. The `package.json` file can be located in the current working directory, or in one of its parent folders.
 
@@ -279,7 +275,6 @@ You can also set up array of possible paths to `mikro-orm.config.*` file in the 
   "name": "your-app",
   "dependencies": { ... },
   "mikro-orm": {
-    "useTsNode": true,
     "configPaths": [
       "./src/mikro-orm.config.ts",
       "./dist/mikro-orm.config.js"

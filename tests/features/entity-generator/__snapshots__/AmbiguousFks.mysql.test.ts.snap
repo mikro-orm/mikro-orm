@@ -100,7 +100,7 @@ export class ProductSizes {
   @Property({ persist: false })
   productId!: number;
 
-  @Property({ columnType: 'smallint', unsigned: true })
+  @Property({ type: 'smallint', unsigned: true })
   size!: number;
 
   @ManyToMany({ entity: () => Countries, pivotTable: 'product_countries', pivotEntity: () => ProductCountries, joinColumn: 'product_id', inverseJoinColumn: 'country' })
@@ -272,7 +272,7 @@ export class Colors {
 export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
-    colorId: { primary: true, type: 'number' },
+    colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
@@ -315,7 +315,7 @@ export const ProductColorsSchema = new EntitySchema({
   class: ProductColors,
   properties: {
     color: { primary: true, kind: 'm:1', entity: () => Colors, fieldName: 'color_id' },
-    colorId: { type: 'number', persist: false },
+    colorId: { type: 'integer', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -323,7 +323,7 @@ export const ProductColorsSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_colors_products1_idx' },
+    productId: { type: 'integer', persist: false, index: 'fk_product_colors_products1_idx' },
   },
 });
 ",
@@ -351,7 +351,7 @@ export const ProductCountriesSchema = new EntitySchema({
       index: 'fk_product_countries_product_sizes1_idx',
     },
     productId: {
-      type: 'number',
+      type: 'integer',
       persist: false,
       index: 'fk_product_countries_product_sizes1_idx',
     },
@@ -379,8 +379,8 @@ export const ProductSizesSchema = new EntitySchema({
   ],
   properties: {
     product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
-    productId: { type: 'number', persist: false },
-    size: { type: 'number', columnType: 'smallint', unsigned: true },
+    productId: { type: 'integer', persist: false },
+    size: { type: 'smallint', unsigned: true },
     productCountries: {
       kind: 'm:n',
       entity: () => Countries,
@@ -403,7 +403,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
   },
 });
@@ -438,10 +438,10 @@ export const SalesSchema = new EntitySchema({
     { name: 'product_id__size__color_id-UNIQUE', properties: ['colorId', 'productSizes'] },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     country: { type: 'unknown', persist: false },
-    sellerId: { type: 'number', persist: false },
-    productId: { type: 'number', persist: false, index: 'product_id_idx' },
+    sellerId: { type: 'integer', persist: false },
+    productId: { type: 'integer', persist: false, index: 'product_id_idx' },
     color: {
       kind: 'm:1',
       entity: () => ProductColors,
@@ -452,8 +452,8 @@ export const SalesSchema = new EntitySchema({
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
-    colorId: { type: 'number', nullable: true, persist: false },
-    size: { type: 'number', nullable: true, persist: false },
+    colorId: { type: 'integer', nullable: true, persist: false },
+    size: { type: 'smallint', nullable: true, persist: false },
     exchanged: {
       kind: 'm:1',
       entity: () => SellerProducts,
@@ -464,7 +464,7 @@ export const SalesSchema = new EntitySchema({
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
-    exchangedProductId: { type: 'number', nullable: true, persist: false },
+    exchangedProductId: { type: 'integer', nullable: true, persist: false },
     productCountries: {
       kind: 'm:1',
       entity: () => ProductCountries,
@@ -528,7 +528,7 @@ export const SellerCountriesSchema = new EntitySchema({
       fieldName: 'seller_id',
       index: 'fk_seller_countries_sellers1_idx',
     },
-    sellerId: { type: 'number', persist: false, index: 'fk_seller_countries_sellers1_idx' },
+    sellerId: { type: 'integer', persist: false, index: 'fk_seller_countries_sellers1_idx' },
     countries: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
   },
 });
@@ -549,7 +549,7 @@ export const SellerProductsSchema = new EntitySchema({
   class: SellerProducts,
   properties: {
     seller: { primary: true, kind: 'm:1', entity: () => Sellers, fieldName: 'seller_id' },
-    sellerId: { type: 'number', persist: false },
+    sellerId: { type: 'integer', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -557,7 +557,7 @@ export const SellerProductsSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_seller_products_products1_idx',
     },
-    productId: { type: 'number', persist: false, index: 'fk_seller_products_products1_idx' },
+    productId: { type: 'integer', persist: false, index: 'fk_seller_products_products1_idx' },
   },
 });
 ",
@@ -578,7 +578,7 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
+    sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerCountries: {
       kind: 'm:n',
@@ -702,7 +702,7 @@ export class ProductSizes {
   @Property({ persist: false })
   productId!: number;
 
-  @Property({ columnType: 'smallint', unsigned: true })
+  @Property({ type: 'smallint', unsigned: true })
   size!: number;
 
   @ManyToMany({ entity: () => Countries, pivotTable: 'product_countries', pivotEntity: () => ProductCountries, joinColumn: 'product_id', inverseJoinColumn: 'country' })
@@ -874,7 +874,7 @@ export class Colors {
 export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
-    colorId: { primary: true, type: 'number' },
+    colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
@@ -923,7 +923,7 @@ export const ProductColorsSchema = new EntitySchema({
       ref: true,
       fieldName: 'color_id',
     },
-    colorId: { type: 'number', persist: false },
+    colorId: { type: 'integer', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -932,7 +932,7 @@ export const ProductColorsSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_colors_products1_idx' },
+    productId: { type: 'integer', persist: false, index: 'fk_product_colors_products1_idx' },
   },
 });
 ",
@@ -961,7 +961,7 @@ export const ProductCountriesSchema = new EntitySchema({
       index: 'fk_product_countries_product_sizes1_idx',
     },
     productId: {
-      type: 'number',
+      type: 'integer',
       persist: false,
       index: 'fk_product_countries_product_sizes1_idx',
     },
@@ -1001,8 +1001,8 @@ export const ProductSizesSchema = new EntitySchema({
       ref: true,
       fieldName: 'product_id',
     },
-    productId: { type: 'number', persist: false },
-    size: { type: 'number', columnType: 'smallint', unsigned: true },
+    productId: { type: 'integer', persist: false },
+    size: { type: 'smallint', unsigned: true },
     productCountries: {
       kind: 'm:n',
       entity: () => Countries,
@@ -1025,7 +1025,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
   },
 });
@@ -1060,10 +1060,10 @@ export const SalesSchema = new EntitySchema({
     { name: 'product_id__size__color_id-UNIQUE', properties: ['colorId', 'productSizes'] },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     country: { type: 'unknown', persist: false },
-    sellerId: { type: 'number', persist: false },
-    productId: { type: 'number', persist: false, index: 'product_id_idx' },
+    sellerId: { type: 'integer', persist: false },
+    productId: { type: 'integer', persist: false, index: 'product_id_idx' },
     color: {
       kind: 'm:1',
       entity: () => ProductColors,
@@ -1075,8 +1075,8 @@ export const SalesSchema = new EntitySchema({
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
-    colorId: { type: 'number', nullable: true, persist: false },
-    size: { type: 'number', nullable: true, persist: false },
+    colorId: { type: 'integer', nullable: true, persist: false },
+    size: { type: 'smallint', nullable: true, persist: false },
     exchanged: {
       kind: 'm:1',
       entity: () => SellerProducts,
@@ -1088,7 +1088,7 @@ export const SalesSchema = new EntitySchema({
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
-    exchangedProductId: { type: 'number', nullable: true, persist: false },
+    exchangedProductId: { type: 'integer', nullable: true, persist: false },
     productCountries: {
       kind: 'm:1',
       entity: () => ProductCountries,
@@ -1157,7 +1157,7 @@ export const SellerCountriesSchema = new EntitySchema({
       fieldName: 'seller_id',
       index: 'fk_seller_countries_sellers1_idx',
     },
-    sellerId: { type: 'number', persist: false, index: 'fk_seller_countries_sellers1_idx' },
+    sellerId: { type: 'integer', persist: false, index: 'fk_seller_countries_sellers1_idx' },
     countries: {
       primary: true,
       kind: 'm:1',
@@ -1190,7 +1190,7 @@ export const SellerProductsSchema = new EntitySchema({
       ref: true,
       fieldName: 'seller_id',
     },
-    sellerId: { type: 'number', persist: false },
+    sellerId: { type: 'integer', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1199,7 +1199,7 @@ export const SellerProductsSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_seller_products_products1_idx',
     },
-    productId: { type: 'number', persist: false, index: 'fk_seller_products_products1_idx' },
+    productId: { type: 'integer', persist: false, index: 'fk_seller_products_products1_idx' },
   },
 });
 ",
@@ -1220,7 +1220,7 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
+    sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerCountries: {
       kind: 'm:n',
@@ -1368,7 +1368,7 @@ export class ProductSizes {
   @Property({ persist: false })
   productId!: number;
 
-  @Property({ columnType: 'smallint', unsigned: true })
+  @Property({ type: 'smallint', unsigned: true })
   size!: number;
 
   @ManyToMany({ entity: () => Countries, pivotTable: 'product_countries', pivotEntity: () => ProductCountries, joinColumn: 'product_id', inverseJoinColumn: 'country' })
@@ -1573,7 +1573,7 @@ export class Colors {
 export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
-    colorId: { primary: true, type: 'number' },
+    colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
@@ -1628,7 +1628,7 @@ export const ProductColorsSchema = new EntitySchema({
   class: ProductColors,
   properties: {
     color: { primary: true, kind: 'm:1', entity: () => Colors, fieldName: 'color_id' },
-    colorId: { type: 'number', persist: false },
+    colorId: { type: 'integer', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1636,7 +1636,7 @@ export const ProductColorsSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_colors_products1_idx' },
+    productId: { type: 'integer', persist: false, index: 'fk_product_colors_products1_idx' },
     colorInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
   },
 });
@@ -1667,7 +1667,7 @@ export const ProductCountriesSchema = new EntitySchema({
       index: 'fk_product_countries_product_sizes1_idx',
     },
     productId: {
-      type: 'number',
+      type: 'integer',
       persist: false,
       index: 'fk_product_countries_product_sizes1_idx',
     },
@@ -1699,8 +1699,8 @@ export const ProductSizesSchema = new EntitySchema({
   ],
   properties: {
     product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
-    productId: { type: 'number', persist: false },
-    size: { type: 'number', columnType: 'smallint', unsigned: true },
+    productId: { type: 'integer', persist: false },
+    size: { type: 'smallint', unsigned: true },
     productCountries: {
       kind: 'm:n',
       entity: () => Countries,
@@ -1731,7 +1731,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColorsInverse: { kind: 'm:n', entity: () => Colors, mappedBy: 'productColors' },
     productInverse: { kind: '1:m', entity: () => SellerProducts, mappedBy: 'product' },
@@ -1769,10 +1769,10 @@ export const SalesSchema = new EntitySchema({
     { name: 'product_id__size__color_id-UNIQUE', properties: ['colorId', 'productSizes'] },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     country: { type: 'unknown', persist: false },
-    sellerId: { type: 'number', persist: false },
-    productId: { type: 'number', persist: false, index: 'product_id_idx' },
+    sellerId: { type: 'integer', persist: false },
+    productId: { type: 'integer', persist: false, index: 'product_id_idx' },
     color: {
       kind: 'm:1',
       entity: () => ProductColors,
@@ -1783,8 +1783,8 @@ export const SalesSchema = new EntitySchema({
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
-    colorId: { type: 'number', nullable: true, persist: false },
-    size: { type: 'number', nullable: true, persist: false },
+    colorId: { type: 'integer', nullable: true, persist: false },
+    size: { type: 'smallint', nullable: true, persist: false },
     exchanged: {
       kind: 'm:1',
       entity: () => SellerProducts,
@@ -1795,7 +1795,7 @@ export const SalesSchema = new EntitySchema({
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
-    exchangedProductId: { type: 'number', nullable: true, persist: false },
+    exchangedProductId: { type: 'integer', nullable: true, persist: false },
     productCountries: {
       kind: 'm:1',
       entity: () => ProductCountries,
@@ -1861,7 +1861,7 @@ export const SellerCountriesSchema = new EntitySchema({
       fieldName: 'seller_id',
       index: 'fk_seller_countries_sellers1_idx',
     },
-    sellerId: { type: 'number', persist: false, index: 'fk_seller_countries_sellers1_idx' },
+    sellerId: { type: 'integer', persist: false, index: 'fk_seller_countries_sellers1_idx' },
     countries: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
     sellerCountriesInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'sellerCountries' },
   },
@@ -1886,7 +1886,7 @@ export const SellerProductsSchema = new EntitySchema({
   class: SellerProducts,
   properties: {
     seller: { primary: true, kind: 'm:1', entity: () => Sellers, fieldName: 'seller_id' },
-    sellerId: { type: 'number', persist: false },
+    sellerId: { type: 'integer', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1894,7 +1894,7 @@ export const SellerProductsSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_seller_products_products1_idx',
     },
-    productId: { type: 'number', persist: false, index: 'fk_seller_products_products1_idx' },
+    productId: { type: 'integer', persist: false, index: 'fk_seller_products_products1_idx' },
     exchangedInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'exchanged' },
     fkSalesSellerProducts1Inverse: { kind: '1:m', entity: () => Sales, mappedBy: 'fkSalesSellerProducts1' },
   },
@@ -1918,7 +1918,7 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
+    sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerCountries: {
       kind: 'm:n',
@@ -2067,7 +2067,7 @@ export class ProductSizes {
   @Property({ persist: false })
   productId!: number;
 
-  @Property({ columnType: 'smallint', unsigned: true })
+  @Property({ type: 'smallint', unsigned: true })
   size!: number;
 
   @ManyToMany({ entity: () => Countries, pivotTable: 'product_countries', pivotEntity: () => ProductCountries, joinColumn: 'product_id', inverseJoinColumn: 'country' })
@@ -2272,7 +2272,7 @@ export class Colors {
 export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
-    colorId: { primary: true, type: 'number' },
+    colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
@@ -2333,7 +2333,7 @@ export const ProductColorsSchema = new EntitySchema({
       ref: true,
       fieldName: 'color_id',
     },
-    colorId: { type: 'number', persist: false },
+    colorId: { type: 'integer', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -2342,7 +2342,7 @@ export const ProductColorsSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_colors_products1_idx' },
+    productId: { type: 'integer', persist: false, index: 'fk_product_colors_products1_idx' },
     colorInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
   },
 });
@@ -2374,7 +2374,7 @@ export const ProductCountriesSchema = new EntitySchema({
       index: 'fk_product_countries_product_sizes1_idx',
     },
     productId: {
-      type: 'number',
+      type: 'integer',
       persist: false,
       index: 'fk_product_countries_product_sizes1_idx',
     },
@@ -2418,8 +2418,8 @@ export const ProductSizesSchema = new EntitySchema({
       ref: true,
       fieldName: 'product_id',
     },
-    productId: { type: 'number', persist: false },
-    size: { type: 'number', columnType: 'smallint', unsigned: true },
+    productId: { type: 'integer', persist: false },
+    size: { type: 'smallint', unsigned: true },
     productCountries: {
       kind: 'm:n',
       entity: () => Countries,
@@ -2450,7 +2450,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColorsInverse: { kind: 'm:n', entity: () => Colors, mappedBy: 'productColors' },
     productInverse: { kind: '1:m', entity: () => SellerProducts, mappedBy: 'product' },
@@ -2488,10 +2488,10 @@ export const SalesSchema = new EntitySchema({
     { name: 'product_id__size__color_id-UNIQUE', properties: ['colorId', 'productSizes'] },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     country: { type: 'unknown', persist: false },
-    sellerId: { type: 'number', persist: false },
-    productId: { type: 'number', persist: false, index: 'product_id_idx' },
+    sellerId: { type: 'integer', persist: false },
+    productId: { type: 'integer', persist: false, index: 'product_id_idx' },
     color: {
       kind: 'm:1',
       entity: () => ProductColors,
@@ -2503,8 +2503,8 @@ export const SalesSchema = new EntitySchema({
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
-    colorId: { type: 'number', nullable: true, persist: false },
-    size: { type: 'number', nullable: true, persist: false },
+    colorId: { type: 'integer', nullable: true, persist: false },
+    size: { type: 'smallint', nullable: true, persist: false },
     exchanged: {
       kind: 'm:1',
       entity: () => SellerProducts,
@@ -2516,7 +2516,7 @@ export const SalesSchema = new EntitySchema({
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
-    exchangedProductId: { type: 'number', nullable: true, persist: false },
+    exchangedProductId: { type: 'integer', nullable: true, persist: false },
     productCountries: {
       kind: 'm:1',
       entity: () => ProductCountries,
@@ -2587,7 +2587,7 @@ export const SellerCountriesSchema = new EntitySchema({
       fieldName: 'seller_id',
       index: 'fk_seller_countries_sellers1_idx',
     },
-    sellerId: { type: 'number', persist: false, index: 'fk_seller_countries_sellers1_idx' },
+    sellerId: { type: 'integer', persist: false, index: 'fk_seller_countries_sellers1_idx' },
     countries: {
       primary: true,
       kind: 'm:1',
@@ -2624,7 +2624,7 @@ export const SellerProductsSchema = new EntitySchema({
       ref: true,
       fieldName: 'seller_id',
     },
-    sellerId: { type: 'number', persist: false },
+    sellerId: { type: 'integer', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -2633,7 +2633,7 @@ export const SellerProductsSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_seller_products_products1_idx',
     },
-    productId: { type: 'number', persist: false, index: 'fk_seller_products_products1_idx' },
+    productId: { type: 'integer', persist: false, index: 'fk_seller_products_products1_idx' },
     exchangedInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'exchanged' },
     fkSalesSellerProducts1Inverse: { kind: '1:m', entity: () => Sales, mappedBy: 'fkSalesSellerProducts1' },
   },
@@ -2657,7 +2657,7 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
+    sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerCountries: {
       kind: 'm:n',
@@ -2773,7 +2773,7 @@ export class ProductSizes {
   @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
   product!: Products;
 
-  @Property({ columnType: 'smallint', unsigned: true })
+  @Property({ type: 'smallint', unsigned: true })
   size!: number;
 
 }
@@ -2905,7 +2905,7 @@ export class Colors {
 export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
-    colorId: { primary: true, type: 'number' },
+    colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
@@ -3018,7 +3018,7 @@ export const ProductSizesSchema = new EntitySchema({
   ],
   properties: {
     product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
-    size: { type: 'number', columnType: 'smallint', unsigned: true },
+    size: { type: 'smallint', unsigned: true },
   },
 });
 ",
@@ -3033,7 +3033,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
   },
 });
@@ -3065,7 +3065,7 @@ export const SalesSchema = new EntitySchema({
     { name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     color: {
       kind: 'm:1',
       entity: () => ProductColors,
@@ -3188,7 +3188,7 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
+    sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
@@ -3295,7 +3295,7 @@ export class ProductSizes {
   @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
   product!: Ref<Products>;
 
-  @Property({ columnType: 'smallint', unsigned: true })
+  @Property({ type: 'smallint', unsigned: true })
   size!: number;
 
 }
@@ -3427,7 +3427,7 @@ export class Colors {
 export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
-    colorId: { primary: true, type: 'number' },
+    colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
@@ -3560,7 +3560,7 @@ export const ProductSizesSchema = new EntitySchema({
       ref: true,
       fieldName: 'product_id',
     },
-    size: { type: 'number', columnType: 'smallint', unsigned: true },
+    size: { type: 'smallint', unsigned: true },
   },
 });
 ",
@@ -3575,7 +3575,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
   },
 });
@@ -3607,7 +3607,7 @@ export const SalesSchema = new EntitySchema({
     { name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     color: {
       kind: 'm:1',
       entity: () => ProductColors,
@@ -3750,7 +3750,7 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
+    sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
@@ -3874,7 +3874,7 @@ export class ProductSizes {
   @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
   product!: Products;
 
-  @Property({ columnType: 'smallint', unsigned: true })
+  @Property({ type: 'smallint', unsigned: true })
   size!: number;
 
   @ManyToMany({ entity: () => Countries, mappedBy: 'productCountries' })
@@ -4046,7 +4046,7 @@ export class Colors {
 export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
-    colorId: { primary: true, type: 'number' },
+    colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
@@ -4174,7 +4174,7 @@ export const ProductSizesSchema = new EntitySchema({
   ],
   properties: {
     product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
-    size: { type: 'number', columnType: 'smallint', unsigned: true },
+    size: { type: 'smallint', unsigned: true },
     productCountriesInverse: { kind: 'm:n', entity: () => Countries, mappedBy: 'productCountries' },
     productInverse: { kind: '1:m', entity: () => ProductCountries, mappedBy: 'product' },
     sizeInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'size' },
@@ -4198,7 +4198,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColorsInverse: { kind: 'm:n', entity: () => Colors, mappedBy: 'productColors' },
     productInverse: { kind: '1:m', entity: () => SellerProducts, mappedBy: 'product' },
@@ -4233,7 +4233,7 @@ export const SalesSchema = new EntitySchema({
     { name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     color: {
       kind: 'm:1',
       entity: () => ProductColors,
@@ -4367,7 +4367,7 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
+    sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
@@ -4493,7 +4493,7 @@ export class ProductSizes {
   @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
   product!: Ref<Products>;
 
-  @Property({ columnType: 'smallint', unsigned: true })
+  @Property({ type: 'smallint', unsigned: true })
   size!: number;
 
   @ManyToMany({ entity: () => Countries, mappedBy: 'productCountries' })
@@ -4665,7 +4665,7 @@ export class Colors {
 export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
-    colorId: { primary: true, type: 'number' },
+    colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
@@ -4813,7 +4813,7 @@ export const ProductSizesSchema = new EntitySchema({
       ref: true,
       fieldName: 'product_id',
     },
-    size: { type: 'number', columnType: 'smallint', unsigned: true },
+    size: { type: 'smallint', unsigned: true },
     productCountriesInverse: { kind: 'm:n', entity: () => Countries, mappedBy: 'productCountries' },
     productInverse: { kind: '1:m', entity: () => ProductCountries, mappedBy: 'product' },
     sizeInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'size' },
@@ -4837,7 +4837,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColorsInverse: { kind: 'm:n', entity: () => Colors, mappedBy: 'productColors' },
     productInverse: { kind: '1:m', entity: () => SellerProducts, mappedBy: 'product' },
@@ -4872,7 +4872,7 @@ export const SalesSchema = new EntitySchema({
     { name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     color: {
       kind: 'm:1',
       entity: () => ProductColors,
@@ -5026,7 +5026,7 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
+    sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
@@ -5135,7 +5135,7 @@ export class ProductSizes {
   @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
   product!: Products;
 
-  @Property({ columnType: 'smallint', unsigned: true })
+  @Property({ type: 'smallint', unsigned: true })
   size!: number;
 
 }
@@ -5267,7 +5267,7 @@ export class Colors {
 export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
-    colorId: { primary: true, type: 'number' },
+    colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
@@ -5380,7 +5380,7 @@ export const ProductSizesSchema = new EntitySchema({
   ],
   properties: {
     product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
-    size: { type: 'number', columnType: 'smallint', unsigned: true },
+    size: { type: 'smallint', unsigned: true },
   },
 });
 ",
@@ -5395,7 +5395,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
   },
 });
@@ -5427,7 +5427,7 @@ export const SalesSchema = new EntitySchema({
     { name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     color: {
       kind: 'm:1',
       entity: () => ProductColors,
@@ -5550,7 +5550,7 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
+    sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
@@ -5657,7 +5657,7 @@ export class ProductSizes {
   @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
   product!: Ref<Products>;
 
-  @Property({ columnType: 'smallint', unsigned: true })
+  @Property({ type: 'smallint', unsigned: true })
   size!: number;
 
 }
@@ -5789,7 +5789,7 @@ export class Colors {
 export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
-    colorId: { primary: true, type: 'number' },
+    colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
@@ -5922,7 +5922,7 @@ export const ProductSizesSchema = new EntitySchema({
       ref: true,
       fieldName: 'product_id',
     },
-    size: { type: 'number', columnType: 'smallint', unsigned: true },
+    size: { type: 'smallint', unsigned: true },
   },
 });
 ",
@@ -5937,7 +5937,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
   },
 });
@@ -5969,7 +5969,7 @@ export const SalesSchema = new EntitySchema({
     { name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     color: {
       kind: 'm:1',
       entity: () => ProductColors,
@@ -6112,7 +6112,7 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
+    sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
@@ -6236,7 +6236,7 @@ export class ProductSizes {
   @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
   product!: Products;
 
-  @Property({ columnType: 'smallint', unsigned: true })
+  @Property({ type: 'smallint', unsigned: true })
   size!: number;
 
   @ManyToMany({ entity: () => Countries, mappedBy: 'productCountries' })
@@ -6408,7 +6408,7 @@ export class Colors {
 export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
-    colorId: { primary: true, type: 'number' },
+    colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
@@ -6536,7 +6536,7 @@ export const ProductSizesSchema = new EntitySchema({
   ],
   properties: {
     product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
-    size: { type: 'number', columnType: 'smallint', unsigned: true },
+    size: { type: 'smallint', unsigned: true },
     productCountriesInverse: { kind: 'm:n', entity: () => Countries, mappedBy: 'productCountries' },
     productInverse: { kind: '1:m', entity: () => ProductCountries, mappedBy: 'product' },
     sizeInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'size' },
@@ -6560,7 +6560,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColorsInverse: { kind: 'm:n', entity: () => Colors, mappedBy: 'productColors' },
     productInverse: { kind: '1:m', entity: () => SellerProducts, mappedBy: 'product' },
@@ -6595,7 +6595,7 @@ export const SalesSchema = new EntitySchema({
     { name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     color: {
       kind: 'm:1',
       entity: () => ProductColors,
@@ -6729,7 +6729,7 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
+    sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
@@ -6855,7 +6855,7 @@ export class ProductSizes {
   @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
   product!: Ref<Products>;
 
-  @Property({ columnType: 'smallint', unsigned: true })
+  @Property({ type: 'smallint', unsigned: true })
   size!: number;
 
   @ManyToMany({ entity: () => Countries, mappedBy: 'productCountries' })
@@ -7027,7 +7027,7 @@ export class Colors {
 export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
-    colorId: { primary: true, type: 'number' },
+    colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
@@ -7175,7 +7175,7 @@ export const ProductSizesSchema = new EntitySchema({
       ref: true,
       fieldName: 'product_id',
     },
-    size: { type: 'number', columnType: 'smallint', unsigned: true },
+    size: { type: 'smallint', unsigned: true },
     productCountriesInverse: { kind: 'm:n', entity: () => Countries, mappedBy: 'productCountries' },
     productInverse: { kind: '1:m', entity: () => ProductCountries, mappedBy: 'product' },
     sizeInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'size' },
@@ -7199,7 +7199,7 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
+    productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColorsInverse: { kind: 'm:n', entity: () => Colors, mappedBy: 'productColors' },
     productInverse: { kind: '1:m', entity: () => SellerProducts, mappedBy: 'product' },
@@ -7234,7 +7234,7 @@ export const SalesSchema = new EntitySchema({
     { name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     color: {
       kind: 'm:1',
       entity: () => ProductColors,
@@ -7388,7 +7388,7 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
+    sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',

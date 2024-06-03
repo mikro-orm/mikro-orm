@@ -22,7 +22,7 @@ export class CLIConfigurator {
     const settings = ConfigurationLoader.getSettings();
     const version = Utils.getORMVersion();
 
-    if (settings.useTsNode) {
+    if (settings.useTsNode !== false) {
       const tsNode = ConfigurationLoader.registerTsNode(settings.tsConfigPath);
 
       /* istanbul ignore if */

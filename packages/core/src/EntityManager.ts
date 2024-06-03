@@ -1227,7 +1227,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async transactional<T>(cb: (em: this) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
     const em = this.getContext(false);
 
-    if (this.disableTransactions) {
+    if (this.disableTransactions || em.disableTransactions) {
       return cb(em);
     }
 

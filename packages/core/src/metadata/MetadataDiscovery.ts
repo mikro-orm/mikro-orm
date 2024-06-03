@@ -958,9 +958,14 @@ export class MetadataDiscovery {
       return prop.embedded ? isParentObject(meta.properties[prop.embedded[0]]) : false;
     };
     const rootProperty = getRootProperty(embeddedProp);
+    const parentProperty = meta.properties[embeddedProp.embedded?.[0] ?? ''];
     const object = isParentObject(embeddedProp);
     this.initFieldName(embeddedProp, rootProperty !== embeddedProp && object);
-    const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_' : embeddedProp.prefix;
+    const prefix = embeddedProp.prefix === false
+      ? (parentProperty?.prefix || '')
+      : embeddedProp.prefix === true
+        ? embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_'
+        : embeddedProp.prefix;
 
     for (const prop of Object.values(embeddable.properties)) {
       const name = (embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_') + prop.name;
@@ -1394,7 +1399,14 @@ export class MetadataDiscovery {
       const mappedType = this.getMappedType(prop);
       const SCALAR_TYPES = ['string', 'number', 'boolean', 'bigint', 'Date', 'Buffer', 'RegExp', 'any', 'unknown'];
 
-      if (mappedType instanceof UnknownType && !prop.columnTypes && !SCALAR_TYPES.includes(prop.type)) {
+      if (
+        mappedType instanceof UnknownType
+        && !prop.columnTypes
+        // it could be a runtime type from reflect-metadata
+        && !SCALAR_TYPES.includes(prop.type)
+        // or it might be inferred via ts-morph to some generic type alias
+        && !prop.type.match(/[<>:"';{}]/)
+      ) {
         prop.columnTypes = [prop.type];
       } else {
         prop.columnTypes = [mappedType.getColumnType(prop, this.platform)];

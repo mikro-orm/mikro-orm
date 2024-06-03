@@ -1,5 +1,6 @@
 import {
   Cascade,
+  DateTimeType,
   DateType,
   DecimalType,
   type Dictionary,
@@ -13,7 +14,9 @@ import {
   type OneToOneOptions,
   type Platform,
   ReferenceKind,
+  SCALAR_TYPES,
   type TypeConfig,
+  TimeType,
   type UniqueOptions,
   UnknownType,
   Utils,
@@ -24,6 +27,8 @@ import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper';
  * @see https://github.com/tc39/proposal-regexp-unicode-property-escapes#other-examples
  */
 export const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$\u200C\u200D\p{ID_Continue}])*$/u;
+
+const primitivesAndLibs = [...SCALAR_TYPES, 'bigint', 'Uint8Array', 'unknown', 'object', 'any'];
 
 export class SourceFile {
 
@@ -206,10 +211,45 @@ export class SourceFile {
 
     const propType = prop.mapToPk
       ? (() => {
-          const runtimeTypes = prop.columnTypes.map(t => this.platform.getMappedType(t).runtimeType);
+          const runtimeTypes = prop.columnTypes.map((t, i) => (prop.customTypes?.[i] ?? this.platform.getMappedType(t)).runtimeType);
           return runtimeTypes.length === 1 ? runtimeTypes[0] : this.serializeObject(runtimeTypes);
         })()
-      : prop.type;
+      : (() => {
+          if (prop.enum) {
+            return prop.runtimeType;
+          }
+
+          if (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) {
+
+            const mappedDeclaredType = this.platform.getMappedType(prop.type);
+            const mappedRawType = (prop.customTypes?.[0] ?? ((prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType)
+              ? this.platform.getMappedType(prop.columnTypes[0])
+              : mappedDeclaredType));
+            const rawType = mappedRawType.runtimeType;
+
+            const serializedType = (prop.customType ?? mappedRawType).runtimeType;
+
+            // Add non-lib imports where needed.
+            for (const typeSpec of [prop.runtimeType, rawType, serializedType]) {
+              const simplePropType = typeSpec.replace(/\[]+$/, '');
+              if (!primitivesAndLibs.includes(simplePropType)) {
+                this.entityImports.add(simplePropType);
+              }
+            }
+
+            if (prop.runtimeType !== rawType || rawType !== serializedType) {
+                this.coreImports.add('IType');
+                if (rawType !== serializedType) {
+                  return `IType<${prop.runtimeType}, ${rawType}, ${serializedType}>`;
+                }
+                return `IType<${prop.runtimeType}, ${rawType}>`;
+            }
+
+            return prop.runtimeType;
+          }
+
+          return prop.type;
+        })();
 
     const useDefault = prop.default != null;
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
@@ -221,7 +261,7 @@ export class SourceFile {
 
     let ret = `${propName}${optional}: ${propType}`;
 
-    if (prop.kind === ReferenceKind.EMBEDDED && prop.array) {
+    if (prop.array && (prop.kind === ReferenceKind.EMBEDDED || prop.enum)) {
       ret += '[]';
     }
     ret += hiddenType;
@@ -355,7 +395,7 @@ export class SourceFile {
     }
 
     if (prop.enum) {
-      options.items = `() => ${prop.type}`;
+      options.items = `() => ${prop.runtimeType}`;
     }
 
     this.getCommonDecoratorOptions(options, prop);
@@ -465,26 +505,45 @@ export class SourceFile {
       return;
     }
 
-    // Type option is added not only with the scalarTypeInDecorator option,
-    // but also when there are prop type modifiers, because reflect-metadata can't extract the base.
-    if (this.options.scalarTypeInDecorator || prop.hidden || (prop.optional && (!prop.nullable || prop.default != null))) {
-      options.type = this.quote(prop.type);
+    const mappedColumnType = this.platform.getMappedType(prop.columnTypes[0]);
+    // If the column's runtimeType matches the declared runtimeType, assume it's the same underlying type.
+    const mappedRuntimeType = mappedColumnType.runtimeType === prop.runtimeType
+      ? mappedColumnType
+      : this.platform.getMappedType(prop.runtimeType);
+
+    const mappedDeclaredType = this.platform.getMappedType(prop.type);
+    const isTypeStringMissingFromMap = prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType;
+
+    if (isTypeStringMissingFromMap) {
+      this.entityImports.add(prop.type);
+      options.type = prop.type;
+    } else {
+      if (this.options.scalarTypeInDecorator // always output type if forced by the generator options
+        || prop.hidden || (prop.optional && (!prop.nullable || prop.default != null)) // also when there are prop type modifiers, because reflect-metadata can't extract the base
+        || (new Set([mappedRuntimeType.name, mappedColumnType.name, mappedDeclaredType.name, this.platform.getMappedType(prop.runtimeType === 'Date' ? 'datetime' : prop.runtimeType).name])).size > 1 // also if there's any ambiguity in the type.
+      ) {
+        options.type = this.quote(prop.type);
+      }
     }
 
-    const mappedTypeFromPropType = this.platform.getMappedType(prop.type === 'Date' ? 'datetime' : prop.type);
-    const mappedTypeFromColumnType = this.platform.getMappedType(prop.columnTypes[0]);
-    const columnTypeFromMappedPropType = mappedTypeFromPropType.getColumnType(
+    const columnTypeFromMappedRuntimeType = mappedRuntimeType.getColumnType(
       { ...prop, autoincrement: false },
       this.platform,
     );
-    const columnTypeFromMappedColumnType = mappedTypeFromColumnType.getColumnType(
+    const columnTypeFromMappedColumnType = mappedColumnType.getColumnType(
+      { ...prop, autoincrement: false },
+      this.platform,
+    );
+    const columnTypeFromMappedDeclaredType = mappedDeclaredType.getColumnType(
       { ...prop, autoincrement: false },
       this.platform,
     );
 
     if (
-      columnTypeFromMappedPropType !== columnTypeFromMappedColumnType
-      || [mappedTypeFromPropType, mappedTypeFromColumnType].some(t => t instanceof UnknownType)
+      isTypeStringMissingFromMap
+      || columnTypeFromMappedRuntimeType !== columnTypeFromMappedColumnType
+      || columnTypeFromMappedDeclaredType !== columnTypeFromMappedColumnType
+      || [mappedRuntimeType, mappedColumnType, columnTypeFromMappedDeclaredType].some(t => t instanceof UnknownType)
     ) {
       options.columnType = this.quote(columnTypeFromMappedColumnType);
     }
@@ -495,13 +554,13 @@ export class SourceFile {
       }
     };
 
-    if (!(mappedTypeFromColumnType instanceof DateType) && !options.columnType) {
+    if (!options.columnType && !(mappedColumnType instanceof DateType || ((mappedColumnType instanceof DateTimeType || mappedColumnType instanceof TimeType) && prop.length === this.platform.getDefaultDateTimeLength()))) {
       assign('length');
     }
 
     // those are already included in the `columnType` in most cases, and when that option is present, they would be ignored anyway
     /* istanbul ignore next */
-    if (mappedTypeFromColumnType instanceof DecimalType && !options.columnType) {
+    if (mappedColumnType instanceof DecimalType && !options.columnType) {
       assign('precision');
       assign('scale');
     }
@@ -509,18 +568,18 @@ export class SourceFile {
     if (this.platform.supportsUnsigned() &&
       (
         (!prop.primary && prop.unsigned) ||
-        (prop.primary && !prop.unsigned && this.platform.isNumericColumn(mappedTypeFromColumnType))
+        (prop.primary && !prop.unsigned && this.platform.isNumericColumn(mappedColumnType))
       )
     ) {
       assign('unsigned');
     }
 
     if (prop.autoincrement) {
-      if (!prop.primary || !this.platform.isNumericColumn(mappedTypeFromColumnType) || this.meta.getPrimaryProps().length !== 1) {
+      if (!prop.primary || !this.platform.isNumericColumn(mappedColumnType) || this.meta.getPrimaryProps().length !== 1) {
         options.autoincrement = true;
       }
     } else {
-      if (prop.primary && this.platform.isNumericColumn(mappedTypeFromColumnType) && this.meta.getPrimaryProps().length === 1) {
+      if (prop.primary && this.platform.isNumericColumn(mappedColumnType) && this.meta.getPrimaryProps().length === 1) {
         options.autoincrement = false;
       }
     }
@@ -575,7 +634,6 @@ export class SourceFile {
   }
 
   protected getEmbeddedPropertyDeclarationOptions(options: Dictionary, prop: EntityProperty) {
-    this.coreImports.add('Embedded');
     this.entityImports.add(prop.type);
     options.entity = `() => ${prop.type}`;
 

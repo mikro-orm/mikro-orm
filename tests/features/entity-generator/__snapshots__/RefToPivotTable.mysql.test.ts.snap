@@ -47,7 +47,7 @@ export class Sender {
 
   [PrimaryKeyProp]?: 'senderId';
 
-  @PrimaryKey({ columnType: 'smallint' })
+  @PrimaryKey({ type: 'smallint' })
   senderId!: number;
 
   @Unique({ name: 'name_UNIQUE' })

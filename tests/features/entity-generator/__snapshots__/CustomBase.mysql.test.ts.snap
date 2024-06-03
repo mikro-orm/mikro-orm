@@ -17,32 +17,32 @@ export class Author4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -61,10 +61,10 @@ export class BookTag4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -86,7 +86,7 @@ export class Book4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -98,7 +98,7 @@ export class Book4 {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -121,7 +121,7 @@ export class FooBar4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -130,7 +130,7 @@ export class FooBar4 {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -139,10 +139,10 @@ export class FooBar4 {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -161,10 +161,10 @@ export class FooBaz4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -183,7 +183,7 @@ export class Publisher4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -249,10 +249,10 @@ export class Test4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -283,16 +283,16 @@ export class Author4 {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -300,7 +300,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -317,11 +317,11 @@ export class BookTag4 {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -345,10 +345,10 @@ export class Book4 {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -364,7 +364,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -395,10 +395,10 @@ export class FooBar4 {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -413,11 +413,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -434,11 +434,11 @@ export class FooBaz4 {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -461,12 +461,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -484,7 +484,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -513,7 +513,7 @@ export class TagsOrdered {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -542,11 +542,11 @@ export class Test4 {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -571,32 +571,32 @@ export class Author4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -616,10 +616,10 @@ export class BookTag4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -642,7 +642,7 @@ export class Book4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -654,7 +654,7 @@ export class Book4 extends BaseEntity {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -678,7 +678,7 @@ export class FooBar4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -687,7 +687,7 @@ export class FooBar4 extends BaseEntity {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -696,10 +696,10 @@ export class FooBar4 extends BaseEntity {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -719,10 +719,10 @@ export class FooBaz4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -742,7 +742,7 @@ export class Publisher4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -811,10 +811,10 @@ export class Test4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -854,16 +854,16 @@ export class Author4 extends BaseEntity {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -871,7 +871,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -889,11 +889,11 @@ export class BookTag4 extends BaseEntity {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -918,10 +918,10 @@ export class Book4 extends BaseEntity {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -937,7 +937,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -969,10 +969,10 @@ export class FooBar4 extends BaseEntity {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -987,11 +987,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -1009,11 +1009,11 @@ export class FooBaz4 extends BaseEntity {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -1037,12 +1037,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -1061,7 +1061,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -1091,7 +1091,7 @@ export class TagsOrdered extends BaseEntity {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -1121,11 +1121,11 @@ export class Test4 extends BaseEntity {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -1162,32 +1162,32 @@ export class Author4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -1207,10 +1207,10 @@ export class BookTag4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -1233,7 +1233,7 @@ export class Book4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -1245,7 +1245,7 @@ export class Book4 extends BaseUser2 {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -1269,7 +1269,7 @@ export class FooBar4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -1278,7 +1278,7 @@ export class FooBar4 extends BaseUser2 {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -1287,10 +1287,10 @@ export class FooBar4 extends BaseUser2 {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -1310,10 +1310,10 @@ export class FooBaz4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -1333,7 +1333,7 @@ export class Publisher4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -1402,10 +1402,10 @@ export class Test4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -1445,16 +1445,16 @@ export class Author4 extends BaseUser2 {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -1462,7 +1462,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -1480,11 +1480,11 @@ export class BookTag4 extends BaseUser2 {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -1509,10 +1509,10 @@ export class Book4 extends BaseUser2 {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -1528,7 +1528,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -1560,10 +1560,10 @@ export class FooBar4 extends BaseUser2 {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -1578,11 +1578,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -1600,11 +1600,11 @@ export class FooBaz4 extends BaseUser2 {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -1628,12 +1628,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -1652,7 +1652,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -1682,7 +1682,7 @@ export class TagsOrdered extends BaseUser2 {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -1712,11 +1712,11 @@ export class Test4 extends BaseUser2 {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -1753,32 +1753,32 @@ export class Author4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -1798,10 +1798,10 @@ export class BookTag4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -1824,7 +1824,7 @@ export class Book4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -1836,7 +1836,7 @@ export class Book4 extends CustomBase {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -1860,7 +1860,7 @@ export class FooBar4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -1869,7 +1869,7 @@ export class FooBar4 extends CustomBase {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -1878,10 +1878,10 @@ export class FooBar4 extends CustomBase {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -1901,10 +1901,10 @@ export class FooBaz4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -1924,7 +1924,7 @@ export class Publisher4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -1993,10 +1993,10 @@ export class Test4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -2036,16 +2036,16 @@ export class Author4 extends CustomBase {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -2053,7 +2053,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -2071,11 +2071,11 @@ export class BookTag4 extends CustomBase {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -2100,10 +2100,10 @@ export class Book4 extends CustomBase {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -2119,7 +2119,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -2151,10 +2151,10 @@ export class FooBar4 extends CustomBase {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -2169,11 +2169,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -2191,11 +2191,11 @@ export class FooBaz4 extends CustomBase {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -2219,12 +2219,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -2243,7 +2243,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -2273,7 +2273,7 @@ export class TagsOrdered extends CustomBase {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -2303,11 +2303,11 @@ export class Test4 extends CustomBase {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -2343,32 +2343,32 @@ export class Author4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -2387,10 +2387,10 @@ export class BookTag4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -2412,7 +2412,7 @@ export class Book4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -2424,7 +2424,7 @@ export class Book4 extends BaseEntity {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -2447,7 +2447,7 @@ export class FooBar4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -2456,7 +2456,7 @@ export class FooBar4 extends BaseEntity {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -2465,10 +2465,10 @@ export class FooBar4 extends BaseEntity {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -2487,10 +2487,10 @@ export class FooBaz4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -2509,7 +2509,7 @@ export class Publisher4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -2575,10 +2575,10 @@ export class Test4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -2609,16 +2609,16 @@ export class Author4 extends BaseEntity {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -2626,7 +2626,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -2643,11 +2643,11 @@ export class BookTag4 extends BaseEntity {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -2671,10 +2671,10 @@ export class Book4 extends BaseEntity {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -2690,7 +2690,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -2721,10 +2721,10 @@ export class FooBar4 extends BaseEntity {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -2739,11 +2739,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -2760,11 +2760,11 @@ export class FooBaz4 extends BaseEntity {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -2787,12 +2787,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -2810,7 +2810,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -2839,7 +2839,7 @@ export class TagsOrdered extends BaseEntity {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -2868,11 +2868,11 @@ export class Test4 extends BaseEntity {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -2897,32 +2897,32 @@ export class Author4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -2942,10 +2942,10 @@ export class BookTag4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -2968,7 +2968,7 @@ export class Book4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -2980,7 +2980,7 @@ export class Book4 extends BaseEntity {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -3004,7 +3004,7 @@ export class FooBar4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -3013,7 +3013,7 @@ export class FooBar4 extends BaseEntity {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -3022,10 +3022,10 @@ export class FooBar4 extends BaseEntity {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -3045,10 +3045,10 @@ export class FooBaz4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -3068,7 +3068,7 @@ export class Publisher4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -3137,10 +3137,10 @@ export class Test4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -3180,16 +3180,16 @@ export class Author4 extends BaseEntity {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -3197,7 +3197,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -3215,11 +3215,11 @@ export class BookTag4 extends BaseEntity {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -3244,10 +3244,10 @@ export class Book4 extends BaseEntity {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -3263,7 +3263,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -3295,10 +3295,10 @@ export class FooBar4 extends BaseEntity {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -3313,11 +3313,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -3335,11 +3335,11 @@ export class FooBaz4 extends BaseEntity {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -3363,12 +3363,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -3387,7 +3387,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -3417,7 +3417,7 @@ export class TagsOrdered extends BaseEntity {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -3447,11 +3447,11 @@ export class Test4 extends BaseEntity {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -3488,32 +3488,32 @@ export class Author4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -3533,10 +3533,10 @@ export class BookTag4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -3559,7 +3559,7 @@ export class Book4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -3571,7 +3571,7 @@ export class Book4 extends BaseUser2 {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -3595,7 +3595,7 @@ export class FooBar4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -3604,7 +3604,7 @@ export class FooBar4 extends BaseUser2 {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -3613,10 +3613,10 @@ export class FooBar4 extends BaseUser2 {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -3636,10 +3636,10 @@ export class FooBaz4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -3659,7 +3659,7 @@ export class Publisher4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -3728,10 +3728,10 @@ export class Test4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -3771,16 +3771,16 @@ export class Author4 extends BaseUser2 {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -3788,7 +3788,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -3806,11 +3806,11 @@ export class BookTag4 extends BaseUser2 {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -3835,10 +3835,10 @@ export class Book4 extends BaseUser2 {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -3854,7 +3854,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -3886,10 +3886,10 @@ export class FooBar4 extends BaseUser2 {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -3904,11 +3904,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -3926,11 +3926,11 @@ export class FooBaz4 extends BaseUser2 {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -3954,12 +3954,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -3978,7 +3978,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -4008,7 +4008,7 @@ export class TagsOrdered extends BaseUser2 {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -4038,11 +4038,11 @@ export class Test4 extends BaseUser2 {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -4079,32 +4079,32 @@ export class Author4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -4124,10 +4124,10 @@ export class BookTag4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -4150,7 +4150,7 @@ export class Book4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -4162,7 +4162,7 @@ export class Book4 extends CustomBase {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -4186,7 +4186,7 @@ export class FooBar4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -4195,7 +4195,7 @@ export class FooBar4 extends CustomBase {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -4204,10 +4204,10 @@ export class FooBar4 extends CustomBase {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -4227,10 +4227,10 @@ export class FooBaz4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -4250,7 +4250,7 @@ export class Publisher4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -4319,10 +4319,10 @@ export class Test4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -4362,16 +4362,16 @@ export class Author4 extends CustomBase {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -4379,7 +4379,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -4397,11 +4397,11 @@ export class BookTag4 extends CustomBase {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -4426,10 +4426,10 @@ export class Book4 extends CustomBase {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -4445,7 +4445,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -4477,10 +4477,10 @@ export class FooBar4 extends CustomBase {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -4495,11 +4495,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -4517,11 +4517,11 @@ export class FooBaz4 extends CustomBase {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -4545,12 +4545,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -4569,7 +4569,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -4599,7 +4599,7 @@ export class TagsOrdered extends CustomBase {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -4629,11 +4629,11 @@ export class Test4 extends CustomBase {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -4669,32 +4669,32 @@ export class Author4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -4713,10 +4713,10 @@ export class BookTag4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -4738,7 +4738,7 @@ export class Book4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -4750,7 +4750,7 @@ export class Book4 {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -4773,7 +4773,7 @@ export class FooBar4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -4782,7 +4782,7 @@ export class FooBar4 {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -4791,10 +4791,10 @@ export class FooBar4 {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -4813,10 +4813,10 @@ export class FooBaz4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -4835,7 +4835,7 @@ export class Publisher4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -4901,10 +4901,10 @@ export class Test4 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -4935,16 +4935,16 @@ export class Author4 {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -4952,7 +4952,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -4969,11 +4969,11 @@ export class BookTag4 {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -4997,10 +4997,10 @@ export class Book4 {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -5016,7 +5016,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -5047,10 +5047,10 @@ export class FooBar4 {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -5065,11 +5065,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -5086,11 +5086,11 @@ export class FooBaz4 {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -5113,12 +5113,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -5136,7 +5136,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -5165,7 +5165,7 @@ export class TagsOrdered {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -5194,11 +5194,11 @@ export class Test4 {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -5223,32 +5223,32 @@ export class Author4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -5268,10 +5268,10 @@ export class BookTag4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -5294,7 +5294,7 @@ export class Book4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -5306,7 +5306,7 @@ export class Book4 extends BaseEntity {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -5330,7 +5330,7 @@ export class FooBar4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -5339,7 +5339,7 @@ export class FooBar4 extends BaseEntity {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -5348,10 +5348,10 @@ export class FooBar4 extends BaseEntity {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -5371,10 +5371,10 @@ export class FooBaz4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -5394,7 +5394,7 @@ export class Publisher4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -5463,10 +5463,10 @@ export class Test4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -5506,16 +5506,16 @@ export class Author4 extends BaseEntity {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -5523,7 +5523,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -5541,11 +5541,11 @@ export class BookTag4 extends BaseEntity {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -5570,10 +5570,10 @@ export class Book4 extends BaseEntity {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -5589,7 +5589,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -5621,10 +5621,10 @@ export class FooBar4 extends BaseEntity {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -5639,11 +5639,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -5661,11 +5661,11 @@ export class FooBaz4 extends BaseEntity {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -5689,12 +5689,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -5713,7 +5713,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -5743,7 +5743,7 @@ export class TagsOrdered extends BaseEntity {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -5773,11 +5773,11 @@ export class Test4 extends BaseEntity {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -5814,32 +5814,32 @@ export class Author4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -5859,10 +5859,10 @@ export class BookTag4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -5885,7 +5885,7 @@ export class Book4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -5897,7 +5897,7 @@ export class Book4 extends BaseUser2 {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -5921,7 +5921,7 @@ export class FooBar4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -5930,7 +5930,7 @@ export class FooBar4 extends BaseUser2 {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -5939,10 +5939,10 @@ export class FooBar4 extends BaseUser2 {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -5962,10 +5962,10 @@ export class FooBaz4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -5985,7 +5985,7 @@ export class Publisher4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -6054,10 +6054,10 @@ export class Test4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -6097,16 +6097,16 @@ export class Author4 extends BaseUser2 {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -6114,7 +6114,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -6132,11 +6132,11 @@ export class BookTag4 extends BaseUser2 {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -6161,10 +6161,10 @@ export class Book4 extends BaseUser2 {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -6180,7 +6180,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -6212,10 +6212,10 @@ export class FooBar4 extends BaseUser2 {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -6230,11 +6230,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -6252,11 +6252,11 @@ export class FooBaz4 extends BaseUser2 {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -6280,12 +6280,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -6304,7 +6304,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -6334,7 +6334,7 @@ export class TagsOrdered extends BaseUser2 {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -6364,11 +6364,11 @@ export class Test4 extends BaseUser2 {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -6405,32 +6405,32 @@ export class Author4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -6450,10 +6450,10 @@ export class BookTag4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -6476,7 +6476,7 @@ export class Book4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -6488,7 +6488,7 @@ export class Book4 extends CustomBase {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -6512,7 +6512,7 @@ export class FooBar4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -6521,7 +6521,7 @@ export class FooBar4 extends CustomBase {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -6530,10 +6530,10 @@ export class FooBar4 extends CustomBase {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -6553,10 +6553,10 @@ export class FooBaz4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -6576,7 +6576,7 @@ export class Publisher4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -6645,10 +6645,10 @@ export class Test4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -6688,16 +6688,16 @@ export class Author4 extends CustomBase {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -6705,7 +6705,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -6723,11 +6723,11 @@ export class BookTag4 extends CustomBase {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -6752,10 +6752,10 @@ export class Book4 extends CustomBase {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -6771,7 +6771,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -6803,10 +6803,10 @@ export class FooBar4 extends CustomBase {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -6821,11 +6821,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -6843,11 +6843,11 @@ export class FooBaz4 extends CustomBase {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -6871,12 +6871,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -6895,7 +6895,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -6925,7 +6925,7 @@ export class TagsOrdered extends CustomBase {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -6955,11 +6955,11 @@ export class Test4 extends CustomBase {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -6995,32 +6995,32 @@ export class Author4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -7039,10 +7039,10 @@ export class BookTag4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -7064,7 +7064,7 @@ export class Book4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -7076,7 +7076,7 @@ export class Book4 extends BaseEntity {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -7099,7 +7099,7 @@ export class FooBar4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -7108,7 +7108,7 @@ export class FooBar4 extends BaseEntity {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -7117,10 +7117,10 @@ export class FooBar4 extends BaseEntity {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -7139,10 +7139,10 @@ export class FooBaz4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -7161,7 +7161,7 @@ export class Publisher4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -7227,10 +7227,10 @@ export class Test4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -7261,16 +7261,16 @@ export class Author4 extends BaseEntity {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -7278,7 +7278,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -7295,11 +7295,11 @@ export class BookTag4 extends BaseEntity {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -7323,10 +7323,10 @@ export class Book4 extends BaseEntity {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -7342,7 +7342,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -7373,10 +7373,10 @@ export class FooBar4 extends BaseEntity {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -7391,11 +7391,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -7412,11 +7412,11 @@ export class FooBaz4 extends BaseEntity {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -7439,12 +7439,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -7462,7 +7462,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -7491,7 +7491,7 @@ export class TagsOrdered extends BaseEntity {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -7520,11 +7520,11 @@ export class Test4 extends BaseEntity {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -7549,32 +7549,32 @@ export class Author4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -7594,10 +7594,10 @@ export class BookTag4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -7620,7 +7620,7 @@ export class Book4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -7632,7 +7632,7 @@ export class Book4 extends BaseEntity {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -7656,7 +7656,7 @@ export class FooBar4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -7665,7 +7665,7 @@ export class FooBar4 extends BaseEntity {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -7674,10 +7674,10 @@ export class FooBar4 extends BaseEntity {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -7697,10 +7697,10 @@ export class FooBaz4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -7720,7 +7720,7 @@ export class Publisher4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -7789,10 +7789,10 @@ export class Test4 extends BaseEntity {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -7832,16 +7832,16 @@ export class Author4 extends BaseEntity {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -7849,7 +7849,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -7867,11 +7867,11 @@ export class BookTag4 extends BaseEntity {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -7896,10 +7896,10 @@ export class Book4 extends BaseEntity {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -7915,7 +7915,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -7947,10 +7947,10 @@ export class FooBar4 extends BaseEntity {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -7965,11 +7965,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -7987,11 +7987,11 @@ export class FooBaz4 extends BaseEntity {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -8015,12 +8015,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -8039,7 +8039,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -8069,7 +8069,7 @@ export class TagsOrdered extends BaseEntity {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -8099,11 +8099,11 @@ export class Test4 extends BaseEntity {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -8140,32 +8140,32 @@ export class Author4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -8185,10 +8185,10 @@ export class BookTag4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -8211,7 +8211,7 @@ export class Book4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -8223,7 +8223,7 @@ export class Book4 extends BaseUser2 {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -8247,7 +8247,7 @@ export class FooBar4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -8256,7 +8256,7 @@ export class FooBar4 extends BaseUser2 {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -8265,10 +8265,10 @@ export class FooBar4 extends BaseUser2 {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -8288,10 +8288,10 @@ export class FooBaz4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -8311,7 +8311,7 @@ export class Publisher4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -8380,10 +8380,10 @@ export class Test4 extends BaseUser2 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -8423,16 +8423,16 @@ export class Author4 extends BaseUser2 {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -8440,7 +8440,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -8458,11 +8458,11 @@ export class BookTag4 extends BaseUser2 {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -8487,10 +8487,10 @@ export class Book4 extends BaseUser2 {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -8506,7 +8506,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -8538,10 +8538,10 @@ export class FooBar4 extends BaseUser2 {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -8556,11 +8556,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -8578,11 +8578,11 @@ export class FooBaz4 extends BaseUser2 {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -8606,12 +8606,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -8630,7 +8630,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -8660,7 +8660,7 @@ export class TagsOrdered extends BaseUser2 {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -8690,11 +8690,11 @@ export class Test4 extends BaseUser2 {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
@@ -8731,32 +8731,32 @@ export class Author4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
   @Unique({ name: 'author4_email_unique' })
-  @Property()
+  @Property({ type: 'text' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
-  @Property({ columnType: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Property({ columnType: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   identity?: any;
 
 }
@@ -8776,10 +8776,10 @@ export class BookTag4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -8802,7 +8802,7 @@ export class Book4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   title!: string;
 
   @Property({ columnType: 'REAL', nullable: true })
@@ -8814,7 +8814,7 @@ export class Book4 extends CustomBase {
   @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   meta?: any;
 
   @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
@@ -8838,7 +8838,7 @@ export class FooBar4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -8847,7 +8847,7 @@ export class FooBar4 extends CustomBase {
   @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Property({ nullable: true })
@@ -8856,10 +8856,10 @@ export class FooBar4 extends CustomBase {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
-  @Property({ columnType: 'json', nullable: true })
+  @Property({ type: 'json', nullable: true })
   object?: any;
 
 }
@@ -8879,10 +8879,10 @@ export class FooBaz4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'Date', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
 }
@@ -8902,7 +8902,7 @@ export class Publisher4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher4Type })
@@ -8971,10 +8971,10 @@ export class Test4 extends CustomBase {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ nullable: true })
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   version: number & Opt = 1;
 
 }
@@ -9014,16 +9014,16 @@ export class Author4 extends CustomBase {
 export const Author4Schema = new EntitySchema({
   class: Author4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    email: { type: 'string', unique: 'author4_email_unique' },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'number' },
-    identities: { type: 'string', nullable: true },
-    born: { type: 'string', columnType: 'date', nullable: true },
-    bornTime: { type: 'string', columnType: 'time', nullable: true },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    email: { type: 'text', unique: 'author4_email_unique' },
+    age: { type: 'integer', nullable: true },
+    termsAccepted: { type: 'integer' },
+    identities: { type: 'text', nullable: true },
+    born: { type: 'date', nullable: true },
+    bornTime: { type: 'time', nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -9031,7 +9031,7 @@ export const Author4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    identity: { type: 'any', columnType: 'json', nullable: true },
+    identity: { type: 'json', nullable: true },
   },
 });
 ",
@@ -9049,11 +9049,11 @@ export class BookTag4 extends CustomBase {
 export const BookTag4Schema = new EntitySchema({
   class: BookTag4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -9078,10 +9078,10 @@ export class Book4 extends CustomBase {
 export const Book4Schema = new EntitySchema({
   class: Book4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    title: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    title: { type: 'text' },
     price: { type: 'unknown', columnType: 'REAL', nullable: true },
     author: {
       kind: 'm:1',
@@ -9097,7 +9097,7 @@ export const Book4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    meta: { type: 'any', columnType: 'json', nullable: true },
+    meta: { type: 'json', nullable: true },
     tagsUnordered: {
       kind: 'm:n',
       entity: () => BookTag4,
@@ -9129,10 +9129,10 @@ export class FooBar4 extends CustomBase {
 export const FooBar4Schema = new EntitySchema({
   class: FooBar4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     baz: {
       kind: '1:1',
       entity: () => FooBaz4,
@@ -9147,11 +9147,11 @@ export const FooBar4Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    version: { type: 'number' },
-    blob: { type: 'Buffer', nullable: true },
-    blob2: { type: 'Buffer', nullable: true },
-    array: { type: 'string', nullable: true },
-    object: { type: 'any', columnType: 'json', nullable: true },
+    version: { type: 'integer' },
+    blob: { type: 'blob', nullable: true },
+    blob2: { type: 'blob', nullable: true },
+    array: { type: 'text', nullable: true },
+    object: { type: 'json', nullable: true },
   },
 });
 ",
@@ -9169,11 +9169,11 @@ export class FooBaz4 extends CustomBase {
 export const FooBaz4Schema = new EntitySchema({
   class: FooBaz4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
-    version: { type: 'Date', defaultRaw: \`current_timestamp\` },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
+    version: { type: 'datetime', defaultRaw: \`current_timestamp\` },
   },
 });
 ",
@@ -9197,12 +9197,12 @@ export enum Publisher4Type {
 export const Publisher4Schema = new EntitySchema({
   class: Publisher4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'number', nullable: true },
+    enum3: { type: 'integer', nullable: true },
   },
 });
 ",
@@ -9221,7 +9221,7 @@ export const Publisher4TestsSchema = new EntitySchema({
   class: Publisher4Tests,
   tableName: 'publisher4_tests',
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     publisher4: {
       kind: 'm:1',
       entity: () => Publisher4,
@@ -9251,7 +9251,7 @@ export class TagsOrdered extends CustomBase {
 export const TagsOrderedSchema = new EntitySchema({
   class: TagsOrdered,
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     book4: {
       kind: 'm:1',
       entity: () => Book4,
@@ -9281,11 +9281,11 @@ export class Test4 extends CustomBase {
 export const Test4Schema = new EntitySchema({
   class: Test4,
   properties: {
-    id: { primary: true, type: 'number' },
-    createdAt: { type: 'Date', nullable: true },
-    updatedAt: { type: 'Date', nullable: true },
-    name: { type: 'string', nullable: true },
-    version: { type: 'number' },
+    id: { primary: true, type: 'integer' },
+    createdAt: { type: 'datetime', nullable: true },
+    updatedAt: { type: 'datetime', nullable: true },
+    name: { type: 'text', nullable: true },
+    version: { type: 'integer' },
   },
 });
 ",
