@@ -251,11 +251,16 @@ export class EntityComparator {
     return snapshotGenerator;
   }
 
+  /**
+   * @internal
+   */
   propName(name: string, parent = 'result') {
     return parent + this.wrap(name);
   }
 
-  // respects nested composite keys, e.g. `[1, [2, 3]]`
+  /**
+   * @internal respects nested composite keys, e.g. `[1, [2, 3]]`
+   */
   createCompositeKeyArray(prop: EntityProperty, parents: EntityProperty[] = []): string {
     if (!prop.targetMeta) {
       let fieldName = prop.fieldNames[0];
@@ -286,6 +291,9 @@ export class EntityComparator {
     return this.formatCompositeKeyPart(parts);
   }
 
+  /**
+   * @internal
+   */
   formatCompositeKeyPart(part: CompositeKeyPart): string {
     if (!Array.isArray(part)) {
       return part;
