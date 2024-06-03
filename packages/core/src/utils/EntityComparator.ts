@@ -251,10 +251,12 @@ export class EntityComparator {
     return snapshotGenerator;
   }
 
-  propName = (name: string, parent = 'result') => parent + this.wrap(name);
+  propName(name: string, parent = 'result') {
+    return parent + this.wrap(name);
+  }
 
   // respects nested composite keys, e.g. `[1, [2, 3]]`
-  createCompositeKeyArray = (prop: EntityProperty, parents: EntityProperty[] = []): string => {
+  createCompositeKeyArray(prop: EntityProperty, parents: EntityProperty[] = []): string {
     if (!prop.targetMeta) {
       let fieldName = prop.fieldNames[0];
       for (let i = parents.length - 1; i >= 0; i--) {
@@ -283,9 +285,9 @@ export class EntityComparator {
     });
 
     return this.formatCompositeKeyPart(parts);
-  };
+  }
 
-  formatCompositeKeyPart = (part: CompositeKeyPart): string  => {
+  formatCompositeKeyPart(part: CompositeKeyPart): string {
     if (!Array.isArray(part)) {
       return part;
     }
@@ -296,7 +298,7 @@ export class EntityComparator {
 
     const formatted = part.map(this.formatCompositeKeyPart).join(', ');
     return `[${formatted}]`;
-  };
+  }
 
   /**
    * @internal Highly performance-sensitive method.
