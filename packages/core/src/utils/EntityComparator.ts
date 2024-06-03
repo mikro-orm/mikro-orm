@@ -265,7 +265,7 @@ export class EntityComparator {
 
         // look for the field name in the parent's referencedColumnNames, except for M:N without a custom pivot entity
         //   (in that case, the field names are the referenced PK's )
-        const target = parent.kind === ReferenceKind.MANY_TO_MANY  && parent.pivotEntity === parent.pivotTable ?
+        const target = parent.kind === ReferenceKind.MANY_TO_MANY && parent.pivotEntity === parent.pivotTable ?
           parent.referencedPKs : parent.referencedColumnNames;
 
         const idx = target.indexOf(fieldName);
