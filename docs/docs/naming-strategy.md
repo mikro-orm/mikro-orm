@@ -76,6 +76,18 @@ Return a column name for a property (used in `EntityGenerator`).
 
 ---
 
+#### `NamingStrategy.getEnumClassName(columnName: string, tableName: string, schemaName?: string): string`
+
+Return an enum class name for a column (used in `EntityGenerator`).
+
+---
+
+#### `NamingStrategy.enumValueToEnumProperty(enumValue: string, columnName: string, tableName: string, schemaName?: string): string`
+
+Return an enum property name for an enum value (used in `EntityGenerator`).
+
+---
+
 #### `NamingStrategy.referenceColumnName(): string`
 
 Return the default reference column name.

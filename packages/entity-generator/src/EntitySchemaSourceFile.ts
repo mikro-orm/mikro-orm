@@ -32,8 +32,7 @@ export class EntitySchemaSourceFile extends SourceFile {
       props.push(this.getPropertyDefinition(prop, 2));
 
       if (prop.enum) {
-        const enumClassName = this.namingStrategy.getClassName(this.meta.collection + '_' + prop.fieldNames[0], '_');
-        enumDefinitions.push(this.getEnumClassDefinition(enumClassName, prop.items as string[], 2));
+        enumDefinitions.push(this.getEnumClassDefinition(prop, 2));
       }
 
       if (prop.eager) {

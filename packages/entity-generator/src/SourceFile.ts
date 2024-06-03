@@ -110,8 +110,7 @@ export class SourceFile {
       classBody += '\n';
 
       if (prop.enum) {
-        const enumClassName = this.namingStrategy.getClassName(this.meta.collection + '_' + prop.fieldNames[0], '_');
-        enumDefinitions.push(this.getEnumClassDefinition(enumClassName, prop.items as string[], 2));
+        enumDefinitions.push(this.getEnumClassDefinition(prop, 2));
       }
 
       if (prop.eager) {
@@ -282,12 +281,15 @@ export class SourceFile {
     return `${padding}${ret} = ${propType === 'string' ? this.quote('' + prop.default) : prop.default};\n`;
   }
 
-  protected getEnumClassDefinition(enumClassName: string, enumValues: string[], padLeft: number): string {
+  protected getEnumClassDefinition(prop: EntityProperty, padLeft: number): string {
+    const enumClassName = this.namingStrategy.getEnumClassName(prop.fieldNames[0], this.meta.collection, this.meta.schema);
     const padding = ' '.repeat(padLeft);
     let ret = `export enum ${enumClassName} {\n`;
 
+    const enumValues = prop.items as string[];
     for (const enumValue of enumValues) {
-      ret += `${padding}${enumValue.toUpperCase()} = '${enumValue}',\n`;
+      const enumName = this.namingStrategy.enumValueToEnumProperty(enumValue, prop.fieldNames[0], this.meta.collection, this.meta.schema);
+      ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)} = ${this.quote(enumValue)},\n`;
     }
 
     ret += '}\n';
