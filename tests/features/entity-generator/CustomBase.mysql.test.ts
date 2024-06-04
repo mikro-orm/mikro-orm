@@ -6,6 +6,7 @@ describe('CustomBase', () => {
 
   beforeEach(async () => {
     orm = await initORMSqlite2('better-sqlite');
+    orm.config.get('entityGenerator').coreImportsPrefix = 'MikroORM_';
   });
 
   afterEach(async () => {
