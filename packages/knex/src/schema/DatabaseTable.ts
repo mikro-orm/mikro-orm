@@ -760,8 +760,7 @@ export class DatabaseTable {
     // If this column is using an enum.
     if (column.enumItems?.length) {
       // We will create a new enum name for this type and set it as the property type as well.
-      // The enum name will be a concatenation of the table name and the column name.
-      return namingStrategy.getClassName(this.name + '_' + column.name, '_');
+      return namingStrategy.getEnumClassName(column.name, this.name, this.schema);
     }
 
     return column.mappedType?.runtimeType ?? 'unknown';

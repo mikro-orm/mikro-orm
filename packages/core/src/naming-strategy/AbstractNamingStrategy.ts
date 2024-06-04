@@ -61,6 +61,20 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return propName;
   }
 
+  /**
+   * @inheritDoc
+   */
+  getEnumClassName(columnName: string, tableName: string, schemaName?: string): string {
+    return this.getEntityName(`${tableName}_${columnName}`, schemaName);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  enumValueToEnumProperty(enumValue: string, columnName: string, tableName: string, schemaName?: string): string {
+    return enumValue.toUpperCase();
+  }
+
   aliasName(entityName: string, index: number): string {
     // Take only the first letter of the prefix to keep character counts down since some engines have character limits
     return entityName.charAt(0).toLowerCase() + index;
