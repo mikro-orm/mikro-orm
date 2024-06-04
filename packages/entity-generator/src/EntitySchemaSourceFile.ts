@@ -1,13 +1,16 @@
 import {
-  ReferenceKind,
-  Utils,
+  type AnyEntity,
+  Config,
   type Dictionary,
   type EntityProperty,
+  type EntitySchemaMetadata,
   type TypeConfig,
   type IndexOptions,
+  ReferenceKind,
   type UniqueOptions,
+  Utils,
 } from '@mikro-orm/core';
-import { identifierRegex, SourceFile } from './SourceFile';
+import { SourceFile } from './SourceFile';
 
 export class EntitySchemaSourceFile extends SourceFile {
 
@@ -63,21 +66,16 @@ export class EntitySchemaSourceFile extends SourceFile {
     }
 
     ret += `\n`;
-    ret += `export const ${this.meta.className}Schema = new ${this.referenceCoreImport('EntitySchema')}({\n`;
-    ret += `  class: ${this.meta.className},\n`;
-
-    if (this.meta.tableName && this.meta.tableName !== this.namingStrategy.classToTableName(this.meta.className)) {
-      ret += `  tableName: ${this.quote(this.meta.tableName)},\n`;
-    }
-
-    /* istanbul ignore next */
-    if (this.meta.schema && this.meta.schema !== this.platform.getDefaultSchemaName()) {
-      ret += `  schema: ${this.quote(this.meta.schema)},\n`;
-    }
+    const entitySchemaOptions: Partial<Record<keyof EntitySchemaMetadata<AnyEntity>, any>> & {[Config]?: any} = {
+      class: this.meta.className,
+      ...(this.meta.embeddable ? this.getEmbeddableDeclOptions() : (this.meta.collection ? this.getEntityDeclOptions() : {})),
+    };
+    const declLine = `export const ${this.meta.className}Schema = new ${this.referenceCoreImport('EntitySchema')}(`;
+    ret += declLine;
 
     if (this.meta.indexes.length > 0) {
-      ret += `  indexes: [\n`;
-      this.meta.indexes.forEach(index => {
+      entitySchemaOptions.indexes = [];
+      entitySchemaOptions.indexes = this.meta.indexes.map(index => {
         const indexOpt: IndexOptions<Dictionary> = {};
         if (typeof index.name === 'string') {
           indexOpt.name = this.quote(index.name);
@@ -88,14 +86,12 @@ export class EntitySchemaSourceFile extends SourceFile {
         if (index.properties) {
           indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
         }
-        ret += `    ${this.serializeObject(indexOpt)},\n`;
+        return indexOpt;
       });
-      ret += `  ],\n`;
     }
 
     if (this.meta.uniques.length > 0) {
-      ret += `  uniques: [\n`;
-      this.meta.uniques.forEach(index => {
+      entitySchemaOptions.uniques = this.meta.uniques.map(index => {
         const uniqueOpt: UniqueOptions<Dictionary> = {};
         if (typeof index.name === 'string') {
           uniqueOpt.name = this.quote(index.name);
@@ -107,23 +103,22 @@ export class EntitySchemaSourceFile extends SourceFile {
           uniqueOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
         }
 
-        ret += `    ${this.serializeObject(uniqueOpt)},\n`;
+        return uniqueOpt;
       });
-      ret += `  ],\n`;
     }
 
-    ret += `  properties: {\n`;
-    Object.values(this.meta.properties).forEach(prop => {
-      const options = this.getPropertyOptions(prop);
-      let def = this.serializeObject(options);
+    entitySchemaOptions.properties = Object.fromEntries(
+      Object.entries(this.meta.properties).map(
+        ([name, prop]) => [name, this.getPropertyOptions(prop)],
+      ),
+    );
 
-      if (def.length > 80) {
-        def = this.serializeObject(options, 2);
-      }
-      ret += `    ${identifierRegex.test(prop.name) ? prop.name : this.quote(prop.name)}: ${def},\n`;
-    });
-    ret += `  },\n`;
-    ret += `});\n`;
+    // Force top level and properties to be indented, regardless of line length
+    entitySchemaOptions[Config] = true;
+    entitySchemaOptions.properties[Config] = true;
+
+    ret += this.serializeObject(entitySchemaOptions, declLine.length > 80 ? undefined : 80 - declLine.length, 0);
+    ret += ');\n';
 
     ret = `${this.generateImports()}\n\n${ret}`;
 

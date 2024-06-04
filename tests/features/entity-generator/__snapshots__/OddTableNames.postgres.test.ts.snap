@@ -164,7 +164,11 @@ export const E123TableNameSchema = new EntitySchema({
       entity: () => Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this,
       fieldName: 'prototype',
     },
-    ohCaptainMyCaptain: { type: 'string', fieldName: 'oh_captain__my___captain', length: 255 },
+    ohCaptainMyCaptain: {
+      type: 'string',
+      fieldName: 'oh_captain__my___captain',
+      length: 255,
+    },
     infer: { type: 'string', length: 255 },
     $$infer: { type: 'string', fieldName: '$infer', length: 200 },
     $$$infer: { type: 'string', fieldName: '$$infer', length: 200 },
@@ -186,7 +190,10 @@ export const E50$37$32of$32stuffSchema = new EntitySchema({
   tableName: '50% of stuff',
   schema: 'odd table_names_example:100%',
   uniques: [
-    { name: 'odd columns\\' unique index', expression: 'CREATE UNIQUE INDEX "odd columns\\' unique index" ON "odd table_names_example:100%"."50% of stuff" USING btree ("column with apostrophe in it\\'s name", "column with backtick in it\`\`s name")' },
+    {
+      name: 'odd columns\\' unique index',
+      expression: 'CREATE UNIQUE INDEX "odd columns\\' unique index" ON "odd table_names_example:100%"."50% of stuff" USING btree ("column with apostrophe in it\\'s name", "column with backtick in it\`\`s name")',
+    },
   ],
   properties: {
     '+20%': { primary: true, type: 'integer', fieldName: '+-20%' },
@@ -196,7 +203,11 @@ export const E50$37$32of$32stuffSchema = new EntitySchema({
       fieldName: 'column with apostrophe in it\\'s name',
       length: 45,
     },
-    'columnWithBacktickInIt\`\`sName': { type: 'string', fieldName: 'column with backtick in it\`\`s name', length: 45 },
+    'columnWithBacktickInIt\`\`sName': {
+      type: 'string',
+      fieldName: 'column with backtick in it\`\`s name',
+      length: 45,
+    },
   },
 });
 ",
@@ -235,8 +246,17 @@ export const Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32thisSchema
   tableName: 'table\\'s name has apostrophe, Also \`\` this',
   schema: 'odd_identifier\\'s_example\\'s_second',
   properties: {
-    '!cool': { primary: true, kind: '1:1', entity: () => E_$42misc, fieldName: '!cool' },
-    \`'derive\`: { type: 'string', length: 45, nullable: true },
+    '!cool': {
+      primary: true,
+      kind: '1:1',
+      entity: () => E_$42misc,
+      fieldName: '!cool',
+    },
+    \`'derive\`: {
+      type: 'string',
+      length: 45,
+      nullable: true,
+    },
   },
 });
 ",

@@ -93,7 +93,12 @@ export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
     country: { type: 'unknown', persist: false },
-    countries: { primary: true, kind: '1:1', entity: () => Countries, fieldName: 'country' },
+    countries: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
   },
 });
 ",
@@ -115,8 +120,16 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'integer' },
-    userCountry: { type: 'unknown', persist: false, index: 'fk_users_countries_idx' },
-    userCountryBorn: { type: 'unknown', persist: false, index: 'fk_users_countries1_idx' },
+    userCountry: {
+      type: 'unknown',
+      persist: false,
+      index: 'fk_users_countries_idx',
+    },
+    userCountryBorn: {
+      type: 'unknown',
+      persist: false,
+      index: 'fk_users_countries1_idx',
+    },
     fkUserCountry: {
       kind: 'm:1',
       entity: () => Countries,
@@ -264,8 +277,16 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'integer' },
-    userCountry: { type: 'unknown', persist: false, index: 'fk_users_countries_idx' },
-    userCountryBorn: { type: 'unknown', persist: false, index: 'fk_users_countries1_idx' },
+    userCountry: {
+      type: 'unknown',
+      persist: false,
+      index: 'fk_users_countries_idx',
+    },
+    userCountryBorn: {
+      type: 'unknown',
+      persist: false,
+      index: 'fk_users_countries1_idx',
+    },
     fkUserCountry: {
       kind: 'm:1',
       entity: () => Countries,
@@ -392,9 +413,21 @@ export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
     code: { primary: true, type: 'unknown', columnType: 'char(2)' },
-    countriesInverse: { kind: '1:1', entity: () => LegalUserCountries, mappedBy: 'countries' },
-    fkUserCountryInverse: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountry' },
-    fkUserCountryBornInverse: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountryBorn' },
+    countriesInverse: {
+      kind: '1:1',
+      entity: () => LegalUserCountries,
+      mappedBy: 'countries',
+    },
+    fkUserCountryInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountry',
+    },
+    fkUserCountryBornInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountryBorn',
+    },
   },
 });
 ",
@@ -413,8 +446,17 @@ export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
     country: { type: 'unknown', persist: false },
-    countries: { primary: true, kind: '1:1', entity: () => Countries, fieldName: 'country' },
-    legalUserCountriesInverse: { kind: '1:m', entity: () => Users, mappedBy: 'legalUserCountries' },
+    countries: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
+    legalUserCountriesInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'legalUserCountries',
+    },
   },
 });
 ",
@@ -436,8 +478,16 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'integer' },
-    userCountry: { type: 'unknown', persist: false, index: 'fk_users_countries_idx' },
-    userCountryBorn: { type: 'unknown', persist: false, index: 'fk_users_countries1_idx' },
+    userCountry: {
+      type: 'unknown',
+      persist: false,
+      index: 'fk_users_countries_idx',
+    },
+    userCountryBorn: {
+      type: 'unknown',
+      persist: false,
+      index: 'fk_users_countries1_idx',
+    },
     fkUserCountry: {
       kind: 'm:1',
       entity: () => Countries,
@@ -567,8 +617,16 @@ export const CountriesSchema = new EntitySchema({
       ref: true,
       mappedBy: 'countries',
     },
-    fkUserCountryInverse: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountry' },
-    fkUserCountryBornInverse: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountryBorn' },
+    fkUserCountryInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountry',
+    },
+    fkUserCountryBornInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountryBorn',
+    },
   },
 });
 ",
@@ -594,7 +652,11 @@ export const LegalUserCountriesSchema = new EntitySchema({
       ref: true,
       fieldName: 'country',
     },
-    legalUserCountriesInverse: { kind: '1:m', entity: () => Users, mappedBy: 'legalUserCountries' },
+    legalUserCountriesInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'legalUserCountries',
+    },
   },
 });
 ",
@@ -616,8 +678,16 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'integer' },
-    userCountry: { type: 'unknown', persist: false, index: 'fk_users_countries_idx' },
-    userCountryBorn: { type: 'unknown', persist: false, index: 'fk_users_countries1_idx' },
+    userCountry: {
+      type: 'unknown',
+      persist: false,
+      index: 'fk_users_countries_idx',
+    },
+    userCountryBorn: {
+      type: 'unknown',
+      persist: false,
+      index: 'fk_users_countries1_idx',
+    },
     fkUserCountry: {
       kind: 'm:1',
       entity: () => Countries,
@@ -727,7 +797,12 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { primary: true, kind: '1:1', entity: () => Countries, fieldName: 'country' },
+    country: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
   },
 });
 ",
@@ -994,9 +1069,21 @@ export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
     code: { primary: true, type: 'unknown', columnType: 'char(2)' },
-    countryInverse: { kind: '1:1', entity: () => LegalUserCountries, mappedBy: 'country' },
-    userCountryBornInverse: { kind: '1:m', entity: () => Users, mappedBy: 'userCountryBorn' },
-    fkUserCountryInverse: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountry' },
+    countryInverse: {
+      kind: '1:1',
+      entity: () => LegalUserCountries,
+      mappedBy: 'country',
+    },
+    userCountryBornInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'userCountryBorn',
+    },
+    fkUserCountryInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountry',
+    },
   },
 });
 ",
@@ -1013,8 +1100,17 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { primary: true, kind: '1:1', entity: () => Countries, fieldName: 'country' },
-    legalUserCountriesInverse: { kind: '1:m', entity: () => Users, mappedBy: 'legalUserCountries' },
+    country: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
+    legalUserCountriesInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'legalUserCountries',
+    },
   },
 });
 ",
@@ -1152,8 +1248,16 @@ export const CountriesSchema = new EntitySchema({
       ref: true,
       mappedBy: 'country',
     },
-    userCountryBornInverse: { kind: '1:m', entity: () => Users, mappedBy: 'userCountryBorn' },
-    fkUserCountryInverse: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountry' },
+    userCountryBornInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'userCountryBorn',
+    },
+    fkUserCountryInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountry',
+    },
   },
 });
 ",
@@ -1177,7 +1281,11 @@ export const LegalUserCountriesSchema = new EntitySchema({
       ref: true,
       fieldName: 'country',
     },
-    legalUserCountriesInverse: { kind: '1:m', entity: () => Users, mappedBy: 'legalUserCountries' },
+    legalUserCountriesInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'legalUserCountries',
+    },
   },
 });
 ",
@@ -1306,7 +1414,12 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { primary: true, kind: '1:1', entity: () => Countries, fieldName: 'country' },
+    country: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
   },
 });
 ",
@@ -1573,9 +1686,21 @@ export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
     code: { primary: true, type: 'unknown', columnType: 'char(2)' },
-    countryInverse: { kind: '1:1', entity: () => LegalUserCountries, mappedBy: 'country' },
-    userCountryBornInverse: { kind: '1:m', entity: () => Users, mappedBy: 'userCountryBorn' },
-    fkUserCountryInverse: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountry' },
+    countryInverse: {
+      kind: '1:1',
+      entity: () => LegalUserCountries,
+      mappedBy: 'country',
+    },
+    userCountryBornInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'userCountryBorn',
+    },
+    fkUserCountryInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountry',
+    },
   },
 });
 ",
@@ -1592,8 +1717,17 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { primary: true, kind: '1:1', entity: () => Countries, fieldName: 'country' },
-    legalUserCountriesInverse: { kind: '1:m', entity: () => Users, mappedBy: 'legalUserCountries' },
+    country: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
+    legalUserCountriesInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'legalUserCountries',
+    },
   },
 });
 ",
@@ -1731,8 +1865,16 @@ export const CountriesSchema = new EntitySchema({
       ref: true,
       mappedBy: 'country',
     },
-    userCountryBornInverse: { kind: '1:m', entity: () => Users, mappedBy: 'userCountryBorn' },
-    fkUserCountryInverse: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountry' },
+    userCountryBornInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'userCountryBorn',
+    },
+    fkUserCountryInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountry',
+    },
   },
 });
 ",
@@ -1756,7 +1898,11 @@ export const LegalUserCountriesSchema = new EntitySchema({
       ref: true,
       fieldName: 'country',
     },
-    legalUserCountriesInverse: { kind: '1:m', entity: () => Users, mappedBy: 'legalUserCountries' },
+    legalUserCountriesInverse: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'legalUserCountries',
+    },
   },
 });
 ",

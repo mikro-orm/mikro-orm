@@ -159,9 +159,7 @@ export class E123TableName {
 export const E123TableNameSchema = new EntitySchema({
   class: E123TableName,
   tableName: '123_table_name',
-  indexes: [
-    { name: 'dollar\\'s index', properties: ['$$', '$$infer'] },
-  ],
+  indexes: [{ name: 'dollar\\'s index', properties: ['$$', '$$infer'] }],
   properties: {
     $: { primary: true, type: 'integer', unsigned: false, autoincrement: false },
     $$: { type: 'bigint' },
@@ -171,7 +169,11 @@ export const E123TableNameSchema = new EntitySchema({
       fieldName: 'prototype',
       index: 'fk_123_table_name_table\\'s name has apostrophe, also\` this_idx',
     },
-    ohCaptainMyCaptain: { type: 'string', fieldName: 'oh_captain__my___captain', length: 255 },
+    ohCaptainMyCaptain: {
+      type: 'string',
+      fieldName: 'oh_captain__my___captain',
+      length: 255,
+    },
     infer: { type: 'string', length: 255 },
     $$infer: { type: 'string', fieldName: '$infer', length: 200 },
     $$$infer: { type: 'string', fieldName: '$$infer', length: 100 },
@@ -192,7 +194,13 @@ export const E50$37$32of$32stuffSchema = new EntitySchema({
   class: E50$37$32of$32stuff,
   tableName: '50% of stuff',
   uniques: [
-    { name: 'odd columns\\' unique index', properties: ['columnWithApostropheInIt\\'sName', 'columnWithBacktickInIt\`sName'] },
+    {
+      name: 'odd columns\\' unique index',
+      properties: [
+        'columnWithApostropheInIt\\'sName',
+        'columnWithBacktickInIt\`sName',
+      ],
+    },
   ],
   properties: {
     '+20%': { primary: true, type: 'integer', fieldName: '+-20%' },
@@ -202,7 +210,11 @@ export const E50$37$32of$32stuffSchema = new EntitySchema({
       fieldName: 'column with apostrophe in it\\'s name',
       length: 45,
     },
-    'columnWithBacktickInIt\`sName': { type: 'string', fieldName: 'column with backtick in it\`s name', length: 45 },
+    'columnWithBacktickInIt\`sName': {
+      type: 'string',
+      fieldName: 'column with backtick in it\`s name',
+      length: 45,
+    },
   },
 });
 ",

@@ -106,10 +106,7 @@ export const EventDetailsSchema = new EntitySchema({
       primary: true,
       kind: '1:1',
       entity: () => Events,
-      fieldNames: [
-        'weekday',
-        'at'
-      ],
+      fieldNames: ['weekday', 'at'],
     },
     moreInfo: { type: 'text', length: 65535, nullable: true },
   },
@@ -128,7 +125,12 @@ export class Events {
 export const EventsSchema = new EntitySchema({
   class: Events,
   properties: {
-    weekday: { primary: true, kind: 'm:1', entity: () => Worktime, fieldName: 'weekday' },
+    weekday: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Worktime,
+      fieldName: 'weekday',
+    },
     at: { primary: true, type: 'time' },
     what: { type: 'string', length: 255 },
   },

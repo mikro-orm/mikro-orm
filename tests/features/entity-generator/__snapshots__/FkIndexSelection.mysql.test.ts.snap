@@ -125,10 +125,7 @@ export const UsersSchema = new EntitySchema({
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -268,10 +265,7 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => FashionableColors,
       ref: true,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -417,10 +411,7 @@ export const UsersSchema = new EntitySchema({
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -567,10 +558,7 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => FashionableColors,
       ref: true,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -687,20 +675,23 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -814,10 +805,16 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
     userId: { primary: true, type: 'integer' },
@@ -825,10 +822,7 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => FashionableColors,
       ref: true,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -949,20 +943,23 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -1083,10 +1080,16 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
     userId: { primary: true, type: 'integer' },
@@ -1094,10 +1097,7 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => FashionableColors,
       ref: true,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -1215,20 +1215,23 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -1347,10 +1350,16 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
     userId: { primary: true, type: 'integer' },
@@ -1358,10 +1367,7 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => FashionableColors,
       ref: true,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -1487,20 +1493,23 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
@@ -1626,10 +1635,16 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
     userId: { primary: true, type: 'integer' },
@@ -1637,10 +1652,7 @@ export const UsersSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => FashionableColors,
       ref: true,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
