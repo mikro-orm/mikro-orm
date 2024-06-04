@@ -19,6 +19,7 @@ type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
 type SnapshotGenerator<T> = (entity: T) => EntityData<T>;
 type PkGetter<T> = (entity: T) => Primary<T>;
 type PkSerializer<T> = (entity: T) => string;
+type CompositeKeyPart = string | CompositeKeyPart[];
 
 export class EntityComparator {
 
@@ -251,6 +252,62 @@ export class EntityComparator {
   }
 
   /**
+   * @internal
+   */
+  propName(name: string, parent = 'result') {
+    return parent + this.wrap(name);
+  }
+
+  /**
+   * @internal respects nested composite keys, e.g. `[1, [2, 3]]`
+   */
+  createCompositeKeyArray(prop: EntityProperty, parents: EntityProperty[] = []): string {
+    if (!prop.targetMeta) {
+      let fieldName = prop.fieldNames[0];
+      // traverse all parents, mapping my field name to each parent's field name until we reach the root
+      for (let i = parents.length - 1; i >= 0; i--) {
+        const parent = parents[i];
+
+        // look for the field name in the parent's referencedColumnNames, except for M:N without a custom pivot entity
+        //   (in that case, the field names are the referenced PK's )
+        const target = parent.kind === ReferenceKind.MANY_TO_MANY && parent.pivotEntity === parent.pivotTable ?
+          parent.referencedPKs : parent.referencedColumnNames;
+
+        const idx = target.indexOf(fieldName);
+
+        fieldName = parent.fieldNames[idx];
+      }
+
+      return this.propName(fieldName);
+    }
+
+    const parts: CompositeKeyPart[] = [];
+
+    prop.targetMeta.getPrimaryProps().forEach(pk => {
+      const part = this.createCompositeKeyArray(pk, [...parents, prop]);
+      parts.push(part);
+    });
+
+    return this.formatCompositeKeyPart(parts);
+  }
+
+  /**
+   * @internal
+   */
+  formatCompositeKeyPart(part: CompositeKeyPart): string {
+    if (!Array.isArray(part)) {
+      return part;
+    }
+
+    if (part.length === 1) {
+      return this.formatCompositeKeyPart(part[0]);
+    }
+
+    const formatted = part.map(this.formatCompositeKeyPart).join(', ');
+    return `[${formatted}]`;
+  }
+
+  /**
    * @internal Highly performance-sensitive method.
    */
   getResultMapper<T>(entityName: string): ResultMapper<T> {
@@ -263,27 +320,6 @@ export class EntityComparator {
     const meta = this.metadata.get<T>(entityName)!;
     const lines: string[] = [];
     const context = new Map<string, any>();
-    const propName = (name: string, parent = 'result') => parent + this.wrap(name);
-
-    // respects nested composite keys, e.g. `[1, [2, 3]]`
-    const createCompositeKeyArray = (prop: EntityProperty, fieldNames = prop.fieldNames, idx = 0): string => {
-      if (!prop.targetMeta) {
-        return propName(fieldNames[idx++]);
-      }
-
-      const parts: string[] = [];
-
-      for (const pk of prop.targetMeta.getPrimaryProps()) {
-        parts.push(createCompositeKeyArray(pk, fieldNames, idx));
-        idx += pk.fieldNames.length;
-      }
-
-      if (parts.length < 2) {
-        return parts[0];
-      }
-
-      return '[' + parts.join(', ') + ']';
-    };
 
     const tz = this.platform.getTimezone();
     const parseDate = (key: string, value: string, padding = '') => {
@@ -310,12 +346,12 @@ export class EntityComparator {
       }
 
       if (prop.targetMeta && prop.fieldNames.length > 1) {
-        lines.push(`  if (${prop.fieldNames.map(field => `typeof ${propName(field)} === 'undefined'`).join(' && ')}) {`);
-        lines.push(`  } else if (${prop.fieldNames.map(field => `${propName(field)} != null`).join(' && ')}) {`);
-        lines.push(`    ret${this.wrap(prop.name)} = ${createCompositeKeyArray(prop)};`);
-        lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`));
-        lines.push(`  } else if (${prop.fieldNames.map(field => `${propName(field)} == null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = null;`);
-        lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`), '  }');
+        lines.push(`  if (${prop.fieldNames.map(field => `typeof ${this.propName(field)} === 'undefined'`).join(' && ')}) {`);
+        lines.push(`  } else if (${prop.fieldNames.map(field => `${this.propName(field)} != null`).join(' && ')}) {`);
+        lines.push(`    ret${this.wrap(prop.name)} = ${this.createCompositeKeyArray(prop)};`);
+        lines.push(...prop.fieldNames.map(field => `    ${this.propName(field, 'mapped')} = true;`));
+        lines.push(`  } else if (${prop.fieldNames.map(field => `${this.propName(field)} == null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = null;`);
+        lines.push(...prop.fieldNames.map(field => `    ${this.propName(field, 'mapped')} = true;`), '  }');
         return;
       }
 
@@ -324,15 +360,15 @@ export class EntityComparator {
       }
 
       if (prop.runtimeType === 'boolean') {
-        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
-        lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])};`);
-        lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
+        lines.push(`  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
+        lines.push(`    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])} == null ? ${this.propName(prop.fieldNames[0])} : !!${this.propName(prop.fieldNames[0])};`);
+        lines.push(`    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
       } else if (prop.runtimeType === 'Date') {
-        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
+        lines.push(`  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
         context.set('parseDate', (value: string | number) => this.platform.parseDate(value as string));
-        parseDate('ret' + this.wrap(prop.name), propName(prop.fieldNames[0]));
-        lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
+        parseDate('ret' + this.wrap(prop.name), this.propName(prop.fieldNames[0]));
+        lines.push(`    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
       } else if (prop.kind === ReferenceKind.EMBEDDED && (prop.object || meta.embeddable)) {
         const idx = this.tmpIndex++;
@@ -345,14 +381,14 @@ export class EntityComparator {
 
           return item == null ? item : this.getResultMapper(prop.type)(item);
         });
-        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
-        lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : mapEmbeddedResult_${idx}(${propName(prop.fieldNames[0])});`);
-        lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
+        lines.push(`  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
+        lines.push(`    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])} == null ? ${this.propName(prop.fieldNames[0])} : mapEmbeddedResult_${idx}(${this.propName(prop.fieldNames[0])});`);
+        lines.push(`    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
       } else if (prop.kind !== ReferenceKind.EMBEDDED) {
-        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
-        lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])};`);
-        lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
+        lines.push(`  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
+        lines.push(`    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])};`);
+        lines.push(`    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
       }
     });
