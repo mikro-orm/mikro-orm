@@ -203,11 +203,10 @@ export class SourceFile {
           return runtimeTypes.length === 1 ? runtimeTypes[0] : this.serializeObject(runtimeTypes);
         })()
       : (() => {
-          if (prop.enum) {
-            return prop.runtimeType;
-          }
-
           if (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) {
+            if (prop.enum) {
+              return prop.runtimeType;
+            }
 
             const mappedDeclaredType = this.platform.getMappedType(prop.type);
             const mappedRawType = (prop.customTypes?.[0] ?? ((prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType)
@@ -381,10 +380,6 @@ export class SourceFile {
       this.getForeignKeyDecoratorOptions(options, prop);
     }
 
-    if (prop.enum) {
-      options.items = `() => ${prop.runtimeType}`;
-    }
-
     this.getCommonDecoratorOptions(options, prop);
     const indexes = this.getPropertyIndexes(prop, options);
     decorator = [...indexes.sort(), decorator].map(d => padding + d).join('\n');
@@ -444,6 +439,10 @@ export class SourceFile {
       options.nullable = true;
     }
 
+    if (prop.primary && (prop.enum || !(typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR))) {
+      options.primary = true;
+    }
+
     (['persist', 'hydrate', 'trackChanges'] as const)
       .filter(key => prop[key] === false)
       .forEach(key => options[key] = false);
@@ -480,6 +479,10 @@ export class SourceFile {
   protected getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
     if (prop.fieldNames[0] !== this.namingStrategy.propertyToColumnName(prop.name)) {
       options.fieldName = this.quote(prop.fieldNames[0]);
+    }
+
+    if (prop.enum) {
+      options.items = `() => ${prop.runtimeType}`;
     }
 
     // For enum properties, we don't need a column type
@@ -699,12 +702,12 @@ export class SourceFile {
       return 'Embedded';
     }
 
-    if (prop.primary) {
-      return 'PrimaryKey';
-    }
-
     if (prop.enum) {
       return 'Enum';
+    }
+
+    if (prop.primary) {
+      return 'PrimaryKey';
     }
 
     if (prop.formula) {

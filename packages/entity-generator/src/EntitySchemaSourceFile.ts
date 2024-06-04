@@ -27,7 +27,7 @@ export class EntitySchemaSourceFile extends SourceFile {
     for (const prop of Object.values(this.meta.properties)) {
       props.push(this.getPropertyDefinition(prop, 2));
 
-      if (prop.enum) {
+      if (prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR)) {
         enumDefinitions.push(this.getEnumClassDefinition(prop, 2));
       }
 
@@ -153,11 +153,6 @@ export class EntitySchemaSourceFile extends SourceFile {
       this.getForeignKeyDecoratorOptions(options, prop);
     }
 
-    if (prop.enum) {
-      options.enum = true;
-      options.items = `() => ${prop.runtimeType}`;
-    }
-
     if (prop.formula) {
       options.formula = `${prop.formula}`;
     }
@@ -205,7 +200,10 @@ export class EntitySchemaSourceFile extends SourceFile {
   }
 
   protected override getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
-    if (prop.kind === ReferenceKind.SCALAR && !prop.enum) {
+    if (prop.enum) {
+      options.enum = true;
+      options.items = `() => ${prop.runtimeType}`;
+    } else {
       options.type = this.quote(prop.type);
     }
 

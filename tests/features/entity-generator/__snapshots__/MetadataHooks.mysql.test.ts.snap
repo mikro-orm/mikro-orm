@@ -796,6 +796,7 @@ export const Author2Schema = new EntitySchema({
       nullable: true,
     },
     secondsSinceLastModified: {
+      type: 'integer',
       formula: alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
       lazy: true,
     },
@@ -1426,8 +1427,8 @@ export class IdentitiesContainer {
 export const IdentitiesContainerSchema = new EntitySchema({
   class: IdentitiesContainer,
   properties: {
-    github: {  },
-    local: {  },
+    github: { type: 'string' },
+    local: { type: 'integer' },
   },
 });
 ",
@@ -2285,6 +2286,7 @@ export const Author2Schema = new EntitySchema({
       nullable: true,
     },
     secondsSinceLastModified: {
+      type: 'integer',
       formula: alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
       lazy: true,
     },
@@ -2956,8 +2958,8 @@ export class IdentitiesContainer {
 export const IdentitiesContainerSchema = new EntitySchema({
   class: IdentitiesContainer,
   properties: {
-    github: {  },
-    local: {  },
+    github: { type: 'string' },
+    local: { type: 'integer' },
   },
 });
 ",
