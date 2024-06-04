@@ -313,6 +313,7 @@ export class Migrator implements IMigrator {
 
     if (blank) {
       up.push('select 1');
+      down.push('select 1');
     } else if (initial) {
       const dump = await this.schemaGenerator.getCreateSchemaSQL({ wrap: false });
       up.push(...dump.split('\n'));

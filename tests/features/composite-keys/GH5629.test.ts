@@ -194,7 +194,6 @@ test('GH issue 5629, createCompositeKeyArray', async () => {
   expect(compositeKeys).toMatchSnapshot();
 });
 
-
 test.failing(`GH issue 5629, query fields`, async () => {
   const tenant = orm.em.create(Tenant, { id: '2' });
   const something = orm.em.create(Something, { tenant, id: '3' });

@@ -1,0 +1,166 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`complex_pks_example entitySchema=false: mysql 1`] = `
+[
+  "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Events } from './Events';
+
+@Entity()
+export class EventDetails {
+
+  [PrimaryKeyProp]?: 'weekday';
+
+  @OneToOne({ entity: () => Events, fieldNames: ['weekday', 'at'], primary: true })
+  weekday!: Events;
+
+  @Property({ type: 'text', length: 65535, nullable: true })
+  moreInfo?: string;
+
+}
+
+export enum EventDetailsWeekday {
+  MONDAY = 'Monday',
+  TUESDAY = 'Tuesday',
+  WEDNESDAY = 'Wednesday',
+  THURSDAY = 'Thursday',
+  FRIDAY = 'Friday',
+  SATURDAY = 'Saturday',
+  SUNDAY = 'Sunday',
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Worktime } from './Worktime';
+
+@Entity()
+export class Events {
+
+  [PrimaryKeyProp]?: ['weekday', 'at'];
+
+  @ManyToOne({ entity: () => Worktime, fieldName: 'weekday', primary: true })
+  weekday!: Worktime;
+
+  @PrimaryKey({ type: 'time' })
+  at!: string;
+
+  @Property({ length: 255 })
+  what!: string;
+
+}
+
+export enum EventsWeekday {
+  MONDAY = 'Monday',
+  TUESDAY = 'Tuesday',
+  WEDNESDAY = 'Wednesday',
+  THURSDAY = 'Thursday',
+  FRIDAY = 'Friday',
+  SATURDAY = 'Saturday',
+  SUNDAY = 'Sunday',
+}
+",
+  "import { Entity, Enum, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Worktime {
+
+  [PrimaryKeyProp]?: 'weekday';
+
+  @Enum({ items: () => WorktimeWeekday, primary: true })
+  weekday!: WorktimeWeekday;
+
+  @Property({ type: 'time' })
+  from!: string;
+
+  @Property({ type: 'time' })
+  to!: string;
+
+}
+
+export enum WorktimeWeekday {
+  MONDAY = 'Monday',
+  TUESDAY = 'Tuesday',
+  WEDNESDAY = 'Wednesday',
+  THURSDAY = 'Thursday',
+  FRIDAY = 'Friday',
+  SATURDAY = 'Saturday',
+  SUNDAY = 'Sunday',
+}
+",
+]
+`;
+
+exports[`complex_pks_example entitySchema=true: mysql 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Events } from './Events';
+
+export class EventDetails {
+  [PrimaryKeyProp]?: 'weekday';
+  weekday!: Events;
+  moreInfo?: string;
+}
+
+export const EventDetailsSchema = new EntitySchema({
+  class: EventDetails,
+  properties: {
+    weekday: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Events,
+      fieldNames: [
+        'weekday',
+        'at'
+      ],
+    },
+    moreInfo: { type: 'text', length: 65535, nullable: true },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Worktime } from './Worktime';
+
+export class Events {
+  [PrimaryKeyProp]?: ['weekday', 'at'];
+  weekday!: Worktime;
+  at!: string;
+  what!: string;
+}
+
+export const EventsSchema = new EntitySchema({
+  class: Events,
+  properties: {
+    weekday: { primary: true, kind: 'm:1', entity: () => Worktime, fieldName: 'weekday' },
+    at: { primary: true, type: 'time' },
+    what: { type: 'string', length: 255 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Worktime {
+  [PrimaryKeyProp]?: 'weekday';
+  weekday!: WorktimeWeekday;
+  from!: string;
+  to!: string;
+}
+
+export enum WorktimeWeekday {
+  MONDAY = 'Monday',
+  TUESDAY = 'Tuesday',
+  WEDNESDAY = 'Wednesday',
+  THURSDAY = 'Thursday',
+  FRIDAY = 'Friday',
+  SATURDAY = 'Saturday',
+  SUNDAY = 'Sunday',
+}
+
+export const WorktimeSchema = new EntitySchema({
+  class: Worktime,
+  properties: {
+    weekday: { primary: true, enum: true, items: () => WorktimeWeekday },
+    from: { type: 'time' },
+    to: { type: 'time' },
+  },
+});
+",
+]
+`;

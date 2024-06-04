@@ -21,6 +21,29 @@ export interface NamingStrategy {
   propertyToColumnName(propertyName: string, object?: boolean): string;
 
   /**
+   * Get an enum class name.
+   *
+   * @param columnName The column name which has the enum.
+   * @param tableName The table name of the column.
+   * @param schemaName The schema name of the column.
+   *
+   * @return A new class name that will be used for the enum.
+   */
+  getEnumClassName(columnName: string, tableName: string, schemaName?: string): string;
+
+  /**
+   * Get an enum option name for a given enum value.
+   *
+   * @param enumValue The enum value to generate a name for.
+   * @param columnName The column name which has the enum.
+   * @param tableName The table name of the column.
+   * @param schemaName The schema name of the column.
+   *
+   * @return The name of the enum property that will hold the value.
+   */
+  enumValueToEnumProperty(enumValue: string, columnName: string, tableName: string, schemaName?: string): string;
+
+  /**
    * Return a name of the entity class based on database table name (used in `EntityGenerator`).
    * Default implementation ignores the schema name.
    */

@@ -15,8 +15,8 @@ import {
   type Platform,
   ReferenceKind,
   SCALAR_TYPES,
-  type TypeConfig,
   TimeType,
+  type TypeConfig,
   type UniqueOptions,
   UnknownType,
   Utils,
@@ -46,17 +46,13 @@ export class SourceFile {
     let ret = '';
     if (this.meta.embeddable || this.meta.collection) {
       if (this.meta.embeddable) {
-        this.coreImports.add('Embeddable');
-        ret += `@Embeddable(${this.getEmbeddableDeclOptions()})\n`;
+        ret += `@${this.referenceCoreImport('Embeddable')}(${this.getEmbeddableDeclOptions()})\n`;
       } else {
-        this.coreImports.add('Entity');
-        ret += `@Entity(${this.getEntityDeclOptions()})\n`;
+        ret += `@${this.referenceCoreImport('Entity')}(${this.getEntityDeclOptions()})\n`;
       }
     }
 
     this.meta.indexes.forEach(index => {
-      this.coreImports.add('Index');
-
       const indexOpt: IndexOptions<Dictionary> = {};
       if (typeof index.name === 'string') {
         indexOpt.name = this.quote(index.name);
@@ -68,12 +64,10 @@ export class SourceFile {
         indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
       }
 
-      ret += `@Index(${this.serializeObject(indexOpt)})\n`;
+      ret += `@${this.referenceCoreImport('Index')}(${this.serializeObject(indexOpt)})\n`;
     });
 
     this.meta.uniques.forEach(index => {
-      this.coreImports.add('Unique');
-
       const uniqueOpt: UniqueOptions<Dictionary> = {};
       if (typeof index.name === 'string') {
         uniqueOpt.name = this.quote(index.name);
@@ -85,16 +79,14 @@ export class SourceFile {
         uniqueOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
       }
 
-      ret += `@Unique(${this.serializeObject(uniqueOpt)})\n`;
+      ret += `@${this.referenceCoreImport('Unique')}(${this.serializeObject(uniqueOpt)})\n`;
     });
 
     let classHead = '';
     if (this.meta.className === this.options.customBaseEntityName) {
-      this.coreImports.add('Config');
-      this.coreImports.add('DefineConfig');
       const defineConfigTypeSettings: TypeConfig = {};
       defineConfigTypeSettings.forceObject = this.platform.getConfig().get('serialization').forceObject ?? false;
-      classHead += `\n${' '.repeat(2)}[Config]?: DefineConfig<${this.serializeObject(defineConfigTypeSettings)}>;\n\n`;
+      classHead += `\n${' '.repeat(2)}[${this.referenceCoreImport('Config')}]?: ${this.referenceCoreImport('DefineConfig')}<${this.serializeObject(defineConfigTypeSettings)}>;\n\n`;
     }
 
     const enumDefinitions: string[] = [];
@@ -110,8 +102,7 @@ export class SourceFile {
       classBody += '\n';
 
       if (prop.enum) {
-        const enumClassName = this.namingStrategy.getClassName(this.meta.collection + '_' + prop.fieldNames[0], '_');
-        enumDefinitions.push(this.getEnumClassDefinition(enumClassName, prop.items as string[], 2));
+        enumDefinitions.push(this.getEnumClassDefinition(prop, 2));
       }
 
       if (prop.eager) {
@@ -124,20 +115,18 @@ export class SourceFile {
     });
 
     if (primaryProps.length > 0) {
-      this.coreImports.add('PrimaryKeyProp');
       const primaryPropNames = primaryProps.map(prop => `'${prop.name}'`);
 
       if (primaryProps.length > 1) {
-        classHead += `\n${' '.repeat(2)}[PrimaryKeyProp]?: [${primaryPropNames.join(', ')}];\n`;
+        classHead += `\n${' '.repeat(2)}[${this.referenceCoreImport('PrimaryKeyProp')}]?: [${primaryPropNames.join(', ')}];\n`;
       } else {
-        classHead += `\n${' '.repeat(2)}[PrimaryKeyProp]?: ${primaryPropNames[0]};\n`;
+        classHead += `\n${' '.repeat(2)}[${this.referenceCoreImport('PrimaryKeyProp')}]?: ${primaryPropNames[0]};\n`;
       }
     }
 
     if (eagerProperties.length > 0) {
-      this.coreImports.add('EagerProps');
       const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
-      classHead += `\n${' '.repeat(2)}[EagerProps]?: ${eagerPropertyNames.join(' | ')};\n`;
+      classHead += `\n${' '.repeat(2)}[${this.referenceCoreImport('EagerProps')}]?: ${eagerPropertyNames.join(' | ')};\n`;
     }
 
     ret += this.getEntityClass(classBody ? `${classHead}\n${classBody}` : classHead);
@@ -152,7 +141,14 @@ export class SourceFile {
   protected generateImports() {
     const imports = [];
     if (this.coreImports.size > 0) {
-      imports.push(`import { ${([...this.coreImports].sort().map(t => POSSIBLE_TYPE_IMPORTS.includes(t as typeof POSSIBLE_TYPE_IMPORTS[number]) ? `type ${t}` : t).join(', '))} } from '@mikro-orm/core';`);
+      imports.push(`import { ${([...this.coreImports].sort().map(t => {
+        let ret = POSSIBLE_TYPE_IMPORTS.includes(t as typeof POSSIBLE_TYPE_IMPORTS[number]) ? `type ${t}` : t;
+        if (this.options.coreImportsPrefix) {
+          const resolvedIdentifier = `${this.options.coreImportsPrefix}${t}`;
+          ret += ` as ${resolvedIdentifier}`;
+        }
+        return ret;
+      }).join(', ')) } } from '@mikro-orm/core';`);
     }
     const entityImportExtension = this.options.esmImport ? '.js' : '';
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
@@ -172,13 +168,7 @@ export class SourceFile {
       this.entityImports.add(this.meta.extends);
       ret += ` extends ${this.meta.extends}`;
     } else if (this.options.useCoreBaseEntity) {
-      if (this.meta.className === 'BaseEntity') {
-        this.coreImports.add('BaseEntity as MikroBaseEntity');
-        ret += ` extends MikroBaseEntity`;
-      } else {
-        this.coreImports.add('BaseEntity');
-        ret += ` extends BaseEntity`;
-      }
+      ret += ` extends ${this.referenceCoreImport('BaseEntity')}`;
     }
     ret += ` {\n${classBody}}\n`;
     return ret;
@@ -200,13 +190,11 @@ export class SourceFile {
 
     let hiddenType = '';
     if (prop.hidden) {
-      this.coreImports.add('Hidden');
-      hiddenType += ' & Hidden';
+      hiddenType += ` & ${this.referenceCoreImport('Hidden')}`;
     }
 
     if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
-      this.coreImports.add('Collection');
-      return `${padding}${propName}${hiddenType ? `: Collection<${prop.type}>${hiddenType}` : ''} = new Collection<${prop.type}>(this);\n`;
+      return `${padding}${propName}${hiddenType ? `: ${this.referenceCoreImport('Collection')}<${prop.type}>${hiddenType}` : ''} = new ${this.referenceCoreImport('Collection')}<${prop.type}>(this);\n`;
     }
 
     const propType = prop.mapToPk
@@ -215,11 +203,10 @@ export class SourceFile {
           return runtimeTypes.length === 1 ? runtimeTypes[0] : this.serializeObject(runtimeTypes);
         })()
       : (() => {
-          if (prop.enum) {
-            return prop.runtimeType;
-          }
-
           if (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) {
+            if (prop.enum) {
+              return prop.runtimeType;
+            }
 
             const mappedDeclaredType = this.platform.getMappedType(prop.type);
             const mappedRawType = (prop.customTypes?.[0] ?? ((prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType)
@@ -238,11 +225,10 @@ export class SourceFile {
             }
 
             if (prop.runtimeType !== rawType || rawType !== serializedType) {
-                this.coreImports.add('IType');
                 if (rawType !== serializedType) {
-                  return `IType<${prop.runtimeType}, ${rawType}, ${serializedType}>`;
+                  return `${this.referenceCoreImport('IType')}<${prop.runtimeType}, ${rawType}, ${serializedType}>`;
                 }
-                return `IType<${prop.runtimeType}, ${rawType}>`;
+                return `${this.referenceCoreImport('IType')}<${prop.runtimeType}, ${rawType}>`;
             }
 
             return prop.runtimeType;
@@ -255,8 +241,7 @@ export class SourceFile {
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
 
     if (prop.ref) {
-      this.coreImports.add('Ref');
-      return `${padding}${propName}${optional}: Ref<${propType}>${hiddenType};\n`;
+      return `${padding}${propName}${optional}: ${this.referenceCoreImport('Ref')}<${propType}>${hiddenType};\n`;
     }
 
     let ret = `${propName}${optional}: ${propType}`;
@@ -267,8 +252,7 @@ export class SourceFile {
     ret += hiddenType;
 
     if (useDefault || (prop.optional && !prop.nullable)) {
-      this.coreImports.add('Opt');
-      ret += ' & Opt';
+      ret += ` & ${this.referenceCoreImport('Opt')}`;
     }
 
     if (!useDefault) {
@@ -282,12 +266,15 @@ export class SourceFile {
     return `${padding}${ret} = ${propType === 'string' ? this.quote('' + prop.default) : prop.default};\n`;
   }
 
-  protected getEnumClassDefinition(enumClassName: string, enumValues: string[], padLeft: number): string {
+  protected getEnumClassDefinition(prop: EntityProperty, padLeft: number): string {
+    const enumClassName = this.namingStrategy.getEnumClassName(prop.fieldNames[0], this.meta.collection, this.meta.schema);
     const padding = ' '.repeat(padLeft);
     let ret = `export enum ${enumClassName} {\n`;
 
+    const enumValues = prop.items as string[];
     for (const enumValue of enumValues) {
-      ret += `${padding}${enumValue.toUpperCase()} = '${enumValue}',\n`;
+      const enumName = this.namingStrategy.enumValueToEnumProperty(enumValue, prop.fieldNames[0], this.meta.collection, this.meta.schema);
+      ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)} = ${this.quote(enumValue)},\n`;
     }
 
     ret += '}\n';
@@ -379,8 +366,7 @@ export class SourceFile {
   private getPropertyDecorator(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
     const options = {} as Dictionary;
-    let decorator = this.getDecoratorType(prop);
-    this.coreImports.add(decorator.substring(1));
+    let decorator = `@${this.referenceCoreImport(this.getDecoratorType(prop))}`;
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY) {
       this.getManyToManyDecoratorOptions(options, prop);
@@ -392,10 +378,6 @@ export class SourceFile {
       this.getEmbeddedPropertyDeclarationOptions(options, prop);
     } else {
       this.getForeignKeyDecoratorOptions(options, prop);
-    }
-
-    if (prop.enum) {
-      options.items = `() => ${prop.runtimeType}`;
     }
 
     this.getCommonDecoratorOptions(options, prop);
@@ -418,13 +400,11 @@ export class SourceFile {
       const ret: string[] = [];
 
       if (prop.index) {
-        this.coreImports.add('Index');
-        ret.push(`@Index(${typeof prop.index === 'string' ? `{ name: ${this.quote(prop.index)} }` : '' })`);
+        ret.push(`@${this.referenceCoreImport('Index')}(${typeof prop.index === 'string' ? `{ name: ${this.quote(prop.index)} }` : '' })`);
       }
 
       if (prop.unique) {
-        this.coreImports.add('Unique');
-        ret.push(`@Unique(${typeof prop.unique === 'string' ? `{ name: ${this.quote(prop.unique)} }` : '' })`);
+        ret.push(`@${this.referenceCoreImport('Unique')}(${typeof prop.unique === 'string' ? `{ name: ${this.quote(prop.unique)} }` : '' })`);
       }
 
       return ret;
@@ -459,6 +439,10 @@ export class SourceFile {
       options.nullable = true;
     }
 
+    if (prop.primary && (prop.enum || !(typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR))) {
+      options.primary = true;
+    }
+
     (['persist', 'hydrate', 'trackChanges'] as const)
       .filter(key => prop[key] === false)
       .forEach(key => options[key] = false);
@@ -476,8 +460,7 @@ export class SourceFile {
       .forEach(key => options[key] = true);
 
     if (prop.cascade && (prop.cascade.length !== 1 || prop.cascade[0] !== Cascade.PERSIST)) {
-      this.coreImports.add('Cascade');
-      options.cascade = `[${prop.cascade.map(value => 'Cascade.' + value.toUpperCase()).join(', ')}]`;
+      options.cascade = `[${prop.cascade.map(value => `${this.referenceCoreImport('Cascade')}.${value.toUpperCase()}`).join(', ')}]`;
     }
 
     if (typeof prop.comment === 'string') {
@@ -496,6 +479,10 @@ export class SourceFile {
   protected getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
     if (prop.fieldNames[0] !== this.namingStrategy.propertyToColumnName(prop.name)) {
       options.fieldName = this.quote(prop.fieldNames[0]);
+    }
+
+    if (prop.enum) {
+      options.items = `() => ${prop.runtimeType}`;
     }
 
     // For enum properties, we don't need a column type
@@ -696,38 +683,45 @@ export class SourceFile {
 
   protected getDecoratorType(prop: EntityProperty): string {
     if (prop.kind === ReferenceKind.ONE_TO_ONE) {
-      return '@OneToOne';
+      return 'OneToOne';
     }
 
     if (prop.kind === ReferenceKind.MANY_TO_ONE) {
-      return '@ManyToOne';
+      return 'ManyToOne';
     }
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY) {
-      return '@OneToMany';
+      return 'OneToMany';
     }
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY) {
-      return '@ManyToMany';
+      return 'ManyToMany';
     }
 
     if (prop.kind === ReferenceKind.EMBEDDED) {
-      return '@Embedded';
-    }
-
-    if (prop.primary) {
-      return '@PrimaryKey';
+      return 'Embedded';
     }
 
     if (prop.enum) {
-      return '@Enum';
+      return 'Enum';
+    }
+
+    if (prop.primary) {
+      return 'PrimaryKey';
     }
 
     if (prop.formula) {
-      return '@Formula';
+      return 'Formula';
     }
 
-    return '@Property';
+    return 'Property';
+  }
+
+  protected referenceCoreImport(identifier: string): string {
+    this.coreImports.add(identifier);
+    return this.options.coreImportsPrefix
+      ? `${this.options.coreImportsPrefix}${identifier}`
+      : identifier;
   }
 
 }
