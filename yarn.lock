@@ -1456,7 +1456,7 @@ __metadata:
     "@mikro-orm/mongodb": "npm:6.2.9"
     fs-extra: "npm:11.2.0"
     mongodb: "npm:6.7.0"
-    umzug: "npm:3.8.0"
+    umzug: "npm:3.8.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1469,7 +1469,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.2.9"
     "@mikro-orm/knex": "npm:6.2.9"
     fs-extra: "npm:11.2.0"
-    umzug: "npm:3.8.0"
+    umzug: "npm:3.8.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1527,7 +1527,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.2.9"
     "@mikro-orm/knex": "npm:6.2.9"
-    pg: "npm:8.11.5"
+    pg: "npm:8.12.0"
     postgres-array: "npm:3.0.2"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.0.2"
@@ -9461,9 +9461,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg@npm:8.11.5":
-  version: 8.11.5
-  resolution: "pg@npm:8.11.5"
+"pg@npm:8.12.0":
+  version: 8.12.0
+  resolution: "pg@npm:8.12.0"
   dependencies:
     pg-cloudflare: "npm:^1.1.1"
     pg-connection-string: "npm:^2.6.4"
@@ -9479,7 +9479,7 @@ __metadata:
   peerDependenciesMeta:
     pg-native:
       optional: true
-  checksum: 10/1510bc42943ea1749bfffac3f7ebae52ae638dc798e38786552fc67ffc0b2e4bd54456e7fd5cda7e805f30a0a59126c98e8c59afa88b6952f95411f16a16f709
+  checksum: 10/ce39af0e85d42bf5fc8dcc02c57b38d4cb203fea937688509a77c0b005a54d4821e5e5963a5663934d76994eab42381698f08a44e21544b4545fd9d142dcfd12
   languageName: node
   linkType: hard
 
@@ -11393,16 +11393,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"umzug@npm:3.8.0":
-  version: 3.8.0
-  resolution: "umzug@npm:3.8.0"
+"umzug@npm:3.8.1":
+  version: 3.8.1
+  resolution: "umzug@npm:3.8.1"
   dependencies:
     "@rushstack/ts-command-line": "npm:^4.12.2"
     emittery: "npm:^0.13.0"
     fast-glob: "npm:^3.3.2"
     pony-cause: "npm:^2.1.4"
     type-fest: "npm:^4.0.0"
-  checksum: 10/e1ce351e08c4dd411b73805b2684673578537cb70cba1e58305f74f63fddaf78474d2dd756643a2e0c39c33ff8b98bc1b72b624ae117783548301c6deee7f8ac
+  checksum: 10/0c65e577bdfd795db4bfe7d72e3115e0aaee06b02eca59a57c7f732549fc8eef2b9d884488ba32f2317112bd57736026e14fabb95b901084700d92a6d4ffd6c4
   languageName: node
   linkType: hard
 
