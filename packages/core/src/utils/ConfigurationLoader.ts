@@ -146,6 +146,7 @@ export class ConfigurationLoader {
       transpileOnly: true,
       compilerOptions: {
         module: 'nodenext',
+        moduleResolution: 'nodenext',
       },
     }).config;
 
