@@ -1,7 +1,8 @@
 import { Entity, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
-@Entity() export class Foo {
+@Entity()
+class Foo {
 
   @PrimaryKey()
   id!: number;
@@ -11,7 +12,8 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 
 }
 
-@Entity() export class Bar {
+@Entity()
+class Bar {
 
   @ManyToOne()
   foo!: Foo;

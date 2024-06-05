@@ -9,7 +9,7 @@ import {
 import type { Knex } from 'knex';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
-import type { CheckDef, Column, IndexDef, Table, TableDifference } from '../typings';
+import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
 
@@ -356,6 +356,165 @@ export abstract class SchemaHelper {
    */
   pushTableQuery(table: Knex.TableBuilder, expression: string, grouping = 'alterTable'): void {
     (table as Dictionary)._statements.push({ grouping, method: 'raw', args: [expression] });
+  }
+
+  async dump(builder: Knex.SchemaBuilder | string, append: string): Promise<string> {
+    if (typeof builder === 'string') {
+      return builder ? builder + (builder.endsWith(';') ? '' : ';') + append : '';
+    }
+
+    const sql = await builder.generateDdlCommands();
+    const queries = [...sql.pre, ...sql.sql, ...sql.post];
+
+    if (queries.length === 0) {
+      return '';
+    }
+
+    const dump = `${queries.map(q => typeof q === 'object' ? (q as Dictionary).sql : q).join(';\n')};${append}`;
+    const tmp = dump.replace(/pragma table_.+/ig, '').replace(/\n\n+/g, '\n').trim();
+
+    return tmp ? tmp + append : '';
+  }
+
+  createTable(tableDef: DatabaseTable, alter?: boolean): Knex.SchemaBuilder {
+    return this.createSchemaBuilder(tableDef.schema).createTable(tableDef.name, table => {
+      tableDef.getColumns().forEach(column => {
+        const col = this.createTableColumn(table, column, tableDef, undefined, alter)!;
+        this.configureColumn(column, col, this.knex);
+      });
+
+      for (const index of tableDef.getIndexes()) {
+        const createPrimary = !tableDef.getColumns().some(c => c.autoincrement && c.primary) || this.hasNonDefaultPrimaryKeyName(tableDef);
+        this.createIndex(table, index, tableDef, createPrimary);
+      }
+
+      for (const check of tableDef.getChecks()) {
+        this.createCheck(table, check);
+      }
+
+      if (tableDef.comment) {
+        const comment = this.platform.quoteValue(tableDef.comment).replace(/^'|'$/g, '');
+        table.comment(comment);
+      }
+
+      if (!this.supportsSchemaConstraints()) {
+        for (const fk of Object.values(tableDef.getForeignKeys())) {
+          this.createForeignKey(table, fk);
+        }
+      }
+
+      this.finalizeTable(table, this.platform.getConfig().get('charset'), this.platform.getConfig().get('collate'));
+    });
+  }
+
+  createForeignKey(table: Knex.CreateTableBuilder, foreignKey: ForeignKey, schema?: string) {
+    if (!this.options.createForeignKeyConstraints) {
+      return;
+    }
+
+    const builder = table
+      .foreign(foreignKey.columnNames, foreignKey.constraintName)
+      .references(foreignKey.referencedColumnNames)
+      .inTable(this.getReferencedTableName(foreignKey.referencedTableName, schema))
+      .withKeyName(foreignKey.constraintName);
+
+    if (foreignKey.localTableName !== foreignKey.referencedTableName || this.platform.supportsMultipleCascadePaths()) {
+      if (foreignKey.updateRule) {
+        builder.onUpdate(foreignKey.updateRule);
+      }
+
+      if (foreignKey.deleteRule) {
+        builder.onDelete(foreignKey.deleteRule);
+      }
+    }
+
+    if (foreignKey.deferMode) {
+      builder.deferrable(foreignKey.deferMode);
+    }
+  }
+
+  splitTableName(name: string): [string | undefined, string] {
+    const parts = name.split('.');
+    const tableName = parts.pop()!;
+    const schemaName = parts.pop();
+
+    return [schemaName, tableName];
+  }
+
+  getReferencedTableName(referencedTableName: string, schema?: string) {
+    const [schemaName, tableName] = this.splitTableName(referencedTableName);
+    schema = schemaName ?? schema ?? this.platform.getConfig().get('schema');
+
+    /* istanbul ignore next */
+    if (schema && schemaName === '*') {
+      return `${schema}.${referencedTableName.replace(/^\*\./, '')}`;
+    }
+
+    if (!schemaName || schemaName === this.platform.getDefaultSchemaName()) {
+      return tableName;
+    }
+
+    return `${schemaName}.${tableName}`;
+  }
+
+  createIndex(table: Knex.CreateTableBuilder, index: IndexDef, tableDef: DatabaseTable, createPrimary = false) {
+    if (index.primary && !createPrimary) {
+      return;
+    }
+
+    if (index.primary) {
+      const keyName = this.hasNonDefaultPrimaryKeyName(tableDef) ? index.keyName : undefined;
+      table.primary(index.columnNames, keyName);
+    } else if (index.unique) {
+      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
+      if (index.columnNames.some(column => column.includes('.'))) {
+        const columns = this.platform.getJsonIndexDefinition(index);
+        table.index(columns.map(column => this.knex.raw(column)), index.keyName, { indexType: 'unique' });
+      } else {
+        table.unique(index.columnNames, { indexName: index.keyName, deferrable: index.deferMode });
+      }
+    } else if (index.expression) {
+      this.pushTableQuery(table, index.expression);
+    } else if (index.type === 'fulltext') {
+      const columns = index.columnNames.map(name => ({ name, type: tableDef.getColumn(name)!.type }));
+
+      if (this.platform.supportsCreatingFullTextIndex()) {
+        this.pushTableQuery(table, this.platform.getFullTextIndexExpression(index.keyName, tableDef.schema, tableDef.name, columns));
+      }
+    } else {
+      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
+      if (index.columnNames.some(column => column.includes('.'))) {
+        const columns = this.platform.getJsonIndexDefinition(index);
+        table.index(columns.map(column => this.knex.raw(column)), index.keyName, index.type as Dictionary);
+      } else {
+        table.index(index.columnNames, index.keyName, index.type as Dictionary);
+      }
+    }
+  }
+
+  createCheck(table: Knex.CreateTableBuilder, check: CheckDef) {
+    table.check(check.expression as string, {}, check.name);
+  }
+
+  createSchemaBuilder(schema?: string): Knex.SchemaBuilder {
+    const builder = this.knex.schema;
+
+    if (schema && schema !== this.platform.getDefaultSchemaName()) {
+      builder.withSchema(schema);
+    }
+
+    return builder;
+  }
+
+  async getAlterTable?(changedTable: TableDifference, wrap?: boolean): Promise<string>;
+
+  get knex(): Knex {
+    const connection = this.platform.getConfig().getDriver().getConnection() as AbstractSqlConnection;
+    return connection.getKnex();
+  }
+
+  get options() {
+    return this.platform.getConfig().get('schemaGenerator');
   }
 
 }
