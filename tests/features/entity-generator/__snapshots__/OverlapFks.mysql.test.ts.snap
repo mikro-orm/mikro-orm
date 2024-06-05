@@ -189,7 +189,10 @@ export class ProductCountryMap {
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
   indexes: [
-    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    {
+      name: 'full_idx',
+      properties: ['countries', 'productId', 'isCurrentlyAllowed'],
+    },
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
@@ -201,9 +204,18 @@ export const ProductCountryMapSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_country_map_products1',
     },
-    productId: { type: 'integer', persist: false, index: 'fk_product_country_map_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_country_map_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
-    countries: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    countries: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
   },
 });
 ",
@@ -241,7 +253,11 @@ export const ProductSellersSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
-    productId: { type: 'integer', persist: false, index: 'fk_product_sellers_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_sellers_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
   },
 });
@@ -301,10 +317,7 @@ export const SalesSchema = new EntitySchema({
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
@@ -315,10 +328,7 @@ export const SalesSchema = new EntitySchema({
     productCountryMap: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -544,7 +554,10 @@ export class ProductCountryMap {
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
   indexes: [
-    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    {
+      name: 'full_idx',
+      properties: ['countries', 'productId', 'isCurrentlyAllowed'],
+    },
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
@@ -557,7 +570,11 @@ export const ProductCountryMapSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_country_map_products1',
     },
-    productId: { type: 'integer', persist: false, index: 'fk_product_country_map_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_country_map_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
     countries: {
       primary: true,
@@ -605,7 +622,11 @@ export const ProductSellersSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
-    productId: { type: 'integer', persist: false, index: 'fk_product_sellers_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_sellers_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
   },
 });
@@ -666,10 +687,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSellers,
       ref: true,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
@@ -681,10 +699,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountryMap,
       ref: true,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -922,8 +937,16 @@ export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
     code: { primary: true, type: 'unknown', columnType: 'char(2)' },
-    countriesInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'countries' },
-    productCountryMapInverse: { kind: 'm:n', entity: () => Products, mappedBy: 'productCountryMap' },
+    countriesInverse: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'countries',
+    },
+    productCountryMapInverse: {
+      kind: 'm:n',
+      entity: () => Products,
+      mappedBy: 'productCountryMap',
+    },
   },
 });
 ",
@@ -945,7 +968,10 @@ export class ProductCountryMap {
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
   indexes: [
-    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    {
+      name: 'full_idx',
+      properties: ['countries', 'productId', 'isCurrentlyAllowed'],
+    },
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
@@ -957,10 +983,23 @@ export const ProductCountryMapSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_country_map_products1',
     },
-    productId: { type: 'integer', persist: false, index: 'fk_product_country_map_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_country_map_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
-    countries: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
-    productCountryMapInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'productCountryMap' },
+    countries: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
+    productCountryMapInverse: {
+      kind: '1:m',
+      entity: () => Sales,
+      mappedBy: 'productCountryMap',
+    },
   },
 });
 ",
@@ -1000,7 +1039,11 @@ export const ProductSellersSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
-    productId: { type: 'integer', persist: false, index: 'fk_product_sellers_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_sellers_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
     sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
@@ -1038,8 +1081,16 @@ export const ProductsSchema = new EntitySchema({
       joinColumn: 'product_id',
       inverseJoinColumn: 'country',
     },
-    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
-    productSellersInverse: { kind: 'm:n', entity: () => Sellers, mappedBy: 'productSellers' },
+    productInverse: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'product',
+    },
+    productSellersInverse: {
+      kind: 'm:n',
+      entity: () => Sellers,
+      mappedBy: 'productSellers',
+    },
   },
 });
 ",
@@ -1067,10 +1118,7 @@ export const SalesSchema = new EntitySchema({
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
@@ -1081,10 +1129,7 @@ export const SalesSchema = new EntitySchema({
     productCountryMap: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -1116,7 +1161,11 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+    sellerInverse: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'seller',
+    },
   },
 });
 ",
@@ -1324,8 +1373,16 @@ export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
     code: { primary: true, type: 'unknown', columnType: 'char(2)' },
-    countriesInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'countries' },
-    productCountryMapInverse: { kind: 'm:n', entity: () => Products, mappedBy: 'productCountryMap' },
+    countriesInverse: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'countries',
+    },
+    productCountryMapInverse: {
+      kind: 'm:n',
+      entity: () => Products,
+      mappedBy: 'productCountryMap',
+    },
   },
 });
 ",
@@ -1347,7 +1404,10 @@ export class ProductCountryMap {
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
   indexes: [
-    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    {
+      name: 'full_idx',
+      properties: ['countries', 'productId', 'isCurrentlyAllowed'],
+    },
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
@@ -1360,7 +1420,11 @@ export const ProductCountryMapSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_country_map_products1',
     },
-    productId: { type: 'integer', persist: false, index: 'fk_product_country_map_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_country_map_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
     countries: {
       primary: true,
@@ -1369,7 +1433,11 @@ export const ProductCountryMapSchema = new EntitySchema({
       ref: true,
       fieldName: 'country',
     },
-    productCountryMapInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'productCountryMap' },
+    productCountryMapInverse: {
+      kind: '1:m',
+      entity: () => Sales,
+      mappedBy: 'productCountryMap',
+    },
   },
 });
 ",
@@ -1411,7 +1479,11 @@ export const ProductSellersSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
-    productId: { type: 'integer', persist: false, index: 'fk_product_sellers_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_sellers_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
     sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
@@ -1449,8 +1521,16 @@ export const ProductsSchema = new EntitySchema({
       joinColumn: 'product_id',
       inverseJoinColumn: 'country',
     },
-    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
-    productSellersInverse: { kind: 'm:n', entity: () => Sellers, mappedBy: 'productSellers' },
+    productInverse: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'product',
+    },
+    productSellersInverse: {
+      kind: 'm:n',
+      entity: () => Sellers,
+      mappedBy: 'productSellers',
+    },
   },
 });
 ",
@@ -1479,10 +1559,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSellers,
       ref: true,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
@@ -1494,10 +1571,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountryMap,
       ref: true,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -1529,7 +1603,11 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+    sellerInverse: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'seller',
+    },
   },
 });
 ",
@@ -1715,7 +1793,12 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['country', 'product'] },
   ],
   properties: {
-    country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    country: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1798,27 +1881,24 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
     saleId: { primary: true, type: 'integer' },
     country: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
@@ -2128,7 +2208,10 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
     saleId: { primary: true, type: 'integer' },
@@ -2136,10 +2219,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountryMap,
       ref: true,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -2147,10 +2227,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSellers,
       ref: true,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
@@ -2374,7 +2451,11 @@ export const CountriesSchema = new EntitySchema({
       joinColumn: 'country',
       inverseJoinColumn: 'product_id',
     },
-    countryInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'country' },
+    countryInverse: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'country',
+    },
   },
 });
 ",
@@ -2398,7 +2479,12 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['country', 'product'] },
   ],
   properties: {
-    country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    country: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
     product: {
       primary: true,
       kind: 'm:1',
@@ -2472,9 +2558,21 @@ export const ProductsSchema = new EntitySchema({
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     currentPrice: { type: 'decimal', precision: 10, scale: 2 },
     currentQuantity: { type: 'integer' },
-    productCountryMapInverse: { kind: 'm:n', entity: () => Countries, mappedBy: 'productCountryMap' },
-    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
-    productSellersInverse: { kind: 'm:n', entity: () => Sellers, mappedBy: 'productSellers' },
+    productCountryMapInverse: {
+      kind: 'm:n',
+      entity: () => Countries,
+      mappedBy: 'productCountryMap',
+    },
+    productInverse: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'product',
+    },
+    productSellersInverse: {
+      kind: 'm:n',
+      entity: () => Sellers,
+      mappedBy: 'productSellers',
+    },
   },
 });
 ",
@@ -2494,27 +2592,24 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
     saleId: { primary: true, type: 'integer' },
     country: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
@@ -2548,7 +2643,11 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+    sellerInverse: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'seller',
+    },
   },
 });
 ",
@@ -2740,7 +2839,11 @@ export const CountriesSchema = new EntitySchema({
       joinColumn: 'country',
       inverseJoinColumn: 'product_id',
     },
-    countryInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'country' },
+    countryInverse: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'country',
+    },
   },
 });
 ",
@@ -2847,9 +2950,21 @@ export const ProductsSchema = new EntitySchema({
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     currentPrice: { type: 'decimal', precision: 10, scale: 2 },
     currentQuantity: { type: 'integer' },
-    productCountryMapInverse: { kind: 'm:n', entity: () => Countries, mappedBy: 'productCountryMap' },
-    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
-    productSellersInverse: { kind: 'm:n', entity: () => Sellers, mappedBy: 'productSellers' },
+    productCountryMapInverse: {
+      kind: 'm:n',
+      entity: () => Countries,
+      mappedBy: 'productCountryMap',
+    },
+    productInverse: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'product',
+    },
+    productSellersInverse: {
+      kind: 'm:n',
+      entity: () => Sellers,
+      mappedBy: 'productSellers',
+    },
   },
 });
 ",
@@ -2869,7 +2984,10 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
     saleId: { primary: true, type: 'integer' },
@@ -2877,10 +2995,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountryMap,
       ref: true,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -2888,10 +3003,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSellers,
       ref: true,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
@@ -2925,7 +3037,11 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+    sellerInverse: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'seller',
+    },
   },
 });
 ",
@@ -3111,7 +3227,12 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['country', 'product'] },
   ],
   properties: {
-    country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    country: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
     product: {
       primary: true,
       kind: 'm:1',
@@ -3194,27 +3315,24 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
     saleId: { primary: true, type: 'integer' },
     country: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
@@ -3524,7 +3642,10 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
     saleId: { primary: true, type: 'integer' },
@@ -3532,10 +3653,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountryMap,
       ref: true,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -3543,10 +3661,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSellers,
       ref: true,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
@@ -3770,7 +3885,11 @@ export const CountriesSchema = new EntitySchema({
       joinColumn: 'country',
       inverseJoinColumn: 'product_id',
     },
-    countryInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'country' },
+    countryInverse: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'country',
+    },
   },
 });
 ",
@@ -3794,7 +3913,12 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['country', 'product'] },
   ],
   properties: {
-    country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    country: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
     product: {
       primary: true,
       kind: 'm:1',
@@ -3868,9 +3992,21 @@ export const ProductsSchema = new EntitySchema({
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     currentPrice: { type: 'decimal', precision: 10, scale: 2 },
     currentQuantity: { type: 'integer' },
-    productCountryMapInverse: { kind: 'm:n', entity: () => Countries, mappedBy: 'productCountryMap' },
-    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
-    productSellersInverse: { kind: 'm:n', entity: () => Sellers, mappedBy: 'productSellers' },
+    productCountryMapInverse: {
+      kind: 'm:n',
+      entity: () => Countries,
+      mappedBy: 'productCountryMap',
+    },
+    productInverse: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'product',
+    },
+    productSellersInverse: {
+      kind: 'm:n',
+      entity: () => Sellers,
+      mappedBy: 'productSellers',
+    },
   },
 });
 ",
@@ -3890,27 +4026,24 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
     saleId: { primary: true, type: 'integer' },
     country: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
@@ -3944,7 +4077,11 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+    sellerInverse: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'seller',
+    },
   },
 });
 ",
@@ -4136,7 +4273,11 @@ export const CountriesSchema = new EntitySchema({
       joinColumn: 'country',
       inverseJoinColumn: 'product_id',
     },
-    countryInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'country' },
+    countryInverse: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'country',
+    },
   },
 });
 ",
@@ -4243,9 +4384,21 @@ export const ProductsSchema = new EntitySchema({
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     currentPrice: { type: 'decimal', precision: 10, scale: 2 },
     currentQuantity: { type: 'integer' },
-    productCountryMapInverse: { kind: 'm:n', entity: () => Countries, mappedBy: 'productCountryMap' },
-    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
-    productSellersInverse: { kind: 'm:n', entity: () => Sellers, mappedBy: 'productSellers' },
+    productCountryMapInverse: {
+      kind: 'm:n',
+      entity: () => Countries,
+      mappedBy: 'productCountryMap',
+    },
+    productInverse: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'product',
+    },
+    productSellersInverse: {
+      kind: 'm:n',
+      entity: () => Sellers,
+      mappedBy: 'productSellers',
+    },
   },
 });
 ",
@@ -4265,7 +4418,10 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
     saleId: { primary: true, type: 'integer' },
@@ -4273,10 +4429,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductCountryMap,
       ref: true,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -4284,10 +4437,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSellers,
       ref: true,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
@@ -4321,7 +4471,11 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+    sellerInverse: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'seller',
+    },
   },
 });
 ",

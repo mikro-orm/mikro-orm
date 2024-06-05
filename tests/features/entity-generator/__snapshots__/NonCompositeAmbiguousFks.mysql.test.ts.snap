@@ -120,7 +120,12 @@ export class DeliverableProducts {
 export const DeliverableProductsSchema = new EntitySchema({
   class: DeliverableProducts,
   properties: {
-    product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
+    product: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+    },
     productId: { type: 'integer', persist: false },
     startingAt: { type: 'datetime' },
   },
@@ -155,7 +160,12 @@ export class ManufacturedProducts {
 export const ManufacturedProductsSchema = new EntitySchema({
   class: ManufacturedProducts,
   properties: {
-    product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
+    product: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+    },
     productId: { type: 'integer', persist: false },
     place: { type: 'string', length: 255 },
   },
@@ -619,7 +629,12 @@ export class DeliverableProducts {
 export const DeliverableProductsSchema = new EntitySchema({
   class: DeliverableProducts,
   properties: {
-    product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
+    product: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+    },
     productId: { type: 'integer', persist: false },
     startingAt: { type: 'datetime' },
     deliverableProductsInverse: {
@@ -645,7 +660,11 @@ export const DestinationsSchema = new EntitySchema({
   properties: {
     destinationId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    destinationsInverse: { kind: '1:m', entity: () => ShippableProducts, mappedBy: 'destinations' },
+    destinationsInverse: {
+      kind: '1:m',
+      entity: () => ShippableProducts,
+      mappedBy: 'destinations',
+    },
   },
 });
 ",
@@ -665,7 +684,12 @@ export class ManufacturedProducts {
 export const ManufacturedProductsSchema = new EntitySchema({
   class: ManufacturedProducts,
   properties: {
-    product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
+    product: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+    },
     productId: { type: 'integer', persist: false },
     place: { type: 'string', length: 255 },
     fkShippableProductsManufacturedProductsInverse: {
@@ -696,7 +720,11 @@ export const ProductsSchema = new EntitySchema({
   properties: {
     productId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255 },
-    productInverse: { kind: '1:1', entity: () => ManufacturedProducts, mappedBy: 'product' },
+    productInverse: {
+      kind: '1:1',
+      entity: () => ManufacturedProducts,
+      mappedBy: 'product',
+    },
   },
 });
 ",
@@ -927,7 +955,11 @@ export const DestinationsSchema = new EntitySchema({
   properties: {
     destinationId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    destinationsInverse: { kind: '1:m', entity: () => ShippableProducts, mappedBy: 'destinations' },
+    destinationsInverse: {
+      kind: '1:m',
+      entity: () => ShippableProducts,
+      mappedBy: 'destinations',
+    },
   },
 });
 ",
@@ -1157,7 +1189,12 @@ export class DeliverableProducts {
 export const DeliverableProductsSchema = new EntitySchema({
   class: DeliverableProducts,
   properties: {
-    product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
+    product: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+    },
     startingAt: { type: 'datetime' },
   },
 });
@@ -1190,7 +1227,12 @@ export class ManufacturedProducts {
 export const ManufacturedProductsSchema = new EntitySchema({
   class: ManufacturedProducts,
   properties: {
-    product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
+    product: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+    },
     place: { type: 'string', length: 255 },
   },
 });
@@ -1606,7 +1648,12 @@ export class DeliverableProducts {
 export const DeliverableProductsSchema = new EntitySchema({
   class: DeliverableProducts,
   properties: {
-    product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
+    product: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+    },
     startingAt: { type: 'datetime' },
     deliverableProductsInverse: {
       kind: '1:m',
@@ -1631,7 +1678,11 @@ export const DestinationsSchema = new EntitySchema({
   properties: {
     destinationId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    destinationInverse: { kind: '1:m', entity: () => ShippableProducts, mappedBy: 'destination' },
+    destinationInverse: {
+      kind: '1:m',
+      entity: () => ShippableProducts,
+      mappedBy: 'destination',
+    },
   },
 });
 ",
@@ -1650,7 +1701,12 @@ export class ManufacturedProducts {
 export const ManufacturedProductsSchema = new EntitySchema({
   class: ManufacturedProducts,
   properties: {
-    product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
+    product: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+    },
     place: { type: 'string', length: 255 },
     fkShippableProductsManufacturedProductsInverse: {
       kind: '1:m',
@@ -1680,7 +1736,11 @@ export const ProductsSchema = new EntitySchema({
   properties: {
     productId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255 },
-    productInverse: { kind: '1:1', entity: () => ManufacturedProducts, mappedBy: 'product' },
+    productInverse: {
+      kind: '1:1',
+      entity: () => ManufacturedProducts,
+      mappedBy: 'product',
+    },
   },
 });
 ",
@@ -1888,7 +1948,11 @@ export const DestinationsSchema = new EntitySchema({
   properties: {
     destinationId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    destinationInverse: { kind: '1:m', entity: () => ShippableProducts, mappedBy: 'destination' },
+    destinationInverse: {
+      kind: '1:m',
+      entity: () => ShippableProducts,
+      mappedBy: 'destination',
+    },
   },
 });
 ",
@@ -2108,7 +2172,12 @@ export class DeliverableProducts {
 export const DeliverableProductsSchema = new EntitySchema({
   class: DeliverableProducts,
   properties: {
-    product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
+    product: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+    },
     startingAt: { type: 'datetime' },
   },
 });
@@ -2141,7 +2210,12 @@ export class ManufacturedProducts {
 export const ManufacturedProductsSchema = new EntitySchema({
   class: ManufacturedProducts,
   properties: {
-    product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
+    product: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+    },
     place: { type: 'string', length: 255 },
   },
 });
@@ -2557,7 +2631,12 @@ export class DeliverableProducts {
 export const DeliverableProductsSchema = new EntitySchema({
   class: DeliverableProducts,
   properties: {
-    product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
+    product: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+    },
     startingAt: { type: 'datetime' },
     deliverableProductsInverse: {
       kind: '1:m',
@@ -2582,7 +2661,11 @@ export const DestinationsSchema = new EntitySchema({
   properties: {
     destinationId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    destinationInverse: { kind: '1:m', entity: () => ShippableProducts, mappedBy: 'destination' },
+    destinationInverse: {
+      kind: '1:m',
+      entity: () => ShippableProducts,
+      mappedBy: 'destination',
+    },
   },
 });
 ",
@@ -2601,7 +2684,12 @@ export class ManufacturedProducts {
 export const ManufacturedProductsSchema = new EntitySchema({
   class: ManufacturedProducts,
   properties: {
-    product: { primary: true, kind: '1:1', entity: () => Products, fieldName: 'product_id' },
+    product: {
+      primary: true,
+      kind: '1:1',
+      entity: () => Products,
+      fieldName: 'product_id',
+    },
     place: { type: 'string', length: 255 },
     fkShippableProductsManufacturedProductsInverse: {
       kind: '1:m',
@@ -2631,7 +2719,11 @@ export const ProductsSchema = new EntitySchema({
   properties: {
     productId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255 },
-    productInverse: { kind: '1:1', entity: () => ManufacturedProducts, mappedBy: 'product' },
+    productInverse: {
+      kind: '1:1',
+      entity: () => ManufacturedProducts,
+      mappedBy: 'product',
+    },
   },
 });
 ",
@@ -2839,7 +2931,11 @@ export const DestinationsSchema = new EntitySchema({
   properties: {
     destinationId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    destinationInverse: { kind: '1:m', entity: () => ShippableProducts, mappedBy: 'destination' },
+    destinationInverse: {
+      kind: '1:m',
+      entity: () => ShippableProducts,
+      mappedBy: 'destination',
+    },
   },
 });
 ",

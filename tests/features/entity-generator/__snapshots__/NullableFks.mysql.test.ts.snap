@@ -178,20 +178,14 @@ export const EmailSendingLogsSchema = new EntitySchema({
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
-      fieldNames: [
-        'recepient_id',
-        'recepient_email_id'
-      ],
+      fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     recepientId: { type: 'integer', persist: false },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
-      fieldNames: [
-        'sender_id',
-        'sender_email_id'
-      ],
+      fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     senderEmailId: { type: 'integer', persist: false },
@@ -199,10 +193,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
-      fieldNames: [
-        'sender_id',
-        'reply_email_id'
-      ],
+      fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -256,7 +247,11 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailId: { type: 'integer', persist: false, index: 'fk_recepient_emails_emails1_idx' },
+    emailId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_recepient_emails_emails1_idx',
+    },
   },
 });
 ",
@@ -302,7 +297,12 @@ export class SenderEmails {
 export const SenderEmailsSchema = new EntitySchema({
   class: SenderEmails,
   properties: {
-    sender: { primary: true, kind: 'm:1', entity: () => Senders, fieldName: 'sender_id' },
+    sender: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Senders,
+      fieldName: 'sender_id',
+    },
     senderId: { type: 'integer', persist: false },
     email: {
       primary: true,
@@ -311,7 +311,11 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailId: { type: 'integer', persist: false, index: 'fk_sender_emails_emails1_idx' },
+    emailId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_sender_emails_emails1_idx',
+    },
   },
 });
 ",
@@ -524,10 +528,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => RecepientEmails,
       ref: true,
-      fieldNames: [
-        'recepient_id',
-        'recepient_email_id'
-      ],
+      fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     recepientId: { type: 'integer', persist: false },
@@ -535,10 +536,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SenderEmails,
       ref: true,
-      fieldNames: [
-        'sender_id',
-        'sender_email_id'
-      ],
+      fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     senderEmailId: { type: 'integer', persist: false },
@@ -547,10 +545,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SenderEmails,
       ref: true,
-      fieldNames: [
-        'sender_id',
-        'reply_email_id'
-      ],
+      fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -606,7 +601,11 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailId: { type: 'integer', persist: false, index: 'fk_recepient_emails_emails1_idx' },
+    emailId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_recepient_emails_emails1_idx',
+    },
   },
 });
 ",
@@ -668,7 +667,11 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailId: { type: 'integer', persist: false, index: 'fk_sender_emails_emails1_idx' },
+    emailId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_sender_emails_emails1_idx',
+    },
   },
 });
 ",
@@ -909,20 +912,14 @@ export const EmailSendingLogsSchema = new EntitySchema({
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
-      fieldNames: [
-        'recepient_id',
-        'recepient_email_id'
-      ],
+      fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     recepientId: { type: 'integer', persist: false },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
-      fieldNames: [
-        'sender_id',
-        'sender_email_id'
-      ],
+      fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     senderEmailId: { type: 'integer', persist: false },
@@ -930,10 +927,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
-      fieldNames: [
-        'sender_id',
-        'reply_email_id'
-      ],
+      fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -962,8 +956,16 @@ export const EmailsSchema = new EntitySchema({
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
-    recepientEmailsInverse: { kind: 'm:n', entity: () => Recepients, mappedBy: 'recepientEmails' },
-    senderEmailsInverse: { kind: 'm:n', entity: () => Senders, mappedBy: 'senderEmails' },
+    recepientEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Recepients,
+      mappedBy: 'recepientEmails',
+    },
+    senderEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Senders,
+      mappedBy: 'senderEmails',
+    },
   },
 });
 ",
@@ -998,8 +1000,16 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailId: { type: 'integer', persist: false, index: 'fk_recepient_emails_emails1_idx' },
-    recepientInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'recepient' },
+    emailId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_recepient_emails_emails1_idx',
+    },
+    recepientInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'recepient',
+    },
   },
 });
 ",
@@ -1028,7 +1038,11 @@ export const RecepientsSchema = new EntitySchema({
       joinColumn: 'recepient_id',
       inverseJoinColumn: 'email_id',
     },
-    recepientInverse: { kind: '1:m', entity: () => RecepientEmails, mappedBy: 'recepient' },
+    recepientInverse: {
+      kind: '1:m',
+      entity: () => RecepientEmails,
+      mappedBy: 'recepient',
+    },
   },
 });
 ",
@@ -1050,7 +1064,12 @@ export class SenderEmails {
 export const SenderEmailsSchema = new EntitySchema({
   class: SenderEmails,
   properties: {
-    sender: { primary: true, kind: 'm:1', entity: () => Senders, fieldName: 'sender_id' },
+    sender: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Senders,
+      fieldName: 'sender_id',
+    },
     senderId: { type: 'integer', persist: false },
     email: {
       primary: true,
@@ -1059,9 +1078,21 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailId: { type: 'integer', persist: false, index: 'fk_sender_emails_emails1_idx' },
-    senderInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'sender' },
-    replyInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'reply' },
+    emailId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_sender_emails_emails1_idx',
+    },
+    senderInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'sender',
+    },
+    replyInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'reply',
+    },
   },
 });
 ",
@@ -1305,10 +1336,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => RecepientEmails,
       ref: true,
-      fieldNames: [
-        'recepient_id',
-        'recepient_email_id'
-      ],
+      fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     recepientId: { type: 'integer', persist: false },
@@ -1316,10 +1344,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SenderEmails,
       ref: true,
-      fieldNames: [
-        'sender_id',
-        'sender_email_id'
-      ],
+      fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     senderEmailId: { type: 'integer', persist: false },
@@ -1328,10 +1353,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => SenderEmails,
       ref: true,
-      fieldNames: [
-        'sender_id',
-        'reply_email_id'
-      ],
+      fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -1360,8 +1382,16 @@ export const EmailsSchema = new EntitySchema({
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
-    recepientEmailsInverse: { kind: 'm:n', entity: () => Recepients, mappedBy: 'recepientEmails' },
-    senderEmailsInverse: { kind: 'm:n', entity: () => Senders, mappedBy: 'senderEmails' },
+    recepientEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Recepients,
+      mappedBy: 'recepientEmails',
+    },
+    senderEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Senders,
+      mappedBy: 'senderEmails',
+    },
   },
 });
 ",
@@ -1398,8 +1428,16 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailId: { type: 'integer', persist: false, index: 'fk_recepient_emails_emails1_idx' },
-    recepientInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'recepient' },
+    emailId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_recepient_emails_emails1_idx',
+    },
+    recepientInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'recepient',
+    },
   },
 });
 ",
@@ -1428,7 +1466,11 @@ export const RecepientsSchema = new EntitySchema({
       joinColumn: 'recepient_id',
       inverseJoinColumn: 'email_id',
     },
-    recepientInverse: { kind: '1:m', entity: () => RecepientEmails, mappedBy: 'recepient' },
+    recepientInverse: {
+      kind: '1:m',
+      entity: () => RecepientEmails,
+      mappedBy: 'recepient',
+    },
   },
 });
 ",
@@ -1466,9 +1508,21 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailId: { type: 'integer', persist: false, index: 'fk_sender_emails_emails1_idx' },
-    senderInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'sender' },
-    replyInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'reply' },
+    emailId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_sender_emails_emails1_idx',
+    },
+    senderInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'sender',
+    },
+    replyInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'reply',
+    },
   },
 });
 ",
@@ -1647,28 +1701,19 @@ export const EmailSendingLogsSchema = new EntitySchema({
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
-      fieldNames: [
-        'recepient_id',
-        'recepient_email_id'
-      ],
+      fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
-      fieldNames: [
-        'sender_id',
-        'sender_email_id'
-      ],
+      fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
-      fieldNames: [
-        'sender_id',
-        'reply_email_id'
-      ],
+      fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -1761,7 +1806,12 @@ export class SenderEmails {
 export const SenderEmailsSchema = new EntitySchema({
   class: SenderEmails,
   properties: {
-    sender: { primary: true, kind: 'm:1', entity: () => Senders, fieldName: 'sender_id' },
+    sender: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Senders,
+      fieldName: 'sender_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -1946,30 +1996,21 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => RecepientEmails,
       ref: true,
-      fieldNames: [
-        'recepient_id',
-        'recepient_email_id'
-      ],
+      fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
       ref: true,
-      fieldNames: [
-        'sender_id',
-        'sender_email_id'
-      ],
+      fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
       ref: true,
-      fieldNames: [
-        'sender_id',
-        'reply_email_id'
-      ],
+      fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -2284,28 +2325,19 @@ export const EmailSendingLogsSchema = new EntitySchema({
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
-      fieldNames: [
-        'recepient_id',
-        'recepient_email_id'
-      ],
+      fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
-      fieldNames: [
-        'sender_id',
-        'sender_email_id'
-      ],
+      fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
-      fieldNames: [
-        'sender_id',
-        'reply_email_id'
-      ],
+      fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -2333,8 +2365,16 @@ export const EmailsSchema = new EntitySchema({
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
-    recepientEmailsInverse: { kind: 'm:n', entity: () => Recepients, mappedBy: 'recepientEmails' },
-    senderEmailsInverse: { kind: 'm:n', entity: () => Senders, mappedBy: 'senderEmails' },
+    recepientEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Recepients,
+      mappedBy: 'recepientEmails',
+    },
+    senderEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Senders,
+      mappedBy: 'senderEmails',
+    },
   },
 });
 ",
@@ -2366,7 +2406,11 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    recepientInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'recepient' },
+    recepientInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'recepient',
+    },
   },
 });
 ",
@@ -2395,7 +2439,11 @@ export const RecepientsSchema = new EntitySchema({
       joinColumn: 'recepient_id',
       inverseJoinColumn: 'email_id',
     },
-    recepientInverse: { kind: '1:m', entity: () => RecepientEmails, mappedBy: 'recepient' },
+    recepientInverse: {
+      kind: '1:m',
+      entity: () => RecepientEmails,
+      mappedBy: 'recepient',
+    },
   },
 });
 ",
@@ -2415,7 +2463,12 @@ export class SenderEmails {
 export const SenderEmailsSchema = new EntitySchema({
   class: SenderEmails,
   properties: {
-    sender: { primary: true, kind: 'm:1', entity: () => Senders, fieldName: 'sender_id' },
+    sender: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Senders,
+      fieldName: 'sender_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -2423,8 +2476,16 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    senderInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'sender' },
-    replyInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'reply' },
+    senderInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'sender',
+    },
+    replyInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'reply',
+    },
   },
 });
 ",
@@ -2633,30 +2694,21 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => RecepientEmails,
       ref: true,
-      fieldNames: [
-        'recepient_id',
-        'recepient_email_id'
-      ],
+      fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
       ref: true,
-      fieldNames: [
-        'sender_id',
-        'sender_email_id'
-      ],
+      fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
       ref: true,
-      fieldNames: [
-        'sender_id',
-        'reply_email_id'
-      ],
+      fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -2684,8 +2736,16 @@ export const EmailsSchema = new EntitySchema({
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
-    recepientEmailsInverse: { kind: 'm:n', entity: () => Recepients, mappedBy: 'recepientEmails' },
-    senderEmailsInverse: { kind: 'm:n', entity: () => Senders, mappedBy: 'senderEmails' },
+    recepientEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Recepients,
+      mappedBy: 'recepientEmails',
+    },
+    senderEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Senders,
+      mappedBy: 'senderEmails',
+    },
   },
 });
 ",
@@ -2719,7 +2779,11 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    recepientInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'recepient' },
+    recepientInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'recepient',
+    },
   },
 });
 ",
@@ -2748,7 +2812,11 @@ export const RecepientsSchema = new EntitySchema({
       joinColumn: 'recepient_id',
       inverseJoinColumn: 'email_id',
     },
-    recepientInverse: { kind: '1:m', entity: () => RecepientEmails, mappedBy: 'recepient' },
+    recepientInverse: {
+      kind: '1:m',
+      entity: () => RecepientEmails,
+      mappedBy: 'recepient',
+    },
   },
 });
 ",
@@ -2783,8 +2851,16 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    senderInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'sender' },
-    replyInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'reply' },
+    senderInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'sender',
+    },
+    replyInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'reply',
+    },
   },
 });
 ",
@@ -2963,28 +3039,19 @@ export const EmailSendingLogsSchema = new EntitySchema({
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
-      fieldNames: [
-        'recepient_id',
-        'recepient_email_id'
-      ],
+      fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
-      fieldNames: [
-        'sender_id',
-        'sender_email_id'
-      ],
+      fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
-      fieldNames: [
-        'sender_id',
-        'reply_email_id'
-      ],
+      fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -3077,7 +3144,12 @@ export class SenderEmails {
 export const SenderEmailsSchema = new EntitySchema({
   class: SenderEmails,
   properties: {
-    sender: { primary: true, kind: 'm:1', entity: () => Senders, fieldName: 'sender_id' },
+    sender: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Senders,
+      fieldName: 'sender_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -3262,30 +3334,21 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => RecepientEmails,
       ref: true,
-      fieldNames: [
-        'recepient_id',
-        'recepient_email_id'
-      ],
+      fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
       ref: true,
-      fieldNames: [
-        'sender_id',
-        'sender_email_id'
-      ],
+      fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
       ref: true,
-      fieldNames: [
-        'sender_id',
-        'reply_email_id'
-      ],
+      fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -3600,28 +3663,19 @@ export const EmailSendingLogsSchema = new EntitySchema({
     recepient: {
       kind: 'm:1',
       entity: () => RecepientEmails,
-      fieldNames: [
-        'recepient_id',
-        'recepient_email_id'
-      ],
+      fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
-      fieldNames: [
-        'sender_id',
-        'sender_email_id'
-      ],
+      fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
-      fieldNames: [
-        'sender_id',
-        'reply_email_id'
-      ],
+      fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -3649,8 +3703,16 @@ export const EmailsSchema = new EntitySchema({
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
-    recepientEmailsInverse: { kind: 'm:n', entity: () => Recepients, mappedBy: 'recepientEmails' },
-    senderEmailsInverse: { kind: 'm:n', entity: () => Senders, mappedBy: 'senderEmails' },
+    recepientEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Recepients,
+      mappedBy: 'recepientEmails',
+    },
+    senderEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Senders,
+      mappedBy: 'senderEmails',
+    },
   },
 });
 ",
@@ -3682,7 +3744,11 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    recepientInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'recepient' },
+    recepientInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'recepient',
+    },
   },
 });
 ",
@@ -3711,7 +3777,11 @@ export const RecepientsSchema = new EntitySchema({
       joinColumn: 'recepient_id',
       inverseJoinColumn: 'email_id',
     },
-    recepientInverse: { kind: '1:m', entity: () => RecepientEmails, mappedBy: 'recepient' },
+    recepientInverse: {
+      kind: '1:m',
+      entity: () => RecepientEmails,
+      mappedBy: 'recepient',
+    },
   },
 });
 ",
@@ -3731,7 +3801,12 @@ export class SenderEmails {
 export const SenderEmailsSchema = new EntitySchema({
   class: SenderEmails,
   properties: {
-    sender: { primary: true, kind: 'm:1', entity: () => Senders, fieldName: 'sender_id' },
+    sender: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Senders,
+      fieldName: 'sender_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -3739,8 +3814,16 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    senderInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'sender' },
-    replyInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'reply' },
+    senderInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'sender',
+    },
+    replyInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'reply',
+    },
   },
 });
 ",
@@ -3949,30 +4032,21 @@ export const EmailSendingLogsSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => RecepientEmails,
       ref: true,
-      fieldNames: [
-        'recepient_id',
-        'recepient_email_id'
-      ],
+      fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
       kind: 'm:1',
       entity: () => SenderEmails,
       ref: true,
-      fieldNames: [
-        'sender_id',
-        'sender_email_id'
-      ],
+      fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
       kind: 'm:1',
       entity: () => SenderEmails,
       ref: true,
-      fieldNames: [
-        'sender_id',
-        'reply_email_id'
-      ],
+      fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
       index: 'fk_email_sending_logs_sender_emails2_idx',
     },
@@ -4000,8 +4074,16 @@ export const EmailsSchema = new EntitySchema({
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
-    recepientEmailsInverse: { kind: 'm:n', entity: () => Recepients, mappedBy: 'recepientEmails' },
-    senderEmailsInverse: { kind: 'm:n', entity: () => Senders, mappedBy: 'senderEmails' },
+    recepientEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Recepients,
+      mappedBy: 'recepientEmails',
+    },
+    senderEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Senders,
+      mappedBy: 'senderEmails',
+    },
   },
 });
 ",
@@ -4035,7 +4117,11 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    recepientInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'recepient' },
+    recepientInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'recepient',
+    },
   },
 });
 ",
@@ -4064,7 +4150,11 @@ export const RecepientsSchema = new EntitySchema({
       joinColumn: 'recepient_id',
       inverseJoinColumn: 'email_id',
     },
-    recepientInverse: { kind: '1:m', entity: () => RecepientEmails, mappedBy: 'recepient' },
+    recepientInverse: {
+      kind: '1:m',
+      entity: () => RecepientEmails,
+      mappedBy: 'recepient',
+    },
   },
 });
 ",
@@ -4099,8 +4189,16 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    senderInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'sender' },
-    replyInverse: { kind: '1:m', entity: () => EmailSendingLogs, mappedBy: 'reply' },
+    senderInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'sender',
+    },
+    replyInverse: {
+      kind: '1:m',
+      entity: () => EmailSendingLogs,
+      mappedBy: 'reply',
+    },
   },
 });
 ",

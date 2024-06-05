@@ -1,5 +1,6 @@
 import {
   Cascade,
+  Config,
   DateTimeType,
   DateType,
   DecimalType,
@@ -46,9 +47,11 @@ export class SourceFile {
     let ret = '';
     if (this.meta.embeddable || this.meta.collection) {
       if (this.meta.embeddable) {
-        ret += `@${this.referenceCoreImport('Embeddable')}(${this.getEmbeddableDeclOptions()})\n`;
+        const options = this.getEmbeddableDeclOptions();
+        ret += `@${this.referenceCoreImport('Embeddable')}(${Utils.hasObjectKeys(options) ? this.serializeObject(options) : ''})\n`;
       } else {
-        ret += `@${this.referenceCoreImport('Entity')}(${this.getEntityDeclOptions()})\n`;
+        const options = this.getEntityDeclOptions();
+        ret += `@${this.referenceCoreImport('Entity')}(${Utils.hasObjectKeys(options) ? this.serializeObject(options) : ''})\n`;
       }
     }
 
@@ -282,27 +285,36 @@ export class SourceFile {
     return ret;
   }
 
-  protected serializeObject(options: {}, spaces?: number): string {
+  protected serializeObject(options: {}, wordwrap?: number, spaces?: number, level = 0): string {
+    if (typeof wordwrap === 'number' && !Object.hasOwn(options, Config)) {
+      const res = this.serializeObject(options, undefined, undefined, level);
+      if (res.length <= wordwrap) {
+        return res;
+      }
+    }
+    const nextWordwrap = typeof wordwrap === 'number' ? 80 - (spaces ?? 0) - (level * 2) : undefined;
     const sep = typeof spaces === 'undefined' ? ', ' : `,\n${' '.repeat(spaces)}`;
     const doIndent = typeof spaces !== 'undefined';
     if (Array.isArray(options)) {
-      return `[${doIndent ? `\n${' '.repeat(spaces)}` : ''}${options.map(val => `${doIndent ? ' '.repeat(spaces) : ''}${this.serializeValue(val, doIndent ? spaces + 2 : undefined)}`).join(sep)}${doIndent ? `\n${' '.repeat(spaces + 2)}` : ''}]`;
+      return `[${doIndent ? `\n${' '.repeat(spaces)}` : ''}${options.map(val => `${doIndent ? ' '.repeat((level * 2) + (spaces + 2)) : ''}${this.serializeValue(val, typeof nextWordwrap === 'number' ? nextWordwrap : undefined, doIndent ? spaces : undefined, level + 1)}`).join(sep)}${doIndent ? `${options.length > 0 ? ',\n' : ''}${' '.repeat(spaces + (level * 2))}` : ''}]`;
     }
-    return `{${doIndent ? `\n${' '.repeat(spaces)}` : ' '}${Object.entries(options).map(
+    const entries = Object.entries(options);
+    return `{${doIndent ? `\n${' '.repeat(spaces)}` : ' '}${entries.map(
       ([opt, val]) => {
-        return `${doIndent ? ' '.repeat(spaces + 2) : ''}${identifierRegex.test(opt) ? opt : JSON.stringify(opt)}: ${this.serializeValue(val, doIndent ? spaces + 2 : undefined)}`;
+        const key = identifierRegex.test(opt) ? opt : this.quote(opt);
+        return `${doIndent ? ' '.repeat((level * 2) + (spaces + 2)) : ''}${key}: ${this.serializeValue(val, typeof nextWordwrap === 'number' ? nextWordwrap - key.length - 2/* ': '.length*/ : undefined, doIndent ? spaces : undefined, level + 1)}`;
       },
-    ).join(sep) }${doIndent ? `,\n${' '.repeat(spaces + 2)}` : ' '}}`;
+    ).join(sep) }${doIndent ? `${entries.length > 0 ? ',\n' : ''}${' '.repeat(spaces + (level * 2))}` : ' '}}`;
   }
 
-  protected serializeValue(val: unknown, spaces?: number) {
+  protected serializeValue(val: unknown, wordwrap?: number, spaces?: number, level = 1) {
     if (typeof val === 'object' && val !== null) {
-      return this.serializeObject(val, spaces);
+      return this.serializeObject(val, wordwrap, spaces, level);
     }
     return val;
   }
 
-  private getEntityDeclOptions() {
+  protected getEntityDeclOptions() {
     const options: EntityOptions<unknown> = {};
 
     if (this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className)) {
@@ -333,12 +345,12 @@ export class SourceFile {
     return this.getCollectionDecl(options);
   }
 
-  private getEmbeddableDeclOptions() {
+  protected getEmbeddableDeclOptions() {
     const options: EmbeddableOptions = {};
     return this.getCollectionDecl(options);
   }
 
-  private getCollectionDecl(options: EntityOptions<unknown> | EmbeddableOptions) {
+  private getCollectionDecl<T extends EntityOptions<unknown> | EmbeddableOptions>(options: T) {
     if (this.meta.abstract) {
       options.abstract = true;
     }
@@ -356,11 +368,7 @@ export class SourceFile {
         .map(([discriminatorValue, className]) => [discriminatorValue, this.quote(className)]));
     }
 
-    if (!Utils.hasObjectKeys(options)) {
-      return '';
-    }
-
-    return this.serializeObject(options);
+    return options;
   }
 
   private getPropertyDecorator(prop: EntityProperty, padLeft: number): string {

@@ -733,12 +733,9 @@ export class Author2 {
 
 export const Author2Schema = new EntitySchema({
   class: Author2,
-  indexes: [
-    { name: 'author2_name_age_index', properties: ['name', 'age'] },
-  ],
-  uniques: [
-    { name: 'author2_name_email_unique', properties: ['name', 'email'] },
-  ],
+  readonly: true,
+  indexes: [{ name: 'author2_name_age_index', properties: ['name', 'age'] }],
+  uniques: [{ name: 'author2_name_email_unique', properties: ['name', 'email'] }],
   properties: {
     id: { primary: true, type: 'integer' },
     createdAt: {
@@ -767,8 +764,16 @@ export const Author2Schema = new EntitySchema({
       unique: 'custom_email_unique_name',
     },
     age: { type: 'integer', nullable: true, concurrencyCheck: true },
-    termsAccepted: { type: 'boolean', lazy: true, index: 'author2_terms_accepted_index' },
-    optional: { type: CustomBooleanType, columnType: 'tinyint(1)', nullable: true },
+    termsAccepted: {
+      type: 'boolean',
+      lazy: true,
+      index: 'author2_terms_accepted_index',
+    },
+    optional: {
+      type: CustomBooleanType,
+      columnType: 'tinyint(1)',
+      nullable: true,
+    },
     identities: { type: 'text', length: 65535, nullable: true },
     born: { type: 'date', nullable: true, index: 'author2_born_index' },
     bornTime: { type: 'time', nullable: true, index: 'born_time_idx' },
@@ -814,10 +819,27 @@ export const Author2Schema = new EntitySchema({
       joinColumn: 'author2_1_id',
       inverseJoinColumn: 'author2_2_id',
     },
-    authorInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'author', orphanRemoval: true },
-    favouriteAuthorInverse: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteAuthor' },
-    authorToFriendInverse: { kind: 'm:n', entity: () => Author2, mappedBy: 'authorToFriend' },
-    followingInverse: { kind: 'm:n', entity: () => Author2, mappedBy: 'following' },
+    authorInverse: {
+      kind: '1:m',
+      entity: () => Book2,
+      mappedBy: 'author',
+      orphanRemoval: true,
+    },
+    favouriteAuthorInverse: {
+      kind: '1:m',
+      entity: () => Author2,
+      mappedBy: 'favouriteAuthor',
+    },
+    authorToFriendInverse: {
+      kind: 'm:n',
+      entity: () => Author2,
+      mappedBy: 'authorToFriend',
+    },
+    followingInverse: {
+      kind: 'm:n',
+      entity: () => Author2,
+      mappedBy: 'following',
+    },
   },
 });
 ",
@@ -846,11 +868,18 @@ export enum BaseUser2Type {
 
 export const BaseUser2Schema = new EntitySchema({
   class: BaseUser2,
+  abstract: true,
+  discriminatorColumn: 'type',
+  discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
   properties: {
     id: { primary: true, type: 'integer' },
     firstName: { type: 'string', length: 100 },
     lastName: { type: 'string', length: 100 },
-    type: { enum: true, items: () => BaseUser2Type, index: 'base_user2_type_index' },
+    type: {
+      enum: true,
+      items: () => BaseUser2Type,
+      index: 'base_user2_type_index',
+    },
     ownerProp: { type: 'string', length: 255, nullable: true },
     favouriteEmployee: {
       kind: 'm:1',
@@ -866,10 +895,22 @@ export const BaseUser2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    employeeProp: { type: 'integer', nullable: true, unique: 'base_user2_employee_prop_unique' },
+    employeeProp: {
+      type: 'integer',
+      nullable: true,
+      unique: 'base_user2_employee_prop_unique',
+    },
     managerProp: { type: 'string', length: 255, nullable: true },
-    favouriteEmployeeInverse: { kind: '1:m', entity: () => BaseUser2, mappedBy: 'favouriteEmployee' },
-    favouriteManagerInverse: { kind: '1:1', entity: () => BaseUser2, mappedBy: 'favouriteManager' },
+    favouriteEmployeeInverse: {
+      kind: '1:m',
+      entity: () => BaseUser2,
+      mappedBy: 'favouriteEmployee',
+    },
+    favouriteManagerInverse: {
+      kind: '1:1',
+      entity: () => BaseUser2,
+      mappedBy: 'favouriteManager',
+    },
   },
 });
 ",
@@ -889,8 +930,16 @@ export const BookTag2Schema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'bigint' },
     name: { type: 'string', length: 50 },
-    bookToTagUnorderedInverse: { kind: 'm:n', entity: () => Book2, mappedBy: 'bookToTagUnordered' },
-    bookTag2Inverse: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'bookTag2' },
+    bookToTagUnorderedInverse: {
+      kind: 'm:n',
+      entity: () => Book2,
+      mappedBy: 'bookToTagUnordered',
+    },
+    bookTag2Inverse: {
+      kind: '1:m',
+      entity: () => Book2Tags,
+      mappedBy: 'bookTag2',
+    },
   },
 });
 ",
@@ -925,7 +974,12 @@ export const Book2Schema = new EntitySchema({
   properties: {
     uuidPk: { primary: true, type: 'uuid', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
-    title: { type: 'string', length: 255, nullable: true, index: 'book2_title_index' },
+    title: {
+      type: 'string',
+      length: 255,
+      nullable: true,
+      index: 'book2_title_index',
+    },
     perex: { type: 'text', length: 65535, nullable: true },
     price: { type: 'decimal', precision: 8, scale: 2, nullable: true },
     double: { type: 'double', nullable: true },
@@ -947,7 +1001,11 @@ export const Book2Schema = new EntitySchema({
       joinColumn: 'book2_uuid_pk',
       inverseJoinColumn: 'book_tag2_id',
     },
-    favouriteBookInverse: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteBook' },
+    favouriteBookInverse: {
+      kind: '1:m',
+      entity: () => Author2,
+      mappedBy: 'favouriteBook',
+    },
     book2Inverse: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'book2' },
     bookInverse: { kind: '1:1', entity: () => Test2, mappedBy: 'book' },
   },
@@ -1023,7 +1081,11 @@ export const Car2Schema = new EntitySchema({
     year: { primary: true, type: 'integer', index: 'car2_year_index' },
     price: { type: 'integer' },
     carInverse: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
-    favouriteCarInverse: { kind: '1:1', entity: () => User2, mappedBy: 'favouriteCar' },
+    favouriteCarInverse: {
+      kind: '1:1',
+      entity: () => User2,
+      mappedBy: 'favouriteCar',
+    },
     carsInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'cars' },
   },
 });
@@ -1042,7 +1104,12 @@ export const Configuration2Schema = new EntitySchema({
   class: Configuration2,
   properties: {
     property: { primary: true, type: 'string', length: 255 },
-    test: { primary: true, kind: 'm:1', entity: () => Test2, updateRule: 'cascade' },
+    test: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Test2,
+      updateRule: 'cascade',
+    },
     value: { type: 'string', length: 255 },
   },
 });
@@ -1087,7 +1154,12 @@ export const FooBar2Schema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
-    nameWithSpace: { type: 'string', fieldName: 'name with space', length: 255, nullable: true },
+    nameWithSpace: {
+      type: 'string',
+      fieldName: 'name with space',
+      length: 255,
+      nullable: true,
+    },
     baz: {
       kind: '1:1',
       entity: () => FooBaz2,
@@ -1148,8 +1220,18 @@ export class FooParam2 {
 export const FooParam2Schema = new EntitySchema({
   class: FooParam2,
   properties: {
-    bar: { primary: true, kind: 'm:1', entity: () => FooBar2, updateRule: 'cascade' },
-    baz: { primary: true, kind: 'm:1', entity: () => FooBaz2, updateRule: 'cascade' },
+    bar: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => FooBar2,
+      updateRule: 'cascade',
+    },
+    baz: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => FooBaz2,
+      updateRule: 'cascade',
+    },
     value: { type: 'string', length: 255 },
     version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
   },
@@ -1206,7 +1288,11 @@ export const Publisher2Schema = new EntitySchema({
     enum4: { enum: true, items: () => Publisher2Enum4, nullable: true },
     enum5: { enum: true, items: () => Publisher2Enum5, nullable: true },
     publisherInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
-    publisher2Inverse: { kind: '1:m', entity: () => Publisher2Tests, mappedBy: 'publisher2' },
+    publisher2Inverse: {
+      kind: '1:m',
+      entity: () => Publisher2Tests,
+      mappedBy: 'publisher2',
+    },
   },
 });
 ",
@@ -1256,7 +1342,11 @@ export const SandwichSchema = new EntitySchema({
     id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     price: { type: 'integer' },
-    sandwichesInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'sandwiches' },
+    sandwichesInverse: {
+      kind: 'm:n',
+      entity: () => User2,
+      mappedBy: 'sandwiches',
+    },
   },
 });
 ",
@@ -1285,7 +1375,12 @@ export const Test2Schema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, nullable: true },
-    book: { kind: '1:1', entity: () => Book2, deleteRule: 'set null', nullable: true },
+    book: {
+      kind: '1:1',
+      entity: () => Book2,
+      deleteRule: 'set null',
+      nullable: true,
+    },
     parent: {
       kind: 'm:1',
       entity: () => Test2,
@@ -1302,7 +1397,12 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'integer', fieldName: 'foo___baz', unsigned: true, nullable: true },
+    fooBaz: {
+      type: 'integer',
+      fieldName: 'foo___baz',
+      unsigned: true,
+      nullable: true,
+    },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -1310,7 +1410,11 @@ export const Test2Schema = new EntitySchema({
       inverseJoinColumn: 'foo_bar2_id',
     },
     testInverse: { kind: '1:m', entity: () => Configuration2, mappedBy: 'test' },
-    test2Inverse: { kind: '1:m', entity: () => Publisher2Tests, mappedBy: 'test2' },
+    test2Inverse: {
+      kind: '1:m',
+      entity: () => Publisher2Tests,
+      mappedBy: 'test2',
+    },
     parentInverse: { kind: '1:m', entity: () => Test2, mappedBy: 'parent' },
   },
 });
@@ -1368,6 +1472,9 @@ export class AuthorPartialView {
 
 export const AuthorPartialViewSchema = new EntitySchema({
   class: AuthorPartialView,
+  expression: 'SELECT name, email FROM author2',
+  comment: 'test',
+  virtual: true,
   properties: {
     name: {
       type: 'string',
@@ -1395,6 +1502,9 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
+  expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']),
+  comment: 'test',
+  virtual: true,
   properties: {
     name: {
       type: 'string',
@@ -1440,6 +1550,7 @@ export class Employee2 extends BaseUser2 {
 
 export const Employee2Schema = new EntitySchema({
   class: Employee2,
+  virtual: true,
   properties: {
   },
 });
@@ -1452,6 +1563,7 @@ export class Manager2 extends BaseUser2 {
 
 export const Manager2Schema = new EntitySchema({
   class: Manager2,
+  virtual: true,
   properties: {
   },
 });
@@ -1464,6 +1576,8 @@ export class CompanyOwner2 extends BaseUser2 {
 
 export const CompanyOwner2Schema = new EntitySchema({
   class: CompanyOwner2,
+  virtual: true,
+  discriminatorValue: 'owner',
   properties: {
   },
 });
@@ -2216,12 +2330,9 @@ export class Author2 {
 
 export const Author2Schema = new EntitySchema({
   class: Author2,
-  indexes: [
-    { name: 'author2_name_age_index', properties: ['name', 'age'] },
-  ],
-  uniques: [
-    { name: 'author2_name_email_unique', properties: ['name', 'email'] },
-  ],
+  readonly: true,
+  indexes: [{ name: 'author2_name_age_index', properties: ['name', 'age'] }],
+  uniques: [{ name: 'author2_name_email_unique', properties: ['name', 'email'] }],
   properties: {
     id: { primary: true, type: 'integer' },
     createdAt: {
@@ -2256,7 +2367,11 @@ export const Author2Schema = new EntitySchema({
       default: false,
       index: 'author2_terms_accepted_index',
     },
-    optional: { type: CustomBooleanType, columnType: 'tinyint(1)', nullable: true },
+    optional: {
+      type: CustomBooleanType,
+      columnType: 'tinyint(1)',
+      nullable: true,
+    },
     identities: { type: 'text', length: 65535, nullable: true },
     born: { type: 'date', nullable: true, index: 'author2_born_index' },
     bornTime: { type: 'time', nullable: true, index: 'born_time_idx' },
@@ -2304,10 +2419,27 @@ export const Author2Schema = new EntitySchema({
       joinColumn: 'author2_1_id',
       inverseJoinColumn: 'author2_2_id',
     },
-    authorInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'author', orphanRemoval: true },
-    favouriteAuthorInverse: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteAuthor' },
-    authorToFriendInverse: { kind: 'm:n', entity: () => Author2, mappedBy: 'authorToFriend' },
-    followingInverse: { kind: 'm:n', entity: () => Author2, mappedBy: 'following' },
+    authorInverse: {
+      kind: '1:m',
+      entity: () => Book2,
+      mappedBy: 'author',
+      orphanRemoval: true,
+    },
+    favouriteAuthorInverse: {
+      kind: '1:m',
+      entity: () => Author2,
+      mappedBy: 'favouriteAuthor',
+    },
+    authorToFriendInverse: {
+      kind: 'm:n',
+      entity: () => Author2,
+      mappedBy: 'authorToFriend',
+    },
+    followingInverse: {
+      kind: 'm:n',
+      entity: () => Author2,
+      mappedBy: 'following',
+    },
   },
 });
 ",
@@ -2336,11 +2468,18 @@ export enum BaseUser2Type {
 
 export const BaseUser2Schema = new EntitySchema({
   class: BaseUser2,
+  abstract: true,
+  discriminatorColumn: 'type',
+  discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
   properties: {
     id: { primary: true, type: 'integer' },
     firstName: { type: 'string', length: 100 },
     lastName: { type: 'string', length: 100 },
-    type: { enum: true, items: () => BaseUser2Type, index: 'base_user2_type_index' },
+    type: {
+      enum: true,
+      items: () => BaseUser2Type,
+      index: 'base_user2_type_index',
+    },
     ownerProp: { type: 'string', length: 255, nullable: true },
     favouriteEmployee: {
       kind: 'm:1',
@@ -2358,9 +2497,17 @@ export const BaseUser2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    employeeProp: { type: 'integer', nullable: true, unique: 'base_user2_employee_prop_unique' },
+    employeeProp: {
+      type: 'integer',
+      nullable: true,
+      unique: 'base_user2_employee_prop_unique',
+    },
     managerProp: { type: 'string', length: 255, nullable: true },
-    favouriteEmployeeInverse: { kind: '1:m', entity: () => BaseUser2, mappedBy: 'favouriteEmployee' },
+    favouriteEmployeeInverse: {
+      kind: '1:m',
+      entity: () => BaseUser2,
+      mappedBy: 'favouriteEmployee',
+    },
     favouriteManagerInverse: {
       kind: '1:1',
       entity: () => BaseUser2,
@@ -2386,8 +2533,16 @@ export const BookTag2Schema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'bigint' },
     name: { type: 'string', length: 50 },
-    bookToTagUnorderedInverse: { kind: 'm:n', entity: () => Book2, mappedBy: 'bookToTagUnordered' },
-    bookTag2Inverse: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'bookTag2' },
+    bookToTagUnorderedInverse: {
+      kind: 'm:n',
+      entity: () => Book2,
+      mappedBy: 'bookToTagUnordered',
+    },
+    bookTag2Inverse: {
+      kind: '1:m',
+      entity: () => Book2Tags,
+      mappedBy: 'bookTag2',
+    },
   },
 });
 ",
@@ -2422,7 +2577,12 @@ export const Book2Schema = new EntitySchema({
   properties: {
     uuidPk: { primary: true, type: 'uuid', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
-    title: { type: 'string', length: 255, nullable: true, index: 'book2_title_index' },
+    title: {
+      type: 'string',
+      length: 255,
+      nullable: true,
+      index: 'book2_title_index',
+    },
     perex: { type: 'text', length: 65535, nullable: true },
     price: { type: 'decimal', precision: 8, scale: 2, nullable: true },
     double: { type: 'double', nullable: true },
@@ -2445,7 +2605,11 @@ export const Book2Schema = new EntitySchema({
       joinColumn: 'book2_uuid_pk',
       inverseJoinColumn: 'book_tag2_id',
     },
-    favouriteBookInverse: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteBook' },
+    favouriteBookInverse: {
+      kind: '1:m',
+      entity: () => Author2,
+      mappedBy: 'favouriteBook',
+    },
     book2Inverse: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'book2' },
     bookInverse: { kind: '1:1', entity: () => Test2, ref: true, mappedBy: 'book' },
   },
@@ -2523,7 +2687,12 @@ export const Car2Schema = new EntitySchema({
     year: { primary: true, type: 'integer', index: 'car2_year_index' },
     price: { type: 'integer' },
     carInverse: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
-    favouriteCarInverse: { kind: '1:1', entity: () => User2, ref: true, mappedBy: 'favouriteCar' },
+    favouriteCarInverse: {
+      kind: '1:1',
+      entity: () => User2,
+      ref: true,
+      mappedBy: 'favouriteCar',
+    },
     carsInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'cars' },
   },
 });
@@ -2593,7 +2762,12 @@ export const FooBar2Schema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
-    nameWithSpace: { type: 'string', fieldName: 'name with space', length: 255, nullable: true },
+    nameWithSpace: {
+      type: 'string',
+      fieldName: 'name with space',
+      length: 255,
+      nullable: true,
+    },
     baz: {
       kind: '1:1',
       entity: () => FooBaz2,
@@ -2615,7 +2789,12 @@ export const FooBar2Schema = new EntitySchema({
     blob2: { type: 'blob', length: 65535, nullable: true },
     array: { type: 'text', length: 65535, nullable: true },
     objectProperty: { type: 'JsonObjectType', columnType: 'json', nullable: true },
-    fooBarInverse: { kind: '1:1', entity: () => Test2, ref: true, mappedBy: 'fooBar' },
+    fooBarInverse: {
+      kind: '1:1',
+      entity: () => Test2,
+      ref: true,
+      mappedBy: 'fooBar',
+    },
     barInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
     barsInverse: { kind: 'm:n', entity: () => Test2, mappedBy: 'bars' },
   },
@@ -2726,7 +2905,11 @@ export const Publisher2Schema = new EntitySchema({
     enum4: { enum: true, items: () => Publisher2Enum4, nullable: true },
     enum5: { enum: true, items: () => Publisher2Enum5, nullable: true },
     publisherInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
-    publisher2Inverse: { kind: '1:m', entity: () => Publisher2Tests, mappedBy: 'publisher2' },
+    publisher2Inverse: {
+      kind: '1:m',
+      entity: () => Publisher2Tests,
+      mappedBy: 'publisher2',
+    },
   },
 });
 ",
@@ -2778,7 +2961,11 @@ export const SandwichSchema = new EntitySchema({
     id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     price: { type: 'integer' },
-    sandwichesInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'sandwiches' },
+    sandwichesInverse: {
+      kind: 'm:n',
+      entity: () => User2,
+      mappedBy: 'sandwiches',
+    },
   },
 });
 ",
@@ -2832,7 +3019,12 @@ export const Test2Schema = new EntitySchema({
       deleteRule: 'set null',
       nullable: true,
     },
-    fooBaz: { type: 'integer', fieldName: 'foo___baz', unsigned: true, nullable: true },
+    fooBaz: {
+      type: 'integer',
+      fieldName: 'foo___baz',
+      unsigned: true,
+      nullable: true,
+    },
     bars: {
       kind: 'm:n',
       entity: () => FooBar2,
@@ -2840,7 +3032,11 @@ export const Test2Schema = new EntitySchema({
       inverseJoinColumn: 'foo_bar2_id',
     },
     testInverse: { kind: '1:m', entity: () => Configuration2, mappedBy: 'test' },
-    test2Inverse: { kind: '1:m', entity: () => Publisher2Tests, mappedBy: 'test2' },
+    test2Inverse: {
+      kind: '1:m',
+      entity: () => Publisher2Tests,
+      mappedBy: 'test2',
+    },
     parentInverse: { kind: '1:m', entity: () => Test2, mappedBy: 'parent' },
   },
 });
@@ -2899,6 +3095,9 @@ export class AuthorPartialView {
 
 export const AuthorPartialViewSchema = new EntitySchema({
   class: AuthorPartialView,
+  expression: 'SELECT name, email FROM author2',
+  comment: 'test',
+  virtual: true,
   properties: {
     name: {
       type: 'string',
@@ -2926,6 +3125,9 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
+  expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']),
+  comment: 'test',
+  virtual: true,
   properties: {
     name: {
       type: 'string',
@@ -2971,6 +3173,7 @@ export class Employee2 extends BaseUser2 {
 
 export const Employee2Schema = new EntitySchema({
   class: Employee2,
+  virtual: true,
   properties: {
   },
 });
@@ -2983,6 +3186,7 @@ export class Manager2 extends BaseUser2 {
 
 export const Manager2Schema = new EntitySchema({
   class: Manager2,
+  virtual: true,
   properties: {
   },
 });
@@ -2995,6 +3199,8 @@ export class CompanyOwner2 extends BaseUser2 {
 
 export const CompanyOwner2Schema = new EntitySchema({
   class: CompanyOwner2,
+  virtual: true,
+  discriminatorValue: 'owner',
   properties: {
   },
 });

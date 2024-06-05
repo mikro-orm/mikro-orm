@@ -151,8 +151,18 @@ export const ConfigSchema = new MikroORM_EntitySchema({
       persist: false,
       hydrate: false,
     },
-    test2: { kind: 'embedded', entity: () => Entity, persist: false, hydrate: false },
-    test3: { kind: 'embedded', entity: () => EntitySchema, persist: false, hydrate: false },
+    test2: {
+      kind: 'embedded',
+      entity: () => Entity,
+      persist: false,
+      hydrate: false,
+    },
+    test3: {
+      kind: 'embedded',
+      entity: () => EntitySchema,
+      persist: false,
+      hydrate: false,
+    },
   },
 });
 ",
@@ -205,7 +215,11 @@ export const EnumSchema = new MikroORM_EntitySchema({
   properties: {
     id: { primary: true, type: 'smallint' },
     opt: { type: 'string', length: 255 },
-    oneToManyInverse: { kind: '1:m', entity: () => Property, mappedBy: 'oneToMany' },
+    oneToManyInverse: {
+      kind: '1:m',
+      entity: () => Property,
+      mappedBy: 'oneToMany',
+    },
   },
 });
 ",
@@ -263,8 +277,16 @@ export const PropertySchema = new MikroORM_EntitySchema({
       fieldName: 'one_to_many',
       index: 'fk_property_enum_idx',
     },
-    manyToManyInverse: { kind: 'm:n', entity: () => Entity, mappedBy: 'manyToMany' },
-    propertyInverse: { kind: '1:m', entity: () => ManyToMany, mappedBy: 'property' },
+    manyToManyInverse: {
+      kind: 'm:n',
+      entity: () => Entity,
+      mappedBy: 'manyToMany',
+    },
+    propertyInverse: {
+      kind: '1:m',
+      entity: () => ManyToMany,
+      mappedBy: 'property',
+    },
   },
 });
 ",
