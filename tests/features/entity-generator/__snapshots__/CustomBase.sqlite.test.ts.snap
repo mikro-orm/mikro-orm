@@ -257,6 +257,15 @@ export class Test4 {
 
 }
 ",
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+
+export abstract class BaseEntity2 {
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
+
+}
+",
 ]
 `;
 
@@ -550,6 +559,19 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
+  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+
+export abstract class BaseEntity2 {
+  serverTime!: Date;
+}
+
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
+  properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+  },
+});
+",
 ]
 `;
 
@@ -816,6 +838,16 @@ export class Test4 extends BaseEntity {
 
   @MikroORM_Property({ type: 'integer' })
   version: number & MikroORM_Opt = 1;
+
+}
+",
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+import { BaseEntity } from './BaseEntity';
+
+export abstract class BaseEntity2 extends BaseEntity {
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
@@ -1129,6 +1161,20 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
+  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+import { BaseEntity } from './BaseEntity';
+
+export abstract class BaseEntity2 extends BaseEntity {
+  serverTime!: Date;
+}
+
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
+  properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+  },
+});
+",
   "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity {
@@ -1144,14 +1190,14 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseUser2 entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema=false: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
 @MikroORM_Entity()
-export class Author4 extends BaseUser2 {
+export class Author4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -1193,10 +1239,10 @@ export class Author4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class BookTag4 extends BaseUser2 {
+export class BookTag4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -1217,12 +1263,12 @@ export class BookTag4 extends BaseUser2 {
 ",
   "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
 
 @MikroORM_Entity()
-export class Book4 extends BaseUser2 {
+export class Book4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -1254,11 +1300,11 @@ export class Book4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
 @MikroORM_Entity()
-export class FooBar4 extends BaseUser2 {
+export class FooBar4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -1296,10 +1342,10 @@ export class FooBar4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class FooBaz4 extends BaseUser2 {
+export class FooBaz4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -1319,10 +1365,10 @@ export class FooBaz4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class Publisher4 extends BaseUser2 {
+export class Publisher4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -1350,12 +1396,12 @@ export enum Publisher4Type {
 }
 ",
   "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
 @MikroORM_Entity({ tableName: 'publisher4_tests' })
-export class Publisher4Tests extends BaseUser2 {
+export class Publisher4Tests extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -1369,12 +1415,12 @@ export class Publisher4Tests extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
 @MikroORM_Entity()
-export class TagsOrdered extends BaseUser2 {
+export class TagsOrdered extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -1388,10 +1434,10 @@ export class TagsOrdered extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class Test4 extends BaseUser2 {
+export class Test4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -1410,24 +1456,28 @@ export class Test4 extends BaseUser2 {
 
 }
 ",
-  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig } from '@mikro-orm/core';
+  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, Formula as MikroORM_Formula } from '@mikro-orm/core';
 
-export abstract class BaseUser2 {
+export abstract class BaseEntity2 {
 
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
+
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseUser2 entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
-export class Author4 extends BaseUser2 {
+export class Author4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -1467,9 +1517,9 @@ export const Author4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class BookTag4 extends BaseUser2 {
+export class BookTag4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -1490,11 +1540,11 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
 ",
   "import { Collection as MikroORM_Collection, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 import { Author4 } from './Author4';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
 
-export class Book4 extends BaseUser2 {
+export class Book4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -1540,10 +1590,10 @@ export const Book4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
-export class FooBar4 extends BaseUser2 {
+export class FooBar4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -1587,9 +1637,9 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class FooBaz4 extends BaseUser2 {
+export class FooBaz4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -1609,9 +1659,9 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class Publisher4 extends BaseUser2 {
+export class Publisher4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -1638,11 +1688,11 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
-export class Publisher4Tests extends BaseUser2 {
+export class Publisher4Tests extends BaseEntity2 {
   id!: number;
   publisher4!: Publisher4;
   test4!: Test4;
@@ -1669,11 +1719,11 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
-export class TagsOrdered extends BaseUser2 {
+export class TagsOrdered extends BaseEntity2 {
   id!: number;
   book4!: Book4;
   bookTag4!: BookTag4;
@@ -1699,9 +1749,9 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class Test4 extends BaseUser2 {
+export class Test4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -1722,13 +1772,15 @@ export const Test4Schema = new MikroORM_EntitySchema({
 ",
   "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
-export abstract class BaseUser2 {
+export abstract class BaseEntity2 {
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
+  serverTime!: Date;
 }
 
-export const BaseUser2Schema = new MikroORM_EntitySchema({
-  class: BaseUser2,
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
   properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
   },
 });
 ",
@@ -1998,6 +2050,16 @@ export class Test4 extends CustomBase {
 
   @MikroORM_Property({ type: 'integer' })
   version: number & MikroORM_Opt = 1;
+
+}
+",
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+import { CustomBase } from './CustomBase';
+
+export abstract class BaseEntity2 extends CustomBase {
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
@@ -2311,6 +2373,20 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
+  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+import { CustomBase } from './CustomBase';
+
+export abstract class BaseEntity2 extends CustomBase {
+  serverTime!: Date;
+}
+
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
+  properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+  },
+});
+",
   "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class CustomBase {
@@ -2580,6 +2656,15 @@ export class Test4 extends MikroORM_BaseEntity {
 
   @MikroORM_Property({ type: 'integer' })
   version: number & MikroORM_Opt = 1;
+
+}
+",
+  "import { BaseEntity as MikroORM_BaseEntity, Formula as MikroORM_Formula } from '@mikro-orm/core';
+
+export abstract class BaseEntity2 extends MikroORM_BaseEntity {
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
@@ -2876,6 +2961,19 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
+  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+
+export abstract class BaseEntity2 extends MikroORM_BaseEntity {
+  serverTime!: Date;
+}
+
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
+  properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+  },
+});
+",
 ]
 `;
 
@@ -3142,6 +3240,16 @@ export class Test4 extends BaseEntity {
 
   @MikroORM_Property({ type: 'integer' })
   version: number & MikroORM_Opt = 1;
+
+}
+",
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+import { BaseEntity } from './BaseEntity';
+
+export abstract class BaseEntity2 extends BaseEntity {
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
@@ -3455,6 +3563,20 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
+  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+import { BaseEntity } from './BaseEntity';
+
+export abstract class BaseEntity2 extends BaseEntity {
+  serverTime!: Date;
+}
+
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
+  properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+  },
+});
+",
   "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity extends MikroORM_BaseEntity {
@@ -3470,14 +3592,14 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseUser2 entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema=false: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
 @MikroORM_Entity()
-export class Author4 extends BaseUser2 {
+export class Author4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -3519,10 +3641,10 @@ export class Author4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class BookTag4 extends BaseUser2 {
+export class BookTag4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -3543,12 +3665,12 @@ export class BookTag4 extends BaseUser2 {
 ",
   "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
 
 @MikroORM_Entity()
-export class Book4 extends BaseUser2 {
+export class Book4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -3580,11 +3702,11 @@ export class Book4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
 @MikroORM_Entity()
-export class FooBar4 extends BaseUser2 {
+export class FooBar4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -3622,10 +3744,10 @@ export class FooBar4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class FooBaz4 extends BaseUser2 {
+export class FooBaz4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -3645,10 +3767,10 @@ export class FooBaz4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class Publisher4 extends BaseUser2 {
+export class Publisher4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -3676,12 +3798,12 @@ export enum Publisher4Type {
 }
 ",
   "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
 @MikroORM_Entity({ tableName: 'publisher4_tests' })
-export class Publisher4Tests extends BaseUser2 {
+export class Publisher4Tests extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -3695,12 +3817,12 @@ export class Publisher4Tests extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
 @MikroORM_Entity()
-export class TagsOrdered extends BaseUser2 {
+export class TagsOrdered extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -3714,10 +3836,10 @@ export class TagsOrdered extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class Test4 extends BaseUser2 {
+export class Test4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -3736,24 +3858,28 @@ export class Test4 extends BaseUser2 {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, Formula as MikroORM_Formula } from '@mikro-orm/core';
 
-export abstract class BaseUser2 extends MikroORM_BaseEntity {
+export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
+
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseUser2 entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
-export class Author4 extends BaseUser2 {
+export class Author4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -3793,9 +3919,9 @@ export const Author4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class BookTag4 extends BaseUser2 {
+export class BookTag4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -3816,11 +3942,11 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
 ",
   "import { Collection as MikroORM_Collection, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 import { Author4 } from './Author4';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
 
-export class Book4 extends BaseUser2 {
+export class Book4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -3866,10 +3992,10 @@ export const Book4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
-export class FooBar4 extends BaseUser2 {
+export class FooBar4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -3913,9 +4039,9 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class FooBaz4 extends BaseUser2 {
+export class FooBaz4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -3935,9 +4061,9 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class Publisher4 extends BaseUser2 {
+export class Publisher4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -3964,11 +4090,11 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
-export class Publisher4Tests extends BaseUser2 {
+export class Publisher4Tests extends BaseEntity2 {
   id!: number;
   publisher4!: Publisher4;
   test4!: Test4;
@@ -3995,11 +4121,11 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
-export class TagsOrdered extends BaseUser2 {
+export class TagsOrdered extends BaseEntity2 {
   id!: number;
   book4!: Book4;
   bookTag4!: BookTag4;
@@ -4025,9 +4151,9 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class Test4 extends BaseUser2 {
+export class Test4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -4048,13 +4174,15 @@ export const Test4Schema = new MikroORM_EntitySchema({
 ",
   "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
-export abstract class BaseUser2 extends MikroORM_BaseEntity {
+export abstract class BaseEntity2 extends MikroORM_BaseEntity {
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
+  serverTime!: Date;
 }
 
-export const BaseUser2Schema = new MikroORM_EntitySchema({
-  class: BaseUser2,
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
   properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
   },
 });
 ",
@@ -4324,6 +4452,16 @@ export class Test4 extends CustomBase {
 
   @MikroORM_Property({ type: 'integer' })
   version: number & MikroORM_Opt = 1;
+
+}
+",
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+import { CustomBase } from './CustomBase';
+
+export abstract class BaseEntity2 extends CustomBase {
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
@@ -4637,6 +4775,20 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
+  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+import { CustomBase } from './CustomBase';
+
+export abstract class BaseEntity2 extends CustomBase {
+  serverTime!: Date;
+}
+
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
+  properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+  },
+});
+",
   "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class CustomBase extends MikroORM_BaseEntity {
@@ -4906,6 +5058,15 @@ export class Test4 {
 
   @MikroORM_Property({ type: 'integer' })
   version: number & MikroORM_Opt = 1;
+
+}
+",
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+
+export abstract class BaseEntity2 {
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
@@ -5202,6 +5363,19 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
+  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+
+export abstract class BaseEntity2 {
+  serverTime!: Date;
+}
+
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
+  properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+  },
+});
+",
 ]
 `;
 
@@ -5468,6 +5642,16 @@ export class Test4 extends BaseEntity {
 
   @MikroORM_Property({ type: 'integer' })
   version: number & MikroORM_Opt = 1;
+
+}
+",
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+import { BaseEntity } from './BaseEntity';
+
+export abstract class BaseEntity2 extends BaseEntity {
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
@@ -5781,6 +5965,20 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
+  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+import { BaseEntity } from './BaseEntity';
+
+export abstract class BaseEntity2 extends BaseEntity {
+  serverTime!: Date;
+}
+
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
+  properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+  },
+});
+",
   "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity {
@@ -5796,14 +5994,14 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseUser2 entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema=false: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
 @MikroORM_Entity()
-export class Author4 extends BaseUser2 {
+export class Author4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -5845,10 +6043,10 @@ export class Author4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class BookTag4 extends BaseUser2 {
+export class BookTag4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -5869,12 +6067,12 @@ export class BookTag4 extends BaseUser2 {
 ",
   "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
 
 @MikroORM_Entity()
-export class Book4 extends BaseUser2 {
+export class Book4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -5906,11 +6104,11 @@ export class Book4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
 @MikroORM_Entity()
-export class FooBar4 extends BaseUser2 {
+export class FooBar4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -5948,10 +6146,10 @@ export class FooBar4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class FooBaz4 extends BaseUser2 {
+export class FooBaz4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -5971,10 +6169,10 @@ export class FooBaz4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class Publisher4 extends BaseUser2 {
+export class Publisher4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -6002,12 +6200,12 @@ export enum Publisher4Type {
 }
 ",
   "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
 @MikroORM_Entity({ tableName: 'publisher4_tests' })
-export class Publisher4Tests extends BaseUser2 {
+export class Publisher4Tests extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -6021,12 +6219,12 @@ export class Publisher4Tests extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
 @MikroORM_Entity()
-export class TagsOrdered extends BaseUser2 {
+export class TagsOrdered extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -6040,10 +6238,10 @@ export class TagsOrdered extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class Test4 extends BaseUser2 {
+export class Test4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -6062,24 +6260,28 @@ export class Test4 extends BaseUser2 {
 
 }
 ",
-  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig } from '@mikro-orm/core';
+  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, Formula as MikroORM_Formula } from '@mikro-orm/core';
 
-export abstract class BaseUser2 {
+export abstract class BaseEntity2 {
 
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
+
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseUser2 entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
-export class Author4 extends BaseUser2 {
+export class Author4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -6119,9 +6321,9 @@ export const Author4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class BookTag4 extends BaseUser2 {
+export class BookTag4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -6142,11 +6344,11 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
 ",
   "import { Collection as MikroORM_Collection, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 import { Author4 } from './Author4';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
 
-export class Book4 extends BaseUser2 {
+export class Book4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -6192,10 +6394,10 @@ export const Book4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
-export class FooBar4 extends BaseUser2 {
+export class FooBar4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -6239,9 +6441,9 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class FooBaz4 extends BaseUser2 {
+export class FooBaz4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -6261,9 +6463,9 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class Publisher4 extends BaseUser2 {
+export class Publisher4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -6290,11 +6492,11 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
-export class Publisher4Tests extends BaseUser2 {
+export class Publisher4Tests extends BaseEntity2 {
   id!: number;
   publisher4!: Publisher4;
   test4!: Test4;
@@ -6321,11 +6523,11 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
-export class TagsOrdered extends BaseUser2 {
+export class TagsOrdered extends BaseEntity2 {
   id!: number;
   book4!: Book4;
   bookTag4!: BookTag4;
@@ -6351,9 +6553,9 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class Test4 extends BaseUser2 {
+export class Test4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -6374,13 +6576,15 @@ export const Test4Schema = new MikroORM_EntitySchema({
 ",
   "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
-export abstract class BaseUser2 {
+export abstract class BaseEntity2 {
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
+  serverTime!: Date;
 }
 
-export const BaseUser2Schema = new MikroORM_EntitySchema({
-  class: BaseUser2,
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
   properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
   },
 });
 ",
@@ -6650,6 +6854,16 @@ export class Test4 extends CustomBase {
 
   @MikroORM_Property({ type: 'integer' })
   version: number & MikroORM_Opt = 1;
+
+}
+",
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+import { CustomBase } from './CustomBase';
+
+export abstract class BaseEntity2 extends CustomBase {
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
@@ -6963,6 +7177,20 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
+  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+import { CustomBase } from './CustomBase';
+
+export abstract class BaseEntity2 extends CustomBase {
+  serverTime!: Date;
+}
+
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
+  properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+  },
+});
+",
   "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class CustomBase {
@@ -7232,6 +7460,15 @@ export class Test4 extends MikroORM_BaseEntity {
 
   @MikroORM_Property({ type: 'integer' })
   version: number & MikroORM_Opt = 1;
+
+}
+",
+  "import { BaseEntity as MikroORM_BaseEntity, Formula as MikroORM_Formula } from '@mikro-orm/core';
+
+export abstract class BaseEntity2 extends MikroORM_BaseEntity {
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
@@ -7528,6 +7765,19 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
+  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+
+export abstract class BaseEntity2 extends MikroORM_BaseEntity {
+  serverTime!: Date;
+}
+
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
+  properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+  },
+});
+",
 ]
 `;
 
@@ -7794,6 +8044,16 @@ export class Test4 extends BaseEntity {
 
   @MikroORM_Property({ type: 'integer' })
   version: number & MikroORM_Opt = 1;
+
+}
+",
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+import { BaseEntity } from './BaseEntity';
+
+export abstract class BaseEntity2 extends BaseEntity {
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
@@ -8107,6 +8367,20 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
+  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+import { BaseEntity } from './BaseEntity';
+
+export abstract class BaseEntity2 extends BaseEntity {
+  serverTime!: Date;
+}
+
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
+  properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+  },
+});
+",
   "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity extends MikroORM_BaseEntity {
@@ -8122,14 +8396,14 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseUser2 entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema=false: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
 @MikroORM_Entity()
-export class Author4 extends BaseUser2 {
+export class Author4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -8171,10 +8445,10 @@ export class Author4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class BookTag4 extends BaseUser2 {
+export class BookTag4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -8195,12 +8469,12 @@ export class BookTag4 extends BaseUser2 {
 ",
   "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
 
 @MikroORM_Entity()
-export class Book4 extends BaseUser2 {
+export class Book4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -8232,11 +8506,11 @@ export class Book4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
 @MikroORM_Entity()
-export class FooBar4 extends BaseUser2 {
+export class FooBar4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -8274,10 +8548,10 @@ export class FooBar4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class FooBaz4 extends BaseUser2 {
+export class FooBaz4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -8297,10 +8571,10 @@ export class FooBaz4 extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class Publisher4 extends BaseUser2 {
+export class Publisher4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -8328,12 +8602,12 @@ export enum Publisher4Type {
 }
 ",
   "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
 @MikroORM_Entity({ tableName: 'publisher4_tests' })
-export class Publisher4Tests extends BaseUser2 {
+export class Publisher4Tests extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -8347,12 +8621,12 @@ export class Publisher4Tests extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
 @MikroORM_Entity()
-export class TagsOrdered extends BaseUser2 {
+export class TagsOrdered extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -8366,10 +8640,10 @@ export class TagsOrdered extends BaseUser2 {
 }
 ",
   "import { Entity as MikroORM_Entity, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @MikroORM_Entity()
-export class Test4 extends BaseUser2 {
+export class Test4 extends BaseEntity2 {
 
   @MikroORM_PrimaryKey()
   id!: number;
@@ -8388,24 +8662,28 @@ export class Test4 extends BaseUser2 {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, Formula as MikroORM_Formula } from '@mikro-orm/core';
 
-export abstract class BaseUser2 extends MikroORM_BaseEntity {
+export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
+
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseUser2 entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema=true: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
-export class Author4 extends BaseUser2 {
+export class Author4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -8445,9 +8723,9 @@ export const Author4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class BookTag4 extends BaseUser2 {
+export class BookTag4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -8468,11 +8746,11 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
 ",
   "import { Collection as MikroORM_Collection, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 import { Author4 } from './Author4';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
 
-export class Book4 extends BaseUser2 {
+export class Book4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -8518,10 +8796,10 @@ export const Book4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
-export class FooBar4 extends BaseUser2 {
+export class FooBar4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -8565,9 +8843,9 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class FooBaz4 extends BaseUser2 {
+export class FooBaz4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -8587,9 +8865,9 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class Publisher4 extends BaseUser2 {
+export class Publisher4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -8616,11 +8894,11 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
-export class Publisher4Tests extends BaseUser2 {
+export class Publisher4Tests extends BaseEntity2 {
   id!: number;
   publisher4!: Publisher4;
   test4!: Test4;
@@ -8647,11 +8925,11 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
-export class TagsOrdered extends BaseUser2 {
+export class TagsOrdered extends BaseEntity2 {
   id!: number;
   book4!: Book4;
   bookTag4!: BookTag4;
@@ -8677,9 +8955,9 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
 });
 ",
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseEntity2 } from './BaseEntity2';
 
-export class Test4 extends BaseUser2 {
+export class Test4 extends BaseEntity2 {
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -8700,13 +8978,15 @@ export const Test4Schema = new MikroORM_EntitySchema({
 ",
   "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
-export abstract class BaseUser2 extends MikroORM_BaseEntity {
+export abstract class BaseEntity2 extends MikroORM_BaseEntity {
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
+  serverTime!: Date;
 }
 
-export const BaseUser2Schema = new MikroORM_EntitySchema({
-  class: BaseUser2,
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
   properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
   },
 });
 ",
@@ -8976,6 +9256,16 @@ export class Test4 extends CustomBase {
 
   @MikroORM_Property({ type: 'integer' })
   version: number & MikroORM_Opt = 1;
+
+}
+",
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+import { CustomBase } from './CustomBase';
+
+export abstract class BaseEntity2 extends CustomBase {
+
+  @MikroORM_Formula(() => 'SELECT NOW()')
+  serverTime!: Date;
 
 }
 ",
@@ -9286,6 +9576,20 @@ export const Test4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text', nullable: true },
     version: { type: 'integer' },
+  },
+});
+",
+  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+import { CustomBase } from './CustomBase';
+
+export abstract class BaseEntity2 extends CustomBase {
+  serverTime!: Date;
+}
+
+export const BaseEntity2Schema = new MikroORM_EntitySchema({
+  class: BaseEntity2,
+  properties: {
+    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
   },
 });
 ",

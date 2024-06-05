@@ -74,7 +74,6 @@ export class EntitySchemaSourceFile extends SourceFile {
     ret += declLine;
 
     if (this.meta.indexes.length > 0) {
-      entitySchemaOptions.indexes = [];
       entitySchemaOptions.indexes = this.meta.indexes.map(index => {
         const indexOpt: IndexOptions<Dictionary> = {};
         if (typeof index.name === 'string') {
