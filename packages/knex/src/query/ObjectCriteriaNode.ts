@@ -93,7 +93,8 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
       if (childNode.shouldInline(payload)) {
         const childAlias = qb.getAliasForJoinPath(childNode.getPath(), options);
-        this.inlineChildPayload(o, payload, field as EntityKey, alias, childAlias);
+        const a = qb.helper.isTableNameAliasRequired(qb.type) ? alias : undefined;
+        this.inlineChildPayload(o, payload, field as EntityKey, a, childAlias);
       } else if (childNode.shouldRename(payload)) {
         o[childNode.renameFieldToPK(qb)] = payload;
       } else if (isRawField) {
@@ -178,7 +179,6 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       } else if (RawQueryFragment.isKnownFragment(k)) {
         o[k] = payload[k];
       } else {
-        o[`${childAlias}.${k}`] = payload[k];
         o[this.aliased(k, childAlias)] = payload[k];
       }
     }
