@@ -1442,7 +1442,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.2.9"
     "@mikro-orm/knex": "npm:6.2.9"
-    mariadb: "npm:3.3.0"
+    mariadb: "npm:3.3.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1560,7 +1560,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.12"
-    "@types/node": "npm:20.14.1"
+    "@types/node": "npm:20.14.2"
     "@types/pg": "npm:8.11.6"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:9.0.8"
@@ -2465,12 +2465,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.14.1":
-  version: 20.14.1
-  resolution: "@types/node@npm:20.14.1"
+"@types/node@npm:20.14.2":
+  version: 20.14.2
+  resolution: "@types/node@npm:20.14.2"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 10/1417d9768dccca9491fb5fc41ef0ee9044cef4c86eef413608dd983c30af19d5f0930b356791dde3aec238a6a47bbea42c47b69929b5fe822cf09cd543f6c52f
+  checksum: 10/c38e47b190fa0a8bdfde24b036dddcf9401551f2fb170a90ff33625c7d6f218907e81c74e0fa6e394804a32623c24c60c50e249badc951007830f0d02c48ee0f
   languageName: node
   linkType: hard
 
@@ -7884,16 +7884,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mariadb@npm:3.3.0":
-  version: 3.3.0
-  resolution: "mariadb@npm:3.3.0"
+"mariadb@npm:3.3.1":
+  version: 3.3.1
+  resolution: "mariadb@npm:3.3.1"
   dependencies:
     "@types/geojson": "npm:^7946.0.14"
     "@types/node": "npm:^20.11.17"
     denque: "npm:^2.1.0"
     iconv-lite: "npm:^0.6.3"
     lru-cache: "npm:^10.2.0"
-  checksum: 10/9d99e9cac7a868a890f876a1c28ef826de70739c629755b8563f0f6933b0fa710775f4298a0d85f11a794cd883e1c538506598da0e0f58a3c0331cb9d6957dba
+  checksum: 10/3335133b122c797c2f8fc3a08b147890a3ca49d976b41394b642308015c8a9afadd6dbb4ff97b5588d9cec0ddec5c3e025270019990fbffecd237741a87dc710
   languageName: node
   linkType: hard
 
