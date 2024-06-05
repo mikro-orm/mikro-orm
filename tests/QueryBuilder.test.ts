@@ -1632,6 +1632,13 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
   });
 
+  test('delete with complex where', async () => {
+    const qb = orm.em.createQueryBuilder(Book2);
+    qb.delete({ author: { id: { $in: [1, 2, 3] } } });
+    expect(qb.getQuery()).toEqual('delete from `book2` where `author_id` in (?, ?, ?)');
+    expect(qb.getParams()).toEqual([1, 2, 3]);
+  });
+
   test('delete all query', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.delete();
