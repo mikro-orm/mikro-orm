@@ -39,7 +39,7 @@ export class UnitOfWork {
   private readonly orphanRemoveStack = new Set<AnyEntity>();
   private readonly changeSets = new Map<AnyEntity, ChangeSet<any>>();
   private readonly collectionUpdates = new Set<Collection<AnyEntity>>();
-  private readonly extraUpdates = new Set<[AnyEntity, string | string[], AnyEntity | AnyEntity[] | Reference<any> | Collection<any>, ChangeSet<any> | undefined]>();
+  private readonly extraUpdates = new Set<[AnyEntity, string | string[], AnyEntity | AnyEntity[] | Reference<any> | Collection<any>, ChangeSet<any> | undefined, ChangeSetType]>();
   private readonly metadata: MetadataStorage;
   private readonly platform: Platform;
   private readonly eventManager: EventManager;
@@ -223,7 +223,7 @@ export class UnitOfWork {
     return [...this.collectionUpdates];
   }
 
-  getExtraUpdates(): Set<[AnyEntity, string | string[], (AnyEntity | AnyEntity[] | Reference<any> | Collection<any>), ChangeSet<any> | undefined]> {
+  getExtraUpdates(): Set<[AnyEntity, string | string[], (AnyEntity | AnyEntity[] | Reference<any> | Collection<any>), ChangeSet<any> | undefined, ChangeSetType]> {
     return this.extraUpdates;
   }
 
@@ -532,10 +532,21 @@ export class UnitOfWork {
     }
 
     let conflicts = false;
+    let type = ChangeSetType.UPDATE;
+
+    if (!props.some(prop => prop.name in changeSet.payload)) {
+      return;
+    }
 
     for (const cs of this.changeSets.values()) {
-      if (cs.rootName === changeSet.rootName && cs.type === changeSet.type) {
-        conflicts = true;
+      for (const prop of props) {
+        if (prop.name in cs.payload && cs.rootName === changeSet.rootName && cs.type === changeSet.type) {
+          conflicts = true;
+
+          if (changeSet.payload[prop.name] == null) {
+            type = ChangeSetType.UPDATE_EARLY;
+          }
+        }
       }
     }
 
@@ -543,7 +554,7 @@ export class UnitOfWork {
       return;
     }
 
-    this.extraUpdates.add([changeSet.entity, props.map(p => p.name), props.map(p => changeSet.entity[p.name]), changeSet]);
+    this.extraUpdates.add([changeSet.entity, props.map(p => p.name), props.map(p => changeSet.entity[p.name]), changeSet, type]);
 
     for (const p of props) {
       delete changeSet.entity[p.name];
@@ -608,14 +619,14 @@ export class UnitOfWork {
    * Returns `true` when the change set should be skipped as it will be empty after the extra update.
    */
   private checkUniqueProps<T extends object>(changeSet: ChangeSet<T>): boolean {
-    if (this.platform.allowsUniqueBatchUpdates() || changeSet.type !== ChangeSetType.UPDATE) {
+    if (changeSet.type !== ChangeSetType.UPDATE) {
       return false;
     }
 
-    // when changing a unique nullable property (or a 1:1 relation), we can't do it in a single query as it would cause unique constraint violations
+    // when changing a unique nullable property (or a 1:1 relation), we can't do it in a single
+    // query as it would cause unique constraint violations
     const uniqueProps = changeSet.meta.uniqueProps.filter(prop => {
-      return (prop.nullable || changeSet.type !== ChangeSetType.CREATE)
-        && changeSet.payload[prop.name] != null;
+      return (prop.nullable || changeSet.type !== ChangeSetType.CREATE);
     });
     this.scheduleExtraUpdate(changeSet, uniqueProps);
 
@@ -703,7 +714,7 @@ export class UnitOfWork {
 
   private processToManyReference<T extends object>(collection: Collection<AnyEntity>, visited: Set<AnyEntity>, processed: Set<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
     if (this.isCollectionSelfReferenced(collection, processed)) {
-      this.extraUpdates.add([parent, prop.name, collection, undefined]);
+      this.extraUpdates.add([parent, prop.name, collection, undefined, ChangeSetType.UPDATE]);
       const coll = new Collection<AnyEntity, T>(parent);
       coll.property = prop as EntityProperty<any>;
       parent[prop.name as keyof T] = coll as unknown as T[keyof T];
@@ -883,38 +894,41 @@ export class UnitOfWork {
     const commitOrder = this.getCommitOrder();
     const commitOrderReversed = [...commitOrder].reverse();
 
-    // 1. early delete - when we recreate entity in the same UoW, we need to issue those delete queries before inserts
+    // early delete - when we recreate entity in the same UoW, we need to issue those delete queries before inserts
     for (const name of commitOrderReversed) {
       await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE_EARLY].get(name) ?? [], ctx);
     }
 
-    // 2. early update - when we recreate entity in the same UoW, we need to issue those delete queries before inserts
+    // early update - when we recreate entity in the same UoW, we need to issue those delete queries before inserts
     for (const name of commitOrder) {
       await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE_EARLY].get(name) ?? [], ctx);
     }
 
-    // 3. create
+    // extra updates
+    await this.commitExtraUpdates(ChangeSetType.UPDATE_EARLY, ctx);
+
+    // create
     for (const name of commitOrder) {
       await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(name) ?? [], ctx);
     }
 
-    // 4. update
+    // update
     for (const name of commitOrder) {
       await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(name) ?? [], ctx);
     }
 
-    // 5. extra updates
-    await this.commitExtraUpdates(ctx);
+    // extra updates
+    await this.commitExtraUpdates(ChangeSetType.UPDATE, ctx);
 
-    // 6. collection updates
+    // collection updates
     await this.commitCollectionUpdates(ctx);
 
-    // 7. delete - entity deletions need to be in reverse commit order
+    // delete - entity deletions need to be in reverse commit order
     for (const name of commitOrderReversed) {
       await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(name) ?? [], ctx);
     }
 
-    // 8. take snapshots of all persisted collections
+    // take snapshots of all persisted collections
     const visited = new Set<object>();
 
     for (const changeSet of this.changeSets.values()) {
@@ -1032,10 +1046,14 @@ export class UnitOfWork {
     }
   }
 
-  private async commitExtraUpdates<T extends object>(ctx?: Transaction): Promise<void> {
+  private async commitExtraUpdates(type: ChangeSetType.UPDATE | ChangeSetType.UPDATE_EARLY, ctx?: Transaction): Promise<void> {
     const extraUpdates: [ChangeSet<any>, ChangeSet<any> | undefined][] = [];
 
     for (const extraUpdate of this.extraUpdates) {
+      if (extraUpdate[4] !== type) {
+        continue;
+      }
+
       if (Array.isArray(extraUpdate[1])) {
         extraUpdate[1].forEach((p, i) => extraUpdate[0][p] = (extraUpdate[2] as unknown[])[i]);
       } else {

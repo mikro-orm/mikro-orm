@@ -2676,7 +2676,7 @@ describe('EntityManagerMySql', () => {
     const bar2 = FooBar2.create('bar 2');
     const bar3 = FooBar2.create('bar 3');
     bar1.fooBar = bar2;
-    await orm.em.persistAndFlush([bar1, bar3]);
+    await orm.em.persistAndFlush([bar3, bar1]);
     bar1.fooBar = undefined;
     bar3.fooBar = bar2;
 
@@ -2684,10 +2684,11 @@ describe('EntityManagerMySql', () => {
 
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select `f0`.`id` from `foo_bar2` as `f0` where ((`f0`.`id` = ? and `f0`.`version` = ?) or (`f0`.`id` = ? and `f0`.`version` = ?))');
-    expect(mock.mock.calls[2][0]).toMatch('update `foo_bar2` set `foo_bar_id` = case when (`id` = ?) then ? when (`id` = ?) then ? else `foo_bar_id` end, `version` = current_timestamp where `id` in (?, ?)');
-    expect(mock.mock.calls[3][0]).toMatch('select `f0`.`id`, `f0`.`version` from `foo_bar2` as `f0` where `f0`.`id` in (?, ?)');
-    expect(mock.mock.calls[4][0]).toMatch('commit');
+    expect(mock.mock.calls[1][0]).toMatch('update `foo_bar2` set `foo_bar_id` = ?, `version` = current_timestamp where `id` = ? and `version` = ?');
+    expect(mock.mock.calls[2][0]).toMatch('select `f0`.`id`, `f0`.`version` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
+    expect(mock.mock.calls[3][0]).toMatch('update `foo_bar2` set `foo_bar_id` = ?, `version` = current_timestamp where `id` = ? and `version` = ?');
+    expect(mock.mock.calls[4][0]).toMatch('select `f0`.`id`, `f0`.`version` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
+    expect(mock.mock.calls[5][0]).toMatch('commit');
   });
 
   test('custom types', async () => {
