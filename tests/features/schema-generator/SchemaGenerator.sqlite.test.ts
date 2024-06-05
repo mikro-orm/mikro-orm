@@ -35,4 +35,15 @@ describe('SchemaGenerator [sqlite]', () => {
     await orm.close(true);
   });
 
+  test('alter enum [sqlite]', async () => {
+    const orm = await initORMSqlite();
+    await orm.schema.dropSchema();
+
+    const updateDump = await orm.schema.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('sqlite-update-empty-schema-dump');
+    await orm.schema.execute(updateDump, { wrap: true });
+
+    await orm.close(true);
+  });
+
 });

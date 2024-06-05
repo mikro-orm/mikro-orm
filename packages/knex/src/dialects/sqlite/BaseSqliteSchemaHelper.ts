@@ -1,7 +1,7 @@
 import type { Connection, Dictionary } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection';
 import { SchemaHelper } from '../../schema/SchemaHelper';
-import type { CheckDef, Column, IndexDef } from '../../typings';
+import type { CheckDef, Column, IndexDef, TableDifference } from '../../typings';
 
 export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
 
@@ -204,6 +204,25 @@ export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
   isImplicitIndex(name: string): boolean {
     // Ignore indexes with reserved names, e.g. autoindexes
     return name.startsWith('sqlite_');
+  }
+
+  override async getAlterTable(changedTable: TableDifference, wrap?: boolean): Promise<string> {
+    wrap ??= this.options.disableForeignKeys;
+    const tempName = `${(changedTable.toTable.name)}__temp_alter`;
+    const quotedName = this.platform.quoteIdentifier(changedTable.toTable.name);
+    const quotedTempName = this.platform.quoteIdentifier(tempName);
+    const createSql = await this.dump(this.createTable(changedTable.toTable), '');
+    const [first, ...rest] = createSql.split('\n');
+
+    return [
+      'pragma foreign_keys = off;',
+      first.replace(`create table ${quotedName}`, `create table ${quotedTempName}`),
+      `insert into ${quotedTempName} select * from ${quotedName};`,
+      `drop table ${quotedName};`,
+      `alter table ${quotedTempName} rename to ${quotedName};`,
+      ...rest,
+      'pragma foreign_keys = on;',
+    ].join('\n');
   }
 
 }
