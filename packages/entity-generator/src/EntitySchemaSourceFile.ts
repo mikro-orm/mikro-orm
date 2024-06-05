@@ -132,7 +132,7 @@ export class EntitySchemaSourceFile extends SourceFile {
     }
 
     if (typeof prop.kind !== 'undefined' && prop.kind !== ReferenceKind.SCALAR) {
-      options.kind = this.quote(prop.kind);
+      options.kind = `${this.referenceCoreImport('ReferenceKind')}.${Object.entries(ReferenceKind).find(([kindName, kindVal]) => kindVal === prop.kind)![0]}`;
     }
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY) {

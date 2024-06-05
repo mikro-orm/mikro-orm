@@ -675,7 +675,7 @@ export abstract class CustomBase2 {
 
 exports[`MetadataHooks [mysql] identifiedReferences=false metadata hooks with entity schema: mysql-EntitySchema-dump 1`] = `
 [
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 export class Address2 {
@@ -689,7 +689,7 @@ export const Address2Schema = new EntitySchema({
   properties: {
     author: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Author2,
       updateRule: 'cascade',
       deleteRule: 'cascade',
@@ -698,7 +698,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt } from '@mikro-orm/core';
+  "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt, ReferenceKind } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBooleanRuntimeType } from './../runtimeTypes/CustomBooleanRuntimeType';
 import { CustomBooleanType } from './../types/CustomBooleanType';
@@ -778,7 +778,7 @@ export const Author2Schema = new EntitySchema({
     born: { type: 'date', nullable: true, index: 'author2_born_index' },
     bornTime: { type: 'time', nullable: true, index: 'born_time_idx' },
     favouriteBook: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Book2,
       deleteRule: 'cascade',
       nullable: true,
@@ -786,14 +786,14 @@ export const Author2Schema = new EntitySchema({
       cascade: [Cascade.PERSIST, Cascade.MERGE],
     },
     favouriteAuthor: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Author2,
       updateRule: 'cascade',
       deleteRule: 'set null',
       nullable: true,
     },
     identity: {
-      kind: 'embedded',
+      kind: ReferenceKind.EMBEDDED,
       entity: () => IdentitiesContainer,
       array: true,
       object: true,
@@ -806,7 +806,7 @@ export const Author2Schema = new EntitySchema({
       lazy: true,
     },
     authorToFriend: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Author2,
       pivotTable: 'author_to_friend',
       joinColumn: 'author2_1_id',
@@ -814,36 +814,36 @@ export const Author2Schema = new EntitySchema({
       hidden: true,
     },
     following: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Author2,
       joinColumn: 'author2_1_id',
       inverseJoinColumn: 'author2_2_id',
     },
     authorInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Book2,
       mappedBy: 'author',
       orphanRemoval: true,
     },
     favouriteAuthorInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Author2,
       mappedBy: 'favouriteAuthor',
     },
     authorToFriendInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Author2,
       mappedBy: 'authorToFriend',
     },
     followingInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Author2,
       mappedBy: 'following',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { CustomBase2 } from './CustomBase2';
 
 export abstract class BaseUser2 extends CustomBase2 {
@@ -882,14 +882,14 @@ export const BaseUser2Schema = new EntitySchema({
     },
     ownerProp: { type: 'string', length: 255, nullable: true },
     favouriteEmployee: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => BaseUser2,
       updateRule: 'cascade',
       deleteRule: 'set null',
       nullable: true,
     },
     favouriteManager: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => BaseUser2,
       updateRule: 'cascade',
       deleteRule: 'set null',
@@ -902,19 +902,19 @@ export const BaseUser2Schema = new EntitySchema({
     },
     managerProp: { type: 'string', length: 255, nullable: true },
     favouriteEmployeeInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => BaseUser2,
       mappedBy: 'favouriteEmployee',
     },
     favouriteManagerInverse: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => BaseUser2,
       mappedBy: 'favouriteManager',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Book2Tags } from './Book2Tags';
 
@@ -931,19 +931,19 @@ export const BookTag2Schema = new EntitySchema({
     id: { primary: true, type: 'bigint' },
     name: { type: 'string', length: 50 },
     bookToTagUnorderedInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Book2,
       mappedBy: 'bookToTagUnordered',
     },
     bookTag2Inverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Book2Tags,
       mappedBy: 'bookTag2',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, type IType, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type IType, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -984,9 +984,9 @@ export const Book2Schema = new EntitySchema({
     price: { type: 'decimal', precision: 8, scale: 2, nullable: true },
     double: { type: 'double', nullable: true },
     meta: { type: 'json', columnType: 'json', nullable: true },
-    author: { kind: 'm:1', entity: () => Author2 },
+    author: { kind: ReferenceKind.MANY_TO_ONE, entity: () => Author2 },
     publisher: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Publisher2,
       mapToPk: true,
       updateRule: 'cascade',
@@ -995,23 +995,31 @@ export const Book2Schema = new EntitySchema({
     },
     foo: { type: 'string', length: 255, nullable: true },
     bookToTagUnordered: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => BookTag2,
       pivotTable: 'book_to_tag_unordered',
       joinColumn: 'book2_uuid_pk',
       inverseJoinColumn: 'book_tag2_id',
     },
     favouriteBookInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Author2,
       mappedBy: 'favouriteBook',
     },
-    book2Inverse: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'book2' },
-    bookInverse: { kind: '1:1', entity: () => Test2, mappedBy: 'book' },
+    book2Inverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Book2Tags,
+      mappedBy: 'book2',
+    },
+    bookInverse: {
+      kind: ReferenceKind.ONE_TO_ONE,
+      entity: () => Test2,
+      mappedBy: 'book',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -1028,13 +1036,13 @@ export const Book2TagsSchema = new EntitySchema({
   properties: {
     order: { primary: true, type: 'integer' },
     book2: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Book2,
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
     bookTag2: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => BookTag2,
       updateRule: 'cascade',
       deleteRule: 'cascade',
@@ -1042,7 +1050,7 @@ export const Book2TagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 
 export class CarOwner2 {
@@ -1056,11 +1064,15 @@ export const CarOwner2Schema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
-    car: { kind: 'm:1', entity: () => Car2, updateRule: 'cascade' },
+    car: {
+      kind: ReferenceKind.MANY_TO_ONE,
+      entity: () => Car2,
+      updateRule: 'cascade',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -1080,17 +1092,25 @@ export const Car2Schema = new EntitySchema({
     name: { primary: true, type: 'string', length: 100, index: 'car2_name_index' },
     year: { primary: true, type: 'integer', index: 'car2_year_index' },
     price: { type: 'integer' },
-    carInverse: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
+    carInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => CarOwner2,
+      mappedBy: 'car',
+    },
     favouriteCarInverse: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => User2,
       mappedBy: 'favouriteCar',
     },
-    carsInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'cars' },
+    carsInverse: {
+      kind: ReferenceKind.MANY_TO_MANY,
+      entity: () => User2,
+      mappedBy: 'cars',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Test2 } from './Test2';
 
 export class Configuration2 {
@@ -1106,7 +1126,7 @@ export const Configuration2Schema = new EntitySchema({
     property: { primary: true, type: 'string', length: 255 },
     test: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Test2,
       updateRule: 'cascade',
     },
@@ -1127,7 +1147,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, type IType, type Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type IType, type Opt, ReferenceKind } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { JSONObject } from './../runtimeTypes/JSONObject';
@@ -1161,14 +1181,14 @@ export const FooBar2Schema = new EntitySchema({
       nullable: true,
     },
     baz: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => FooBaz2,
       updateRule: 'cascade',
       deleteRule: 'set null',
       nullable: true,
     },
     fooBar: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => FooBar2,
       updateRule: 'cascade',
       deleteRule: 'set null',
@@ -1179,13 +1199,25 @@ export const FooBar2Schema = new EntitySchema({
     blob2: { type: 'blob', length: 65535, nullable: true },
     array: { type: 'text', length: 65535, nullable: true },
     objectProperty: { type: 'JsonObjectType', columnType: 'json', nullable: true },
-    fooBarInverse: { kind: '1:1', entity: () => Test2, mappedBy: 'fooBar' },
-    barInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
-    barsInverse: { kind: 'm:n', entity: () => Test2, mappedBy: 'bars' },
+    fooBarInverse: {
+      kind: ReferenceKind.ONE_TO_ONE,
+      entity: () => Test2,
+      mappedBy: 'fooBar',
+    },
+    barInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => FooParam2,
+      mappedBy: 'bar',
+    },
+    barsInverse: {
+      kind: ReferenceKind.MANY_TO_MANY,
+      entity: () => Test2,
+      mappedBy: 'bars',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, ReferenceKind } from '@mikro-orm/core';
 import { FooParam2 } from './FooParam2';
 
 export class FooBaz2 {
@@ -1201,11 +1233,15 @@ export const FooBaz2Schema = new EntitySchema({
     id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
-    bazInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
+    bazInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => FooParam2,
+      mappedBy: 'baz',
+    },
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -1222,13 +1258,13 @@ export const FooParam2Schema = new EntitySchema({
   properties: {
     bar: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FooBar2,
       updateRule: 'cascade',
     },
     baz: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FooBaz2,
       updateRule: 'cascade',
     },
@@ -1237,7 +1273,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, ReferenceKind } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
@@ -1287,16 +1323,20 @@ export const Publisher2Schema = new EntitySchema({
     enum3: { type: 'tinyint', nullable: true },
     enum4: { enum: true, items: () => Publisher2Enum4, nullable: true },
     enum5: { enum: true, items: () => Publisher2Enum5, nullable: true },
-    publisherInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
+    publisherInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Book2,
+      mappedBy: 'publisher',
+    },
     publisher2Inverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Publisher2Tests,
       mappedBy: 'publisher2',
     },
   },
 });
 ",
-  "import { EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -1312,13 +1352,13 @@ export const Publisher2TestsSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     publisher2: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Publisher2,
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
     test2: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Test2,
       updateRule: 'cascade',
       deleteRule: 'cascade',
@@ -1326,7 +1366,7 @@ export const Publisher2TestsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { User2 } from './User2';
 
 export class Sandwich {
@@ -1343,14 +1383,14 @@ export const SandwichSchema = new EntitySchema({
     name: { type: 'string', length: 255 },
     price: { type: 'integer' },
     sandwichesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => User2,
       mappedBy: 'sandwiches',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, ReferenceKind } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -1376,13 +1416,13 @@ export const Test2Schema = new EntitySchema({
     id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, nullable: true },
     book: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Book2,
       deleteRule: 'set null',
       nullable: true,
     },
     parent: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Test2,
       updateRule: 'cascade',
       deleteRule: 'set null',
@@ -1390,7 +1430,7 @@ export const Test2Schema = new EntitySchema({
     },
     version: { type: 'integer', version: true },
     fooBar: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => FooBar2,
       fieldName: 'foo___bar',
       updateRule: 'cascade',
@@ -1404,22 +1444,30 @@ export const Test2Schema = new EntitySchema({
       nullable: true,
     },
     bars: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => FooBar2,
       joinColumn: 'test2_id',
       inverseJoinColumn: 'foo_bar2_id',
     },
-    testInverse: { kind: '1:m', entity: () => Configuration2, mappedBy: 'test' },
+    testInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Configuration2,
+      mappedBy: 'test',
+    },
     test2Inverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Publisher2Tests,
       mappedBy: 'test2',
     },
-    parentInverse: { kind: '1:m', entity: () => Test2, mappedBy: 'parent' },
+    parentInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Test2,
+      mappedBy: 'parent',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -1440,7 +1488,7 @@ export const User2Schema = new EntitySchema({
     lastName: { primary: true, type: 'string', length: 100 },
     foo: { type: 'integer', nullable: true },
     favouriteCar: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Car2,
       mapToPk: true,
       updateRule: 'cascade',
@@ -1448,13 +1496,13 @@ export const User2Schema = new EntitySchema({
       nullable: true,
     },
     cars: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Car2,
       joinColumns: ['user2_first_name', 'user2_last_name'],
       inverseJoinColumns: ['car2_name', 'car2_year'],
     },
     sandwiches: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sandwich,
       joinColumns: ['user2_first_name', 'user2_last_name'],
       inverseJoinColumn: 'sandwich_id',
@@ -2271,7 +2319,7 @@ export abstract class CustomBase2 {
 
 exports[`MetadataHooks [mysql] identifiedReferences=true metadata hooks with entity schema: mysql-EntitySchema-dump 1`] = `
 [
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 export class Address2 {
@@ -2285,7 +2333,7 @@ export const Address2Schema = new EntitySchema({
   properties: {
     author: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Author2,
       ref: true,
       updateRule: 'cascade',
@@ -2295,7 +2343,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt, type Ref } from '@mikro-orm/core';
+  "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBooleanRuntimeType } from './../runtimeTypes/CustomBooleanRuntimeType';
 import { CustomBooleanType } from './../types/CustomBooleanType';
@@ -2376,7 +2424,7 @@ export const Author2Schema = new EntitySchema({
     born: { type: 'date', nullable: true, index: 'author2_born_index' },
     bornTime: { type: 'time', nullable: true, index: 'born_time_idx' },
     favouriteBook: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Book2,
       ref: true,
       deleteRule: 'cascade',
@@ -2385,7 +2433,7 @@ export const Author2Schema = new EntitySchema({
       cascade: [Cascade.PERSIST, Cascade.MERGE],
     },
     favouriteAuthor: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Author2,
       ref: true,
       updateRule: 'cascade',
@@ -2393,7 +2441,7 @@ export const Author2Schema = new EntitySchema({
       nullable: true,
     },
     identity: {
-      kind: 'embedded',
+      kind: ReferenceKind.EMBEDDED,
       entity: () => IdentitiesContainer,
       array: true,
       object: true,
@@ -2406,7 +2454,7 @@ export const Author2Schema = new EntitySchema({
       lazy: true,
     },
     authorToFriend: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Author2,
       pivotTable: 'author_to_friend',
       joinColumn: 'author2_1_id',
@@ -2414,36 +2462,36 @@ export const Author2Schema = new EntitySchema({
       hidden: true,
     },
     following: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Author2,
       joinColumn: 'author2_1_id',
       inverseJoinColumn: 'author2_2_id',
     },
     authorInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Book2,
       mappedBy: 'author',
       orphanRemoval: true,
     },
     favouriteAuthorInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Author2,
       mappedBy: 'favouriteAuthor',
     },
     authorToFriendInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Author2,
       mappedBy: 'authorToFriend',
     },
     followingInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Author2,
       mappedBy: 'following',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { CustomBase2 } from './CustomBase2';
 
 export abstract class BaseUser2 extends CustomBase2 {
@@ -2482,7 +2530,7 @@ export const BaseUser2Schema = new EntitySchema({
     },
     ownerProp: { type: 'string', length: 255, nullable: true },
     favouriteEmployee: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => BaseUser2,
       ref: true,
       updateRule: 'cascade',
@@ -2490,7 +2538,7 @@ export const BaseUser2Schema = new EntitySchema({
       nullable: true,
     },
     favouriteManager: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => BaseUser2,
       ref: true,
       updateRule: 'cascade',
@@ -2504,12 +2552,12 @@ export const BaseUser2Schema = new EntitySchema({
     },
     managerProp: { type: 'string', length: 255, nullable: true },
     favouriteEmployeeInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => BaseUser2,
       mappedBy: 'favouriteEmployee',
     },
     favouriteManagerInverse: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => BaseUser2,
       ref: true,
       mappedBy: 'favouriteManager',
@@ -2517,7 +2565,7 @@ export const BaseUser2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Book2Tags } from './Book2Tags';
 
@@ -2534,19 +2582,19 @@ export const BookTag2Schema = new EntitySchema({
     id: { primary: true, type: 'bigint' },
     name: { type: 'string', length: 50 },
     bookToTagUnorderedInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Book2,
       mappedBy: 'bookToTagUnordered',
     },
     bookTag2Inverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Book2Tags,
       mappedBy: 'bookTag2',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, type IType, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type IType, type Opt, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -2587,9 +2635,9 @@ export const Book2Schema = new EntitySchema({
     price: { type: 'decimal', precision: 8, scale: 2, nullable: true },
     double: { type: 'double', nullable: true },
     meta: { type: 'json', columnType: 'json', nullable: true },
-    author: { kind: 'm:1', entity: () => Author2, ref: true },
+    author: { kind: ReferenceKind.MANY_TO_ONE, entity: () => Author2, ref: true },
     publisher: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Publisher2,
       ref: true,
       mapToPk: true,
@@ -2599,23 +2647,32 @@ export const Book2Schema = new EntitySchema({
     },
     foo: { type: 'string', length: 255, nullable: true },
     bookToTagUnordered: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => BookTag2,
       pivotTable: 'book_to_tag_unordered',
       joinColumn: 'book2_uuid_pk',
       inverseJoinColumn: 'book_tag2_id',
     },
     favouriteBookInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Author2,
       mappedBy: 'favouriteBook',
     },
-    book2Inverse: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'book2' },
-    bookInverse: { kind: '1:1', entity: () => Test2, ref: true, mappedBy: 'book' },
+    book2Inverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Book2Tags,
+      mappedBy: 'book2',
+    },
+    bookInverse: {
+      kind: ReferenceKind.ONE_TO_ONE,
+      entity: () => Test2,
+      ref: true,
+      mappedBy: 'book',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -2632,14 +2689,14 @@ export const Book2TagsSchema = new EntitySchema({
   properties: {
     order: { primary: true, type: 'integer' },
     book2: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Book2,
       ref: true,
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
     bookTag2: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => BookTag2,
       ref: true,
       updateRule: 'cascade',
@@ -2648,7 +2705,7 @@ export const Book2TagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 
 export class CarOwner2 {
@@ -2662,11 +2719,16 @@ export const CarOwner2Schema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
-    car: { kind: 'm:1', entity: () => Car2, ref: true, updateRule: 'cascade' },
+    car: {
+      kind: ReferenceKind.MANY_TO_ONE,
+      entity: () => Car2,
+      ref: true,
+      updateRule: 'cascade',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -2686,18 +2748,26 @@ export const Car2Schema = new EntitySchema({
     name: { primary: true, type: 'string', length: 100, index: 'car2_name_index' },
     year: { primary: true, type: 'integer', index: 'car2_year_index' },
     price: { type: 'integer' },
-    carInverse: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
+    carInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => CarOwner2,
+      mappedBy: 'car',
+    },
     favouriteCarInverse: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => User2,
       ref: true,
       mappedBy: 'favouriteCar',
     },
-    carsInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'cars' },
+    carsInverse: {
+      kind: ReferenceKind.MANY_TO_MANY,
+      entity: () => User2,
+      mappedBy: 'cars',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Test2 } from './Test2';
 
 export class Configuration2 {
@@ -2713,7 +2783,7 @@ export const Configuration2Schema = new EntitySchema({
     property: { primary: true, type: 'string', length: 255 },
     test: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Test2,
       ref: true,
       updateRule: 'cascade',
@@ -2735,7 +2805,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, type IType, type Opt, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type IType, type Opt, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { JSONObject } from './../runtimeTypes/JSONObject';
@@ -2769,7 +2839,7 @@ export const FooBar2Schema = new EntitySchema({
       nullable: true,
     },
     baz: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => FooBaz2,
       ref: true,
       updateRule: 'cascade',
@@ -2777,7 +2847,7 @@ export const FooBar2Schema = new EntitySchema({
       nullable: true,
     },
     fooBar: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => FooBar2,
       ref: true,
       updateRule: 'cascade',
@@ -2790,17 +2860,25 @@ export const FooBar2Schema = new EntitySchema({
     array: { type: 'text', length: 65535, nullable: true },
     objectProperty: { type: 'JsonObjectType', columnType: 'json', nullable: true },
     fooBarInverse: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Test2,
       ref: true,
       mappedBy: 'fooBar',
     },
-    barInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
-    barsInverse: { kind: 'm:n', entity: () => Test2, mappedBy: 'bars' },
+    barInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => FooParam2,
+      mappedBy: 'bar',
+    },
+    barsInverse: {
+      kind: ReferenceKind.MANY_TO_MANY,
+      entity: () => Test2,
+      mappedBy: 'bars',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, ReferenceKind } from '@mikro-orm/core';
 import { FooParam2 } from './FooParam2';
 
 export class FooBaz2 {
@@ -2816,11 +2894,15 @@ export const FooBaz2Schema = new EntitySchema({
     id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
-    bazInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
+    bazInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => FooParam2,
+      mappedBy: 'baz',
+    },
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -2837,14 +2919,14 @@ export const FooParam2Schema = new EntitySchema({
   properties: {
     bar: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FooBar2,
       ref: true,
       updateRule: 'cascade',
     },
     baz: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FooBaz2,
       ref: true,
       updateRule: 'cascade',
@@ -2854,7 +2936,7 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, ReferenceKind } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
@@ -2904,16 +2986,20 @@ export const Publisher2Schema = new EntitySchema({
     enum3: { type: 'tinyint', nullable: true },
     enum4: { enum: true, items: () => Publisher2Enum4, nullable: true },
     enum5: { enum: true, items: () => Publisher2Enum5, nullable: true },
-    publisherInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
+    publisherInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Book2,
+      mappedBy: 'publisher',
+    },
     publisher2Inverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Publisher2Tests,
       mappedBy: 'publisher2',
     },
   },
 });
 ",
-  "import { EntitySchema, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -2929,14 +3015,14 @@ export const Publisher2TestsSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     publisher2: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Publisher2,
       ref: true,
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
     test2: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Test2,
       ref: true,
       updateRule: 'cascade',
@@ -2945,7 +3031,7 @@ export const Publisher2TestsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { User2 } from './User2';
 
 export class Sandwich {
@@ -2962,14 +3048,14 @@ export const SandwichSchema = new EntitySchema({
     name: { type: 'string', length: 255 },
     price: { type: 'integer' },
     sandwichesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => User2,
       mappedBy: 'sandwiches',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -2995,14 +3081,14 @@ export const Test2Schema = new EntitySchema({
     id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, nullable: true },
     book: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Book2,
       ref: true,
       deleteRule: 'set null',
       nullable: true,
     },
     parent: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Test2,
       ref: true,
       updateRule: 'cascade',
@@ -3011,7 +3097,7 @@ export const Test2Schema = new EntitySchema({
     },
     version: { type: 'integer', version: true },
     fooBar: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => FooBar2,
       ref: true,
       fieldName: 'foo___bar',
@@ -3026,22 +3112,30 @@ export const Test2Schema = new EntitySchema({
       nullable: true,
     },
     bars: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => FooBar2,
       joinColumn: 'test2_id',
       inverseJoinColumn: 'foo_bar2_id',
     },
-    testInverse: { kind: '1:m', entity: () => Configuration2, mappedBy: 'test' },
+    testInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Configuration2,
+      mappedBy: 'test',
+    },
     test2Inverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Publisher2Tests,
       mappedBy: 'test2',
     },
-    parentInverse: { kind: '1:m', entity: () => Test2, mappedBy: 'parent' },
+    parentInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Test2,
+      mappedBy: 'parent',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -3062,7 +3156,7 @@ export const User2Schema = new EntitySchema({
     lastName: { primary: true, type: 'string', length: 100 },
     foo: { type: 'integer', nullable: true },
     favouriteCar: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Car2,
       ref: true,
       mapToPk: true,
@@ -3071,13 +3165,13 @@ export const User2Schema = new EntitySchema({
       nullable: true,
     },
     cars: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Car2,
       joinColumns: ['user2_first_name', 'user2_last_name'],
       inverseJoinColumns: ['car2_name', 'car2_year'],
     },
     sandwiches: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sandwich,
       joinColumns: ['user2_first_name', 'user2_last_name'],
       inverseJoinColumn: 'sandwich_id',

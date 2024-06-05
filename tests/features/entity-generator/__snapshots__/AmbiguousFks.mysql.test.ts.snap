@@ -258,7 +258,7 @@ export class Sellers {
 
 exports[`ambiguous_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
@@ -275,7 +275,7 @@ export const ColorsSchema = new EntitySchema({
     colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'product_colors',
       pivotEntity: () => ProductColors,
@@ -299,7 +299,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { Products } from './Products';
 
@@ -316,14 +316,14 @@ export const ProductColorsSchema = new EntitySchema({
   properties: {
     color: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Colors,
       fieldName: 'color_id',
     },
     colorId: { type: 'integer', persist: false },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
@@ -336,7 +336,7 @@ export const ProductColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSizes } from './ProductSizes';
 
@@ -354,7 +354,7 @@ export const ProductCountriesSchema = new EntitySchema({
     country: { type: 'unknown', persist: false },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       fieldName: 'product_id',
       index: 'fk_product_countries_product_sizes1_idx',
@@ -366,14 +366,14 @@ export const ProductCountriesSchema = new EntitySchema({
     },
     countries: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       fieldName: 'country',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountries } from './ProductCountries';
 import { Products } from './Products';
@@ -394,14 +394,14 @@ export const ProductSizesSchema = new EntitySchema({
   properties: {
     product: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
     },
     productId: { type: 'integer', persist: false },
     size: { type: 'smallint', unsigned: true },
     productCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       pivotTable: 'product_countries',
       pivotEntity: () => ProductCountries,
@@ -427,7 +427,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
@@ -465,7 +465,7 @@ export const SalesSchema = new EntitySchema({
     sellerId: { type: 'integer', persist: false },
     productId: { type: 'integer', persist: false, index: 'product_id_idx' },
     color: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductColors,
       fieldNames: ['color_id', 'product_id'],
       nullable: true,
@@ -474,7 +474,7 @@ export const SalesSchema = new EntitySchema({
     colorId: { type: 'integer', nullable: true, persist: false },
     size: { type: 'smallint', nullable: true, persist: false },
     exchanged: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'exchanged_product_id'],
       nullable: true,
@@ -482,26 +482,26 @@ export const SalesSchema = new EntitySchema({
     },
     exchangedProductId: { type: 'integer', nullable: true, persist: false },
     productCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductCountries,
       fieldNames: ['country', 'product_id'],
       index: 'fk_sales_product_countries1_idx',
     },
     productSizes: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
     sellerCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerCountries,
       fieldNames: ['country', 'seller_id'],
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'product_id'],
       index: 'fk_sales_seller_products1_idx',
@@ -509,7 +509,7 @@ export const SalesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Sellers } from './Sellers';
 
@@ -527,7 +527,7 @@ export const SellerCountriesSchema = new EntitySchema({
     country: { type: 'unknown', persist: false },
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       fieldName: 'seller_id',
       index: 'fk_seller_countries_sellers1_idx',
@@ -539,14 +539,14 @@ export const SellerCountriesSchema = new EntitySchema({
     },
     countries: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       fieldName: 'country',
     },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -563,14 +563,14 @@ export const SellerProductsSchema = new EntitySchema({
   properties: {
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       fieldName: 'seller_id',
     },
     sellerId: { type: 'integer', persist: false },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
       index: 'fk_seller_products_products1_idx',
@@ -583,7 +583,7 @@ export const SellerProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { SellerCountries } from './SellerCountries';
@@ -603,7 +603,7 @@ export const SellersSchema = new EntitySchema({
     sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       pivotTable: 'seller_countries',
       pivotEntity: () => SellerCountries,
@@ -611,7 +611,7 @@ export const SellersSchema = new EntitySchema({
       inverseJoinColumn: 'country',
     },
     sellerProducts: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'seller_products',
       pivotEntity: () => SellerProducts,
@@ -882,7 +882,7 @@ export class Sellers {
 
 exports[`ambiguous_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
@@ -899,7 +899,7 @@ export const ColorsSchema = new EntitySchema({
     colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'product_colors',
       pivotEntity: () => ProductColors,
@@ -923,7 +923,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { Products } from './Products';
 
@@ -940,7 +940,7 @@ export const ProductColorsSchema = new EntitySchema({
   properties: {
     color: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Colors,
       ref: true,
       fieldName: 'color_id',
@@ -948,7 +948,7 @@ export const ProductColorsSchema = new EntitySchema({
     colorId: { type: 'integer', persist: false },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
@@ -962,7 +962,7 @@ export const ProductColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSizes } from './ProductSizes';
 
@@ -980,7 +980,7 @@ export const ProductCountriesSchema = new EntitySchema({
     country: { type: 'unknown', persist: false },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       ref: true,
       fieldName: 'product_id',
@@ -993,7 +993,7 @@ export const ProductCountriesSchema = new EntitySchema({
     },
     countries: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
@@ -1001,7 +1001,7 @@ export const ProductCountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountries } from './ProductCountries';
 import { Products } from './Products';
@@ -1022,7 +1022,7 @@ export const ProductSizesSchema = new EntitySchema({
   properties: {
     product: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
@@ -1030,7 +1030,7 @@ export const ProductSizesSchema = new EntitySchema({
     productId: { type: 'integer', persist: false },
     size: { type: 'smallint', unsigned: true },
     productCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       pivotTable: 'product_countries',
       pivotEntity: () => ProductCountries,
@@ -1056,7 +1056,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
@@ -1094,7 +1094,7 @@ export const SalesSchema = new EntitySchema({
     sellerId: { type: 'integer', persist: false },
     productId: { type: 'integer', persist: false, index: 'product_id_idx' },
     color: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductColors,
       ref: true,
       fieldNames: ['color_id', 'product_id'],
@@ -1104,7 +1104,7 @@ export const SalesSchema = new EntitySchema({
     colorId: { type: 'integer', nullable: true, persist: false },
     size: { type: 'smallint', nullable: true, persist: false },
     exchanged: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'exchanged_product_id'],
@@ -1113,14 +1113,14 @@ export const SalesSchema = new EntitySchema({
     },
     exchangedProductId: { type: 'integer', nullable: true, persist: false },
     productCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductCountries,
       ref: true,
       fieldNames: ['country', 'product_id'],
       index: 'fk_sales_product_countries1_idx',
     },
     productSizes: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       ref: true,
       fieldNames: ['size', 'product_id'],
@@ -1128,14 +1128,14 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sizes1_idx',
     },
     sellerCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerCountries,
       ref: true,
       fieldNames: ['country', 'seller_id'],
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
@@ -1144,7 +1144,7 @@ export const SalesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Sellers } from './Sellers';
 
@@ -1162,7 +1162,7 @@ export const SellerCountriesSchema = new EntitySchema({
     country: { type: 'unknown', persist: false },
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
@@ -1175,7 +1175,7 @@ export const SellerCountriesSchema = new EntitySchema({
     },
     countries: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
@@ -1183,7 +1183,7 @@ export const SellerCountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -1200,7 +1200,7 @@ export const SellerProductsSchema = new EntitySchema({
   properties: {
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
@@ -1208,7 +1208,7 @@ export const SellerProductsSchema = new EntitySchema({
     sellerId: { type: 'integer', persist: false },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
@@ -1222,7 +1222,7 @@ export const SellerProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { SellerCountries } from './SellerCountries';
@@ -1242,7 +1242,7 @@ export const SellersSchema = new EntitySchema({
     sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       pivotTable: 'seller_countries',
       pivotEntity: () => SellerCountries,
@@ -1250,7 +1250,7 @@ export const SellersSchema = new EntitySchema({
       inverseJoinColumn: 'country',
     },
     sellerProducts: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'seller_products',
       pivotEntity: () => SellerProducts,
@@ -1577,7 +1577,7 @@ export class Sellers {
 
 exports[`ambiguous_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
@@ -1595,18 +1595,22 @@ export const ColorsSchema = new EntitySchema({
     colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'product_colors',
       pivotEntity: () => ProductColors,
       joinColumn: 'color_id',
       inverseJoinColumn: 'product_id',
     },
-    colorInverse: { kind: '1:m', entity: () => ProductColors, mappedBy: 'color' },
+    colorInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => ProductColors,
+      mappedBy: 'color',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
 import { Sellers } from './Sellers';
@@ -1624,24 +1628,24 @@ export const CountriesSchema = new EntitySchema({
   properties: {
     country: { primary: true, type: 'unknown', columnType: 'char(2)' },
     countriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerCountries,
       mappedBy: 'countries',
     },
     productCountriesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => ProductSizes,
       mappedBy: 'productCountries',
     },
     sellerCountriesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       mappedBy: 'sellerCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -1660,14 +1664,14 @@ export const ProductColorsSchema = new EntitySchema({
   properties: {
     color: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Colors,
       fieldName: 'color_id',
     },
     colorId: { type: 'integer', persist: false },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
@@ -1677,11 +1681,15 @@ export const ProductColorsSchema = new EntitySchema({
       persist: false,
       index: 'fk_product_colors_products1_idx',
     },
-    colorInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
+    colorInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'color',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSizes } from './ProductSizes';
 import { Sales } from './Sales';
@@ -1701,7 +1709,7 @@ export const ProductCountriesSchema = new EntitySchema({
     country: { type: 'unknown', persist: false },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       fieldName: 'product_id',
       index: 'fk_product_countries_product_sizes1_idx',
@@ -1713,19 +1721,19 @@ export const ProductCountriesSchema = new EntitySchema({
     },
     countries: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       fieldName: 'country',
     },
     productCountriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'productCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountries } from './ProductCountries';
 import { Products } from './Products';
@@ -1749,14 +1757,14 @@ export const ProductSizesSchema = new EntitySchema({
   properties: {
     product: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
     },
     productId: { type: 'integer', persist: false },
     size: { type: 'smallint', unsigned: true },
     productCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       pivotTable: 'product_countries',
       pivotEntity: () => ProductCountries,
@@ -1764,19 +1772,19 @@ export const ProductSizesSchema = new EntitySchema({
       inverseJoinColumn: 'country',
     },
     productInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => ProductCountries,
       mappedBy: 'product',
     },
     productSizesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'productSizes',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { SellerProducts } from './SellerProducts';
 import { Sellers } from './Sellers';
@@ -1796,24 +1804,24 @@ export const ProductsSchema = new EntitySchema({
     productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColorsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Colors,
       mappedBy: 'productColors',
     },
     productInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerProducts,
       mappedBy: 'product',
     },
     sellerProductsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       mappedBy: 'sellerProducts',
     },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
@@ -1851,7 +1859,7 @@ export const SalesSchema = new EntitySchema({
     sellerId: { type: 'integer', persist: false },
     productId: { type: 'integer', persist: false, index: 'product_id_idx' },
     color: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductColors,
       fieldNames: ['color_id', 'product_id'],
       nullable: true,
@@ -1860,7 +1868,7 @@ export const SalesSchema = new EntitySchema({
     colorId: { type: 'integer', nullable: true, persist: false },
     size: { type: 'smallint', nullable: true, persist: false },
     exchanged: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'exchanged_product_id'],
       nullable: true,
@@ -1868,26 +1876,26 @@ export const SalesSchema = new EntitySchema({
     },
     exchangedProductId: { type: 'integer', nullable: true, persist: false },
     productCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductCountries,
       fieldNames: ['country', 'product_id'],
       index: 'fk_sales_product_countries1_idx',
     },
     productSizes: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
     sellerCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerCountries,
       fieldNames: ['country', 'seller_id'],
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'product_id'],
       index: 'fk_sales_seller_products1_idx',
@@ -1895,7 +1903,7 @@ export const SalesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -1915,7 +1923,7 @@ export const SellerCountriesSchema = new EntitySchema({
     country: { type: 'unknown', persist: false },
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       fieldName: 'seller_id',
       index: 'fk_seller_countries_sellers1_idx',
@@ -1927,19 +1935,19 @@ export const SellerCountriesSchema = new EntitySchema({
     },
     countries: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       fieldName: 'country',
     },
     sellerCountriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'sellerCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -1959,14 +1967,14 @@ export const SellerProductsSchema = new EntitySchema({
   properties: {
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       fieldName: 'seller_id',
     },
     sellerId: { type: 'integer', persist: false },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
       index: 'fk_seller_products_products1_idx',
@@ -1976,16 +1984,20 @@ export const SellerProductsSchema = new EntitySchema({
       persist: false,
       index: 'fk_seller_products_products1_idx',
     },
-    exchangedInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'exchanged' },
+    exchangedInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'exchanged',
+    },
     fkSalesSellerProducts1Inverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'fkSalesSellerProducts1',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { SellerCountries } from './SellerCountries';
@@ -2006,7 +2018,7 @@ export const SellersSchema = new EntitySchema({
     sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       pivotTable: 'seller_countries',
       pivotEntity: () => SellerCountries,
@@ -2014,7 +2026,7 @@ export const SellersSchema = new EntitySchema({
       inverseJoinColumn: 'country',
     },
     sellerProducts: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'seller_products',
       pivotEntity: () => SellerProducts,
@@ -2022,7 +2034,7 @@ export const SellersSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerProducts,
       mappedBy: 'seller',
     },
@@ -2346,7 +2358,7 @@ export class Sellers {
 
 exports[`ambiguous_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
@@ -2364,18 +2376,22 @@ export const ColorsSchema = new EntitySchema({
     colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'product_colors',
       pivotEntity: () => ProductColors,
       joinColumn: 'color_id',
       inverseJoinColumn: 'product_id',
     },
-    colorInverse: { kind: '1:m', entity: () => ProductColors, mappedBy: 'color' },
+    colorInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => ProductColors,
+      mappedBy: 'color',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
 import { Sellers } from './Sellers';
@@ -2393,24 +2409,24 @@ export const CountriesSchema = new EntitySchema({
   properties: {
     country: { primary: true, type: 'unknown', columnType: 'char(2)' },
     countriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerCountries,
       mappedBy: 'countries',
     },
     productCountriesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => ProductSizes,
       mappedBy: 'productCountries',
     },
     sellerCountriesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       mappedBy: 'sellerCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -2429,7 +2445,7 @@ export const ProductColorsSchema = new EntitySchema({
   properties: {
     color: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Colors,
       ref: true,
       fieldName: 'color_id',
@@ -2437,7 +2453,7 @@ export const ProductColorsSchema = new EntitySchema({
     colorId: { type: 'integer', persist: false },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
@@ -2448,11 +2464,15 @@ export const ProductColorsSchema = new EntitySchema({
       persist: false,
       index: 'fk_product_colors_products1_idx',
     },
-    colorInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
+    colorInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'color',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSizes } from './ProductSizes';
 import { Sales } from './Sales';
@@ -2472,7 +2492,7 @@ export const ProductCountriesSchema = new EntitySchema({
     country: { type: 'unknown', persist: false },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       ref: true,
       fieldName: 'product_id',
@@ -2485,20 +2505,20 @@ export const ProductCountriesSchema = new EntitySchema({
     },
     countries: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
     },
     productCountriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'productCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountries } from './ProductCountries';
 import { Products } from './Products';
@@ -2522,7 +2542,7 @@ export const ProductSizesSchema = new EntitySchema({
   properties: {
     product: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
@@ -2530,7 +2550,7 @@ export const ProductSizesSchema = new EntitySchema({
     productId: { type: 'integer', persist: false },
     size: { type: 'smallint', unsigned: true },
     productCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       pivotTable: 'product_countries',
       pivotEntity: () => ProductCountries,
@@ -2538,19 +2558,19 @@ export const ProductSizesSchema = new EntitySchema({
       inverseJoinColumn: 'country',
     },
     productInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => ProductCountries,
       mappedBy: 'product',
     },
     productSizesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'productSizes',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { SellerProducts } from './SellerProducts';
 import { Sellers } from './Sellers';
@@ -2570,24 +2590,24 @@ export const ProductsSchema = new EntitySchema({
     productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColorsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Colors,
       mappedBy: 'productColors',
     },
     productInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerProducts,
       mappedBy: 'product',
     },
     sellerProductsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       mappedBy: 'sellerProducts',
     },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
@@ -2625,7 +2645,7 @@ export const SalesSchema = new EntitySchema({
     sellerId: { type: 'integer', persist: false },
     productId: { type: 'integer', persist: false, index: 'product_id_idx' },
     color: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductColors,
       ref: true,
       fieldNames: ['color_id', 'product_id'],
@@ -2635,7 +2655,7 @@ export const SalesSchema = new EntitySchema({
     colorId: { type: 'integer', nullable: true, persist: false },
     size: { type: 'smallint', nullable: true, persist: false },
     exchanged: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'exchanged_product_id'],
@@ -2644,14 +2664,14 @@ export const SalesSchema = new EntitySchema({
     },
     exchangedProductId: { type: 'integer', nullable: true, persist: false },
     productCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductCountries,
       ref: true,
       fieldNames: ['country', 'product_id'],
       index: 'fk_sales_product_countries1_idx',
     },
     productSizes: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       ref: true,
       fieldNames: ['size', 'product_id'],
@@ -2659,14 +2679,14 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sizes1_idx',
     },
     sellerCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerCountries,
       ref: true,
       fieldNames: ['country', 'seller_id'],
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
@@ -2675,7 +2695,7 @@ export const SalesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -2695,7 +2715,7 @@ export const SellerCountriesSchema = new EntitySchema({
     country: { type: 'unknown', persist: false },
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
@@ -2708,20 +2728,20 @@ export const SellerCountriesSchema = new EntitySchema({
     },
     countries: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
     },
     sellerCountriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'sellerCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -2741,7 +2761,7 @@ export const SellerProductsSchema = new EntitySchema({
   properties: {
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
@@ -2749,7 +2769,7 @@ export const SellerProductsSchema = new EntitySchema({
     sellerId: { type: 'integer', persist: false },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
@@ -2760,16 +2780,20 @@ export const SellerProductsSchema = new EntitySchema({
       persist: false,
       index: 'fk_seller_products_products1_idx',
     },
-    exchangedInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'exchanged' },
+    exchangedInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'exchanged',
+    },
     fkSalesSellerProducts1Inverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'fkSalesSellerProducts1',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { SellerCountries } from './SellerCountries';
@@ -2790,7 +2814,7 @@ export const SellersSchema = new EntitySchema({
     sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       pivotTable: 'seller_countries',
       pivotEntity: () => SellerCountries,
@@ -2798,7 +2822,7 @@ export const SellersSchema = new EntitySchema({
       inverseJoinColumn: 'country',
     },
     sellerProducts: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'seller_products',
       pivotEntity: () => SellerProducts,
@@ -2806,7 +2830,7 @@ export const SellersSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerProducts,
       mappedBy: 'seller',
     },
@@ -3025,7 +3049,7 @@ export class Sellers {
 
 exports[`ambiguous_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
@@ -3042,7 +3066,7 @@ export const ColorsSchema = new EntitySchema({
     colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'product_colors',
       pivotEntity: () => ProductColors,
@@ -3052,7 +3076,7 @@ export const ColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
@@ -3070,7 +3094,7 @@ export const CountriesSchema = new EntitySchema({
   properties: {
     country: { primary: true, type: 'unknown', columnType: 'char(2)' },
     productCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => ProductSizes,
       pivotTable: 'product_countries',
       pivotEntity: () => ProductCountries,
@@ -3078,7 +3102,7 @@ export const CountriesSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       pivotTable: 'seller_countries',
       pivotEntity: () => SellerCountries,
@@ -3088,7 +3112,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { Products } from './Products';
 
@@ -3103,13 +3127,13 @@ export const ProductColorsSchema = new EntitySchema({
   properties: {
     color: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Colors,
       fieldName: 'color_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
@@ -3117,7 +3141,7 @@ export const ProductColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSizes } from './ProductSizes';
 
@@ -3132,13 +3156,13 @@ export const ProductCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       fieldName: 'country',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       fieldName: 'product_id',
       index: 'fk_product_countries_product_sizes1_idx',
@@ -3146,7 +3170,7 @@ export const ProductCountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 
 export class ProductSizes {
@@ -3161,7 +3185,7 @@ export const ProductSizesSchema = new EntitySchema({
   properties: {
     product: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
     },
@@ -3185,7 +3209,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
@@ -3220,40 +3244,40 @@ export const SalesSchema = new EntitySchema({
   properties: {
     saleId: { primary: true, type: 'integer' },
     color: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductColors,
       fieldNames: ['color_id', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
     size: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
     exchanged: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'exchanged_product_id'],
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
     productCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductCountries,
       fieldNames: ['country', 'product_id'],
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerCountries,
       fieldNames: ['country', 'seller_id'],
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'product_id'],
       index: 'fk_sales_seller_products1_idx',
@@ -3261,7 +3285,7 @@ export const SalesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Sellers } from './Sellers';
 
@@ -3276,13 +3300,13 @@ export const SellerCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       fieldName: 'country',
     },
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       fieldName: 'seller_id',
       index: 'fk_seller_countries_sellers1_idx',
@@ -3290,7 +3314,7 @@ export const SellerCountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -3305,13 +3329,13 @@ export const SellerProductsSchema = new EntitySchema({
   properties: {
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       fieldName: 'seller_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
       index: 'fk_seller_products_products1_idx',
@@ -3319,7 +3343,7 @@ export const SellerProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { SellerProducts } from './SellerProducts';
 
@@ -3336,7 +3360,7 @@ export const SellersSchema = new EntitySchema({
     sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'seller_products',
       pivotEntity: () => SellerProducts,
@@ -3558,7 +3582,7 @@ export class Sellers {
 
 exports[`ambiguous_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
@@ -3575,7 +3599,7 @@ export const ColorsSchema = new EntitySchema({
     colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'product_colors',
       pivotEntity: () => ProductColors,
@@ -3585,7 +3609,7 @@ export const ColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
@@ -3603,7 +3627,7 @@ export const CountriesSchema = new EntitySchema({
   properties: {
     country: { primary: true, type: 'unknown', columnType: 'char(2)' },
     productCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => ProductSizes,
       pivotTable: 'product_countries',
       pivotEntity: () => ProductCountries,
@@ -3611,7 +3635,7 @@ export const CountriesSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       pivotTable: 'seller_countries',
       pivotEntity: () => SellerCountries,
@@ -3621,7 +3645,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { Products } from './Products';
 
@@ -3636,14 +3660,14 @@ export const ProductColorsSchema = new EntitySchema({
   properties: {
     color: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Colors,
       ref: true,
       fieldName: 'color_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
@@ -3652,7 +3676,7 @@ export const ProductColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSizes } from './ProductSizes';
 
@@ -3667,14 +3691,14 @@ export const ProductCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       ref: true,
       fieldName: 'product_id',
@@ -3683,7 +3707,7 @@ export const ProductCountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 
 export class ProductSizes {
@@ -3698,7 +3722,7 @@ export const ProductSizesSchema = new EntitySchema({
   properties: {
     product: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
@@ -3723,7 +3747,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
@@ -3758,7 +3782,7 @@ export const SalesSchema = new EntitySchema({
   properties: {
     saleId: { primary: true, type: 'integer' },
     color: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductColors,
       ref: true,
       fieldNames: ['color_id', 'product_id'],
@@ -3766,7 +3790,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_colors1_idx',
     },
     size: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       ref: true,
       fieldNames: ['size', 'product_id'],
@@ -3774,7 +3798,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sizes1_idx',
     },
     exchanged: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'exchanged_product_id'],
@@ -3782,21 +3806,21 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_seller_products2_idx',
     },
     productCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductCountries,
       ref: true,
       fieldNames: ['country', 'product_id'],
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerCountries,
       ref: true,
       fieldNames: ['country', 'seller_id'],
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
@@ -3805,7 +3829,7 @@ export const SalesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Sellers } from './Sellers';
 
@@ -3820,14 +3844,14 @@ export const SellerCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
     },
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
@@ -3836,7 +3860,7 @@ export const SellerCountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -3851,14 +3875,14 @@ export const SellerProductsSchema = new EntitySchema({
   properties: {
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
@@ -3867,7 +3891,7 @@ export const SellerProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { SellerProducts } from './SellerProducts';
 
@@ -3884,7 +3908,7 @@ export const SellersSchema = new EntitySchema({
     sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'seller_products',
       pivotEntity: () => SellerProducts,
@@ -4162,7 +4186,7 @@ export class Sellers {
 
 exports[`ambiguous_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
@@ -4180,18 +4204,22 @@ export const ColorsSchema = new EntitySchema({
     colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'product_colors',
       pivotEntity: () => ProductColors,
       joinColumn: 'color_id',
       inverseJoinColumn: 'product_id',
     },
-    colorInverse: { kind: '1:m', entity: () => ProductColors, mappedBy: 'color' },
+    colorInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => ProductColors,
+      mappedBy: 'color',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
@@ -4210,7 +4238,7 @@ export const CountriesSchema = new EntitySchema({
   properties: {
     country: { primary: true, type: 'unknown', columnType: 'char(2)' },
     productCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => ProductSizes,
       pivotTable: 'product_countries',
       pivotEntity: () => ProductCountries,
@@ -4218,7 +4246,7 @@ export const CountriesSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       pivotTable: 'seller_countries',
       pivotEntity: () => SellerCountries,
@@ -4226,14 +4254,14 @@ export const CountriesSchema = new EntitySchema({
       inverseJoinColumn: 'seller_id',
     },
     countryInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerCountries,
       mappedBy: 'country',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -4250,22 +4278,26 @@ export const ProductColorsSchema = new EntitySchema({
   properties: {
     color: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Colors,
       fieldName: 'color_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
     },
-    colorInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
+    colorInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'color',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSizes } from './ProductSizes';
 import { Sales } from './Sales';
@@ -4282,26 +4314,26 @@ export const ProductCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       fieldName: 'country',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       fieldName: 'product_id',
       index: 'fk_product_countries_product_sizes1_idx',
     },
     productCountriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'productCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountries } from './ProductCountries';
 import { Products } from './Products';
@@ -4322,26 +4354,30 @@ export const ProductSizesSchema = new EntitySchema({
   properties: {
     product: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
     },
     size: { type: 'smallint', unsigned: true },
     productCountriesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       mappedBy: 'productCountries',
     },
     productInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => ProductCountries,
       mappedBy: 'product',
     },
-    sizeInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'size' },
+    sizeInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'size',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { SellerProducts } from './SellerProducts';
 import { Sellers } from './Sellers';
@@ -4361,24 +4397,24 @@ export const ProductsSchema = new EntitySchema({
     productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColorsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Colors,
       mappedBy: 'productColors',
     },
     productInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerProducts,
       mappedBy: 'product',
     },
     sellerProductsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       mappedBy: 'sellerProducts',
     },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
@@ -4413,40 +4449,40 @@ export const SalesSchema = new EntitySchema({
   properties: {
     saleId: { primary: true, type: 'integer' },
     color: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductColors,
       fieldNames: ['color_id', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
     size: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
     exchanged: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'exchanged_product_id'],
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
     productCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductCountries,
       fieldNames: ['country', 'product_id'],
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerCountries,
       fieldNames: ['country', 'seller_id'],
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'product_id'],
       index: 'fk_sales_seller_products1_idx',
@@ -4454,7 +4490,7 @@ export const SalesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -4471,26 +4507,26 @@ export const SellerCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       fieldName: 'country',
     },
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       fieldName: 'seller_id',
       index: 'fk_seller_countries_sellers1_idx',
     },
     sellerCountriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'sellerCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -4508,27 +4544,31 @@ export const SellerProductsSchema = new EntitySchema({
   properties: {
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       fieldName: 'seller_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
       index: 'fk_seller_products_products1_idx',
     },
-    exchangedInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'exchanged' },
+    exchangedInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'exchanged',
+    },
     fkSalesSellerProducts1Inverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'fkSalesSellerProducts1',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { SellerProducts } from './SellerProducts';
@@ -4548,7 +4588,7 @@ export const SellersSchema = new EntitySchema({
     sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'seller_products',
       pivotEntity: () => SellerProducts,
@@ -4556,12 +4596,12 @@ export const SellersSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerCountriesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       mappedBy: 'sellerCountries',
     },
     sellerInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerProducts,
       mappedBy: 'seller',
     },
@@ -4836,7 +4876,7 @@ export class Sellers {
 
 exports[`ambiguous_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
@@ -4854,18 +4894,22 @@ export const ColorsSchema = new EntitySchema({
     colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'product_colors',
       pivotEntity: () => ProductColors,
       joinColumn: 'color_id',
       inverseJoinColumn: 'product_id',
     },
-    colorInverse: { kind: '1:m', entity: () => ProductColors, mappedBy: 'color' },
+    colorInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => ProductColors,
+      mappedBy: 'color',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
@@ -4884,7 +4928,7 @@ export const CountriesSchema = new EntitySchema({
   properties: {
     country: { primary: true, type: 'unknown', columnType: 'char(2)' },
     productCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => ProductSizes,
       pivotTable: 'product_countries',
       pivotEntity: () => ProductCountries,
@@ -4892,7 +4936,7 @@ export const CountriesSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       pivotTable: 'seller_countries',
       pivotEntity: () => SellerCountries,
@@ -4900,14 +4944,14 @@ export const CountriesSchema = new EntitySchema({
       inverseJoinColumn: 'seller_id',
     },
     countryInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerCountries,
       mappedBy: 'country',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -4924,24 +4968,28 @@ export const ProductColorsSchema = new EntitySchema({
   properties: {
     color: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Colors,
       ref: true,
       fieldName: 'color_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
     },
-    colorInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
+    colorInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'color',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSizes } from './ProductSizes';
 import { Sales } from './Sales';
@@ -4958,28 +5006,28 @@ export const ProductCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       ref: true,
       fieldName: 'product_id',
       index: 'fk_product_countries_product_sizes1_idx',
     },
     productCountriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'productCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountries } from './ProductCountries';
 import { Products } from './Products';
@@ -5000,27 +5048,31 @@ export const ProductSizesSchema = new EntitySchema({
   properties: {
     product: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
     },
     size: { type: 'smallint', unsigned: true },
     productCountriesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       mappedBy: 'productCountries',
     },
     productInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => ProductCountries,
       mappedBy: 'product',
     },
-    sizeInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'size' },
+    sizeInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'size',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { SellerProducts } from './SellerProducts';
 import { Sellers } from './Sellers';
@@ -5040,24 +5092,24 @@ export const ProductsSchema = new EntitySchema({
     productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColorsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Colors,
       mappedBy: 'productColors',
     },
     productInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerProducts,
       mappedBy: 'product',
     },
     sellerProductsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       mappedBy: 'sellerProducts',
     },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
@@ -5092,7 +5144,7 @@ export const SalesSchema = new EntitySchema({
   properties: {
     saleId: { primary: true, type: 'integer' },
     color: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductColors,
       ref: true,
       fieldNames: ['color_id', 'product_id'],
@@ -5100,7 +5152,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_colors1_idx',
     },
     size: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       ref: true,
       fieldNames: ['size', 'product_id'],
@@ -5108,7 +5160,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sizes1_idx',
     },
     exchanged: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'exchanged_product_id'],
@@ -5116,21 +5168,21 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_seller_products2_idx',
     },
     productCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductCountries,
       ref: true,
       fieldNames: ['country', 'product_id'],
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerCountries,
       ref: true,
       fieldNames: ['country', 'seller_id'],
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
@@ -5139,7 +5191,7 @@ export const SalesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -5156,28 +5208,28 @@ export const SellerCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
     },
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
       index: 'fk_seller_countries_sellers1_idx',
     },
     sellerCountriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'sellerCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -5195,29 +5247,33 @@ export const SellerProductsSchema = new EntitySchema({
   properties: {
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
       index: 'fk_seller_products_products1_idx',
     },
-    exchangedInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'exchanged' },
+    exchangedInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'exchanged',
+    },
     fkSalesSellerProducts1Inverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'fkSalesSellerProducts1',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { SellerProducts } from './SellerProducts';
@@ -5237,7 +5293,7 @@ export const SellersSchema = new EntitySchema({
     sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'seller_products',
       pivotEntity: () => SellerProducts,
@@ -5245,12 +5301,12 @@ export const SellersSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerCountriesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       mappedBy: 'sellerCountries',
     },
     sellerInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerProducts,
       mappedBy: 'seller',
     },
@@ -5469,7 +5525,7 @@ export class Sellers {
 
 exports[`ambiguous_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
@@ -5486,7 +5542,7 @@ export const ColorsSchema = new EntitySchema({
     colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'product_colors',
       pivotEntity: () => ProductColors,
@@ -5496,7 +5552,7 @@ export const ColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
@@ -5514,7 +5570,7 @@ export const CountriesSchema = new EntitySchema({
   properties: {
     country: { primary: true, type: 'unknown', columnType: 'char(2)' },
     productCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => ProductSizes,
       pivotTable: 'product_countries',
       pivotEntity: () => ProductCountries,
@@ -5522,7 +5578,7 @@ export const CountriesSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       pivotTable: 'seller_countries',
       pivotEntity: () => SellerCountries,
@@ -5532,7 +5588,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { Products } from './Products';
 
@@ -5547,13 +5603,13 @@ export const ProductColorsSchema = new EntitySchema({
   properties: {
     color: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Colors,
       fieldName: 'color_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
@@ -5561,7 +5617,7 @@ export const ProductColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSizes } from './ProductSizes';
 
@@ -5576,13 +5632,13 @@ export const ProductCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       fieldName: 'country',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       fieldName: 'product_id',
       index: 'fk_product_countries_product_sizes1_idx',
@@ -5590,7 +5646,7 @@ export const ProductCountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 
 export class ProductSizes {
@@ -5605,7 +5661,7 @@ export const ProductSizesSchema = new EntitySchema({
   properties: {
     product: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
     },
@@ -5629,7 +5685,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
@@ -5664,40 +5720,40 @@ export const SalesSchema = new EntitySchema({
   properties: {
     saleId: { primary: true, type: 'integer' },
     color: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductColors,
       fieldNames: ['color_id', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
     size: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
     exchanged: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'exchanged_product_id'],
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
     productCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductCountries,
       fieldNames: ['country', 'product_id'],
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerCountries,
       fieldNames: ['country', 'seller_id'],
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'product_id'],
       index: 'fk_sales_seller_products1_idx',
@@ -5705,7 +5761,7 @@ export const SalesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Sellers } from './Sellers';
 
@@ -5720,13 +5776,13 @@ export const SellerCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       fieldName: 'country',
     },
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       fieldName: 'seller_id',
       index: 'fk_seller_countries_sellers1_idx',
@@ -5734,7 +5790,7 @@ export const SellerCountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -5749,13 +5805,13 @@ export const SellerProductsSchema = new EntitySchema({
   properties: {
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       fieldName: 'seller_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
       index: 'fk_seller_products_products1_idx',
@@ -5763,7 +5819,7 @@ export const SellerProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { SellerProducts } from './SellerProducts';
 
@@ -5780,7 +5836,7 @@ export const SellersSchema = new EntitySchema({
     sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'seller_products',
       pivotEntity: () => SellerProducts,
@@ -6002,7 +6058,7 @@ export class Sellers {
 
 exports[`ambiguous_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
@@ -6019,7 +6075,7 @@ export const ColorsSchema = new EntitySchema({
     colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'product_colors',
       pivotEntity: () => ProductColors,
@@ -6029,7 +6085,7 @@ export const ColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
@@ -6047,7 +6103,7 @@ export const CountriesSchema = new EntitySchema({
   properties: {
     country: { primary: true, type: 'unknown', columnType: 'char(2)' },
     productCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => ProductSizes,
       pivotTable: 'product_countries',
       pivotEntity: () => ProductCountries,
@@ -6055,7 +6111,7 @@ export const CountriesSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       pivotTable: 'seller_countries',
       pivotEntity: () => SellerCountries,
@@ -6065,7 +6121,7 @@ export const CountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { Products } from './Products';
 
@@ -6080,14 +6136,14 @@ export const ProductColorsSchema = new EntitySchema({
   properties: {
     color: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Colors,
       ref: true,
       fieldName: 'color_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
@@ -6096,7 +6152,7 @@ export const ProductColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSizes } from './ProductSizes';
 
@@ -6111,14 +6167,14 @@ export const ProductCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       ref: true,
       fieldName: 'product_id',
@@ -6127,7 +6183,7 @@ export const ProductCountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 
 export class ProductSizes {
@@ -6142,7 +6198,7 @@ export const ProductSizesSchema = new EntitySchema({
   properties: {
     product: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
@@ -6167,7 +6223,7 @@ export const ProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
@@ -6202,7 +6258,7 @@ export const SalesSchema = new EntitySchema({
   properties: {
     saleId: { primary: true, type: 'integer' },
     color: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductColors,
       ref: true,
       fieldNames: ['color_id', 'product_id'],
@@ -6210,7 +6266,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_colors1_idx',
     },
     size: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       ref: true,
       fieldNames: ['size', 'product_id'],
@@ -6218,7 +6274,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sizes1_idx',
     },
     exchanged: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'exchanged_product_id'],
@@ -6226,21 +6282,21 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_seller_products2_idx',
     },
     productCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductCountries,
       ref: true,
       fieldNames: ['country', 'product_id'],
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerCountries,
       ref: true,
       fieldNames: ['country', 'seller_id'],
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
@@ -6249,7 +6305,7 @@ export const SalesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Sellers } from './Sellers';
 
@@ -6264,14 +6320,14 @@ export const SellerCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
     },
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
@@ -6280,7 +6336,7 @@ export const SellerCountriesSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -6295,14 +6351,14 @@ export const SellerProductsSchema = new EntitySchema({
   properties: {
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
@@ -6311,7 +6367,7 @@ export const SellerProductsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { SellerProducts } from './SellerProducts';
 
@@ -6328,7 +6384,7 @@ export const SellersSchema = new EntitySchema({
     sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'seller_products',
       pivotEntity: () => SellerProducts,
@@ -6606,7 +6662,7 @@ export class Sellers {
 
 exports[`ambiguous_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
@@ -6624,18 +6680,22 @@ export const ColorsSchema = new EntitySchema({
     colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'product_colors',
       pivotEntity: () => ProductColors,
       joinColumn: 'color_id',
       inverseJoinColumn: 'product_id',
     },
-    colorInverse: { kind: '1:m', entity: () => ProductColors, mappedBy: 'color' },
+    colorInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => ProductColors,
+      mappedBy: 'color',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
@@ -6654,7 +6714,7 @@ export const CountriesSchema = new EntitySchema({
   properties: {
     country: { primary: true, type: 'unknown', columnType: 'char(2)' },
     productCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => ProductSizes,
       pivotTable: 'product_countries',
       pivotEntity: () => ProductCountries,
@@ -6662,7 +6722,7 @@ export const CountriesSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       pivotTable: 'seller_countries',
       pivotEntity: () => SellerCountries,
@@ -6670,14 +6730,14 @@ export const CountriesSchema = new EntitySchema({
       inverseJoinColumn: 'seller_id',
     },
     countryInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerCountries,
       mappedBy: 'country',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -6694,22 +6754,26 @@ export const ProductColorsSchema = new EntitySchema({
   properties: {
     color: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Colors,
       fieldName: 'color_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
     },
-    colorInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
+    colorInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'color',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSizes } from './ProductSizes';
 import { Sales } from './Sales';
@@ -6726,26 +6790,26 @@ export const ProductCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       fieldName: 'country',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       fieldName: 'product_id',
       index: 'fk_product_countries_product_sizes1_idx',
     },
     productCountriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'productCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountries } from './ProductCountries';
 import { Products } from './Products';
@@ -6766,26 +6830,30 @@ export const ProductSizesSchema = new EntitySchema({
   properties: {
     product: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
     },
     size: { type: 'smallint', unsigned: true },
     productCountriesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       mappedBy: 'productCountries',
     },
     productInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => ProductCountries,
       mappedBy: 'product',
     },
-    sizeInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'size' },
+    sizeInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'size',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { SellerProducts } from './SellerProducts';
 import { Sellers } from './Sellers';
@@ -6805,24 +6873,24 @@ export const ProductsSchema = new EntitySchema({
     productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColorsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Colors,
       mappedBy: 'productColors',
     },
     productInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerProducts,
       mappedBy: 'product',
     },
     sellerProductsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       mappedBy: 'sellerProducts',
     },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
@@ -6857,40 +6925,40 @@ export const SalesSchema = new EntitySchema({
   properties: {
     saleId: { primary: true, type: 'integer' },
     color: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductColors,
       fieldNames: ['color_id', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_colors1_idx',
     },
     size: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
     exchanged: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'exchanged_product_id'],
       nullable: true,
       index: 'fk_sales_seller_products2_idx',
     },
     productCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductCountries,
       fieldNames: ['country', 'product_id'],
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerCountries,
       fieldNames: ['country', 'seller_id'],
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       fieldNames: ['seller_id', 'product_id'],
       index: 'fk_sales_seller_products1_idx',
@@ -6898,7 +6966,7 @@ export const SalesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -6915,26 +6983,26 @@ export const SellerCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       fieldName: 'country',
     },
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       fieldName: 'seller_id',
       index: 'fk_seller_countries_sellers1_idx',
     },
     sellerCountriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'sellerCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -6952,27 +7020,31 @@ export const SellerProductsSchema = new EntitySchema({
   properties: {
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       fieldName: 'seller_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       fieldName: 'product_id',
       index: 'fk_seller_products_products1_idx',
     },
-    exchangedInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'exchanged' },
+    exchangedInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'exchanged',
+    },
     fkSalesSellerProducts1Inverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'fkSalesSellerProducts1',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { SellerProducts } from './SellerProducts';
@@ -6992,7 +7064,7 @@ export const SellersSchema = new EntitySchema({
     sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'seller_products',
       pivotEntity: () => SellerProducts,
@@ -7000,12 +7072,12 @@ export const SellersSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerCountriesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       mappedBy: 'sellerCountries',
     },
     sellerInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerProducts,
       mappedBy: 'seller',
     },
@@ -7280,7 +7352,7 @@ export class Sellers {
 
 exports[`ambiguous_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { Products } from './Products';
 
@@ -7298,18 +7370,22 @@ export const ColorsSchema = new EntitySchema({
     colorId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColors: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'product_colors',
       pivotEntity: () => ProductColors,
       joinColumn: 'color_id',
       inverseJoinColumn: 'product_id',
     },
-    colorInverse: { kind: '1:m', entity: () => ProductColors, mappedBy: 'color' },
+    colorInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => ProductColors,
+      mappedBy: 'color',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
 import { SellerCountries } from './SellerCountries';
@@ -7328,7 +7404,7 @@ export const CountriesSchema = new EntitySchema({
   properties: {
     country: { primary: true, type: 'unknown', columnType: 'char(2)' },
     productCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => ProductSizes,
       pivotTable: 'product_countries',
       pivotEntity: () => ProductCountries,
@@ -7336,7 +7412,7 @@ export const CountriesSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerCountries: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       pivotTable: 'seller_countries',
       pivotEntity: () => SellerCountries,
@@ -7344,14 +7420,14 @@ export const CountriesSchema = new EntitySchema({
       inverseJoinColumn: 'seller_id',
     },
     countryInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerCountries,
       mappedBy: 'country',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -7368,24 +7444,28 @@ export const ProductColorsSchema = new EntitySchema({
   properties: {
     color: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Colors,
       ref: true,
       fieldName: 'color_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
       index: 'fk_product_colors_products1_idx',
     },
-    colorInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'color' },
+    colorInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'color',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductSizes } from './ProductSizes';
 import { Sales } from './Sales';
@@ -7402,28 +7482,28 @@ export const ProductCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       ref: true,
       fieldName: 'product_id',
       index: 'fk_product_countries_product_sizes1_idx',
     },
     productCountriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'productCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountries } from './ProductCountries';
 import { Products } from './Products';
@@ -7444,27 +7524,31 @@ export const ProductSizesSchema = new EntitySchema({
   properties: {
     product: {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
     },
     size: { type: 'smallint', unsigned: true },
     productCountriesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       mappedBy: 'productCountries',
     },
     productInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => ProductCountries,
       mappedBy: 'product',
     },
-    sizeInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'size' },
+    sizeInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'size',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Colors } from './Colors';
 import { SellerProducts } from './SellerProducts';
 import { Sellers } from './Sellers';
@@ -7484,24 +7568,24 @@ export const ProductsSchema = new EntitySchema({
     productId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     productColorsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Colors,
       mappedBy: 'productColors',
     },
     productInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerProducts,
       mappedBy: 'product',
     },
     sellerProductsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Sellers,
       mappedBy: 'sellerProducts',
     },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { ProductColors } from './ProductColors';
 import { ProductCountries } from './ProductCountries';
 import { ProductSizes } from './ProductSizes';
@@ -7536,7 +7620,7 @@ export const SalesSchema = new EntitySchema({
   properties: {
     saleId: { primary: true, type: 'integer' },
     color: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductColors,
       ref: true,
       fieldNames: ['color_id', 'product_id'],
@@ -7544,7 +7628,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_colors1_idx',
     },
     size: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductSizes,
       ref: true,
       fieldNames: ['size', 'product_id'],
@@ -7552,7 +7636,7 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_product_sizes1_idx',
     },
     exchanged: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'exchanged_product_id'],
@@ -7560,21 +7644,21 @@ export const SalesSchema = new EntitySchema({
       index: 'fk_sales_seller_products2_idx',
     },
     productCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => ProductCountries,
       ref: true,
       fieldNames: ['country', 'product_id'],
       index: 'fk_sales_product_countries1_idx',
     },
     sellerCountries: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerCountries,
       ref: true,
       fieldNames: ['country', 'seller_id'],
       index: 'fk_sales_seller_countries1_idx',
     },
     fkSalesSellerProducts1: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SellerProducts,
       ref: true,
       fieldNames: ['seller_id', 'product_id'],
@@ -7583,7 +7667,7 @@ export const SalesSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -7600,28 +7684,28 @@ export const SellerCountriesSchema = new EntitySchema({
   properties: {
     country: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Countries,
       ref: true,
       fieldName: 'country',
     },
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
       index: 'fk_seller_countries_sellers1_idx',
     },
     sellerCountriesInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'sellerCountries',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -7639,29 +7723,33 @@ export const SellerProductsSchema = new EntitySchema({
   properties: {
     seller: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Sellers,
       ref: true,
       fieldName: 'seller_id',
     },
     product: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Products,
       ref: true,
       fieldName: 'product_id',
       index: 'fk_seller_products_products1_idx',
     },
-    exchangedInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'exchanged' },
+    exchangedInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Sales,
+      mappedBy: 'exchanged',
+    },
     fkSalesSellerProducts1Inverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => Sales,
       mappedBy: 'fkSalesSellerProducts1',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { SellerProducts } from './SellerProducts';
@@ -7681,7 +7769,7 @@ export const SellersSchema = new EntitySchema({
     sellerId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     sellerProducts: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Products,
       pivotTable: 'seller_products',
       pivotEntity: () => SellerProducts,
@@ -7689,12 +7777,12 @@ export const SellersSchema = new EntitySchema({
       inverseJoinColumn: 'product_id',
     },
     sellerCountriesInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Countries,
       mappedBy: 'sellerCountries',
     },
     sellerInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => SellerProducts,
       mappedBy: 'seller',
     },

@@ -184,7 +184,7 @@ export class Users {
 
 exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false readOnlyPivotTables=false entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -200,13 +200,13 @@ export const CompletedOrdersSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     user: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_completed_orders_orders1_idx',
@@ -262,7 +262,7 @@ export const OrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -278,7 +278,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -286,7 +286,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
@@ -295,7 +295,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -312,19 +312,19 @@ export const UserEmailFlagsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Flags,
       fieldName: 'flag_id',
       defaultRaw: \`1\`,
@@ -334,7 +334,7 @@ export const UserEmailFlagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -351,19 +351,19 @@ export const UserEmailOrdersSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_user_email_orders_orders1_idx',
@@ -371,7 +371,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -387,7 +387,7 @@ export const UserEmailsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -395,7 +395,7 @@ export const UserEmailsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       updateRule: 'cascade',
@@ -406,7 +406,7 @@ export const UserEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -427,7 +427,7 @@ export const UsersSchema = new EntitySchema({
     userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'user_emails',
       pivotEntity: () => UserEmails,
@@ -435,14 +435,14 @@ export const UsersSchema = new EntitySchema({
       inverseJoinColumn: 'email_id',
     },
     userFlags: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Flags,
       pivotTable: 'user_flags',
       joinColumn: 'user_id',
       inverseJoinColumn: 'flag_id',
     },
     userOrders: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Orders,
       pivotTable: 'user_orders',
       joinColumn: 'user_id',
@@ -652,7 +652,7 @@ export class Users {
 
 exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false readOnlyPivotTables=true entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -668,13 +668,13 @@ export const CompletedOrdersSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     user: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_completed_orders_orders1_idx',
@@ -730,7 +730,7 @@ export const OrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -746,7 +746,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -754,7 +754,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
@@ -763,7 +763,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -780,19 +780,19 @@ export const UserEmailFlagsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Flags,
       fieldName: 'flag_id',
       defaultRaw: \`1\`,
@@ -802,7 +802,7 @@ export const UserEmailFlagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -819,19 +819,19 @@ export const UserEmailOrdersSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_user_email_orders_orders1_idx',
@@ -839,7 +839,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -855,7 +855,7 @@ export const UserEmailsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -863,7 +863,7 @@ export const UserEmailsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       updateRule: 'cascade',
@@ -874,7 +874,7 @@ export const UserEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -901,7 +901,7 @@ export const UsersSchema = new EntitySchema({
     userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userEmailAvatars: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'user_email_avatars',
       pivotEntity: () => UserEmailAvatars,
@@ -910,7 +910,7 @@ export const UsersSchema = new EntitySchema({
       persist: false,
     },
     userEmailFlags: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'user_email_flags',
       pivotEntity: () => UserEmailFlags,
@@ -919,7 +919,7 @@ export const UsersSchema = new EntitySchema({
       persist: false,
     },
     userEmailOrders: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'user_email_orders',
       pivotEntity: () => UserEmailOrders,
@@ -928,7 +928,7 @@ export const UsersSchema = new EntitySchema({
       persist: false,
     },
     userEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'user_emails',
       pivotEntity: () => UserEmails,
@@ -936,14 +936,14 @@ export const UsersSchema = new EntitySchema({
       inverseJoinColumn: 'email_id',
     },
     userFlags: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Flags,
       pivotTable: 'user_flags',
       joinColumn: 'user_id',
       inverseJoinColumn: 'flag_id',
     },
     userOrders: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Orders,
       pivotTable: 'user_orders',
       joinColumn: 'user_id',
@@ -1153,7 +1153,7 @@ export class Users {
 
 exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true readOnlyPivotTables=false entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -1169,13 +1169,13 @@ export const CompletedOrdersSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     user: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_completed_orders_orders1_idx',
@@ -1231,7 +1231,7 @@ export const OrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -1247,7 +1247,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -1255,7 +1255,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
@@ -1264,7 +1264,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -1281,19 +1281,19 @@ export const UserEmailFlagsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Flags,
       fieldName: 'flag_id',
       defaultRaw: \`1\`,
@@ -1303,7 +1303,7 @@ export const UserEmailFlagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -1320,19 +1320,19 @@ export const UserEmailOrdersSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_user_email_orders_orders1_idx',
@@ -1340,7 +1340,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -1356,7 +1356,7 @@ export const UserEmailsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -1364,7 +1364,7 @@ export const UserEmailsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       updateRule: 'cascade',
@@ -1375,7 +1375,7 @@ export const UserEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -1391,13 +1391,13 @@ export const UserOrdersSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     order: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       updateRule: 'cascade',
@@ -1413,7 +1413,7 @@ export const UserOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Flags } from './Flags';
 
 export class Users {
@@ -1429,7 +1429,7 @@ export const UsersSchema = new EntitySchema({
     userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userFlags: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Flags,
       pivotTable: 'user_flags',
       joinColumn: 'user_id',
@@ -1637,7 +1637,7 @@ export class Users {
 
 exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true readOnlyPivotTables=true entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -1653,13 +1653,13 @@ export const CompletedOrdersSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     user: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_completed_orders_orders1_idx',
@@ -1715,7 +1715,7 @@ export const OrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -1731,7 +1731,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -1739,7 +1739,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
@@ -1748,7 +1748,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -1765,19 +1765,19 @@ export const UserEmailFlagsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Flags,
       fieldName: 'flag_id',
       defaultRaw: \`1\`,
@@ -1787,7 +1787,7 @@ export const UserEmailFlagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -1804,19 +1804,19 @@ export const UserEmailOrdersSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_user_email_orders_orders1_idx',
@@ -1824,7 +1824,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -1840,7 +1840,7 @@ export const UserEmailsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -1848,7 +1848,7 @@ export const UserEmailsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       updateRule: 'cascade',
@@ -1859,7 +1859,7 @@ export const UserEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -1875,13 +1875,13 @@ export const UserOrdersSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     order: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       updateRule: 'cascade',
@@ -1897,7 +1897,7 @@ export const UserOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Flags } from './Flags';
 
 export class Users {
@@ -1913,7 +1913,7 @@ export const UsersSchema = new EntitySchema({
     userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userFlags: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Flags,
       pivotTable: 'user_flags',
       joinColumn: 'user_id',
@@ -2136,7 +2136,7 @@ export class Users {
 
 exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false readOnlyPivotTables=false entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -2152,13 +2152,13 @@ export const CompletedOrdersSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     user: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_completed_orders_orders1_idx',
@@ -2166,7 +2166,7 @@ export const CompletedOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { UserEmails } from './UserEmails';
 import { Users } from './Users';
 
@@ -2183,16 +2183,20 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+    emailInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => UserEmails,
+      mappedBy: 'email',
+    },
     userEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Users,
       mappedBy: 'userEmails',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -2209,12 +2213,20 @@ export const FlagsSchema = new EntitySchema({
   properties: {
     flagId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
-    userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
+    flagInverse: {
+      kind: ReferenceKind.ONE_TO_ONE,
+      entity: () => UserEmailFlags,
+      mappedBy: 'flag',
+    },
+    userFlagsInverse: {
+      kind: ReferenceKind.MANY_TO_MANY,
+      entity: () => Users,
+      mappedBy: 'userFlags',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { UserEmailOrders } from './UserEmailOrders';
 import { Users } from './Users';
 
@@ -2232,19 +2244,19 @@ export const OrdersSchema = new EntitySchema({
     orderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     orderInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => UserEmailOrders,
       mappedBy: 'order',
     },
     userOrdersInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Users,
       mappedBy: 'userOrders',
     },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -2260,7 +2272,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -2268,7 +2280,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
@@ -2277,7 +2289,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -2294,19 +2306,19 @@ export const UserEmailFlagsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Flags,
       fieldName: 'flag_id',
       defaultRaw: \`1\`,
@@ -2316,7 +2328,7 @@ export const UserEmailFlagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -2333,19 +2345,19 @@ export const UserEmailOrdersSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_user_email_orders_orders1_idx',
@@ -2353,7 +2365,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -2369,7 +2381,7 @@ export const UserEmailsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -2377,7 +2389,7 @@ export const UserEmailsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       updateRule: 'cascade',
@@ -2388,7 +2400,7 @@ export const UserEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -2410,7 +2422,7 @@ export const UsersSchema = new EntitySchema({
     userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'user_emails',
       pivotEntity: () => UserEmails,
@@ -2418,14 +2430,14 @@ export const UsersSchema = new EntitySchema({
       inverseJoinColumn: 'email_id',
     },
     userFlags: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Flags,
       pivotTable: 'user_flags',
       joinColumn: 'user_id',
       inverseJoinColumn: 'flag_id',
     },
     userOrders: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Orders,
       pivotTable: 'user_orders',
       joinColumn: 'user_id',
@@ -2433,7 +2445,11 @@ export const UsersSchema = new EntitySchema({
       fixedOrder: true,
       fixedOrderColumn: 'priority',
     },
-    userInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'user' },
+    userInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => UserEmails,
+      mappedBy: 'user',
+    },
   },
 });
 ",
@@ -2672,7 +2688,7 @@ export class Users {
 
 exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false readOnlyPivotTables=true entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -2688,13 +2704,13 @@ export const CompletedOrdersSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     user: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_completed_orders_orders1_idx',
@@ -2702,7 +2718,7 @@ export const CompletedOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { UserEmails } from './UserEmails';
 import { Users } from './Users';
 
@@ -2722,34 +2738,38 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+    emailInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => UserEmails,
+      mappedBy: 'email',
+    },
     userEmailAvatarsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Users,
       mappedBy: 'userEmailAvatars',
       persist: false,
     },
     userEmailFlagsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Users,
       mappedBy: 'userEmailFlags',
       persist: false,
     },
     userEmailOrdersInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Users,
       mappedBy: 'userEmailOrders',
       persist: false,
     },
     userEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Users,
       mappedBy: 'userEmails',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -2766,12 +2786,20 @@ export const FlagsSchema = new EntitySchema({
   properties: {
     flagId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
-    userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
+    flagInverse: {
+      kind: ReferenceKind.ONE_TO_ONE,
+      entity: () => UserEmailFlags,
+      mappedBy: 'flag',
+    },
+    userFlagsInverse: {
+      kind: ReferenceKind.MANY_TO_MANY,
+      entity: () => Users,
+      mappedBy: 'userFlags',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { UserEmailOrders } from './UserEmailOrders';
 import { Users } from './Users';
 
@@ -2789,19 +2817,19 @@ export const OrdersSchema = new EntitySchema({
     orderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     orderInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => UserEmailOrders,
       mappedBy: 'order',
     },
     userOrdersInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Users,
       mappedBy: 'userOrders',
     },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -2817,7 +2845,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -2825,7 +2853,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
@@ -2834,7 +2862,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -2851,19 +2879,19 @@ export const UserEmailFlagsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Flags,
       fieldName: 'flag_id',
       defaultRaw: \`1\`,
@@ -2873,7 +2901,7 @@ export const UserEmailFlagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -2890,19 +2918,19 @@ export const UserEmailOrdersSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_user_email_orders_orders1_idx',
@@ -2910,7 +2938,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -2926,7 +2954,7 @@ export const UserEmailsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -2934,7 +2962,7 @@ export const UserEmailsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       updateRule: 'cascade',
@@ -2945,7 +2973,7 @@ export const UserEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -2973,7 +3001,7 @@ export const UsersSchema = new EntitySchema({
     userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userEmailAvatars: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'user_email_avatars',
       pivotEntity: () => UserEmailAvatars,
@@ -2982,7 +3010,7 @@ export const UsersSchema = new EntitySchema({
       persist: false,
     },
     userEmailFlags: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'user_email_flags',
       pivotEntity: () => UserEmailFlags,
@@ -2991,7 +3019,7 @@ export const UsersSchema = new EntitySchema({
       persist: false,
     },
     userEmailOrders: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'user_email_orders',
       pivotEntity: () => UserEmailOrders,
@@ -3000,7 +3028,7 @@ export const UsersSchema = new EntitySchema({
       persist: false,
     },
     userEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'user_emails',
       pivotEntity: () => UserEmails,
@@ -3008,14 +3036,14 @@ export const UsersSchema = new EntitySchema({
       inverseJoinColumn: 'email_id',
     },
     userFlags: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Flags,
       pivotTable: 'user_flags',
       joinColumn: 'user_id',
       inverseJoinColumn: 'flag_id',
     },
     userOrders: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Orders,
       pivotTable: 'user_orders',
       joinColumn: 'user_id',
@@ -3023,7 +3051,11 @@ export const UsersSchema = new EntitySchema({
       fixedOrder: true,
       fixedOrderColumn: 'priority',
     },
-    userInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'user' },
+    userInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => UserEmails,
+      mappedBy: 'user',
+    },
   },
 });
 ",
@@ -3246,7 +3278,7 @@ export class Users {
 
 exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true readOnlyPivotTables=false entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -3262,13 +3294,13 @@ export const CompletedOrdersSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     user: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_completed_orders_orders1_idx',
@@ -3276,7 +3308,7 @@ export const CompletedOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { UserEmails } from './UserEmails';
 
 export class Emails {
@@ -3291,11 +3323,15 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+    emailInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => UserEmails,
+      mappedBy: 'email',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -3312,12 +3348,20 @@ export const FlagsSchema = new EntitySchema({
   properties: {
     flagId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
-    userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
+    flagInverse: {
+      kind: ReferenceKind.ONE_TO_ONE,
+      entity: () => UserEmailFlags,
+      mappedBy: 'flag',
+    },
+    userFlagsInverse: {
+      kind: ReferenceKind.MANY_TO_MANY,
+      entity: () => Users,
+      mappedBy: 'userFlags',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { UserOrders } from './UserOrders';
 
 export class Orders {
@@ -3332,11 +3376,15 @@ export const OrdersSchema = new EntitySchema({
   properties: {
     orderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
-    orderInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'order' },
+    orderInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => UserOrders,
+      mappedBy: 'order',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -3352,7 +3400,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -3360,7 +3408,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
@@ -3369,7 +3417,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -3386,19 +3434,19 @@ export const UserEmailFlagsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Flags,
       fieldName: 'flag_id',
       defaultRaw: \`1\`,
@@ -3408,7 +3456,7 @@ export const UserEmailFlagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -3425,19 +3473,19 @@ export const UserEmailOrdersSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_user_email_orders_orders1_idx',
@@ -3445,7 +3493,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -3461,7 +3509,7 @@ export const UserEmailsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -3469,7 +3517,7 @@ export const UserEmailsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       updateRule: 'cascade',
@@ -3480,7 +3528,7 @@ export const UserEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -3496,13 +3544,13 @@ export const UserOrdersSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     order: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       updateRule: 'cascade',
@@ -3518,7 +3566,7 @@ export const UserOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Flags } from './Flags';
 import { UserOrders } from './UserOrders';
 
@@ -3536,13 +3584,17 @@ export const UsersSchema = new EntitySchema({
     userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userFlags: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Flags,
       pivotTable: 'user_flags',
       joinColumn: 'user_id',
       inverseJoinColumn: 'flag_id',
     },
-    userInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'user' },
+    userInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => UserOrders,
+      mappedBy: 'user',
+    },
   },
 });
 ",
@@ -3765,7 +3817,7 @@ export class Users {
 
 exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true readOnlyPivotTables=true entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema, ReferenceKind } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -3781,13 +3833,13 @@ export const CompletedOrdersSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     user: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       index: 'fk_completed_orders_users1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_completed_orders_orders1_idx',
@@ -3795,7 +3847,7 @@ export const CompletedOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { UserEmails } from './UserEmails';
 
 export class Emails {
@@ -3810,11 +3862,15 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+    emailInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => UserEmails,
+      mappedBy: 'email',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -3831,12 +3887,20 @@ export const FlagsSchema = new EntitySchema({
   properties: {
     flagId: { primary: true, type: 'integer', autoincrement: false },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
-    userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
+    flagInverse: {
+      kind: ReferenceKind.ONE_TO_ONE,
+      entity: () => UserEmailFlags,
+      mappedBy: 'flag',
+    },
+    userFlagsInverse: {
+      kind: ReferenceKind.MANY_TO_MANY,
+      entity: () => Users,
+      mappedBy: 'userFlags',
+    },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { UserOrders } from './UserOrders';
 
 export class Orders {
@@ -3851,11 +3915,15 @@ export const OrdersSchema = new EntitySchema({
   properties: {
     orderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
-    orderInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'order' },
+    orderInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => UserOrders,
+      mappedBy: 'order',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -3871,7 +3939,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -3879,7 +3947,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
@@ -3888,7 +3956,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -3905,19 +3973,19 @@ export const UserEmailFlagsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_flags_emails1_idx',
     },
     flag: {
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => Flags,
       fieldName: 'flag_id',
       defaultRaw: \`1\`,
@@ -3927,7 +3995,7 @@ export const UserEmailFlagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -3944,19 +4012,19 @@ export const UserEmailOrdersSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_user_email_orders_emails1_idx',
     },
     order: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       index: 'fk_user_email_orders_orders1_idx',
@@ -3964,7 +4032,7 @@ export const UserEmailOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -3980,7 +4048,7 @@ export const UserEmailsSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
       updateRule: 'cascade',
@@ -3988,7 +4056,7 @@ export const UserEmailsSchema = new EntitySchema({
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       updateRule: 'cascade',
@@ -3999,7 +4067,7 @@ export const UserEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -4015,13 +4083,13 @@ export const UserOrdersSchema = new EntitySchema({
   properties: {
     user: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Users,
       fieldName: 'user_id',
     },
     order: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Orders,
       fieldName: 'order_id',
       updateRule: 'cascade',
@@ -4037,7 +4105,7 @@ export const UserOrdersSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Flags } from './Flags';
 import { UserOrders } from './UserOrders';
 
@@ -4055,13 +4123,17 @@ export const UsersSchema = new EntitySchema({
     userId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     userFlags: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Flags,
       pivotTable: 'user_flags',
       joinColumn: 'user_id',
       inverseJoinColumn: 'flag_id',
     },
-    userInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'user' },
+    userInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => UserOrders,
+      mappedBy: 'user',
+    },
   },
 });
 ",

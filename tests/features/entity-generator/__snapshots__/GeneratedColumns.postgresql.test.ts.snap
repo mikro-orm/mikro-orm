@@ -108,7 +108,7 @@ export const AllowedAgesAtCreationSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, ReferenceKind } from '@mikro-orm/core';
 import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 export class Users {
@@ -135,7 +135,7 @@ export const UsersSchema = new EntitySchema({
     createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
     dateOfBirth: { type: 'date' },
     ageAtCreation: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => AllowedAgesAtCreation,
       fieldName: 'age_at_creation',
       deleteRule: 'cascade',
@@ -164,7 +164,7 @@ export const AllowedAgesAtCreationSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, ReferenceKind } from '@mikro-orm/core';
 import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 export class Users {
@@ -191,7 +191,7 @@ export const UsersSchema = new EntitySchema({
     createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
     dateOfBirth: { type: 'date' },
     ageAtCreation: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => AllowedAgesAtCreation,
       fieldName: 'age_at_creation',
       deleteRule: 'cascade',

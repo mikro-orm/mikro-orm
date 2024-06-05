@@ -152,7 +152,7 @@ export class Senders {
 
 exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -176,14 +176,14 @@ export const EmailSendingLogsSchema = new EntitySchema({
     logId: { primary: true, type: 'integer' },
     senderId: { type: 'integer', persist: false },
     recepient: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => RecepientEmails,
       fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     recepientId: { type: 'integer', persist: false },
     sender: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
@@ -191,7 +191,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
     senderEmailId: { type: 'integer', persist: false },
     recepientEmailId: { type: 'integer', persist: false },
     reply: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
@@ -218,7 +218,7 @@ export const EmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
 
@@ -235,14 +235,14 @@ export const RecepientEmailsSchema = new EntitySchema({
   properties: {
     recepient: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Recepients,
       fieldName: 'recepient_id',
     },
     recepientId: { type: 'integer', persist: false },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
@@ -255,7 +255,7 @@ export const RecepientEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -272,7 +272,7 @@ export const RecepientsSchema = new EntitySchema({
     recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'recepient_emails',
       pivotEntity: () => RecepientEmails,
@@ -282,7 +282,7 @@ export const RecepientsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
 
@@ -299,14 +299,14 @@ export const SenderEmailsSchema = new EntitySchema({
   properties: {
     sender: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Senders,
       fieldName: 'sender_id',
     },
     senderId: { type: 'integer', persist: false },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
@@ -319,7 +319,7 @@ export const SenderEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -336,7 +336,7 @@ export const SendersSchema = new EntitySchema({
     senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'sender_emails',
       pivotEntity: () => SenderEmails,
@@ -501,7 +501,7 @@ export class Senders {
 
 exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -525,7 +525,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
     logId: { primary: true, type: 'integer' },
     senderId: { type: 'integer', persist: false },
     recepient: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => RecepientEmails,
       ref: true,
       fieldNames: ['recepient_id', 'recepient_email_id'],
@@ -533,7 +533,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
     },
     recepientId: { type: 'integer', persist: false },
     sender: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'sender_email_id'],
@@ -542,7 +542,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
     senderEmailId: { type: 'integer', persist: false },
     recepientEmailId: { type: 'integer', persist: false },
     reply: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'reply_email_id'],
@@ -570,7 +570,7 @@ export const EmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
 
@@ -587,7 +587,7 @@ export const RecepientEmailsSchema = new EntitySchema({
   properties: {
     recepient: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Recepients,
       ref: true,
       fieldName: 'recepient_id',
@@ -595,7 +595,7 @@ export const RecepientEmailsSchema = new EntitySchema({
     recepientId: { type: 'integer', persist: false },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
@@ -609,7 +609,7 @@ export const RecepientEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -626,7 +626,7 @@ export const RecepientsSchema = new EntitySchema({
     recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'recepient_emails',
       pivotEntity: () => RecepientEmails,
@@ -636,7 +636,7 @@ export const RecepientsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
 
@@ -653,7 +653,7 @@ export const SenderEmailsSchema = new EntitySchema({
   properties: {
     sender: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Senders,
       ref: true,
       fieldName: 'sender_id',
@@ -661,7 +661,7 @@ export const SenderEmailsSchema = new EntitySchema({
     senderId: { type: 'integer', persist: false },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
@@ -675,7 +675,7 @@ export const SenderEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -692,7 +692,7 @@ export const SendersSchema = new EntitySchema({
     senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'sender_emails',
       pivotEntity: () => SenderEmails,
@@ -886,7 +886,7 @@ export class Senders {
 
 exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -910,14 +910,14 @@ export const EmailSendingLogsSchema = new EntitySchema({
     logId: { primary: true, type: 'integer' },
     senderId: { type: 'integer', persist: false },
     recepient: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => RecepientEmails,
       fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     recepientId: { type: 'integer', persist: false },
     sender: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
@@ -925,7 +925,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
     senderEmailId: { type: 'integer', persist: false },
     recepientEmailId: { type: 'integer', persist: false },
     reply: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
@@ -936,7 +936,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Recepients } from './Recepients';
 import { SenderEmails } from './SenderEmails';
 import { Senders } from './Senders';
@@ -955,21 +955,25 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
+    emailInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => SenderEmails,
+      mappedBy: 'email',
+    },
     recepientEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Recepients,
       mappedBy: 'recepientEmails',
     },
     senderEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Senders,
       mappedBy: 'senderEmails',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
@@ -988,14 +992,14 @@ export const RecepientEmailsSchema = new EntitySchema({
   properties: {
     recepient: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Recepients,
       fieldName: 'recepient_id',
     },
     recepientId: { type: 'integer', persist: false },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
@@ -1006,14 +1010,14 @@ export const RecepientEmailsSchema = new EntitySchema({
       index: 'fk_recepient_emails_emails1_idx',
     },
     recepientInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'recepient',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -1031,7 +1035,7 @@ export const RecepientsSchema = new EntitySchema({
     recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'recepient_emails',
       pivotEntity: () => RecepientEmails,
@@ -1039,14 +1043,14 @@ export const RecepientsSchema = new EntitySchema({
       inverseJoinColumn: 'email_id',
     },
     recepientInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => RecepientEmails,
       mappedBy: 'recepient',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
@@ -1066,14 +1070,14 @@ export const SenderEmailsSchema = new EntitySchema({
   properties: {
     sender: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Senders,
       fieldName: 'sender_id',
     },
     senderId: { type: 'integer', persist: false },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
@@ -1084,19 +1088,19 @@ export const SenderEmailsSchema = new EntitySchema({
       index: 'fk_sender_emails_emails1_idx',
     },
     senderInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'sender',
     },
     replyInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'reply',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -1114,14 +1118,18 @@ export const SendersSchema = new EntitySchema({
     senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'sender_emails',
       pivotEntity: () => SenderEmails,
       joinColumn: 'sender_id',
       inverseJoinColumn: 'email_id',
     },
-    senderInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'sender' },
+    senderInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => SenderEmails,
+      mappedBy: 'sender',
+    },
   },
 });
 ",
@@ -1309,7 +1317,7 @@ export class Senders {
 
 exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -1333,7 +1341,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
     logId: { primary: true, type: 'integer' },
     senderId: { type: 'integer', persist: false },
     recepient: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => RecepientEmails,
       ref: true,
       fieldNames: ['recepient_id', 'recepient_email_id'],
@@ -1341,7 +1349,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
     },
     recepientId: { type: 'integer', persist: false },
     sender: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'sender_email_id'],
@@ -1350,7 +1358,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
     senderEmailId: { type: 'integer', persist: false },
     recepientEmailId: { type: 'integer', persist: false },
     reply: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'reply_email_id'],
@@ -1362,7 +1370,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Recepients } from './Recepients';
 import { SenderEmails } from './SenderEmails';
 import { Senders } from './Senders';
@@ -1381,21 +1389,25 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
+    emailInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => SenderEmails,
+      mappedBy: 'email',
+    },
     recepientEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Recepients,
       mappedBy: 'recepientEmails',
     },
     senderEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Senders,
       mappedBy: 'senderEmails',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
@@ -1414,7 +1426,7 @@ export const RecepientEmailsSchema = new EntitySchema({
   properties: {
     recepient: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Recepients,
       ref: true,
       fieldName: 'recepient_id',
@@ -1422,7 +1434,7 @@ export const RecepientEmailsSchema = new EntitySchema({
     recepientId: { type: 'integer', persist: false },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
@@ -1434,14 +1446,14 @@ export const RecepientEmailsSchema = new EntitySchema({
       index: 'fk_recepient_emails_emails1_idx',
     },
     recepientInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'recepient',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -1459,7 +1471,7 @@ export const RecepientsSchema = new EntitySchema({
     recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'recepient_emails',
       pivotEntity: () => RecepientEmails,
@@ -1467,14 +1479,14 @@ export const RecepientsSchema = new EntitySchema({
       inverseJoinColumn: 'email_id',
     },
     recepientInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => RecepientEmails,
       mappedBy: 'recepient',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
@@ -1494,7 +1506,7 @@ export const SenderEmailsSchema = new EntitySchema({
   properties: {
     sender: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Senders,
       ref: true,
       fieldName: 'sender_id',
@@ -1502,7 +1514,7 @@ export const SenderEmailsSchema = new EntitySchema({
     senderId: { type: 'integer', persist: false },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
@@ -1514,19 +1526,19 @@ export const SenderEmailsSchema = new EntitySchema({
       index: 'fk_sender_emails_emails1_idx',
     },
     senderInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'sender',
     },
     replyInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'reply',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -1544,14 +1556,18 @@ export const SendersSchema = new EntitySchema({
     senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'sender_emails',
       pivotEntity: () => SenderEmails,
       joinColumn: 'sender_id',
       inverseJoinColumn: 'email_id',
     },
-    senderInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'sender' },
+    senderInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => SenderEmails,
+      mappedBy: 'sender',
+    },
   },
 });
 ",
@@ -1681,7 +1697,7 @@ export class Senders {
 
 exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -1699,19 +1715,19 @@ export const EmailSendingLogsSchema = new EntitySchema({
   properties: {
     logId: { primary: true, type: 'integer' },
     recepient: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => RecepientEmails,
       fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
@@ -1737,7 +1753,7 @@ export const EmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
 
@@ -1752,13 +1768,13 @@ export const RecepientEmailsSchema = new EntitySchema({
   properties: {
     recepient: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Recepients,
       fieldName: 'recepient_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
@@ -1766,7 +1782,7 @@ export const RecepientEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -1783,7 +1799,7 @@ export const RecepientsSchema = new EntitySchema({
     recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'recepient_emails',
       pivotEntity: () => RecepientEmails,
@@ -1793,7 +1809,7 @@ export const RecepientsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
 
@@ -1808,13 +1824,13 @@ export const SenderEmailsSchema = new EntitySchema({
   properties: {
     sender: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Senders,
       fieldName: 'sender_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
@@ -1822,7 +1838,7 @@ export const SenderEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -1839,7 +1855,7 @@ export const SendersSchema = new EntitySchema({
     senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'sender_emails',
       pivotEntity: () => SenderEmails,
@@ -1975,7 +1991,7 @@ export class Senders {
 
 exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -1993,21 +2009,21 @@ export const EmailSendingLogsSchema = new EntitySchema({
   properties: {
     logId: { primary: true, type: 'integer' },
     recepient: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => RecepientEmails,
       ref: true,
       fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'reply_email_id'],
@@ -2034,7 +2050,7 @@ export const EmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
 
@@ -2049,14 +2065,14 @@ export const RecepientEmailsSchema = new EntitySchema({
   properties: {
     recepient: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Recepients,
       ref: true,
       fieldName: 'recepient_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
@@ -2065,7 +2081,7 @@ export const RecepientEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -2082,7 +2098,7 @@ export const RecepientsSchema = new EntitySchema({
     recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'recepient_emails',
       pivotEntity: () => RecepientEmails,
@@ -2092,7 +2108,7 @@ export const RecepientsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
 
@@ -2107,14 +2123,14 @@ export const SenderEmailsSchema = new EntitySchema({
   properties: {
     sender: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Senders,
       ref: true,
       fieldName: 'sender_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
@@ -2123,7 +2139,7 @@ export const SenderEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -2140,7 +2156,7 @@ export const SendersSchema = new EntitySchema({
     senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'sender_emails',
       pivotEntity: () => SenderEmails,
@@ -2305,7 +2321,7 @@ export class Senders {
 
 exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -2323,19 +2339,19 @@ export const EmailSendingLogsSchema = new EntitySchema({
   properties: {
     logId: { primary: true, type: 'integer' },
     recepient: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => RecepientEmails,
       fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
@@ -2345,7 +2361,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Recepients } from './Recepients';
 import { SenderEmails } from './SenderEmails';
 import { Senders } from './Senders';
@@ -2364,21 +2380,25 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
+    emailInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => SenderEmails,
+      mappedBy: 'email',
+    },
     recepientEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Recepients,
       mappedBy: 'recepientEmails',
     },
     senderEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Senders,
       mappedBy: 'senderEmails',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
@@ -2395,26 +2415,26 @@ export const RecepientEmailsSchema = new EntitySchema({
   properties: {
     recepient: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Recepients,
       fieldName: 'recepient_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
     recepientInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'recepient',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -2432,7 +2452,7 @@ export const RecepientsSchema = new EntitySchema({
     recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'recepient_emails',
       pivotEntity: () => RecepientEmails,
@@ -2440,14 +2460,14 @@ export const RecepientsSchema = new EntitySchema({
       inverseJoinColumn: 'email_id',
     },
     recepientInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => RecepientEmails,
       mappedBy: 'recepient',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
@@ -2465,31 +2485,31 @@ export const SenderEmailsSchema = new EntitySchema({
   properties: {
     sender: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Senders,
       fieldName: 'sender_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
     senderInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'sender',
     },
     replyInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'reply',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -2507,14 +2527,18 @@ export const SendersSchema = new EntitySchema({
     senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'sender_emails',
       pivotEntity: () => SenderEmails,
       joinColumn: 'sender_id',
       inverseJoinColumn: 'email_id',
     },
-    senderInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'sender' },
+    senderInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => SenderEmails,
+      mappedBy: 'sender',
+    },
   },
 });
 ",
@@ -2673,7 +2697,7 @@ export class Senders {
 
 exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -2691,21 +2715,21 @@ export const EmailSendingLogsSchema = new EntitySchema({
   properties: {
     logId: { primary: true, type: 'integer' },
     recepient: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => RecepientEmails,
       ref: true,
       fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'reply_email_id'],
@@ -2716,7 +2740,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Recepients } from './Recepients';
 import { SenderEmails } from './SenderEmails';
 import { Senders } from './Senders';
@@ -2735,21 +2759,25 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
+    emailInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => SenderEmails,
+      mappedBy: 'email',
+    },
     recepientEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Recepients,
       mappedBy: 'recepientEmails',
     },
     senderEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Senders,
       mappedBy: 'senderEmails',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
@@ -2766,28 +2794,28 @@ export const RecepientEmailsSchema = new EntitySchema({
   properties: {
     recepient: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Recepients,
       ref: true,
       fieldName: 'recepient_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
     recepientInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'recepient',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -2805,7 +2833,7 @@ export const RecepientsSchema = new EntitySchema({
     recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'recepient_emails',
       pivotEntity: () => RecepientEmails,
@@ -2813,14 +2841,14 @@ export const RecepientsSchema = new EntitySchema({
       inverseJoinColumn: 'email_id',
     },
     recepientInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => RecepientEmails,
       mappedBy: 'recepient',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
@@ -2838,33 +2866,33 @@ export const SenderEmailsSchema = new EntitySchema({
   properties: {
     sender: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Senders,
       ref: true,
       fieldName: 'sender_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
     senderInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'sender',
     },
     replyInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'reply',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -2882,14 +2910,18 @@ export const SendersSchema = new EntitySchema({
     senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'sender_emails',
       pivotEntity: () => SenderEmails,
       joinColumn: 'sender_id',
       inverseJoinColumn: 'email_id',
     },
-    senderInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'sender' },
+    senderInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => SenderEmails,
+      mappedBy: 'sender',
+    },
   },
 });
 ",
@@ -3019,7 +3051,7 @@ export class Senders {
 
 exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -3037,19 +3069,19 @@ export const EmailSendingLogsSchema = new EntitySchema({
   properties: {
     logId: { primary: true, type: 'integer' },
     recepient: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => RecepientEmails,
       fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
@@ -3075,7 +3107,7 @@ export const EmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
 
@@ -3090,13 +3122,13 @@ export const RecepientEmailsSchema = new EntitySchema({
   properties: {
     recepient: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Recepients,
       fieldName: 'recepient_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
@@ -3104,7 +3136,7 @@ export const RecepientEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -3121,7 +3153,7 @@ export const RecepientsSchema = new EntitySchema({
     recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'recepient_emails',
       pivotEntity: () => RecepientEmails,
@@ -3131,7 +3163,7 @@ export const RecepientsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
 
@@ -3146,13 +3178,13 @@ export const SenderEmailsSchema = new EntitySchema({
   properties: {
     sender: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Senders,
       fieldName: 'sender_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
@@ -3160,7 +3192,7 @@ export const SenderEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -3177,7 +3209,7 @@ export const SendersSchema = new EntitySchema({
     senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'sender_emails',
       pivotEntity: () => SenderEmails,
@@ -3313,7 +3345,7 @@ export class Senders {
 
 exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -3331,21 +3363,21 @@ export const EmailSendingLogsSchema = new EntitySchema({
   properties: {
     logId: { primary: true, type: 'integer' },
     recepient: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => RecepientEmails,
       ref: true,
       fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'reply_email_id'],
@@ -3372,7 +3404,7 @@ export const EmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
 
@@ -3387,14 +3419,14 @@ export const RecepientEmailsSchema = new EntitySchema({
   properties: {
     recepient: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Recepients,
       ref: true,
       fieldName: 'recepient_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
@@ -3403,7 +3435,7 @@ export const RecepientEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -3420,7 +3452,7 @@ export const RecepientsSchema = new EntitySchema({
     recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'recepient_emails',
       pivotEntity: () => RecepientEmails,
@@ -3430,7 +3462,7 @@ export const RecepientsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
 
@@ -3445,14 +3477,14 @@ export const SenderEmailsSchema = new EntitySchema({
   properties: {
     sender: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Senders,
       ref: true,
       fieldName: 'sender_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
@@ -3461,7 +3493,7 @@ export const SenderEmailsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -3478,7 +3510,7 @@ export const SendersSchema = new EntitySchema({
     senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'sender_emails',
       pivotEntity: () => SenderEmails,
@@ -3643,7 +3675,7 @@ export class Senders {
 
 exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -3661,19 +3693,19 @@ export const EmailSendingLogsSchema = new EntitySchema({
   properties: {
     logId: { primary: true, type: 'integer' },
     recepient: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => RecepientEmails,
       fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       fieldNames: ['sender_id', 'reply_email_id'],
       nullable: true,
@@ -3683,7 +3715,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Recepients } from './Recepients';
 import { SenderEmails } from './SenderEmails';
 import { Senders } from './Senders';
@@ -3702,21 +3734,25 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
+    emailInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => SenderEmails,
+      mappedBy: 'email',
+    },
     recepientEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Recepients,
       mappedBy: 'recepientEmails',
     },
     senderEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Senders,
       mappedBy: 'senderEmails',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
@@ -3733,26 +3769,26 @@ export const RecepientEmailsSchema = new EntitySchema({
   properties: {
     recepient: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Recepients,
       fieldName: 'recepient_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
     recepientInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'recepient',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -3770,7 +3806,7 @@ export const RecepientsSchema = new EntitySchema({
     recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'recepient_emails',
       pivotEntity: () => RecepientEmails,
@@ -3778,14 +3814,14 @@ export const RecepientsSchema = new EntitySchema({
       inverseJoinColumn: 'email_id',
     },
     recepientInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => RecepientEmails,
       mappedBy: 'recepient',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
@@ -3803,31 +3839,31 @@ export const SenderEmailsSchema = new EntitySchema({
   properties: {
     sender: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Senders,
       fieldName: 'sender_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
     senderInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'sender',
     },
     replyInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'reply',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -3845,14 +3881,18 @@ export const SendersSchema = new EntitySchema({
     senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'sender_emails',
       pivotEntity: () => SenderEmails,
       joinColumn: 'sender_id',
       inverseJoinColumn: 'email_id',
     },
-    senderInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'sender' },
+    senderInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => SenderEmails,
+      mappedBy: 'sender',
+    },
   },
 });
 ",
@@ -4011,7 +4051,7 @@ export class Senders {
 
 exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -4029,21 +4069,21 @@ export const EmailSendingLogsSchema = new EntitySchema({
   properties: {
     logId: { primary: true, type: 'integer' },
     recepient: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => RecepientEmails,
       ref: true,
       fieldNames: ['recepient_id', 'recepient_email_id'],
       index: 'fk_email_sending_logs_recepient_emails1_idx',
     },
     sender: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'sender_email_id'],
       index: 'fk_email_sending_logs_sender_emails1_idx',
     },
     reply: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => SenderEmails,
       ref: true,
       fieldNames: ['sender_id', 'reply_email_id'],
@@ -4054,7 +4094,7 @@ export const EmailSendingLogsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Recepients } from './Recepients';
 import { SenderEmails } from './SenderEmails';
 import { Senders } from './Senders';
@@ -4073,21 +4113,25 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
+    emailInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => SenderEmails,
+      mappedBy: 'email',
+    },
     recepientEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Recepients,
       mappedBy: 'recepientEmails',
     },
     senderEmailsInverse: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Senders,
       mappedBy: 'senderEmails',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
@@ -4104,28 +4148,28 @@ export const RecepientEmailsSchema = new EntitySchema({
   properties: {
     recepient: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Recepients,
       ref: true,
       fieldName: 'recepient_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
     recepientInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'recepient',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -4143,7 +4187,7 @@ export const RecepientsSchema = new EntitySchema({
     recepientId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     recepientEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'recepient_emails',
       pivotEntity: () => RecepientEmails,
@@ -4151,14 +4195,14 @@ export const RecepientsSchema = new EntitySchema({
       inverseJoinColumn: 'email_id',
     },
     recepientInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => RecepientEmails,
       mappedBy: 'recepient',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
@@ -4176,33 +4220,33 @@ export const SenderEmailsSchema = new EntitySchema({
   properties: {
     sender: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Senders,
       ref: true,
       fieldName: 'sender_id',
     },
     email: {
       primary: true,
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Emails,
       ref: true,
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
     senderInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'sender',
     },
     replyInverse: {
-      kind: '1:m',
+      kind: ReferenceKind.ONE_TO_MANY,
       entity: () => EmailSendingLogs,
       mappedBy: 'reply',
     },
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -4220,14 +4264,18 @@ export const SendersSchema = new EntitySchema({
     senderId: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
     senderEmails: {
-      kind: 'm:n',
+      kind: ReferenceKind.MANY_TO_MANY,
       entity: () => Emails,
       pivotTable: 'sender_emails',
       pivotEntity: () => SenderEmails,
       joinColumn: 'sender_id',
       inverseJoinColumn: 'email_id',
     },
-    senderInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'sender' },
+    senderInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => SenderEmails,
+      mappedBy: 'sender',
+    },
   },
 });
 ",

@@ -125,7 +125,7 @@ export class Property {
 
 exports[`conflicting_entity_names_example entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema as MikroORM_EntitySchema, ReferenceKind as MikroORM_ReferenceKind } from '@mikro-orm/core';
 import { Entity } from './Entity';
 import { EntitySchema } from './EntitySchema';
 import { MyUnknownClass } from './MyUnknownClass';
@@ -146,19 +146,19 @@ export const ConfigSchema = new MikroORM_EntitySchema({
     name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
     settings: { type: 'json' },
     test: {
-      kind: 'embedded',
+      kind: MikroORM_ReferenceKind.EMBEDDED,
       entity: () => MyUnknownClass,
       persist: false,
       hydrate: false,
     },
     test2: {
-      kind: 'embedded',
+      kind: MikroORM_ReferenceKind.EMBEDDED,
       entity: () => Entity,
       persist: false,
       hydrate: false,
     },
     test3: {
-      kind: 'embedded',
+      kind: MikroORM_ReferenceKind.EMBEDDED,
       entity: () => EntitySchema,
       persist: false,
       hydrate: false,
@@ -166,7 +166,7 @@ export const ConfigSchema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { Collection as MikroORM_Collection, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, EntitySchema as MikroORM_EntitySchema, ReferenceKind as MikroORM_ReferenceKind } from '@mikro-orm/core';
 import { ManyToMany } from './ManyToMany';
 import { Property } from './Property';
 
@@ -188,7 +188,7 @@ export const EntitySchema = new MikroORM_EntitySchema({
     id: { primary: true, type: 'integer' },
     type: { enum: true, items: () => EntityType },
     manyToMany: {
-      kind: 'm:n',
+      kind: MikroORM_ReferenceKind.MANY_TO_MANY,
       entity: () => Property,
       pivotTable: 'many_to_many',
       pivotEntity: () => ManyToMany,
@@ -197,11 +197,15 @@ export const EntitySchema = new MikroORM_EntitySchema({
       fixedOrder: true,
       fixedOrderColumn: 'creation_order',
     },
-    entityInverse: { kind: '1:m', entity: () => ManyToMany, mappedBy: 'entity' },
+    entityInverse: {
+      kind: MikroORM_ReferenceKind.ONE_TO_MANY,
+      entity: () => ManyToMany,
+      mappedBy: 'entity',
+    },
   },
 });
 ",
-  "import { Collection as MikroORM_Collection, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, EntitySchema as MikroORM_EntitySchema, ReferenceKind as MikroORM_ReferenceKind } from '@mikro-orm/core';
 import { Property } from './Property';
 
 export class Enum {
@@ -216,14 +220,14 @@ export const EnumSchema = new MikroORM_EntitySchema({
     id: { primary: true, type: 'smallint' },
     opt: { type: 'string', length: 255 },
     oneToManyInverse: {
-      kind: '1:m',
+      kind: MikroORM_ReferenceKind.ONE_TO_MANY,
       entity: () => Property,
       mappedBy: 'oneToMany',
     },
   },
 });
 ",
-  "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt, PrimaryKeyProp as MikroORM_PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt, PrimaryKeyProp as MikroORM_PrimaryKeyProp, ReferenceKind as MikroORM_ReferenceKind } from '@mikro-orm/core';
 import { Entity } from './Entity';
 import { Property } from './Property';
 
@@ -238,10 +242,14 @@ export class ManyToMany {
 export const ManyToManySchema = new MikroORM_EntitySchema({
   class: ManyToMany,
   properties: {
-    entity: { primary: true, kind: 'm:1', entity: () => Entity },
+    entity: {
+      primary: true,
+      kind: MikroORM_ReferenceKind.MANY_TO_ONE,
+      entity: () => Entity,
+    },
     property: {
       primary: true,
-      kind: 'm:1',
+      kind: MikroORM_ReferenceKind.MANY_TO_ONE,
       entity: () => Property,
       index: 'fk_many_to_many_property1_idx',
     },
@@ -255,7 +263,7 @@ export const ManyToManySchema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { Collection as MikroORM_Collection, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, EntitySchema as MikroORM_EntitySchema, ReferenceKind as MikroORM_ReferenceKind } from '@mikro-orm/core';
 import { Entity } from './Entity';
 import { Enum } from './Enum';
 import { ManyToMany } from './ManyToMany';
@@ -272,18 +280,18 @@ export const PropertySchema = new MikroORM_EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     oneToMany: {
-      kind: 'm:1',
+      kind: MikroORM_ReferenceKind.MANY_TO_ONE,
       entity: () => Enum,
       fieldName: 'one_to_many',
       index: 'fk_property_enum_idx',
     },
     manyToManyInverse: {
-      kind: 'm:n',
+      kind: MikroORM_ReferenceKind.MANY_TO_MANY,
       entity: () => Entity,
       mappedBy: 'manyToMany',
     },
     propertyInverse: {
-      kind: '1:m',
+      kind: MikroORM_ReferenceKind.ONE_TO_MANY,
       entity: () => ManyToMany,
       mappedBy: 'property',
     },

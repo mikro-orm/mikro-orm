@@ -114,7 +114,7 @@ export class This$43that {
 
 exports[`odd_table_names_example:100% entitySchema=true: mysql 1`] = `
 [
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
 
 export class E_$42misc {
@@ -134,7 +134,7 @@ export const E_$42miscSchema = new EntitySchema({
   properties: {
     '@ref': {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => E50$37$32of$32stuff,
       fieldName: '@ref',
     },
@@ -142,7 +142,7 @@ export const E_$42miscSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Table$39s$32name$32has$32apostrophe$44$32also$32$96$32this } from './Table$39s$32name$32has$32apostrophe$44$32also$32$96$32this';
 
 export class E123TableName {
@@ -164,7 +164,7 @@ export const E123TableNameSchema = new EntitySchema({
     $: { primary: true, type: 'integer', unsigned: false, autoincrement: false },
     $$: { type: 'bigint' },
     prototype: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => Table$39s$32name$32has$32apostrophe$44$32also$32$96$32this,
       fieldName: 'prototype',
       index: 'fk_123_table_name_table\\'s name has apostrophe, also\` this_idx',
@@ -238,7 +238,7 @@ export const NsSubnsTheNameSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { E_$42misc } from './E_$42misc';
 
 export class This$43that {
@@ -252,7 +252,7 @@ export const This$43thatSchema = new EntitySchema({
   properties: {
     '80%OfStuff': {
       primary: true,
-      kind: '1:1',
+      kind: ReferenceKind.ONE_TO_ONE,
       entity: () => E_$42misc,
       fieldName: '80% of stuff',
     },

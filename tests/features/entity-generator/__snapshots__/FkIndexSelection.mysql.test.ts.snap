@@ -99,7 +99,7 @@ export const FashionableColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { FashionableColors } from './FashionableColors';
 
 export class Users {
@@ -123,7 +123,7 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FashionableColors,
       fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
@@ -238,7 +238,7 @@ export const FashionableColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { FashionableColors } from './FashionableColors';
 
 export class Users {
@@ -262,7 +262,7 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FashionableColors,
       ref: true,
       fieldNames: ['favorite_car_year', 'favorite_color'],
@@ -366,7 +366,7 @@ export const CarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Users } from './Users';
 
 export class FashionableColors {
@@ -381,11 +381,15 @@ export const FashionableColorsSchema = new EntitySchema({
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
     color: { primary: true, type: 'string', length: 255 },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    favoriteInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Users,
+      mappedBy: 'favorite',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { FashionableColors } from './FashionableColors';
 
 export class Users {
@@ -409,7 +413,7 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FashionableColors,
       fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
@@ -512,7 +516,7 @@ export const CarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Users } from './Users';
 
 export class FashionableColors {
@@ -527,11 +531,15 @@ export const FashionableColorsSchema = new EntitySchema({
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
     color: { primary: true, type: 'string', length: 255 },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    favoriteInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Users,
+      mappedBy: 'favorite',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { FashionableColors } from './FashionableColors';
 
 export class Users {
@@ -555,7 +563,7 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FashionableColors,
       ref: true,
       fieldNames: ['favorite_car_year', 'favorite_color'],
@@ -662,7 +670,7 @@ export const FashionableColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { FashionableColors } from './FashionableColors';
 
 export class Users {
@@ -689,7 +697,7 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FashionableColors,
       fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
@@ -792,7 +800,7 @@ export const FashionableColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { FashionableColors } from './FashionableColors';
 
 export class Users {
@@ -819,7 +827,7 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FashionableColors,
       ref: true,
       fieldNames: ['favorite_car_year', 'favorite_color'],
@@ -911,7 +919,7 @@ export const CarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Users } from './Users';
 
 export class FashionableColors {
@@ -926,11 +934,15 @@ export const FashionableColorsSchema = new EntitySchema({
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
     color: { primary: true, type: 'string', length: 255 },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    favoriteInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Users,
+      mappedBy: 'favorite',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { FashionableColors } from './FashionableColors';
 
 export class Users {
@@ -957,7 +969,7 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FashionableColors,
       fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
@@ -1048,7 +1060,7 @@ export const CarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Users } from './Users';
 
 export class FashionableColors {
@@ -1063,11 +1075,15 @@ export const FashionableColorsSchema = new EntitySchema({
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
     color: { primary: true, type: 'string', length: 255 },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    favoriteInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Users,
+      mappedBy: 'favorite',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { FashionableColors } from './FashionableColors';
 
 export class Users {
@@ -1094,7 +1110,7 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FashionableColors,
       ref: true,
       fieldNames: ['favorite_car_year', 'favorite_color'],
@@ -1201,7 +1217,7 @@ export const FashionableColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { FashionableColors } from './FashionableColors';
 
 export class Users {
@@ -1229,7 +1245,7 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FashionableColors,
       fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
@@ -1336,7 +1352,7 @@ export const FashionableColorsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { FashionableColors } from './FashionableColors';
 
 export class Users {
@@ -1364,7 +1380,7 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FashionableColors,
       ref: true,
       fieldNames: ['favorite_car_year', 'favorite_color'],
@@ -1460,7 +1476,7 @@ export const CarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Users } from './Users';
 
 export class FashionableColors {
@@ -1475,11 +1491,15 @@ export const FashionableColorsSchema = new EntitySchema({
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
     color: { primary: true, type: 'string', length: 255 },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    favoriteInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Users,
+      mappedBy: 'favorite',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { FashionableColors } from './FashionableColors';
 
 export class Users {
@@ -1507,7 +1527,7 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FashionableColors,
       fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
@@ -1602,7 +1622,7 @@ export const CarsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, ReferenceKind } from '@mikro-orm/core';
 import { Users } from './Users';
 
 export class FashionableColors {
@@ -1617,11 +1637,15 @@ export const FashionableColorsSchema = new EntitySchema({
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
     color: { primary: true, type: 'string', length: 255 },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    favoriteInverse: {
+      kind: ReferenceKind.ONE_TO_MANY,
+      entity: () => Users,
+      mappedBy: 'favorite',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref, ReferenceKind } from '@mikro-orm/core';
 import { FashionableColors } from './FashionableColors';
 
 export class Users {
@@ -1649,7 +1673,7 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     favorite: {
-      kind: 'm:1',
+      kind: ReferenceKind.MANY_TO_ONE,
       entity: () => FashionableColors,
       ref: true,
       fieldNames: ['favorite_car_year', 'favorite_color'],
