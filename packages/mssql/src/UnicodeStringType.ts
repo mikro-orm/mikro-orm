@@ -1,4 +1,4 @@
-import { Type } from '@mikro-orm/core';
+import { type Platform, Type } from '@mikro-orm/core';
 
 export class UnicodeString {
 
@@ -26,8 +26,8 @@ export class UnicodeString {
 
 export class UnicodeStringType extends Type<string | null, string | null> {
 
-  override getColumnType(prop: { length?: number }) {
-    const length = prop.length === -1 ? 'max' : (prop.length ?? 255);
+  override getColumnType(prop: { length?: number }, platform: Platform) {
+    const length = prop.length === -1 ? 'max' : (prop.length ?? this.getDefaultLength(platform));
     return `nvarchar(${length})`;
   }
 
@@ -54,6 +54,10 @@ export class UnicodeStringType extends Type<string | null, string | null> {
 
   override toJSON(value: string | null | UnicodeString): string | null {
     return this.convertToJSValue(value);
+  }
+
+  override getDefaultLength(platform: Platform): number {
+    return platform.getDefaultVarcharLength();
   }
 
 }

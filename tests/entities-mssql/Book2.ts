@@ -1,5 +1,22 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Entity, Filter, Formula, Ref, JsonType, ManyToMany, ManyToOne, OneToOne, OptionalProps, PrimaryKey, Property, QueryOrder, t } from '@mikro-orm/core';
+import {
+  Cascade,
+  Collection,
+  Entity,
+  Filter,
+  Formula,
+  Ref,
+  JsonType,
+  ManyToMany,
+  ManyToOne,
+  OneToOne,
+  OptionalProps,
+  PrimaryKey,
+  Property,
+  QueryOrder,
+  t,
+  Unique,
+} from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
@@ -19,6 +36,10 @@ export class Book2 {
 
   @Property({ defaultRaw: 'current_timestamp', length: 3 })
   createdAt: Date = new Date();
+
+  @Unique()
+  @Property({ type: 'character', length: 13, nullable: true })
+  isbn?: string;
 
   @Property({ nullable: true, default: '' })
   title?: string;

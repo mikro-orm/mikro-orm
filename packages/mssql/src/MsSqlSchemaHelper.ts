@@ -438,7 +438,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       return;
     }
 
-    if (match[2] === 'max' && ['varchar', 'nvarchar'].includes(match[1])) {
+    if (match[2] === 'max') {
       return -1;
     }
 

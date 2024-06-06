@@ -21,7 +21,8 @@ create index "custom_idx_name_123" on "author2" ("name");
 create index "author2_name_age_index" on "author2" ("name", "age");
 alter table "author2" add constraint "author2_name_email_unique" unique ("name", "email");
 
-create table "book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "title" varchar(255) null default '', "perex" text null, "price" numeric(8,2) null, "double" double precision null, "meta" jsonb null, "author_id" int not null, "publisher_id" int null, constraint "book2_pkey" primary key ("uuid_pk"));
+create table "book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "isbn" char(13) null, "title" varchar(255) null default '', "perex" text null, "price" numeric(8,2) null, "double" double precision null, "meta" jsonb null, "author_id" int not null, "publisher_id" int null, constraint "book2_pkey" primary key ("uuid_pk"));
+alter table "book2" add constraint "book2_isbn_unique" unique ("isbn");
 create index "book2_title_index" on "public"."book2" using gin(to_tsvector('simple', "title"));
 
 create table "book2_tags" ("order" serial primary key, "book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null);

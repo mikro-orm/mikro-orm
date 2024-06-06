@@ -641,6 +641,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       switch (match[1]) {
         case 'character varying':
         case 'varchar':
+        case 'bpchar':
+        case 'char':
+        case 'character':
           return -1;
         case 'interval':
         case 'time':

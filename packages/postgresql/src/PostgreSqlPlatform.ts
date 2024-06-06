@@ -192,6 +192,13 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return super.getVarcharTypeDeclarationSQL(column);
   }
 
+  override getCharTypeDeclarationSQL(column: { length?: number }): string {
+    if (column.length === -1) {
+      return 'char';
+    }
+    return super.getCharTypeDeclarationSQL(column);
+  }
+
   override getBlobDeclarationSQL(): string {
     return 'bytea';
   }
@@ -295,6 +302,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       'bytea': 'blob',
       'jsonb': 'json',
       'character varying': 'varchar',
+      'bpchar': 'character',
     };
 
     return super.getDefaultMappedType(map[normalizedType as keyof typeof map] ?? type);

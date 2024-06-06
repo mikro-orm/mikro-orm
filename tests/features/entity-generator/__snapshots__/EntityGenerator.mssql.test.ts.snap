@@ -13,7 +13,7 @@ export class Address2 {
   @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Author2;
 
-  @Property({ length: 255, comment: 'This is address property' })
+  @Property({ comment: 'This is address property' })
   value!: string;
 
 }
@@ -37,12 +37,12 @@ export class Author2 {
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ length: 255 })
+  @Property()
   email!: string;
 
   @Property({ nullable: true })
@@ -98,7 +98,7 @@ export class BaseUser2 {
   @Enum({ items: () => BaseUser2Type })
   type!: BaseUser2Type;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   ownerProp?: string;
 
   @ManyToOne({ entity: () => BaseUser2, nullable: true })
@@ -110,7 +110,7 @@ export class BaseUser2 {
   @Property({ nullable: true })
   employeeProp?: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   managerProp?: string;
 
 }
@@ -134,12 +134,13 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
 
 @Entity()
+@Unique({ name: 'book2_isbn_unique', expression: 'create unique index [book2_isbn_unique] on [book2] (where ([isbn] IS NOT NULL))' })
 export class Book2 {
 
   [PrimaryKeyProp]?: 'uuidPk';
@@ -150,7 +151,11 @@ export class Book2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp\` })
   createdAt!: Date & Opt;
 
-  @Property({ length: 255, nullable: true })
+  @Unique({ name: 'book2_isbn_unique' })
+  @Property({ type: 'character', length: 13, nullable: true })
+  isbn?: string;
+
+  @Property({ nullable: true })
   title?: string;
 
   @Property({ type: 'text', length: 2147483647, nullable: true })
@@ -205,7 +210,7 @@ export class CarOwner2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToOne({ entity: () => Car2, updateRule: 'cascade', index: true })
@@ -241,13 +246,13 @@ export class Configuration2 {
 
   [PrimaryKeyProp]?: ['property', 'test'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   property!: string;
 
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
   test!: Test2;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
 }
@@ -271,7 +276,7 @@ export class FooBar2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -302,7 +307,7 @@ export class FooBaz2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @Property({ type: 'string', columnType: 'varchar(255)' })
@@ -328,7 +333,7 @@ export class FooParam2 {
   @ManyToOne({ entity: () => FooBaz2, primary: true })
   baz!: FooBaz2;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
 }
@@ -341,7 +346,7 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'string', length: 255 })
+  @Property({ type: 'string' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher2Type })
@@ -406,7 +411,7 @@ export class Sandwich {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @Property()
@@ -423,7 +428,7 @@ export class Test2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   name?: string;
 
   @OneToOne({ entity: () => Book2, nullable: true })
