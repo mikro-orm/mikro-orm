@@ -89,6 +89,7 @@ beforeAll(async () => {
     },
   });
 });
+afterAll(() => orm.close());
 
 test('#5642', async () => {
   const qb = orm.em.createQueryBuilder(Patient);
