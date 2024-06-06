@@ -118,7 +118,7 @@ export class Book3 {
   title!: string;
 
   @Property()
-  @Unique()
+  @Unique({ name: 'isbn_null', expression: 'create unique index isbn_null on "book" ("isbn") where "isbn" is not null' })
   isbn!: string;
 
   @Property({ type: 'json' })
@@ -156,7 +156,7 @@ export class Book4 {
   title!: string;
 
   @Property()
-  @Unique()
+  @Unique({ name: 'isbn_null', expression: 'create unique index isbn_null on "book" ("isbn") where "isbn" is not null' })
   isbn!: string;
 
   @Property({ type: 'json' })

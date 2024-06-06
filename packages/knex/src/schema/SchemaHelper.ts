@@ -462,7 +462,9 @@ export abstract class SchemaHelper {
       return;
     }
 
-    if (index.primary) {
+    if (index.expression) {
+      this.pushTableQuery(table, index.expression);
+    } else if (index.primary) {
       const keyName = this.hasNonDefaultPrimaryKeyName(tableDef) ? index.keyName : undefined;
       table.primary(index.columnNames, keyName);
     } else if (index.unique) {
@@ -473,8 +475,6 @@ export abstract class SchemaHelper {
       } else {
         table.unique(index.columnNames, { indexName: index.keyName, deferrable: index.deferMode });
       }
-    } else if (index.expression) {
-      this.pushTableQuery(table, index.expression);
     } else if (index.type === 'fulltext') {
       const columns = index.columnNames.map(name => ({ name, type: tableDef.getColumn(name)!.type }));
 
