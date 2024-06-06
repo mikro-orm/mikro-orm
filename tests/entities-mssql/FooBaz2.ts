@@ -10,6 +10,9 @@ export class FooBaz2 {
   @Property()
   name: string;
 
+  @Property({ type: 'varchar' })
+  code: string;
+
   @OneToOne(() => FooBar2, 'baz', { lazy: true })
   bar?: FooBar2;
 
@@ -18,6 +21,7 @@ export class FooBaz2 {
 
   constructor(name: string) {
     this.name = name;
+    this.code = name;
   }
 
 }

@@ -1,4 +1,4 @@
-import { Type, type EntityProperty } from '@mikro-orm/core';
+import { Type } from '@mikro-orm/core';
 
 export class UnicodeString {
 
@@ -26,7 +26,7 @@ export class UnicodeString {
 
 export class UnicodeStringType extends Type<string | null, string | null> {
 
-  override getColumnType(prop: EntityProperty) {
+  override getColumnType(prop: { length?: number }) {
     const length = prop.length === -1 ? 'max' : (prop.length ?? 255);
     return `nvarchar(${length})`;
   }

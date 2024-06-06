@@ -293,7 +293,7 @@ describe('QueryBuilder', () => {
       .where({ 'fz.name': 'baz' })
       .limit(1);
     const sql = 'select `fb1`.*, ' +
-      '`fz`.`id` as `fz__id`, `fz`.`name` as `fz__name`, `fz`.`version` as `fz__version`, ' +
+      '`fz`.`id` as `fz__id`, `fz`.`name` as `fz__name`, `fz`.`code` as `fz__code`, `fz`.`version` as `fz__version`, ' +
       '`fb2`.`id` as `fb2__id`, `fb2`.`name` as `fb2__name`, `fb2`.`name with space` as `fb2__name with space`, `fb2`.`baz_id` as `fb2__baz_id`, `fb2`.`foo_bar_id` as `fb2__foo_bar_id`, `fb2`.`version` as `fb2__version`, `fb2`.`blob` as `fb2__blob`, `fb2`.`blob2` as `fb2__blob2`, `fb2`.`array` as `fb2__array`, `fb2`.`object_property` as `fb2__object_property`, (select 123) as `fb2__random`, ' +
       '(select 123) as `random` from `foo_bar2` as `fb1` ' +
       'inner join `foo_baz2` as `fz` on `fb1`.`baz_id` = `fz`.`id` ' +
@@ -313,7 +313,7 @@ describe('QueryBuilder', () => {
       .setFlag(QueryFlag.PAGINATE)
       .limit(1);
     const sql = 'select `fb1`.*, ' +
-      '`fz`.`id` as `fz__id`, `fz`.`name` as `fz__name`, `fz`.`version` as `fz__version`, ' +
+      '`fz`.`id` as `fz__id`, `fz`.`name` as `fz__name`, `fz`.`code` as `fz__code`, `fz`.`version` as `fz__version`, ' +
       '`fb2`.`id` as `fb2__id`, `fb2`.`name` as `fb2__name`, `fb2`.`name with space` as `fb2__name with space`, `fb2`.`baz_id` as `fb2__baz_id`, `fb2`.`foo_bar_id` as `fb2__foo_bar_id`, `fb2`.`version` as `fb2__version`, `fb2`.`blob` as `fb2__blob`, `fb2`.`blob2` as `fb2__blob2`, `fb2`.`array` as `fb2__array`, `fb2`.`object_property` as `fb2__object_property`, (select 123) as `fb2__random`, ' +
       '(select 123) as `random` from `foo_bar2` as `fb1` ' +
       'inner join `foo_baz2` as `fz` on `fb1`.`baz_id` = `fz`.`id` ' +
@@ -2639,7 +2639,7 @@ describe('QueryBuilder', () => {
         .where({ 'fz.name': 'baz' })
         .limit(1);
       const sql = 'select distinct on ("fb1"."id") "fb1".*, ' +
-        '"fz"."id" as "fz__id", "fz"."name" as "fz__name", "fz"."version" as "fz__version", ' +
+        '"fz"."id" as "fz__id", "fz"."name" as "fz__name", "fz"."code" as "fz__code", "fz"."version" as "fz__version", ' +
         '"fb2"."id" as "fb2__id", "fb2"."name" as "fb2__name", "fb2"."name with space" as "fb2__name with space", "fb2"."baz_id" as "fb2__baz_id", "fb2"."foo_bar_id" as "fb2__foo_bar_id", "fb2"."version" as "fb2__version", "fb2"."blob" as "fb2__blob", "fb2"."blob2" as "fb2__blob2", "fb2"."array" as "fb2__array", "fb2"."object_property" as "fb2__object_property", (select 123) as "fb2__random", ' +
         '(select 123) as "random" from "foo_bar2" as "fb1" ' +
         'inner join "foo_baz2" as "fz" on "fb1"."baz_id" = "fz"."id" ' +
@@ -2706,7 +2706,7 @@ describe('QueryBuilder', () => {
         .where({ 'fz.name': 'baz' })
         .limit(1);
       const sql = 'select distinct "fb1".*, ' +
-        '"fz"."id" as "fz__id", "fz"."name" as "fz__name", "fz"."version" as "fz__version", ' +
+        '"fz"."id" as "fz__id", "fz"."name" as "fz__name", "fz"."code" as "fz__code", "fz"."version" as "fz__version", ' +
         '"fb2"."id" as "fb2__id", "fb2"."name" as "fb2__name", "fb2"."name with space" as "fb2__name with space", "fb2"."baz_id" as "fb2__baz_id", "fb2"."foo_bar_id" as "fb2__foo_bar_id", "fb2"."version" as "fb2__version", "fb2"."blob" as "fb2__blob", "fb2"."blob2" as "fb2__blob2", "fb2"."array" as "fb2__array", "fb2"."object_property" as "fb2__object_property", (select 123) as "fb2__random", ' +
         '(select 123) as "random" from "foo_bar2" as "fb1" ' +
         'inner join "foo_baz2" as "fz" on "fb1"."baz_id" = "fz"."id" ' +

@@ -50,6 +50,7 @@ describe('EntityHelperMySql', () => {
         }, // circular reference breaks the cycle
         id: 1,
         name: 'fz',
+        code: 'fz',
         version: a.baz!.version,
       },
       fooBar: null,
@@ -91,6 +92,7 @@ describe('EntityHelperMySql', () => {
         }, // circular reference breaks the cycle
         id: 1,
         name: 'fz',
+        code: 'fz',
         version: a.baz!.version,
       },
       fooBar: null,
