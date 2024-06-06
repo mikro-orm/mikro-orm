@@ -2,6 +2,7 @@ import {
   AbstractSqlPlatform,
   type Dictionary,
   type EntityMetadata,
+  type EntityProperty,
   type IDatabaseDriver,
   type EntityManager,
   type MikroORM,
@@ -92,9 +93,9 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return 'nvarchar(max)';
   }
 
-  override getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[]; length?: number }): string {
+  override getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
     if (column.items?.every(item => Utils.isString(item))) {
-      return this.getVarcharTypeDeclarationSQL({ length: 100, ...column });
+      return Type.getType(UnicodeStringType).getColumnType({ length: 100, ...column } as EntityProperty, this);
     }
 
     /* istanbul ignore next */
@@ -122,10 +123,6 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override getDefaultSchemaName(): string | undefined {
     return 'dbo';
-  }
-
-  override getVarcharTypeDeclarationSQL(column: { length?: number }): string {
-    return `nvarchar(${column.length ?? 255})`;
   }
 
   override getUuidTypeDeclarationSQL(column: { length?: number }): string {

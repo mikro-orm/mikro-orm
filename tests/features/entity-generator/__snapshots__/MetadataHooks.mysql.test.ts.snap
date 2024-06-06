@@ -391,6 +391,9 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
+  @Property({ length: 255 })
+  code!: string;
+
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
@@ -1191,6 +1194,7 @@ import { FooParam2 } from './FooParam2';
 export class FooBaz2 {
   id!: number;
   name!: string;
+  code!: string;
   version!: Date & Opt;
   bazInverse = new Collection<FooParam2>(this);
 }
@@ -1200,6 +1204,7 @@ export const FooBaz2Schema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
+    code: { type: 'string', length: 255 },
     version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     bazInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
   },
@@ -1986,6 +1991,9 @@ export class FooBaz2 {
 
   @Property({ length: 255 })
   name!: string;
+
+  @Property({ length: 255 })
+  code!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
@@ -2806,6 +2814,7 @@ import { FooParam2 } from './FooParam2';
 export class FooBaz2 {
   id!: number;
   name!: string;
+  code!: string;
   version!: Date & Opt;
   bazInverse = new Collection<FooParam2>(this);
 }
@@ -2815,6 +2824,7 @@ export const FooBaz2Schema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'integer' },
     name: { type: 'string', length: 255 },
+    code: { type: 'string', length: 255 },
     version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     bazInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
   },

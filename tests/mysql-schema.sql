@@ -39,7 +39,7 @@ create table `sandwich` (`id` int(10) unsigned not null auto_increment primary k
 
 create table `publisher2` (`id` int(10) unsigned not null auto_increment primary key, `name` varchar(255) not null default 'asd', `type` enum('local', 'global') not null default 'local', `type2` enum('LOCAL', 'GLOBAL') not null default 'LOCAL', `enum1` tinyint null, `enum2` tinyint null, `enum3` tinyint null, `enum4` enum('a', 'b', 'c') null, `enum5` enum('a') null) default character set utf8mb4 engine = InnoDB;
 
-create table `foo_baz2` (`id` int(10) unsigned not null auto_increment primary key, `name` varchar(255) not null, `version` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
+create table `foo_baz2` (`id` int(10) unsigned not null auto_increment primary key, `name` varchar(255) not null, `code` varchar(255) not null, `version` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
 
 create table `foo_bar2` (`id` int(10) unsigned not null auto_increment primary key, `name` varchar(255) not null, `name with space` varchar(255) null, `baz_id` int(10) unsigned null, `foo_bar_id` int(10) unsigned null, `version` datetime not null default current_timestamp, `blob` blob null, `blob2` blob null, `array` text null, `object_property` json null) default character set utf8mb4 engine = InnoDB;
 alter table `foo_bar2` add unique `foo_bar2_baz_id_unique`(`baz_id`);

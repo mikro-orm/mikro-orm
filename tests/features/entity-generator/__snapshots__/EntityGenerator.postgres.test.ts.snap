@@ -264,6 +264,9 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
+  @Property({ length: 255 })
+  code!: string;
+
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
@@ -654,6 +657,9 @@ export class FooBaz2 {
 
   @Property({ length: 255 })
   name!: string;
+
+  @Property({ length: 255 })
+  code!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
