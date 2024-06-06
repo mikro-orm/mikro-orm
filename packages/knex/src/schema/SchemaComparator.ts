@@ -461,7 +461,10 @@ export class SchemaComparator {
 
     const defaultRule = ['restrict', 'no action'];
     const rule = (key: ForeignKey, method: 'updateRule' | 'deleteRule') => {
-      return (key[method] ?? defaultRule[0]).toLowerCase().replace(defaultRule[1], defaultRule[0]);
+      return (key[method] ?? defaultRule[0])
+        .toLowerCase()
+        .replace(defaultRule[1], defaultRule[0])
+        .replace(/"/g, '');
     };
     const compare = (method: 'updateRule' | 'deleteRule') => rule(key1, method) === rule(key2, method);
 

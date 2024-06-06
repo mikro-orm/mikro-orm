@@ -222,7 +222,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
     const sql = `select nsp1.nspname schema_name, cls1.relname table_name, nsp2.nspname referenced_schema_name,
       cls2.relname referenced_table_name, a.attname column_name, af.attname referenced_column_name, conname constraint_name,
-      confupdtype update_rule, confdeltype delete_rule, array_position(con.conkey,a.attnum) as ord, condeferrable, condeferred
+      confupdtype update_rule, confdeltype delete_rule, array_position(con.conkey,a.attnum) as ord, condeferrable, condeferred,
+      pg_get_constraintdef(con.oid) as constraint_def
       from pg_attribute a
       join pg_constraint con on con.conrelid = a.attrelid AND a.attnum = ANY (con.conkey)
       join pg_attribute af on af.attnum = con.confkey[array_position(con.conkey,a.attnum)] AND af.attrelid = con.confrelid
@@ -237,7 +238,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
 
-    function mapReferencialIntegrity(value: string) {
+    function mapReferentialIntegrity(value: string, def: string) {
+      const match = ['n', 'd'].includes(value) && def.match(/ON DELETE (SET (NULL|DEFAULT) \(.*?\))/);
+
+      if (match) {
+        return match[1];
+      }
+
       switch (value) {
         case 'r': return 'RESTRICT';
         case 'c': return 'CASCADE';
@@ -249,8 +256,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
 
     for (const fk of allFks) {
-      fk.update_rule = mapReferencialIntegrity(fk.update_rule);
-      fk.delete_rule = mapReferencialIntegrity(fk.delete_rule);
+      fk.update_rule = mapReferentialIntegrity(fk.update_rule, fk.constraint_def);
+      fk.delete_rule = mapReferentialIntegrity(fk.delete_rule, fk.constraint_def);
 
       if (fk.condeferrable) {
         fk.defer_mode = fk.condeferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
