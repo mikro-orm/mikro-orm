@@ -453,9 +453,18 @@ export class QueryBuilderHelper {
     return `%${value}%`;
   }
 
-  appendOnConflictClause<T>(type: QueryType, onConflict: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[], qb: Knex.QueryBuilder): void {
+  appendOnConflictClause<T>(type: QueryType, onConflict: { fields: string[] | RawQueryFragment; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[], qb: Knex.QueryBuilder): void {
     onConflict.forEach(item => {
-      const sub = item.fields.length > 0 ? qb.onConflict(item.fields) : qb.onConflict();
+      let sub: Knex.OnConflictQueryBuilder<any, any>;
+
+      if (Utils.isRawSql<RawQueryFragment>(item.fields)) {
+        sub = qb.onConflict(this.knex.raw(item.fields.sql, item.fields.params));
+      } else if (item.fields.length > 0) {
+        sub = qb.onConflict(item.fields);
+      } else {
+        sub = qb.onConflict();
+      }
+
       Utils.runIfNotEmpty(() => sub.ignore(), item.ignore);
       Utils.runIfNotEmpty(() => {
         let mergeParam: Dictionary | string[] = item.merge!;

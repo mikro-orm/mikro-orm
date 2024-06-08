@@ -162,7 +162,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     /* istanbul ignore next */
     const rename = (field: keyof T) => meta ? (meta.properties[field as string]?.fieldNames[0] as keyof T ?? field) : field;
 
-    if (options.onConflictFields) {
+    if (options.onConflictFields && Array.isArray(options.onConflictFields)) {
       options.onConflictFields = options.onConflictFields.map(rename);
     }
 
@@ -192,7 +192,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     /* istanbul ignore next */
     const rename = (field: keyof T) => meta ? (meta.properties[field as string]?.fieldNames[0] as keyof T ?? field) : field;
 
-    if (options.onConflictFields) {
+    if (options.onConflictFields && Array.isArray(options.onConflictFields)) {
       options.onConflictFields = options.onConflictFields.map(rename);
     }
 

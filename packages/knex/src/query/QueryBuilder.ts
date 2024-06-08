@@ -179,7 +179,7 @@ export class QueryBuilder<
   protected _groupBy: Field<Entity>[] = [];
   protected _having: Dictionary = {};
   protected _returning?: Field<Entity>[];
-  protected _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<Entity> | Field<Entity>[]; where?: QBFilterQuery<Entity> }[];
+  protected _onConflict?: { fields: string[] | RawQueryFragment; ignore?: boolean; merge?: EntityData<Entity> | Field<Entity>[]; where?: QBFilterQuery<Entity> }[];
   protected _limit?: number;
   protected _offset?: number;
   protected _distinctOn?: string[];
@@ -573,11 +573,13 @@ export class QueryBuilder<
     this.ensureNotFinalized();
     this._onConflict ??= [];
     this._onConflict.push({
-      fields: Utils.asArray(fields).flatMap(f => {
-        const key = f.toString() as EntityKey<Entity>;
-        /* istanbul ignore next */
-        return meta.properties[key]?.fieldNames ?? [key];
-      }),
+      fields: Utils.isRawSql<RawQueryFragment>(fields)
+        ? fields
+        : Utils.asArray(fields).flatMap(f => {
+          const key = f.toString() as EntityKey<Entity>;
+          /* istanbul ignore next */
+          return meta.properties[key]?.fieldNames ?? [key];
+        }),
     });
     return this as InsertQueryBuilder<Entity>;
   }
