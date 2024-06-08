@@ -1,10 +1,10 @@
 import type { Transaction } from './connections';
 import {
-  type PopulatePath,
-  type DeferMode,
   type Cascade,
+  type DeferMode,
   type EventType,
   type LoadStrategy,
+  type PopulatePath,
   type QueryOrderMap,
   ReferenceKind,
 } from './enums';
@@ -311,7 +311,7 @@ export type RequiredEntityDataNested<T, O, C extends boolean> = T extends any[]
 
 type ExplicitlyOptionalProps<T> = (T extends { [OptionalProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Opt ? K : never }[keyof T] & {});
 type NullableKeys<T, V = null> = { [K in keyof T]: V extends T[K] ? K : never }[keyof T];
-type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | Defined<NullableKeys<T>>;
+type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | NonNullable<NullableKeys<T>>;
 
 type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
   ? true
@@ -391,7 +391,7 @@ export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
                   : T;
 
 // ideally this should also mark not populated collections as optional, but that would be breaking
-type DTOProbablyOptionalProps<T> = Defined<NullableKeys<T, undefined>>;
+type DTOProbablyOptionalProps<T> = NonNullable<NullableKeys<T, undefined>>;
 type DTOIsOptional<T, K extends keyof T> = T[K] extends LoadedCollection<any>
   ? false
   : K extends PrimaryProperty<T>
@@ -988,10 +988,10 @@ export type AutoPath<O, P extends string | boolean, E extends string = never, D 
           ? (P & `${string}.` extends never ? P : P & `${string}.`) extends infer Q
             ? Q extends `${infer A}.${infer B}`
               ? A extends StringKeys<O, E>
-                ? `${A}.${AutoPath<Defined<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
+                ? `${A}.${AutoPath<NonNullable<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
                 : never
               : Q extends StringKeys<O, E>
-                ? (Defined<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<Defined<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q & string}.`)
+                ? (NonNullable<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<NonNullable<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q & string}.`)
                 : StringKeys<O, E> | `${CollectionKeys<O>}:ref`
               : never
             : never
@@ -1054,8 +1054,6 @@ type Suffix<Key, Hint extends string, All = true | '*'> = Hint extends `${infer 
     ? Hint
     : never;
 
-type Defined<T> = T & {};
-
 export type IsSubset<T, U> = keyof U extends keyof T
   ? {}
   : Dictionary extends U
@@ -1104,7 +1102,7 @@ export type AddEager<T> = ExtractEagerProps<T> & string;
 export type ExpandHint<T, L extends string> = L | AddEager<T>;
 
 export type Selected<T, L extends string = never, F extends string = '*'> = {
-  [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
+  [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
 } & {
   [K in keyof T as FunctionKeys<T, K>]: T[K];
 } & { [__selectedType]?: T };
@@ -1116,8 +1114,8 @@ export type FromEntityType<T> = T extends LoadedEntityType<infer U> ? U : T;
 type LoadedInternal<T, L extends string = never, F extends string = '*', E extends string = never> =
   [F] extends ['*']
     ? IsNever<E> extends true
-      ? T & { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>>]: LoadedProp<Defined<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
-      : { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>, E>]: LoadedProp<Defined<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
+      ? T & { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
+      : { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>, E>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
     : Selected<T, L, F>;
 
 /**
@@ -1125,14 +1123,14 @@ type LoadedInternal<T, L extends string = never, F extends string = '*', E exten
  */
 export type Loaded<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedInternal<T, L, F, E> & { [__loadedType]?: T };
 
-export interface LoadedReference<T> extends Reference<Defined<T>> {
-  $: Defined<T>;
-  get(): Defined<T>;
+export interface LoadedReference<T> extends Reference<NonNullable<T>> {
+  $: NonNullable<T>;
+  get(): NonNullable<T>;
 }
 
-export interface LoadedScalarReference<T> extends ScalarReference<Defined<T>> {
-  $: Defined<T>;
-  get(): Defined<T>;
+export interface LoadedScalarReference<T> extends ScalarReference<NonNullable<T>> {
+  $: NonNullable<T>;
+  get(): NonNullable<T>;
 }
 
 export interface LoadedCollection<T extends object> extends Collection<T> {
