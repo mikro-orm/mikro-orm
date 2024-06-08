@@ -1407,9 +1407,13 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           throw new Error(`Trying to order by not existing property ${meta.className}.${propName}`);
         }
 
+        let path = parentPath;
         const meta2 = this.metadata.find<T>(prop.type)!;
         const childOrder = orderHint[prop.name] as Dictionary;
-        let path = `${parentPath}.${propName}`;
+
+        if (![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) || !prop.owner || Utils.isPlainObject(childOrder)) {
+          path += `.${propName}`;
+        }
 
         if (prop.kind === ReferenceKind.MANY_TO_MANY && typeof childOrder !== 'object') {
           path += '[pivot]';
