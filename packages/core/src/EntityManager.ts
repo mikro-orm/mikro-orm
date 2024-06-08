@@ -891,10 +891,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const unique = options.onConflictFields as string[] ?? meta.props.filter(p => p.unique).map(p => p.name);
-    const propIndex = unique.findIndex(p => (data as Dictionary)[p] != null);
+    const propIndex = !Utils.isRawSql(unique) && unique.findIndex(p => (data as Dictionary)[p] != null);
 
     if (options.onConflictFields || where == null) {
-      if (propIndex >= 0) {
+      if (propIndex !== false && propIndex >= 0) {
         where = { [unique[propIndex]]: (data as Dictionary)[unique[propIndex]] } as FilterQuery<Entity>;
       } else if (meta.uniques.length > 0) {
         for (const u of meta.uniques) {
@@ -942,7 +942,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (options.onConflictAction === 'ignore' || !helper(entity).hasPrimaryKey() || (returning.length > 0 && !(this.getPlatform().usesReturningStatement() && ret.row))) {
       const where = {} as FilterQuery<Entity>;
-      uniqueFields.forEach(prop => where[prop as EntityKey] = data![prop as EntityKey]);
+
+      if (Array.isArray(uniqueFields)) {
+        uniqueFields.forEach(prop => where[prop as EntityKey] = data![prop as EntityKey]);
+      }
+
       const data2 = await this.driver.findOne(meta.className, where, {
         fields: returning as any[],
         ctx: em.transactionContext,
@@ -1145,15 +1149,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       const where = { $or: [] as Dictionary[] };
-      data.forEach((item, idx) => {
-        where.$or[idx] = {};
-        uniqueFields.forEach(prop => {
-          where.$or[idx][prop as string] = item[prop as EntityKey];
+
+      if (Array.isArray(uniqueFields)) {
+        data.forEach((item, idx) => {
+          where.$or[idx] = {};
+          uniqueFields.forEach(prop => {
+            where.$or[idx][prop as string] = item[prop as EntityKey];
+          });
         });
-      });
+      }
 
       const data2 = await this.driver.find(meta.className, where, {
-        fields: returning.concat(...add).concat(...uniqueFields as string[]) as any,
+        fields: returning.concat(...add).concat(...(Array.isArray(uniqueFields) ? uniqueFields : []) as string[]) as any,
         ctx: em.transactionContext,
         convertCustomTypes: true,
         connectionType: 'write',
@@ -1178,7 +1185,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         em.getHydrator().hydrate(entity, meta, row, em.entityFactory, 'full');
       }
 
-      if (loadPK.size !== data2.length) {
+      if (loadPK.size !== data2.length && Array.isArray(uniqueFields)) {
         for (let i = 0; i < allData.length; i++) {
           const data = allData[i];
           const cond = uniqueFields.reduce((a, b) => {
