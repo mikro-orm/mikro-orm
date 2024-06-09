@@ -2025,6 +2025,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await this.entityLoader.populate(meta.className, [entity], preparedPopulate, {
       ...options as Dictionary,
       ...this.getPopulateWhere<T>(where as ObjectQuery<T>, options),
+      orderBy: options.populateOrderBy ?? options.orderBy,
       convertCustomTypes: false,
       ignoreLazyScalarProperties: true,
       lookup: false,
