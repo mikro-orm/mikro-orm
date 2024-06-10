@@ -1231,7 +1231,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Runs your callback wrapped inside a database transaction.
    */
-  async transactional<T>(cb: (em: this) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
+  async transactional<T>(cb: (em: this) => T | Promise<T>, options: TransactionOptions = {}): Promise<T> {
     const em = this.getContext(false);
 
     if (this.disableTransactions || em.disableTransactions) {
