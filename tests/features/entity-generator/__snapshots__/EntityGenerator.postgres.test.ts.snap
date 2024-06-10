@@ -39,7 +39,7 @@ exports[`EntityGenerator generate entities from schema [postgres]: postgres-enti
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
-@Entity()
+@Entity({ comment: 'This is address table' })
 export class Address2 {
 
   [PrimaryKeyProp]?: 'author';
@@ -47,7 +47,7 @@ export class Address2 {
   @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Author2;
 
-  @Property({ length: 255 })
+  @Property({ length: 255, comment: 'This is address property' })
   value!: string;
 
 }
@@ -436,7 +436,7 @@ exports[`EntityGenerator skipTables [postgres]: postgres-entity-dump-skipTables 
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
-@Entity()
+@Entity({ comment: 'This is address table' })
 export class Address2 {
 
   [PrimaryKeyProp]?: 'author';
@@ -444,7 +444,7 @@ export class Address2 {
   @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Author2;
 
-  @Property({ length: 255 })
+  @Property({ length: 255, comment: 'This is address property' })
   value!: string;
 
 }

@@ -228,7 +228,7 @@ export class DatabaseTable {
     } = this.foreignKeysToProps(namingStrategy, scalarPropertiesForRelations);
 
     const name = namingStrategy.getEntityName(this.name, this.schema);
-    const schema = new EntitySchema({ name, collection: this.name, schema: this.schema });
+    const schema = new EntitySchema({ name, collection: this.name, schema: this.schema, comment: this.comment });
 
     const compositeFkIndexes: Dictionary<{ keyName: string }> = {};
     const compositeFkUniques: Dictionary<{ keyName: string }> = {};
@@ -639,6 +639,7 @@ export class DatabaseTable {
       columnOptions.length = column.length;
       columnOptions.precision = column.precision;
       columnOptions.scale = column.scale;
+      columnOptions.comment = column.comment;
       columnOptions.enum = !!column.enumItems?.length;
       columnOptions.items = column.enumItems;
     }
@@ -706,6 +707,7 @@ export class DatabaseTable {
       length: column.length,
       precision: column.precision,
       scale: column.scale,
+      comment: column.comment,
       index: index ? index.keyName : undefined,
       unique: unique ? unique.keyName : undefined,
       enum: !!column.enumItems?.length,

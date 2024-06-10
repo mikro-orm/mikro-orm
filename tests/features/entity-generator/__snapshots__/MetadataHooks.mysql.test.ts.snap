@@ -5,7 +5,7 @@ exports[`MetadataHooks [mysql] identifiedReferences=false metadata hooks with de
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
-@Entity()
+@Entity({ comment: 'This is address table' })
 export class Address2 {
 
   [PrimaryKeyProp]?: 'author';
@@ -13,7 +13,7 @@ export class Address2 {
   @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Author2;
 
-  @Property({ length: 255 })
+  @Property({ length: 255, comment: 'This is address property' })
   value!: string;
 
 }
@@ -689,6 +689,7 @@ export class Address2 {
 
 export const Address2Schema = new EntitySchema({
   class: Address2,
+  comment: 'This is address table',
   properties: {
     author: {
       primary: true,
@@ -697,7 +698,7 @@ export const Address2Schema = new EntitySchema({
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
-    value: { type: 'string', length: 255 },
+    value: { type: 'string', length: 255, comment: 'This is address property' },
   },
 });
 ",
@@ -1606,7 +1607,7 @@ exports[`MetadataHooks [mysql] identifiedReferences=true metadata hooks with dec
   "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
-@Entity()
+@Entity({ comment: 'This is address table' })
 export class Address2 {
 
   [PrimaryKeyProp]?: 'author';
@@ -1614,7 +1615,7 @@ export class Address2 {
   @OneToOne({ entity: () => Author2, ref: true, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Ref<Author2>;
 
-  @Property({ length: 255 })
+  @Property({ length: 255, comment: 'This is address property' })
   value!: string;
 
 }
@@ -2290,6 +2291,7 @@ export class Address2 {
 
 export const Address2Schema = new EntitySchema({
   class: Address2,
+  comment: 'This is address table',
   properties: {
     author: {
       primary: true,
@@ -2299,7 +2301,7 @@ export const Address2Schema = new EntitySchema({
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
-    value: { type: 'string', length: 255 },
+    value: { type: 'string', length: 255, comment: 'This is address property' },
   },
 });
 ",

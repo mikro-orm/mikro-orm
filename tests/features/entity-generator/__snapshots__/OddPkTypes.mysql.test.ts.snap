@@ -59,7 +59,7 @@ export enum EventsWeekday {
 ",
   "import { Entity, Enum, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
-@Entity()
+@Entity({ comment: 'Worktime. If a day is holiday, remove the row.' })
 export class Worktime {
 
   [PrimaryKeyProp]?: 'weekday';
@@ -157,6 +157,7 @@ export enum WorktimeWeekday {
 
 export const WorktimeSchema = new EntitySchema({
   class: Worktime,
+  comment: 'Worktime. If a day is holiday, remove the row.',
   properties: {
     weekday: { primary: true, enum: true, items: () => WorktimeWeekday },
     from: { type: 'time' },
