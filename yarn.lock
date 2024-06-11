@@ -1567,7 +1567,7 @@ __metadata:
     "@types/webpack-env": "npm:1.18.5"
     "@typescript-eslint/eslint-plugin": "npm:7.13.0"
     "@typescript-eslint/parser": "npm:7.13.0"
-    bson: "npm:^6.4.0"
+    bson: "npm:^6.7.0"
     conditional-type-checks: "npm:1.0.6"
     eslint: "npm:8.57.0"
     eslint-plugin-import: "npm:2.29.1"
@@ -1578,7 +1578,7 @@ __metadata:
     husky: "npm:9.0.11"
     jest: "npm:29.7.0"
     lerna: "npm:8.1.3"
-    lint-staged: "npm:15.2.5"
+    lint-staged: "npm:15.2.6"
     mongodb: "npm:6.7.0"
     mongodb-memory-server: "npm:9.3.0"
     rimraf: "npm:5.0.7"
@@ -2456,16 +2456,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=18, @types/node@npm:^20.11.17":
-  version: 20.12.13
-  resolution: "@types/node@npm:20.12.13"
-  dependencies:
-    undici-types: "npm:~5.26.4"
-  checksum: 10/c9f02cfe342bce4aa9221f389115c1f9e3bd9abc87d45e3b2c3a5b92d99523c02b72dd67f50cbbc5edddbaf7dd458cf61dd3289d7a8c14fde80c998df10fee82
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:20.14.2":
+"@types/node@npm:*, @types/node@npm:20.14.2, @types/node@npm:>=18, @types/node@npm:^20.11.17":
   version: 20.14.2
   resolution: "@types/node@npm:20.14.2"
   dependencies:
@@ -3370,7 +3361,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bson@npm:^6.4.0, bson@npm:^6.7.0":
+"bson@npm:^6.7.0":
   version: 6.7.0
   resolution: "bson@npm:6.7.0"
   checksum: 10/d4bc1d9514c67dbcb8451b7be95704e6e7cb262f0d11c938715c21297ab5550b0e2f3badf5480d53c4b3f899a84f2ed8708f3f46cad83ec52059f076aad8e1cd
@@ -7470,9 +7461,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:15.2.5":
-  version: 15.2.5
-  resolution: "lint-staged@npm:15.2.5"
+"lint-staged@npm:15.2.6":
+  version: 15.2.6
+  resolution: "lint-staged@npm:15.2.6"
   dependencies:
     chalk: "npm:~5.3.0"
     commander: "npm:~12.1.0"
@@ -7486,7 +7477,7 @@ __metadata:
     yaml: "npm:~2.4.2"
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 10/2cb8e14e532a4de0a338da44dc5e22f94581390b988ba3d345d1132d592d9ce50be50846c9a9d25eaffaf3f1f634e0a056598f6abb705269ac21d0fd3bad3a45
+  checksum: 10/d2e7b610603ace80521d80afa7d355864a0f5f574aa2a2edbf5d96486e99ceeebb4d988e733c0b6ad8bfa899092f1c20db5cb02a0cc3e260919aeb92ef6f2d79
   languageName: node
   linkType: hard
 
