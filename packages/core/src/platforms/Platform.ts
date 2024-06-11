@@ -147,7 +147,7 @@ export abstract class Platform {
     return { $re: val.source };
   }
 
-  isAllowedTopLevelOperator(operator: string) {
+  isAllowedTopLevelOperator(operator: string): boolean {
     return operator === '$not';
   }
 

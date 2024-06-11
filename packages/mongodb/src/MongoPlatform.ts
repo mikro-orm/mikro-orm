@@ -113,7 +113,7 @@ export class MongoPlatform extends Platform {
     }
   }
 
-  override isAllowedTopLevelOperator(operator: string) {
+  override isAllowedTopLevelOperator(operator: string): boolean {
     return ['$not', '$fulltext'].includes(operator);
   }
 
