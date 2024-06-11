@@ -99,7 +99,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
       nullif(table_schema, schema()) as schema_name,
       column_name as column_name,
       column_default as column_default,
-      column_comment as column_comment,
+      nullif(column_comment, '') as column_comment,
       is_nullable as is_nullable,
       data_type as data_type,
       column_type as column_type,

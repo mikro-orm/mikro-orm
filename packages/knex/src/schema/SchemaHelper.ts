@@ -88,8 +88,7 @@ export abstract class SchemaHelper {
 
   async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void> {
     for (const t of tables) {
-      const table = schema.addTable(t.table_name, t.schema_name);
-      table.comment = t.table_comment;
+      const table = schema.addTable(t.table_name, t.schema_name, t.table_comment);
       const cols = await this.getColumns(connection, table.name, table.schema);
       const indexes = await this.getIndexes(connection, table.name, table.schema);
       const checks = await this.getChecks(connection, table.name, table.schema, cols);
