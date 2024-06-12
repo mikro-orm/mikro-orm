@@ -1298,9 +1298,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@libsql/darwin-arm64@npm:0.3.19":
+  version: 0.3.19
+  resolution: "@libsql/darwin-arm64@npm:0.3.19"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@libsql/darwin-x64@npm:0.3.18":
   version: 0.3.18
   resolution: "@libsql/darwin-x64@npm:0.3.18"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@libsql/darwin-x64@npm:0.3.19":
+  version: 0.3.19
+  resolution: "@libsql/darwin-x64@npm:0.3.19"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
@@ -1312,9 +1326,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@libsql/linux-arm64-gnu@npm:0.3.19":
+  version: 0.3.19
+  resolution: "@libsql/linux-arm64-gnu@npm:0.3.19"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@libsql/linux-arm64-musl@npm:0.3.18":
   version: 0.3.18
   resolution: "@libsql/linux-arm64-musl@npm:0.3.18"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@libsql/linux-arm64-musl@npm:0.3.19":
+  version: 0.3.19
+  resolution: "@libsql/linux-arm64-musl@npm:0.3.19"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
@@ -1326,6 +1354,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@libsql/linux-x64-gnu@npm:0.3.19":
+  version: 0.3.19
+  resolution: "@libsql/linux-x64-gnu@npm:0.3.19"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@libsql/linux-x64-musl@npm:0.3.18":
   version: 0.3.18
   resolution: "@libsql/linux-x64-musl@npm:0.3.18"
@@ -1333,9 +1368,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@libsql/linux-x64-musl@npm:0.3.19":
+  version: 0.3.19
+  resolution: "@libsql/linux-x64-musl@npm:0.3.19"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@libsql/win32-x64-msvc@npm:0.3.18":
   version: 0.3.18
   resolution: "@libsql/win32-x64-msvc@npm:0.3.18"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@libsql/win32-x64-msvc@npm:0.3.19":
+  version: 0.3.19
+  resolution: "@libsql/win32-x64-msvc@npm:0.3.19"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -1429,7 +1478,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.2.9"
     "@mikro-orm/knex": "npm:6.2.9"
     fs-extra: "npm:11.2.0"
-    libsql: "npm:0.3.18"
+    libsql: "npm:0.3.19"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1578,7 +1627,7 @@ __metadata:
     husky: "npm:9.0.11"
     jest: "npm:29.7.0"
     lerna: "npm:8.1.3"
-    lint-staged: "npm:15.2.6"
+    lint-staged: "npm:15.2.7"
     mongodb: "npm:6.7.0"
     mongodb-memory-server: "npm:9.3.0"
     rimraf: "npm:5.0.7"
@@ -7406,7 +7455,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libsql@npm:0.3.18, libsql@npm:^0.3.15":
+"libsql@npm:0.3.19":
+  version: 0.3.19
+  resolution: "libsql@npm:0.3.19"
+  dependencies:
+    "@libsql/darwin-arm64": "npm:0.3.19"
+    "@libsql/darwin-x64": "npm:0.3.19"
+    "@libsql/linux-arm64-gnu": "npm:0.3.19"
+    "@libsql/linux-arm64-musl": "npm:0.3.19"
+    "@libsql/linux-x64-gnu": "npm:0.3.19"
+    "@libsql/linux-x64-musl": "npm:0.3.19"
+    "@libsql/win32-x64-msvc": "npm:0.3.19"
+    "@neon-rs/load": "npm:^0.0.4"
+    detect-libc: "npm:2.0.2"
+    libsql: "npm:^0.3.15"
+  dependenciesMeta:
+    "@libsql/darwin-arm64":
+      optional: true
+    "@libsql/darwin-x64":
+      optional: true
+    "@libsql/linux-arm64-gnu":
+      optional: true
+    "@libsql/linux-arm64-musl":
+      optional: true
+    "@libsql/linux-x64-gnu":
+      optional: true
+    "@libsql/linux-x64-musl":
+      optional: true
+    "@libsql/win32-x64-msvc":
+      optional: true
+  checksum: 10/9a2419f39b0f2f21de704d14b6c8d2870ca190551265cf7dea99e7e6afccbd06809cd6b0e723568151a49daac7c2fa223ec1b81d4428f0391d56a77e96728ddf
+  conditions: (os=darwin | os=linux | os=win32) & (cpu=x64 | cpu=arm64 | cpu=wasm32)
+  languageName: node
+  linkType: hard
+
+"libsql@npm:^0.3.15":
   version: 0.3.18
   resolution: "libsql@npm:0.3.18"
   dependencies:
@@ -7461,9 +7544,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:15.2.6":
-  version: 15.2.6
-  resolution: "lint-staged@npm:15.2.6"
+"lint-staged@npm:15.2.7":
+  version: 15.2.7
+  resolution: "lint-staged@npm:15.2.7"
   dependencies:
     chalk: "npm:~5.3.0"
     commander: "npm:~12.1.0"
@@ -7477,7 +7560,7 @@ __metadata:
     yaml: "npm:~2.4.2"
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 10/d2e7b610603ace80521d80afa7d355864a0f5f574aa2a2edbf5d96486e99ceeebb4d988e733c0b6ad8bfa899092f1c20db5cb02a0cc3e260919aeb92ef6f2d79
+  checksum: 10/7557bcf4e8dc0555f2c7e6a8ab6f5dfd7faaaed632a5d9e598768c86f786267ca216f8005068796a8118884d322a1c7f8f93e57c01b3e556475b77297ddad34f
   languageName: node
   linkType: hard
 
