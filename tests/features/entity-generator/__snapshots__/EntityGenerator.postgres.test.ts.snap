@@ -10,7 +10,7 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'string', nullable: true })
+  @Property({ type: 'string', length: -1, nullable: true })
   test?: string & Opt = '123';
 
   @Enum({ items: () => Publisher2Type })
@@ -54,7 +54,6 @@ export class Address2 {
 ",
   "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
-import { array } from './array';
 
 @Entity()
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
@@ -89,7 +88,7 @@ export class Author2 {
   @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ type: array, columnType: 'text[]', nullable: true })
+  @Property({ nullable: true })
   identities?: string[];
 
   @Index({ name: 'author2_born_index' })
@@ -216,7 +215,6 @@ export class Configuration2 {
 ",
   "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
-import { array } from './array';
 
 @Entity()
 export class FooBar2 {
@@ -245,7 +243,7 @@ export class FooBar2 {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ type: array, columnType: 'text[]', nullable: true })
+  @Property({ nullable: true })
   array?: string[];
 
   @Property({ type: 'json', nullable: true })
@@ -451,7 +449,6 @@ export class Address2 {
 ",
   "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
-import { array } from './array';
 
 @Entity()
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
@@ -486,7 +483,7 @@ export class Author2 {
   @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ type: array, columnType: 'text[]', nullable: true })
+  @Property({ nullable: true })
   identities?: string[];
 
   @Index({ name: 'author2_born_index' })
@@ -610,7 +607,6 @@ export class Configuration2 {
 ",
   "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
-import { array } from './array';
 
 @Entity()
 export class FooBar2 {
@@ -639,7 +635,7 @@ export class FooBar2 {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ type: array, columnType: 'text[]', nullable: true })
+  @Property({ nullable: true })
   array?: string[];
 
   @Property({ type: 'json', nullable: true })
@@ -798,7 +794,6 @@ export class Publisher2Tests {
 exports[`EntityGenerator takeTables [postgres]: postgres-entity-dump-takeTables 1`] = `
 [
   "import { Entity, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
-import { array } from './array';
 
 @Entity()
 export class FooBar2 {
@@ -829,7 +824,7 @@ export class FooBar2 {
   @Property({ nullable: true })
   blob2?: Buffer;
 
-  @Property({ type: array, columnType: 'text[]', nullable: true })
+  @Property({ nullable: true })
   array?: string[];
 
   @Property({ type: 'json', nullable: true })

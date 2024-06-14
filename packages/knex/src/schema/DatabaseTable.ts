@@ -13,7 +13,9 @@ import {
   type NamingStrategy,
   ReferenceKind,
   t,
+  Type,
   type UniqueOptions,
+  UnknownType,
   Utils,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
@@ -110,7 +112,7 @@ export class DatabaseTable {
       }
 
       if (prop.length == null && prop.columnTypes[idx]) {
-        prop.length = this.platform.getSchemaHelper()!.inferLengthFromColumnType(prop.columnTypes[idx]);
+        prop.length = this.platform.getSchemaHelper()!.inferLengthFromColumnType(prop.columnTypes[idx].trimStart());
       }
 
       const primary = !meta.compositePK && !!prop.primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType);
@@ -691,7 +693,10 @@ export class DatabaseTable {
 
     return {
       name: prop,
-      type: fk ? runtimeType : (Utils.entries(t).find(([k, v]) => Object.getPrototypeOf(column.mappedType) === v.prototype)?.[0] ?? runtimeType),
+      type: fk ? runtimeType : (Utils.keys(t).find(k => {
+        const typeInCoreMap = this.platform.getMappedType(k);
+        return (typeInCoreMap !== Type.getType(UnknownType) || k === 'unknown') && typeInCoreMap === column.mappedType;
+      }) ?? runtimeType),
       runtimeType,
       kind,
       generated: column.generated,

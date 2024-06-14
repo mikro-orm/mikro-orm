@@ -17,21 +17,21 @@ export class DcimDevice {
   @PrimaryKey({ autoincrement: false })
   id!: bigint;
 
-  @Property({ nullable: true })
+  @Property({ length: -1, nullable: true })
   name?: string;
 
-  @Property({ nullable: true })
+  @Property({ length: -1, nullable: true })
   _name?: string;
 
   @Index({ name: 'dcim_device_asset_tag_8dac1079_like' })
   @Unique({ name: 'dcim_device_asset_tag_key' })
-  @Property({ nullable: true })
+  @Property({ length: -1, nullable: true })
   assetTag?: string;
 
   @Property({ type: 'decimal', nullable: true })
   position?: string;
 
-  @Property()
+  @Property({ length: -1 })
   face!: string;
 
   @Property({ type: 'smallint', nullable: true })
@@ -84,7 +84,7 @@ export class DcimDevice {
   @Property({ nullable: true })
   virtualChassisId?: bigint;
 
-  @Property()
+  @Property({ length: -1 })
   airflow!: string;
 
   @Index({ name: 'dcim_device_config_template_id_316328c4' })

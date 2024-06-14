@@ -185,6 +185,13 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return value.substring(1, value.length - 1).split(',').map(v => v === `""` ? '' : v);
   }
 
+  override getVarcharTypeDeclarationSQL(column: { length?: number }): string {
+    if (column.length === -1) {
+      return 'varchar';
+    }
+    return super.getVarcharTypeDeclarationSQL(column);
+  }
+
   override getBlobDeclarationSQL(): string {
     return 'bytea';
   }
