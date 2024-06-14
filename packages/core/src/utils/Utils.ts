@@ -879,9 +879,9 @@ export class Utils {
   }
 
   /**
-   * Resolves and normalizes a series of path parts relative to each preceeding part.
+   * Resolves and normalizes a series of path parts relative to each preceding part.
    * If any part is a `file:` URL, it is converted to a local path. If any part is an
-   * absolute path, it replaces preceeding paths (similar to `path.resolve` in NodeJS).
+   * absolute path, it replaces preceding paths (similar to `path.resolve` in NodeJS).
    * Trailing directory separators are removed, and all directory separators are converted
    * to POSIX-style separators (`/`).
    */

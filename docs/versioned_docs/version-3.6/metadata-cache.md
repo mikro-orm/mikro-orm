@@ -12,7 +12,7 @@ After the discovery process ends, all metadata will be cached. By default, `File
 
 Entity metadata are cached together with modified time of the source file, and every time the cache is requested, it first checks if the cache is not invalid. This way you can forgot about the caching mechanism most of the time.
 
-One case where you can end up needing to wipe the cache manually is when you work withing a git branch where contents of entities folder differs.
+One case where you can end up needing to wipe the cache manually is when you work within a git branch where contents of entities folder differs.
 
 ## Disabling Metadata Cache
 

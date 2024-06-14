@@ -306,7 +306,7 @@ console.log(qb.getQuery());
 
 ## Count queries
 
-To create a count query, we can ue `qb.count()`, which will initialize a select clause with `count()` function. By default, it will use the primary key.
+To create a count query, we can use `qb.count()`, which will initialize a select clause with `count()` function. By default, it will use the primary key.
 
 ```ts
 const qb = em.createQueryBuilder(Test);
