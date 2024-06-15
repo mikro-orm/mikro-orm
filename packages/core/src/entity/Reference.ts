@@ -1,4 +1,6 @@
 import { inspect } from 'util';
+import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
+import { DataloaderType } from '../enums';
 import type {
   AddEager,
   Dictionary,
@@ -10,11 +12,9 @@ import type {
   Primary,
   Ref,
 } from '../typings';
-import type { EntityFactory } from './EntityFactory';
-import { DataloaderType } from '../enums';
-import { helper, wrap } from './wrap';
 import { DataloaderUtils, Utils } from '../utils';
-import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
+import type { EntityFactory } from './EntityFactory';
+import { helper, wrap } from './wrap';
 
 export class Reference<T extends object> {
 
@@ -101,7 +101,10 @@ export class Reference<T extends object> {
    * the method returns `null`. Use `loadOrFail()` if you want an error to be thrown in such a case.
    */
   async load<TT extends T, P extends string = never, F extends string = '*', E extends string = never>(options: LoadReferenceOptions<TT, P, F, E> = {}): Promise<Loaded<TT, P, F, E> | null> {
-    if (!this.isInitialized() || options.refresh) {
+    const wrapped = helper(this.entity as TT & object);
+    const propertiesToPopulate = options.populate || [];
+    const isPopulatedPropertyNotLoaded = propertiesToPopulate.some(field => !wrapped.__loadedProperties.has(field));
+    if (!this.isInitialized() || options.refresh || isPopulatedPropertyNotLoaded) {
       const wrapped = helper(this.entity as TT & object);
 
       if (!wrapped.__em) {
