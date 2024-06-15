@@ -251,7 +251,8 @@ export class QueryBuilderHelper {
           const right = `${join.alias}.${join.joinColumns![idx]}`;
 
           if (join.prop.formula) {
-            const left = join.prop.formula(join.ownerAlias);
+            const alias = this.platform.quoteIdentifier(join.ownerAlias);
+            const left = join.prop.formula(alias);
             conditions.push(`${left} = ${this.knex.ref(right)}`);
             return;
           }
