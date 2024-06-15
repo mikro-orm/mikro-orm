@@ -3,6 +3,7 @@ import {
   AnyEntity,
   ChangeSet,
   DefaultLogger,
+  EntityMetadata,
   EventSubscriber,
   FilterQuery,
   FlushEventArgs,
@@ -1617,6 +1618,22 @@ describe('EntityManagerPostgre', () => {
     expect(books[0].publisher!.unwrap().tests.count()).toBe(2);
     expect(books[0].publisher!.unwrap().tests[0].name).toBe('t11');
     expect(books[0].publisher!.unwrap().tests[1].name).toBe('t12');
+
+    // #5711
+    orm.em.clear();
+    const [book] = await orm.em.findAll(Book2, {
+      populate: ['publisher'],
+      orderBy: { title: QueryOrder.ASC },
+    });
+    const perex = await book.perex?.load({});
+    expect(perex).toBe(undefined);
+    expect(book.publisher?.isInitialized()).toBe(true);
+    // @ts-ignore
+    expect(book.publisher!.__meta).toBeInstanceOf(EntityMetadata);
+    expect(book.publisher!.unwrap().tests.isInitialized(true)).toBe(false);
+    await book.publisher!.load({ populate: ['tests'] });
+    expect(book.publisher!.isInitialized()).toBe(true);
+    expect(book.publisher!.unwrap().tests.isInitialized(true)).toBe(true);
   });
 
   test('hooks', async () => {
