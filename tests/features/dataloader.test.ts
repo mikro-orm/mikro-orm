@@ -19,6 +19,7 @@ import {
   DataloaderType,
   serialize,
   Filter,
+  ScalarReference,
 } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
@@ -166,6 +167,24 @@ class Message {
 
 }
 
+@Entity()
+class Article {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ lazy: true, ref: true })
+  content: ScalarReference<string>;
+
+  constructor({ id, content }: { id?: number; content: string }) {
+    if (id) {
+      this.id = id;
+    }
+    this.content = ref(content);
+  }
+
+}
+
 async function populateDatabase(em: MikroORM['em']) {
   const authors = [
     new Author({ id : 1, name: 'a', age: 31, email: 'a@a.com' }),
@@ -219,6 +238,11 @@ async function populateDatabase(em: MikroORM['em']) {
   books[5].publisher = ref(publishers[1]);
   em.persist(books);
 
+  const articles = [
+    new Article({ id: 1, content: 'A1' }),
+  ];
+  em.persist(articles);
+
   await em.flush();
   em.clear();
 }
@@ -260,7 +284,7 @@ describe('Dataloader', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       dbName: ':memory:',
-      entities: [Author, Book, Chat, Message],
+      entities: [Author, Book, Chat, Message, Article],
       loggerFactory: options => new SimpleLogger(options),
     });
 
@@ -340,12 +364,21 @@ describe('Dataloader', () => {
     expect(serialize(resA)).toEqual(serialize(resB));
   });
 
+  test('Reference.load populate of not-yet loaded property of already initialized entity', async () => {
+    const articleReference = orm.em.getReference(Article, 1, { wrapped: true });
+    const initializedArticle = await articleReference.load();
+    expect(initializedArticle).toBeDefined();
+    expect(initializedArticle!.content.isInitialized()).toEqual(false);
+    const articleLoadedASecondTime = await articleReference.load({ populate: ['content'] });
+    expect(articleLoadedASecondTime!.content.$).toBeTruthy();
+  });
+
   test('Dataloader can be globally enabled for References with true, DataloaderType.ALL, DataloaderType.REFERENCE', async () => {
     async function getRefs(dataloader: DataloaderType | boolean) {
       const orm = await MikroORM.init({
         dbName: ':memory:',
         dataloader,
-        entities: [Author, Book, Chat, Message],
+        entities: [Author, Book, Chat, Message, Article],
         loggerFactory: options => new SimpleLogger(options),
       });
       await orm.schema.createSchema();
@@ -369,7 +402,7 @@ describe('Dataloader', () => {
       const orm = await MikroORM.init({
         dbName: ':memory:',
         dataloader,
-        entities: [Author, Book, Chat, Message],
+        entities: [Author, Book, Chat, Message, Article],
         loggerFactory: options => new SimpleLogger(options),
       });
       await orm.schema.createSchema();
@@ -392,7 +425,7 @@ describe('Dataloader', () => {
     const orm = await MikroORM.init({
       dbName: ':memory:',
       dataloader: DataloaderType.ALL,
-      entities: [Author, Book, Chat, Message],
+      entities: [Author, Book, Chat, Message, Article],
       loggerFactory: options => new SimpleLogger(options),
     });
     await orm.schema.createSchema();
@@ -585,7 +618,7 @@ describe('Dataloader', () => {
       const orm = await MikroORM.init({
         dbName: ':memory:',
         dataloader,
-        entities: [Author, Book, Chat, Message],
+        entities: [Author, Book, Chat, Message, Article],
         loggerFactory: options => new SimpleLogger(options),
       });
       await orm.schema.createSchema();
@@ -609,7 +642,7 @@ describe('Dataloader', () => {
       const orm = await MikroORM.init({
         dbName: ':memory:',
         dataloader,
-        entities: [Author, Book, Chat, Message],
+        entities: [Author, Book, Chat, Message, Article],
         loggerFactory: options => new SimpleLogger(options),
       });
       await orm.schema.createSchema();
@@ -632,7 +665,7 @@ describe('Dataloader', () => {
     const orm = await MikroORM.init({
       dbName: ':memory:',
       dataloader: DataloaderType.ALL,
-      entities: [Author, Book, Chat, Message],
+      entities: [Author, Book, Chat, Message, Article],
       loggerFactory: options => new SimpleLogger(options),
     });
     await orm.schema.createSchema();
