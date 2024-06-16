@@ -139,7 +139,7 @@ test('qb.joinAndSelect', async () => {
     'from `tag` as `u` ' +
     'left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` ' +
     'left join `job` as `a` on `t1`.`job_id` = `a`.`id` ' +
-    'where `u`.`id` in (select `u`.`id` from (select `u`.`id` from `tag` as `u` left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` left join `job` as `a` on `t1`.`job_id` = `a`.`id` where coalesce("u"."name", ?) >= ? group by `u`.`id` order by coalesce(u."name", \'def\') desc nulls last limit ?) as `u`) ' +
+    'where `u`.`id` in (select `u`.`id` from (select `u`.`id` from `tag` as `u` left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` left join `job` as `a` on `t1`.`job_id` = `a`.`id` where coalesce("u"."name", \'abc\') >= ? group by `u`.`id` order by coalesce(u."name", \'def\') desc nulls last limit ?) as `u`) ' +
     'order by coalesce(u."name", \'def\') desc nulls last');
   await query;
   expect(RawQueryFragment.checkCacheSize()).toBe(0);

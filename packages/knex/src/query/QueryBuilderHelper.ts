@@ -94,7 +94,8 @@ export class QueryBuilderHelper {
     const rawField = RawQueryFragment.getKnownFragment(field);
 
     if (rawField) {
-      return this.knex.raw(rawField.sql, rawField.params);
+      // sometimes knex is confusing the binding positions, we need to interpolate early
+      return this.knex.raw(this.platform.formatQuery(rawField.sql, rawField.params));
     }
 
     const [a, f] = this.splitField(field as EntityKey);
