@@ -584,6 +584,10 @@ export class QueryBuilderHelper {
       value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, tmp);
     }
 
+    if (value[op] instanceof RawQueryFragment) {
+      value[op] = this.knex.raw(value[op].sql, value[op].params);
+    }
+
     if (this.subQueries[key]) {
       return void qb[m](this.knex.raw(`(${this.subQueries[key]})`), replacement, value[op]);
     }
