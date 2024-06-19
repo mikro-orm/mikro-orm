@@ -124,18 +124,42 @@ await article2.author.load(); // no additional query, already loaded
 
 ### `ScalarReference` wrapper
 
-Similarly to the [`Reference`](/api/core/class/Reference) wrapper, we can also wrap scalars with `Ref` into a `ScalarReference` object. This is handy for lazy scalar properties.
+Similarly to the `Reference` wrapper, we can also wrap scalars with `Ref` into a `ScalarReference` object. This is handy for lazy scalar properties.
+
+The `Ref` type automatically resolves to `ScalarReference` for non-object types, so the below is correct:
 
 ```ts
 @Property({ lazy: true, ref: true })
 passwordHash!: Ref<string>;
 ```
 
-The `Ref` type automatically resolves to `ScalarReference` for non-object types. You can use it explicitly if you want to wrap an object scalar property (e.g. JSON value).
-
 ```ts
 const user = await em.findOne(User, 1);
 const passwordHash = await user.passwordHash.load();
+```
+
+For object-like types, if you choose to use the reference wrappers, you should use the `ScalarReference<T>` type explicitly. For example, you might want to lazily load a large JSON value:
+
+```ts
+@Property({ type: 'json', nullable: true, lazy: true, ref: true })
+// ReportParameters is an example class, imagine it defined elsewhere.
+reportParameters!: ScalarReference<ReportParameters | null>; 
+```
+
+Keep in mind that once a scalar value is managed through a `ScalarReference`, accessing it through MikroORM managed objects will always return the `Reference` wrapper. That can be confusing in case the property is also `nullable`, since the `Reference` will always be truthy. In such cases, you should inform the type system of the nullability of the property through `ScalarReference<T>`'s type parameter as demonstrated above. Below is an example of how it all works:
+
+```ts
+// Say Report of id "1" has no reportParameters in the Database.
+const report = await em.findOne(Report, 1);
+if (report.reportParameters) {
+  // Logs Ref<?>, not the actual value. **Would always run***.
+  console.log(report.reportParameters); 
+  //@ts-expect-error $/.get() is not available until the reference has been loaded.
+  // const mistake = report.reportParameters.$
+}
+const populatedReport = await em.populate(report, ['reportParameters']);
+// Logs `null`
+console.log(populatedReport.reportParameters.$); 
 ```
 
 ## `Loaded` type
