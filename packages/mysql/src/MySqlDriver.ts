@@ -1,4 +1,14 @@
-import type { Configuration, EntityDictionary, NativeInsertUpdateManyOptions, QueryResult, Transaction } from '@mikro-orm/core';
+import {
+  type Configuration, Dictionary,
+  type EntityDictionary,
+  type EntityKey,
+  type FilterQuery,
+  type NativeInsertUpdateManyOptions,
+  type QueryResult,
+  type Transaction,
+  type UpsertManyOptions,
+  Utils,
+} from '@mikro-orm/core';
 import { AbstractSqlDriver, MySqlConnection, MySqlPlatform } from '@mikro-orm/knex';
 
 export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatform> {
@@ -33,6 +43,34 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
     const ctx = options.ctx;
     const autoIncrementIncrement = await this.getAutoIncrementIncrement(ctx);
     data.forEach((item, idx) => res.rows![idx] = { [pks[0]]: item[pks[0]] ?? res.insertId as number + (idx * autoIncrementIncrement) });
+    res.row = res.rows![0];
+
+    return res;
+  }
+
+  override async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
+    const res = await super.nativeUpdateMany(entityName, where, data, options);
+    const pks = this.getPrimaryKeyFields(entityName);
+    const ctx = options.ctx;
+    const autoIncrementIncrement = await this.getAutoIncrementIncrement(ctx);
+    let i = 0;
+
+    const rows = where.map(cond => {
+      if (res.insertId != null && Utils.isEmpty(cond)) {
+        return { [pks[0]]: res.insertId as number + (i++ * autoIncrementIncrement) };
+      }
+
+      if (cond[pks[0] as EntityKey] == null) {
+        return undefined;
+      }
+
+      return { [pks[0]]: cond[pks[0] as EntityKey] };
+    });
+
+    if (rows.every(i => i !== undefined)) {
+      res.rows = rows as Dictionary[];
+    }
+
     res.row = res.rows![0];
 
     return res;

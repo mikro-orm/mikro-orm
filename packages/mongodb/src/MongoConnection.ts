@@ -336,8 +336,14 @@ export class MongoConnection extends Connection {
           const doc = this.createUpdatePayload(row, upsertOptions) as Dictionary;
 
           if (upsert) {
-            query += log(() => `bulk.find(${this.logObject(cond)}).upsert().update(${this.logObject(doc)});\n`);
-            bulk.find(cond).upsert().update(doc);
+            if (Utils.isEmpty(cond)) {
+              query += log(() => `bulk.insert(${this.logObject(row)});\n`);
+              bulk.insert(row);
+            } else {
+              query += log(() => `bulk.find(${this.logObject(cond)}).upsert().update(${this.logObject(doc)});\n`);
+              bulk.find(cond).upsert().update(doc);
+            }
+
             return;
           }
 

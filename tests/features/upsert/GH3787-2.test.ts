@@ -108,8 +108,3 @@ test('upsertMany with managed entity calls assign', async () => {
     ['[query] commit'],
   ]);
 });
-
-test('validation', async () => {
-  await expect(orm.em.upsert(MyEntity1, {})).rejects.toThrow('Unique property value required for upsert, provide one of: id');
-  await expect(orm.em.upsertMany(MyEntity1, [{}])).rejects.toThrow('Unique property value required for upsert, provide one of: id');
-});

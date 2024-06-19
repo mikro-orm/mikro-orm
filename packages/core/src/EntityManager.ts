@@ -909,12 +909,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    if (where == null) {
-      const compositeUniqueProps = meta.uniques.map(u => Utils.asArray(u.properties).join(' + ')) as EntityKey<Entity>[];
-      const uniqueProps = meta.primaryKeys.concat(...unique as EntityKey[]).concat(compositeUniqueProps);
-      throw new Error(`Unique property value required for upsert, provide one of: ${uniqueProps.join(', ')}`);
-    }
-
     data = QueryHelper.processObjectParams(data) as EntityData<Entity>;
     em.validator.validateParams(data, 'insert data');
 
@@ -936,7 +930,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: true,
     });
 
-    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta);
+    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta, true);
     const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys) as (keyof Entity)[];
     const returning = getOnConflictReturningFields(meta, data, uniqueFields, options) as string[];
 
@@ -944,7 +938,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const where = {} as FilterQuery<Entity>;
 
       if (Array.isArray(uniqueFields)) {
-        uniqueFields.forEach(prop => where[prop as EntityKey] = data![prop as EntityKey]);
+        for (const prop of uniqueFields) {
+          if (data![prop as EntityKey] != null) {
+            where[prop as EntityKey] = data![prop as EntityKey];
+          } else if (meta.primaryKeys.includes(prop as EntityKey) && ret.insertId != null) {
+            where[prop as EntityKey] = ret.insertId as never;
+          }
+        }
       }
 
       const data2 = await this.driver.findOne(meta.className, where, {
@@ -1077,12 +1077,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
       }
 
-      if (where == null) {
-        const compositeUniqueProps = meta.uniques.map(u => Utils.asArray(u.properties).join(' + '));
-        const uniqueProps = (meta.primaryKeys as string[]).concat(...unique).concat(compositeUniqueProps);
-        throw new Error(`Unique property value required for upsert, provide one of: ${uniqueProps.join(', ')}`);
-      }
-
       row = QueryHelper.processObjectParams(row) as EntityData<Entity>;
       where = QueryHelper.processWhere({
         where,
@@ -1125,7 +1119,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         convertCustomTypes: true,
       });
 
-      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, Utils.isEntity(data![i]) ? {} : data![i], res.rows?.[i], meta);
+      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, Utils.isEntity(data![i]) ? {} : data![i], res.rows?.[i], meta, true);
 
       if (!helper(entity).hasPrimaryKey()) {
         loadPK.set(entity, allWhere[i]);

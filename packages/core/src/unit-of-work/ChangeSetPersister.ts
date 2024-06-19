@@ -429,8 +429,8 @@ export class ChangeSetPersister {
    * No need to handle composite keys here as they need to be set upfront.
    * We do need to map to the change set payload too, as it will be used in the originalEntityData for new entities.
    */
-  mapReturnedValues<T extends object>(entity: T, payload: EntityDictionary<T>, row: Dictionary | undefined, meta: EntityMetadata<T>): void {
-    if (this.usesReturningStatement && row && Utils.hasObjectKeys(row)) {
+  mapReturnedValues<T extends object>(entity: T, payload: EntityDictionary<T>, row: Dictionary | undefined, meta: EntityMetadata<T>, upsert = false): void {
+    if ((this.usesReturningStatement || upsert) && row && Utils.hasObjectKeys(row)) {
       const mapped = this.comparator.mapResult<T>(meta.className, row as EntityDictionary<T>);
       this.hydrator.hydrate(entity, meta, mapped, this.factory, 'full', false, true);
       Object.assign(payload, mapped); // merge to the changeset payload, so it gets saved to the entity snapshot
