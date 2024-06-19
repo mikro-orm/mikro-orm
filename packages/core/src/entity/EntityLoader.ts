@@ -100,6 +100,10 @@ export class EntityLoader {
     for (const pop of populate) {
       await this.populateField<Entity>(entityName, entities, pop, options as Required<EntityLoaderOptions<Entity>>);
     }
+
+    for (const entity of entities) {
+      visited.delete(entity);
+    }
   }
 
   normalizePopulate<Entity>(entityName: string, populate: (PopulateOptions<Entity> | boolean)[] | PopulateOptions<Entity> | boolean, strategy?: LoadStrategy, lookup = true): PopulateOptions<Entity>[] {
