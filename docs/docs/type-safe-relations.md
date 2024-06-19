@@ -198,7 +198,7 @@ For object-like types, if you choose to use the reference wrappers, you should u
 
 ```ts
 @Property({ type: 'json', nullable: true, lazy: true, ref: true })
-// ReportParameters is an example class, imagine it defined elsewhere.
+// ReportParameters is an object type, imagine it defined elsewhere.
 reportParameters!: ScalarReference<ReportParameters | null>; 
 ```
 
