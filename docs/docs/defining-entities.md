@@ -1112,7 +1112,7 @@ const user = await em.findOne(User, 1);
 const passwordHash = await user.passwordHash.load();
 ```
 
-For object-like types, if you choose to use the reference wrappers, you should use the `ScalarReference<T>` type explicitly. For example, you might want to lazily load a large JSON value:
+For object-like types, if you choose to use the reference wrappers, you should use the `ScalarRef<T>` type explicitly. For example, you might want to lazily load a large JSON value:
 
 ```ts
 @Property({ type: 'json', nullable: true, lazy: true, ref: true })
