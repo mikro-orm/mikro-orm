@@ -2,7 +2,6 @@ import {
   AbstractSqlPlatform,
   type Dictionary,
   type EntityMetadata,
-  type EntityProperty,
   type IDatabaseDriver,
   type EntityManager,
   type MikroORM,
@@ -95,7 +94,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
     if (column.items?.every(item => Utils.isString(item))) {
-      return Type.getType(UnicodeStringType).getColumnType({ length: 100, ...column } as EntityProperty, this);
+      return Type.getType(UnicodeStringType).getColumnType({ length: 100, ...column });
     }
 
     /* istanbul ignore next */

@@ -325,7 +325,7 @@ describe('SchemaGenerator [postgres]', () => {
     // test changing a column to tsvector and adding an index
     meta.get('Book2').properties.title.defaultRaw = undefined;
     meta.get('Book2').properties.title.customType = Type.getType(FullTextType);
-    meta.get('Book2').properties.title.columnTypes[0] = Type.getType(FullTextType).getColumnType(meta.get('Book2').properties.title, orm.em.getPlatform());
+    meta.get('Book2').properties.title.columnTypes[0] = Type.getType(FullTextType).getColumnType();
     meta.get('Book2').indexes.push({ type: 'fulltext', properties: ['title'] });
 
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
