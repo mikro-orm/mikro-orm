@@ -1116,21 +1116,24 @@ For object-like types, if you choose to use the reference wrappers, you should u
 
 ```ts
 @Property({ type: 'json', nullable: true, lazy: true, ref: true })
-reportParameters!: ScalarReference<ReportParameters | null>; // ReportParameters is an example class, imagine it defined elsewhere.
+// ReportParameters is an example class, imagine it defined elsewhere.
+reportParameters!: ScalarReference<ReportParameters | null>; 
 ```
 
-Keep in mind that once a scalar value is managed through a ScalarReference, accessing it through MikroORM managed objects will always return the Reference wrapper. That can be confusing in case the property is also `nullable`, since the Reference will always be truthy. In such cases, you should inform the type system of the nullability of the property through `ScalarReference<T>`'s type parameter as demonstrated above. Below is an example of how it works:
+Keep in mind that once a scalar value is managed through a `ScalarReference`, accessing it through MikroORM managed objects will always return the `Reference` wrapper. That can be confusing in case the property is also `nullable`, since the `Reference` will always be truthy. In such cases, you should inform the type system of the nullability of the property through `ScalarReference<T>`'s type parameter as demonstrated above. Below is an example of how it all works:
 
 ```ts
 // Say Report of id "1" has no reportParameters in the Database.
 const report = await em.findOne(Report, 1);
 if (report.reportParameters) {
-  console.log(report.reportParameters); // Logs Ref<?>, not the actual value. **Would always run***.
+  // Logs Ref<?>, not the actual value. **Would always run***.
+  console.log(report.reportParameters); 
   //@ts-expect-error $/.get() is not available until the reference has been loaded.
   // const mistake = report.reportParameters.$
 }
 const populatedReport = await em.populate(report, ['reportParameters']);
-console.log(populatedReport.reportParameters.$); // Logs `null`
+// Logs `null`
+console.log(populatedReport.reportParameters.$); 
 ```
 
 
