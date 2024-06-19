@@ -150,7 +150,7 @@ export class MetadataDiscovery {
       }
     }
 
-    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initIndexes(prop)));
+    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initIndexes(meta, prop)));
     filtered.forEach(meta => this.autoWireBidirectionalProperties(meta));
     filtered.forEach(meta => this.findReferencingProperties(meta, filtered));
 
@@ -1479,8 +1479,10 @@ export class MetadataDiscovery {
     prop.unsigned ??= (prop.primary || prop.unsigned) && this.isNumericProperty(prop) && this.platform.supportsUnsigned();
   }
 
-  private initIndexes(prop: EntityProperty): void {
-    if (prop.kind === ReferenceKind.MANY_TO_ONE && this.platform.indexForeignKeys()) {
+  private initIndexes(meta: EntityMetadata, prop: EntityProperty): void {
+    const hasIndex = meta.indexes.some(idx => idx.properties?.length === 1 && idx.properties[0] === prop.name);
+
+    if (prop.kind === ReferenceKind.MANY_TO_ONE && this.platform.indexForeignKeys() && !hasIndex) {
       prop.index ??= true;
     }
   }
