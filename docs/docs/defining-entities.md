@@ -1135,6 +1135,7 @@ const populatedReport = await em.populate(report, ['reportParameters']);
 // Logs `null`
 console.log(populatedReport.reportParameters.$); 
 ```
+
 ## Virtual Properties
 
 We can define our properties as virtual, either as a method, or via JavaScript `get/set`.
