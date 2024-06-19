@@ -146,7 +146,7 @@ For object-like types, if you choose to use the reference wrappers, you should u
 reportParameters!: ScalarReference<ReportParameters | null>; 
 ```
 
-Keep in mind that once a scalar value is managed through a `ScalarReference`, accessing it through MikroORM managed objects will always return the `Reference` wrapper. That can be confusing in case the property is also `nullable`, since the `Reference` will always be truthy. In such cases, you should inform the type system of the nullability of the property through `ScalarReference<T>`'s type parameter as demonstrated above. Below is an example of how it all works:
+Keep in mind that once a scalar value is managed through a `ScalarReference`, accessing it through MikroORM managed objects will always return the `ScalarReference` wrapper. That can be confusing in case the property is also `nullable`, since the `ScalarReference` will always be truthy. In such cases, you should inform the type system of the nullability of the property through `ScalarReference<T>`'s type parameter as demonstrated above. Below is an example of how it all works:
 
 ```ts
 // Say Report of id "1" has no reportParameters in the Database.
