@@ -56,12 +56,41 @@ afterAll(async () => {
 });
 
 test('5715', async () => {
-  orm.em.create(User, { name: 'Foo', email: 'foo' });
+  orm.em.create(User, { name: 'Foo', email: 'foo0' });
   await orm.em.flush();
   orm.em.clear();
 
   const user = await orm.em.upsert(User,
-    { name: 'Bar', email: 'foo', roles: null },
+    { name: 'Bar', email: 'foo0', roles: null },
   );
   expect(user.name).toBe('Bar');
+});
+
+test('5723', async () => {
+  const user1 = orm.em.create(User, {
+    name: 'Foo',
+    email: 'foo',
+    roles: [{ name: 'Foo' }],
+  });
+  const user2 = orm.em.create(User, {
+    name: 'Bar',
+    email: 'bar',
+    roles: [{ name: 'Bar' }],
+  });
+  await orm.em.flush();
+
+  user1.name = 'Baz';
+  user1.roles = null;
+
+  user2.name = 'Qux';
+  user2.roles = null;
+
+  await orm.em.flush();
+  orm.em.clear();
+
+  const user1Check = await orm.em.findOneOrFail(User, { email: 'foo' });
+  expect(user1Check.name).toBe('Baz');
+
+  const user2Check = await orm.em.findOneOrFail(User, { email: 'bar' });
+  expect(user2Check.name).toBe('Qux');
 });
