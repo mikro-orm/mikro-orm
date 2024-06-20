@@ -1,5 +1,6 @@
 import {
-  type Configuration, Dictionary,
+  type Configuration,
+  type Dictionary,
   type EntityDictionary,
   type EntityKey,
   type FilterQuery,

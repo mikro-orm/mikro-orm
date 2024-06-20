@@ -11,7 +11,8 @@ import {
   type FilterQuery,
   type UpsertManyOptions,
   Utils,
-  type EntityKey, Dictionary,
+  type EntityKey,
+  type Dictionary,
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, type Knex, type SqlEntityManager } from '@mikro-orm/knex';
 import { MariaDbConnection } from './MariaDbConnection';
