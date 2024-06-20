@@ -12,14 +12,14 @@ In the current version, MikroORM is able to automatically batch [references](./g
 Dataloaders are disabled by default, but they can be easily enabled globally:
 
 ```ts
-import { Dataloader } from '@mikro-orm/core';
+import { DataloaderType } from '@mikro-orm/core';
 
 MikroORM.init({
-  dataloader: Dataloader.ALL,
+  dataloader: DataloaderType.ALL,
 });
 ```
 
-`Dataloader.REFERENCE` enables the dataloader for [References](./guide/05-type-safety.md#reference-wrapper), `Dataloader.COLLECTION` enables it for [Collections](./collections.md) while `Dataloader.ALL` enables it for both. A boolean value is also supported to enable/disable all of them.
+`DataloaderType.REFERENCE` enables the dataloader for [References](./guide/05-type-safety.md#reference-wrapper), `DataloaderType.COLLECTION` enables it for [Collections](./collections.md) while `DataloaderType.ALL` enables it for both. A boolean value is also supported to enable/disable all of them.
 
 The dataloader can also be enabled per-query via the `load()` method options of `Reference` or `Collection` class.
 
