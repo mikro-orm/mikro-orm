@@ -855,7 +855,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     let entityName: EntityName<Entity>;
     let where: FilterQuery<Entity>;
-    let entity: Entity;
+    let entity: Entity | null = null;
 
     if (data === undefined) {
       entityName = (entityNameOrEntity as Dictionary).constructor.name;
@@ -923,6 +923,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       ...options,
     });
 
+    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta, true);
+
     entity ??= em.entityFactory.create(entityName, data, {
       refresh: true,
       initialized: true,
@@ -930,7 +932,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: true,
     });
 
-    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta, true);
     const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys) as (keyof Entity)[];
     const returning = getOnConflictReturningFields(meta, data, uniqueFields, options) as string[];
 
@@ -1112,14 +1113,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const loadPK = new Map<Entity, FilterQuery<Entity>>();
 
     allData.forEach((row, i) => {
+      em.unitOfWork.getChangeSetPersister().mapReturnedValues(Utils.isEntity(data![i]) ? data![i] as Entity : null, Utils.isEntity(data![i]) ? {} : data![i], res.rows?.[i], meta, true);
       const entity = Utils.isEntity(data![i]) ? data![i] as Entity : em.entityFactory.create(entityName, row, {
         refresh: true,
         initialized: true,
         schema: options.schema,
         convertCustomTypes: true,
       });
-
-      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, Utils.isEntity(data![i]) ? {} : data![i], res.rows?.[i], meta, true);
 
       if (!helper(entity).hasPrimaryKey()) {
         loadPK.set(entity, allWhere[i]);
