@@ -132,5 +132,5 @@
     "typescript": "5.5.2",
     "uuid": "10.0.0"
   },
-  "packageManager": "yarn@4.3.0"
+  "packageManager": "yarn@4.3.1"
 }
