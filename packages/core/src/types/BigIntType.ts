@@ -32,7 +32,7 @@ export class BigIntType extends Type<string | bigint | number | null | undefined
         return String(value);
       case 'bigint':
       default:
-        return BigInt(value);
+        return BigInt(String(value));
     }
   }
 

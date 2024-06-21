@@ -101,13 +101,17 @@ export class Reference<T extends object> {
    * the method returns `null`. Use `loadOrFail()` if you want an error to be thrown in such a case.
    */
   async load<TT extends T, P extends string = never, F extends string = '*', E extends string = never>(options: LoadReferenceOptions<TT, P, F, E> = {}): Promise<Loaded<TT, P, F, E> | null> {
+    const wrapped = helper(this.entity as TT & object);
+
+    if (!wrapped.__em) {
+      return this.entity as Loaded<TT, P, F, E>;
+    }
+
+    if (this.isInitialized() && !options.refresh && options.populate) {
+      await wrapped.__em.populate(this.entity, options.populate as any, options as any);
+    }
+
     if (!this.isInitialized() || options.refresh) {
-      const wrapped = helper(this.entity as TT & object);
-
-      if (!wrapped.__em) {
-        return this.entity as Loaded<TT, P, F, E>;
-      }
-
       if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.REFERENCE].includes(DataloaderUtils.getDataloaderType(wrapped.__em.config.get('dataloader')))) {
         // eslint-disable-next-line dot-notation
         return wrapped.__em!['refLoader'].load([this, options as any]);

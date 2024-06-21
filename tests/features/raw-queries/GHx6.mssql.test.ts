@@ -139,7 +139,7 @@ test('qb.joinAndSelect', async () => {
     'where [u].[id] in (select [u].[id] from (select top (?) [u].[id] from [tag] as [u] ' +
     'left join [tag_jobs] as [t1] on [u].[id] = [t1].[tag_id] ' +
     'left join [dbo].[job] as [a] on [t1].[job_id] = [a].[id] ' +
-    'where coalesce([u].[name], ?) >= ? ' +
+    'where coalesce([u].[name], \'abc\') >= ? ' +
     'group by [u].[id]) as [u])');
   await query;
   expect(RawQueryFragment.checkCacheSize()).toBe(0);

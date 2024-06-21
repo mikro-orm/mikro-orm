@@ -295,7 +295,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         delete data[k];
 
         if (prop.array) {
-          data[prop.fieldNames[0]] = copy.map((item: Dictionary) => this.mapDataToFieldNames(item, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes, true));
+          data[prop.fieldNames[0]] = copy?.map((item: Dictionary) => this.mapDataToFieldNames(item, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes, true));
         } else {
           data[prop.fieldNames[0]] = this.mapDataToFieldNames(copy, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes, true);
         }

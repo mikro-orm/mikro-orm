@@ -1,0 +1,76 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`em.upsert without unique values [better-sqlite] em.upsert() without unique values: better-sqlite 1`] = `
+[
+  [
+    "[query] insert into \`book\` (\`title\`) values ('foo 1') on conflict (\`id\`) do update set \`title\` = excluded.\`title\` returning \`id\`",
+  ],
+  [
+    "[query] insert into \`book\` (\`id\`, \`title\`) select 1 as \`id\`, 'foo 12' as \`title\` union all select NULL as \`id\`, 'foo 2' as \`title\` union all select NULL as \`id\`, 'foo 3' as \`title\` where true on conflict (\`id\`) do update set \`title\` = excluded.\`title\` returning \`id\`",
+  ],
+]
+`;
+
+exports[`em.upsert without unique values [mariadb] em.upsert() without unique values: mariadb 1`] = `
+[
+  [
+    "[query] insert into \`book\` (\`title\`) values ('foo 1') on duplicate key update \`title\` = values(\`title\`)",
+  ],
+  [
+    "[query] select \`b0\`.\`id\` from \`book\` as \`b0\` where \`b0\`.\`id\` = 1 limit 1",
+  ],
+  [
+    "[query] insert into \`book\` (\`id\`, \`title\`) values (1, 'foo 12'), (DEFAULT, 'foo 2'), (DEFAULT, 'foo 3') on duplicate key update \`title\` = values(\`title\`)",
+  ],
+]
+`;
+
+exports[`em.upsert without unique values [mongo] em.upsert() without unique values: mongo 1`] = `
+[
+  [
+    "[query] db.getCollection('mongo-book').updateMany({}, { '$set': { title: 'foo 1' } }, { upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('mongo-book').find({}, { projection: { id: 1 } }).limit(1).toArray();",
+  ],
+  [
+    "[query] bulk = db.getCollection('mongo-book').initializeUnorderedBulkOp({ upsert: true });bulk.find({ _id: ObjectId('[generated-object-id]') }).upsert().update({ '$set': { _id: ObjectId('[generated-object-id]'), title: 'foo 12' } });bulk.insert({ title: 'foo 2' });bulk.insert({ title: 'foo 3' });bulk.execute()",
+  ],
+]
+`;
+
+exports[`em.upsert without unique values [mysql] em.upsert() without unique values: mysql 1`] = `
+[
+  [
+    "[query] insert into \`book\` (\`title\`) values ('foo 1') on duplicate key update \`title\` = values(\`title\`)",
+  ],
+  [
+    "[query] select \`b0\`.\`id\` from \`book\` as \`b0\` where \`b0\`.\`id\` = 1 limit 1",
+  ],
+  [
+    "[query] insert into \`book\` (\`id\`, \`title\`) values (1, 'foo 12'), (DEFAULT, 'foo 2'), (DEFAULT, 'foo 3') on duplicate key update \`title\` = values(\`title\`)",
+  ],
+]
+`;
+
+exports[`em.upsert without unique values [postgresql] em.upsert() without unique values: postgresql 1`] = `
+[
+  [
+    "[query] insert into "book" ("title") values ('foo 1') on conflict ("id") do update set "title" = excluded."title" returning "id"",
+  ],
+  [
+    "[query] insert into "book" ("id", "title") values (1, 'foo 12'), (DEFAULT, 'foo 2'), (DEFAULT, 'foo 3') on conflict ("id") do update set "title" = excluded."title" returning "id"",
+  ],
+]
+`;
+
+exports[`em.upsert without unique values [sqlite] em.upsert() without unique values: sqlite 1`] = `
+[
+  [
+    "[query] insert into \`book\` (\`title\`) values ('foo 1') on conflict (\`id\`) do update set \`title\` = excluded.\`title\` returning \`id\`",
+  ],
+  [
+    "[query] insert into \`book\` (\`id\`, \`title\`) select 1 as \`id\`, 'foo 12' as \`title\` union all select NULL as \`id\`, 'foo 2' as \`title\` union all select NULL as \`id\`, 'foo 3' as \`title\` where true on conflict (\`id\`) do update set \`title\` = excluded.\`title\` returning \`id\`",
+  ],
+]
+`;

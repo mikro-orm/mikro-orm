@@ -94,7 +94,8 @@ export class QueryBuilderHelper {
     const rawField = RawQueryFragment.getKnownFragment(field);
 
     if (rawField) {
-      return this.knex.raw(rawField.sql, rawField.params);
+      // sometimes knex is confusing the binding positions, we need to interpolate early
+      return this.knex.raw(this.platform.formatQuery(rawField.sql, rawField.params));
     }
 
     const [a, f] = this.splitField(field as EntityKey);
@@ -251,7 +252,8 @@ export class QueryBuilderHelper {
           const right = `${join.alias}.${join.joinColumns![idx]}`;
 
           if (join.prop.formula) {
-            const left = join.prop.formula(join.ownerAlias);
+            const alias = this.platform.quoteIdentifier(join.ownerAlias);
+            const left = join.prop.formula(alias);
             conditions.push(`${left} = ${this.knex.ref(right)}`);
             return;
           }
@@ -580,6 +582,10 @@ export class QueryBuilderHelper {
     if (fields.length > 1 && Array.isArray(value[op]) && !value[op].every((v: unknown) => Array.isArray(v))) {
       const tmp = value[op].length === 1 && Utils.isPlainObject(value[op][0]) ? fields.map(f => value[op][0][f]) : value[op];
       value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, tmp);
+    }
+
+    if (value[op] instanceof RawQueryFragment) {
+      value[op] = this.knex.raw(value[op].sql, value[op].params);
     }
 
     if (this.subQueries[key]) {

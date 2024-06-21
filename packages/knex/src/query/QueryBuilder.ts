@@ -1649,7 +1649,7 @@ export class QueryBuilder<
           const type = this.platform.castColumn(prop);
           const fieldName = this.helper.mapper(field, this.type, undefined, null);
 
-          if (!prop?.persist && !prop?.formula && !pks.includes(fieldName)) {
+          if (!prop?.persist && !prop?.formula && !prop?.hasConvertToJSValueSQL && !pks.includes(fieldName)) {
             addToSelect.push(fieldName);
           }
 
@@ -1679,8 +1679,10 @@ export class QueryBuilder<
           return false;
         });
 
+        /* istanbul ignore next */
         if (field instanceof RawQueryFragment) {
-          knexQuery.select(this.platform.formatQuery(field.sql, field.params));
+          const sql = this.platform.formatQuery(field.sql, field.params);
+          knexQuery.select(this.knex.raw(sql));
         } else if (field) {
           knexQuery.select(field as string);
         }

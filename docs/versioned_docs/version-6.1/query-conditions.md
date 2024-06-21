@@ -239,7 +239,7 @@ export class Book {
 
 In SQLite, full text searches can only be executed on [FTS5 virtual tables](https://www.sqlite.org/fts5.html#overview_of_fts5). MikroORM can't create this table, and has to be done [manually](https://www.sqlite.org/fts5.html#fts5_table_creation_and_initialization). Simple tables can be created with this query:
 
-`CREATE VIRTUAL TABLE <table name> USING fts5(<colum1>, <column2>, ...);`
+`CREATE VIRTUAL TABLE <table name> USING fts5(<column1>, <column2>, ...);`
 
 Afterwards an entity can created normally for the structure of this table. The `@Index` is not necessary for full text searches in SQLite.
 

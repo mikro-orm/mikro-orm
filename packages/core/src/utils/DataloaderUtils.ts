@@ -13,7 +13,7 @@ export class DataloaderUtils {
 
   /**
    * Groups identified references by entity and returns a Map with the
-   * class name as the index and the corresponging primary keys as the value.
+   * class name as the index and the corresponding primary keys as the value.
    */
   static groupPrimaryKeysByEntityAndOpts(
     refsWithOpts: readonly [Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?][],
@@ -28,7 +28,7 @@ export class DataloaderUtils {
          In real-world scenarios (GraphQL) most of the time you will end up batching the same sets of options anyway,
          so we end up getting most of the benefits with the much simpler implementation.
          Also there are scenarios where the single query per entity implementation may end up being slower, for example
-         if the vast majority of the refereces batched for a certain entity  don't have populate options while a few ones have
+         if the vast majority of the references batched for a certain entity  don't have populate options while a few ones have
          a wildcard populate so you end up doing the additional joins for all the entities.
          Thus such approach should probably be configurable, if not opt-in.
          NOTE: meta + opts multi maps (https://github.com/martian17/ds-js) might be a more elegant way
@@ -46,7 +46,7 @@ export class DataloaderUtils {
 
   /**
    * Returns the reference dataloader batchLoadFn, which aggregates references by entity,
-   * makes one query per entity and maps each input reference to the corresponging result.
+   * makes one query per entity and maps each input reference to the corresponding result.
    */
   static getRefBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?], any> {
     return async (refsWithOpts: readonly [Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?][]): Promise<ArrayLike<any | Error>> => {
@@ -186,7 +186,7 @@ export class DataloaderUtils {
 
   /**
    * Returns the collection dataloader batchLoadFn, which aggregates collections by entity,
-   * makes one query per entity and maps each input collection to the corresponging result.
+   * makes one query per entity and maps each input collection to the corresponding result.
    */
   static getColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
     return async (collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]) => {

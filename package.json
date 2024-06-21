@@ -105,13 +105,13 @@
     "@types/esprima": "4.0.6",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "29.5.12",
-    "@types/node": "20.14.2",
+    "@types/node": "20.14.7",
     "@types/pg": "8.11.6",
     "@types/sqlstring": "2.3.2",
-    "@types/uuid": "9.0.8",
+    "@types/uuid": "10.0.0",
     "@types/webpack-env": "1.18.5",
-    "@typescript-eslint/eslint-plugin": "7.13.0",
-    "@typescript-eslint/parser": "7.13.0",
+    "@typescript-eslint/eslint-plugin": "7.13.1",
+    "@typescript-eslint/parser": "7.13.1",
     "bson": "^6.7.0",
     "conditional-type-checks": "1.0.6",
     "eslint": "8.57.0",
@@ -127,10 +127,10 @@
     "mongodb": "6.7.0",
     "mongodb-memory-server": "9.3.0",
     "rimraf": "5.0.7",
-    "ts-jest": "29.1.4",
+    "ts-jest": "29.1.5",
     "ts-node": "10.9.2",
-    "typescript": "5.4.5",
+    "typescript": "5.5.2",
     "uuid": "10.0.0"
   },
-  "packageManager": "yarn@4.3.0"
+  "packageManager": "yarn@4.3.1"
 }

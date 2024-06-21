@@ -1128,9 +1128,9 @@ export interface LoadedReference<T> extends Reference<NonNullable<T>> {
   get(): NonNullable<T>;
 }
 
-export interface LoadedScalarReference<T> extends ScalarReference<NonNullable<T>> {
-  $: NonNullable<T>;
-  get(): NonNullable<T>;
+export interface LoadedScalarReference<T> extends ScalarReference<T> {
+  $: T;
+  get(): T;
 }
 
 export interface LoadedCollection<T extends object> extends Collection<T> {

@@ -14,7 +14,7 @@ If we use folder based discovery, cache will be dependent on environment - if we
 
 Entity metadata are cached together with modified time of the source file, and every time the cache is requested, it first checks if the cache is not invalid. This way we can forget about the caching mechanism most of the time.
 
-One case where we can end up needing to wipe the cache manually is when we work withing a git branch where contents of entities folder differs.
+One case where we can end up needing to wipe the cache manually is when we work within a git branch where contents of entities folder differs.
 
 ## Disabling Metadata Cache
 

@@ -476,17 +476,20 @@ export class Utils {
     const tokens = this.tokenize(func);
 
     let inside = 0;
+    let currentBlockStart = 0;
 
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
 
       if (token.type === 'Identifier' && token.value === methodName) {
         inside = 1;
+        currentBlockStart = i;
         continue;
       }
 
       if (inside === 1 && token.type === 'Punctuator' && token.value === '(') {
         inside = 2;
+        currentBlockStart = i;
         continue;
       }
 
@@ -494,7 +497,7 @@ export class Utils {
         break;
       }
 
-      if (inside === 2 && token.type === 'Punctuator' && token.value === '{') {
+      if (inside === 2 && token.type === 'Punctuator' && token.value === '{' && i === currentBlockStart + 1) {
         ret.push(ObjectBindingPattern as unknown as string);
         i = tokens.findIndex((t, idx) => idx > i + 2 && t.type === 'Punctuator' && t.value === '}');
         continue;
@@ -879,9 +882,9 @@ export class Utils {
   }
 
   /**
-   * Resolves and normalizes a series of path parts relative to each preceeding part.
+   * Resolves and normalizes a series of path parts relative to each preceding part.
    * If any part is a `file:` URL, it is converted to a local path. If any part is an
-   * absolute path, it replaces preceeding paths (similar to `path.resolve` in NodeJS).
+   * absolute path, it replaces preceding paths (similar to `path.resolve` in NodeJS).
    * Trailing directory separators are removed, and all directory separators are converted
    * to POSIX-style separators (`/`).
    */
