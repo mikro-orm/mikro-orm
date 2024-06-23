@@ -460,7 +460,7 @@ values={[
 }>
 <TabItem value="reflect-metadata">
 
-```ts title="./entities/Author.ts"
+```ts title="./entities/User.ts"
 import { OutsideEnum } from './OutsideEnum.ts';
 
 @Entity()
@@ -498,7 +498,7 @@ export const enum UserStatus {
   </TabItem>
   <TabItem value="ts-morph">
 
-```ts title="./entities/Author.ts"
+```ts title="./entities/User.ts"
 import { OutsideEnum } from './OutsideEnum.ts';
 
 @Entity()
@@ -536,7 +536,7 @@ export const enum UserStatus {
   </TabItem>
   <TabItem value="entity-schema">
 
-```ts title="./entities/Author.ts"
+```ts title="./entities/User.ts"
 properties: {
   // string enum
   role: { enum: true, items: () => UserRole },
@@ -567,7 +567,7 @@ values={[
 }>
 <TabItem value="reflect-metadata">
 
-```ts title="./entities/Author.ts"
+```ts title="./entities/User.ts"
 @Entity()
 export class User {
 
@@ -586,7 +586,7 @@ export enum UserRole {
   </TabItem>
   <TabItem value="ts-morph">
 
-```ts title="./entities/Author.ts"
+```ts title="./entities/User.ts"
 @Entity()
 export class User {
 
@@ -605,7 +605,7 @@ export enum UserRole {
   </TabItem>
   <TabItem value="entity-schema">
 
-```ts title="./entities/Author.ts"
+```ts title="./entities/User.ts"
 export enum UserRole {
   ADMIN = 'admin',
   MODERATOR = 'moderator',
@@ -1383,7 +1383,7 @@ export class User {
   </TabItem>
   <TabItem value="ts-morph">
 
-```ts title="./entities/Book.ts"
+```ts title="./entities/User.ts"
 @Entity()
 export class User {
 
@@ -1467,7 +1467,7 @@ export class User {
   </TabItem>
   <TabItem value="ts-morph">
 
-```ts title="./entities/Book.ts"
+```ts title="./entities/User.ts"
 @Entity()
 export class User {
 
