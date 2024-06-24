@@ -112,7 +112,7 @@ export class DatabaseTable {
       }
 
       if (prop.length == null && prop.columnTypes[idx]) {
-        prop.length = this.platform.getSchemaHelper()!.inferLengthFromColumnType(prop.columnTypes[idx].trimStart());
+        prop.length = this.platform.getSchemaHelper()!.inferLengthFromColumnType(prop.columnTypes[idx]);
       }
 
       const primary = !meta.compositePK && !!prop.primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType);
