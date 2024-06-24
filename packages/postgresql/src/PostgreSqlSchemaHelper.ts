@@ -171,11 +171,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         type += `(${col.numeric_precision},${col.numeric_scale})`;
       }
 
+      const length = this.inferLengthFromColumnType(type) === -1 ? -1 : col.length;
+
       const column: Column = {
         name: col.column_name,
         type,
         mappedType,
-        length: col.length,
+        length,
         precision: col.numeric_precision,
         scale: col.numeric_scale,
         nullable: col.is_nullable === 'YES',
@@ -626,6 +628,20 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   override async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
     const res = await this.getAllIndexes(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
+  }
+
+  override inferLengthFromColumnType(type: string): number | undefined {
+    const match = type.match(/^(varchar|character varying)\s*(?:\(\s*(\d+)\s*\))?/);
+
+    if (!match) {
+      return;
+    }
+
+    if (!match[2]) {
+      return -1;
+    }
+
+    return +match[2];
   }
 
 }

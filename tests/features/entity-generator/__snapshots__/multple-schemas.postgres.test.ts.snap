@@ -10,7 +10,7 @@ export class Schema1Test {
   @PrimaryKey({ autoincrement: false })
   id!: bigint;
 
-  @Property({ nullable: true })
+  @Property({ length: -1, nullable: true })
   name?: string;
 
   @Property({ nullable: true })
@@ -29,7 +29,7 @@ export class Schema2Test {
   @PrimaryKey({ autoincrement: false })
   id!: bigint;
 
-  @Property({ nullable: true })
+  @Property({ length: -1, nullable: true })
   name?: string;
 
   @Property({ nullable: true })
@@ -48,7 +48,7 @@ export class Test {
   @PrimaryKey({ autoincrement: false })
   id!: bigint;
 
-  @Property({ nullable: true })
+  @Property({ length: -1, nullable: true })
   name?: string;
 
   @Property({ nullable: true })
@@ -72,7 +72,7 @@ export class Schema1Test {
   @PrimaryKey({ autoincrement: false })
   id!: bigint;
 
-  @Property({ nullable: true })
+  @Property({ length: -1, nullable: true })
   name?: string;
 
   @Property({ nullable: true })
@@ -91,7 +91,7 @@ export class Schema2Test {
   @PrimaryKey({ autoincrement: false })
   id!: bigint;
 
-  @Property({ nullable: true })
+  @Property({ length: -1, nullable: true })
   name?: string;
 
   @Property({ nullable: true })
@@ -110,7 +110,7 @@ export class PublicTest {
   @PrimaryKey({ autoincrement: false })
   id!: bigint;
 
-  @Property({ nullable: true })
+  @Property({ length: -1, nullable: true })
   name?: string;
 
   @Property({ nullable: true })
