@@ -47,7 +47,12 @@ export abstract class SchemaHelper {
   }
 
   inferLengthFromColumnType(type: string): number | undefined {
-    return undefined;
+    const match = type.match(/^\w+\s*(?:\(\s*(\d+)\s*\)|$)/);
+    if (!match) {
+      return;
+    }
+
+    return +match[1];
   }
 
   async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {

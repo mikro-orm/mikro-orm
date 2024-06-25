@@ -92,6 +92,22 @@ export abstract class Type<JSType = string, DBType = JSType> {
     return prop.columnTypes?.[0] ?? platform.getTextTypeDeclarationSQL(prop);
   }
 
+  /**
+   * Get the default length for values of this type
+   *
+   * When doing schema generation, if neither "length" nor "columnType" option is provided,
+   * the length will be defaulted to this value.
+   *
+   * When doing entity generation, if the type is recognized to this type, and the inferred length is this value,
+   * the length option will be omitted in the output. If this method is not defined, length is always outputted
+   * based on what is in the database metadata.
+   *
+   * @param platform The platform the default will be used for.
+   *
+   * @return The default value for the given platform.
+   */
+  getDefaultLength?(platform: Platform): number;
+
   static getType<JSType, DBType = JSType, TypeClass extends Constructor<Type<JSType, DBType>> = Constructor<Type<JSType, DBType>>>(cls: TypeClass): InstanceType<TypeClass> {
     const key = cls.name;
 

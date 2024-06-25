@@ -25,4 +25,8 @@ export class TimeType extends Type {
     return platform.getTimeTypeDeclarationSQL(prop.length);
   }
 
+  override getDefaultLength(platform: Platform): number {
+    return platform.getDefaultDateTimeLength();
+  }
+
 }

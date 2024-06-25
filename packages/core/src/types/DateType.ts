@@ -20,4 +20,8 @@ export class DateType extends Type<string | null | undefined, string | null | un
     return platform.getDateTypeDeclarationSQL(prop.length);
   }
 
+  override getDefaultLength(platform: Platform): number {
+    return 0;
+  }
+
 }

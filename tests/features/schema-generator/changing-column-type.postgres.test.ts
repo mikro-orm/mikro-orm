@@ -10,6 +10,12 @@ export class Book1 {
   @Property({ default: true, nullable: true, comment: 'this is a comment' })
   myColumn: boolean = true;
 
+  @Property({ type: 'character varying' })
+  myStrCol: string = '';
+
+  @Property({ columnType: 'integer[3][3]' })
+  sudokuSquare!: number[][];
+
 }
 
 @Entity({ tableName: 'book' })
@@ -21,6 +27,12 @@ export class Book2 {
   @Property({ default: false, nullable: false, comment: 'this is a comment' })
   myColumn: boolean = false;
 
+  @Property({ type: 'character varying', columnType: 'character varying' })
+  myStrCol: string = '';
+
+  @Property({ columnType: 'integer[3][3]' })
+  sudokuSquare!: number[][];
+
 }
 
 @Entity({ tableName: 'book' })
@@ -31,6 +43,9 @@ export class Book3 {
 
   @Property({ default: false, nullable: true })
   myColumn: boolean = false;
+
+  @Property({ type: 'character varying', columnType: 'character varying' })
+  myStrCol: string = '';
 
 }
 
@@ -77,20 +92,31 @@ describe('changing column in postgres (GH 2407)', () => {
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toBe(`alter table "book" alter column "my_column" type boolean using ("my_column"::boolean);
 alter table "book" alter column "my_column" set default false;
-alter table "book" alter column "my_column" set not null;\n\n`);
+alter table "book" alter column "my_column" set not null;
+alter table "book" alter column "my_str_col" type character varying using ("my_str_col"::character varying);
+alter table "book" alter column "sudoku_square" type integer[3][3] using ("sudoku_square"::integer[3][3]);
+
+`);
     await orm.schema.execute(diff1);
 
     orm.getMetadata().reset('Book2');
     await orm.discoverEntity(Book3);
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff3).toBe(`alter table "book" alter column "my_column" type boolean using ("my_column"::boolean);
-alter table "book" alter column "my_column" drop not null;\n\n`);
+    expect(diff3).toBe(`alter table "book" drop column "sudoku_square";
+
+alter table "book" alter column "my_column" type boolean using ("my_column"::boolean);
+alter table "book" alter column "my_column" drop not null;
+alter table "book" alter column "my_str_col" type character varying using ("my_str_col"::character varying);
+
+`);
     await orm.schema.execute(diff3);
 
     orm.getMetadata().reset('Book3');
     await orm.discoverEntity(Book4);
     const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff4).toBe(`comment on column "book"."my_column" is 'lalala';\n\n`);
+    expect(diff4).toBe(`alter table "book" drop column "my_str_col";
+
+comment on column "book"."my_column" is 'lalala';\n\n`);
     await orm.schema.execute(diff4);
 
     orm.getMetadata().reset('Book4');

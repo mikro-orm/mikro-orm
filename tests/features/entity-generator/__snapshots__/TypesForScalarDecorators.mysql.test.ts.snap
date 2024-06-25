@@ -12,7 +12,7 @@ export class Users {
   @PrimaryKey({ type: 'integer' })
   userId!: number;
 
-  @Property({ type: 'string', length: 255 })
+  @Property({ type: 'string' })
   username!: string;
 
   @Property({ type: 'bigint', unsigned: true })

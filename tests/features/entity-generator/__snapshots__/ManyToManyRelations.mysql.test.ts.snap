@@ -32,7 +32,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -48,7 +48,7 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -63,7 +63,7 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -83,7 +83,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -165,7 +165,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id' })
@@ -226,7 +226,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -242,7 +242,7 @@ export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
     flagId: { primary: true, type: 'integer', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -258,7 +258,7 @@ export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
     orderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
   },
 });
 ",
@@ -291,7 +291,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -425,7 +425,7 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -488,7 +488,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -504,7 +504,7 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -519,7 +519,7 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -539,7 +539,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -624,7 +624,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_avatars', pivotEntity: () => UserEmailAvatars, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
@@ -694,7 +694,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -710,7 +710,7 @@ export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
     flagId: { primary: true, type: 'integer', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -726,7 +726,7 @@ export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
     orderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
   },
 });
 ",
@@ -759,7 +759,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -899,7 +899,7 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userEmailAvatars: {
       kind: 'm:n',
       entity: () => Emails,
@@ -989,7 +989,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -1005,7 +1005,7 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -1020,7 +1020,7 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -1040,7 +1040,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -1140,7 +1140,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -1195,7 +1195,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -1211,7 +1211,7 @@ export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
     flagId: { primary: true, type: 'integer', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -1227,7 +1227,7 @@ export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
     orderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
   },
 });
 ",
@@ -1260,7 +1260,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -1427,7 +1427,7 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userFlags: {
       kind: 'm:n',
       entity: () => Flags,
@@ -1473,7 +1473,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -1489,7 +1489,7 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -1504,7 +1504,7 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -1524,7 +1524,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -1624,7 +1624,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -1679,7 +1679,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -1695,7 +1695,7 @@ export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
     flagId: { primary: true, type: 'integer', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -1711,7 +1711,7 @@ export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
     orderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
   },
 });
 ",
@@ -1744,7 +1744,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -1911,7 +1911,7 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userFlags: {
       kind: 'm:n',
       entity: () => Flags,
@@ -1959,7 +1959,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
@@ -1983,7 +1983,7 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
@@ -2006,7 +2006,7 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
@@ -2032,7 +2032,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -2114,7 +2114,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id' })
@@ -2182,7 +2182,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
     userEmailsInverse: {
       kind: 'm:n',
@@ -2208,7 +2208,7 @@ export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
     flagId: { primary: true, type: 'integer', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
   },
@@ -2230,7 +2230,7 @@ export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
     orderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     orderInverse: {
       kind: '1:m',
       entity: () => UserEmailOrders,
@@ -2273,7 +2273,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -2408,7 +2408,7 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -2474,7 +2474,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
@@ -2507,7 +2507,7 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
@@ -2530,7 +2530,7 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
@@ -2556,7 +2556,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -2641,7 +2641,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_avatars', pivotEntity: () => UserEmailAvatars, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
@@ -2721,7 +2721,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
     userEmailAvatarsInverse: {
       kind: 'm:n',
@@ -2765,7 +2765,7 @@ export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
     flagId: { primary: true, type: 'integer', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
   },
@@ -2787,7 +2787,7 @@ export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
     orderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     orderInverse: {
       kind: '1:m',
       entity: () => UserEmailOrders,
@@ -2830,7 +2830,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -2971,7 +2971,7 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userEmailAvatars: {
       kind: 'm:n',
       entity: () => Emails,
@@ -3063,7 +3063,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
@@ -3084,7 +3084,7 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
@@ -3106,7 +3106,7 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @OneToMany({ entity: () => UserOrders, mappedBy: 'order' })
@@ -3129,7 +3129,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -3230,7 +3230,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -3290,7 +3290,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
   },
 });
@@ -3311,7 +3311,7 @@ export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
     flagId: { primary: true, type: 'integer', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
   },
@@ -3331,7 +3331,7 @@ export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
     orderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     orderInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'order' },
   },
 });
@@ -3365,7 +3365,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -3534,7 +3534,7 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userFlags: {
       kind: 'm:n',
       entity: () => Flags,
@@ -3582,7 +3582,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
@@ -3603,7 +3603,7 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
@@ -3625,7 +3625,7 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @OneToMany({ entity: () => UserOrders, mappedBy: 'order' })
@@ -3648,7 +3648,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -3749,7 +3749,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -3809,7 +3809,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
   },
 });
@@ -3830,7 +3830,7 @@ export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
     flagId: { primary: true, type: 'integer', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
   },
@@ -3850,7 +3850,7 @@ export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
     orderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     orderInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'order' },
   },
 });
@@ -3884,7 +3884,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -4053,7 +4053,7 @@ export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
     userId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userFlags: {
       kind: 'm:n',
       entity: () => Flags,

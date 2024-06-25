@@ -1,7 +1,6 @@
 import {
   Cascade,
   type Configuration,
-  DateTimeType,
   DecimalType,
   type DeferMode,
   type Dictionary,
@@ -9,7 +8,6 @@ import {
   type EntityMetadata,
   type EntityProperty,
   EntitySchema,
-  IntervalType,
   type NamingStrategy,
   ReferenceKind,
   t,
@@ -101,18 +99,12 @@ export class DatabaseTable {
         }
       }
 
-      if (mappedType instanceof DateTimeType || mappedType instanceof IntervalType) {
-        const match = prop.columnTypes[idx].match(/\w+\((\d+)\)/);
-
-        if (match) {
-          prop.length ??= +match[1];
-        } else {
-          prop.length ??= this.platform.getDefaultDateTimeLength();
-        }
-      }
-
       if (prop.length == null && prop.columnTypes[idx]) {
         prop.length = this.platform.getSchemaHelper()!.inferLengthFromColumnType(prop.columnTypes[idx]);
+
+        if (typeof mappedType.getDefaultLength !== 'undefined') {
+          prop.length ??= mappedType.getDefaultLength(this.platform);
+        }
       }
 
       const primary = !meta.compositePK && !!prop.primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType);

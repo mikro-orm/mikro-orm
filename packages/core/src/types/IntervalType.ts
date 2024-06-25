@@ -16,4 +16,8 @@ export class IntervalType extends Type<string | null | undefined, string | null 
     return platform.convertIntervalToDatabaseValue(value) as string;
   }
 
+  override getDefaultLength(platform: Platform): number {
+    return platform.getDefaultDateTimeLength();
+  }
+
 }

@@ -41,10 +41,10 @@ export class E123TableName {
   @ManyToOne({ entity: () => Table$39s$32name$32has$32apostrophe$44$32also$32$96$32this, fieldName: 'prototype', index: 'fk_123_table_name_table\\'s name has apostrophe, also\` this_idx' })
   prototype!: Table$39s$32name$32has$32apostrophe$44$32also$32$96$32this;
 
-  @Property({ fieldName: 'oh_captain__my___captain', type: 'string', length: 255 })
+  @Property({ fieldName: 'oh_captain__my___captain', type: 'string' })
   ohCaptainMyCaptain: string & Opt = 'test';
 
-  @Property({ length: 255 })
+  @Property()
   infer!: string;
 
   @Property({ fieldName: '$infer', length: 200 })
@@ -169,12 +169,8 @@ export const E123TableNameSchema = new EntitySchema({
       fieldName: 'prototype',
       index: 'fk_123_table_name_table\\'s name has apostrophe, also\` this_idx',
     },
-    ohCaptainMyCaptain: {
-      type: 'string',
-      fieldName: 'oh_captain__my___captain',
-      length: 255,
-    },
-    infer: { type: 'string', length: 255 },
+    ohCaptainMyCaptain: { type: 'string', fieldName: 'oh_captain__my___captain' },
+    infer: { type: 'string' },
     $$infer: { type: 'string', fieldName: '$infer', length: 200 },
     $$$infer: { type: 'string', fieldName: '$$infer', length: 100 },
   },
