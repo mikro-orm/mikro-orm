@@ -30,7 +30,7 @@ describe('check constraint [postgres]', () => {
   test('check constraint is generated for decorator [postgres]', async () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
-      dbName: `mikro_orm_test`,
+      dbName: `mikro_orm_test_check_1`,
       driver: PostgreSqlDriver,
     });
 

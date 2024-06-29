@@ -5,6 +5,12 @@ enum SomeEnum {
   BAR = 'Bar',
 }
 
+// GH #5751
+enum TestEnum {
+  Yes = 'Y',
+  No = '',
+}
+
 @Entity({ tableName: 'author' })
 class Author0 {
 
@@ -16,6 +22,9 @@ class Author0 {
 
   @Enum(() => SomeEnum)
   someEnum!: SomeEnum;
+
+  @Enum(() => TestEnum)
+  testEnum!: TestEnum;
 
 }
 
@@ -31,9 +40,12 @@ class Author1 {
   @Enum({ items: () => SomeEnum, comment: 'this is a comment' })
   someEnum!: SomeEnum;
 
+  @Enum(() => TestEnum)
+  testEnum!: TestEnum;
+
 }
 
-test('GH #4112', async () => {
+test('GH #4112 and #5751', async () => {
   const orm = await MikroORM.init({
     entities: [Author0],
     dbName: `mikro_orm_test_enum_diffing`,
