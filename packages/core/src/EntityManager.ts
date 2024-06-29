@@ -683,7 +683,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Fields extends string = '*',
     Excludes extends string = never,
   >(entity: Entity, options: FindOneOptions<Entity, Hint, Fields, Excludes> = {}): Promise<MergeLoaded<Entity, Naked, Hint, Fields, Excludes, true> | null> {
-    const fork = this.fork();
+    const fork = this.fork({ keepTransactionContext: true });
     const entityName = entity.constructor.name;
     const reloaded = await fork.findOne(entityName, entity, {
       schema: helper(entity).__schema,
