@@ -230,7 +230,7 @@ export class EntitySerializer {
       const pruned = Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<T>;
 
       if (visible.length === 1) {
-        return platform.normalizePrimaryKey(pruned[visible[0]] as IPrimaryKey) as EntityValue<T>;
+        return platform.normalizePrimaryKey(pruned[visible[0] as keyof typeof pruned] as IPrimaryKey) as EntityValue<T>;
       }
 
       return pruned;

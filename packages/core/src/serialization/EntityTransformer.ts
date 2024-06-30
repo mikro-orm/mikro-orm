@@ -226,7 +226,7 @@ export class EntityTransformer {
       const pruned = Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<Entity>;
 
       if (visible.length === 1) {
-        return platform.normalizePrimaryKey(pruned[visible[0]] as IPrimaryKey) as EntityValue<Entity>;
+        return platform.normalizePrimaryKey(pruned[visible[0] as keyof typeof pruned] as IPrimaryKey) as EntityValue<Entity>;
       }
 
       return pruned;

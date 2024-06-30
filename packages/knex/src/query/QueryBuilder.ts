@@ -979,7 +979,7 @@ export class QueryBuilder<
       helper(entity).__serializationContext.populate ??= hint;
       hint.forEach(hint => {
         const [propName] = hint.field.split(':', 2) as [EntityKey<Entity>];
-        const value = Reference.unwrapReference(entity[propName] as object);
+        const value = Reference.unwrapReference(entity[propName as never] as object);
 
         if (Utils.isEntity<U>(value)) {
           helper(value).populated();

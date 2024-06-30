@@ -205,7 +205,7 @@ export class EntityHelper {
         continue;
       }
 
-      const inverse = value?.[prop2.name as EntityKey<T>];
+      const inverse = value?.[prop2.name as never] as EntityValue<T>;
 
       if (prop.kind === ReferenceKind.MANY_TO_ONE && Utils.isCollection<T, T>(inverse) && inverse.isInitialized()) {
         inverse.addWithoutPropagation(owner);
@@ -226,8 +226,8 @@ export class EntityHelper {
     helper(entity).__pk = helper(entity).getPrimaryKey()!;
 
     // the inverse side will be changed on the `value` too, so we need to clean-up and schedule orphan removal there too
-    if (!prop.primary && !prop2.mapToPk && value?.[prop2.name] != null && Reference.unwrapReference(value[prop2.name]!) !== entity) {
-      const other = Reference.unwrapReference(value![prop2.name]!);
+    if (!prop.primary && !prop2.mapToPk && value?.[prop2.name as never] != null && Reference.unwrapReference(value[prop2.name as never]!) !== entity) {
+      const other = Reference.unwrapReference(value![prop2.name as never]!);
       delete helper(other).__data[prop.name];
 
       if (prop2.orphanRemoval) {

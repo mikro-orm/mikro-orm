@@ -33,7 +33,7 @@ import type { FindOneOptions, FindOptions } from './drivers';
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
 // `EntityKey<T, true>` will skip scalar properties (and some other scalar like types like Date or Buffer)
-export type EntityKey<T = unknown, B extends boolean = false> = string & keyof { [K in keyof T as CleanKeys<T, K, B>]?: unknown };
+export type EntityKey<T = unknown, B extends boolean = false> = string & { [K in keyof T]-?: CleanKeys<T, K, B> extends never ? never : K; }[keyof T];
 export type EntityValue<T> = T[EntityKey<T>];
 export type FilterKey<T> = keyof FilterQuery<T>;
 export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
@@ -174,7 +174,7 @@ export type ExpandQuery<T> = T extends object
   : FilterValue<T>;
 
 export type EntityProps<T> = { -readonly [K in EntityKey<T>]?: T[K] };
-export type ObjectQuery<T> = OperatorMap<T> & ExpandObject<T>;
+export type ObjectQuery<T> = OperatorMap<T> & FilterObject<T>;
 export type FilterQuery<T> =
   | ObjectQuery<T>
   | NonNullable<ExpandScalar<Primary<T>>>
